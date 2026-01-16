@@ -63,7 +63,7 @@ const page = (): JSX.Element => {
     }
   };
   return (
-    <div className={`ml-[${SIDEBAR_WIDTH}] mt-${MARGIN_TOP} p-6`}>
+    <div className={`ml-[${SIDEBAR_WIDTH}] mt-14 p-6`}>
       <ResetPassword
         formData={formData}
         handleChange={handleChange}
