@@ -242,7 +242,7 @@ const page = (): JSX.Element => {
             >
               <option value="">Unassigned</option>
               {usersData?.map((user) => (
-                <option key={user._id} value={user._id}>
+                <option key={user.id} value={user.id}>
                   {user.firstName} {user.lastName}
                 </option>
               ))}
