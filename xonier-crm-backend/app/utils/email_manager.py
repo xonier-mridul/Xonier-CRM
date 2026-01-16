@@ -1,4 +1,4 @@
-import smtplib
+import aiosmtplib
 from app.config.email_config import EMAIL_USER, EMAIL_HOST, EMAIL_PASS, EMAIL_PORT, FROM_EMAIL
 from app.core.enums import OTP_TYPE
 from email.message import EmailMessage
@@ -13,7 +13,7 @@ class EmailManager:
         self.email_port = EMAIL_PORT
         self.from_email = FROM_EMAIL
 
-    async def send_otp_email(self,to:str, otp: int, type: OTP_TYPE):
+    async def send_otp_email(self, to: str, otp: int, type: OTP_TYPE):
         match type:
             case OTP_TYPE.EMAIL_VERIFICATION:
                 subject = "OTP for email verification"
@@ -30,26 +30,26 @@ class EmailManager:
         body = otp_template(title=subject, otp_code=otp)
 
         message = EmailMessage()
-
         message["Subject"] = subject
         message["From"] = self.from_email
         message["To"] = to
         message.set_content(f"your verification otp is {otp}")
         message.add_alternative(body, subtype="html")
 
-        try: 
-        
-            with smtplib.SMTP_SSL(self.email_host, 465) as smtp:
-                smtp.login(EMAIL_USER, self.email_pass)  
-                smtp.send_message(message)
-                return True
+        try:
+            await aiosmtplib.send(
+                message,
+                hostname=self.email_host,
+                port=465,
+                username=self.email_user,
+                password=self.email_pass,
+                use_tls=True
+            )
+            return True
         
         except Exception as e:
             print("email error: ", e)
             return False
-
-
-
         
 
         
