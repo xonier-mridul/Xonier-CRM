@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+
+html {
+  scroll-behavior: smooth;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #777e89 !important;
+  opacity: 1; 
+}
+
+body {
+  
+  /* color: var(--foreground); */
+  font-family: "Instrument Sans", sans-serif;
+  transition: all;
+  transition-duration: .3s;
+}
