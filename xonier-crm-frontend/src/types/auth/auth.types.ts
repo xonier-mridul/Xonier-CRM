@@ -73,11 +73,16 @@ export enum USER_STATUS {
 
 
 export interface UserRole {
-  id: string;
+  _id: string;
   name: string;
   code: string;
-  permissions?: string[];
+  status: string;
+  isSystemRole: boolean;
+  permissions: Permissions[];
+  createdAt: string;
+  updatedAt?: string;
 }
+
 
 
 export interface UserRef {

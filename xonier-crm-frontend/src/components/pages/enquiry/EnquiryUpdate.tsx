@@ -50,7 +50,7 @@ const EnquiryUpdate = ({isLoading, formData, setFormData, handleSubmit,usersData
           <Input
             label="Company Name"
             placeholder="Optional"
-            value={formData.companyName}
+            value={formData.companyName ?? ""}
             onChange={(e) =>
               setFormData({ ...formData, companyName: e.target.value })
             }
@@ -148,7 +148,7 @@ const EnquiryUpdate = ({isLoading, formData, setFormData, handleSubmit,usersData
             ${err ? "border-red-500 focus:ring-red-500" : ""}
             
           `}
-              value={formData.assignTo}
+              value={formData.assignTo ?? ""}
               onChange={(e) =>
                 setFormData({ ...formData, assignTo: e.target.value })
               }
@@ -176,7 +176,7 @@ const EnquiryUpdate = ({isLoading, formData, setFormData, handleSubmit,usersData
             ${err ? "border-red-500 focus:ring-red-500" : ""}
             
           `}
-              value={formData.message}
+              value={formData.message ?? ""}
               onChange={(e) =>
                 setFormData({ ...formData, message: e.target.value })
               }
