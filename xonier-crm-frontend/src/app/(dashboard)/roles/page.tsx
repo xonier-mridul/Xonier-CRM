@@ -1,6 +1,6 @@
 "use client";
 import { MARGIN_TOP, SIDEBAR_WIDTH } from "@/src/constants/constants";
-import { UserRole } from "@/src/types";
+
 import React, { JSX, useState, useEffect } from "react";
 import extractErrorMessages from "../../utils/error.utils";
 import { toast } from "react-toastify";
@@ -8,8 +8,9 @@ import axios from "axios";
 import { RoleService } from "@/src/services/role.service";
 import UserRolesTable from "@/src/components/pages/roles/UserRolesTable";
 import { PermissionsService } from "@/src/services/permission.service";
-import { Permissions, UserRolePayload } from "@/src/types/roles/roles.types";
+import { Permissions, UserRole, UserRolePayload } from "@/src/types/roles/roles.types";
 import { usePermissions } from "@/src/hooks/usePermissions";
+
 
 const page = (): JSX.Element => {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -17,7 +18,7 @@ const page = (): JSX.Element => {
   const [pageLimit, setPageLimit] = useState<number>(10);
   const [err, setErr] = useState<string | string[] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [roleData, setRoleData] = useState<Array<UserRole>>([]);
+  const [roleData, setRoleData] = useState<UserRole[]>([]);
   const [permissionData, setPermissionData] =
     useState<Array<Permissions> | null>(null);
   const [formData, setFormData] = useState<UserRolePayload>({

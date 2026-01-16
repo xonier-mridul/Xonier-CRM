@@ -13,7 +13,7 @@ import { RoleService } from "@/src/services/role.service";
 
 const page = (): JSX.Element => {
   const [err, setErr] = useState<string[] | string>("");
-  const [userData, setUserData] = useState<User[] | null>(null);
+  const [userData, setUserData] = useState<User[]>([]);
   const [roleData, setRoleData] = useState<UserRole[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);

@@ -36,13 +36,12 @@ export interface UserRole {
     createdAt: Date;
     updatedAt: Date;
     deletedAt: Date;
-
 }
 
 // Props
 
 export interface RoleTableProps {
-    roleData: Array<UserRole>;
+    roleData: UserRole[];
   permissionData: Array<Permissions> | null;
   currentPage: number;
   pageLimit: number;

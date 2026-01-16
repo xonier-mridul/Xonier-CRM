@@ -108,8 +108,8 @@ const UserUpdate = ({
               <option value="">Select user role</option>
               {roleData.map((role) => (
                 <option
-                  key={role.id}
-                  value={role.id}
+                  key={role._id }
+                  value={role._id}
                   hidden={role.code === SUPER_ADMIN_ROLE_CODE}
                   disabled={role.code === SUPER_ADMIN_ROLE_CODE}
                 >
@@ -120,7 +120,7 @@ const UserUpdate = ({
             {formData.userRole.length > 0 && (
               <div className="col-span-1 flex flex-wrap gap-2 mt-2">
                 {formData.userRole.map((roleId) => {
-                  const role = roleData.find((r) => r.id === roleId);
+                  const role = roleData.find((r) => r._id === roleId);
                   if (!role) return null;
 
                   return (
