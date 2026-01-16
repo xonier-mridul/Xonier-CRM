@@ -14,9 +14,27 @@ class RegisterUserSchema(BaseModel):
     lastName: str
     email: EmailStr
     phone: str
-    password: str
+    password: Password
     userRole: List[str]
     company: str
+
+    @field_validator("password")
+    @classmethod
+    def strong_password(cls, v: str):
+        rules = {
+            "lowercase": any(c.islower() for c in v),
+            "uppercase": any(c.isupper() for c in v),
+            "digit": any(c.isdigit() for c in v),
+            "special": any(c in "@$!%*?&#" for c in v),
+            "length": len(v) >= 8,
+        }
+
+        if not all(rules.values()):
+            raise ValueError(
+                "Password must contain uppercase, lowercase, digit, special character and be at least 8 characters long"
+            )
+
+        return v
 
 class UpdateUserSchema(BaseModel):
     firstName: str

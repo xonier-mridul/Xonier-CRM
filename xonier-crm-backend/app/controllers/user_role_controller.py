@@ -32,6 +32,17 @@ class UserRoleController:
         except AppException as e:
             raise e
         
+        
+    async def get_all_active_without_pagination(self):
+        try:
+            result = await self.service.get_all_active()
+
+            return successResponse(200, "All roles fetch successfully", result)
+
+        except AppException as e:
+            raise e
+
+        
     async def delete(self, request: Request, id: str):
         try:
            result = await self.service.delete(id)

@@ -49,7 +49,7 @@ async def getMe(request: Request, response: Response):
     return await auth_controller.getMe(request=request)
 
 @router.put("/update/{id}", status_code=200, dependencies=[Depends(dependencies.authorized)])
-async def update(request: Request,id: PydanticObjectId, payload: UpdateUserSchema ):
+async def update(request: Request,id: str, payload: UpdateUserSchema ):
     return await auth_controller.update(request, id, payload)
 
 @router.post("/logout", status_code=200, dependencies=[Depends(dependencies.authorized)])

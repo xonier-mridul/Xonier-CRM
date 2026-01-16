@@ -21,6 +21,10 @@ async def create_user_role(request: Request, data: UserRoleRegistrationSchema):
 async def get_all_user_roles(request: Request):
     return await user_role_controller.get_all(request)
 
+@router.get("/all/active/without-pagination", dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["role:read"]))])
+async def get_all_active():
+    return await user_role_controller.get_all_active_without_pagination()
+
 @router.delete("/delete/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["role:delete"]))])
 async def delete(request: Request,id: str):
     return await user_role_controller.delete(request, id)

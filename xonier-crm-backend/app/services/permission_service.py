@@ -19,3 +19,6 @@ class PermissionService:
 
         except AppException:
             raise
+
+        except Exception as e:
+            raise AppException(status_code=500, message="internal server error")

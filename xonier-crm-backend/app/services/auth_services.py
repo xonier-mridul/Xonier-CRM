@@ -18,6 +18,8 @@ from app.schemas.user_schema import UpdateUserSchema
 from app.core.security import hash_password
 from bson import ObjectId
 from app.core.enums import USER_STATUS
+from app.core.constants import SUPER_ADMIN_CODE
+from app.repositories.user_role_repository import UserRoleRepository
 
 
 class AuthServices:
@@ -25,6 +27,7 @@ class AuthServices:
         self.client = Client
         self.repo = UserRepository()
         self.otp_repo = OtpRepository()
+        self.role_repo = UserRoleRepository()
         self.email_manager = EmailManager()
         self.settings = get_setting()
 
@@ -64,6 +67,9 @@ class AuthServices:
         except Exception as e:
             raise
 
+        except Exception as e:
+            raise AppException(status_code=500, message="internal server error")
+
     
     async def get_all_for_frontend(self, page:int=1, limit:int = 10, filters: Dict[str, Any] = {})->List[UserModel]:
         try:
@@ -98,6 +104,9 @@ class AuthServices:
         except Exception as e:
             raise
 
+        except Exception as e:
+            raise AppException(status_code=500, message="internal server error")
+
     async def get_all_active_without_pagination(self, filters:Dict[str, Any]):
         try:
             query = {}
@@ -117,8 +126,12 @@ class AuthServices:
             
             raise
 
+        except Exception as e:
+            raise AppException(status_code=500, message="internal server error")
+
     async def get_user_by_id(self,id: PydanticObjectId):
         try:
+    
           user = await self.repo.find_by_id(id, populate=["userRole", "createdBy"])
 
           if not user:
@@ -135,18 +148,28 @@ class AuthServices:
         except Exception as e:
             raise
 
+        except Exception as e:
+            raise AppException(status_code=500, message="internal server error")
+
     async def create(self, user: Dict[str, Any], data: Dict[str, Any]):
         session = await self.client.start_session()
         try:
-            print("lalalala")
             session.start_transaction()
             hashed_email = hash_value(data["email"])
+            print("err1")
             is_user_exist = await self.repo.find_user_by_hashMail(
-                hashMail=hashed_email, projections=None, session=session
+                hashMail=hashed_email, populate=["userRole"], session=session
             )
-
+            print("err2", data)
             if is_user_exist:
                 raise AppException(400, "User already exist, please use another email")
+            
+            for item in data["userRole"]:
+              get_role = await self.role_repo.find_by_id(id=PydanticObjectId(item), session=session)
+              
+              if get_role.code == SUPER_ADMIN_CODE:
+                  raise AppException(400, "Super admin user creation is invalid, please use different role")
+                
             
             userModel = await self.repo.find_by_id(user["_id"], False, session)
 
@@ -168,6 +191,10 @@ class AuthServices:
             await session.abort_transaction()
             raise
 
+        except Exception as e:
+            await session.abort_transaction()
+            raise AppException(status_code=500, message="internal server error")
+
         finally:
             await session.end_session()
 
@@ -185,6 +212,7 @@ class AuthServices:
 
             if not isUserExist:
                 raise AppException(404, "User not found, Please create account first")
+            
 
             if not isUserExist.isEmailVerified:
                 raise AppException(400, "Email is not verified, please verified first")
@@ -201,7 +229,7 @@ class AuthServices:
                 )
 
             if isUserExist.status == USER_STATUS.DELETED.value:
-                raise AppException(400, "Your account is deleted")
+                raise AppException(400, "Your account is deleted, please connect with support team")
            
             is_password_valid = isUserExist.compare_password(data["password"])
 
@@ -209,6 +237,7 @@ class AuthServices:
                 raise AppException(400, "Password is not valid, please try again")
 
             otp = generate_otp(6)
+            print("otp: ", otp)
             hashed_otp = hash_value(str(otp))
 
             send_email = await self.email_manager.send_otp_email(
@@ -243,6 +272,10 @@ class AuthServices:
             await session.abort_transaction()
             raise
 
+        except Exception as e:
+            await session.abort_transaction()
+            raise AppException(status_code=500, message="internal server error")
+        
         finally:
             await session.end_session()
 
@@ -261,7 +294,6 @@ class AuthServices:
             
             isPasswordValid =  isUserExist.compare_password(data["password"])
 
-            print("valid: ", isPasswordValid)
 
             if not isPasswordValid:
                 raise AppException(400, "Password not match, please back to the login page and try again")
@@ -279,6 +311,7 @@ class AuthServices:
                     )
             
             otp = generate_otp(6)
+            print("otp: ", otp)
             hashed_otp = hash_value(str(otp))
 
             send_email = await self.email_manager.send_otp_email(
@@ -312,6 +345,11 @@ class AuthServices:
         except AppException:
             await session.abort_transaction()
             raise
+
+        except Exception as e:
+            await session.abort_transaction()
+            raise AppException(status_code=500, message="internal server error")
+        
         finally:
             await session.end_session()
 
@@ -381,6 +419,10 @@ class AuthServices:
             await session.abort_transaction()
             raise
 
+        except Exception as e:
+             await session.abort_transaction()
+             raise AppException(status_code=500, message="internal server error")
+
         finally:
             await session.end_session()
 
@@ -392,10 +434,13 @@ class AuthServices:
              raise AppException(400, "User not found")
          
          return jsonable_encoder(user, exclude={"password", "refreshToken"})
-        except Exception as e:
+        except AppException:
             raise
 
-    async def update(self, userId: PydanticObjectId, updatedBy: PydanticObjectId, payload: UpdateUserSchema):
+        except Exception as e:
+            raise AppException(status_code=500, message="internal server error")
+
+    async def update(self, userId: PydanticObjectId, updatedBy: PydanticObjectId, payload: Dict[str, Any])->bool:
         session = await self.client.start_session()
         try:
             session.start_transaction()
@@ -404,12 +449,15 @@ class AuthServices:
                 **payload, "updatedBy": updatedBy 
             }
 
-            updated_user = await self.repo.update(userId, payload, session)
+            updated_user = await self.repo.update_with_encryption(userId, payload, session)
             if not updated_user:
                 raise AppException(400, "User not updated")
-            
-            return updated_user.model_dump()
-           
+            await session.commit_transaction()
+            return True
+
+        except AppException:
+            await session.abort_transaction()
+            raise 
         except Exception as e:
             await session.abort_transaction()
             raise
@@ -441,6 +489,10 @@ class AuthServices:
             await session.abort_transaction()
             raise
 
+        except Exception as e:
+            await session.abort_transaction()
+            raise AppException(status_code=500, message="internal server error")
+
         finally:
             await session.end_session()
 
@@ -450,13 +502,25 @@ class AuthServices:
         try:
             session.start_transaction()
 
-            user = await self.repo.find_by_id(userId, False, session=session)
+            user = await self.repo.find_by_id(userId, ["userRole"], session=session)
 
             if not user:
                 raise AppException(404, "User not found")
             
-            if user.status == USER_STATUS.DELETED:
+            print("user role: ", jsonable_encoder(user.userRole))
+
+            roles = jsonable_encoder(user.userRole)
+
+            for item in roles:
+                if item["code"] == SUPER_ADMIN_CODE:
+                    raise AppException(400, "Super Admin user deletion not allowed")
+            
+
+            
+            if user.status == USER_STATUS.DELETED.value:
                 raise AppException(400, "User already deleted")
+            
+           
             
             updatedUser = await self.repo.update(userId, {
                 "status": USER_STATUS.DELETED, "updatedBy": user, "deletedBy": user, "deletedAt": datetime.now(timezone.utc)
@@ -472,6 +536,10 @@ class AuthServices:
         except AppException:
             await session.abort_transaction()
             raise
+
+        except Exception as e:
+            await session.abort_transaction()
+            raise AppException(status_code=500, message="internal server error")
 
         finally:
             await session.end_session()
@@ -498,7 +566,7 @@ class AuthServices:
             
             hashed = hash_password(data["newPassword"])
 
-            print("hashed pass: ", hashed)
+
 
             result = await self.repo.update(
                 id=ObjectId(userId),
@@ -520,6 +588,10 @@ class AuthServices:
         except AppException:
             await session.abort_transaction()
             raise
+
+        except Exception as e:
+            await session.abort_transaction()
+            raise AppException(status_code=500, message="internal server error")
 
 
         finally:

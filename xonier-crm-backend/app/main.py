@@ -21,6 +21,8 @@ from app.routes.user_role_route import router as user_role_router
 from app.routes.auth_routes import router as auth_router
 from app.routes.permission_route import router as permission_router
 from app.routes.enquiry_route import router as enquiry_route
+from app.routes.team_route import router as team_router
+from app.routes.team_category_route import router as team_category_route
 
 settings = get_setting()
 
@@ -72,6 +74,8 @@ app.include_router(user_role_router, prefix="/api/user-role")
 app.include_router(auth_router, prefix="/api/auth")
 app.include_router(permission_router, prefix="/api/permission")
 app.include_router(enquiry_route, prefix="/api/enquiry")
+app.include_router(team_router, prefix="/api/team")
+app.include_router(team_category_route, prefix="/api/team-category")
 
 app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(AppException, app_exception_handler)

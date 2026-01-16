@@ -36,6 +36,26 @@ class UserRoleService:
         except AppException:
             raise
 
+        except Exception as e:
+            raise AppException(status_code=500, message="internal server error")
+        
+    
+    async def get_all_active(self):
+        try:
+
+            result = await self.repository.get_all_without_pagination(filters={"status": True}, populate=["createdBy", "permissions"])
+
+            if not result:
+                raise AppException(status_code=404, message="No active roles found")
+            
+            return result
+        
+        except AppException:
+            raise 
+        
+        except Exception as e:
+            raise AppException(status_code=500, message="internal server error")
+
 
     async def create_role(self, user: Dict[str, any], data:Dict[str, Any]):
         session = await self.client.start_session()
@@ -57,8 +77,13 @@ class UserRoleService:
         except AppException:
             await session.abort_transaction()
             raise 
+        except Exception as e:
+            await session.abort_transaction()
+            raise AppException(status_code=500, message="internal server error")
         finally:
             await session.end_session()
+
+    
 
     async def delete(self, id: PydanticObjectId):
         try:
@@ -72,5 +97,9 @@ class UserRoleService:
                 raise AppException(400, "Role not deleted")
             
             return is_Exist.model_dump(mode="json")
+        
         except Exception as e:
             raise
+
+        except Exception as e:
+                    raise AppException(status_code=500, message="internal server error")

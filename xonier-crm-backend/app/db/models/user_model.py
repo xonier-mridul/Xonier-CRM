@@ -1,6 +1,6 @@
 from beanie import Document, Indexed, Link, before_event
 from beanie.odm.actions import Save, Replace, Insert
-from pydantic import Field
+from pydantic import Field, field_validator
 from typing import Optional, List, TYPE_CHECKING
 from app.core.security import hash_password, hash_value, verify_password
 
@@ -66,10 +66,29 @@ class UserModel(Document):
             self.email = encryptor.encrypt_data(plain_email)
             return
 
-        if self.is_changed("email"):
+        if "email" in self.get_changes():
             plain_email:str = self.email.lower()
             self.hashedEmail = hash_value(plain_email)
             self.email = encryptor.encrypt_data(plain_email)
+
+    
+    @field_validator("password")
+    @classmethod
+    def strong_password(cls, v: str):
+        rules = {
+            "lowercase": any(c.islower() for c in v),
+            "uppercase": any(c.isupper() for c in v),
+            "digit": any(c.isdigit() for c in v),
+            "special": any(c in "@$!%*?&#" for c in v),
+            "length": len(v) >= 8,
+        }
+
+        if not all(rules.values()):
+            raise ValueError(
+                "Password must contain uppercase, lowercase, digit, special character and be at least 8 characters long"
+            )
+
+        return v
 
 
     @before_event(Insert, Replace, Save)
@@ -83,10 +102,11 @@ class UserModel(Document):
             self.hashedPhone = hash_value(plain_phone)
             return
         
-        if self.is_changed("phone"):
+        if "phone" in self.get_changes():
             plain_phone = self.phone
             self.phone = encryptor.encrypt_data(plain_phone)
             self.hashedPhone = hash_value(plain_phone)
+            
 
     @before_event(Save, Replace)
     def update_timestamp_update(self):

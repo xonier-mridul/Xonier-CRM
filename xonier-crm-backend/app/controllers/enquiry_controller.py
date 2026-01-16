@@ -4,7 +4,7 @@ from app.utils.custom_exception import AppException
 from app.utils.custom_response import successResponse
 from app.schemas.enquiry_schema import EnquiryRegisterSchema
 from beanie import PydanticObjectId
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 
 class EnquiryController:
@@ -43,6 +43,34 @@ class EnquiryController:
 
         except AppException as e:
             raise e
+        
+    async def bulk_create(self, request: Request, payload: Dict[str, Any]):
+
+        try:
+           user = request.state.user
+
+           print("paylaod : ", payload)
+
+           result = await self.service.bulk_create(PydanticObjectId(user["_id"]), payload)
+
+           return successResponse(201, "Bulk enquiry created successfully", result)
+
+        except AppException as e:
+            raise e
+        
+    
+    async def update(self, request: Request, id: str, payload: Dict[str, Any]):
+        try:
+            user = request.state.user
+
+            result = await self.service.update(PydanticObjectId(user["_id"]), PydanticObjectId(id), payload)
+            return successResponse(201, "Enquiry updated successfully")
+
+
+        except AppException as e:
+            raise e
+            
+    
         
 
     async def delete(self, request:Request, id: str):

@@ -118,5 +118,61 @@ PERMISSIONS = [
         "title": "delete lead",
         "description": "permission for delete lead data"
     },
+    {
+        "code": "team:create",
+        "module": "team",
+        "action": "create",
+        "title": "create team",
+        "description": "permission for create team data"
+    },
+    {
+        "code": "team:read",
+        "module": "team",
+        "action": "read",
+        "title": "read team",
+        "description": "permission for read team data"
+    },
+    {
+        "code": "team:update",
+        "module": "team",
+        "action": "update",
+        "title": "update team",
+        "description": "permission for update team data"
+    },
+    {
+        "code": "team:delete",
+        "module": "team",
+        "action": "delete",
+        "title": "delete team",
+        "description": "permission for delete team data"
+    },
+    {
+        "code": "team_cat:create",
+        "module": "team_cat",
+        "action": "create",
+        "title": "create team category",
+        "description": "permission for create team category data"
+    },
+    {
+        "code": "team_cat:read",
+        "module": "team_cat",
+        "action": "read",
+        "title": "read team category",
+        "description": "permission for read team category data"
+    },
+    {
+        "code": "team_cat:update",
+        "module": "team_cat",
+        "action": "update",
+        "title": "update team category",
+        "description": "permission for update team category data"
+    },
+    {
+        "code": "team_cat:delete",
+        "module": "team_cat",
+        "action": "delete",
+        "title": "delete team category",
+        "description": "permission for delete team category data"
+    },
        
 ]

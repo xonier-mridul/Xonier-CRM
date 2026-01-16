@@ -8,3 +8,5 @@ JWT_OPTIONS = {
     "samesite": "none",
     "path": "/"
 }
+
+SUPER_ADMIN_CODE = "SUPER_ADMIN"

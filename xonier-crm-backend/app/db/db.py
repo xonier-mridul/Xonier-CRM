@@ -6,6 +6,8 @@ from app.db.models.permissions_model import PermissionModel
 from app.db.models.user_roles_model import UserRoleModel
 from app.db.models.otp_model import OtpModel
 from app.db.models.enquiry_management_model import EnquiryModel
+from app.db.models.team_model import TeamModel
+from app.db.models.team_category_model import TeamCategoryModel
 
 
 settings = get_setting()
@@ -24,7 +26,7 @@ async def connect_db():
         
         await init_beanie(
             database=db,
-            document_models=[UserModel, PermissionModel, UserRoleModel, OtpModel, EnquiryModel]
+            document_models=[UserModel, PermissionModel, UserRoleModel, OtpModel, EnquiryModel, TeamModel, TeamCategoryModel]
         )
         print("Successfully connected to MongoDB and initialized Beanie")
     except Exception as e:

@@ -2,6 +2,8 @@ from typing import Optional, Dict, Any, List
 from motor.motor_asyncio import AsyncIOMotorClientSession
 from beanie import PydanticObjectId
 import math
+from app.db.models.user_roles_model import UserRoleModel
+from app.db.models.user_model import UserModel
 
 
 class BaseRepository:
@@ -20,8 +22,10 @@ class BaseRepository:
         docs: List[Dict[str, Any]],
         session: Optional[AsyncIOMotorClientSession] = None,
     ):
-        result = self.model.insert_many(docs, session=session)
-        return result
+        documents = [self.model(**doc) for doc in docs]
+
+        result = await self.model.insert_many(documents, session=session)
+        return result.inserted_ids
 
     async def find_by_id(
         self,
@@ -147,7 +151,7 @@ class BaseRepository:
 
                         setattr(doc, field, fetched_items)
 
-        return items
+        return [doc.model_dump(mode="json") for doc in items]
 
     async def get_all(
     self,
@@ -214,6 +218,46 @@ class BaseRepository:
         )
 
         return result.modified_count
+    
+
+
+
+    async def update_with_encryption(
+        self,
+        user_id: PydanticObjectId,
+        data: Dict[str, Any],
+        session,
+    ):
+        user = await self.model.get(user_id, session=session)
+        if not user:
+            return None
+
+
+        if "updatedBy" in data and data["updatedBy"]:
+            updater = await UserModel.get(
+                PydanticObjectId(data["updatedBy"]),
+                session=session
+            )
+            user.updatedBy = updater
+            del data["updatedBy"]
+
+        # 🔥 FIX userRole (already discussed)
+        if "userRole" in data:
+            roles = []
+            for role_id in data["userRole"]:
+                role = await UserRoleModel.get(PydanticObjectId(role_id), session=session)
+                if role:
+                    roles.append(role)
+            user.userRole = roles
+            del data["userRole"]
+
+        # Set remaining scalar fields
+        for key, value in data.items():
+            setattr(user, key, value)
+
+        await user.save(session=session)
+        return user
+
 
     async def delete_by_id(
         self, id: PydanticObjectId, session: Optional[AsyncIOMotorClientSession] = None
