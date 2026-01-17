@@ -1,6 +1,7 @@
 import {NextRequest, NextResponse} from "next/server"
 
 const PROTECTED_ROUTES: Array<string> = ["/dashboard", "/users", "/roles", "/enquiry", "/teams"]
+const API_BASE_URL = process.env.API_BASE_URL!;
 export async function middleware(request: NextRequest){
     const {pathname} = request.nextUrl;
 
@@ -8,13 +9,13 @@ export async function middleware(request: NextRequest){
 
     let isAuthenticated: boolean = false;
 
+
     try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/me`, {
+        const res = await fetch(`${API_BASE_URL}/auth/me`, {
         method:"GET",
         headers: {
         cookie: request.headers.get("cookie") || "",
-      },
-      credentials: "include"
+      }
     })
 
     if(res.status === 200){
@@ -26,10 +27,6 @@ export async function middleware(request: NextRequest){
         isAuthenticated = false
         console.log("naiyo re")
     }
-
-    
-
-
 
     if(PROTECTED_ROUTES.some((item)=> pathname.startsWith(item) && !isAuthenticated)){
         const loginUrl = new URL("/login", request.url);
