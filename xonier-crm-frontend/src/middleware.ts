@@ -1,20 +1,45 @@
 import {NextRequest, NextResponse} from "next/server"
 
 const PROTECTED_ROUTES: Array<string> = ["/dashboard", "/users", "/roles", "/enquiry", "/teams"]
-export function middleware(request: NextRequest){
-    const {pathname} = request.nextUrl
+export async function middleware(request: NextRequest){
+    const {pathname} = request.nextUrl;
 
-    const accessToken = request.cookies.get("accessToken")?.value
+    const accessToken = request.cookies.get("accessToken")?.value;
 
-    if(PROTECTED_ROUTES.some((item)=> pathname.startsWith(item) && !accessToken)){
-        const loginUrl = new URL("/login", request.url)
+    let isAuthenticated: boolean = false;
 
-        return NextResponse.redirect(loginUrl)
+    try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/me`, {
+        method:"GET",
+        headers: {
+        cookie: request.headers.get("cookie") || "",
+      },
+      credentials: "include"
+    })
+
+    if(res.status === 200){
+      const json = await res.json()
+      isAuthenticated = true
+      console.log("chuk dum dum")
+    }
+    } catch (error) {
+        isAuthenticated = false
+        console.log("naiyo re")
     }
 
-    if(pathname.startsWith("/login") && accessToken){
-        const dashboardUrl = new URL("/dashboard", request.url)
-        return NextResponse.redirect(dashboardUrl)
+    
+
+
+
+    if(PROTECTED_ROUTES.some((item)=> pathname.startsWith(item) && !isAuthenticated)){
+        const loginUrl = new URL("/login", request.url);
+
+        return NextResponse.redirect(loginUrl);
+    }
+
+    if(pathname.startsWith("/login") && isAuthenticated){
+        const dashboardUrl = new URL("/dashboard", request.url);
+        return NextResponse.redirect(dashboardUrl);
     }
 
     return NextResponse.next()
