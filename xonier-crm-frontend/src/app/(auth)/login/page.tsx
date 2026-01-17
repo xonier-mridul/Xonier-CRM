@@ -58,7 +58,7 @@ const page = () => {
       <div className="w-[65%] mt-7 mx-11 flex flex-col justify-center ">
         <nav>
           <Image
-            src={"/images/xonier-logo.png"}
+            src={"/images/trakeroo.png"}
             height={200}
             width={200}
             alt="xonier logo"
