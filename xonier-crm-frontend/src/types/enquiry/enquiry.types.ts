@@ -95,6 +95,7 @@ export interface UpdateEnquiryPayload {
 
 export interface UpdateEnquiryCompProps {
   isLoading: boolean,
+  loading: boolean;
   formData: UpdateEnquiryFromData,
   setFormData: Dispatch<SetStateAction<UpdateEnquiryFromData>>,
   handleSubmit: (e: FormEvent<HTMLFormElement>)=>Promise<void>,

@@ -22,6 +22,7 @@ import { toast } from "react-toastify";
 
 const page = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [err, setErr] = useState<string | string[]>("");
   const [usersData, setUsersData] = useState<User[] | null>(null)
   const [formData, setFormData] = useState<UpdateEnquiryFromData>({
@@ -42,7 +43,7 @@ const page = (): JSX.Element => {
 
   const getEnquiryData = async (id: ParamValue): Promise<void> => {
     setErr("");
-    console.log("enquiry id: ", id)
+    setLoading(true)
     try {
       const result = await EnquiryService.getById(id);
 
@@ -71,6 +72,8 @@ const page = (): JSX.Element => {
       } else {
         setErr(["Something went wrong"]);
       }
+    } finally {
+      setLoading(false)
     }
   };
 
@@ -134,7 +137,7 @@ const page = (): JSX.Element => {
   };
 
   return <div className={`ml-[${SIDEBAR_WIDTH}] mt-[60px] p-6`}>
-    <EnquiryUpdate isLoading={isLoading} formData={formData} setFormData={setFormData} handleSubmit={handleSubmit} usersData={usersData} err={err}/>
+    <EnquiryUpdate isLoading={isLoading} formData={formData} setFormData={setFormData} handleSubmit={handleSubmit} usersData={usersData} err={err} loading={loading}/>
 
   </div>;
 };

@@ -68,10 +68,14 @@ const SideBar = () => {
 
   useEffect(() => {
     if (pathname.startsWith("/teams") || pathname.startsWith("/users")) {
-      setOpenMenu("leads");
+      setOpenMenu("team");
     }
     if (pathname.startsWith("/roles")) {
       setOpenMenu("team");
+    }
+
+    if (pathname.startsWith("/enquiry")){
+      setOpenMenu("sales")
     }
   }, [pathname]);
 
@@ -80,6 +84,8 @@ const SideBar = () => {
   };
 
   const isActive = (path: string) => pathname.startsWith(path);
+
+  console.log("isActive: ", isActive)
   
 
   return (
@@ -244,6 +250,18 @@ const SideBar = () => {
                   transition={{ duration: 0.25 }}
                   className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
                 >
+                  {hasPermission(PERMISSIONS.readRole) && <li>
+                    <Link
+                      href="/roles"
+                      className={`block px-3 py-2 text-sm rounded-md hover:bg-blue-600/10 ${
+                        isActive("/roles")
+                          ? "text-blue-700 dark:text-blue-300"
+                          : ""
+                      }`}
+                    >
+                      Roles
+                    </Link>
+                  </li>}
                   {hasPermission(PERMISSIONS.readTeamCategory) &&<li>
                     <Link
                       href="/teams/categories"
@@ -260,7 +278,7 @@ const SideBar = () => {
                     <Link
                       href="/teams"
                       className={`block px-3 py-2 text-sm rounded-md hover:bg-blue-600/10 ${
-                        isActive("/teams")
+                        (isActive("/teams") && !isActive("/teams/categories"))
                           ? "text-blue-700 dark:text-blue-300"
                           : ""
                       }`}
@@ -280,18 +298,7 @@ const SideBar = () => {
                       Users
                     </Link>
                   </li>}
-                  {hasPermission(PERMISSIONS.readRole) && <li>
-                    <Link
-                      href="/roles"
-                      className={`block px-3 py-2 text-sm rounded-md hover:bg-blue-600/10 ${
-                        isActive("/roles")
-                          ? "text-blue-700 dark:text-blue-300"
-                          : ""
-                      }`}
-                    >
-                      Roles
-                    </Link>
-                  </li>}
+                  
                 </motion.ul>
               )}
             </AnimatePresence>
@@ -331,7 +338,7 @@ const SideBar = () => {
                     <Link
                       href="/enquiry"
                       className={`block px-3 py-2 text-sm rounded-md hover:bg-blue-600/10 ${
-                        isActive("/teams")
+                        isActive("/enquiry")
                           ? "text-blue-700 dark:text-blue-300"
                           : ""
                       }`}

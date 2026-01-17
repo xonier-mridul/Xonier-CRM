@@ -8,7 +8,7 @@ export interface GetAllRolesPayload {
 }
 
 export interface Permissions{
-    _id: string;
+    id: string;
     code: string;
     module: string;
     action: string;

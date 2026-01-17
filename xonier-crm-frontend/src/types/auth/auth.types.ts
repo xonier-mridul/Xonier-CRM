@@ -73,7 +73,7 @@ export enum USER_STATUS {
 
 
 export interface UserRole {
-  _id: string;
+  id: string;
   name: string;
   code: string;
   status: string;

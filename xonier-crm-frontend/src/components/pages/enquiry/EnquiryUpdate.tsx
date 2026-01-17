@@ -4,8 +4,10 @@ import Input from '../../ui/Input'
 import FormButton from '../../ui/FormButton'
 import { UpdateEnquiryCompProps } from '@/src/types/enquiry/enquiry.types'
 import { PRIORITY, PROJECT_TYPES, SOURCE } from '@/src/constants/enum'
+import Skeleton from 'react-loading-skeleton'
+import { div } from 'framer-motion/client'
 
-const EnquiryUpdate = ({isLoading, formData, setFormData, handleSubmit,usersData, err}:UpdateEnquiryCompProps):JSX.Element => {
+const EnquiryUpdate = ({isLoading, formData, setFormData, handleSubmit,usersData, err, loading}:UpdateEnquiryCompProps):JSX.Element => {
   return (
     <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm flex flex-col gap-5 p-6 rounded-xl border-[1px] border-slate-900/10 w-full">
         <h2 className="text-xl font-bold  dark:text-white text-slate-900 capitalize">
@@ -16,7 +18,7 @@ const EnquiryUpdate = ({isLoading, formData, setFormData, handleSubmit,usersData
           onSubmit={handleSubmit}
           className="grid grid-cols-1 md:grid-cols-2 gap-6"
         >
-          <Input
+          {loading ? <div className='flex flex-col gap-1'> <Skeleton height={14} width={100}/> <Skeleton height={36} width={500} borderRadius={12}/> </div> :<Input
             label="Full Name"
             placeholder="Enter full name"
             required
@@ -24,9 +26,9 @@ const EnquiryUpdate = ({isLoading, formData, setFormData, handleSubmit,usersData
             onChange={(e) =>
               setFormData({ ...formData, fullName: e.target.value })
             }
-          />
+          />}
 
-          <Input
+          {loading ? <div className='flex flex-col gap-1'> <Skeleton height={14} width={100}/> <Skeleton height={36} width={500} borderRadius={12}/> </div> : <Input
             label="Email"
             type="email"
             placeholder="Enter email address"
@@ -35,9 +37,9 @@ const EnquiryUpdate = ({isLoading, formData, setFormData, handleSubmit,usersData
             onChange={(e) =>
               setFormData({ ...formData, email: e.target.value })
             }
-          />
+          />}
 
-          <Input
+          {loading ? <div className='flex flex-col gap-1'> <Skeleton height={14} width={100}/> <Skeleton height={36} width={500} borderRadius={12}/> </div> :<Input
             label="Phone"
             placeholder="Enter phone number"
             required
@@ -45,18 +47,18 @@ const EnquiryUpdate = ({isLoading, formData, setFormData, handleSubmit,usersData
             onChange={(e) =>
               setFormData({ ...formData, phone: e.target.value })
             }
-          />
+          />}
 
-          <Input
+          {loading ? <div className='flex flex-col gap-1'> <Skeleton height={14} width={100}/> <Skeleton height={36} width={500} borderRadius={12}/> </div> :<Input
             label="Company Name"
             placeholder="Optional"
             value={formData.companyName ?? ""}
             onChange={(e) =>
               setFormData({ ...formData, companyName: e.target.value })
             }
-          />
+          />}
 
-          <div className="flex flex-col gap-1">
+          {loading ? <div className='flex flex-col gap-1'> <Skeleton height={14} width={100}/> <Skeleton height={36} width={500} borderRadius={12}/> </div> :<div className="flex flex-col gap-1">
             <label className="text-sm font-medium">Priority</label>
             <select
               required
@@ -81,9 +83,9 @@ const EnquiryUpdate = ({isLoading, formData, setFormData, handleSubmit,usersData
                 </option>
               ))}
             </select>
-          </div>
+          </div>}
 
-          <div className="flex flex-col gap-1">
+          {loading ? <div className='flex flex-col gap-1'> <Skeleton height={14} width={100}/> <Skeleton height={36} width={500} borderRadius={12}/> </div> :<div className="flex flex-col gap-1">
             <label className="text-sm font-medium">Project Type</label>
             <select
               required
@@ -108,9 +110,9 @@ const EnquiryUpdate = ({isLoading, formData, setFormData, handleSubmit,usersData
                 </option>
               ))}
             </select>
-          </div>
+          </div>}
 
-          <div className="flex flex-col gap-1">
+          {loading ? <div className='flex flex-col gap-1'> <Skeleton height={14} width={100}/> <Skeleton height={36} width={500} borderRadius={12}/> </div> :<div className="flex flex-col gap-1">
             <label className="text-sm font-medium">Source</label>
             <select
               required
@@ -134,9 +136,9 @@ const EnquiryUpdate = ({isLoading, formData, setFormData, handleSubmit,usersData
                 </option>
               ))}
             </select>
-          </div>
+          </div>}
 
-          <div className="flex flex-col gap-1">
+          {loading ? <div className='flex flex-col gap-1'> <Skeleton height={14} width={100}/> <Skeleton height={36} width={500} borderRadius={12}/> </div> :<div className="flex flex-col gap-1">
             <label className="text-sm font-medium">Assign To</label>
             <select
               className={`
@@ -160,9 +162,9 @@ const EnquiryUpdate = ({isLoading, formData, setFormData, handleSubmit,usersData
                 </option>
               ))}
             </select>
-          </div>
+          </div>}
 
-          <div className="col-span-1 md:col-span-2 flex flex-col gap-1">
+          { loading ? <div className='flex flex-col gap-1'> <Skeleton height={14} width={100}/> <Skeleton height={96} width={1000} borderRadius={12}/> </div> :<div className="col-span-1 md:col-span-2 flex flex-col gap-1">
             <label className="text-sm font-medium">Message</label>
             <textarea
               rows={4}
@@ -181,7 +183,7 @@ const EnquiryUpdate = ({isLoading, formData, setFormData, handleSubmit,usersData
                 setFormData({ ...formData, message: e.target.value })
               }
             />
-          </div>
+          </div>}
           {err && (
             <div className="col-span-1 md:col-span-2">
               <div className="rounded-md border border-red-500/40 bg-red-50 dark:bg-red-900/20 px-4 py-2 text-sm text-red-600 dark:text-red-400">
@@ -199,9 +201,9 @@ const EnquiryUpdate = ({isLoading, formData, setFormData, handleSubmit,usersData
           )}
 
           <div className="col-span-1 md:col-span-2 flex justify-end">
-            <FormButton isLoading={isLoading} type="submit">
+            <FormButton isLoading={isLoading} type="submit" disabled={formData.fullName === "" || formData.email === "" || formData.phone === "" || formData.priority === "" || formData.projectType === "" || formData.source === "" }>
               {" "}
-              Create Enquiry
+              Update Enquiry
             </FormButton>
           </div>
         </form>

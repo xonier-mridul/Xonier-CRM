@@ -7,6 +7,7 @@ import FormButton from "../../ui/FormButton";
 import Input from "../../ui/Input";
 import { PERMISSIONS } from "@/src/constants/enum";
 import { SUPER_ADMIN_ROLE_CODE } from "@/src/constants/constants";
+import Skeleton from "react-loading-skeleton";
 
 const UserRolesTable = ({
   roleData,
@@ -76,7 +77,7 @@ const UserRolesTable = ({
 
                 <div className="flex flex-wrap gap-2">
                   {formData.permissions.map((id) => {
-                    const perm = permissionData?.find((p) => p._id === id);
+                    const perm = permissionData?.find((p) => p.id === id);
                     if (!perm) return null;
 
                     return (
@@ -108,14 +109,14 @@ const UserRolesTable = ({
 
               <div className="max-h-64 overflow-y-auto border rounded-md p-2">
                 {permissionData?.map((permission) => {
-                  const selected = isSelected(permission._id);
+                  const selected = isSelected(permission.id);
 
                   return (
                     <button
-                      key={permission._id}
+                      key={permission.id}
                       type="button"
                       disabled={selected}
-                      onClick={() => addPermission(permission._id)}
+                      onClick={() => addPermission(permission.id)}
                       className={`
           w-full text-left px-3 py-2 rounded-md mb-1 transition
           ${
@@ -151,7 +152,7 @@ const UserRolesTable = ({
                 Cancel
               </button>
 
-              <FormButton isLoading={isLoading} onClick={handleSubmit}>
+              <FormButton isLoading={isLoading} onClick={handleSubmit} disabled={formData.name === "" || formData.permissions.length <= 0}>
                 Create Role
               </FormButton>
             </div>
@@ -234,9 +235,24 @@ const UserRolesTable = ({
                 </tr>
               )
             ) : (
-              <tr>
-                <td colSpan={3} className="p-4 text-center">
-                  Loading...
+              <tr className="animate-pulse">
+                <td  className="p-4">
+                  <Skeleton height={30} width={130} borderRadius={14} />
+                </td>
+                <td  className="p-4 ">
+                  <div className="flex items-center gap-2">
+                  <Skeleton height={30} width={120} borderRadius={14} />
+                  <Skeleton height={30} width={120} borderRadius={14} />
+                  <Skeleton height={30} width={120} borderRadius={14} />
+                  <Skeleton height={30} width={120} borderRadius={14} />
+                  </div>
+                </td>
+                <td  className="p-4 ">
+                  <div className="flex items-center gap-2">
+                  <Skeleton height={35} width={35} borderRadius={14} />
+                  <Skeleton height={35} width={35} borderRadius={14} />
+                  </div>
+                  
                 </td>
               </tr>
             )}
