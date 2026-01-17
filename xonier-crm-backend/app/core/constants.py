@@ -5,8 +5,9 @@ settings = get_setting()
 JWT_OPTIONS = {
     "httponly": True,
     "secure": True,
-    "samesite": "lax",
-    "path": "/"
+    "samesite": "none",
+    "path": "/",
+    
 }
 
 SUPER_ADMIN_CODE = "SUPER_ADMIN"
