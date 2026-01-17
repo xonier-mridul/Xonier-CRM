@@ -166,10 +166,10 @@ const page = (): JSX.Element => {
   return (
     <div className={`ml-[${SIDEBAR_WIDTH}] mt-14 p-6 space-y-6`}>
       <div className="bg-white dark:bg-gray-700 rounded-xl p-6 flex justify-between items-center">
-        <div>
+        <div className="flex flex-col gap-3">
           <h2 className="text-2xl font-bold">Bulk Enquiries</h2>
-          <p className="text-gray-500">
-            Upload CSV to create enquiries in bulk
+          <p className="text-gray-500 dark:text-gray-200">
+            Upload CSV to create enquiries in bulk, download the sample sheet and update it
           </p>
         </div>
 
@@ -199,8 +199,8 @@ const page = (): JSX.Element => {
           ${isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"}`}
       >
         <div className="flex flex-col items-center gap-3">
-          <FaFileCsv className="text-4xl text-gray-400" />
-          <p className="text-gray-600">Drag & drop your CSV file here</p>
+          <FaFileCsv className="text-4xl text-gray-400 dark:text-gray-300" />
+          <p className="text-gray-600 dark:text-gray-300">Drag & drop your CSV file here</p>
 
           <input
             type="file"
@@ -251,7 +251,7 @@ const page = (): JSX.Element => {
             </thead>
             <tbody>
               {paginatedData.map((item, i) => (
-                <tr key={i} className="border-t hover:bg-gray-50 hover:bg-gray-800">
+                <tr key={i} className="border-t hover:bg-gray-50 dark:hover:bg-gray-800">
                   <td className="p-3">{item.fullName}</td>
                   <td className="p-3">{item.email}</td>
                   <td className="p-3">{item.phone}</td>

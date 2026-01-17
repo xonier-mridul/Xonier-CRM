@@ -165,19 +165,20 @@ class AuthServices:
                 raise AppException(400, "User already exist, please use another email")
             
             for item in data["userRole"]:
+              print("dataaaa: ", item)
               get_role = await self.role_repo.find_by_id(id=PydanticObjectId(item), session=session)
               
               if get_role.code == SUPER_ADMIN_CODE:
                   raise AppException(400, "Super admin user creation is invalid, please use different role")
                 
             
-            userModel = await self.repo.find_by_id(user["_id"], False, session)
-
+            userModel = await self.repo.find_by_id(id=user["_id"], session=session)
+            print("user: ", userModel)
             if not userModel:
                 raise AppException(404, "Current user not found")
 
             new_user = await self.repo.create(
-                data={**data, "createdBy": userModel}, session=session
+                data={**data, "createdBy": userModel.id}, session=session
             )
 
             if not new_user:
@@ -237,15 +238,15 @@ class AuthServices:
                 raise AppException(400, "Password is not valid, please try again")
 
             otp = generate_otp(6)
-            print("otp: ", otp)
+
             hashed_otp = hash_value(str(otp))
 
-            # send_email = await self.email_manager.send_otp_email(
-            #     to=data["email"], otp=otp, type=OTP_TYPE.LOGIN.value
-            # )
+            send_email = await self.email_manager.send_otp_email(
+                to=data["email"], otp=otp, type=OTP_TYPE.LOGIN.value
+            )
 
-            # if not send_email:
-            #     raise AppException(400, "Email send Failed")
+            if not send_email:
+                raise AppException(400, "Email send Failed")
 
             expire_time = datetime.now(timezone.utc) + timedelta(
                 minutes=float(OTP_EXPIRY.TEN_MINUTS.value)
@@ -549,9 +550,7 @@ class AuthServices:
         try:
             session.start_transaction()
 
-            print("one")
-            if data["oldPassword"] == data["newPassword"]:
-                raise AppException(400, "Your new password is same as old password")
+            
             
             user = await self.repo.find_by_id(ObjectId(userId), False, session=session)
 
@@ -563,6 +562,9 @@ class AuthServices:
             if not isPasswordCorrect:
                 
                 raise AppException(400, "Old password is incorrect")
+            
+            if data["oldPassword"] == data["newPassword"]:
+                raise AppException(400, "Your new password is same as old password")
             
             hashed = hash_password(data["newPassword"])
 

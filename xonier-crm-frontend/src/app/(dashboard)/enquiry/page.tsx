@@ -22,6 +22,7 @@ import { usePermissions } from "@/src/hooks/usePermissions";
 import { HiDownload } from "react-icons/hi";
 import PrimaryButton from "@/src/components/ui/PrimeryButton";
 import { LiaMailBulkSolid } from "react-icons/lia";
+import Skeleton from "react-loading-skeleton";
 
 const page = (): JSX.Element => {
   const [enquiryData, setEnquiryData] = useState<EnquiryData | null>(null);
@@ -252,8 +253,30 @@ const page = (): JSX.Element => {
               })
             ) : (
               <tr className="p-4">
-                <td colSpan={6} className="text-center p-4">
-                  Loading...
+                <td className="text-center p-4">
+                   <Skeleton width={120} height={30} borderRadius={14}/>
+                </td>
+                <td className="p-4">
+                  <div className="flex flex-col gap-1">
+                   <Skeleton width={120} height={28} borderRadius={12}/>
+                   <Skeleton width={80} height={12} borderRadius={10} />
+                  </div>
+                </td>
+                <td className="p-4">
+                  <Skeleton width={120} height={30} borderRadius={14}/>
+                </td>
+                <td className="p-4">
+                  <Skeleton width={120} height={30} borderRadius={14}/>
+                </td>
+                <td className="p-4">
+                  <Skeleton width={120} height={30} borderRadius={14}/>
+                </td>
+                <td className="p-4">
+                  <div className="flex items-center gap-2">
+                  <Skeleton width={32} height={32} borderRadius={10}/>
+                  <Skeleton width={32} height={32} borderRadius={10}/>
+                  <Skeleton width={32} height={32} borderRadius={10}/>
+                  </div>
                 </td>
               </tr>
             )}

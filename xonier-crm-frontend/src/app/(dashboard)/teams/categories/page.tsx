@@ -26,6 +26,7 @@ import { div } from "framer-motion/client";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import ErrorComponent from "@/src/components/ui/ErrorComponent";
 import SuccessComponent from "@/src/components/ui/SuccessComponent";
+import Skeleton from "react-loading-skeleton";
 
 const page = (): JSX.Element => {
   const [isPopupShow, setIsPopupShow] = useState<boolean>(false);
@@ -82,6 +83,7 @@ const page = (): JSX.Element => {
   }, [currentPage, pageLimit]);
 
   const handleSubmit = async(e: FormEvent<HTMLFormElement>)=>{
+    e.preventDefault()
     try {
 
         const result = await TeamCategoryService.create(formData)
@@ -94,6 +96,7 @@ const page = (): JSX.Element => {
              toast.success("Category created successfully")
              setIsPopupShow(false)
              setShowSuccess("Category created successfully")
+             await getTeamCategoryData()
              setTimeout(() => {
                 setShowSuccess("")
              }, 3000);
@@ -328,7 +331,7 @@ const page = (): JSX.Element => {
                               <FaRegEye className="text-xl" />
                             </Link>
                             <Link
-                              href={`/users/update/${item.id}`}
+                              href={`/teams/categories/update/${item.id}`}
                               className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-yellow-200/80 dark:bg-yellow-100 hover:bg-yellow-300/70 dark:hover:bg-yellow-200 text-yellow-500 hover:scale-104"
                             >
                               <MdOutlineEdit className="text-xl" />
@@ -356,11 +359,34 @@ const page = (): JSX.Element => {
                   </tr>
                 )
               ) : (
-                <tr className=" text-center ">
-                  <td colSpan={7} className="p-4">
-                    Loading...
-                  </td>
-                </tr>
+               
+                  <tr className=" text-center animate-pulse">
+                                  <td className="p-4" >
+                                    <Skeleton width={30} height={30} borderRadius={12}/>
+                                  </td>
+                                  <td className="p-4" >
+                                    <Skeleton width={140} height={30} borderRadius={12}/>
+                                  </td>
+                                  <td className="p-4" >
+                                    <Skeleton width={140} height={30} borderRadius={12}/>
+                                  </td>
+                                  <td className="p-4" >
+                                    <Skeleton width={130} height={30} borderRadius={12}/>
+                                  </td>
+                                  <td className="p-4" >
+                                    <Skeleton width={120} height={30} borderRadius={999}/>
+                                  </td>
+                                 
+                                  <td className="p-4" >
+                                    <div className="flex items-center gap-2">
+                                      <Skeleton width={35} height={35} borderRadius={12}/>
+                                      <Skeleton width={35} height={35} borderRadius={12}/>
+                                      <Skeleton width={35} height={35} borderRadius={12}/>
+                                    </div>
+                                  </td>
+                  
+                                </tr>
+                
               )}
             </tbody>
           </table>

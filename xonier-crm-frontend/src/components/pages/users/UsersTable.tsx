@@ -115,7 +115,7 @@ const UsersTable = ({
                 >
                   <option value="">Select user role</option>
                   {roleData.map((role) => (
-                    <option key={role._id} value={role._id} hidden={role.code === SUPER_ADMIN_ROLE_CODE} disabled={role.code === SUPER_ADMIN_ROLE_CODE}>
+                    <option key={role.id} value={role.id} hidden={role.code === SUPER_ADMIN_ROLE_CODE} disabled={role.code === SUPER_ADMIN_ROLE_CODE}>
                       {role.name}
                     </option>
                   ))}
@@ -123,7 +123,7 @@ const UsersTable = ({
                  {formData.userRole.length > 0 && (
                 <div className="col-span-1 flex flex-wrap gap-2 mt-2">
                   {formData.userRole.map((roleId) => {
-                    const role = roleData.find((r) => r._id === roleId);
+                    const role = roleData.find((r) => r.id === roleId);
                     if (!role) return null;
 
                     
@@ -169,7 +169,7 @@ const UsersTable = ({
                   formData.lastName === "" ||
                   formData.email === "" ||
                   formData.phone === "" ||
-                  formData.password === ""
+                  formData.password === "" || formData.userRole.length <=0
                 }
                 className="col-span-2"
               >
