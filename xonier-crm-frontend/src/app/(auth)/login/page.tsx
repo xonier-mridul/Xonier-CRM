@@ -76,7 +76,7 @@ const page = () => {
       </div>
       <div className="w-[35%] bg-white h-screen flex items-start justify-center flex-col gap-5 p-14">
         <h1 className="text-2xl text-black font-medium">Welcome back Admin</h1>
-        <div className="flex flex-col gap-2 text-gray-500">
+        {/* <div className="flex flex-col gap-2 text-gray-500">
           Continue with
           <div className="flex items-center justify-between gap-3 w-full">
             <button className="flex items-center justify-center gap-2 text-black/90 rounded-sm border-[1px] border-gray-200 p-2.5 px-6">
@@ -100,12 +100,12 @@ const page = () => {
               with Facebook
             </button>
           </div>
-        </div>
-        <div className="flex items-center justify-center gap-3 w-full">
+        </div> */}
+        {/* <div className="flex items-center justify-center gap-3 w-full">
           <span className="w-full border-b-1 border-gray-100"></span>
           <h5 className="text-black w-80 text-center">or sign in with</h5>
           <span className="w-full border-b-1 border-gray-100"></span>
-        </div>
+        </div> */}
 
         <form className="w-full " onSubmit={handleSubmit}>
           <div className="flex flex-col gap-4">
