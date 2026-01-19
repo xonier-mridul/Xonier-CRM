@@ -1,4 +1,5 @@
 import { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
+import { Permissions } from "../roles/roles.types";
 
 
 export interface AuthState{

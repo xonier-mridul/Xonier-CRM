@@ -8,6 +8,8 @@ import Input from "../../ui/Input";
 import { PERMISSIONS } from "@/src/constants/enum";
 import { SUPER_ADMIN_ROLE_CODE } from "@/src/constants/constants";
 import Skeleton from "react-loading-skeleton";
+import Link from "next/link";
+
 
 const UserRolesTable = ({
   roleData,
@@ -188,7 +190,7 @@ const UserRolesTable = ({
               roleData && roleData.length > 0 ? (
                 roleData?.map((role) => (
                   <tr
-                    key={role._id}
+                    key={role.id}
                     className="border-b border-gray-200 dark:border-gray-700"
                   >
                     <td className="p-4 ">
@@ -199,7 +201,7 @@ const UserRolesTable = ({
                         </span>
                       </div>{" "}
                     </td>
-                    <td className="p-4 flex items-center gap-3">
+                    <td className="p-4 flex items-center flex-wrap gap-3">
                       {role.permissions && ( (role.code === SUPER_ADMIN_ROLE_CODE) ? <span className="bg-green-50 px-3 py-1 text-green-600 rounded-md text-sm capitalize">
                             All permissions
                           </span> :
@@ -209,14 +211,16 @@ const UserRolesTable = ({
                           </span>
                         )))}
                     </td>
-                    <td>
-                      <div className="flex items-center gap-2">
-                        <button className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-yellow-200/80 dark:bg-yellow-100 hover:bg-yellow-300/70 dark:hover:bg-yellow-200 disabled:cursor-not-allowed disabled:bg-yellow-50  text-yellow-500 hover:scale-104" disabled={!hasPermissions(PERMISSIONS.updateRole)}>
+                    <td className="">
+                      <div className="flex items-center gap-3">
+                        {hasPermissions(PERMISSIONS.updateRole) ? <Link href={`/roles/update/${role.id}`} className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-yellow-200/80 dark:bg-yellow-100 hover:bg-yellow-300/70 dark:hover:bg-yellow-200 disabled:cursor-not-allowed disabled:bg-yellow-50  text-yellow-500 hover:scale-104" >
                           <MdOutlineEdit className="text-xl" />
-                        </button>
+                        </Link> : <span className="h-9 w-9 flex items-center justify-center rounded-md  bg-yellow-100/80 dark:bg-yellow-100  dark:hover:bg-yellow-100 cursor-not-allowed   text-yellow-400">
+                           <MdOutlineEdit className="text-xl" />
+                          </span>}
                         {
                           <button
-                            onClick={() => handleDelete(role._id)}
+                            onClick={() => handleDelete(role.id)}
                             className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-red-100 text-red-500 hover:bg-red-200 disabled:cursor-not-allowed hover:scale-104" disabled={!hasPermissions(PERMISSIONS.deleteRole)}
                           >
                             {" "}

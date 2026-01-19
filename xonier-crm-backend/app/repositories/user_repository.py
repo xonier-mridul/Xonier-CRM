@@ -2,6 +2,8 @@ from app.repositories.base_repository import BaseRepository
 from app.db.models.user_model import UserModel
 from motor.motor_asyncio import AsyncIOMotorClientSession
 from typing import Dict, List, Optional
+from bson import ObjectId
+from beanie import PydanticObjectId
 
 class UserRepository(BaseRepository):
     def __init__(self):
@@ -9,4 +11,9 @@ class UserRepository(BaseRepository):
 
     async def find_user_by_hashMail(self,hashMail: str, projections: Optional[Dict[str, int]] = None, populate: Optional[List[str]] = None,  session: Optional[AsyncIOMotorClientSession] = None ):
         result = await self.find_one({"hashedEmail": hashMail}, projections, populate,  session)
+        return result
+    
+    async def find_by_role(self, roleId: str , projections: Optional[Dict[str, int]] = None, populate: Optional[List[str]] = None, session: Optional[AsyncIOMotorClientSession]=None):
+        print("userid: ", roleId)
+        result = await self.get_all(filters={"userRole.$id": {"$in":[PydanticObjectId(roleId)]}}, populate=populate, session=session)
         return result

@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction } from "react";
-import { User } from "../auth/auth.types";
+import { User, UserRole } from "../auth/auth.types";
 
 export interface GetAllRolesPayload {
     currentPage: number,
@@ -24,19 +24,19 @@ export interface Permissions{
 
 
 
-export interface UserRole {
-    _id: string;
-    name: string;
-    code: string;
-    permissions: Array<Permissions>;
-    status: boolean;
-    isSystemRole: boolean;
-    createdBy?:User | null;
-    updatedBy?: User | null;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date;
-}
+// export interface UserRole {
+//     _id: string;
+//     name: string;
+//     code: string;
+//     permissions: Array<Permissions>;
+//     status: boolean;
+//     isSystemRole: boolean;
+//     createdBy?:User | null;
+//     updatedBy?: User | null;
+//     createdAt: Date;
+//     updatedAt: Date;
+//     deletedAt: Date;
+// }
 
 // Props
 
