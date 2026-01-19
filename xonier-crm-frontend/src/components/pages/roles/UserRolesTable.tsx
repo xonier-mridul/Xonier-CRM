@@ -11,6 +11,7 @@ import Skeleton from "react-loading-skeleton";
 import Link from "next/link";
 
 
+
 const UserRolesTable = ({
   roleData,
   handleDelete,
@@ -21,10 +22,14 @@ const UserRolesTable = ({
   formData,
   setFormData,
   handleSubmit,
-  hasPermissions
+  hasPermissions, 
+  isAdmin
 }: RoleTableProps) => {
+  console.log("isAd: ", isAdmin)
   const addPermission = (permissionId: string) => {
     if (formData.permissions.includes(permissionId)) return;
+
+    
 
     setFormData((prev) => ({
       ...prev,
@@ -206,14 +211,14 @@ const UserRolesTable = ({
                             All permissions
                           </span> :
                         role.permissions.map((item, i) => (
-                          <span className="bg-green-50 px-3 py-1 text-green-600 rounded-md text-sm capitalize">
+                          <span key={i} className="bg-green-50 px-3 py-1 text-green-600 rounded-md text-sm capitalize">
                             {item.title}
                           </span>
                         )))}
                     </td>
                     <td className="">
                       <div className="flex items-center gap-3">
-                        {hasPermissions(PERMISSIONS.updateRole) ? <Link href={`/roles/update/${role.id}`} className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-yellow-200/80 dark:bg-yellow-100 hover:bg-yellow-300/70 dark:hover:bg-yellow-200 disabled:cursor-not-allowed disabled:bg-yellow-50  text-yellow-500 hover:scale-104" >
+                        {(hasPermissions(PERMISSIONS.updateRole) && !isAdmin ) ? <Link href={`/roles/update/${role.id}`} className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-yellow-200/80 dark:bg-yellow-100 hover:bg-yellow-300/70 dark:hover:bg-yellow-200 disabled:cursor-not-allowed disabled:bg-yellow-50  text-yellow-500 hover:scale-104" >
                           <MdOutlineEdit className="text-xl" />
                         </Link> : <span className="h-9 w-9 flex items-center justify-center rounded-md  bg-yellow-100/80 dark:bg-yellow-100  dark:hover:bg-yellow-100 cursor-not-allowed   text-yellow-400">
                            <MdOutlineEdit className="text-xl" />

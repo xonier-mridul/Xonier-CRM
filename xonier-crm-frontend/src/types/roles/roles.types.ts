@@ -54,6 +54,7 @@ export interface RoleTableProps {
   setFormData: Dispatch<SetStateAction<UserRolePayload>>;
   handleSubmit: () => Promise<void>;
   hasPermissions: (permission: string)=>boolean
+  isAdmin: boolean
 }
 
 

@@ -4,7 +4,7 @@ import { Permissions } from "../roles/roles.types";
 
 export interface AuthState{
     isAuthenticated: boolean;
-    user: any | null;
+    user: User | null;
 }
 
 export interface LoginPayload {

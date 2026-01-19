@@ -1,7 +1,7 @@
 import secrets
 
 def generate_otp(digit: int = 6) -> int:
-    # return 123456
+    return 123456
     if digit <= 0:
         raise ValueError("digit must be greater than 0")
 

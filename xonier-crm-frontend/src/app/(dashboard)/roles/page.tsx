@@ -1,5 +1,5 @@
 "use client";
-import { MARGIN_TOP, SIDEBAR_WIDTH } from "@/src/constants/constants";
+import { MARGIN_TOP, SIDEBAR_WIDTH, SUPER_ADMIN_ROLE_CODE } from "@/src/constants/constants";
 
 import React, { JSX, useState, useEffect } from "react";
 import extractErrorMessages from "../../utils/error.utils";
@@ -12,6 +12,9 @@ import { Permissions, UserRolePayload } from "@/src/types/roles/roles.types";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { UserRole } from "@/src/types";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
+import { useSelector, UseSelector } from "react-redux";
+import { RootState } from "@/src/store";
+
 
 
 const page = (): JSX.Element => {
@@ -22,12 +25,19 @@ const page = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [roleData, setRoleData] = useState<UserRole[]>([]);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false)
   const [permissionData, setPermissionData] =
     useState<Array<Permissions> | null>(null);
   const [formData, setFormData] = useState<UserRolePayload>({
     name: "",
     permissions: [],
   });
+
+  const auth = useSelector((state: RootState)=>state.auth)
+
+
+
+ 
 
   const {hasPermission} = usePermissions()
 
@@ -132,7 +142,11 @@ const page = (): JSX.Element => {
 
   useEffect(() => {
     getAllPermissions();
+    console.log("addd: ", auth)
+    const Admin:boolean = auth.user?.userRole?.some(item=>item.code === SUPER_ADMIN_ROLE_CODE) ?? false
+     setIsAdmin(Admin)
   }, []);
+  
 
   return (
     <div className={`ml-[${SIDEBAR_WIDTH}] mt-14 p-6`}>
@@ -149,6 +163,7 @@ const page = (): JSX.Element => {
         setFormData={setFormData}
         handleSubmit={handleSubmit}
         hasPermissions={hasPermission}
+        isAdmin={isAdmin}
       />
     </div>
   );
