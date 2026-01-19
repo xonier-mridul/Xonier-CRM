@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, Depends
-from app.schemas.user_role_schema import UserRoleRegistrationSchema
+from app.schemas.user_role_schema import UserRoleRegistrationSchema, UserRoleUpdateSchema
 from app.controllers.user_role_controller import UserRoleController
 from app.core.dependencies import Dependencies
 from app.core.permissions import PERMISSIONS
@@ -24,6 +24,16 @@ async def get_all_user_roles(request: Request):
 @router.get("/all/active/without-pagination", dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["role:read"]))])
 async def get_all_active():
     return await user_role_controller.get_all_active_without_pagination()
+
+@router.get("/get-by-id/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["role:read"]))])
+async def get_by_id(id:str):
+    return await user_role_controller.get_by_id(id)
+
+
+@router.put("/update/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["role:update"]))])
+async def update(request: Request, id: str, payload: UserRoleUpdateSchema):
+    return await user_role_controller.update(request=request, roleId=id, data=payload.model_dump())
+
 
 @router.delete("/delete/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["role:delete"]))])
 async def delete(request: Request,id: str):

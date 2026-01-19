@@ -154,6 +154,9 @@ const page = (): JSX.Element => {
         toast.success(
           `${formData.firstName} ${formData.lastName} user create successfully`
         );
+        setIsPopupShow(false);
+        await user();
+        
         setFormData({
           firstName: "",
           lastName: "",
@@ -164,8 +167,6 @@ const page = (): JSX.Element => {
           userRole: [],
           company: "",
         });
-        await user();
-        setIsPopupShow(false);
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);

@@ -1,6 +1,6 @@
 from app.utils.custom_exception import AppException
 
-from typing import Dict
+from typing import Dict, Any
 from fastapi import Request
 from app.services.user_role_service import UserRoleService
 from app.utils.custom_response import successResponse
@@ -41,6 +41,30 @@ class UserRoleController:
 
         except AppException as e:
             raise e
+        
+
+    async def get_by_id(self, id:str):
+        try:
+            result = await self.service.get_by_id(id)
+
+            return successResponse(200, "Role fetch successfully", result)
+
+        except AppException as e:
+            raise e
+        
+    
+    async def update(self, request: Request, roleId: str, data: Dict[str, Any]):
+        try:
+            user = request.state.user
+
+            await self.service.update(data=data,roleId=roleId, updatedBy=user["_id"])
+            return successResponse(200, "Role updated successfully")
+
+
+        except AppException as e:
+            raise e
+
+            
 
         
     async def delete(self, request: Request, id: str):

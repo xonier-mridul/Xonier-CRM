@@ -8,8 +8,10 @@ import axios from "axios";
 import { RoleService } from "@/src/services/role.service";
 import UserRolesTable from "@/src/components/pages/roles/UserRolesTable";
 import { PermissionsService } from "@/src/services/permission.service";
-import { Permissions, UserRole, UserRolePayload } from "@/src/types/roles/roles.types";
+import { Permissions, UserRolePayload } from "@/src/types/roles/roles.types";
 import { usePermissions } from "@/src/hooks/usePermissions";
+import { UserRole } from "@/src/types";
+import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 
 
 const page = (): JSX.Element => {
@@ -18,6 +20,7 @@ const page = (): JSX.Element => {
   const [pageLimit, setPageLimit] = useState<number>(10);
   const [err, setErr] = useState<string | string[] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [roleData, setRoleData] = useState<UserRole[]>([]);
   const [permissionData, setPermissionData] =
     useState<Array<Permissions> | null>(null);
@@ -72,8 +75,28 @@ const page = (): JSX.Element => {
   };
 
   const handleDelete = async (id: string): Promise<void> => {
+    setErr("");
+    setLoading(true)
     try {
-    } catch (error) {}
+      const confirm =await ConfirmPopup({title: "Are you sure for delete", text:"Are you sure to delete this User role", btnTxt: "Yes, Delete"})
+
+      if(confirm){
+         const result = await RoleService.delete(id)
+         if(result.status === 200){
+          toast.success("Role deleted successfully")
+          await getAllRoles()
+         }
+      }
+    } catch (error) {
+      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+      if (axios.isAxiosError(error)) {
+        const messages = extractErrorMessages(error);
+        setErr(messages);
+        toast.error(`${messages}`);
+      }
+    } finally {
+      setLoading(false)
+    }
   };
 
   const handleSubmit = async (): Promise<void> => {

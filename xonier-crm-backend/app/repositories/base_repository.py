@@ -108,6 +108,67 @@ class BaseRepository:
                 setattr(doc, field, fetched_items)
 
         return doc
+    
+
+
+    async def find(
+        self,
+        filter: Dict[str, Any] = None,
+        projections: Optional[Dict[str, int]] = None,
+        populate: Optional[List[str]] = None,
+        session: Optional[AsyncIOMotorClientSession] = None,
+        skip: int = 0,
+        limit: int = 0,
+        sort: Optional[List[tuple]] = None,
+    ):
+        populate = populate or []
+        filter = filter or {}
+
+        query = self.model.find(filter, session=session)
+
+        if projections:
+            query = query.project(projections)
+
+        if sort:
+            query = query.sort(sort)
+
+        if skip:
+            query = query.skip(skip)
+
+        if limit:
+            query = query.limit(limit)
+
+        docs = await query.to_list()
+
+        if not docs:
+            return []
+
+        
+        for doc in docs:
+            for field in populate:
+                value = getattr(doc, field, None)
+
+                if value is None:
+                    continue
+
+            
+                if hasattr(value, "fetch"):
+                    fetched = await value.fetch()
+                    setattr(doc, field, fetched)
+
+            
+                elif isinstance(value, list):
+                    fetched_items = []
+                    for item in value:
+                        if hasattr(item, "fetch"):
+                            fetched_items.append(await item.fetch())
+                        else:
+                            fetched_items.append(item)
+
+                    setattr(doc, field, fetched_items)
+
+        return docs
+
 
     async def get_all_without_pagination(
         self,

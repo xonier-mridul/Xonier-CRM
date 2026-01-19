@@ -6,5 +6,9 @@ from typing import List
 class UserRoleRegistrationSchema(BaseModel):
     name: str
     permissions: List[PydanticObjectId]
+class UserRoleUpdateSchema(BaseModel):
+    name: str
+    permissions: List[PydanticObjectId]
+
 
     
