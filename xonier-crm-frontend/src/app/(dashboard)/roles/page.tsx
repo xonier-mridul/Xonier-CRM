@@ -25,7 +25,7 @@ const page = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [roleData, setRoleData] = useState<UserRole[]>([]);
-  const [isAdmin, setIsAdmin] = useState<boolean>(false)
+
   const [permissionData, setPermissionData] =
     useState<Array<Permissions> | null>(null);
   const [formData, setFormData] = useState<UserRolePayload>({
@@ -142,10 +142,13 @@ const page = (): JSX.Element => {
 
   useEffect(() => {
     getAllPermissions();
-    console.log("addd: ", auth)
-    const Admin:boolean = auth.user?.userRole?.some(item=>item.code === SUPER_ADMIN_ROLE_CODE) ?? false
-     setIsAdmin(Admin)
+    
   }, []);
+
+  const isAdmin =
+  auth.user?.userRole?.some(
+    (role) => role.code === SUPER_ADMIN_ROLE_CODE
+  ) ?? false;
   
 
   return (
