@@ -66,7 +66,7 @@ class DealModel(Document):
     
     @field_validator("forecastProbability", mode="before")
     @classmethod
-    def define_percentage(cls, v):
+    def define_forecast_percentage(cls, v):
         if v is None:
             return v
         if v<0 or v>100:

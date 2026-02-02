@@ -89,7 +89,7 @@ class UserLoginSchema(BaseModel):
 
     @field_validator("password")
     @classmethod
-    def strong_password(cls, v: str):
+    def strong_password2(cls, v: str):
         rules = {
             "lowercase": any(c.islower() for c in v),
             "uppercase": any(c.isupper() for c in v),
@@ -138,7 +138,7 @@ class VerifyLoginOtpSchema(BaseModel):
 
     @field_validator("password")
     @classmethod
-    def strong_password(cls, v: str):
+    def strong_password3(cls, v: str):
         rules = {
             "lowercase": any(c.islower() for c in v),
             "uppercase": any(c.isupper() for c in v),
@@ -161,7 +161,7 @@ class ResetPasswordSchema(BaseModel):
 
     @field_validator("newPassword")
     @classmethod
-    def strong_password(cls, v: str):
+    def strong_password4(cls, v: str):
         rules = {
             "lowercase": any(c.islower() for c in v),
             "uppercase": any(c.isupper() for c in v),
@@ -184,7 +184,7 @@ class ResetPasswordByAdminSchema(BaseModel):
 
     @field_validator("password")
     @classmethod
-    def strong_password(cls, v: str):
+    def strong_password5(cls, v: str):
         rules = {
             "lowercase": any(c.islower() for c in v),
             "uppercase": any(c.isupper() for c in v),
@@ -201,7 +201,7 @@ class ResetPasswordByAdminSchema(BaseModel):
         return v
     @field_validator("confirmPassword")
     @classmethod
-    def strong_password(cls, v: str):
+    def strong_password6(cls, v: str):
         rules = {
             "lowercase": any(c.islower() for c in v),
             "uppercase": any(c.isupper() for c in v),
