@@ -115,7 +115,7 @@ class ResendOTPSchema(BaseModel):
 
     @field_validator("password")
     @classmethod
-    def strong_password(cls, v: str):
+    def strong_password33(cls, v: str):
         rules = {
             "lowercase": any(c.islower() for c in v),
             "uppercase": any(c.isupper() for c in v),
