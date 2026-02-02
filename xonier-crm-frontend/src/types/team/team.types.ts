@@ -6,6 +6,7 @@ export interface TeamCreatePayload {
     name: string;
     category: string;
     description?: string;
+    manager: string[];
     members: string[];
 }
 
@@ -14,6 +15,7 @@ export interface TeamUpdatePayload {
     category: string;
     description?: string;
     isActive: boolean,
+    manager: string[];
     members: string[];
 }
 
@@ -47,6 +49,7 @@ export interface Team {
     slug: string
     category: TeamCategory | string
     description?: string
+    manager: User[]
     members: User[]
     isActive: boolean
     isDefault: boolean

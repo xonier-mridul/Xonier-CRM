@@ -18,6 +18,7 @@ import { ParamValue } from 'next/dist/server/request/params';
 import ErrorComponent from '@/src/components/ui/ErrorComponent';
 import SuccessComponent from '@/src/components/ui/SuccessComponent';
 import { PERMISSIONS } from '@/src/constants/enum';
+import { FaXmark } from 'react-icons/fa6';
 
 const page = ():JSX.Element => {
   const [isPopupShow, setIsPopupShow] = useState<boolean>(false);
@@ -34,6 +35,7 @@ const page = ():JSX.Element => {
       description: "",
       category:"",
       isActive: false,
+      manager: [],
       members: [],
     });
     const [showSuccess, setShowSuccess] = useState<string>("");
@@ -126,6 +128,7 @@ const page = ():JSX.Element => {
         ? teamData.category
         : teamData.category.id || teamData.category.id,
     isActive: teamData.isActive,
+    manager:  teamData.manager.map(m => m.id || m.id),
     members: teamData.members.map(m => m.id || m.id),
   });
 }, [teamData]);
@@ -142,6 +145,20 @@ const page = ():JSX.Element => {
       if (prev.members.includes(userId)) return prev;
       return { ...prev, members: [...prev.members, userId] };
     });
+  };
+
+    const handleAddManager = (userId: string) => {
+    setFormData((prev) => {
+      if (prev.members.includes(userId)) return prev;
+      return { ...prev, manager: [...prev.manager, userId] };
+    });
+  };
+
+  const handleRemoveManager = (userId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      manager: prev.manager.filter((id) => id !== userId),
+    }));
   };
   
   const handleRemoveMember = (userId: string) => {
@@ -219,6 +236,56 @@ const page = ():JSX.Element => {
       ))}
     </select>
   </div>
+
+   <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                    Add Manager
+                  </label>
+  
+                  <select
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        handleAddManager(e.target.value);
+                        e.target.value = "";
+                      }
+                    }}
+                    className="bg-white dark:bg-gray-600 px-3 py-2 rounded-md border capitalize"
+                  >
+                    <option value="">Select user</option>
+                    {userData.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {`${user.firstName} ${user.lastName} (${user.userRole.map((item) => item.name)})`}
+                      </option>
+                    ))}
+                  </select>
+  
+                  {formData.manager.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {formData.manager.map((memberId) => {
+                        const user = userData.find((u) => u.id === memberId);
+                        if (!user) return null;
+  
+                        return (
+                          <span
+                            key={memberId}
+                            className="flex items-center gap-1 bg-blue-100 text-blue-600 
+                           px-3 py-1 rounded-full text-sm"
+                          >
+                            {user.firstName} {user.lastName} (
+                            {user.userRole.map((item) => item.name)})
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveManager(memberId)}
+                              className="hover:text-red-500 cursor-pointer hover:rotate-90 transition-all duration-300"
+                            >
+                              <FaXmark size={14} />
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
 
   {/* Members */}
   <div className="flex flex-col gap-2">

@@ -24,6 +24,8 @@ import PrimaryButton from "@/src/components/ui/PrimeryButton";
 import { LiaMailBulkSolid } from "react-icons/lia";
 import Skeleton from "react-loading-skeleton";
 
+
+
 const page = (): JSX.Element => {
   const [enquiryData, setEnquiryData] = useState<EnquiryData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -34,9 +36,13 @@ const page = (): JSX.Element => {
 
   const { hasPermission } = usePermissions();
 
+  const auth = useSelector((state: RootState)=> state.auth)
+
   const getEnquiryData = async () => {
     setIsLoading(true);
     try {
+      console.log("isAdmin: ", auth.isAdmin)
+      if(auth.isAdmin){
       const result = await EnquiryService.getAll({
         page: currentPage,
         limit: pageLimit,
@@ -47,6 +53,15 @@ const page = (): JSX.Element => {
         setCurrentPage(data.page);
         setPageLimit(data.limit);
         setTotalPages(data.totalPages);
+      }}else{
+        const result = await EnquiryService.getAllByCreator(currentPage, pageLimit);
+        if (result.status === 200) {
+          let data = result.data.data;
+          setEnquiryData(data.data);
+          setCurrentPage(data.page);
+          setPageLimit(data.limit);
+          setTotalPages(data.totalPages);
+        }
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
@@ -92,6 +107,10 @@ const page = (): JSX.Element => {
       }
     }
   };
+  const handleCopy = async (text: string) => {
+      await navigator.clipboard.writeText(text);
+      toast.success("text copied successfully")
+    };
 
   return (
     <div className={`ml-[${SIDEBAR_WIDTH}] mt-14 p-6`}>
@@ -174,9 +193,7 @@ const page = (): JSX.Element => {
             </tr>
           </thead>
           <tbody className="">
-            {enquiryData &&
-            Array.isArray(enquiryData) &&
-            enquiryData.length > 0 ? (
+            {!isLoading ? ((enquiryData && Array.isArray(enquiryData) && enquiryData.length > 0) ? (
               enquiryData.map((item, i) => {
                 let rr = i % 2 == 0;
 
@@ -190,11 +207,11 @@ const page = (): JSX.Element => {
                     } w-full`}
                   >
                     <td className="p-4">
-                      <span className="text-sm"> {item.enquiry_id}</span>
+                      <span className="text-sm cursor-copy" onClick={()=> handleCopy(item.lead_id)}> {item.enquiry_id}</span>
                     </td>
                     <td className="flex gap-1 flex-col p-4">
                       <h4>{item.fullName}</h4>{" "}
-                      <Link href={``} className="text-xs">
+                      <Link href={`mailto:${item.email}`} className="text-xs">
                         {item.email}
                       </Link>{" "}
                     </td>
@@ -214,7 +231,7 @@ const page = (): JSX.Element => {
                     <td className="p-4"> {item.status} </td>
                     <td>
                       <div className="flex items-center gap-2">
-                        {hasPermission(PERMISSIONS.createEnquiry) ? <Link
+                        {hasPermission(PERMISSIONS.readEnquiry) ? <Link
                           href={`/enquiry/view/${item.id}`}
                           className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-green-100/80 dark:bg-green-50 hover:bg-green-200/70 dark:hover:bg-green-100 text-green-500 hover:scale-104"
                         >
@@ -251,7 +268,7 @@ const page = (): JSX.Element => {
                   </tr>
                 );
               })
-            ) : (
+            ): <tr><td className="p-4 text-center" colSpan={6}>Data not found</td></tr>) : (
               <tr className="p-4">
                 <td className="text-center p-4">
                    <Skeleton width={120} height={30} borderRadius={14}/>

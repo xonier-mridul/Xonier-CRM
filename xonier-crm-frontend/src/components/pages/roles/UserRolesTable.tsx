@@ -25,7 +25,7 @@ const UserRolesTable = ({
   hasPermissions, 
   isAdmin
 }: RoleTableProps) => {
-  console.log("isAd: ", isAdmin)
+  
   const addPermission = (permissionId: string) => {
     if (formData.permissions.includes(permissionId)) return;
 
@@ -150,7 +150,7 @@ const UserRolesTable = ({
               </div>
             </div>
 
-            {/* Actions */}
+
             <div className="flex justify-end gap-3 pt-2">
               <button
                 onClick={() => setIsPopupShow(false)}
@@ -200,7 +200,7 @@ const UserRolesTable = ({
                   >
                     <td className="p-4 ">
                       <div className="flex flex-col gap-1 font-medium ">
-                        <h3>{role.name}</h3>
+                        <h3 className="capitalize">{role.name}</h3>
                         <span className="text-xs text-gray-500 capitalize">
                           {role.code === SUPER_ADMIN_ROLE_CODE ? "All" : role.permissions.length} permissions
                         </span>
@@ -218,19 +218,21 @@ const UserRolesTable = ({
                     </td>
                     <td className="">
                       <div className="flex items-center gap-3">
-                        {(hasPermissions(PERMISSIONS.updateRole) && !isAdmin ) ? <Link href={`/roles/update/${role.id}`} className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-yellow-200/80 dark:bg-yellow-100 hover:bg-yellow-300/70 dark:hover:bg-yellow-200 disabled:cursor-not-allowed disabled:bg-yellow-50  text-yellow-500 hover:scale-104" >
+                        {(hasPermissions(PERMISSIONS.updateRole) && (role.code !== SUPER_ADMIN_ROLE_CODE)) ? <Link href={`/roles/update/${role.id}`} className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-yellow-200/80 dark:bg-yellow-100 hover:bg-yellow-300/70 dark:hover:bg-yellow-200 disabled:cursor-not-allowed disabled:bg-yellow-50  text-yellow-500 hover:scale-104" >
                           <MdOutlineEdit className="text-xl" />
-                        </Link> : <span className="h-9 w-9 flex items-center justify-center rounded-md  bg-yellow-100/80 dark:bg-yellow-100  dark:hover:bg-yellow-100 cursor-not-allowed   text-yellow-400">
+                        </Link> : <span className="h-9 w-9 flex items-center justify-center rounded-md  bg-yellow-100/80 dark:bg-yellow-100   cursor-not-allowed   text-yellow-400">
                            <MdOutlineEdit className="text-xl" />
                           </span>}
-                        {
+                        {role.code !== SUPER_ADMIN_ROLE_CODE ?
                           <button
                             onClick={() => handleDelete(role.id)}
-                            className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-red-100 text-red-500 hover:bg-red-200 disabled:cursor-not-allowed hover:scale-104" disabled={!hasPermissions(PERMISSIONS.deleteRole)}
+                            className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-red-100 text-red-500 hover:bg-red-200 disabled:hover:bg-red-100 disabled:cursor-not-allowed hover:scale-104 disabled:scale-100" disabled={(!hasPermissions(PERMISSIONS.deleteRole))}
                           >
                             {" "}
                             <MdDeleteOutline className="text-xl" />{" "}
-                          </button>
+                          </button> : <span className="h-9 w-9 flex items-center justify-center rounded-md  bg-red-100 text-red-400  cursor-not-allowed ">
+                            <MdDeleteOutline className="text-xl" />
+                          </span>
                         }
                       </div>
                     </td>
@@ -246,7 +248,10 @@ const UserRolesTable = ({
             ) : (
               <tr className="animate-pulse">
                 <td  className="p-4">
-                  <Skeleton height={30} width={130} borderRadius={14} />
+                  <div className="flex flex-col gap-1">
+                  <Skeleton height={25} width={130} borderRadius={14} />
+                  <Skeleton height={14} width={70} borderRadius={10} />
+                  </div>
                 </td>
                 <td  className="p-4 ">
                   <div className="flex items-center gap-2">
@@ -258,8 +263,8 @@ const UserRolesTable = ({
                 </td>
                 <td  className="p-4 ">
                   <div className="flex items-center gap-2">
-                  <Skeleton height={35} width={35} borderRadius={14} />
-                  <Skeleton height={35} width={35} borderRadius={14} />
+                  <Skeleton height={35} width={35} borderRadius={10} />
+                  <Skeleton height={35} width={35} borderRadius={10} />
                   </div>
                   
                 </td>

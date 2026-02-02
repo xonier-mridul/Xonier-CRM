@@ -10,6 +10,7 @@ import ComponentLoader from "../../common/ComponentLoader";
 import Link from "next/link";
 import { MdOutlineEdit } from "react-icons/md";
 import PrimaryButton from "../../ui/PrimeryButton";
+import { handleCopy } from "@/src/app/utils/clipboard.utils";
 
 const UserDetail = ({
   userData,
@@ -20,6 +21,8 @@ const UserDetail = ({
       <ComponentLoader/>
     );
   }
+
+  console.log("user data: ", userData)
 
   if (!userData) {
     return (
@@ -73,13 +76,13 @@ const UserDetail = ({
             {userData.status}
           </span>
 
-          <p className="text-gray-500 dark:text-gray-400">
+         <p className="text-gray-500 dark:text-gray-400 cursor-copy" onClick={()=>handleCopy(userData?.email)}>
             {userData.email}
           </p>
         </div>
         </div>
         <div className="flex justify-end gap-3 w-full">
-            <PrimaryButton text={"Update User"} isLoading={isLoading} disabled={isLoading}  link={`/users/update/${userData.id}`} icon={<MdOutlineEdit className="text-lg"/>}/>
+            <PrimaryButton text={"Update User"} isLoading={isLoading} disabled={isLoading}  link={`/users/update/${userData.id? userData.id : userData._id}`} icon={<MdOutlineEdit className="text-lg"/>}/>
 
         </div>
       </div>

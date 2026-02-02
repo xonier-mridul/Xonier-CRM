@@ -17,6 +17,7 @@ import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSIONS } from "@/src/constants/enum";
 import FormButton from "../../ui/FormButton";
 import Skeleton from "react-loading-skeleton";
+import Pagination from "../../common/pagination";
 
 const UsersTable = ({
   currentPage,
@@ -32,11 +33,18 @@ const UsersTable = ({
   handleUserRoleChange,
   handleRemoveRole,
   handleSubmit,
-  
+  setPageLimit,
+  totalPage,
   err,
-  loading
+  loading,
+  setCurrentPages
 }: UserTableComponentProps): JSX.Element => {
   const { hasPermission } = usePermissions();
+
+  const handleLimit = (n:string)=>{
+    setPageLimit(Number(n))
+    setCurrentPages(1)
+  }
 
   return (
     <>
@@ -196,15 +204,16 @@ const UsersTable = ({
               name="limit"
               id="limit"
               className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10"
+              onChange={(e)=>handleLimit(e.target.value)}
             >
               <option value="10">10</option>
-              <option value="10">20</option>
-              <option value="10">30</option>
-              <option value="10">50</option>
+              <option value="20">20</option>
+              <option value="30">30</option>
+              <option value="40">50</option>
             </select>
-            <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 flex items-center">
+            <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2">
               <IoIosSearch className="text-xl" />
-              <input type="text" />
+              <input type="text" placeholder="Search by name" />
             </div>
             <button
               onClick={() => setIsPopupShow(true)}
@@ -282,14 +291,14 @@ const UsersTable = ({
                       <td>
                         <Link
                           href={`/users/${item.id}`}
-                          className="cursor-pointer hover:text-blue-500"
+                          className="cursor-pointer hover:text-blue-500 capitalize"
                         >
                           {item.firstName} {item.lastName}
                         </Link>
                       </td>
                       <td>
                         {item.userRole.map((item) => (
-                          <span>{item.name}</span>
+                          <span className="bg-green-500 px-3.5 py-1.5 rounded-lg text-white text-xs tracking-wide">{item.name}</span>
                         ))}
                       </td>
                       <td>{date}</td>
@@ -297,7 +306,7 @@ const UsersTable = ({
                         <span
                           className={`${
                             item.status === USER_STATUS.ACTIVE
-                              ? "bg-green-100  text-green-600"
+                              ? "bg-green-100  text-green-500"
                               : item.status === USER_STATUS.INACTIVE
                               ? "bg-yellow-100 text-yellow-500"
                               : item.status === USER_STATUS.DELETED
@@ -363,12 +372,10 @@ const UsersTable = ({
                 </tr>
               )
             ) : (
-              <tr className=" text-center animate-pulse">
+               Array.from({length: 10}).map((_)=>(
+                 <tr className=" text-center animate-pulse">
                 <td className="p-4" >
                   <Skeleton width={30} height={30} borderRadius={12}/>
-                </td>
-                <td className="p-4" >
-                  <Skeleton width={140} height={30} borderRadius={12}/>
                 </td>
                 <td className="p-4" >
                   <Skeleton width={140} height={30} borderRadius={12}/>
@@ -377,7 +384,10 @@ const UsersTable = ({
                   <Skeleton width={130} height={30} borderRadius={12}/>
                 </td>
                 <td className="p-4" >
-                  <Skeleton width={120} height={30} borderRadius={999}/>
+                  <Skeleton width={120} height={30} borderRadius={12}/>
+                </td>
+                <td className="p-4" >
+                  <Skeleton width={100} height={30} borderRadius={999}/>
                 </td>
                 <td className="p-4" >
                   <Skeleton width={140} height={30} borderRadius={12}/>
@@ -391,9 +401,11 @@ const UsersTable = ({
                 </td>
 
               </tr>
+              )) 
             )}
           </tbody>
         </table>
+        <Pagination currentPage={currentPage} totalPages={totalPage} onPageChange={(page) => setCurrentPages(page)}/>
       </div>
     </>
   );

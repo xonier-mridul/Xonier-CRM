@@ -32,7 +32,7 @@ async def get_by_id(id:str):
 
 @router.put("/update/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["role:update"]))])
 async def update(request: Request, id: str, payload: UserRoleUpdateSchema):
-    return await user_role_controller.update(request=request, roleId=id, data=payload.model_dump())
+    return await user_role_controller.update(request=request, roleId=id, data=payload.model_dump(exclude_unset=True))
 
 
 @router.delete("/delete/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["role:delete"]))])

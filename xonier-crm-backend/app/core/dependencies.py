@@ -6,7 +6,7 @@ from app.utils.manage_tokens import verify_access_token
 from app.repositories.user_repository import UserRepository
 from app.core.enums import USER_STATUS
 from beanie import PydanticObjectId
-
+from app.core.constants import SUPER_ADMIN_CODE
 
 class Dependencies:
     def __init__(self):
@@ -78,3 +78,28 @@ class Dependencies:
 
         except Exception as e:
             raise e
+        
+
+    async def onlyForAdmin(self, request:Request):
+        try:
+            user = request.state.user
+
+            isAdmin = False
+            
+            for item in user["userRole"]:
+                if item["code"] == SUPER_ADMIN_CODE:
+                   isAdmin = True
+                   break
+
+
+            if not isAdmin:
+                raise AppException(403, "Only admin can access this route")  
+
+            return True
+
+
+        except Exception as e:
+            raise e
+
+
+    # async def managerLead

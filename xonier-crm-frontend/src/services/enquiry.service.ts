@@ -16,6 +16,22 @@ export const EnquiryService = {
         `${data.projectType ? `projectType=${data.projectType}&` : ""}` +
         `${data.priority ? `priority=${data.priority}&` : ""}`
     ),
+    getAllByCreator:(page?: number, limit?: number, filters?: Record<string, any>) => {
+    const params = new URLSearchParams();
+
+    if (page) params.append("page", String(page));
+    if (limit) params.append("limit", String(limit));
+
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+          params.append(key, String(value));
+        }
+      });
+    }
+
+    return api.get(`/enquiry/all/by-creator?${params.toString()}`);
+  },
     getById:(id:ParamValue)=> api.get(`/enquiry/get-by-id/${id}`),
     create: (payload: CreateEnquiryPayload)=> api.post("/enquiry/create", payload),
     bulkCreate: (payload: BulkCreateEnquiryPayload)=> api.post("/enquiry/create/bulk", payload),

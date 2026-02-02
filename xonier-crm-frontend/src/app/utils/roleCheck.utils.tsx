@@ -2,12 +2,21 @@ import { SUPER_ADMIN_ROLE_CODE } from "@/src/constants/constants";
 import { UserRole } from "@/src/types";
 
 
-const checkRole = (permission: string, userRole: UserRole[])=>{
+const checkRole = (permission: string, userRole: UserRole[]):boolean=>{
     if(userRole.some(i => i.code === SUPER_ADMIN_ROLE_CODE)){
         return true
     }
     
-    return userRole.some(i=>i.code === permission)
+    for(let item of userRole){
+        
+        if(item.permissions?.some((i)=> i.code === permission)){
+            console.log("permission success")
+            return true
+        }
+
+    }
+    console.log("permission deined")
+    return false
 
 }
 

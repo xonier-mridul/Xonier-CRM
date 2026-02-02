@@ -2,6 +2,10 @@
   "name": "xonier-crm-frontend",
   "version": "0.1.0",
   "private": true,
+  "author": {
+    "name": "Mridul Singh Saklani",
+    "email": "saklanimridul@gmail.com"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -9,6 +13,10 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@fullcalendar/daygrid": "^6.1.20",
+    "@fullcalendar/interaction": "^6.1.20",
+    "@fullcalendar/react": "^6.1.20",
+    "@fullcalendar/timegrid": "^6.1.20",
     "@reduxjs/toolkit": "^2.11.2",
     "axios": "^1.13.2",
     "framer-motion": "^12.23.26",

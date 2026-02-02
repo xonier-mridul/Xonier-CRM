@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Response, Request
 
 
 from app.middlewares.auth_middleware import AuthMiddleware
-from app.schemas.user_schema import UserLoginSchema, VerifyLoginOtpSchema, RegisterUserSchema, ResendOTPSchema, UpdateUserSchema, ResetPasswordSchema
+from app.schemas.user_schema import UserLoginSchema, VerifyLoginOtpSchema, RegisterUserSchema, ResendOTPSchema, UpdateUserSchema, ResetPasswordSchema, UpdateUserStatusSchema, ResetPasswordByAdminSchema
 from app.controllers.auth_controller import AuthController
 from app.core.dependencies import Dependencies
 from beanie import PydanticObjectId
@@ -48,9 +48,14 @@ async def verify_login_otp(response: Response, data: VerifyLoginOtpSchema):
 async def getMe(request: Request, response: Response):
     return await auth_controller.getMe(request=request)
 
-@router.put("/update/{id}", status_code=200, dependencies=[Depends(dependencies.authorized)])
+@router.put("/update/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["user:update"]))])
 async def update(request: Request,id: str, payload: UpdateUserSchema ):
     return await auth_controller.update(request, id, payload)
+
+
+@router.patch("/update-status/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["user:update"]))])
+async def update_status(request: Request, id: str, payload: UpdateUserStatusSchema):
+    return await auth_controller.update_status(request, id, payload.model_dump())
 
 @router.post("/logout", status_code=200, dependencies=[Depends(dependencies.authorized)])
 async def logout(request: Request, response: Response):
@@ -62,4 +67,9 @@ async def soft_delete(request: Request, id: PydanticObjectId):
 
 @router.patch("/reset-password", status_code=200, dependencies=[Depends(dependencies.authorized)])
 async def reset_password(request: Request, data: ResetPasswordSchema):
-    return await auth_controller.reset_password(request, data.model_dump())
+    return await auth_controller.reset_password(request, data.model_dump(exclude_unset=True))
+
+@router.patch("/reset-user-password/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["user:update"]))])
+async def reset_user_password(request:Request, id:str, payload: ResetPasswordByAdminSchema):
+    return await auth_controller.reset_user_password(request, id, payload.model_dump())
+

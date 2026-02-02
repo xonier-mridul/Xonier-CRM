@@ -10,7 +10,7 @@ dependencies = Dependencies()
 teamController = TeamController()
 
 
-@router.post("/create", status_code=201)
+@router.post("/create", status_code=201, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["team:create"]))])
 async def create(request: Request, data: TeamRegisterSchema):
     return await teamController.create(request, data.model_dump())
 
@@ -24,8 +24,7 @@ async def get_by_id(request: Request, id: str):
 
 @router.put("/update/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["team:update"]))])
 async def update(request: Request, id: str, payload: TeamUpdateSchema):
-    return await teamController.update(request, id, payload.model_dump())
-
+    return await teamController.update(request, id, payload.model_dump(exclude_unset=True))
 
 @router.delete("/delete/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["team:delete"]))])
 async def delete(id: str):

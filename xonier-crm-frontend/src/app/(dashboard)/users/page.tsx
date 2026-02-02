@@ -19,6 +19,7 @@ const page = (): JSX.Element => {
   const [loading, setLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPages] = useState<number>(1);
   const [pageLimit, setPageLimit] = useState<number>(10);
+  const [totalPage, setTotalPage] = useState<number>(1)
   const [isPopupShow, setIsPopupShow] = useState<boolean>(false);
   const [formData, setFormData] = useState<RegisterPayload>({
     firstName: "",
@@ -28,7 +29,7 @@ const page = (): JSX.Element => {
     password: "",
     confirmPassword: "",
     userRole: [],
-    company: "",
+    company: "Xonier Technologies",
   });
 
   const user = async (): Promise<void> => {
@@ -41,9 +42,10 @@ const page = (): JSX.Element => {
       if (result.status === 200) {
         const resultData = result.data.data;
         setUserData(resultData.data);
-        console.log("user: ", resultData.data);
+       
         setCurrentPages(resultData.page);
         setPageLimit(resultData.limit);
+        setTotalPage(resultData.totalPages)
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
@@ -165,7 +167,7 @@ const page = (): JSX.Element => {
           password: "",
           confirmPassword: "",
           userRole: [],
-          company: "",
+          company: "xonier technologies",
         });
       }
     } catch (error) {
@@ -201,6 +203,9 @@ const page = (): JSX.Element => {
         handleSubmit={handleSubmit}
         err={err}
         loading={loading}
+        setPageLimit={setPageLimit}
+        totalPage={totalPage}
+        setCurrentPages={setCurrentPages}
       />
     </div>
   );

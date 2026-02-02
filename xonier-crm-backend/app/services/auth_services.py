@@ -11,6 +11,7 @@ from datetime import datetime, timezone, timedelta
 from app.core.config import get_setting
 from fastapi.encoders import jsonable_encoder
 from beanie import PydanticObjectId
+from pydantic import ValidationError
 from app.core.crypto import encryptor
 from app.repositories.otp_repository import OtpRepository
 from app.db.models.user_model import UserModel
@@ -20,6 +21,10 @@ from bson import ObjectId
 from app.core.enums import USER_STATUS
 from app.core.constants import SUPER_ADMIN_CODE
 from app.repositories.user_role_repository import UserRoleRepository
+from app.utils.cache_key_generator import cache_key_generator_by_id
+from app.core.constants import GET_ME_NAMESPACE
+from fastapi_cache import FastAPICache
+import json
 
 
 class AuthServices:
@@ -156,16 +161,16 @@ class AuthServices:
         try:
             session.start_transaction()
             hashed_email = hash_value(data["email"])
-            print("err1")
+
             is_user_exist = await self.repo.find_user_by_hashMail(
                 hashMail=hashed_email, populate=["userRole"], session=session
             )
-            print("err2", data)
+
             if is_user_exist:
                 raise AppException(400, "User already exist, please use another email")
             
             for item in data["userRole"]:
-              print("dataaaa: ", item)
+
               get_role = await self.role_repo.find_by_id(id=PydanticObjectId(item), session=session)
               
               if get_role.code == SUPER_ADMIN_CODE:
@@ -173,7 +178,7 @@ class AuthServices:
                 
             
             userModel = await self.repo.find_by_id(id=user["_id"], session=session)
-            print("user: ", userModel)
+
             if not userModel:
                 raise AppException(404, "Current user not found")
 
@@ -193,8 +198,15 @@ class AuthServices:
             raise
 
         except Exception as e:
+            print("errr: ", e)
             await session.abort_transaction()
             raise AppException(status_code=500, message="internal server error")
+        
+        except ValidationError as e:
+            raise AppException(
+                status_code=422,
+                message=e.errors()
+            )
 
         finally:
             await session.end_session()
@@ -429,12 +441,21 @@ class AuthServices:
 
     async def getMe(self, userId: PydanticObjectId)->bool:
         try:
-         user = await self.repo.find_by_id(userId, ["userRole"])
+         
+        
 
+         user = await self.repo.find_by_id_nested(userId, ["userRole", "userRole.permissions"])
+         
          if not user:
              raise AppException(400, "User not found")
          
-         return jsonable_encoder(user, exclude={"password", "refreshToken"})
+         
+         
+         result = jsonable_encoder(user, exclude={"password", "refreshToken"})
+
+         
+         
+         return result
         except AppException:
             raise
 
@@ -453,6 +474,7 @@ class AuthServices:
             updated_user = await self.repo.update_with_encryption(userId, payload, session)
             if not updated_user:
                 raise AppException(400, "User not updated")
+            
             await session.commit_transaction()
             return True
 
@@ -466,7 +488,34 @@ class AuthServices:
         finally:
             await session.end_session()
 
+    
+    async def update_status(self, userId: str, updatedBy: str, payload: Dict[str, Any])->bool:
+        try:
 
+            is_exist = await self.repo.find_by_id(id=PydanticObjectId(userId))
+
+            if not is_exist:
+                raise AppException(404, "User not found")
+            
+            new_payload = {
+                **payload, "updatedBy": PydanticObjectId(updatedBy)
+            }
+            
+            updated = await self.repo.update_with_encryption(PydanticObjectId(userId), data=new_payload)
+
+
+            if not updated:
+                raise AppException(400, "User status updating failed")
+            
+            return True
+
+
+        except AppException:
+            raise 
+
+        except Exception as e:
+           
+            raise
 
     async def logout(self, user_id: str):
         session = await self.client.start_session()
@@ -483,6 +532,8 @@ class AuthServices:
                 session=session,
             )
             await session.commit_transaction()
+
+           
 
             return user.model_dump()
 
@@ -598,5 +649,55 @@ class AuthServices:
 
         finally:
             await session.end_session()
+
+
+    async def reset_user_password(self, userId: str, payload: Dict[str, Any], updatedBy: Dict[str, Any] )->bool:
+        try:
+            print("one", userId)
+            is_exist = await self.repo.find_by_id(id=PydanticObjectId(userId))
+            print("isEx", payload)
+            if(payload.get("password") != payload.get("confirmPassword")):
+                raise AppException(400, "Password and Confirm Password not matching, please check and try again")
+            print("tow")
+            if not is_exist:
+                raise AppException(404, "User not found")
+            
+            is_super_admin = False
+
+            for role in updatedBy.get("userRole", []):
+                if role.get("code") == "SUPER_ADMIN":
+                    is_super_admin = True
+                    break
+            print("three")
+            if not is_super_admin:
+                raise AppException(403, "Permission denied")
+            
+            hashed = hash_password(payload["password"])
+            
+            new_payload = {
+                "password": hashed,
+                "updatedBy": PydanticObjectId(updatedBy.get("_id")),
+                "updatedAt": datetime.now(timezone.utc)
+            }
+            print("four", new_payload)
+
+            update = await self.repo.update_with_encryption(PydanticObjectId(userId), new_payload)
+            print("five", update)
+            if not update:
+                raise AppException(400, "User update failed")
+            
+            
+            
+            return True
+
+
+        
+        except AppException:
+            
+            raise
+
+        except Exception as e:
+            
+            raise AppException(status_code=500, message="internal server error")
 
 
