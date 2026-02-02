@@ -377,6 +377,19 @@ const SideBar = () => {
                     </Link>
                   </li>}
                   
+                  {hasPermission(PERMISSIONS.readDeal) && <li>
+                    <Link
+                      href="/deals"
+                      className={`block px-3 py-2 text-sm rounded-md hover:bg-blue-600/10 ${
+                        isActive("/deals")
+                          ? "text-blue-700 dark:text-blue-300"
+                          : ""
+                      }`}
+                    >
+                      Deals
+                    </Link>
+                  </li>}
+                  
                 </motion.ul>
               )}
             </AnimatePresence>

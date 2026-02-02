@@ -12,6 +12,7 @@ dnspython==2.8.0
 ecdsa==0.19.1
 email-validator==2.3.0
 fastapi==0.124.4
+fastapi-cache2==0.2.2
 h11==0.16.0
 idna==3.11
 lazy-model==0.4.0
@@ -19,6 +20,7 @@ limits==5.6.0
 motor==3.7.1
 packaging==25.0
 passlib==1.7.4
+pendulum==3.1.0
 phonenumbers==9.0.22
 pyasn1==0.6.1
 pycparser==2.23
@@ -26,6 +28,7 @@ pydantic==2.12.5
 pydantic-settings==2.12.0
 pydantic_core==2.41.5
 pymongo==4.15.5
+python-dateutil==2.9.0.post0
 python-dotenv==1.2.1
 python-jose==3.5.0
 redis==7.1.0
@@ -35,5 +38,6 @@ slowapi==0.1.9
 starlette==0.50.0
 typing-inspection==0.4.2
 typing_extensions==4.15.0
+tzdata==2025.3
 uvicorn==0.38.0
 wrapt==2.0.1
