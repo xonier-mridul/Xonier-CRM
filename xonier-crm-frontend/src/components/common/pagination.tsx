@@ -44,11 +44,11 @@ const Pagination = ({
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className={`h-9 w-9 flex items-center justify-center rounded-md border
+          className={`h-9 w-9 flex items-center justify-center  rounded-md border
             ${
               currentPage === 1
                 ? "opacity-50 cursor-not-allowed"
-                : "hover:bg-gray-100 dark:hover:bg-gray-600"
+                : "hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
             }`}
         >
           <FaChevronLeft />
@@ -59,7 +59,7 @@ const Pagination = ({
           <button
             key={page}
             onClick={() => onPageChange(page)}
-            className={`h-9 w-9 rounded-md text-sm font-medium
+            className={`h-9 w-9 rounded-md text-sm font-medium cursor-pointer
               ${
                 page === currentPage
                   ? "bg-blue-600 text-white"

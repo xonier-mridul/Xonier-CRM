@@ -15,7 +15,7 @@ class UserRoleController:
            user = request.state.user
           
            result = await self.service.create_role(user, data)
-           print("result: ", result)
+           
            return successResponse(200, f"{result["name"]} User role created successfully", result)
            
         except AppException as e:

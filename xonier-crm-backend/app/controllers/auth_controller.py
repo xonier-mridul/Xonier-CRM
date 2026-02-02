@@ -100,7 +100,7 @@ class AuthController:
     async def getMe(self, request: Request):
         try:
            user = request.state.user
-           print("111")
+           
            result = await self.service.getMe(user["_id"])
            
            
@@ -134,6 +134,14 @@ class AuthController:
            user = request.state.user
            result = await self.service.update(PydanticObjectId(userId), PydanticObjectId(user["_id"]), payload.model_dump())
            return successResponse(200, "User updated successfully" )
+        except AppException as e:
+            raise e
+        
+    async def update_status(self, request: Request, userId: str, payload: Dict[str, Any]):
+        try:
+            user = request.state.user
+            result  = await self.service.update_status(userId=userId, updatedBy=user["_id"], payload=payload)
+
         except AppException as e:
             raise e
     
@@ -185,4 +193,19 @@ class AuthController:
         
         except Exception as e:
             raise e
+        
+    async def reset_user_password(self, request: Request, userId:str, data:Dict[str, Any]):
+        try:
+            user = request.state.user
+            
+            await self.service.reset_user_password(userId=userId, updatedBy=user, payload=data)
+
+            return successResponse(200, f"Password reset successfully")
+
+        except AppException as e:
+            print("errr: ", e)
+            raise e
+        
+        
+    
 

@@ -72,7 +72,7 @@ const NavBar = () => {
                   quality={100}
                 />
               </span>
-              <span className="group-hover:text-blue-700 dark:group-hover:text-blue-500">
+              <span className="group-hover:text-blue-700 dark:group-hover:text-blue-500 capitalize">
                 {auth.user?.firstName} {auth.user?.lastName}
               </span>
             </div>
@@ -91,7 +91,7 @@ const NavBar = () => {
                   <div className="flex items-center gap-4">
                     <div className="w-1/3"><Image src={"/images/user-1.png"} className="rounded-full" height={300} width={300} alt="user profile image"/></div>
                     <div className="w-2/3 flex flex-col gap-2">
-                    <h3 className="text-slate-900 dark:text-white text-lg">{auth?.user?.firstName} {auth?.user?.lastName}</h3>
+                    <h3 className="text-slate-900 dark:text-white text-lg capitalize">{auth?.user?.firstName} {auth?.user?.lastName}</h3>
                     <span>{}</span>
                   </div>
                   </div>

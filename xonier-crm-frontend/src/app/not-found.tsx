@@ -3,6 +3,7 @@
 import React, { JSX } from "react";
 import Link from "next/link";
 import { FiArrowLeft, FiHome } from "react-icons/fi";
+import Image from "next/image";
 
 const NotFound = () => {
   return (
@@ -49,6 +50,7 @@ const NotFound = () => {
           If you believe this is an error, please contact your system administrator.
         </p>
       </div>
+      {/* <Image src={"/images/not-found.gif"} height={200} width={200} alt='not found' quality={100} className='w-full' /> */}
     </div>
   );
 };

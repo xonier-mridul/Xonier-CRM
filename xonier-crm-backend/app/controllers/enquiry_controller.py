@@ -16,12 +16,29 @@ class EnquiryController:
         try:
             filters = request.query_params
 
+
             result = await self.service.get_all(int(filters["page"]), int(filters["limit"]), filters={**filters})
 
             return successResponse(status_code=200, message="All enquiries fetched successfully", data=result)
 
         except AppException as e:
             raise e
+        
+    async def get_all_by_creator(self, request: Request):
+        try:
+            filters = request.query_params
+            user = request.state.user
+
+            page = filters.get("page") or 1
+            limit = filters.get('limit') or 10
+
+            result = await self.service.get_all_by_creator(user=user, page=int(page), limit=int(limit), filters={**filters} )
+
+            return successResponse(status_code=200, message="All enquiries fetched successfully", data=result)
+        
+        except AppException as e:
+            raise e
+
         
     async def get_by_id(self, request: Request, id: str):
         try:

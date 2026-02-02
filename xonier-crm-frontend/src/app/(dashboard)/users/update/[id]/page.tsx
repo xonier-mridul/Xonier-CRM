@@ -2,7 +2,7 @@
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import { MARGIN_TOP, SIDEBAR_WIDTH } from "@/src/constants/constants";
 import { AuthService } from "@/src/services/auth.service";
-import { User, UserRole, UserUpdatePayload } from "@/src/types";
+import { User, UserPasswordUpdatedByAdminPayload, UserRole, UserStatusPayload, UserUpdatePayload } from "@/src/types";
 import axios from "axios";
 import React, { JSX, useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -10,13 +10,25 @@ import { ParamValue } from "next/dist/server/request/params";
 import UserUpdate from "@/src/components/pages/users/UserUpdate";
 import { toast } from "react-toastify";
 import { RoleService } from "@/src/services/role.service";
+import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 
 const page = (): JSX.Element => {
   const [err, setErr] = useState<string[] | string >("");
+   const [statusErr, setStatusErr] = useState<string | string[]>("");
+   const [passErr, setPassErr] = useState<string | string[]>("");
   const [userData, setUserData] = useState<User[]>([]);
   const [roleData, setRoleData] = useState<UserRole[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isPassLoading, setIsPassLoading] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false);
+  const [statusLoading, setStatusLoading] = useState<boolean>(false);
+  const [statusData, setStatusData] = useState<UserStatusPayload>({
+    status: ""
+  })
+  const [passwordData, setPasswordData] = useState<UserPasswordUpdatedByAdminPayload>({
+    password: "",
+    confirmPassword: ""
+  })
   const [formData, setFormData] = useState<UserUpdatePayload>({
     firstName: "",
     lastName: "",
@@ -52,6 +64,7 @@ const page = (): JSX.Element => {
       let result = await AuthService.getUserById(params);
       if (result.status === 200) {
         const resultData = result.data.data;
+
         setUserData(resultData);
 
         setFormData({
@@ -62,6 +75,10 @@ const page = (): JSX.Element => {
           userRole: resultData?.userRole?.map((item: any) => item.id) ?? [],
           company: resultData?.company ?? "",
         });
+
+        setStatusData({
+          status: resultData?.status ?? ""
+        })
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
@@ -84,6 +101,15 @@ const page = (): JSX.Element => {
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handlePassChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPasswordData((prev) => ({ ...prev, [name]: value }));
+  };
+  const handleStatusChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setStatusData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleUserRoleChange = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -138,6 +164,75 @@ const page = (): JSX.Element => {
     }
 
   }
+
+  const handleStatus = async(e:FormEvent<HTMLFormElement>)=>{
+    e.preventDefault()
+    setStatusLoading(true)
+    setStatusErr("")
+    try {
+
+       const confirm = await ConfirmPopup({title: "Are you sure", text: `Are you sure to change ${formData.firstName} ${formData.lastName} status to ${statusData.status}?`, btnTxt: "Yes, Change"})
+
+       if(confirm){
+const result = await AuthService.updateStatus(params, statusData)
+      if (result.status === 200){
+        toast.success(`${formData.firstName} ${formData.lastName} status to ${statusData.status.toUpperCase()} updated successfully`)
+        setTimeout(() => {
+          router.push("/users")
+        }, 2000);
+      }
+       }
+
+      
+      
+    } catch (error) {
+      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+      if (axios.isAxiosError(error)) {
+        const messages = extractErrorMessages(error);
+        setStatusErr(messages);
+      } else {
+        setStatusErr(["Something went wrong"]);
+      }
+    } finally {
+      setStatusLoading(false)
+    }
+  }
+
+  const handlePasswordSubmit = async(e:FormEvent<HTMLFormElement>)=>{
+    e.preventDefault()
+    setPassErr("")
+    setIsPassLoading(true)
+       try {
+
+        if(passwordData.password.trim() !== passwordData.confirmPassword.trim()){
+          setPassErr("Password and confirm password not matching, please check and try again")
+          return
+        }
+
+        const confirm = await ConfirmPopup({title: "Are you sure", text: `Are you sure to update ${formData.firstName} ${formData.lastName} password`, btnTxt: "Yes, Update Password"})
+
+        if(confirm){
+           const result = await AuthService.changePasswordByAdmin(params, passwordData)
+           if(result.status === 200){
+            toast.success(`${formData.firstName} ${formData.lastName} password updated successfully`)
+            setTimeout(() => {
+          router.push("/users")
+        }, 2000);
+           }
+        }
+        
+       } catch (error) {
+        process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+      if (axios.isAxiosError(error)) {
+        const messages = extractErrorMessages(error);
+        setPassErr(messages);
+      } else {
+        setPassErr(["Something went wrong"]);
+      }
+       } finally {
+        setIsPassLoading(false)
+       }
+  }
   return (
     <div className={`ml-[${SIDEBAR_WIDTH}] mt-14 p-6`}>
       <UserUpdate
@@ -150,7 +245,16 @@ const page = (): JSX.Element => {
         handleSubmit={handleSubmit}
         loading={loading}
         err={err}
-        
+        handleStatus={handleStatus}
+        handleStatusChange={handleStatusChange}
+        statusData={statusData}
+        statusErr={statusErr}
+        statusLoading={statusLoading}
+        passwordData={passwordData}
+        handlePassChange={handlePassChange}
+        handlePasswordSubmit={handlePasswordSubmit}
+        passErr={passErr}
+        isPassLoading={isPassLoading}
       />
     </div>
   );

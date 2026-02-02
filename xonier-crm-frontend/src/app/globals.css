@@ -3,8 +3,20 @@
 @variant dark (&:where(.dark, .dark *));
 
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: smooth !important;
 }
+
+*{
+  transition: all;
+  transition-duration: .3s;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 
 input::placeholder,
 textarea::placeholder {
@@ -14,8 +26,21 @@ textarea::placeholder {
 
 body {
   
+  
   /* color: var(--foreground); */
   font-family: "Instrument Sans", sans-serif;
   transition: all;
   transition-duration: .3s;
 }
+
+label.required::after {
+  content: " *";
+  color: #ef4444; 
+  font-weight: 600;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+

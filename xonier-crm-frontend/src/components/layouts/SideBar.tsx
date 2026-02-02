@@ -77,6 +77,12 @@ const SideBar = () => {
     if (pathname.startsWith("/enquiry")){
       setOpenMenu("sales")
     }
+    if (pathname.startsWith("/leads")){
+      setOpenMenu("sales")
+    }
+    if (pathname.startsWith("/deals")){
+      setOpenMenu("sales")
+    }
   }, [pathname]);
 
   const toggleMenu = (menu: string) => {
@@ -304,7 +310,7 @@ const SideBar = () => {
             </AnimatePresence>
           </li>}
 
-          {(hasPermission(PERMISSIONS.createEnquiry) || hasPermission(PERMISSIONS.readEnquiry)) && <li>
+          {(hasPermission(PERMISSIONS.createEnquiry) || hasPermission(PERMISSIONS.readEnquiry) || hasPermission(PERMISSIONS.createLead) || hasPermission(PERMISSIONS.readLead) || hasPermission(PERMISSIONS.createDeal) || hasPermission(PERMISSIONS.readDeal)) && <li>
             <button
               onClick={() => toggleMenu("sales")}
               className={`flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition ${
@@ -356,6 +362,18 @@ const SideBar = () => {
                       }`}
                     >
                       Leads
+                    </Link>
+                  </li>}
+                  {hasPermission(PERMISSIONS.readDeal) && <li>
+                    <Link
+                      href="/deals"
+                      className={`block px-3 py-2 text-sm rounded-md hover:bg-blue-600/10 ${
+                        isActive("/deals")
+                          ? "text-blue-700 dark:text-blue-300"
+                          : ""
+                      }`}
+                    >
+                      Deals
                     </Link>
                   </li>}
                   

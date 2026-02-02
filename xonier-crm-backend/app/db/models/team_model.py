@@ -12,7 +12,8 @@ class TeamModel(Document):
     name: str = Field(...)
     slug: SLUG = Indexed(unique=True)
     category: Link[TeamCategoryModel]
-    description: Optional[str]
+    description: Optional[str] = None
+    manager: List[Link[UserModel]]
     members: List[Link[UserModel]]
     isActive: bool = True
     isDefault: bool = False

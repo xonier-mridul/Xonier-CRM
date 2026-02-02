@@ -16,14 +16,14 @@ from jose import jwt
 EnvSettings = get_setting()
 
 class UserModel(Document):
-    firstName: str = Field(..., min_length=5, max_length=49)
+    firstName: str = Field(..., min_length=4, max_length=49)
     lastName: Optional[str] = Field(None, max_length=49)
     email: str = Field(...)
     hashedEmail: str = Indexed(unique=True)
     phone: str = Field(...)
     hashedPhone: str = Indexed(unique=True) 
     password: str = Field(...)
-    isEmailVerified: bool = False
+    isEmailVerified: bool = True
     status: USER_STATUS = Field(default=USER_STATUS.ACTIVE)
     userRole: List[Link["UserRoleModel"]] = Field(default_factory=list)
     company: str = Field(...)
@@ -70,6 +70,7 @@ class UserModel(Document):
             plain_email:str = self.email.lower()
             self.hashedEmail = hash_value(plain_email)
             self.email = encryptor.encrypt_data(plain_email)
+            return
 
     
     @field_validator("password")

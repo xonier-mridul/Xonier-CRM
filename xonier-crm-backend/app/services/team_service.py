@@ -4,13 +4,16 @@ from typing import Dict, Any
 from pymongo.errors import DuplicateKeyError
 
 from app.repositories.team_repository import TeamRepository
+from app.repositories.user_repository import UserRepository
 from app.utils.slug_generator import generate_slug
 from fastapi.encoders import jsonable_encoder
 from app.db.db import Client
+from app.core.constants import MANGER_CODE
 
 class TeamService:
     def __init__(self):
         self.repo = TeamRepository()
+        self.userRepo = UserRepository()
         self.client = Client
 
 
@@ -27,7 +30,7 @@ class TeamService:
             if "active" in filters:
                 query.update({"isActive": filters["active"]})
 
-            result = await self.repo.get_all(page, limit, query,["members", "category", "createdBy"])
+            result = await self.repo.get_all(page, limit, query,["members", "category", "createdBy", "manager"])
 
             if not result:
                 raise AppException(400, "Failed to fetch teams data")
@@ -61,6 +64,10 @@ class TeamService:
                     "createdBy": createdBy
                 }
 
+                rr = any(item in payload["members"] for item in payload["manager"])
+
+                if rr:
+                    raise AppException(400, "Manager user also selected in members list, please remove it")
 
                 team = await self.repo.create(new_payload, session)
 
@@ -79,7 +86,7 @@ class TeamService:
     
     async def get_by_id(self, id: PydanticObjectId):
         try:
-           result = await self.repo.find_by_id(id, ["members", "category"])
+           result = await self.repo.find_by_id(id, ["members", "category", "manager", "createdBy"])
 
            if not result:
                raise AppException(404, "Team not found")
@@ -115,6 +122,12 @@ class TeamService:
 
                     # if is_exist_with_slug:
                     #     raise AppException(status_code=400, message=f"Team already exist with '{payload["name"].capitalize()}' name, please use different name")
+
+
+                    rr = any(item in payload["members"] for item in payload["manager"])
+
+                    if rr:
+                        raise AppException(400, "Manager user also selected in members list, please remove it")
 
 
                     update = await self.repo.update(id=PydanticObjectId(id), data=updated_payload, session=session)

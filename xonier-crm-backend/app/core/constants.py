@@ -10,4 +10,28 @@ JWT_OPTIONS = {
     
 }
 
-SUPER_ADMIN_CODE = "SUPER_ADMIN"
+
+
+# AUTH
+
+GET_ME_NAMESPACE:str = "auth:me"
+
+
+# LEAD
+
+LEAD_CACHE_NAMESPACE:str = "leads:list"
+
+USER_LEAD_CACHE_NAMESPACE:str = "userleads:list"
+
+
+
+# DEAL
+
+DEAL_CACHE_NAMESPACE:str = "deals:list"
+DEAL_CACHE_NAMESPACE_BY_ID:str = "deal:userId"
+
+
+
+
+SUPER_ADMIN_CODE:str = "SUPER_ADMIN"
+MANGER_CODE:str = "MANAGER"

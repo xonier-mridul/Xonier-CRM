@@ -156,8 +156,9 @@ class EnquiryService:
             raise AppException(status_code=500, message="internal server error")
 
     
-    async def get_all(self, page:int = 1, limit: int = 10, filters: Dict[str, Any] = {}):
+    async def get_all(self, page:int = 1, limit: int = 10, filters: Dict[str, Any] = {}, ):
         try:
+
            
             query = {}
 
@@ -194,6 +195,49 @@ class EnquiryService:
 
         except Exception as e:
             raise AppException(status_code=500, message="internal server error")
+        
+    
+    async def get_all_by_creator(self, user:Dict[str, Any], page:int = 1, limit: int = 10, filters: Dict[str, Any] = {}):
+        try:
+           
+            query = {}
+
+            query.update({"createdBy.$id": PydanticObjectId(user["_id"])})
+
+            if "enquiry_id" in filters:
+               query.update({"enquiry_id": filters["enquiry_id"]})
+
+            if "fullName" in filters:
+                query.update({"fullName": filters["fullName"]})
+
+            if "email" in filters:
+                query.update({"email": filters["email"]})
+
+            if "phone" in filters:
+                query.update({"phone": filters["phone"]})
+
+            if "companyName" in filters:
+                query.update({"companyName": filters["companyName"]})
+
+            if "projectType" in filters:
+                query.update({"projectType": filters["projectType"]})
+
+            if "priority" in filters:
+                query.update({"priority": filters["priority"]})
+
+            result = await self.repo.get_all(page, limit, query, ["assignTo", "createdBy"])
+
+            if not result:
+                raise AppException(404, "Enquiry data not found")
+            
+            return jsonable_encoder(result, exclude={"password"})
+        
+        except AppException:
+            raise
+
+        except Exception as e:
+            raise AppException(status_code=500, message="internal server error")
+    
 
     async def update(self, updatedBy: PydanticObjectId, id:PydanticObjectId, payload: Dict[str, Any])->bool:
         session = await self.client.start_session()

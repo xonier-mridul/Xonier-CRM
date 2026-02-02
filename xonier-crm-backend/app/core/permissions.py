@@ -174,5 +174,89 @@ PERMISSIONS = [
         "title": "delete team category",
         "description": "permission for delete team category data"
     },
+    {
+        "code": "deal:create",
+        "module": "deal",
+        "action": "create",
+        "title": "create deal",
+        "description": "permission for create deal data"
+    },
+    {
+        "code": "deal:read",
+        "module": "deal",
+        "action": "read",
+        "title": "read deal",
+        "description": "permission for read deal data"
+    },
+    {
+        "code": "deal:update",
+        "module": "deal",
+        "action": "update",
+        "title": "update deal",
+        "description": "permission for update deal data"
+    },
+    {
+        "code": "deal:delete",
+        "module": "deal",
+        "action": "delete",
+        "title": "delete deal",
+        "description": "permission for delete deal data"
+    },
+    {
+        "code": "quote:create",
+        "module": "quote",
+        "action": "create",
+        "title": "create quote",
+        "description": "permission for create quote data"
+    },
+    {
+        "code": "quote:read",
+        "module": "quote",
+        "action": "read",
+        "title": "read quote",
+        "description": "permission for read quote data"
+    },
+    {
+        "code": "quote:update",
+        "module": "quote",
+        "action": "update",
+        "title": "update quote",
+        "description": "permission for update quote data"
+    },
+    {
+        "code": "quote:delete",
+        "module": "quote",
+        "action": "delete",
+        "title": "delete quote",
+        "description": "permission for delete quote data"
+    },
+    {
+        "code": "event:create",
+        "module": "event",
+        "action": "create",
+        "title": "create event",
+        "description": "permission for create event data"
+    },
+    {
+        "code": "event:read",
+        "module": "event",
+        "action": "read",
+        "title": "read event",
+        "description": "permission for read event data"
+    },
+    {
+        "code": "event:update",
+        "module": "event",
+        "action": "update",
+        "title": "update event",
+        "description": "permission for update event data"
+    },
+    {
+        "code": "event:delete",
+        "module": "event",
+        "action": "delete",
+        "title": "delete event",
+        "description": "permission for delete event data"
+    },
        
 ]

@@ -4,6 +4,7 @@ import { Permissions } from "../roles/roles.types";
 
 export interface AuthState{
     isAuthenticated: boolean;
+    isAdmin: boolean,
     user: User | null;
 }
 
@@ -40,7 +41,6 @@ export interface GetAllUsers {
     limit: number;
     firstName?: string;
     lastName?: string;
-
 }
 
 export interface RegisterPayload {
@@ -64,12 +64,22 @@ export interface UserUpdatePayload{
 }
 
 
+
 export enum USER_STATUS {
   ACTIVE = "active",
     INACTIVE = "inactive",
     SUSPENDED = "suspended",
     DELETED = "deleted",
 
+}
+
+export interface UserStatusPayload{
+  status: string
+}
+
+export interface UserPasswordUpdatedByAdminPayload{
+  password: string,
+  confirmPassword: string
 }
 
 
@@ -97,6 +107,7 @@ export interface UserRef {
 
 export interface User {
   id: string;
+  _id?:string
 
   firstName: string;
   lastName?: string;
@@ -140,7 +151,10 @@ export interface UserTableComponentProps{
     handleRemoveRole:(id:string)=>void;
     handleSubmit:(e:FormEvent<HTMLFormElement>)=>void;
     err: string | string[];
-    loading: boolean
+    loading: boolean,
+    setPageLimit: Dispatch<SetStateAction<number>>,
+    totalPage: number,
+    setCurrentPages: Dispatch<SetStateAction<number>>
 }
 
 export interface UserDetailPageProps {
@@ -152,13 +166,22 @@ export interface UserUpdatePageProps {
   formData: UserUpdatePayload;
   isLoading: boolean;
   handleChange: (e:ChangeEvent<HTMLInputElement>)=>void;
+  handlePassChange: (e:ChangeEvent<HTMLInputElement>)=>void;
   handleUserRoleChange: (e:ChangeEvent<HTMLSelectElement>)=>void;
   handleRemoveRole: (roleId: string)=>void;
   roleData: UserRole[];
   handleSubmit: (e:FormEvent<HTMLFormElement>)=>void;
-  loading: boolean
-  err: string | string[]
- 
+  loading: boolean;
+  err: string | string[];
+  statusErr: string | string[];
+  handleStatus: (e:FormEvent<HTMLFormElement>)=>void;
+  handleStatusChange: (e:ChangeEvent<HTMLSelectElement>)=>void;
+  statusData: UserStatusPayload;
+  statusLoading:boolean;
+  passwordData: UserPasswordUpdatedByAdminPayload;
+  handlePasswordSubmit: (e:FormEvent<HTMLFormElement>)=>void
+  passErr: string | string[]
+  isPassLoading:boolean
 }
 
 export interface ChangePasswordFormData {

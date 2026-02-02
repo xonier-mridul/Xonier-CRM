@@ -9,9 +9,13 @@ dependencies = Dependencies()
 
 enquiryController = EnquiryController()
 
-@router.get("/all", status_code=200, dependencies=[Depends(dependencies.authorized)])
+@router.get("/all", status_code=200, dependencies=[Depends(dependencies.authorized),  Depends(dependencies.permissions(["enquiry:read"])), Depends(dependencies.onlyForAdmin)])
 async def get_all(request: Request):
     return await enquiryController.get_all(request=request)
+
+@router.get("/all/by-creator", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["enquiry:read"]))])
+async def get_all_by_creator(request: Request):
+    return await enquiryController.get_all_by_creator(request)
 
 
 @router.get("/get-by-id/{id}", status_code=200, dependencies=[Depends(dependencies.authorized)])
@@ -28,7 +32,7 @@ async def bulk_register(request: Request, payload: BulkEnquiryRegisterSchema):
 
 @router.put("/update/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["enquiry:update"]))])
 async def update(request: Request, id:str, data: UpdateEnquirySchema):
-    return await enquiryController.update(request, id, data.model_dump())
+    return await enquiryController.update(request, id, data.model_dump(exclude_unset=True))
 
 
 @router.delete("/delete/{id}", status_code=200, dependencies=[Depends(dependencies.authorized)])

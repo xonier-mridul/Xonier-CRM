@@ -7,7 +7,8 @@ from app.db.models.user_model import UserModel
 class TeamRegisterSchema(BaseModel):
     name: str = Field(...)
     category: str
-    description: Optional[str]
+    description: Optional[str] = None
+    manager: List[str]
     members: List[str]
     
 
@@ -16,6 +17,7 @@ class TeamUpdateSchema(BaseModel):
     category: str
     description: Optional[str]
     isActive: bool
+    manager: List[str]
     members: List[str]
     
     
