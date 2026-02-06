@@ -46,7 +46,7 @@ async def verify_login_otp(response: Response, data: VerifyLoginOtpSchema):
 
 @router.get("/me", status_code=200, dependencies=[Depends(dependencies.authorized)])
 async def getMe(request: Request, response: Response):
-    return await auth_controller.getMe(request=request)
+    return await auth_controller.getMe(request=request, response=response)
 
 @router.put("/update/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["user:update"]))])
 async def update(request: Request,id: str, payload: UpdateUserSchema ):

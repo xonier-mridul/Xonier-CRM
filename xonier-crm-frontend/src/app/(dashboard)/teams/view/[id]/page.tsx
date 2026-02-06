@@ -120,7 +120,7 @@ const Page = (): JSX.Element => {
 
   if (isLoading) {
     return (
-      <div className={`ml-[${SIDEBAR_WIDTH}] mt-14 p-6`}>
+      <div className={`ml-72 mt-14 p-6`}>
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-8">
           <div className="flex items-center gap-4 mb-6 animate-pulse">
             <div className="w-10 h-10 bg-slate-200 dark:bg-gray-700 rounded-lg"></div>
@@ -141,7 +141,7 @@ const Page = (): JSX.Element => {
 
   if (!teamData) {
     return (
-      <div className={`ml-[${SIDEBAR_WIDTH}] mt-14 p-6`}>
+      <div className={`ml-72 mt-14 p-6`}>
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-12 text-center">
           <div className="flex justify-center mb-4">
             <FaSearch className="text-6xl text-gray-300 dark:text-gray-600" />
@@ -161,7 +161,7 @@ const Page = (): JSX.Element => {
   }
 
   return (
-    <div className={`ml-[${SIDEBAR_WIDTH}] mt-14 p-6`}>
+    <div className={`ml-72 mt-14 p-6`}>
       
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">

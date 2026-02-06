@@ -1,4 +1,4 @@
-from fastapi import Request, status
+from fastapi import Request, status, Response
 from typing import List
 from app.core.exception_handler import AppException
 from app.repositories.permissions_repository import PermissionRepository
@@ -7,6 +7,7 @@ from app.repositories.user_repository import UserRepository
 from app.core.enums import USER_STATUS
 from beanie import PydanticObjectId
 from app.core.constants import SUPER_ADMIN_CODE
+
 
 class Dependencies:
     def __init__(self):
@@ -49,15 +50,22 @@ class Dependencies:
 
         return checking
     
-    async def authorized(self,request: Request):
+    async def authorized(self,request: Request, response: Response):
         try:
-           token = request.cookies.get("accessToken")
+           token = None
+
+           auth_header = request.headers.get("Authorization")
+           if auth_header and auth_header.startswith("Bearer "):
+                token = auth_header.split(" ")[1]
+           if not token: 
+                token = request.cookies.get("accessToken")
 
            if not token:
                raise AppException(401, "Token not found")
            payload = verify_access_token(token)
            
            if not payload:
+               
                raise AppException(401, "Invalid or expired Tokens")
            
            user = await self.userRepo.find_by_id(PydanticObjectId(payload["_id"]), populate=["userRole"])
@@ -66,7 +74,6 @@ class Dependencies:
                raise AppException(401, "User not found")
            
            user = user.model_dump(mode="json")
-
 
            if user["status"] == USER_STATUS.DELETED.value:
                raise AppException(400, "Bad request, Your account is deleted")

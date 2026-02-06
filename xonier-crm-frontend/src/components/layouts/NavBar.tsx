@@ -41,7 +41,7 @@ const NavBar = () => {
   };
 
   return (
-    <div className="h-14 z-99 fixed top-0 left-[280px] backdrop-blur-sm right-0 px-4 flex justify-between items-center my-2">
+    <div className="h-14 z-99 fixed top-0 left-74 backdrop-blur-sm right-0 px-4 flex justify-between items-center my-2">
       <div />
 
       <div className="flex items-center gap-5">

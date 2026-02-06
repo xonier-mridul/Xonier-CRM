@@ -15,12 +15,12 @@ encryption = Encryption()
 
 class QuotationModel(Document):
     quoteId: str
-    title: Optional[str]
-    description: Optional[str]
+    title: str
+    description: Optional[str] = None
 
     deal: Link[DealModel]
 
-    customerId: str
+
     customerName: str
 
     customerEmail: str
@@ -29,7 +29,7 @@ class QuotationModel(Document):
     customerPhone: Optional[str]
     customerPhoneHash: Optional[str] = None
 
-    companyName: Optional[str]
+    companyName: Optional[str] = None
 
     subTotal: float
     total: float
@@ -40,10 +40,12 @@ class QuotationModel(Document):
     valid: datetime = Field(default_factory=lambda: datetime.now(timezone.utc) + timedelta(days=60))
 
     createdBy: Link[UserModel]
-    updatedBy: Link[UserModel]
+    updatedBy: Optional[Link[UserModel]] = None
 
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updatedAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    deletedBy: Optional[Link[UserModel]] = None
+    deletedAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     class Settings:
         name = "quotations"

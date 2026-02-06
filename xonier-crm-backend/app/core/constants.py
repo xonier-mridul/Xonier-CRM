@@ -35,3 +35,6 @@ DEAL_CACHE_NAMESPACE_BY_ID:str = "deal:userId"
 
 SUPER_ADMIN_CODE:str = "SUPER_ADMIN"
 MANGER_CODE:str = "MANAGER"
+
+COMPANY_LOGO_LINK:str = "https://xoniertechnologies.com/asset/images/logo.png"
+COMPANY_ADDRESS:str = "H-161, Office No: 202, Second Floor, H Block, Sector 63, Noida, India"

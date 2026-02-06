@@ -1,4 +1,5 @@
 import { COUNTRY_CODE, EMPLOYEE_SENIORITY, INDUSTRIES, LANGUAGE_CODE, PRIORITY, PROJECT_TYPES, SALES_STATUS, SOURCE } from "@/src/constants/enum";
+import { User } from "../auth/auth.types";
 
 export interface Lead {
   id: string;                
@@ -13,8 +14,8 @@ export interface Lead {
   projectType: PROJECT_TYPES;
   status: SALES_STATUS;
 
-  createdBy: string;          
-  updatedBy?: string | null;  
+  createdBy: User;          
+  updatedBy?: User | null;  
 
   companyName?: string | null;
   city?: string | null;

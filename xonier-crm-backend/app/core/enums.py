@@ -481,12 +481,36 @@ class EVENT_TYPE(str, Enum):
 class QuotationStatus(str, Enum):
     DRAFT = "draft"
     SENT = "sent"
+    UPDATED = "updated"
+    RESEND = "resend"
     VIEWED = "viewed"
     ACCEPTED = "accepted"
     REJECTED = "rejected"
     EXPIRED = "expired"
+    DELETE = "delete"
 
 
+
+class QuotationEventType(str, Enum):
+    CREATED = "created"
+    UPDATED = "updated"
+    STATUS_CHANGED = "status_changed"
+    EMAIL_SENT = "email_sent"
+    RESEND = "resend"
+    VIEWED = "viewed"
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
+    EXPIRED = "expired"
+    DELETE = "delete"
+
+
+class INVOICE_STATUS(str, Enum):
+    DRAFT = "draft"
+    ISSUED = "issued"
+    PARTIALLY_PAID = "partially_paid"
+    PAID = "paid"
+    OVERDUE = "overdue"
+    CANCELLED = "cancelled"
 
 
 

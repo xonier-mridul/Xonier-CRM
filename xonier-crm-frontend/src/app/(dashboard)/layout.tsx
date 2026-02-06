@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`ml-[${SIDEBAR_WIDTH}] mt-${MARGIN_TOP} p-6 bg-stone-50`}
+        className={`mt-${MARGIN_TOP} p-6 bg-stone-50`}
       >
 
         <SideBar/>

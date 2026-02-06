@@ -29,6 +29,8 @@ from app.routes.form_field_route import router as form_field_route
 from app.routes.user_form_route import router as user_form_route
 from app.routes.deal_route import router as deal_router
 from app.routes.event_route import router as event_router
+from app.routes.quotation_route import router as quote_router
+from app.routes.quotation_history_route import router as quote_history_router
 
 settings = get_setting()
 
@@ -92,7 +94,8 @@ app.include_router(form_field_route, prefix="/api/form")
 app.include_router(user_form_route, prefix="/api/user-form")
 app.include_router(deal_router, prefix="/api/deal")
 app.include_router(event_router, prefix="/api/event")
-
+app.include_router(quote_router, prefix="/api/quote")
+app.include_router(quote_history_router, prefix="/api/quote-history")
 
 app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(AppException, app_exception_handler)

@@ -164,7 +164,7 @@ const page = (): JSX.Element => {
   };
 
   return (
-    <div className={`ml-[${SIDEBAR_WIDTH}] mt-14 p-6 space-y-6`}>
+    <div className={`ml-72 mt-14 p-6 space-y-6`}>
       <div className="bg-white dark:bg-gray-700 rounded-xl p-6 flex justify-between items-center">
         <div className="flex flex-col gap-3">
           <h2 className="text-2xl font-bold">Bulk Enquiries</h2>

@@ -137,7 +137,11 @@ export enum PERMISSIONS {
   createDeal = "deal:create",
   readDeal = "deal:read",
   updateDeal = "deal:update",
-  deleteDeal = "deal:delete"
+  deleteDeal = "deal:delete",
+  createQuote = "quote:create",
+  readQuote = "quote:read",
+  updateQuote = "quote:update",
+  quoteDelete = "quote:delete"
 }
 
 
@@ -411,10 +415,26 @@ export enum FORECAST_CATEGORY {
 export enum QuotationStatus {
   DRAFT = "draft",
   SENT = "sent",
+  UPDATED = "updated",
+  RESEND = "resend",
   VIEWED = "viewed",
   ACCEPTED = "accepted",
   REJECTED = "rejected",
   EXPIRED = "expired",
+  DELETE = "delete"
+}
+
+export enum QUOTATION_EVENT_TYPE{
+    CREATED = "created",
+    UPDATED = "updated",
+    STATUS_CHANGED = "status_changed",
+    EMAIL_SENT = "email_sent",
+    RESEND = "resend",
+    VIEWED = "viewed",
+    ACCEPTED = "accepted",
+    REJECTED = "rejected",
+    EXPIRED = "expired",
+    DELETE = "delete",
 }
 
 

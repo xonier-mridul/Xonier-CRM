@@ -234,7 +234,7 @@ const result = await AuthService.updateStatus(params, statusData)
        }
   }
   return (
-    <div className={`ml-[${SIDEBAR_WIDTH}] mt-14 p-6`}>
+    <div className={`ml-72 mt-14 p-6`}>
       <UserUpdate
         formData={formData}
         isLoading={isLoading}

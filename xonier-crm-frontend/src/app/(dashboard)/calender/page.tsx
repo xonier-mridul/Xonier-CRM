@@ -170,8 +170,8 @@ const [openViewModal, setOpenViewModal] = useState(false);
       />
 
       <div
-        className="mt-14 p-6 transition-all"
-        style={{ marginLeft: SIDEBAR_WIDTH }}
+        className="mt-14 ml-72 p-6 transition-all"
+ 
       >
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">

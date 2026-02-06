@@ -90,16 +90,17 @@ class AuthController:
 
             user_name = f"{result['user']["firstName"]} {result['user']["lastName"]}"
 
-            return successResponse(200, f"{user_name} logged in successfully",  result["user"])
+            return successResponse(200, f"{user_name} logged in successfully", {**result["user"], "accessToken": result["access_token"], "refreshToken": result["refresh_token"]})
 
 
         except AppException as e:
            print("error: ", e)
            raise e
         
-    async def getMe(self, request: Request):
+    async def getMe(self, request: Request, response: Response):
         try:
            user = request.state.user
+               
            
            result = await self.service.getMe(user["_id"])
            
@@ -108,6 +109,7 @@ class AuthController:
            return successResponse(200,  f"{name} logged in successfully",result)
            
         except AppException as e:
+            
             raise e
         
     async def get_all_for_frontend(self, request: Request, response: Response):
