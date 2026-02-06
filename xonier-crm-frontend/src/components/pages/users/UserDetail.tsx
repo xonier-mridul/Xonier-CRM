@@ -22,7 +22,7 @@ const UserDetail = ({
     );
   }
 
-  console.log("user data: ", userData)
+
 
   if (!userData) {
     return (

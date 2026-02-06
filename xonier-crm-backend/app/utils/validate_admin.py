@@ -2,8 +2,10 @@ from app.core.constants import SUPER_ADMIN_CODE
 
 
 
-async def validate_admin(userRole: str)->bool:
-    if userRole == SUPER_ADMIN_CODE:
-        return True
+def validate_admin(userRole: str)->bool:
+    
+    for item in userRole:
+        if item["code"] == SUPER_ADMIN_CODE:
+            return True
     
     return False

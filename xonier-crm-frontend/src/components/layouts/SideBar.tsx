@@ -27,8 +27,6 @@ import checkRole from "@/src/app/utils/roleCheck.utils";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSIONS } from "@/src/constants/enum";
 
-
-
 const SideBar = () => {
   const pathname = usePathname();
 
@@ -41,9 +39,6 @@ const SideBar = () => {
   const auth = useSelector((state:RootState)=>state.auth);
  
   const router = useRouter();
-
-  
-  
 
   const handleLogout = async():Promise<void> => {
     try {
@@ -65,7 +60,6 @@ const SideBar = () => {
 
   };
 
-
   useEffect(() => {
     if (pathname.startsWith("/teams") || pathname.startsWith("/users")) {
       setOpenMenu("team");
@@ -83,6 +77,12 @@ const SideBar = () => {
     if (pathname.startsWith("/deals")){
       setOpenMenu("sales")
     }
+    if (pathname.startsWith("/quotations")){
+      setOpenMenu("sales")
+    }
+    if (pathname.startsWith("/invoice")){
+      setOpenMenu("sales")
+    }
   }, [pathname]);
 
   const toggleMenu = (menu: string) => {
@@ -91,48 +91,58 @@ const SideBar = () => {
 
   const isActive = (path: string) => pathname.startsWith(path);
 
-  console.log("isActive: ", isActive)
-  
+  // Check if any submenu item is active
+  const isMenuActive = (menu: string) => {
+    switch (menu) {
+      case "team":
+        return pathname.startsWith("/teams") || 
+               pathname.startsWith("/users") || 
+               pathname.startsWith("/roles");
+      case "sales":
+        return pathname.startsWith("/enquiry") || 
+               pathname.startsWith("/leads") || 
+               pathname.startsWith("/deals") || 
+               pathname.startsWith("/quotations") ||
+               pathname.startsWith("/invoice");
+      default:
+        return false;
+    }
+  };
 
   return (
-    <div className={`fixed top-0 left-0 w-[${SIDEBAR_WIDTH}] p-6 bg-slate-50 h-screen dark:bg-gray-800 flex flex-col gap-6 border-r border-slate-900/15 dark:border-gray-700`}>
-      
+    <div className={`fixed top-0 left-0 w-72 p-6 bg-slate-50 h-screen dark:bg-gray-800 flex flex-col gap-6 border-r border-slate-900/15 dark:border-gray-700 `}>
+      <div className="h-[89vh] overflow-y-scroll flex flex-col gap-6">
+      <Link href={"/"}> 
+        <Image
+          src="/images/trakeroo.png"
+          height={200}
+          width={220}
+          alt="xonier logo"
+          className="w-46 dark:hidden"
+        />
+        <Image
+          src="/images/trakeroo-light.png"
+          height={200}
+          width={220}
+          alt="xonier logo"
+          className="w-46 hidden dark:block "
+        />
+      </Link>
 
-      <Image
-        src="/images/trakeroo.png"
-        height={200}
-        width={200}
-        alt="xonier logo"
-        className="w-40 dark:hidden"
-      />
-      <Image
-        src="/images/trakeroo-light.png"
-        height={200}
-        width={200}
-        alt="xonier logo"
-        className="w-40 hidden dark:block "
-      />
-
-     
-
-
-
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 ">
         <h2 className="uppercase text-xs text-gray-500 dark:text-gray-400 pl-3">
           Home
         </h2>
 
-        <ul className="flex flex-col gap-1">
-
-      
+        <ul className="flex flex-col gap-1 ">
           <li>
             <Link
               href="/dashboard"
               className={`${
                 isActive("/dashboard")
-                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300"
-                  : ""
-              } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition`}
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
+              } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
             >
               <BiHome className="text-lg" />
               Dashboard
@@ -143,73 +153,13 @@ const SideBar = () => {
               href="/calender"
               className={`${
                 isActive("/calender")
-                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300"
-                  : ""
-              } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition`}
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
+              } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
             >
               <SlCalender className="text-lg" />
               Calender
             </Link>
-          </li>
-
-          
-          <li>
-            <button
-              onClick={() => toggleMenu("leads")}
-              className={`flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition ${
-                openMenu === "leads"
-                  ? "text-blue-700 dark:text-blue-300"
-                  : ""
-              }`}
-            >
-              <span className="flex items-center gap-3">
-                <HiOutlineAdjustments className="text-lg" />
-                Prospect & Leads
-              </span>
-
-              <IoChevronDown
-                className={`transition-transform ${
-                  openMenu === "leads" ? "rotate-180" : ""
-                }`}
-              />
-            </button>
-
-            <AnimatePresence>
-              {openMenu === "leads" && (
-                <motion.ul
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.25 }}
-                  className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
-                >
-                  <li>
-                    <Link
-                      href="/people"
-                      className={`block px-3 py-2 text-sm rounded-md hover:bg-blue-600/10 ${
-                        isActive("/people")
-                          ? "text-blue-700 dark:text-blue-300"
-                          : ""
-                      }`}
-                    >
-                      People
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/companies"
-                      className={`block px-3 py-2 text-sm rounded-md hover:bg-blue-600/10 ${
-                        isActive("/companies")
-                          ? "text-blue-700 dark:text-blue-300"
-                          : ""
-                      }`}
-                    >
-                      Companies
-                    </Link>
-                  </li>
-                </motion.ul>
-              )}
-            </AnimatePresence>
           </li>
 
           <li>
@@ -217,9 +167,9 @@ const SideBar = () => {
               href="/notes"
               className={`${
                 isActive("/notes")
-                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300"
-                  : ""
-              } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition`}
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
+              } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
             >
               <TbNotes className="text-lg" />
               Notes
@@ -229,11 +179,11 @@ const SideBar = () => {
           {(hasPermission(PERMISSIONS.readUser) || hasPermission(PERMISSIONS.readRole) || hasPermission(PERMISSIONS.createTeam)) && <li>
             <button
               onClick={() => toggleMenu("team")}
-              className={`flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition ${
-                openMenu === "team"
-                  ? "text-blue-700 dark:text-blue-300"
-                  : ""
-              }`}
+              className={`${
+                isMenuActive("team")
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
+              } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
             >
               <span className="flex items-center gap-3">
                 <AiOutlineTeam className="text-lg" />
@@ -259,11 +209,11 @@ const SideBar = () => {
                   {hasPermission(PERMISSIONS.readRole) && <li>
                     <Link
                       href="/roles"
-                      className={`block px-3 py-2 text-sm rounded-md hover:bg-blue-600/10 ${
+                      className={`${
                         isActive("/roles")
-                          ? "text-blue-700 dark:text-blue-300"
-                          : ""
-                      }`}
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
+                      } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                     >
                       Roles
                     </Link>
@@ -271,11 +221,11 @@ const SideBar = () => {
                   {hasPermission(PERMISSIONS.readTeamCategory) &&<li>
                     <Link
                       href="/teams/categories"
-                      className={`block px-3 py-2 text-sm rounded-md hover:bg-blue-600/10 ${
+                      className={`${
                         isActive("/teams/categories")
-                          ? "text-blue-700 dark:text-blue-300"
-                          : ""
-                      }`}
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
+                      } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                     >
                       Teams Categories
                     </Link>
@@ -283,11 +233,11 @@ const SideBar = () => {
                   {hasPermission(PERMISSIONS.readTeam) &&<li>
                     <Link
                       href="/teams"
-                      className={`block px-3 py-2 text-sm rounded-md hover:bg-blue-600/10 ${
+                      className={`${
                         (isActive("/teams") && !isActive("/teams/categories"))
-                          ? "text-blue-700 dark:text-blue-300"
-                          : ""
-                      }`}
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
+                      } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                     >
                       Teams
                     </Link>
@@ -295,16 +245,15 @@ const SideBar = () => {
                   {hasPermission(PERMISSIONS.readUser) && <li>
                     <Link
                       href="/users"
-                      className={`block px-3 py-2 text-sm rounded-md hover:bg-blue-600/10 ${
+                      className={`${
                         isActive("/users")
-                          ? "text-blue-700 dark:text-blue-300"
-                          : ""
-                      }`}
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
+                      } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                     >
                       Users
                     </Link>
                   </li>}
-                  
                 </motion.ul>
               )}
             </AnimatePresence>
@@ -313,11 +262,11 @@ const SideBar = () => {
           {(hasPermission(PERMISSIONS.createEnquiry) || hasPermission(PERMISSIONS.readEnquiry) || hasPermission(PERMISSIONS.createLead) || hasPermission(PERMISSIONS.readLead) || hasPermission(PERMISSIONS.createDeal) || hasPermission(PERMISSIONS.readDeal)) && <li>
             <button
               onClick={() => toggleMenu("sales")}
-              className={`flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition ${
-                openMenu === "sales"
-                  ? "text-blue-700 dark:text-blue-300"
-                  : ""
-              }`}
+              className={`${
+                isMenuActive("sales")
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
+              } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
             >
               <span className="flex items-center gap-3">
                 <BsBarChart className="text-lg" />
@@ -343,11 +292,11 @@ const SideBar = () => {
                   {hasPermission(PERMISSIONS.createEnquiry) && <li>
                     <Link
                       href="/enquiry"
-                      className={`block px-3 py-2 text-sm rounded-md hover:bg-blue-600/10 ${
+                      className={`${
                         isActive("/enquiry")
-                          ? "text-blue-700 dark:text-blue-300"
-                          : ""
-                      }`}
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
+                      } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                     >
                       Enquiry Management
                     </Link>
@@ -355,11 +304,11 @@ const SideBar = () => {
                   {hasPermission(PERMISSIONS.readLead) && <li>
                     <Link
                       href="/leads"
-                      className={`block px-3 py-2 text-sm rounded-md hover:bg-blue-600/10 ${
+                      className={`${
                         isActive("/leads")
-                          ? "text-blue-700 dark:text-blue-300"
-                          : ""
-                      }`}
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
+                      } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                     >
                       Leads
                     </Link>
@@ -367,75 +316,44 @@ const SideBar = () => {
                   {hasPermission(PERMISSIONS.readDeal) && <li>
                     <Link
                       href="/deals"
-                      className={`block px-3 py-2 text-sm rounded-md hover:bg-blue-600/10 ${
+                      className={`${
                         isActive("/deals")
-                          ? "text-blue-700 dark:text-blue-300"
-                          : ""
-                      }`}
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
+                      } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                     >
                       Deals
                     </Link>
                   </li>}
-                  
-                  {hasPermission(PERMISSIONS.readDeal) && <li>
+
+                  {hasPermission(PERMISSIONS.readQuote) && <li>
                     <Link
-                      href="/deals"
-                      className={`block px-3 py-2 text-sm rounded-md hover:bg-blue-600/10 ${
-                        isActive("/deals")
-                          ? "text-blue-700 dark:text-blue-300"
-                          : ""
-                      }`}
+                      href="/quotations"
+                      className={`${
+                        isActive("/quotations")
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
+                      } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                     >
-                      Deals
+                      Quotations
                     </Link>
                   </li>}
-                  
+                  {hasPermission(PERMISSIONS.readQuote) && <li>
+                    <Link
+                      href="/invoice"
+                      className={`${
+                        isActive("/invoice")
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
+                      } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                    >
+                      Invoice
+                    </Link>
+                  </li>}
                 </motion.ul>
               )}
             </AnimatePresence>
           </li>}
-
-          <li>
-            <Link
-              href="/clients"
-              className={`${
-                isActive("/clients")
-                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300"
-                  : ""
-              } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition`}
-            >
-              <BiUserCheck className="text-lg" />
-              Clients
-            </Link>
-          </li>
-
-          <li>
-            <Link
-              href="/expense"
-              className={`${
-                isActive("/expense")
-                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300"
-                  : ""
-              } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition`}
-            >
-              <TbMoneybag className="text-lg" />
-              Expense
-            </Link>
-          </li>
-
-          <li>
-            <Link
-              href="/support"
-              className={`${
-                isActive("/support")
-                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300"
-                  : ""
-              } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition`}
-            >
-              <MdOutlineHelpOutline className="text-lg" />
-              Support
-            </Link>
-          </li>
         </ul>
       </div>
 
@@ -447,7 +365,7 @@ const SideBar = () => {
           <li>
             <button
             onClick={()=>handleLogout()}
-              className={`w-full flex items-center cursor-pointer gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition`}
+              className={`w-full flex items-center cursor-pointer gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all border-l-2 border-transparent`}
             >
               <MdOutlineLogout className="text-lg" />
               Logout
@@ -456,13 +374,18 @@ const SideBar = () => {
           <li>
             <Link
               href={"/reset-password"}
-              className={`w-full flex items-center cursor-pointer gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition capitalize`}
+              className={`${
+                isActive("/reset-password")
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
+              } w-full flex items-center cursor-pointer gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all capitalize`}
             >
               <RiLockPasswordLine className="text-lg" />
               Reset password
             </Link>
           </li>
         </ul>
+      </div>
       </div>
     </div>
   );

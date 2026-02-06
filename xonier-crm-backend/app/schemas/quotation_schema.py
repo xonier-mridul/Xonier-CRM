@@ -1,17 +1,15 @@
 from pydantic import BaseModel, field_validator
-from typing import Optional
+from typing import Optional, Any
 import phonenumbers
 from app.core.enums import QuotationStatus
-from datetime import date
+from datetime import date, datetime
 
 class QuotationSchema(BaseModel):
-    quoteId: str
+
     title: Optional[str]
     description: Optional[str]
 
     deal: str
-
-    customerId: str
     customerName: str
 
     customerEmail: str
@@ -21,6 +19,7 @@ class QuotationSchema(BaseModel):
     companyName: Optional[str]
     quotationStatus: QuotationStatus = QuotationStatus.SENT
     issueDate: date
+    valid: Optional[datetime] = None
     subTotal: float
     total: float
 
@@ -62,3 +61,79 @@ class QuotationSchema(BaseModel):
                 "Invalid phone number format. Use country code, e.g. +919876543210"
             )
         return v
+    
+
+class QuotationUpdateSchema(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+
+    deal: Optional[str] = None
+    customerName: Optional[str] = None
+    customerEmail: Optional[str] = None
+    customerPhone: Optional[str] = None
+    companyName: Optional[str] = None
+
+    issueDate: Optional[date] = None
+    valid: Optional[datetime] = None
+
+    subTotal: Optional[float] = None
+    total: Optional[float] = None
+
+
+    @field_validator("subTotal")
+    @classmethod
+    def validate_subtotal(cls, v):
+        if v is not None and v < 0:
+            raise ValueError("Sub total must be >= 0")
+        return v
+
+    @field_validator("total")
+    @classmethod
+    def validate_total(cls, v):
+        if v is not None and v < 0:
+            raise ValueError("Total must be >= 0")
+        return v
+
+
+    @field_validator("customerPhone")
+    @classmethod
+    def validate_phone(cls, v):
+        if not v:
+            return v
+        try:
+            phone_number = phonenumbers.parse(v, None)
+            if not phonenumbers.is_valid_number(phone_number):
+                raise ValueError()
+            return phonenumbers.format_number(
+                phone_number, phonenumbers.PhoneNumberFormat.E164
+            )
+        except Exception:
+            raise ValueError("Invalid phone number format")
+        
+
+class QuoteStatusUpdateSchema(BaseModel):
+    quotationStatus: QuotationStatus
+
+
+    @field_validator('quotationStatus', mode='before')
+    @classmethod
+    def validate_quotation_status(cls, v: Any) -> QuotationStatus:
+        
+        if isinstance(v, QuotationStatus):
+            return v
+        
+        if isinstance(v, str):
+            
+            try:
+                return QuotationStatus(v.lower())
+            except ValueError:
+                valid_values = [status.value for status in QuotationStatus]
+                raise ValueError(
+                    f"Invalid quotation status: '{v}'. "
+                    f"Must be one of: {', '.join(valid_values)}"
+                )
+        
+        raise ValueError(
+            f"quotationStatus must be a string or QuotationStatus enum, "
+            f"got {type(v).__name__}"
+        )

@@ -31,9 +31,11 @@ import {
   DEAL_STAGES,
   DEAL_TYPE,
   FORECAST_CATEGORY,
+  PERMISSIONS,
 } from "@/src/constants/enum";
 import dealService from "@/src/services/deal.service";
 import ErrorComponent from "@/src/components/ui/ErrorComponent";
+import { usePermissions } from "@/src/hooks/usePermissions";
 
 const page = (): JSX.Element => {
   const [err, setErr] = useState<string | string[]>("");
@@ -76,6 +78,8 @@ const page = (): JSX.Element => {
 
   const router = useRouter();
   const { id } = useParams();
+
+  const {hasPermission} = usePermissions()
 
   type change = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
@@ -453,7 +457,7 @@ const page = (): JSX.Element => {
               hover:bg-blue-700 hover:cursor-pointer
               disabled:opacity-50 disabled:cursor-not-allowed
               transition-colors duration-200 capitalize"
-              disabled={loading || selectedFieldsIds.length <= 0}
+              disabled={loading || selectedFieldsIds.length <= 0 || !hasPermission(PERMISSIONS.createDeal)}
             >
               <MdOutlineCloudUpload className="text-lg" />{" "}
               {loading ? "Updating..." : "Create deals"}

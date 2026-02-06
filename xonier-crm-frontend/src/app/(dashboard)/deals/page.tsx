@@ -20,6 +20,7 @@ import { formatDate } from "../../utils/date.utils";
 
 import {  } from "react-icons/md";
 import { handleCopy } from "../../utils/clipboard.utils";
+import { FaRegPaperPlane } from "react-icons/fa";
 
 const page = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -141,7 +142,7 @@ const page = (): JSX.Element => {
   }
 
   return (
-    <div className={`ml-[${SIDEBAR_WIDTH}] mt-14 p-6`}>
+    <div className={`ml-72 mt-14 p-6`}>
       
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm  p-6 rounded-xl border-[1px] border-slate-900/10 w-full flex flex-col gap-7 items-center justify-between">
           <div className="flex w-full items-center gap-12 justify-between">
@@ -237,14 +238,14 @@ const page = (): JSX.Element => {
                       <td className="p-4">
                         <Link
                           href={`/deals/view/${item.id}`}
-                          className="text-sm cursor-pointer hover:scale-110 transition-all hover:text-blue-300"
+                          className="text-xs cursor-pointer hover:scale-110 transition-all hover:text-blue-300"
                         >
                           {" "}
                           {item.deal_id}
                         </Link>
                       </td>
                       <td className="flex gap-1 flex-col p-4">
-                        <h4 className="capitalize">{item.dealName}</h4>{" "}
+                        <h4 className="capitalize text-sm">{item.dealName}</h4>{" "}
                         
                       
                       </td>
@@ -252,7 +253,7 @@ const page = (): JSX.Element => {
                         <span className={`${(item.dealPipeline.trim() === DEAL_PIPELINE.REQUIREMENT_ANALYSIS) ? "bg-orange-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.QUALIFICATION) ? "bg-blue-600" : (item.dealPipeline.trim() === DEAL_PIPELINE.PROPOSAL) ? "bg-cyan-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.NEGOTIATION) ? "bg-teal-600" : (item.dealPipeline.trim() === DEAL_PIPELINE.WON) ? "bg-green-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.LOST) ? "bg-red-500" : "bg-gray-600"} text-white px-4 py-1.5 text-sm rounded-md capitalize`}>{item.dealPipeline.trim()}</span>
                       </td> */}
                       <td className="p-4 ">
-                        <span className={`${(item.dealStage.trim() === DEAL_STAGES.REQUIREMENT_ANALYSIS) ? "bg-orange-500" : (item.dealStage.trim() === DEAL_STAGES.QUALIFICATION) ? "bg-blue-600" : (item.dealStage.trim() === DEAL_STAGES.PROPOSAL) ? "bg-cyan-500" : (item.dealPipeline.trim() === DEAL_STAGES.NEGOTIATION) ? "bg-teal-600" : (item.dealStage.trim() === DEAL_STAGES.WON) ? "bg-green-500" : (item.dealStage.trim() === DEAL_STAGES.LOST) ? "bg-red-500" : "bg-gray-600"} text-white px-4 py-1.5 text-sm rounded-md capitalize`}>{item.dealStage.trim()}</span>
+                        <span className={`${(item.dealStage.trim() === DEAL_STAGES.REQUIREMENT_ANALYSIS) ? "bg-orange-500" : (item.dealStage.trim() === DEAL_STAGES.QUALIFICATION) ? "bg-blue-600" : (item.dealStage.trim() === DEAL_STAGES.PROPOSAL) ? "bg-cyan-500" : (item.dealPipeline.trim() === DEAL_STAGES.NEGOTIATION) ? "bg-teal-600" : (item.dealStage.trim() === DEAL_STAGES.WON) ? "bg-green-500" : (item.dealStage.trim() === DEAL_STAGES.LOST) ? "bg-red-500" : "bg-gray-600"} text-white px-4 py-1.5 text-sm rounded-md capitalize text-sm`}>{item.dealStage.trim()}</span>
                       </td>
                       <td className="p-4 ">
                         <span
@@ -263,7 +264,7 @@ const page = (): JSX.Element => {
                           {item?.lead_id?.lead_id}
                         </span>
                       </td>
-                      <td className="p-4"> <span className="px-4 py-1.5 rounded-md bg-blue-200 text-sm text-blue-600 font-medium">{date}</span></td>
+                      <td className="p-4"> <span className="px-3 py-1.5 rounded-md bg-blue-100 text-xs text-blue-600 font-medium">{date}</span></td>
                       <td>
                         <div className="flex items-center gap-2">
                           {hasPermission(PERMISSIONS.readLead) ? (
@@ -294,6 +295,26 @@ const page = (): JSX.Element => {
                bg-yellow-100 text-yellow-400 opacity-80 cursor-not-allowed"
                             >
                               <MdOutlineEdit className="text-xl" />
+                            </span>
+                          )}
+                          {hasPermission(PERMISSIONS.createQuote) ? (
+                           item.inQuotation ? <span
+                              className="h-9 w-9 flex items-center justify-center rounded-md
+               bg-orange-500 text-white  cursor-no-drop"
+                            >
+                              <FaRegPaperPlane className="text-lg" />
+                            </span> : <Link
+                              href={`/deals/quotation/${item.id}`}
+                              className={`${item.inQuotation ? "" : "bg-orange-200/80 dark:bg-orange-100 hover:bg-orange-300/70 dark:hover:bg-orange-200 text-orange-500"} h-9 w-9 flex items-center justify-center rounded-md  hover:scale-104`}
+                            >
+                              <FaRegPaperPlane className="text-lg" />
+                            </Link>
+                          ) : (
+                            <span
+                              className="h-9 w-9 flex items-center justify-center rounded-md
+               bg-orange-100 text-orange-400 opacity-80 cursor-not-allowed"
+                            >
+                              <FaRegPaperPlane className="text-lg" />
                             </span>
                           )}
                           

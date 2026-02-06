@@ -32,7 +32,7 @@ export const MaskEmailField = ({
     <span className="text-xs uppercase tracking-wide text-gray-400 group-hover:text-blue-300">
       {label}
     </span>
-    <span className="text-[13px] tracking-wide font-medium text-gray-900 dark:text-gray-100 cursor-copy group-hover:bg-slate-500 rounded-lg px-3 py-1">
+    <span className="text-[13px] tracking-wide font-medium text-gray-900 dark:text-gray-100 cursor-copy group-hover:dark:bg-slate-500 rounded-lg px-3 py-1">
       <SensitiveField value={String(value)} maskedValue={email} link={`mailto:${String(value)}`}/>
     </span>
   </div>
@@ -50,7 +50,7 @@ export const MaskPhoneField = ({
     <span className="text-xs uppercase tracking-wide text-gray-400 group-hover:text-blue-300">
       {label}
     </span>
-    <span className="text-[13px] tracking-wide font-medium text-gray-900 dark:text-gray-100 cursor-copy group-hover:bg-slate-500 rounded-lg px-3 py-1">
+    <span className="text-[13px] tracking-wide font-medium text-gray-900 dark:text-gray-100 cursor-copy group-hover:dark:bg-slate-500 rounded-lg px-3 py-1">
       <SensitiveField value={String(value)} maskedValue={email} link={`tel:${String(value)}`}/>
     </span>
   </div>

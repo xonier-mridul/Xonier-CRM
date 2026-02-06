@@ -123,7 +123,7 @@ const isSelected = (id: string) => {
   return formData.permissions.includes(id.toString());
 };
   return (
-    <div className={`ml-[${SIDEBAR_WIDTH}] mt-14 p-6`}>
+    <div className={`ml-72 mt-14 p-6`}>
       <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm flex flex-col gap-5 p-6 rounded-xl border border-slate-900/10 w-full">
         <h2 className="text-xl font-bold dark:text-white">Update Role</h2>
 

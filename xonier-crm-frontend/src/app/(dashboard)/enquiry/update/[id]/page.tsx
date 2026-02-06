@@ -136,7 +136,7 @@ const page = (): JSX.Element => {
     }
   };
 
-  return <div className={`ml-[${SIDEBAR_WIDTH}] mt-[60px] p-6`}>
+  return <div className={`ml-72 mt-[60px] p-6`}>
     <EnquiryUpdate isLoading={isLoading} formData={formData} setFormData={setFormData} handleSubmit={handleSubmit} usersData={usersData} err={err} loading={loading}/>
 
   </div>;

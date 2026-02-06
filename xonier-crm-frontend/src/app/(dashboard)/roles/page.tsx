@@ -153,7 +153,7 @@ const page = (): JSX.Element => {
   
 
   return (
-    <div className={`ml-[${SIDEBAR_WIDTH}] mt-14 p-6`}>
+    <div className={`ml-72 mt-14 p-6`}>
       <UserRolesTable
         roleData={roleData}
         permissionData={permissionData}

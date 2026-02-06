@@ -1,7 +1,7 @@
 import {NextRequest, NextResponse} from "next/server"
 
 const PROTECTED_ROUTES: Array<string> = ["/dashboard", "/users", "/roles", "/enquiry", "/teams", "/notes", "/calender", "support", "/leads", "/deals", "/quotations"]
-export function middleware(request: NextRequest){
+export function proxy(request: NextRequest){
     const {pathname} = request.nextUrl
 
     const accessToken = request.cookies.get("accessToken")?.value

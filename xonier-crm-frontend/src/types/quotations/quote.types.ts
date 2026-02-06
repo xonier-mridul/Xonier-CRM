@@ -11,7 +11,7 @@ export interface Quotation {
 
   deal: Deal;             
 
-  customerId: string;
+
   customerName: string;
 
   customerEmail: string;
@@ -26,7 +26,7 @@ export interface Quotation {
   total: number;
 
   quotationStatus: QuotationStatus;
-
+ 
   issueDate: string;         
   valid: string;    
   
@@ -38,29 +38,48 @@ export interface Quotation {
 }
 
 export interface QuotationCreatePayload {
-          
-  quoteId: string;
+  title: string;
+  description: string;
 
-  title?: string;
-  description?: string;
-
-  deal: Deal;             
-
-  customerId: string;
+  deal: string;             
   customerName: string;
 
   customerEmail: string;
-  customerEmailHash?: string | null;
+  customerPhone: string | null;
 
-  customerPhone?: string | null;
-  customerPhoneHash?: string | null;
-
-  companyName?: string | null;
+  companyName: string | null;
 
   subTotal: number;
   total: number;
 
   quotationStatus: QuotationStatus;
 
-  issueDate: string;  
+  issueDate: string; 
+  valid: string | null
+}
+
+
+export interface QuotationUpdatePayload {
+  title?: string;
+  description?: string;
+
+  deal?: string;
+
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string | null;
+
+  companyName?: string | null;
+
+  issueDate?: string;        
+  valid?: string | null;    
+
+  subTotal?: number;
+  total?: number;
+
+  quotationStatus?: QuotationStatus;
+}
+
+export interface QuoteStatusUpdatePayload {
+  quotationStatus: string
 }

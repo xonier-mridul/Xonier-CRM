@@ -15,7 +15,7 @@ const checkRole = (permission: string, userRole: UserRole[]):boolean=>{
         }
 
     }
-    console.log("permission deined")
+   
     return false
 
 }

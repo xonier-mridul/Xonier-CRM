@@ -42,7 +42,7 @@ const page = (): JSX.Element => {
   }, [id]);
 
   return (
-    <div className={`ml-[${SIDEBAR_WIDTH}] mt-[60px] p-6`}>
+    <div className={`ml-72 mt-[60px] p-6`}>
       <div className="max-w-6xl mx-auto flex flex-col gap-6">
 
         {/* Header */}
