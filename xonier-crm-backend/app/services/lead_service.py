@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, List
 from beanie import PydanticObjectId, BeanieObjectId
 from app.core.security import hash_value
 from pymongo.errors import DuplicateKeyError
@@ -73,6 +73,24 @@ class LeadService:
 
         except Exception as e:
             raise AppException(status_code=500, message=f"Internal server error: {e}")
+        
+
+
+    # async def bulk_create(self, payload: List[Dict[str, Any]], user: Dict[str, Any]):
+    #     try:
+    #         for items in payload:
+
+
+
+    #     except AppException:
+    #         raise
+
+    #     except DuplicateKeyError:
+    #         raise AppException(status_code=409, message="Lead ID already exist")
+
+    #     except Exception as e:
+    #         raise AppException(status_code=500, message=f"Internal server error: {e}")
+
 
 
 

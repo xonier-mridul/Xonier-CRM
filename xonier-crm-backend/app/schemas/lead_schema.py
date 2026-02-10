@@ -1,5 +1,5 @@
 from pydantic import BaseModel, field_validator, Field, EmailStr
-from typing import Optional
+from typing import Optional, List
 import phonenumbers
 from app.core.enums import (
     PROJECT_TYPES,
@@ -11,15 +11,16 @@ from app.core.enums import (
     INDUSTRIES,
     EMPLOYEE_SENIORITY,
 )
+from app.utils.custom_exception import AppException
 
 class LeadBaseSchema(BaseModel):
-    fullName: Optional[str] = None
-    email: Optional[EmailStr] = None
-    phone: Optional[str] = None
+    fullName: str
+    email: EmailStr
+    phone: str
 
-    priority: Optional[PRIORITY] = None
-    source: Optional[SOURCE] = None
-    projectType: Optional[PROJECT_TYPES] = None
+    priority: PRIORITY
+    source: SOURCE
+    projectType:PROJECT_TYPES
 
     companyName: Optional[str] = None
     city: Optional[str] = None
@@ -34,11 +35,11 @@ class LeadBaseSchema(BaseModel):
     message: Optional[str] = None
     membershipNotes: Optional[str] = None
 
-    @field_validator("fullName")
+    @field_validator("fullName", mode="before")
     @classmethod
     def name_min_length(cls, v: Optional[str]):
         if v and len(v.strip()) < 5:
-            raise ValueError("Full name must be at least 5 characters long")
+            raise AppException(422, "Full name must be at least 5 characters long")
         return v
 
     @field_validator("phone")
@@ -49,9 +50,9 @@ class LeadBaseSchema(BaseModel):
         try:
             phone_number = phonenumbers.parse(v, None)
             if not phonenumbers.is_valid_number(phone_number):
-                raise ValueError()
+                raise AppException(422, "Invalid phone number format. Use country code, e.g. +919876543210")
         except Exception:
-            raise ValueError(
+            raise AppException(422,
                 "Invalid phone number format. Use country code, e.g. +919876543210"
             )
         return v
@@ -63,7 +64,7 @@ class LeadBaseSchema(BaseModel):
             return v
         
         if (v < 1000) or (v > 999999):
-            raise ValueError("Postal code must be between 4 and 6 digits (e.g., 1234–123456)")
+            raise AppException(422, "Postal code must be between 4 and 6 digits (e.g., 1234–123456)")
         
         return v
 
@@ -89,6 +90,10 @@ class LeadsCreateSchema(LeadBaseSchema):
 
     message: Optional[str] = None
     membershipNotes: Optional[str] = None
+
+
+class CreateBulkLeadSchema(BaseModel):
+    leads: List[LeadsCreateSchema]
     
 
     

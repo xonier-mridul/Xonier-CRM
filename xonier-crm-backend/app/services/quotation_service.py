@@ -16,6 +16,7 @@ from fastapi.encoders import jsonable_encoder
 from app.core.crypto import Encryption
 from app.core.enums import DEAL_STAGES, QuotationStatus, QuotationEventType
 from app.repositories.quotation_history_repository import QuotationHistoryRepository
+from app.repositories.invoice_repository import InvoiceRepository
 from datetime import datetime, timezone
 
 
@@ -28,6 +29,7 @@ class QuotationService:
         self.getTeamMem = GetTeamMembers()
         self.emailManager = EmailManager()
         self.encryption = Encryption()
+        self.invoiceRepo = InvoiceRepository()
 
     async def create(self, user:Dict[str, Any], payload: Dict[str, Any]):
         async with await self.client.start_session() as session:
@@ -83,7 +85,7 @@ class QuotationService:
                     if new_payload.get("valid") is None:
                         new_payload.pop("valid")
 
-                    print("new payload: ",new_payload )
+            
 
                     await self.emailManager.send_quotation_email(to=payload["customerEmail"], quote_id=quote_id, title=[payload["title"]], customer_name=payload["customerName"], customer_email=payload["customerEmail"], customer_phone=payload["customerPhone"], company_name=payload["companyName"], issue_date=payload["issueDate"], valid_until=payload["valid"], sub_total=payload["subTotal"], total=payload["total"], description=payload["description"], company_logo= COMPANY_LOGO_LINK, company_address=COMPANY_ADDRESS)
                     
@@ -219,6 +221,9 @@ class QuotationService:
                     
                     if quotation.quotationStatus == QuotationStatus.DELETE:
                         raise AppException(400, "Quotation deleted, quotation updation failed")
+                    
+                    if quotation.quotationStatus == QuotationStatus.ACCEPTED:
+                        raise AppException(400, "Quotation accepted, quotation updation failed")
 
                     
                     isAdmin = validate_admin(user["userRole"])
@@ -300,6 +305,9 @@ class QuotationService:
                     if quotation.quotationStatus == QuotationStatus.DELETE:
                         raise AppException(400, "Quotation deleted, quotation updation failed")
                     
+                    if quotation.quotationStatus == QuotationStatus.ACCEPTED:
+                        raise AppException(400, "Quotation accepted, quotation updation failed")
+                    
                     isAdmin = validate_admin(user["userRole"])
 
                     if not isAdmin:
@@ -347,6 +355,26 @@ class QuotationService:
                         },
                         session=session
                     )
+
+                    if quotation.quotationStatus == QuotationStatus.ACCEPTED:
+                        invoice_id = generate_enquiry_id("INV")
+                        
+                        invoice_payload = {
+                             'invoiceId': invoice_id,
+                             "deal": quotation.deal.id,
+                             "quotation": quotation.id,
+                             "customerName": quotation.customerName,
+                             "customerEmail": quotation.customerEmail,
+                             "customerPhone": quotation.customerPhone,
+                             "companyName": quotation.companyName,
+                             "subTotal": quotation.subTotal,
+                             "total": quotation.total,
+                             "issueDate": quotation.issueDate,
+                             "createdBy": user["_id"],
+
+
+                        }
+                        await self.invoiceRepo.create(data=invoice_payload, session=session)
 
                     return quotation.model_dump(mode="json")
 

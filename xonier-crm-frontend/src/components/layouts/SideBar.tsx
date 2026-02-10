@@ -148,7 +148,7 @@ const SideBar = () => {
               Dashboard
             </Link>
           </li>
-          <li>
+          {hasPermission(PERMISSIONS.readEvent) &&<li>
             <Link
               href="/calender"
               className={`${
@@ -160,7 +160,7 @@ const SideBar = () => {
               <SlCalender className="text-lg" />
               Calender
             </Link>
-          </li>
+          </li>}
 
           <li>
             <Link
@@ -338,7 +338,7 @@ const SideBar = () => {
                       Quotations
                     </Link>
                   </li>}
-                  {hasPermission(PERMISSIONS.readQuote) && <li>
+                  {hasPermission(PERMISSIONS.readInvoice) && <li>
                     <Link
                       href="/invoice"
                       className={`${

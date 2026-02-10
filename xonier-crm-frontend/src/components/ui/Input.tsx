@@ -45,6 +45,7 @@ const Input: React.FC<InputProps> = ({
           <textarea
             required={required}
             className={`${commonClasses} resize-none`}
+            rows={5}
             {...(props as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
           />
         ) : (

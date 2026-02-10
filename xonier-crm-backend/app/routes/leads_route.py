@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Request
 from app.core.dependencies import Dependencies
-from app.schemas.lead_schema import LeadsCreateSchema, LeadUpdateSchema, LeadBaseSchema
+from app.schemas.lead_schema import LeadsCreateSchema, LeadUpdateSchema, LeadBaseSchema, CreateBulkLeadSchema
 from app.controllers.lead_controller import LeadController
 
 router = APIRouter()
@@ -12,6 +12,10 @@ leadController = LeadController()
 @router.post("/create", status_code=201, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["lead:create"]))])
 async def create(request: Request, payload: LeadBaseSchema):
     return await leadController.create(request=request, payload=payload.model_dump())
+
+@router.post("/create/bulk", status_code=201, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["lead:create"]))])
+async def bulk_create(request: Request, payload: CreateBulkLeadSchema):
+    return await leadController.bulk_create(request=request, payload=payload.model_dump(mode="json"))
 
 @router.get("/all", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["lead:read"]))])
 async def get_all(request: Request):

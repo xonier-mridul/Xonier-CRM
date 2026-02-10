@@ -16,6 +16,7 @@ from app.db.models.calender_event_model import CalenderEventModel
 from app.db.models.quotation_model import QuotationModel
 from app.db.models.quotation_history_model import QuotationHistoryModel
 from app.db.models.invoice_model import InvoiceModel
+from app.db.models.notes_model import NoteModel
 
 
 settings = get_setting()
@@ -34,7 +35,7 @@ async def connect_db():
         
         await init_beanie(
             database=db,
-            document_models=[UserModel, PermissionModel, UserRoleModel, OtpModel, EnquiryModel, TeamModel, TeamCategoryModel, LeadsModel, CustomFieldModel, UserFormModel, DealModel, CalenderEventModel, QuotationModel, QuotationHistoryModel, InvoiceModel]
+            document_models=[UserModel, PermissionModel, UserRoleModel, OtpModel, EnquiryModel, TeamModel, TeamCategoryModel, LeadsModel, CustomFieldModel, UserFormModel, DealModel, CalenderEventModel, QuotationModel, QuotationHistoryModel, InvoiceModel, NoteModel]
         )
         print("Successfully connected to MongoDB and initialized Beanie")
     except Exception as e:

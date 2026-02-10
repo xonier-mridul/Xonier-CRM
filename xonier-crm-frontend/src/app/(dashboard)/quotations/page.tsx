@@ -30,7 +30,7 @@ const STATUS_CONFIG = {
   [QuotationStatus.DELETE]: { label: "Delete", color: "bg-red-800" },
 };
 
-// Available statuses for dropdown (excluding DELETE)
+
 const AVAILABLE_STATUSES = [
   QuotationStatus.DRAFT,
   QuotationStatus.SENT,
@@ -116,7 +116,7 @@ const StatusDropdown = ({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 min-w-[180px] py-1 max-h-[320px] overflow-y-auto">
+        <div className="absolute top-full left-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-250 min-w-[180px] py-1 max-h-[320px] overflow-y-auto">
           {AVAILABLE_STATUSES.map((status) => (
             <button
               key={status}
@@ -234,6 +234,8 @@ const page = (): JSX.Element => {
     getQuotationData();
   }, []);
 
+ 
+
   return (
     <div className={`ml-72 mt-14 p-6`}>
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border-[1px] border-slate-900/10 w-full flex flex-col gap-7 items-center justify-between">
@@ -301,7 +303,7 @@ const page = (): JSX.Element => {
           </li>
         </ul>
         {currentTab === 1 && (
-          <table className="w-full rounded-xl overflow-hidden">
+          <table className="w-full rounded-xl overflow-hidden ">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">

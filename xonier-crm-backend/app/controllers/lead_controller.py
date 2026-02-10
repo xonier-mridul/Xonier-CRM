@@ -1,6 +1,6 @@
 
 from fastapi import Request
-from typing import Dict, Any
+from typing import Dict, Any, List
 from app.utils.custom_exception import AppException
 from app.utils.custom_response import successResponse
 from app.services.lead_service import LeadService
@@ -21,6 +21,18 @@ class LeadController:
 
         except AppException as e:
             raise e
+        
+
+    async def bulk_create(self, request: Request, payload: List[Dict[str, Any]]):
+        try:
+            user = request.state.user
+            
+            result = await self.service.create(payload=payload, createdBy=user["_id"])
+            return successResponse(201, f"{result.get("fullName")} query created successfully", result)
+
+        except AppException as e:
+            raise e
+
         
     async def get_all(self, request: Request):
         try:

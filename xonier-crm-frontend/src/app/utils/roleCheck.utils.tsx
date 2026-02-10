@@ -10,7 +10,7 @@ const checkRole = (permission: string, userRole: UserRole[]):boolean=>{
     for(let item of userRole){
         
         if(item.permissions?.some((i)=> i.code === permission)){
-            console.log("permission success")
+            
             return true
         }
 

@@ -16,8 +16,11 @@ class EnquiryController:
         try:
             filters = request.query_params
 
+            page = filters.get("page") or 1
+            limit = filters.get("limit") or 10
 
-            result = await self.service.get_all(int(filters["page"]), int(filters["limit"]), filters={**filters})
+
+            result = await self.service.get_all(int(page), int(limit), filters={**filters})
 
             return successResponse(status_code=200, message="All enquiries fetched successfully", data=result)
 
@@ -60,6 +63,8 @@ class EnquiryController:
 
         except AppException as e:
             raise e
+        
+        
         
     async def bulk_create(self, request: Request, payload: Dict[str, Any]):
 
