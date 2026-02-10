@@ -207,7 +207,7 @@ const page = (): JSX.Element => {
                     } w-full`}
                   >
                     <td className="p-4">
-                      <span className="text-sm cursor-copy" onClick={()=> handleCopy(item.lead_id)}> {item.enquiry_id}</span>
+                      <span className="text-sm cursor-copy" onClick={()=> handleCopy(item.enquiry_id)}> {item.enquiry_id}</span>
                     </td>
                     <td className="flex gap-1 flex-col p-4">
                       <h4>{item.fullName}</h4>{" "}

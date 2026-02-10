@@ -20,6 +20,14 @@ declare global {
     icon?:  ReactNode
   }
 
+  interface SecondaryButtonProps {
+    text: string,
+    isLoading?: boolean,
+    disabled?: boolean,
+    onClickEvt: ()=>void,
+    icon?:  ReactNode
+  }
+
   
 }
 

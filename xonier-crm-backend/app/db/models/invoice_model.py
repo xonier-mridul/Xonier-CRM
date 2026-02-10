@@ -1,7 +1,7 @@
 from beanie import Document, Link, before_event, Insert, Save
-from pydantic import Field, BaseModel
+from pydantic import Field, BaseModel, field_validator, ValidationInfo
 from typing import Optional, List
-from datetime import datetime, date, timezone
+from datetime import datetime, date, timezone, timedelta
 from app.db.models.deal_model import DealModel
 from app.db.models.quotation_model import QuotationModel
 from app.core.enums import INVOICE_STATUS
@@ -19,20 +19,19 @@ class InvoiceModel(Document):
     invoiceId: str                   
     deal: Link[DealModel]
     quotation: Link[QuotationModel]
-    projectType: PROJECT_TYPES
+    # projectType: PROJECT_TYPES
     customerName: str
     customerEmail: str
-
     customerPhone: Optional[str] = None
-
     companyName: Optional[str] = None
-    
     billingAddress: Optional[str] = None
     subTotal: float = Field(..., gt=0)
     total: float = Field(0, ge=0)
 
     issueDate: Optional[date] = None
-    dueDate: date
+    dueDate: date = Field(
+    default_factory=lambda: (datetime.now(timezone.utc) + timedelta(days=30)).date()
+)
 
     status: INVOICE_STATUS = INVOICE_STATUS.DRAFT
 
@@ -57,19 +56,16 @@ class InvoiceModel(Document):
             IndexModel([("createdAt", 1)]) 
         ]
 
-    @before_event(Insert, Save)
-    def secure_sensitive_fields(self):
-       
-        if not self.customerEmail:
-            raise ValueError("Customer email is required")
 
-        email_plain = self.customerEmail.lower()
+    # @field_validator('dueDate', mode="before")
+    # @classmethod
+    # def validate_due_date(cls, v, info: ValidationInfo):
+    #     issueDate = info.data.get("issueDate")
+    #     if issueDate and v < issueDate:
+    #         raise ValueError("Due date must be greater the issue date")
         
-        self.customerEmail = encryption.encrypt_data(email_plain)
+    #     return v
 
-        if self.customerPhone:
-            phone_plain = self.customerPhone
-            self.customerPhone = encryption.encrypt_data(phone_plain)
 
     @before_event(Insert, Save)
     def update_stamp(self):

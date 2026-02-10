@@ -118,6 +118,7 @@ class DealService:
 
             if "stage" in filters:
                 query.update({"dealStage": filters["stage"]})
+                
             cache_query = {
                 k: (
                     str(v)

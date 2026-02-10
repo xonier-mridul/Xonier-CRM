@@ -23,7 +23,7 @@ const NavBar = () => {
   const handleLogout = async():Promise<void> => {
     try {
     
-    let isConfirmed = await ConfirmPopup({title:"Logout", text:"Are you want to logout"});
+    let isConfirmed = await ConfirmPopup({title:"Logout", text:"Are you want to logout", btnTxt:"Yes, Logout"});
 
     if (isConfirmed){
         const isLogout = await AuthService.logout()

@@ -9,6 +9,7 @@ from fastapi.encoders import jsonable_encoder
 from app.schemas.enquiry_schema import EnquiryRegisterSchema
 from pydantic import ValidationError
 from pymongo.errors import BulkWriteError
+from bson import ObjectId
 
 class EnquiryService:
     def __init__(self):
@@ -20,8 +21,10 @@ class EnquiryService:
         try:
             session.start_transaction()
 
-            
+            if not ObjectId.is_valid(payload["assignTo"]):
+                raise AppException(400, "Invalid assignTo user ObjectId, make sure it is user object id")
 
+        
             enquiry_id:str = generate_enquiry_id()
 
             is_exist = await self.repo.find_by_enquiry_id(enquiry_id, None, None, session=session)
@@ -53,7 +56,7 @@ class EnquiryService:
 
         except Exception as e:
             await session.abort_transaction()
-            raise AppException(status_code=500, message="internal server error")
+            raise AppException(status_code=500, message="internal server error: {e}")
 
         finally:
             await session.end_session()

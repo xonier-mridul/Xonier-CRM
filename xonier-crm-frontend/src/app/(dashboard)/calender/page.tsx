@@ -17,6 +17,8 @@ import { EventService } from "@/src/services/event.service";
 import ViewEventPopup from "@/src/components/pages/calender/ViewEventPopup";
 import { ParamValue } from "next/dist/server/request/params";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
+import { usePermissions } from "@/src/hooks/usePermissions";
+import { PERMISSIONS } from "@/src/constants/enum";
 
 const Page = (): JSX.Element => {
   const [openModal, setOpenModal] = useState(false);
@@ -27,6 +29,8 @@ const Page = (): JSX.Element => {
 const [eventData, setEventData] = useState<EventInput[]>([]);
 const [selectedEvent, setSelectedEvent] = useState<EventInput | null>(null);
 const [openViewModal, setOpenViewModal] = useState(false);
+
+const {hasPermission} = usePermissions()
 
   const openCreateEventModal = (dateStr: string) => {
     setSelectedDate(dateStr);
@@ -107,9 +111,14 @@ const [openViewModal, setOpenViewModal] = useState(false);
   }
 
   const handleDateClick = (info: any) => {
+    
     const now = Date.now();
 
     if (lastClickRef.current && now - lastClickRef.current < 300) {
+      if(!hasPermission(PERMISSIONS.createEvent)){
+      toast.info("You not have permission to create event")
+      return
+    } ;
       const formatted = toDateTimeLocal(info.date);
       openCreateEventModal(formatted);
     }

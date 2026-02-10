@@ -141,7 +141,19 @@ export enum PERMISSIONS {
   createQuote = "quote:create",
   readQuote = "quote:read",
   updateQuote = "quote:update",
-  quoteDelete = "quote:delete"
+  quoteDelete = "quote:delete",
+  readInvoice = "invoice:read",
+  updateInvoice = "invoice:update",
+  deleteInvoice = "invoice:delete",
+  sendInvoice = "invoice:send",
+  downloadInvoice = "invoice:download",
+  markPaidInvoice = "invoice:mark-paid",
+  cancelInvoice = "invoice:cancel",
+  createEvent = "event:create",
+  readEvent = "event:read",
+  updateEvent = "event:update",
+  deleteEvent = "event:delete"
+
 }
 
 
@@ -444,5 +456,34 @@ export enum EventType {
   NOTE = "note",
   TASK = "task",
   REMINDER = "reminder"
+}
+
+export enum INVOICE_STATUS {
+  DRAFT = "DRAFT",
+  SENT = "SENT",
+  PAID = "PAID",
+  PARTIALLY_PAID = "PARTIALLY_PAID",
+  OVERDUE = "OVERDUE",
+  CANCELLED = "CANCELLED",
+}
+
+export enum NoteVisibility {
+  PRIVATE = "private",
+  TEAM = "team",
+  PUBLIC = "public",
+}
+
+export enum NoteStatus {
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+  DELETED = "deleted",
+}
+
+export enum NotesEntities {
+  LEAD = "lead",
+  DEAL = "deal",
+  QUOTATION = "quotation",
+  INVOICE = "invoice",
+  GENERAL = "general",
 }
 

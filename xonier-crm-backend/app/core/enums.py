@@ -50,12 +50,10 @@ class PROJECT_TYPES(str, Enum):
     ERP = "erp"
     CUSTOM_SOFTWARE = "custom_software"
 
-    
     AI_ML = "ai_ml"
     DATA_SCIENCE = "data_science"
     BLOCKCHAIN = "blockchain"
     IOT = "iot"
-
 
     UI_UX_DESIGN = "ui_ux_design"
     GRAPHIC_DESIGN = "graphic_design"
@@ -511,6 +509,24 @@ class INVOICE_STATUS(str, Enum):
     PAID = "paid"
     OVERDUE = "overdue"
     CANCELLED = "cancelled"
+
+class NOTE_VISIBILITY(str, Enum):
+    PRIVATE = "private"   
+    TEAM = "team"        
+    PUBLIC = "public" 
+
+class NOTE_STATUS(str, Enum):
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    DELETE = "delete"
+
+class NOTES_ENTITIES(str, Enum):
+    LEAD = "lead"
+    DEAL = "deal"
+    QUOTATION = "quotation"
+    INVOICE = "invoice"
+    GENERAL = "general"
+
 
 
 

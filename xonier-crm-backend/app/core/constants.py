@@ -30,6 +30,12 @@ USER_LEAD_CACHE_NAMESPACE:str = "userleads:list"
 DEAL_CACHE_NAMESPACE:str = "deals:list"
 DEAL_CACHE_NAMESPACE_BY_ID:str = "deal:userId"
 
+# NOTE
+
+NOTE_CACHE_NAMESPACE:str = "notes:publicList"
+
+NOTE_PRIVATE_CACHE_NAMESPACE = "notes:privateList"
+
 
 
 
