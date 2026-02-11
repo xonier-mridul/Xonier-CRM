@@ -3,6 +3,8 @@ from app.utils.custom_exception import AppException
 from app.repositories.event_repository import EventRepository
 from fastapi.encoders import jsonable_encoder
 from bson import ObjectId
+from app.utils.validate_admin import validate_admin
+from datetime import datetime, timezone
 
 from beanie import PydanticObjectId
 class EventService:
@@ -52,6 +54,48 @@ class EventService:
         
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+        
+    async def update(self, id:str, user:Dict[str, Any], payload:Dict[str, Any])->bool:
+        try:
+            if not ObjectId.is_valid(id):
+                raise AppException(400, "Invalid Event object id")
+            
+            print("err")
+            is_admin = validate_admin(user["userRole"])
+            is_creator = False
+
+            event = await self.repo.find_by_id(id=PydanticObjectId(id), populate=["createdBy"])
+
+            if not event:
+                raise AppException(404, "Event not found against the event object Id")
+
+            if str(event.createdBy.id) == id:
+                is_creator = True
+
+            if not is_admin and not is_creator:
+                raise AppException(403, "Permission denied, you are not admin or creator")
+            
+            new_payload = {
+                **payload,
+                "updatedBy": user["_id"],
+                "updatedAt": datetime.now(timezone.utc)
+            }
+             
+            update = await self.repo.update(id=PydanticObjectId(id), data=new_payload)
+
+            if not update:
+                raise AppException(400, f"{payload["title"]} updation failed")
+            
+            return True
+
+
+        
+        except AppException as e:
+            raise e
+        
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+        
         
 
     async def delete(self,user: Dict[str, Any], eventId: str)->bool:

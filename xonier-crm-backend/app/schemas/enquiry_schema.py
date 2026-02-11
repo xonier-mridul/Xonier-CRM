@@ -61,20 +61,21 @@ class EnquiryRegisterSchema(BaseModel):
         if not values.get("projectType"):
             raise AppException(422, "Project type field must be required")
         
-        if values.get("projectType") != PROJECT_TYPES:
-            raise AppException(422, "Project type field must be a valid enum")
+        # if values.get("projectType") not in PROJECT_TYPES.__members__:
+        #    print("vv: ", PROJECT_TYPES.__members__)
+        #    raise AppException(422, "Project type field must be a valid enum")
 
         if not values.get("priority"):
             raise AppException(422, "Priority field must be required")
         
-        if values.get("priority") != PRIORITY:
-            raise AppException(422, "Priority field must be a valid enum")
+        # if values.get("priority") != PRIORITY:
+        #     raise AppException(422, "Priority field must be a valid enum")
 
         if not values.get("source"):
             raise AppException(422, "Source  field must be required")
         
-        if values.get("source") != SOURCE:
-            raise AppException(422, "Source  field must be a valid enum")
+        # if values.get("source") != SOURCE:
+        #     raise AppException(422, "Source  field must be a valid enum")
         return values
     
 
@@ -127,24 +128,24 @@ class UpdateEnquirySchema(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def validate_project_type(cls, values):
+    def validate_project_update_type(cls, values):
         if not values.get("projectType"):
             raise AppException(422, "Project type field must be required")
         
-        if values.get("projectType") != PROJECT_TYPES:
-            raise AppException(422, "Project type field must be a valid enum")
+        # if values.get("projectType") != PROJECT_TYPES:
+        #     raise AppException(422, "Project type field must be a valid enum")
 
         if not values.get("priority"):
             raise AppException(422, "Priority field must be required")
         
-        if values.get("priority") != PRIORITY:
-            raise AppException(422, "Priority field must be a valid enum")
+        # if values.get("priority") != PRIORITY:
+        #     raise AppException(422, "Priority field must be a valid enum")
 
         if not values.get("source"):
             raise AppException(422, "Source  field must be required")
         
-        if values.get("source") != SOURCE:
-            raise AppException(422, "Source  field must be a valid enum")
+        # if values.get("source") != SOURCE:
+        #     raise AppException(422, "Source  field must be a valid enum")
         return values
 
 

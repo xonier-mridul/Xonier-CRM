@@ -8,7 +8,7 @@ export interface CalendarEvent {
   description?: string | null;
 
   eventType: EventType;
-
+  meetingLink?: string | null;
   start: string; 
   end?: string | null; 
 
@@ -24,11 +24,11 @@ export interface CalendarEvent {
 }
 
 export interface CalendarEventPayload {
-    title: string;
+  title: string;
   description: string ;
 
   eventType: EventType;
-
+  meetingLink: string | null;
   start: string; 
   end: string | null ; 
 

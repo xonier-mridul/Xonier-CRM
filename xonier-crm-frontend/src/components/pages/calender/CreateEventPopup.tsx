@@ -34,6 +34,7 @@ const [isLoading, setIsLoading] = useState<boolean>(false)
     eventType: EventType.MEETING,
     start: "",
     end: null,
+    meetingLink: "",
     isAllDay: false,
     priority: "medium",
     description: "",
@@ -87,6 +88,7 @@ const [isLoading, setIsLoading] = useState<boolean>(false)
     title: "",
     eventType: EventType.MEETING,
     start: "",
+    meetingLink: "",
     end: null,
     isAllDay: false,
     priority: "medium",
@@ -205,6 +207,17 @@ const [isLoading, setIsLoading] = useState<boolean>(false)
               { label: "High", value: "high" },
             ]}
           />
+           {form.eventType === EventType.MEETING &&<div className="col-span-2">
+         <Input
+          label="Meeting Link"
+          name="meetingLink"
+          type="url"
+          value={form.meetingLink ?? ""}
+          onChange={handleSelectChange}
+          placeholder="https://meet.google.com/abc-defg-hij"
+          className="col-span-2"
+          />
+          </div>}
           
           <div className="col-span-2">
           <Input

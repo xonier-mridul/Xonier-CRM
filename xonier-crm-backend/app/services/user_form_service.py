@@ -4,6 +4,8 @@ from bson import ObjectId
 from beanie import PydanticObjectId
 from app.repositories.user_form_repository import UserFormRepository
 from app.core.enums import FORM_FIELD_MODULES
+from app.db.models.custom_form_field_model import UserCustomFieldModel
+from app.db.models.form_field_model import CustomFieldModel
 
 class UserFormService:
     def __init__(self):
@@ -44,25 +46,57 @@ class UserFormService:
             raise AppException(500, f"Internal server error: {e}")
         
 
+
+
     async def get_lead_by_user_id(self, userId: str):
         try:
-
             if not ObjectId.is_valid(userId):
                 raise AppException(400, "Invalid user id")
-            
-            result = await self.repo.find_by_user_id(userId=PydanticObjectId(userId), module=FORM_FIELD_MODULES.LEAD, populate=["userId", "selectedFormFields"])
+
+            result = await self.repo.find_by_user_id(
+                userId=PydanticObjectId(userId),
+                module=FORM_FIELD_MODULES.LEAD,
+                populate=["userId", "selectedFormFields"],
+            )
 
             if not result:
-                raise AppException(404, 'You haven’t created any form fields yet. Please create form fields to continue')
-            
-            return result.model_dump(mode="json")
+                raise AppException(
+                    404,
+                    "You haven’t created any form fields yet. Please create form fields to continue"
+                )
 
+            
+            hydrated_fields = []
+
+            for field in result.selectedFormFields:
+                
+                if isinstance(field, CustomFieldModel):
+                    hydrated_fields.append(field)
+                    continue
+
+                
+                field_id = None
+
+                if hasattr(field, "id") and field.id:
+                    field_id = field.id
+                elif hasattr(field, "ref") and field.ref:
+                    field_id = field.ref.id
+
+                if field_id:
+                    custom_field = await UserCustomFieldModel.get(field_id)
+                    if custom_field:
+                        hydrated_fields.append(custom_field)
+
+            result.selectedFormFields = hydrated_fields
+
+            return result.model_dump(mode="json")
 
         except AppException:
             raise
 
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+
         
 
     async def get_deal_by_user_id(self, userId: str):

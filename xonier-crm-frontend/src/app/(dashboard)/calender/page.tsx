@@ -19,74 +19,74 @@ import { ParamValue } from "next/dist/server/request/params";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSIONS } from "@/src/constants/enum";
+import UpdateEventModal from "@/src/components/pages/calender/UpdateEventPopup";
 
 const Page = (): JSX.Element => {
   const [openModal, setOpenModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [err, setErr] = useState<string | string[]>("")
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [loading, setLoading] = useState<boolean>(false)
-const [eventData, setEventData] = useState<EventInput[]>([]);
-const [selectedEvent, setSelectedEvent] = useState<EventInput | null>(null);
-const [openViewModal, setOpenViewModal] = useState(false);
+  const [err, setErr] = useState<string | string[]>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [eventData, setEventData] = useState<EventInput[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<EventInput | null>(null);
+  const [openViewModal, setOpenViewModal] = useState(false);
+  const [openUpdateModal, setOpenUpdateModal] = useState(false);
 
-const {hasPermission} = usePermissions()
+  const { hasPermission } = usePermissions();
 
   const openCreateEventModal = (dateStr: string) => {
     setSelectedDate(dateStr);
     setOpenModal(true);
   };
 
-
   const getAllEvent = async () => {
-  setIsLoading(true);
-  try {
-    const result = await EventService.getAll();
+    setIsLoading(true);
+    try {
+      const result = await EventService.getAll();
 
-    if (result.status === 200) {
-      const mapped = mapToCalendarEvents(result.data.data);
-      setEventData(mapped);
+      if (result.status === 200) {
+        const mapped = mapToCalendarEvents(result.data.data);
+        setEventData(mapped);
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        setErr(extractErrorMessages(error));
+      } else {
+        setErr(["Something went wrong"]);
+      }
+    } finally {
+      setIsLoading(false);
     }
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      setErr(extractErrorMessages(error));
-    } else {
-      setErr(["Something went wrong"]);
-    }
-  } finally {
-    setIsLoading(false);
-  }
-};
-
+  };
 
   const mapToCalendarEvents = (events: CalendarEvent[]): EventInput[] => {
-  return events.map((event) => ({
-    id: event.id,
-    title: event.title,
-    start: event.start,
-    end: event.end ?? undefined, 
-    allDay: event.isAllDay,
-    extendedProps: {
-      description: event.description,
-      priority: event.priority,
-      eventType: event.eventType,
-    },
-  }));
-};
-
+    return events.map((event) => ({
+      id: event.id,
+      title: event.title,
+      start: event.start,
+      end: event.end ?? undefined,
+      allDay: event.isAllDay,
+      extendedProps: {
+        description: event.description,
+        priority: event.priority,
+        eventType: event.eventType,
+        meetingLink: event.meetingLink,
+      },
+    }));
+  };
 
   const handleEventClick = (info: any) => {
-  setSelectedEvent({
-    id: info.event.id,
-    title: info.event.title,
-    start: info.event.start,
-    end: info.event.end,
-    allDay: info.event.allDay,
-    extendedProps: info.event.extendedProps,
-  });
+    setSelectedEvent({
+      id: info.event.id,
+      title: info.event.title,
+      start: info.event.start,
+      end: info.event.end,
+      allDay: info.event.allDay,
+      extendedProps: info.event.extendedProps,
+    });
 
-  setOpenViewModal(true);
-};
+    setOpenViewModal(true);
+  };
 
   const handleCreateEvent = (data: any) => {
     console.log("Submit to API:", data);
@@ -111,14 +111,13 @@ const {hasPermission} = usePermissions()
   }
 
   const handleDateClick = (info: any) => {
-    
     const now = Date.now();
 
     if (lastClickRef.current && now - lastClickRef.current < 300) {
-      if(!hasPermission(PERMISSIONS.createEvent)){
-      toast.info("You not have permission to create event")
-      return
-    } ;
+      if (!hasPermission(PERMISSIONS.createEvent)) {
+        toast.info("You not have permission to create event");
+        return;
+      }
       const formatted = toDateTimeLocal(info.date);
       openCreateEventModal(formatted);
     }
@@ -127,33 +126,32 @@ const {hasPermission} = usePermissions()
   };
 
   useEffect(() => {
-    getAllEvent()
-  }, [])
+    getAllEvent();
+  }, []);
 
-
-  const handleDelete = async(id:string, title:string)=>{
-    setLoading(true)
+  const handleDelete = async (id: string, title: string) => {
+    setLoading(true);
     try {
-      if(!id){
-        toast.info(`Event id not found`)
-        return
+      if (!id) {
+        toast.info(`Event id not found`);
+        return;
       }
 
-      const isConfirm = await ConfirmPopup({title: "Are you sure", text:`Are you want to delete ${title} event!`, btnTxt: "Yes, Delete"})
-      if(isConfirm){
-        const result = await EventService.delete(id)
-        setOpenViewModal(false)
-      if(result.status === 200){
-         toast.success("Event deleted successfully")
-         await getAllEvent()
+      const isConfirm = await ConfirmPopup({
+        title: "Are you sure",
+        text: `Are you want to delete ${title} event!`,
+        btnTxt: "Yes, Delete",
+      });
+      if (isConfirm) {
+        const result = await EventService.delete(id);
+        setOpenViewModal(false);
+        if (result.status === 200) {
+          toast.success("Event deleted successfully");
+          await getAllEvent();
+        }
       }
-
-      }
-      
-
-      
     } catch (error) {
-       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) {
         const messages = extractErrorMessages(error);
         setErr(messages);
@@ -161,12 +159,23 @@ const {hasPermission} = usePermissions()
       } else {
         setErr(["Something went wrong"]);
       }
-      
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
-  
+  };
+
+  const handleEditClick = () => {
+    if (!hasPermission(PERMISSIONS.updateEvent)) {
+      toast.info("You do not have permission to update events");
+      return;
+    }
+    setOpenViewModal(false);
+    setOpenUpdateModal(true);
+  };
+
+  const handleUpdateSuccess = () => {
+    getAllEvent();
+  };
 
   return (
     <>
@@ -177,11 +186,15 @@ const {hasPermission} = usePermissions()
         onSubmit={handleCreateEvent}
         getAllEvent={getAllEvent}
       />
+      
+      <UpdateEventModal
+        open={openUpdateModal}
+        event={selectedEvent}
+        onClose={() => setOpenUpdateModal(false)}
+        onSuccess={handleUpdateSuccess}
+      />
 
-      <div
-        className="mt-14 ml-72 p-6 transition-all"
- 
-      >
+      <div className="mt-14 ml-72 p-6 transition-all">
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
             Calendar
@@ -192,11 +205,12 @@ const {hasPermission} = usePermissions()
         </div>
 
         <ViewEventPopup
-  open={openViewModal}
-  event={selectedEvent}
-  onClose={() => setOpenViewModal(false)}
-  onDelete={handleDelete}
-/>
+          open={openViewModal}
+          event={selectedEvent}
+          onClose={() => setOpenViewModal(false)}
+          onDelete={handleDelete}
+          onEdit={handleEditClick}
+        />
 
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
           <FullCalendar
@@ -213,7 +227,7 @@ const {hasPermission} = usePermissions()
               center: "title",
               right: "dayGridMonth,timeGridWeek,timeGridDay",
             }}
-            eventClick={handleEventClick} 
+            eventClick={handleEventClick}
             buttonText={{
               today: "Today",
               month: "Month",

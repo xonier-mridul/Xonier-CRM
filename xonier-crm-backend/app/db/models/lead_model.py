@@ -99,15 +99,3 @@ class LeadsModel(Document):
             self.phone = encryptor.encrypt_data(plain_phone)
             self.hashedPhone = hash_value(plain_phone)
 
-
-    # @field_validator("phone")
-    # @classmethod
-    # def validate_phone(cls, v: str):
-    #     try:
-    #         phone_number = phonenumbers.parse(v, None) 
-    #         if not phonenumbers.is_valid_number(phone_number):
-    #             raise ValueError()
-    #     except Exception:
-    #         raise ValueError("Invalid phone number format. Use country code, e.g. +919876543210")
-
-    #     return v

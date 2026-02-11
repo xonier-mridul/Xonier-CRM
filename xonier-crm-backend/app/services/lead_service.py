@@ -14,6 +14,7 @@ from app.core.constants import (
     LEAD_CACHE_NAMESPACE,
     USER_LEAD_CACHE_NAMESPACE,
 )
+from app.db.models.lead_model import LeadsModel 
 from app.core.enums import SALES_STATUS
 from app.utils.cache_key_generator import (
     cache_key_generator,
@@ -76,22 +77,79 @@ class LeadService:
         
 
 
-    # async def bulk_create(self, payload: List[Dict[str, Any]], user: Dict[str, Any]):
-    #     try:
-    #         for items in payload:
+    async def bulk_create(self, payload: List[Dict[str, Any]], user: Dict[str, Any]):
+        try:
+            if not payload:
+                raise AppException(400, "Leads payload cannot be empty")
 
+            created_by = PydanticObjectId(user["id"])
 
+            leads_to_insert: List[LeadsModel] = []
+            skipped: List[Dict[str, Any]] = []
 
-    #     except AppException:
-    #         raise
+           
+            hash_filters = []
+            for lead in payload:
+                hash_filters.append({
+                    "hashedEmail": hash_value(lead["email"].lower()),
+                    "hashedPhone": hash_value(lead["phone"]),
+                    "projectType": lead["projectType"],
+                })
 
-    #     except DuplicateKeyError:
-    #         raise AppException(status_code=409, message="Lead ID already exist")
+            
+            existing_leads = await LeadsModel.find(
+                {"$or": hash_filters}
+            ).project(LeadsModel.hashedEmail, LeadsModel.hashedPhone).to_list()
 
-    #     except Exception as e:
-    #         raise AppException(status_code=500, message=f"Internal server error: {e}")
+            existing_set = {
+                (l.hashedEmail, l.hashedPhone) for l in existing_leads
+            }
 
+            for lead in payload:
+                hashed_email = hash_value(lead["email"].lower())
+                hashed_phone = hash_value(lead["phone"])
 
+                if (hashed_email, hashed_phone) in existing_set:
+                    skipped.append({
+                        "email": lead["email"],
+                        "phone": lead["phone"],
+                        "reason": "Duplicate lead"
+                    })
+                    continue
+
+                lead_doc = LeadsModel(
+                    **lead,
+                    lead_id=generate_enquiry_id("LEAD"),
+                    createdBy=created_by,
+                )
+
+                leads_to_insert.append(lead_doc)
+
+            if not leads_to_insert:
+                raise AppException(400, "All leads already exist")
+
+            
+            await LeadsModel.insert_many(leads_to_insert)
+
+            
+            backend = FastAPICache.get_backend()
+            await backend.clear(namespace=LEAD_CACHE_NAMESPACE)
+            await backend.clear(namespace=USER_LEAD_CACHE_NAMESPACE)
+
+            return {
+                "inserted": len(leads_to_insert),
+                "skipped": len(skipped),
+                "skippedRecords": skipped,
+            }
+
+        except AppException:
+            raise
+
+        except DuplicateKeyError:
+            raise AppException(409, "Duplicate lead detected")
+
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
 
 
 

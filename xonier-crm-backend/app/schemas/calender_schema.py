@@ -9,13 +9,13 @@ class CreateCalendarEventSchema(BaseModel):
     description: Optional[str] = None
 
     eventType: EVENT_TYPE
-
+    meetingLink: Optional[str] = None
     start: datetime
     end: Optional[datetime] = None
 
     isAllDay: bool = False
 
-    priority: Optional[Literal["low", "medium", "high"]] = "low"
+    priority: Optional[Literal["low", "medium", "high"]] = None
 
 
     @model_validator(mode="after")
@@ -24,3 +24,5 @@ class CreateCalendarEventSchema(BaseModel):
             raise ValueError("end must be greater than start")
 
         return self
+    
+

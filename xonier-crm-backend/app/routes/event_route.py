@@ -19,6 +19,11 @@ async def getAll(request: Request):
     return await controller.get_all(request)
 
 
+@router.put("/update/{id}", status_code=200, dependencies=[Depends(dependencies.authorized),Depends(dependencies.permissions(["event:update"]))])
+async def update(id:str, request: Request, payload: CreateCalendarEventSchema):
+    return await controller.update(id, request, payload.model_dump(exclude_unset=True))
+
+
 @router.delete("/delete/{id}", status_code=200, dependencies=[Depends(dependencies.authorized),Depends(dependencies.permissions(["event:read"]))])
 async def delete(request: Request, id:str):
     return await controller.delete(request=request, eventId=id)

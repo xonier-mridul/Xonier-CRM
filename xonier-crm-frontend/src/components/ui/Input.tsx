@@ -7,6 +7,7 @@ interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement> {
   label?: string;
   error?: string;
+  
 }
 
 const Input: React.FC<InputProps> = ({
