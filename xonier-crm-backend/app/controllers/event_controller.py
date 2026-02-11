@@ -34,6 +34,17 @@ class EventController:
             raise e
         
 
+    async def update(self, id:str, request: Request, payload: Dict[str, Any]):
+        try:
+            user = request.state.user
+            result = await self.service.update(id, user, payload)
+
+            return successResponse(200, f"{payload["title"]} event updated successfully")
+
+        except AppException as e:
+            raise e
+        
+
     async def delete(self, request: Request, eventId: str):
         try:
            user = request.state.user

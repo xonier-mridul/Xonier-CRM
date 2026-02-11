@@ -15,6 +15,7 @@ class CalenderEventModel(Document):
     start: datetime
     end: Optional[datetime] = None
     isAllDay: bool = False
+    meetingLink: Optional[str] = None
     createdBy: Link[UserModel]
     updatedBy: Optional[Link[UserModel]] = None
     priority: Optional[Literal["low", "medium", "high"]] = "low"

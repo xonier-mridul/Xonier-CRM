@@ -33,6 +33,7 @@ from app.routes.quotation_route import router as quote_router
 from app.routes.quotation_history_route import router as quote_history_router
 from app.routes.invoice_routes import router as invoice_router
 from app.routes.notes_route import router as note_router
+from app.routes.cusotm_form_field_route import router as custom_field_route
 
 settings = get_setting()
 
@@ -100,6 +101,7 @@ app.include_router(quote_router, prefix="/api/quote")
 app.include_router(quote_history_router, prefix="/api/quote-history")
 app.include_router(invoice_router, prefix="/api/invoice")
 app.include_router(note_router, prefix="/api/note")
+app.include_router(custom_field_route, prefix="/api/custom-field")
 
 
 app.add_exception_handler(HTTPException, http_exception_handler)
