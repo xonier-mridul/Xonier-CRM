@@ -460,7 +460,7 @@ const page = (): JSX.Element => {
               disabled={loading || selectedFieldsKeys.length <= 0}
             >
               <MdOutlineCloudUpload className="text-lg" />{" "}
-              {loading ? "Updating..." : "Create deals"}
+              {loading ? "Updating..." : "Update deals"}
             </button>
 
             <button

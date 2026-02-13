@@ -1,6 +1,6 @@
 import { ParamValue } from "next/dist/server/request/params";
 import api from "../lib/axios";
-import { LeadPayload } from "../types/leads/leads.types";
+import { BulkLeadPayload, LeadPayload } from "../types/leads/leads.types";
 
 
 
@@ -38,9 +38,10 @@ const LeadService = {
     return api.get(`/lead/leads-by-user/all?${params.toString()}`);
   },
   create: (data: LeadPayload)=> api.post("/lead/create", data),
+  bulkCreate: (data: BulkLeadPayload )=> api.post("/lead/create/bulk", data),
   getById: (id: ParamValue)=> api.get(`/lead/get-by-id/${id}`),
   update: (id: ParamValue, payload: LeadPayload)=> api.put(`/lead/update/${id}`, payload),
-  delete: (id: ParamValue)=> api.delete(`/lead/delete/${id}`)
+  delete: (id: string)=> api.delete(`/lead/delete/${id}`)
 };
 
 

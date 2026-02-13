@@ -19,7 +19,7 @@ class QuotationSchema(BaseModel):
     companyName: Optional[str]
     quotationStatus: QuotationStatus = QuotationStatus.SENT
     issueDate: date
-    valid: Optional[datetime] = None
+    valid: Optional[date] = None
     subTotal: float
     total: float
 

@@ -14,10 +14,12 @@ from app.utils.enquiry_id_generator import generate_enquiry_id
 from app.core.constants import COMPANY_ADDRESS, COMPANY_LOGO_LINK
 from fastapi.encoders import jsonable_encoder
 from app.core.crypto import Encryption
-from app.core.enums import DEAL_STAGES, QuotationStatus, QuotationEventType
+from app.core.enums import DEAL_STAGES, QuotationStatus, QuotationEventType, DEAL_STATUS
 from app.repositories.quotation_history_repository import QuotationHistoryRepository
 from app.repositories.invoice_repository import InvoiceRepository
 from datetime import datetime, timezone
+from fastapi_cache import FastAPICache
+from app.core.constants import DEAL_CACHE_NAMESPACE, DEAL_CACHE_NAMESPACE_BY_ID
 
 
 class QuotationService:
@@ -49,6 +51,9 @@ class QuotationService:
 
                     if deal["inQuotation"]:
                         raise AppException(400, "Action stopped, Already created quotation against this deal")
+                    
+                    if deal["dealStage"] == DEAL_STAGES.DELETE.value and deal["status"] == DEAL_STATUS.DELETE.value:
+                        raise AppException(400, f"Quotation failed, {deal["dealName"]} deleted")
 
                     isAdmin = False
                     isCreator = False
@@ -100,6 +105,9 @@ class QuotationService:
 
                     if not update_deal:
                         raise AppException(400, "Deal field not updated")
+                    
+                    await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE)
+                    await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE_BY_ID)
 
                     return create.model_dump(mode="json")
 
@@ -107,6 +115,10 @@ class QuotationService:
 
                 except AppException:
                     raise
+
+                except ValueError as e:
+                    raise AppException(400, f"{e}")
+
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
                 
@@ -137,8 +149,11 @@ class QuotationService:
             if "dealId" in filters:
                  query.update({"deal.$id": PydanticObjectId(filters["dealId"])})
 
+            if "status" in filters:
+                query.update({"quotationStatus": filters["status"]})
+
             
-            result = await self.repo.get_all(page=int(page), limit=int(limit), filters=query, populate=["lead", "createdBy", "updatedBy"])
+            result = await self.repo.get_all(page=int(page), limit=int(limit), filters=query, populate=["lead", "createdBy", "updatedBy"], sort=["-createdAt"])
 
             if not result:
                  raise AppException(404, "Quotations data not found")
@@ -148,8 +163,8 @@ class QuotationService:
             return result
 
 
-        except AppException:
-            raise
+        except AppException as e:
+            raise e
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
         

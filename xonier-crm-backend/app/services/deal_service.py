@@ -13,9 +13,11 @@ from app.core.crypto import Encryption
 from app.utils.cache_key_generator import cache_key_generator, cache_key_generator_by_id, cache_key_generator_with_id
 from fastapi_cache import FastAPICache
 import json
-from app.core.enums import SALES_STATUS
+from app.core.enums import SALES_STATUS, DEAL_STATUS, DEAL_STAGES
 
 from app.utils.get_team_members import GetTeamMembers
+from app.utils.validate_admin import validate_admin
+from datetime import datetime, timezone
 
 
 class DealService:
@@ -159,16 +161,20 @@ class DealService:
              
             if cache:
                 return json.loads(cache)
+            print("qurey: ", query)
 
             result = await self.repo.get_all(
                 page=int(page),
                 limit=int(limit),
                 filters=query,
                 populate=["createdBy", "lead_id", "updatedBy"],
+                sort=["-createdAt"]
             )
 
             if not result:
                 raise AppException(404, "Deal data not found")
+            
+            print("Result: ", result)
             
             result = jsonable_encoder(
                 result,
@@ -206,13 +212,6 @@ class DealService:
                    isAdmin = True
                    break
 
-            key = cache_key_generator_by_id(prefix=DEAL_CACHE_NAMESPACE_BY_ID, id=str(user["_id"]))
-
-            cache = await FastAPICache.get_backend().get(key=key)
-
-            if cache:
-                return json.loads(cache)
-
             
             result = await self.repo.find_by_id(id=PydanticObjectId(dealId), populate=["createdBy", "lead_id", "updatedBy"])
             if not result:
@@ -240,8 +239,6 @@ class DealService:
 
             result["createdBy"]["email"] = self.encryption.decrypt_data(userEmail)
             result["createdBy"]["phone"] = self.encryption.decrypt_data(userPhone)
-
-            await FastAPICache.get_backend().set(key=key, value=json.dumps(result), expire=300)
      
             return result
 
@@ -263,6 +260,15 @@ class DealService:
             isAdmin:bool = False
             isCreator:bool = False
 
+            deal = await self.repo.find_by_id(id=PydanticObjectId(id), populate=["createdBy"])
+            if not deal:
+                raise AppException(404, "deal not found against this id")
+            
+            deal = deal.model_dump(mode="json")
+            
+            if deal["dealStage"] == DEAL_STAGES.DELETE.value and deal["status"] == DEAL_STATUS.DELETE.value:
+                raise AppException(400, f"Update operation failed, {deal["dealName"]} deal deleted")
+
             userRole = user["userRole"]
 
    
@@ -272,13 +278,8 @@ class DealService:
                    break
 
             if not isAdmin:
-                lead = await self.repo.find_by_id(id=PydanticObjectId(id), populate=["createdBy"])
-                if not lead:
-                    raise AppException(404, "Lead not found against this id")
-                
-                lead = lead.model_dump(mode="json")
 
-                if user["_id"] == lead["createdBy"]["id"]:
+                if user["_id"] == deal["createdBy"]["id"]:
                     isCreator = True
             
             if not isAdmin and not isCreator:
@@ -307,6 +308,57 @@ class DealService:
         except Exception as e:
             print("error: ", e)
             raise AppException(500, "Internal server error")
+        
+
+    async def delete(self, id: str, user:Dict[str, Any]):
+        try:
+            if not ObjectId.is_valid(id):
+                raise AppException(400, "Invalid Deal object id")
+            
+            is_admin = validate_admin(user["userRole"])
+            is_creator = False
+
+            result = await self.repo.find_by_id(id=PydanticObjectId(id), populate=["createdBy"])
+
+            if not result:
+                raise AppException(404, "No deal data found again deal Id")
+            
+            if result.dealStage == DEAL_STAGES.WON.value:
+                raise AppException(400, "Deal is won, deletion failed")
+
+            if result.dealStage == DEAL_STAGES.DELETE.value and result.status == DEAL_STATUS.DELETE:
+                raise AppException(400, "Deal already deleted")
+            
+            if result.inQuotation:
+                raise AppException(400, "Deletion failed, Deal in under quotation")
+            
+            if str(result.createdBy.id) == str(user["_id"]):
+                is_creator = True
+
+            if not is_admin and not is_creator:
+                raise AppException(403, "Permission denied, only admin or creator can perform this operation")
+            
+            payload = {
+                "status": DEAL_STATUS.DELETE.value,
+                "dealStage": DEAL_STAGES.DELETE.value,
+                "deletedAt": datetime.now(timezone.utc)
+            }
+
+            deleted = await self.repo.update(id=PydanticObjectId(id), data=payload)
+
+            if not deleted:
+                raise AppException(400, "Deal not deleted")
+            
+            return result.model_dump(mode="json")
+
+
+        except AppException as e:
+            raise
+        except Exception as e:
+            print("error: ", e)
+            raise AppException(500, f"Internal server error {e}")
+
+
         
 
     

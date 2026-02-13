@@ -23,7 +23,8 @@ const dealService = {
     return api.get(`/deal/all?${params.toString()}`);
   },
   getById: (id:ParamValue) => api.get(`/deal/get-by-id/${id}`),
-  update:(id: ParamValue, payload:DealUpdatePayload)=> api.put(`/deal/update/${id}`, payload)
+  update:(id: ParamValue, payload:DealUpdatePayload)=> api.put(`/deal/update/${id}`, payload),
+  delete:(id:string)=> api.delete(`/deal/delete/${id}`)
 }
 
 export default dealService

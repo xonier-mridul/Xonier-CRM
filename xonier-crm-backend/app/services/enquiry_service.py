@@ -161,8 +161,8 @@ class EnquiryService:
     
     async def get_all(self, page:int = 1, limit: int = 10, filters: Dict[str, Any] = {}, ):
         try:
+            print("ues")
 
-           
             query = {}
 
             if "enquiry_id" in filters:
@@ -185,8 +185,9 @@ class EnquiryService:
 
             if "priority" in filters:
                 query.update("priority", filters["priority"])
-
-            result = await self.repo.get_all(page, limit, query, ["assignTo", "createdBy"])
+            print("one")
+            result = await self.repo.get_all(page=page, limit=limit, filters=query, populate=["assignTo", "createdBy"], sort=["-createdAt"])
+            print("two")
 
             if not result:
                 raise AppException(404, "Enquiry data not found")
@@ -204,7 +205,7 @@ class EnquiryService:
         try:
            
             query = {}
-
+            print("ues")
             query.update({"createdBy.$id": PydanticObjectId(user["_id"])})
 
             if "enquiry_id" in filters:
@@ -228,7 +229,7 @@ class EnquiryService:
             if "priority" in filters:
                 query.update({"priority": filters["priority"]})
 
-            result = await self.repo.get_all(page, limit, query, ["assignTo", "createdBy"])
+            result = await self.repo.get_all(page, limit, query, ["assignTo", "createdBy"], sort=["-createdAt"])
 
             if not result:
                 raise AppException(404, "Enquiry data not found")

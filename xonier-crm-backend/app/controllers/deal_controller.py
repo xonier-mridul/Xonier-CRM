@@ -59,3 +59,14 @@ class DealController:
 
         except AppException as e:
             raise e
+        
+
+    async def delete(self, id:str, request: Request):
+        try:
+            user = request.state.user
+            result = await self.service.delete(id, user)
+            return successResponse(200, f"{result["dealName"]} deleted successfully")
+
+
+        except AppException as e:
+            raise e

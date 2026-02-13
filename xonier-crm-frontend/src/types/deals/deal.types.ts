@@ -1,10 +1,10 @@
-import { DEAL_PIPELINE, DEAL_STAGES, DEAL_TYPE, FORECAST_CATEGORY } from "@/src/constants/enum";
+import { DEAL_PIPELINE, DEAL_STAGES, DEAL_STATUS, DEAL_TYPE, FORECAST_CATEGORY } from "@/src/constants/enum";
 import { Lead } from "../leads/leads.types";
 import { User } from "../auth/auth.types";
 
 
 export interface Deal {
-  id?: string;                 
+  id: string;                 
 
   deal_id: string;
   lead_id:  Lead;              
@@ -35,10 +35,10 @@ export interface Deal {
 
   originalTrafficSource?: string | null;
   inQuotation: boolean;
-
+  status: DEAL_STATUS;
   createdBy: User;            
   updatedBy?:  null | User;    
-
+  
   createdAt: string;            
   updatedAt: string;            
   deletedAt?: string | null;
@@ -101,6 +101,10 @@ export interface DealUpdatePayload {
   closedLostReason?: string | null;
 
   originalTrafficSource?: string | null;
+}
+
+export interface UpdateDealStatusPayload{
+  status: DEAL_STATUS
 }
 
 export interface GetAllParams {
