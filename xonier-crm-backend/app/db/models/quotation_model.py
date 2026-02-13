@@ -1,8 +1,9 @@
 from beanie import Document, Link, before_event, Insert, Replace, Save
-from pydantic import Field
+from pydantic import Field, model_validator
 from typing import Optional
 from datetime import datetime, timezone, date, timedelta
 from pymongo import IndexModel
+
 
 from app.core.enums import QuotationStatus
 from app.db.models.deal_model import DealModel
@@ -37,7 +38,7 @@ class QuotationModel(Document):
     quotationStatus: QuotationStatus = QuotationStatus.SENT
 
     issueDate: date = Field(default_factory=date.today)
-    valid: datetime = Field(default_factory=lambda: datetime.now(timezone.utc) + timedelta(days=60))
+    valid: date = Field(default_factory=lambda: datetime.now(timezone.utc).date() + timedelta(days=60))
 
     createdBy: Link[UserModel]
     updatedBy: Optional[Link[UserModel]] = None
@@ -55,6 +56,15 @@ class QuotationModel(Document):
             IndexModel([("customerPhoneHash", 1)], name="phone_hash_idx"),
         ]
 
+
+    @model_validator(mode="after")
+    def validate_dates(self):
+        if self.issueDate > self.valid:
+            raise ValueError("Valid date must be grater then issue date")
+        
+        return self
+    
+    
 
     @before_event(Insert, Replace, Save)
     def secure_sensitive_fields(self):
@@ -76,7 +86,7 @@ class QuotationModel(Document):
             self.customerPhoneHash = hash_value(phone_plain)
             self.customerPhone = encryption.encrypt_data(phone_plain)
 
-    @before_event(Insert, Replace, Save)
+    @before_event(Insert, Replace)
     def update_stamp(self):
         self.updatedAt = datetime.now(timezone.utc)
 

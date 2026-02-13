@@ -61,3 +61,7 @@ export interface LeadPayload {
   message?: string | null;
   membershipNotes?: string | null;
 }
+
+export interface BulkLeadPayload {
+  leads: LeadPayload[];
+}

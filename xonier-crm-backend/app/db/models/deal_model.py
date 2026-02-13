@@ -5,7 +5,7 @@ from pydantic import Field, field_validator
 from app.db.models.lead_model import LeadsModel
 from app.db.models.user_model import UserModel
 from datetime import datetime, timezone
-from app.core.enums import DEAL_PIPELINE, DEAL_STAGES, DEAL_TYPE, FORECAST_CATEGORY
+from app.core.enums import DEAL_PIPELINE, DEAL_STAGES, DEAL_TYPE, FORECAST_CATEGORY, DEAL_STATUS
 
 class DealModel(Document):
     deal_id : str
@@ -28,6 +28,7 @@ class DealModel(Document):
     closedLostReason: Optional[str] = None
     originalTrafficSource: Optional[str] = None
     inQuotation: bool = False
+    status: DEAL_STATUS = DEAL_STATUS.ACTIVE
     createdBy : Link[UserModel]
     updatedBy: Optional[Link[UserModel]] = None
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

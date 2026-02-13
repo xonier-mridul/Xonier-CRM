@@ -53,6 +53,7 @@ class LeadsModel(Document):
     updatedBy: Optional[Link[UserModel]] = None
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updatedAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    deletedBy: Optional[Link[UserModel]] = None
     deletedAt: Optional[datetime] = None
 
 

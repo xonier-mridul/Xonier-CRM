@@ -88,6 +88,7 @@ class SALES_STATUS(str, Enum):
     PROPOSAL = "proposal"
     WON = "won"
     LOST = "lost"
+    DELETE = "delete"
 
 class PRIORITY(str, Enum):
     LOW = "low"
@@ -452,6 +453,7 @@ class DEAL_STAGES(str, Enum):
     NEGOTIATION = "negotiation"
     WON = "won"
     LOST = "lost"
+    DELETE = "delete"
 
 
 class DEAL_TYPE(str, Enum):
@@ -459,6 +461,12 @@ class DEAL_TYPE(str, Enum):
     EXISTING_BUSINESS = "existing_business"
     PARTNERSHIP = "partnership"
     OTHER = "other"
+
+class DEAL_STATUS(str, Enum):
+    ACTIVE="active"
+    INACTIVE="inactive"
+    DELETE="delete"
+
 
 
 class FORECAST_CATEGORY(str, Enum):

@@ -13,7 +13,7 @@ import {
 } from "@/src/components/ui/LeadComponent";
 import PrimaryButton from "@/src/components/ui/PrimeryButton";
 import { SIDEBAR_WIDTH } from "@/src/constants/constants";
-import { PERMISSIONS } from "@/src/constants/enum";
+import { PERMISSIONS, SALES_STATUS } from "@/src/constants/enum";
 import LeadService from "@/src/services/lead.service";
 import { Lead } from "@/src/types/leads/leads.types";
 import axios from "axios";
@@ -93,7 +93,7 @@ const LeadViewPage = (): JSX.Element => {
     getLeadData();
   }, []);
 
-  const handleDelete = async () => {
+  const handleDelete = async (id:string) => {
     if (!leadData) return;
 
     try {
@@ -104,10 +104,13 @@ const LeadViewPage = (): JSX.Element => {
       });
 
       if (confirm) {
-        // Add your delete service call here
-        // const result = await LeadService.delete(leadData.id);
-        toast.success("Lead deleted successfully");
+        const result = await LeadService.delete(id)
+
+        if (result.status === 200){
+           toast.success("Lead deleted successfully");
         router.push("/leads");
+        }
+        
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -153,6 +156,7 @@ const LeadViewPage = (): JSX.Element => {
         "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
       won: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
       lost: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+      delete: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
     };
     return (
       colors[status] ||
@@ -265,7 +269,7 @@ const LeadViewPage = (): JSX.Element => {
 
             {/* Action Buttons */}
             <div className="flex flex-wrap items-center gap-2">
-              {hasPermission(PERMISSIONS.updateLead) ? (
+              {hasPermission(PERMISSIONS.updateLead) && (leadData.status !== SALES_STATUS.DELETE ) ? (
                 <Link
                   href={`/leads/update/${leadData.id}`}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
@@ -298,7 +302,7 @@ const LeadViewPage = (): JSX.Element => {
                  
                   {hasPermission(PERMISSIONS.deleteLead) && (
                     <button
-                      onClick={handleDelete}
+                      onClick={()=>handleDelete(leadData.id)}
                       className="w-full flex items-center gap-2 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
                     >
                       <MdDeleteOutline className="w-4 h-4" />
@@ -312,7 +316,7 @@ const LeadViewPage = (): JSX.Element => {
         </div>
       </div>
 
-      {/* Key Metrics Cards */}
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <MetricCard
           icon={<IoBusinessOutline className="w-6 h-6" />}
@@ -362,13 +366,13 @@ const LeadViewPage = (): JSX.Element => {
         </div>
       </div>
 
-      {/* Main Content */}
+      
       <div className="flex gap-6">
         <div className="w-2/3 flex flex-col gap-6">
-          {/* Overview Tab */}
+          
           {activeTab === "overview" && (
             <>
-              {/* Lead Information */}
+              
               <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-2 mb-6">
                   <IoInformationCircleOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -434,7 +438,7 @@ const LeadViewPage = (): JSX.Element => {
                 </div>
               </div>
 
-              {/* Notes */}
+
               {(leadData?.message || leadData?.membershipNotes) && (
                 <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-2 mb-6">
@@ -649,13 +653,16 @@ const MetricCard = ({
   color: string;
 }) => (
   <div className="bg-white dark:bg-gray-700 p-5 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-3 overflow-hidden">
       <div className={`${color} p-3 rounded-lg text-white`}>{icon}</div>
-      <div className="flex-1">
-        <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
-        <p className="text-xl font-bold text-gray-900 dark:text-white mt-1 capitalize">
+      <div className="flex-1 group:">
+        <p className="text-sm text-gray-500 dark:text-gray-400 ">{label}</p>
+        <p className="text-xl font-bold text-gray-900 dark:text-white mt-1 capitalize truncate w-42">
           {value}
+          
         </p>
+
+        
       </div>
     </div>
   </div>

@@ -52,6 +52,7 @@ export enum SALES_STATUS {
   PROPOSAL = "proposal",
   WON = "won",
   LOST = "lost",
+  DELETE = "delete"
 }
 
 
@@ -405,6 +406,7 @@ export enum DEAL_STAGES {
   NEGOTIATION = "negotiation",
   WON = "won",
   LOST = "lost",
+  DELETE = "delete"
 }
 
 
@@ -415,6 +417,11 @@ export enum DEAL_TYPE {
   OTHER = "other",
 }
 
+export enum DEAL_STATUS{
+  ACTIVE="active",
+  INACTIVE="inactive",
+  DELETE="delete"
+}
 
 export enum FORECAST_CATEGORY {
   PIPELINE = "pipeline",
@@ -486,4 +493,16 @@ export enum NotesEntities {
   INVOICE = "invoice",
   GENERAL = "general",
 }
+
+export enum CUSTOM_FIELD_TYPE {
+  TEXT = "text",
+  NUMBER = "number",
+  EMAIL = "email",
+  PHONE = "phone",
+  SELECT = "select",
+  TEXTAREA = "textarea",
+  DATE = "date",
+  CHECKBOX = "checkbox",
+}
+
 

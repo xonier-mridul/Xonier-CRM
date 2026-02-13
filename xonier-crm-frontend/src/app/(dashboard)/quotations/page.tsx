@@ -157,6 +157,8 @@ const page = (): JSX.Element => {
   const [wonPageLimit, setWonPageLimit] = useState<number>(10);
   const [lostPageLimit, setLostPageLimit] = useState<number>(10);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [wonTotalPages, setWonTotalPages] = useState<number>(1);
+  const [lostTotalPages, setLostTotalPages] = useState<number>(1);
   const [currentTab, setCurrentTab] = useState<number>(1);
 
   const { hasPermission } = usePermissions();
@@ -171,6 +173,54 @@ const page = (): JSX.Element => {
         setCurrentPage(data.page);
         setPageLimit(data.limit);
         setTotalPages(data.totalPages);
+      }
+    } catch (error) {
+      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+      if (axios.isAxiosError(error)) {
+        const messages = extractErrorMessages(error);
+        setErr(messages);
+      } else {
+        setErr(["Something went wrong"]);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getWonQuotationData = async () => {
+    setIsLoading(true);
+    try {
+      const result = await QuoteService.getAll(currentPage, pageLimit, {"status":QuotationStatus.ACCEPTED});
+      if (result.status === 200) {
+        const data = result.data.data;
+        setWonQuoteData(data.data);
+        setWonCurrentPage(data.page);
+        setWonPageLimit(data.limit);
+        setWonTotalPages(data.totalPages);
+      }
+    } catch (error) {
+      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+      if (axios.isAxiosError(error)) {
+        const messages = extractErrorMessages(error);
+        setErr(messages);
+      } else {
+        setErr(["Something went wrong"]);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getLostQuotationData = async () => {
+    setIsLoading(true);
+    try {
+      const result = await QuoteService.getAll(currentPage, pageLimit, {"status":QuotationStatus.REJECTED});
+      if (result.status === 200) {
+        const data = result.data.data;
+        setLostQuoteData(data.data);
+        setLostCurrentPage(data.page);
+        setLostPageLimit(data.limit);
+        setLostTotalPages(data.totalPages);
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
@@ -232,7 +282,12 @@ const page = (): JSX.Element => {
 
   useEffect(() => {
     getQuotationData();
-  }, []);
+  }, [currentPage, pageLimit]);
+
+  useEffect(() => {
+    getWonQuotationData()
+  }, [wonCurrentPage, wonPageLimit])
+  
 
  
 
@@ -332,6 +387,302 @@ const page = (): JSX.Element => {
                 Array.isArray(quoteData) &&
                 quoteData.length > 0 ? (
                   quoteData.map((item, i) => {
+                    let rr = i % 2 == 0;
+                    const date = formatDate(item.createdAt);
+
+                    return (
+                      <tr
+                        key={item.quoteId}
+                        className={`${
+                          rr
+                            ? "bg-white dark:bg-transparent"
+                            : "bg-blue-100/50 dark:bg-slate-500"
+                        } w-full`}
+                      >
+                        <td className="p-4">
+                          <Link
+                            href={`/deals/view/${item.id}`}
+                            className="text-sm cursor-pointer hover:scale-110 transition-all hover:text-blue-300"
+                          >
+                            {item.quoteId}
+                          </Link>
+                        </td>
+                        <td className="flex gap-1 flex-col p-4">
+                          <h4 className="capitalize">{item.title}</h4>
+                        </td>
+                        <td className="p-4">{item.customerName}</td>
+                        <td className="p-4">
+                          <StatusDropdown
+                            currentStatus={item.quotationStatus}
+                            quoteId={item.id}
+                            onStatusUpdate={updateQuoteStatus}
+                          />
+                        </td>
+                        <td className="p-4">
+                          <span className="px-4 py-1.5 rounded-md bg-blue-200 text-sm text-blue-600 font-medium">
+                            {date}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="flex items-center gap-2">
+                            {hasPermission(PERMISSIONS.readLead) ? (
+                              <Link
+                                href={`/quotations/view/${item.id}`}
+                                className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-green-100/80 dark:bg-green-50 hover:bg-green-200/70 dark:hover:bg-green-100 text-green-500 hover:scale-104"
+                              >
+                                <FaRegEye className="text-xl" />
+                              </Link>
+                            ) : (
+                              <span className="h-9 w-9 flex items-center justify-center rounded-md bg-green-100/80 dark:bg-green-50 text-green-500 opacity-80 cursor-not-allowed">
+                                <FaRegEye className="text-xl" />
+                              </span>
+                            )}
+                            {hasPermission(PERMISSIONS.updateLead) ? (
+                              <Link
+                                href={`/quotations/update/${item.id}`}
+                                className="h-9 w-9 flex items-center justify-center rounded-md bg-yellow-200/80 dark:bg-yellow-100 hover:bg-yellow-300/70 dark:hover:bg-yellow-200 text-yellow-500 hover:scale-104"
+                              >
+                                <MdOutlineEdit className="text-xl" />
+                              </Link>
+                            ) : (
+                              <span className="h-9 w-9 flex items-center justify-center rounded-md bg-yellow-100 text-yellow-400 opacity-80 cursor-not-allowed">
+                                <MdOutlineEdit className="text-xl" />
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td className="p-4 text-center" colSpan={6}>
+                      Data not found
+                    </td>
+                  </tr>
+                )
+              ) : (
+                Array.from({ length: 10 }).map((item, i) => {
+                  let rr = i % 2 == 0;
+
+                  return (
+                    <tr
+                      key={i}
+                      className={`${
+                        rr
+                          ? "bg-white dark:bg-transparent"
+                          : "bg-blue-100/50 dark:bg-slate-500"
+                      } w-full`}
+                    >
+                      <td className="text-center p-4">
+                        <Skeleton width={120} height={30} borderRadius={14} />
+                      </td>
+                      <td className="p-4">
+                        <div className="flex flex-col gap-1">
+                          <Skeleton width={110} height={28} borderRadius={12} />
+                          <Skeleton width={140} height={12} borderRadius={10} />
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <Skeleton width={80} height={30} borderRadius={14} />
+                      </td>
+                      <td className="p-4">
+                        <Skeleton width={120} height={30} borderRadius={14} />
+                      </td>
+                      <td className="p-4">
+                        <Skeleton width={110} height={30} borderRadius={14} />
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-2">
+                          <Skeleton width={32} height={32} borderRadius={10} />
+                          <Skeleton width={32} height={32} borderRadius={10} />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        )}
+        {currentTab === 2 && (
+          <table className="w-full rounded-xl overflow-hidden ">
+            <thead>
+              <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                  Quote Id
+                </th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                  Quote Title
+                </th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                  Client Name
+                </th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                  Quotation Status
+                </th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                  Created Date
+                </th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="">
+              {!isLoading ? (
+                wonQuoteData &&
+                Array.isArray(wonQuoteData) &&
+                wonQuoteData.length > 0 ? (
+                  wonQuoteData.map((item, i) => {
+                    let rr = i % 2 == 0;
+                    const date = formatDate(item.createdAt);
+
+                    return (
+                      <tr
+                        key={item.quoteId}
+                        className={`${
+                          rr
+                            ? "bg-white dark:bg-transparent"
+                            : "bg-blue-100/50 dark:bg-slate-500"
+                        } w-full`}
+                      >
+                        <td className="p-4">
+                          <Link
+                            href={`/deals/view/${item.id}`}
+                            className="text-sm cursor-pointer hover:scale-110 transition-all hover:text-blue-300"
+                          >
+                            {item.quoteId}
+                          </Link>
+                        </td>
+                        <td className="flex gap-1 flex-col p-4">
+                          <h4 className="capitalize">{item.title}</h4>
+                        </td>
+                        <td className="p-4">{item.customerName}</td>
+                        <td className="p-4">
+                          <StatusDropdown
+                            currentStatus={item.quotationStatus}
+                            quoteId={item.id}
+                            onStatusUpdate={updateQuoteStatus}
+                          />
+                        </td>
+                        <td className="p-4">
+                          <span className="px-4 py-1.5 rounded-md bg-blue-200 text-sm text-blue-600 font-medium">
+                            {date}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="flex items-center gap-2">
+                            {hasPermission(PERMISSIONS.readLead) ? (
+                              <Link
+                                href={`/quotations/view/${item.id}`}
+                                className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-green-100/80 dark:bg-green-50 hover:bg-green-200/70 dark:hover:bg-green-100 text-green-500 hover:scale-104"
+                              >
+                                <FaRegEye className="text-xl" />
+                              </Link>
+                            ) : (
+                              <span className="h-9 w-9 flex items-center justify-center rounded-md bg-green-100/80 dark:bg-green-50 text-green-500 opacity-80 cursor-not-allowed">
+                                <FaRegEye className="text-xl" />
+                              </span>
+                            )}
+                            {hasPermission(PERMISSIONS.updateLead) ? (
+                              <Link
+                                href={`/quotations/update/${item.id}`}
+                                className="h-9 w-9 flex items-center justify-center rounded-md bg-yellow-200/80 dark:bg-yellow-100 hover:bg-yellow-300/70 dark:hover:bg-yellow-200 text-yellow-500 hover:scale-104"
+                              >
+                                <MdOutlineEdit className="text-xl" />
+                              </Link>
+                            ) : (
+                              <span className="h-9 w-9 flex items-center justify-center rounded-md bg-yellow-100 text-yellow-400 opacity-80 cursor-not-allowed">
+                                <MdOutlineEdit className="text-xl" />
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td className="p-4 text-center" colSpan={6}>
+                      Data not found
+                    </td>
+                  </tr>
+                )
+              ) : (
+                Array.from({ length: 10 }).map((item, i) => {
+                  let rr = i % 2 == 0;
+
+                  return (
+                    <tr
+                      key={i}
+                      className={`${
+                        rr
+                          ? "bg-white dark:bg-transparent"
+                          : "bg-blue-100/50 dark:bg-slate-500"
+                      } w-full`}
+                    >
+                      <td className="text-center p-4">
+                        <Skeleton width={120} height={30} borderRadius={14} />
+                      </td>
+                      <td className="p-4">
+                        <div className="flex flex-col gap-1">
+                          <Skeleton width={110} height={28} borderRadius={12} />
+                          <Skeleton width={140} height={12} borderRadius={10} />
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <Skeleton width={80} height={30} borderRadius={14} />
+                      </td>
+                      <td className="p-4">
+                        <Skeleton width={120} height={30} borderRadius={14} />
+                      </td>
+                      <td className="p-4">
+                        <Skeleton width={110} height={30} borderRadius={14} />
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-2">
+                          <Skeleton width={32} height={32} borderRadius={10} />
+                          <Skeleton width={32} height={32} borderRadius={10} />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        )}
+        {currentTab === 3 && (
+          <table className="w-full rounded-xl overflow-hidden ">
+            <thead>
+              <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                  Quote Id
+                </th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                  Quote Title
+                </th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                  Client Name
+                </th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                  Quotation Status
+                </th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                  Created Date
+                </th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="">
+              {!isLoading ? (
+                lostQuoteData &&
+                Array.isArray(lostQuoteData) &&
+                lostQuoteData.length > 0 ? (
+                  lostQuoteData.map((item, i) => {
                     let rr = i % 2 == 0;
                     const date = formatDate(item.createdAt);
 

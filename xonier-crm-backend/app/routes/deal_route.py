@@ -27,3 +27,8 @@ async def get_by_id(id: str, request: Request):
 async def update(id: str, request: Request, payload: DealUpdateSchema):
     return await controller.update(id, request, payload.model_dump(exclude_unset=True))
 
+
+@router.delete("/delete/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["deal:delete"]))])
+async def delete(id:str, request: Request):
+    return await controller.delete(id=id, request=request)
+

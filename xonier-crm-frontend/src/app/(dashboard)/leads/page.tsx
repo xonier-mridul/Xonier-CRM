@@ -25,6 +25,7 @@ import { FaRegHandshake } from "react-icons/fa";
 import { FaHandshake } from "react-icons/fa6";
 import { UseDispatch, useSelector } from "react-redux";
 import { RootState } from "@/src/store";
+import Pagination from "@/src/components/common/pagination";
 
 const page = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -39,6 +40,8 @@ const page = (): JSX.Element => {
   const [wonPageLimit, setWonPageLimit] = useState<number>(10);
   const [lostPageLimit, setLostPageLimit] = useState<number>(10);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [wonTotalPages, setWonTotalPages] = useState<number>(1);
+  const [lostTotalPages, setLostTotalPages] = useState<number>(1);
   const [currentTab, setCurrentTab] = useState<number>(1)
 
   const { hasPermission } = usePermissions();
@@ -55,7 +58,7 @@ const page = (): JSX.Element => {
           setLeadData(data.data);
           setCurrentPage(Number(data.page));
           setPageLimit(Number(data.limit));
-          setPageLimit(Number(data.pageLimit));
+          setTotalPages(Number(data.totalPages));
         }
 
       
@@ -77,12 +80,13 @@ const page = (): JSX.Element => {
     setIsLoading(true);
     try {
     
-        const result = await LeadService.getAll(currentPage, pageLimit, {status: SALES_STATUS.WON});
+        const result = await LeadService.getAll(currentWonPage, wonPageLimit, {status: SALES_STATUS.WON});
       if (result.status === 200) {
         const data = result.data.data;
         setWonLeadData(data.data);
         setWonCurrentPage(Number(data.page));
         setWonPageLimit(Number(data.limit));
+        setWonTotalPages(Number(data.totalPages))
        
       }
       
@@ -105,13 +109,13 @@ const page = (): JSX.Element => {
     setIsLoading(true);
     try {
    
-const result = await LeadService.getAll(currentPage, pageLimit, {status: SALES_STATUS.LOST});
+const result = await LeadService.getAll(currentLostPage, lostPageLimit, {status: SALES_STATUS.LOST});
       if (result.status === 200) {
         const data = result.data.data;
         setLostLeadData(data.data);
         setLostCurrentPage(Number(data.page));
         setLostPageLimit(Number(data.limit));
-       
+        setLostTotalPages(Number(data.totalPages))
       }
      
       
@@ -141,7 +145,7 @@ const result = await LeadService.getAll(currentPage, pageLimit, {status: SALES_S
         btnTxt: "Yes, delete",
       });
       if (confirm) {
-        const result = await LeadService.delete(id);
+        const result = await LeadService.delete(String(id));
         if (result.status === 200) {
           toast.success(`${name} lead deleted successfully`);
           const filteredLead = leadData.filter((item) => item.id !== id);
@@ -167,6 +171,16 @@ const result = await LeadService.getAll(currentPage, pageLimit, {status: SALES_S
     toast.success("text copied successfully");
   };
 
+
+  useEffect(() => {
+    getWonLeadData()
+  }, [currentWonPage, wonPageLimit])
+
+  useEffect(() => {
+    getLostLeadData()
+  }, [currentLostPage, lostPageLimit])
+  
+
   const handleTabs =async(no:number):Promise<void>=>{
      setCurrentTab(no)
      if(no === 2){
@@ -175,6 +189,22 @@ const result = await LeadService.getAll(currentPage, pageLimit, {status: SALES_S
      if(no===3){
       await getLostLeadData()
      }
+  }
+
+  const handlePageLimit = (val:number)=>{
+    if (currentTab === 1){
+      setCurrentPage(1)
+      setPageLimit(val)
+    }
+    else if(currentTab === 2){
+      setWonCurrentPage(1)
+      setWonPageLimit(val)
+    }
+    
+    else if(currentTab === 3){
+      setLostCurrentPage(1)
+      setLostPageLimit(val)
+    }
   }
 
   return (
@@ -219,7 +249,7 @@ const result = await LeadService.getAll(currentPage, pageLimit, {status: SALES_S
                 name="limit"
                 id="limit"
                 className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10"
-                onChange={(e) => setPageLimit(Number(e.target.value))}
+                onChange={(e) => handlePageLimit(Number(e.target.value))}
               >
                 <option value="10">10</option>
                 <option value="20">20</option>
@@ -257,7 +287,7 @@ const result = await LeadService.getAll(currentPage, pageLimit, {status: SALES_S
             <li><TabsButton btnTxt="Won Leads" dataLen={wonLeadData.length} no={2} currentVal={currentTab} onClickEvent={()=>handleTabs(2)}/></li>
             <li><TabsButton btnTxt="Lost Leads" dataLen={lostLeadData.length} no={3} currentVal={currentTab} onClickEvent={()=>handleTabs(3)}/></li>
           </ul>
-          {(currentTab === 1) && <table className="w-full rounded-xl overflow-hidden">
+          {(currentTab === 1) && <> <table className="w-full rounded-xl overflow-hidden">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
@@ -333,7 +363,28 @@ const result = await LeadService.getAll(currentPage, pageLimit, {status: SALES_S
                           {item.source}
                         </span>
                       </td>
-                      <td className="p-4"> {item.status} </td>
+                      <td className="p-4"> <span
+    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium capitalize
+      ${
+        item.status === "new"
+          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+          : item.status === "contacted"
+          ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300"
+          : item.status === "qualified"
+          ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
+          : item.status === "proposal"
+          ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
+          : item.status === "won"
+          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+          : item.status === "lost"
+          ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
+          : item.status === "delete"
+          ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+          : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300"
+      }`}
+  >
+    {item.status}
+  </span> </td>
                       <td>
                         <div className="flex items-center gap-2">
                           {hasPermission(PERMISSIONS.readLead) ? (
@@ -349,7 +400,7 @@ const result = await LeadService.getAll(currentPage, pageLimit, {status: SALES_S
                               <FaRegEye className="text-xl" />{" "}
                             </span>
                           )}
-                          {hasPermission(PERMISSIONS.updateLead) ? (
+                          {hasPermission(PERMISSIONS.updateLead) && (item.status !== SALES_STATUS.DELETE) ? (
                             <Link
                               href={`/leads/update/${item.id}`}
                               className="h-9 w-9 flex items-center justify-center rounded-md
@@ -375,14 +426,14 @@ const result = await LeadService.getAll(currentPage, pageLimit, {status: SALES_S
                             {" "}
                             <MdDeleteOutline className="text-xl" />{" "}
                           </button> */}
-                         {item.inDeal === false ?  <Link
+                         {(item.status !== SALES_STATUS.DELETE) ? (item.inDeal === false  ?  <Link
                             href={`/leads/make-deal/${item.id}`}
                             className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-blue-100 text-blue-500 hover:bg-blue-200 hover:scale-104 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-blue-100 disabled:opacity-80"
                             
                           >
                             {" "}
                             <FaRegHandshake className="text-xl" />{" "}
-                          </Link> : <span className="h-9 w-9 flex items-center justify-center rounded-md bg-blue-900 text-white hover:bg-blue-950 dark:bg-blue-600 dark:hover:bg-blue-700 cursor-default" title="Already on deal"> <FaHandshake className="text-xl"/></span>}
+                          </Link> : <span className="h-9 w-9 flex items-center justify-center rounded-md bg-blue-900 text-white hover:bg-blue-950 dark:bg-blue-600 dark:hover:bg-blue-700 cursor-default" title="Already on deal"> <FaHandshake className="text-xl"/></span>) : <span className="h-9 w-9 flex items-center justify-center rounded-md bg-blue-100 text-blue-500 opacity-50 cursor-not-allowed" title="Already on deal"> <FaHandshake className="text-xl"/></span>}
                         </div>
                       </td>
                     </tr>
@@ -431,8 +482,9 @@ const result = await LeadService.getAll(currentPage, pageLimit, {status: SALES_S
                 
               )}
             </tbody>
-          </table>}
-          {(currentTab === 2) && <table className="w-full rounded-xl overflow-hidden">
+          </table>
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={((page)=>setCurrentPage(page))} className="w-full"/> </>}
+          {(currentTab === 2) && <><table className="w-full rounded-xl overflow-hidden">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
@@ -508,7 +560,28 @@ const result = await LeadService.getAll(currentPage, pageLimit, {status: SALES_S
                           {item.source}
                         </span>
                       </td>
-                      <td className="p-4"> {item.status} </td>
+                      <td className="p-4"> <span
+    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium capitalize
+      ${
+        item.status === "new"
+          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+          : item.status === "contacted"
+          ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300"
+          : item.status === "qualified"
+          ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
+          : item.status === "proposal"
+          ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
+          : item.status === "won"
+          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+          : item.status === "lost"
+          ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
+          : item.status === "delete"
+          ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+          : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300"
+      }`}
+  >
+    {item.status}
+  </span> </td>
                       <td>
                         <div className="flex items-center gap-2">
                           {hasPermission(PERMISSIONS.readLead) ? (
@@ -598,9 +671,9 @@ const result = await LeadService.getAll(currentPage, pageLimit, {status: SALES_S
                 
               )}
             </tbody>
-          </table>}
+          </table><Pagination currentPage={currentWonPage} totalPages={wonTotalPages} onPageChange={((page)=>setWonCurrentPage(page))} className="w-full" /></>}
 
-          {(currentTab === 3) && <table className="w-full rounded-xl overflow-hidden">
+          {(currentTab === 3) && <> <table className="w-full rounded-xl overflow-hidden">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
@@ -676,7 +749,28 @@ const result = await LeadService.getAll(currentPage, pageLimit, {status: SALES_S
                           {item.source}
                         </span>
                       </td>
-                      <td className="p-4"> {item.status} </td>
+                      <td className="p-4"> <span
+    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium capitalize
+      ${
+        item.status === "new"
+          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+          : item.status === "contacted"
+          ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300"
+          : item.status === "qualified"
+          ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
+          : item.status === "proposal"
+          ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
+          : item.status === "won"
+          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+          : item.status === "lost"
+          ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
+          : item.status === "delete"
+          ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+          : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300"
+      }`}
+  >
+    {item.status}
+  </span> </td>
                       <td>
                         <div className="flex items-center gap-2">
                           {hasPermission(PERMISSIONS.readLead) ? (
@@ -692,7 +786,7 @@ const result = await LeadService.getAll(currentPage, pageLimit, {status: SALES_S
                               <FaRegEye className="text-xl" />{" "}
                             </span>
                           )}
-                          {hasPermission(PERMISSIONS.updateLead) ? (
+                          {hasPermission(PERMISSIONS.updateLead) || (item.status !== SALES_STATUS.DELETE) ? (
                             <Link
                               href={`/leads/update/${item.id}`}
                               className="h-9 w-9 flex items-center justify-center rounded-md
@@ -766,7 +860,8 @@ const result = await LeadService.getAll(currentPage, pageLimit, {status: SALES_S
                 
               )}
             </tbody>
-          </table>}
+          </table> <Pagination currentPage={currentLostPage} totalPages={lostTotalPages} onPageChange={((page)=>setLostCurrentPage(page))} className="w-full" /> </>}
+          
           
         </div>
       </div>

@@ -23,12 +23,21 @@ class LeadController:
             raise e
         
 
-    async def bulk_create(self, request: Request, payload: List[Dict[str, Any]]):
+    async def bulk_create(self, request: Request, payload: Dict[str, Any]):
         try:
             user = request.state.user
             
-            result = await self.service.create(payload=payload, createdBy=user["_id"])
-            return successResponse(201, f"{result.get("fullName")} query created successfully", result)
+            result = await self.service.bulk_create(payload=payload, user=user)
+            
+            
+            inserted = result.get('inserted', 0)
+            skipped = result.get('skipped', 0)
+            
+            message = f"Successfully created {inserted} lead{'s' if inserted != 1 else ''}"
+            if skipped > 0:
+                message += f". Skipped {skipped} duplicate{'s' if skipped != 1 else ''}"
+            
+            return successResponse(201, message, result)
 
         except AppException as e:
             raise e
@@ -43,6 +52,7 @@ class LeadController:
             return successResponse(200, "Leads data fetched successfully", result)
 
         except AppException as e:
+            print("err: ", e)
             raise e
         
     async def get_all_by_user(self, request: Request):

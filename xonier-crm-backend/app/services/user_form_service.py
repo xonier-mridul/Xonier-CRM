@@ -130,9 +130,10 @@ class UserFormService:
 
             is_exist = await self.repo.find_one({"_id": PydanticObjectId(id), "userId.$id": PydanticObjectId(userId)})
 
-
             if not is_exist:
                 raise AppException(403, "Unauthorized for this request")
+            
+
             update = await self.repo.update(id=PydanticObjectId(id), data=payload)
             if not update:
                 raise AppException(400, "Document updation failed")

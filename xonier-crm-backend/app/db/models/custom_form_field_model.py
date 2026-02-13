@@ -8,6 +8,8 @@ from app.core.enums import FORM_FIELD_MODULES
 from app.db.models.user_model import UserModel
 from enum import Enum
 
+
+
 class SelectOption(BaseModel):
     label: str
     value: str

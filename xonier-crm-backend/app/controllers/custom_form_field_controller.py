@@ -38,6 +38,20 @@ class CustomFormFieldController:
 
         except AppException as e:
             raise e
+        
+
+    async def delete(self, request:Request, id:str):
+        try:
+            user = request.state.user
+
+            await self.service.delete(user=user, id=id)
+
+            return successResponse(status_code=200, message=f" field delete successfully")
+
+
+        except AppException as e:
+            raise e
+
 
 
         

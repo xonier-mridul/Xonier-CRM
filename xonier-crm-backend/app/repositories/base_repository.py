@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Tuple
 from motor.motor_asyncio import AsyncIOMotorClientSession
 from beanie import PydanticObjectId
 import math
@@ -274,6 +274,7 @@ class BaseRepository:
         populate: Optional[List[str]] = None,
         projection: Optional[str] = "",
         session: Optional[AsyncIOMotorClientSession] = None,
+        sort: Optional[List[str]] = None
     ):
 
         filters = filters or {}
@@ -285,6 +286,9 @@ class BaseRepository:
 
         if session:
             query = query.session(session)
+
+        if sort:
+            query.sort(sort)
 
         items = await query.to_list()
        
@@ -319,13 +323,19 @@ class BaseRepository:
     filters: Optional[Dict[str, Any]] = None,
     populate: Optional[List[str]] = None,
     session: Optional[AsyncIOMotorClientSession] = None,
+    sort: Optional[List[str]] = None
     ):
         filters = filters or {}
         populate = populate or []
 
         skip = (page - 1) * limit
 
+       
+
         query = self.model.find(filters).skip(skip).limit(limit)
+
+        if sort:
+            query.sort(sort)
 
         if session:
             query = query.session(session)

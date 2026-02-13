@@ -6,7 +6,7 @@ import { FaRegEye } from "react-icons/fa";
 import { FaPlus, FaXmark } from "react-icons/fa6";
 import { IoIosSearch } from "react-icons/io";
 import { usePermissions } from "@/src/hooks/usePermissions";
-import { DEAL_PIPELINE, DEAL_STAGES, PERMISSIONS } from "@/src/constants/enum";
+import { DEAL_PIPELINE, DEAL_STAGES, DEAL_STATUS, PERMISSIONS } from "@/src/constants/enum";
 import { Deal } from "@/src/types/deals/deal.types";
 import extractErrorMessages from "../../utils/error.utils";
 import axios from "axios";
@@ -21,6 +21,7 @@ import { formatDate } from "../../utils/date.utils";
 import {  } from "react-icons/md";
 import { handleCopy } from "../../utils/clipboard.utils";
 import { FaRegPaperPlane } from "react-icons/fa";
+import Pagination from "@/src/components/common/pagination";
 
 const page = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -35,6 +36,8 @@ const page = (): JSX.Element => {
   const [wonPageLimit, setWonPageLimit] = useState<number>(10);
   const [lostPageLimit, setLostPageLimit] = useState<number>(10);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalWonPages, setTotalWonPages] = useState<number>(1);
+  const [totalLostPages, setTotalLostPages] = useState<number>(1);
   const [currentTab, setCurrentTab] = useState<number>(1);
 
   const { hasPermission } = usePermissions();
@@ -50,6 +53,7 @@ const page = (): JSX.Element => {
         console.log("deal data: ", data.data);
         setCurrentPage(Number(data.page));
         setPageLimit(Number(data.limit));
+        setTotalPages(Number(data.totalPages))
         
       }
     } catch (error) {
@@ -77,6 +81,7 @@ const page = (): JSX.Element => {
         
         setWonCurrentPage(Number(data.page));
         setWonPageLimit(Number(data.limit));
+        setTotalWonPages(Number(data.totalPages))
         
       }
     } catch (error) {
@@ -96,7 +101,7 @@ const page = (): JSX.Element => {
   const getLostDealData = async () => {
     setIsLoading(true);
     try {
-      const result = await dealService.getAll(wonCurrentPage, wonPageLimit, {stage: "lost"});
+      const result = await dealService.getAll(lostCurrentPage, lostPageLimit, {stage: "lost"});
 
       if (result.status === 200) {
         const data = result.data.data;
@@ -104,6 +109,7 @@ const page = (): JSX.Element => {
         
         setLostCurrentPage(Number(data.page));
         setLostPageLimit(Number(data.limit));
+        setTotalLostPages(Number(data.totalPages))
         
       }
     } catch (error) {
@@ -141,6 +147,28 @@ const page = (): JSX.Element => {
      }
   }
 
+
+  useEffect(() => {
+    getWonDealData()
+  }, [wonCurrentPage, wonPageLimit])
+
+  useEffect(() => {
+    getLostDealData()
+  }, [lostCurrentPage, lostPageLimit])
+
+  const handlePageLimit = async(v:number)=>{
+    if(currentTab === 1){
+      setPageLimit(v)
+    }
+    else if(currentTab === 2){
+      setWonPageLimit(v)
+    }
+    else if(currentTab === 3){
+      setLostPageLimit(v)
+    }
+  }
+  
+
   return (
     <div className={`ml-72 mt-14 p-6`}>
       
@@ -159,7 +187,7 @@ const page = (): JSX.Element => {
                 name="limit"
                 id="limit"
                 className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10"
-                onChange={(e) => setPageLimit(Number(e.target.value))}
+                onChange={(e) => handlePageLimit(Number(e.target.value))}
               >
                 <option value="10">10</option>
                 <option value="20">20</option>
@@ -188,7 +216,7 @@ const page = (): JSX.Element => {
             <li><TabsButton btnTxt="Won Deals" dataLen={wonDealData.length} no={2} currentVal={currentTab} onClickEvent={()=>handleTabs(2)}/></li>
             <li><TabsButton btnTxt="Lost Deals" dataLen={lostDealData.length} no={3} currentVal={currentTab} onClickEvent={()=>handleTabs(3)}/></li>
           </ul>
-          {(currentTab === 1) && <table className="w-full rounded-xl overflow-hidden">
+          {(currentTab === 1) &&<> <table className="w-full rounded-xl overflow-hidden">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
@@ -253,7 +281,7 @@ const page = (): JSX.Element => {
                         <span className={`${(item.dealPipeline.trim() === DEAL_PIPELINE.REQUIREMENT_ANALYSIS) ? "bg-orange-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.QUALIFICATION) ? "bg-blue-600" : (item.dealPipeline.trim() === DEAL_PIPELINE.PROPOSAL) ? "bg-cyan-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.NEGOTIATION) ? "bg-teal-600" : (item.dealPipeline.trim() === DEAL_PIPELINE.WON) ? "bg-green-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.LOST) ? "bg-red-500" : "bg-gray-600"} text-white px-4 py-1.5 text-sm rounded-md capitalize`}>{item.dealPipeline.trim()}</span>
                       </td> */}
                       <td className="p-4 ">
-                        <span className={`${(item.dealStage.trim() === DEAL_STAGES.REQUIREMENT_ANALYSIS) ? "bg-orange-500" : (item.dealStage.trim() === DEAL_STAGES.QUALIFICATION) ? "bg-blue-600" : (item.dealStage.trim() === DEAL_STAGES.PROPOSAL) ? "bg-cyan-500" : (item.dealPipeline.trim() === DEAL_STAGES.NEGOTIATION) ? "bg-teal-600" : (item.dealStage.trim() === DEAL_STAGES.WON) ? "bg-green-500" : (item.dealStage.trim() === DEAL_STAGES.LOST) ? "bg-red-500" : "bg-gray-600"} text-white px-4 py-1.5 text-sm rounded-md capitalize text-sm`}>{item.dealStage.trim()}</span>
+                        <span className={`${(item.dealStage.trim() === DEAL_STAGES.REQUIREMENT_ANALYSIS) ? "bg-orange-500" : (item.dealStage.trim() === DEAL_STAGES.QUALIFICATION) ? "bg-blue-600" : (item.dealStage.trim() === DEAL_STAGES.PROPOSAL) ? "bg-cyan-500" : (item.dealPipeline.trim() === DEAL_STAGES.NEGOTIATION) ? "bg-teal-600" : (item.dealStage.trim() === DEAL_STAGES.WON) ? "bg-green-500" : (item.dealStage.trim() === DEAL_STAGES.LOST) ? "bg-red-500" : (item.dealStage.trim() === DEAL_STAGES.DELETE) ?  "bg-red-500" : "bg-gray-600"} text-white px-4 py-1.5 text-sm rounded-md capitalize`}>{item.dealStage.trim()}</span>
                       </td>
                       <td className="p-4 ">
                         <span
@@ -280,7 +308,7 @@ const page = (): JSX.Element => {
                               <FaRegEye className="text-xl" />{" "}
                             </span>
                           )}
-                          {hasPermission(PERMISSIONS.updateLead) ? (
+                          {(hasPermission(PERMISSIONS.updateLead) && (item.status !== DEAL_STATUS.DELETE)) ? (
                             <Link
                               href={`/deals/update/${item.id}`}
                               className="h-9 w-9 flex items-center justify-center rounded-md bg-yellow-200/80 dark:bg-yellow-100
@@ -297,7 +325,7 @@ const page = (): JSX.Element => {
                               <MdOutlineEdit className="text-xl" />
                             </span>
                           )}
-                          {hasPermission(PERMISSIONS.createQuote) ? (
+                          {(hasPermission(PERMISSIONS.createQuote) && (item.status !== DEAL_STATUS.DELETE)) ? (
                            item.inQuotation ? <span
                               className="h-9 w-9 flex items-center justify-center rounded-md
                bg-orange-500 text-white  cursor-no-drop"
@@ -367,8 +395,8 @@ const page = (): JSX.Element => {
                 
               )}
             </tbody>
-          </table>}
-          {(currentTab === 2) && <table className="w-full rounded-xl overflow-hidden">
+          </table> <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={((page)=>setCurrentPage(page))} className="w-full"/> </>}
+          {(currentTab === 2) && <> <table className="w-full rounded-xl overflow-hidden">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
@@ -527,8 +555,8 @@ const page = (): JSX.Element => {
                 
               )}
             </tbody>
-          </table>}
-          {(currentTab === 3) && <table className="w-full rounded-xl overflow-hidden">
+          </table> <Pagination currentPage={wonCurrentPage} totalPages={totalWonPages} onPageChange={((page)=>setWonCurrentPage(page))} className="w-full"/> </>}
+          {(currentTab === 3) && <><table className="w-full rounded-xl overflow-hidden">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
@@ -687,7 +715,7 @@ const page = (): JSX.Element => {
                 
               )}
             </tbody>
-          </table>}
+          </table> <Pagination currentPage={lostCurrentPage} totalPages={totalLostPages} onPageChange={((page)=>setLostCurrentPage(page))} className="w-full"/></>}
         </div>
     </div>
   );

@@ -1,6 +1,6 @@
 
 from pydantic import BaseModel, Field, field_validator
-from app.core.enums import DEAL_PIPELINE, DEAL_STAGES, DEAL_TYPE, FORECAST_CATEGORY
+from app.core.enums import DEAL_PIPELINE, DEAL_STAGES, DEAL_TYPE, FORECAST_CATEGORY, DEAL_STATUS
 from typing import Optional
 from datetime import datetime
 
@@ -75,6 +75,9 @@ class DealUpdateSchema(BaseModel):
             raise ValueError("Amount must be grater then 0")
         
         return v
+    
+class UpdateDealStatusSchema(BaseModel):
+    status: DEAL_STATUS
         
        
 

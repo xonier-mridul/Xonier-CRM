@@ -56,7 +56,7 @@ import {
 } from "react-icons/io5";
 import Link from "next/link";
 import { usePermissions } from "@/src/hooks/usePermissions";
-import { PERMISSIONS } from "@/src/constants/enum";
+import { DEAL_STATUS, PERMISSIONS } from "@/src/constants/enum";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 
 const DealViewPage = (): JSX.Element => {
@@ -102,9 +102,13 @@ const DealViewPage = (): JSX.Element => {
       });
 
       if (confirm) {
-        // Add your delete service call here
-        toast.success("Deal deleted successfully");
-        router.push('/deals');
+        const result = await dealService.delete(dealData.id)
+        if(result.status === 200){
+
+          toast.success("Deal deleted successfully");
+          router.push('/deals');
+        }
+        
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -135,6 +139,7 @@ const DealViewPage = (): JSX.Element => {
       'negotiation': 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
       'closed_won': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
       'closed_lost': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+      'delete': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
     };
     return colors[stage] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
   };
@@ -198,12 +203,12 @@ const DealViewPage = (): JSX.Element => {
     <div className="mt-14 ml-72 p-6 min-h-screen">
       {/* Header Section */}
       <div className="mb-6">
-        <div className="bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+        <div className={`${dealData.status === DEAL_STATUS.DELETE ? "border-red-400 bg-red-100 ": "bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-700"}  rounded-xl border border-gray-200 p-6`}>
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 
-                <h1 className="text-3xl font-bold line-clamp-1 w-64 text-gray-900 dark:text-white capitalize">
+                <h1 className={`${dealData.status === DEAL_STATUS.DELETE ? "text-red-500 " : "text-gray-900 dark:text-white"} text-3xl font-bold line-clamp-1 w-64 capitalize`}>
                   {dealData?.dealName}
                 </h1>
                 <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium capitalize ${getDealStageColor(dealData?.dealStage)}`}>
@@ -226,7 +231,7 @@ const DealViewPage = (): JSX.Element => {
 
 
             <div className="flex flex-wrap items-center gap-2">
-              {hasPermission(PERMISSIONS.createQuote) && (
+              {(hasPermission(PERMISSIONS.createQuote)&& (dealData.status !== DEAL_STATUS.DELETE)) && (
                 <Link
                   href={`/deals/quotation/${dealData.id}`}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors group"
@@ -251,7 +256,7 @@ const DealViewPage = (): JSX.Element => {
                   <IoEllipsisVertical className="w-4 h-4" />
                 </button>
                 <div className="hidden group-hover:block absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10">
-                 {hasPermission(PERMISSIONS.updateDeal) ? (
+                 {(hasPermission(PERMISSIONS.updateDeal) && (dealData.status !== DEAL_STATUS.DELETE)) ? (
                 <Link
                   href={`/deals/update/${dealData.id}`}
                   className="w-full flex items-center gap-2 px-4 py-2 text-blue-600 dark:text-blue-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
@@ -260,13 +265,13 @@ const DealViewPage = (): JSX.Element => {
                   Update Deal
                 </Link>
               ) : (
-                <span className="inline-flex items-center gap-2 px-4 py-2 bg-blue-400 opacity-60 text-white rounded-lg cursor-not-allowed">
+                <span className="inline-flex items-center gap-2 px-4 py-2  opacity-60 rounded-lg cursor-not-allowed">
                   <MdOutlineSettings className="w-4 h-4" />
                   Update Deal
                 </span>
               )}
 
-                  {hasPermission(PERMISSIONS.deleteDeal) && (
+                  {(hasPermission(PERMISSIONS.deleteDeal) && (dealData.status !== DEAL_STATUS.DELETE)) && (
                     <button
                       onClick={handleDelete}
                       className="w-full flex items-center gap-2 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
