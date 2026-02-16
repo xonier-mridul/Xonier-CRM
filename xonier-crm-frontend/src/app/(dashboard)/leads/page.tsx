@@ -426,14 +426,14 @@ const result = await LeadService.getAll(currentLostPage, lostPageLimit, {status:
                             {" "}
                             <MdDeleteOutline className="text-xl" />{" "}
                           </button> */}
-                         {(item.status !== SALES_STATUS.DELETE) ? (item.inDeal === false  ?  <Link
+                         {hasPermission(PERMISSIONS.createDeal) ? (item.status !== SALES_STATUS.DELETE) ? ((item.inDeal === false)  ?  <Link
                             href={`/leads/make-deal/${item.id}`}
                             className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-blue-100 text-blue-500 hover:bg-blue-200 hover:scale-104 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-blue-100 disabled:opacity-80"
                             
                           >
                             {" "}
                             <FaRegHandshake className="text-xl" />{" "}
-                          </Link> : <span className="h-9 w-9 flex items-center justify-center rounded-md bg-blue-900 text-white hover:bg-blue-950 dark:bg-blue-600 dark:hover:bg-blue-700 cursor-default" title="Already on deal"> <FaHandshake className="text-xl"/></span>) : <span className="h-9 w-9 flex items-center justify-center rounded-md bg-blue-100 text-blue-500 opacity-50 cursor-not-allowed" title="Already on deal"> <FaHandshake className="text-xl"/></span>}
+                          </Link> : <span className="h-9 w-9 flex items-center justify-center rounded-md bg-blue-900 text-white hover:bg-blue-950 dark:bg-blue-600 dark:hover:bg-blue-700 cursor-default" title="Already on deal"> <FaHandshake className="text-xl"/></span>) : <span className="h-9 w-9 flex items-center justify-center rounded-md bg-blue-100 text-blue-500 opacity-50 cursor-not-allowed" title="Already on deal"> <FaHandshake className="text-xl"/></span> : <span className="h-9 w-9 flex items-center justify-center rounded-md bg-blue-100 text-blue-500 opacity-50 cursor-not-allowed opacity-80" title="Already on deal"> <FaHandshake className="text-xl"/></span>}
                         </div>
                       </td>
                     </tr>

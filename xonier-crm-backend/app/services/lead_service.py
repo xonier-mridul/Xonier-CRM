@@ -522,11 +522,18 @@ class LeadService:
 
             is_admin = False
             is_creator = False
+            is_manager = False
 
             for item in user["userRole"]:
                 if item["code"] == SUPER_ADMIN_CODE:
                     is_admin = True
                     break
+            
+            if not is_admin:
+                members = await self.getTeamMem.get_team_members(user["_id"])
+                if members:
+                    is_manager = True
+                    
 
             result = result.model_dump(
                 mode="json", exclude={"hashedEmail", "hashedPhone"}
@@ -535,9 +542,9 @@ class LeadService:
             if str(result["createdBy"]["id"]) == str(user["_id"]):
                 is_creator = True
 
-            if not is_admin and not is_creator:
+            if not is_admin and not is_creator and not is_manager:
                 raise AppException(
-                    403, "Unauthorized, only admin or creator access this"
+                    403, "Unauthorized, only admin. manager or creator access lead data"
                 )
 
             result["email"] = encryptor.decrypt_data(result["email"])
@@ -628,6 +635,9 @@ class LeadService:
             
             if result.status == SALES_STATUS.DELETE.value:
                 raise AppException(400, "Action denied, Lead is already deleted")
+            
+            if result.inDeal:
+                raise AppException(400, "Lead is in deal, so please delete from the deal")
 
             result = result.model_dump(
                 mode="json", exclude={"hashedEmail", "hashedPhone"}

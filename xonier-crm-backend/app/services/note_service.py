@@ -154,7 +154,7 @@ class NoteService:
             query = {
                 "status": NOTE_STATUS.ACTIVE.value,
                 "visibility": NOTE_VISIBILITY.PRIVATE.value,
-                "createdBy.$id": user["_id"],
+                "createdBy.$id": PydanticObjectId(user["_id"]),
             }
 
 
@@ -172,15 +172,16 @@ class NoteService:
             cache = await FastAPICache.get_backend().get(key=cache_key)
 
             if cache:
-                
                 return json.loads(cache)
-
+            
             result = await self.noteRepo.get_all(
                 page=page,
                 limit=limit,
                 filters=query,
                 populate=["createdBy"]
             )
+
+
 
             if not result:
                 raise AppException(404, "Private notes not found")

@@ -23,6 +23,7 @@ import { RiLockPasswordLine } from "react-icons/ri";
 import { TiGlobeOutline } from "react-icons/ti";
 import { RootState } from "@/src/store";
 import checkRole from "@/src/app/utils/roleCheck.utils";
+import { FiUserCheck } from "react-icons/fi";
 
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSIONS } from "@/src/constants/enum";
@@ -353,6 +354,19 @@ const SideBar = () => {
                 </motion.ul>
               )}
             </AnimatePresence>
+          </li>}
+          {hasPermission(PERMISSIONS.readEvent) &&<li>
+            <Link
+              href="/clients"
+              className={`${
+                isActive("/clients")
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
+              } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+            >
+              <FiUserCheck className="text-lg" />
+              Clients
+            </Link>
           </li>}
         </ul>
       </div>

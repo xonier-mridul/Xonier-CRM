@@ -152,7 +152,8 @@ class EmailManager:
                 port=self.email_port,
                 username=self.email_user,
                 password=self.email_pass,
-                use_tls=True
+                # use_tls=True
+                start_tls=True
             )
             return True
         except Exception as e:

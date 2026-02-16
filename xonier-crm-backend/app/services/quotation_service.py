@@ -19,7 +19,7 @@ from app.repositories.quotation_history_repository import QuotationHistoryReposi
 from app.repositories.invoice_repository import InvoiceRepository
 from datetime import datetime, timezone
 from fastapi_cache import FastAPICache
-from app.core.constants import DEAL_CACHE_NAMESPACE, DEAL_CACHE_NAMESPACE_BY_ID
+from app.core.constants import DEAL_CACHE_NAMESPACE, DEAL_CACHE_NAMESPACE_BY_ID, LEAD_CACHE_NAMESPACE
 
 
 class QuotationService:
@@ -90,7 +90,7 @@ class QuotationService:
                     if new_payload.get("valid") is None:
                         new_payload.pop("valid")
 
-            
+                    print("customer email: ", payload["customerEmail"])
 
                     await self.emailManager.send_quotation_email(to=payload["customerEmail"], quote_id=quote_id, title=[payload["title"]], customer_name=payload["customerName"], customer_email=payload["customerEmail"], customer_phone=payload["customerPhone"], company_name=payload["companyName"], issue_date=payload["issueDate"], valid_until=payload["valid"], sub_total=payload["subTotal"], total=payload["total"], description=payload["description"], company_logo= COMPANY_LOGO_LINK, company_address=COMPANY_ADDRESS)
                     
@@ -198,11 +198,16 @@ class QuotationService:
 
             if str(quotation["createdBy"]["id"]) == str(user["_id"]):
                 return quotation
+            
+
 
 
             members = await self.getTeamMem.get_team_members(user["_id"])
 
-            if members and quotation["createdBy"]["id"] in members:
+            print("members: ", members)
+            print("user: ", quotation["createdBy"]["id"])
+
+            if members and ObjectId(quotation["createdBy"]["id"]) in members:
                 return quotation
 
 
@@ -401,8 +406,6 @@ class QuotationService:
                     raise AppException(500, f"Internal server error: {e}")
 
 
-
-
     async def resend(self, quoteId: str, user: Dict[str, Any])->bool:
         async with await self.client.start_session() as session:
             async with session.start_transaction():
@@ -457,8 +460,8 @@ class QuotationService:
                         self.encryption.decrypt_data(quotation.customerPhone)
                         if quotation.customerPhone else None
                     )
-
-                    await self.emailManager.send_quotation_email(
+                    print("customer email: ", customer_email)
+                    is_send = await self.emailManager.send_quotation_email(
                         to=customer_email,
                         quote_id=quotation.quoteId,
                         title=[quotation.title],
@@ -474,6 +477,9 @@ class QuotationService:
                         company_logo=COMPANY_LOGO_LINK,
                         company_address=COMPANY_ADDRESS
                     )
+
+                    if not is_send:
+                        raise AppException(400, "Quotation mail failed")
 
                     await self.repo.update(
                         id=quotation.id,
@@ -547,6 +553,8 @@ class QuotationService:
                     
                     await self.repo.update(id=PydanticObjectId(quoteId), data={"quotationStatus": QuotationStatus.DELETE, "deletedAt": datetime.now(timezone.utc), "deletedBy": PydanticObjectId(user["_id"])}, session=session)
 
+                    await self.dealRepo.update(id=PydanticObjectId(quotation.deal.id), data={"inQuotation": False, "dealStage": DEAL_STAGES.REQUIREMENT_ANALYSIS.value}, session=session)
+
                     await self.historyRepo.create(
                         data={
                             "quotation": quoteId,
@@ -557,6 +565,10 @@ class QuotationService:
                         },
                         session=session
                     )
+
+                    await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE)
+                    await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE_BY_ID)
+                    await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
 
                     return True
 

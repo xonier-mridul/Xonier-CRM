@@ -39,18 +39,18 @@ class DealModel(Document):
 
     class Settings:
         name = "deals"
-        indexes = [
-            IndexModel(
-                [("deal_id", 1)],
-                unique=True,
-                name="unique_deal_id"
-            ),
-            IndexModel(
-                [("lead_id.$id", 1)],
-                unique=True,
-                name="idx_lead_id"
-            )
-        ]
+        # indexes = [
+        #     IndexModel(
+        #         [("deal_id", 1)],
+        #         unique=True,
+        #         name="unique_deal_id"
+        #     ),
+        #     IndexModel(
+        #         [("lead_id.$id", 1)],
+        #         unique=True,
+        #         name="idx_lead_id"
+        #     )
+        # ]
 
     @before_event(Save, Replace)
     def update_timestamp_update(self):

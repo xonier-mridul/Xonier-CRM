@@ -18,5 +18,5 @@ class PermissionRepository(BaseRepository):
         for items in data:
            
            permissions.add(items["code"])
-        print("permissions data: ", permissions)
+
         return permissions
