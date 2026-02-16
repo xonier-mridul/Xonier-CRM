@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///Users/mac/Desktop/Xonier%20CRM/xonier-crm-frontend/src/app/utils/error.utils.tsx"],"sourcesContent":["const extractErrorMessages = (error: any): string[] => {\n  const data = error?.response?.data;\n\n  if (!data) return [\"Something went wrong\"];\n\n\n  if (Array.isArray(data.detail)) {\n    return data.detail.map((err: any) => err.msg || \"Invalid input\");\n  }\n\n\n  if (typeof data.detail === \"string\") {\n    return [data.detail];\n  }\n\n\n  if (typeof data.message === \"string\") {\n    return [data.message];\n  }\n\n  return [\"Unexpected error occurred\"];\n};\n\nexport default extractErrorMessages\n"],"names":[],"mappings":";;;;AAAA,MAAM,uBAAuB,CAAC;IAC5B,MAAM,OAAO,OAAO,UAAU;IAE9B,IAAI,CAAC,MAAM,OAAO;QAAC;KAAuB;IAG1C,IAAI,MAAM,OAAO,CAAC,KAAK,MAAM,GAAG;QAC9B,OAAO,KAAK,MAAM,CAAC,GAAG,CAAC,CAAC,MAAa,IAAI,GAAG,IAAI;IAClD;IAGA,IAAI,OAAO,KAAK,MAAM,KAAK,UAAU;QACnC,OAAO;YAAC,KAAK,MAAM;SAAC;IACtB;IAGA,IAAI,OAAO,KAAK,OAAO,KAAK,UAAU;QACpC,OAAO;YAAC,KAAK,OAAO;SAAC;IACvB;IAEA,OAAO;QAAC;KAA4B;AACtC;uCAEe"}}]
+}

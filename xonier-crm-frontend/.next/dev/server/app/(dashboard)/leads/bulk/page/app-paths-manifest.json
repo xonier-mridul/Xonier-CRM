@@ -1,0 +1,3 @@
+{
+  "/(dashboard)/leads/bulk/page": "app/(dashboard)/leads/bulk/page.js"
+}
