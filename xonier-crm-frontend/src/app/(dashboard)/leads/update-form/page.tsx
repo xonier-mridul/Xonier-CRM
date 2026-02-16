@@ -660,7 +660,7 @@ const handleCreateCustomField = async (e: FormEvent) => {
               ))}
         </ul>
         
-        <button className="flex items-center group hover:bg-blue-600 gap-3 capitalize border-2 border-gray-300 hover:border-blue-600 rounded-md px-4 py-2.5 bg-white w-full hover:text-white cursor-pointer" onClick={handleUpdateFieldPopup}>
+        <button className="flex items-center group hover:bg-blue-600 gap-3 capitalize border-2 border-gray-300 dark:border-gray-800 hover:border-blue-600 rounded-md px-4 py-2.5 bg-white dark:bg-slate-700 w-full hover:text-white cursor-pointer" onClick={handleUpdateFieldPopup}>
           <FaPlus className="text-blue-500 group-hover:text-white group-hover:rotate-90 transition-all"/> 
           Add Custom fields
         </button>

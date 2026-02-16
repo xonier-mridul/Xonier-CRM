@@ -37,7 +37,9 @@ class DealService:
                     leadId=PydanticObjectId(lead_id)
                 )
 
-                if is_exist:
+                print("iiii: ", is_exist.status != DEAL_STATUS.DELETE.value)
+
+                if is_exist and is_exist.status != DEAL_STATUS.DELETE.value:
                     raise AppException(
                         400, "Deal already exist for this lead, process stopped"
                     )
@@ -97,7 +99,7 @@ class DealService:
                     is_admin = True
                     break
 
-            query = {}
+            query = {"status": DEAL_STATUS.ACTIVE.value}
 
             if not is_admin:
                 
@@ -204,6 +206,7 @@ class DealService:
             
             isAdmin = False
             isCreator = False
+            isManager = False
            
             userRole = user["userRole"]
 
@@ -211,6 +214,11 @@ class DealService:
                 if item["code"] == SUPER_ADMIN_CODE:
                    isAdmin = True
                    break
+
+            if not isAdmin:
+                members = await self.getTeamMem.get_team_members(user["_id"])
+                if members:
+                    isManager = True
 
             
             result = await self.repo.find_by_id(id=PydanticObjectId(dealId), populate=["createdBy", "lead_id", "updatedBy"])
@@ -225,8 +233,8 @@ class DealService:
                 isCreator = True
 
 
-            if not isAdmin and not isCreator:
-                raise AppException(403, "Unauthorized, only admin or creator access this")
+            if not isAdmin and not isCreator and not isManager:
+                raise AppException(403, "Unauthorized, only admin, manager or creator access deal")
             
             email = result["lead_id"]["email"]
             phone = result["lead_id"]["phone"]
@@ -259,6 +267,7 @@ class DealService:
 
             isAdmin:bool = False
             isCreator:bool = False
+            isManager:bool = False
 
             deal = await self.repo.find_by_id(id=PydanticObjectId(id), populate=["createdBy"])
             if not deal:
@@ -281,9 +290,14 @@ class DealService:
 
                 if user["_id"] == deal["createdBy"]["id"]:
                     isCreator = True
+                
+               
+                members = await self.getTeamMem.get_team_members(user["_id"])
+                if members:
+                    isManager = True
             
-            if not isAdmin and not isCreator:
-                raise AppException(403, "Unauthorized, only admin or creator access this")
+            if not isAdmin and not isCreator and not isManager:
+                raise AppException(403, "Unauthorized, only admin, manager or creator update deal")
             
             new_payload: Dict[str, Any] = {
                 **payload,
@@ -311,56 +325,74 @@ class DealService:
         
 
     async def delete(self, id: str, user:Dict[str, Any]):
-        try:
-            if not ObjectId.is_valid(id):
-                raise AppException(400, "Invalid Deal object id")
+        async with await self.client.start_session() as session:
+            async with session.start_transaction():
+                try:
+                    if not ObjectId.is_valid(id):
+                        raise AppException(400, "Invalid Deal object id")
+                    
+                    is_admin = validate_admin(user["userRole"])
+                    is_creator = False
+
+                    result = await self.repo.find_by_id(id=PydanticObjectId(id), populate=["createdBy", "lead_id"])
+
+                    if not result:
+                        raise AppException(404, "No deal data found again deal Id")
+                    
+                    if result.dealStage == DEAL_STAGES.WON.value:
+                        raise AppException(400, "Deal is won, deletion failed")
+
+                    if result.dealStage == DEAL_STAGES.DELETE.value and result.status == DEAL_STATUS.DELETE:
+                        raise AppException(400, "Deal already deleted")
+                    
+                    if result.inQuotation:
+                        raise AppException(400, "Deletion failed, Deal in under quotation")
+                    
+                    if str(result.createdBy.id) == str(user["_id"]):
+                        is_creator = True
+
+                    if not is_admin and not is_creator:
+                        raise AppException(403, "Permission denied, only admin or creator can perform this operation")
+                    
+                    
+                    payload = {
+                        "status": DEAL_STATUS.DELETE.value,
+                        "dealStage": DEAL_STAGES.DELETE.value,
+                        "deletedAt": datetime.now(timezone.utc)
+                    }
+
+                    deleted = await self.repo.update(id=PydanticObjectId(id), data=payload, session=session)
+
+                    lead_payload = {
+                        "inDeal": False,
+                        "status": SALES_STATUS.CONTACTED.value
+
+                    }
+
+                    lead_update = await self.leadRepo.update(id=PydanticObjectId(result.lead_id.id), data=lead_payload, session=session)
+
+                    if not lead_update:
+                        raise AppException(400, "Lead fields are not updated")
+
+                    if not deleted:
+                        raise AppException(400, "Deal not deleted")
+                    
+                    await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE)
+                    await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE_BY_ID)
+                    await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
+                    
+                    return result.model_dump(mode="json")
+
+
+                except AppException as e:
+                    raise
+                except Exception as e:
+                    print("error: ", e)
+                    raise AppException(500, f"Internal server error {e}")
+
+
+                
+
             
-            is_admin = validate_admin(user["userRole"])
-            is_creator = False
 
-            result = await self.repo.find_by_id(id=PydanticObjectId(id), populate=["createdBy"])
-
-            if not result:
-                raise AppException(404, "No deal data found again deal Id")
-            
-            if result.dealStage == DEAL_STAGES.WON.value:
-                raise AppException(400, "Deal is won, deletion failed")
-
-            if result.dealStage == DEAL_STAGES.DELETE.value and result.status == DEAL_STATUS.DELETE:
-                raise AppException(400, "Deal already deleted")
-            
-            if result.inQuotation:
-                raise AppException(400, "Deletion failed, Deal in under quotation")
-            
-            if str(result.createdBy.id) == str(user["_id"]):
-                is_creator = True
-
-            if not is_admin and not is_creator:
-                raise AppException(403, "Permission denied, only admin or creator can perform this operation")
-            
-            payload = {
-                "status": DEAL_STATUS.DELETE.value,
-                "dealStage": DEAL_STAGES.DELETE.value,
-                "deletedAt": datetime.now(timezone.utc)
-            }
-
-            deleted = await self.repo.update(id=PydanticObjectId(id), data=payload)
-
-            if not deleted:
-                raise AppException(400, "Deal not deleted")
-            
-            return result.model_dump(mode="json")
-
-
-        except AppException as e:
-            raise
-        except Exception as e:
-            print("error: ", e)
-            raise AppException(500, f"Internal server error {e}")
-
-
-        
-
-    
-
-        
+                

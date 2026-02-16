@@ -18,7 +18,8 @@ const InvoiceService = {
 
     return api.get(`/invoice/all?${params.toString()}`);
   },
-  getById: (id:string)=> api.get(`/invoice/get-by-id/${id}`)
+  getById: (id:string)=> api.get(`/invoice/get-by-id/${id}`),
+  download: (id:string)=> api.get(`/invoice/download/${id}`, {responseType: 'blob'})
 }
 
 export default InvoiceService

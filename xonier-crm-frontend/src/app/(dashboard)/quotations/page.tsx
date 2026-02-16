@@ -116,7 +116,7 @@ const StatusDropdown = ({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-250 min-w-[180px] py-1 max-h-[320px] overflow-y-auto">
+        <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-250 min-w-[180px] py-1 max-h-[140px] overflow-y-auto">
           {AVAILABLE_STATUSES.map((status) => (
             <button
               key={status}
@@ -412,11 +412,13 @@ const page = (): JSX.Element => {
                         </td>
                         <td className="p-4">{item.customerName}</td>
                         <td className="p-4">
-                          <StatusDropdown
+                          {(item.quotationStatus !== QuotationStatus.DELETE) ? <StatusDropdown
                             currentStatus={item.quotationStatus}
                             quoteId={item.id}
                             onStatusUpdate={updateQuoteStatus}
-                          />
+                          /> : <span className="text-white bg-red-600 px-4 py-1.5 text-sm rounded-md capitalize flex items-center gap-2 opacity-60 cursor-not-allowed min-w-[120px] justify-between">
+                             Deleted
+                            </span>}
                         </td>
                         <td className="p-4">
                           <span className="px-4 py-1.5 rounded-md bg-blue-200 text-sm text-blue-600 font-medium">

@@ -4,8 +4,8 @@ settings = get_setting()
 
 JWT_OPTIONS = {
     "httponly": True,
-    "secure": True,
-    "samesite": "none",
+    "secure": False,
+    "samesite": "lax",
     "path": "/",
     
 }

@@ -36,6 +36,9 @@ import {
 import dealService from "@/src/services/deal.service";
 import ErrorComponent from "@/src/components/ui/ErrorComponent";
 import { usePermissions } from "@/src/hooks/usePermissions";
+import LeadService from "@/src/services/lead.service";
+import { Lead } from "@/src/types/leads/leads.types";
+import LeadInfoCard from "@/src/components/pages/lead/LeadInfoCard";
 
 const page = (): JSX.Element => {
   const [err, setErr] = useState<string | string[]>("");
@@ -47,6 +50,7 @@ const page = (): JSX.Element => {
   const [requiredIds, setRequiredIds] = useState<CustomField[]>([]);
   const [userFormData, setUserFormData] = useState<UserForm | null>(null);
   const [userFormField, setUserFormField] = useState<CustomField[]>([]);
+    const [leadData, setLeadData] = useState<Lead | null>(null);
   const [formData, setFormData] = useState<DealPayload>({
     lead_id: "",
     dealName: "",
@@ -83,6 +87,31 @@ const page = (): JSX.Element => {
 
   type change = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
+  const getLeadData = async () => {
+      setIsLoading(true);
+      try {
+        const result = await LeadService.getById(id);
+        if (result.status === 200) {
+          setLeadData(result.data.data);
+        }
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          const messages = extractErrorMessages(error);
+          setErr(messages);
+          toast.error(`${messages}`);
+        } else {
+          setErr(["Something went wrong"]);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    useEffect(() => {
+      getLeadData()
+    }, [])
+    
+
   const handleChange = (e: ChangeEvent<change>) => {
     const { name, value, type } = e.target;
     if (type === "number") {
@@ -92,37 +121,6 @@ const page = (): JSX.Element => {
     }
   };
 
-  // const getDealField = async () => {
-  //   setIsLoading(true);
-  //   try {
-  //     const result = await UserFormService.getAllDeal();
-
-  //     if (result.status === 200) {
-  //       const selectedFields: CustomField[] =
-  //         result.data.data.selectedFormFields ?? [];
-  //         console.log("DSJKDHJFKH:", selectedFields)
-  //       const selectedFieldsIds = selectedFields.map((item) => item.id);
-  //       const required = selectedFields.filter(
-  //         (item) => item.required === true,
-  //       );
-  //       setUserFormData(result.data.data);
-  //       setUserFormField(selectedFields);
-  //       setSelectedFieldsIds(selectedFieldsIds);
-  //       setRequiredIds(required);
-  //     }
-  //   } catch (error) {
-  //     process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
-  //     if (axios.isAxiosError(error)) {
-  //       const messages = extractErrorMessages(error);
-  //       setErr(messages);
-  //       toast.error(`${messages}`);
-  //     } else {
-  //       setErr(["Something went wrong"]);
-  //     }
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
 
   const getAllFieldsData = async (): Promise<void> => {
     setFieldDataLoading(true);
@@ -315,7 +313,10 @@ const page = (): JSX.Element => {
         </div>
       </div>
 
-      <div className="ml-92 relative mt-18 flex flex-col gap-3 p-8">
+      
+
+      <div className="ml-92 relative mt-18 flex flex-col gap-6 p-8">
+        <LeadInfoCard lead={leadData} loading={isLoading} />
         {err && <ErrorComponent error={err} />}
         <div className=" bg-white dark:bg-gray-700 p-6 rounded-lg grid grid-cols-2 gap-5">
           {!isLoading ? (

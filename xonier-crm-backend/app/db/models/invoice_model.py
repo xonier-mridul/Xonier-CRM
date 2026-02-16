@@ -19,7 +19,6 @@ class InvoiceModel(Document):
     invoiceId: str                   
     deal: Link[DealModel]
     quotation: Link[QuotationModel]
-    # projectType: PROJECT_TYPES
     customerName: str
     customerEmail: str
     customerPhone: Optional[str] = None

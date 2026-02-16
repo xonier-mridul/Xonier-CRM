@@ -117,9 +117,44 @@ const InvoiceViewPage = (): JSX.Element => {
     toast.info("Send invoice functionality coming soon");
   };
 
-  const handleDownload = async () => {
-    toast.info("Download functionality coming soon");
-  };
+  const handleDownload = async (id: string) => {
+    if(!id){
+      toast.info("Invoice id not found")
+      return
+    }
+  try {
+
+    const result = await InvoiceService.download(id);
+    
+    if (result.status === 200) {
+
+      const blob = new Blob([result.data], { type: 'application/pdf' });
+      
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `invoice_${id}.pdf`;
+      
+
+      document.body.appendChild(link);
+      link.click();
+      
+      
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success("Invoice downloaded successfully");
+    }
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const messages = extractErrorMessages(error);
+      toast.error(`${messages}`);
+    } else {
+      toast.error("Something went wrong");
+    }
+  }
+};
 
   const handlePrint = async () => {
     window.print();
@@ -256,6 +291,8 @@ const InvoiceViewPage = (): JSX.Element => {
   const balance = calculateBalance();
   const paymentPercentage = calculatePaymentPercentage();
 
+  console.log("invoice id: ", invoiceData.id)
+
   return (
     <div className="ml-72 mt-14 p-6 min-h-screen">
 
@@ -315,7 +352,7 @@ const InvoiceViewPage = (): JSX.Element => {
                 </button>
               )}
               <button
-                onClick={handleDownload}
+                onClick={()=>handleDownload(String(id))}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
               >
                 <IoDownloadOutline className="w-4 h-4" />
