@@ -1,0 +1,1 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,46864,t=>{"use strict";var o=t.i(40141);function i(t){return(0,o.GenIcon)({tag:"svg",attr:{viewBox:"0 0 24 24"},child:[{tag:"path",attr:{d:"M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z"},child:[]}]})(t)}t.s(["GoDotFill",()=>i])}]);

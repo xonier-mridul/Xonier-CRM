@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/(dashboard)/layout,_N_T_/(dashboard)/deals/layout,_N_T_/(dashboard)/deals/page,_N_T_/deals"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/!KGRhc2hib2FyZCk/deals/__PAGE__",
+    "/!KGRhc2hib2FyZCk/deals",
+    "/!KGRhc2hib2FyZCk",
+    "/_index",
+    "/_head"
+  ]
+}
