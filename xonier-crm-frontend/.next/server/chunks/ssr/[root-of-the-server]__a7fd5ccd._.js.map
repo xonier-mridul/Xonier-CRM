@@ -1,1 +1,0 @@
-{"version":3,"sources":["../../../../src/app/%28dashboard%29/teams/categories/update/%5Bid%5D/page.tsx"],"sourcesContent":["import React, { JSX } from 'react'\n\nconst page = ():JSX.Element => {\n  return (\n    <div>\n      \n    </div>\n  )\n}\n\nexport default page\n"],"names":[],"mappings":"gYAEa,IAET,CAAA,EAAA,EAAA,GAAA,EAAC,MAAA,CAAA"}

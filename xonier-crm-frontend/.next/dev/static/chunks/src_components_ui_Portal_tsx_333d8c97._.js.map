@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///Users/mac/Desktop/Xonier%20CRM/xonier-crm-frontend/src/components/ui/Portal.tsx"],"sourcesContent":["\"use client\";\n\nimport { createPortal } from \"react-dom\";\nimport { useEffect, useState } from \"react\";\n\nconst Portal = ({ children }: { children: React.ReactNode }) => {\n  const [mounted, setMounted] = useState(false);\n\n  useEffect(() => {\n    setMounted(true);\n  }, []);\n\n  if (!mounted) return null;\n\n  return createPortal(children, document.body);\n};\n\nexport default Portal;\n"],"names":[],"mappings":";;;;AAEA;AACA;;AAHA;;;AAKA,MAAM,SAAS,CAAC,EAAE,QAAQ,EAAiC;;IACzD,MAAM,CAAC,SAAS,WAAW,GAAG,IAAA,yKAAQ,EAAC;IAEvC,IAAA,0KAAS;4BAAC;YACR,WAAW;QACb;2BAAG,EAAE;IAEL,IAAI,CAAC,SAAS,OAAO;IAErB,qBAAO,IAAA,oLAAY,EAAC,UAAU,SAAS,IAAI;AAC7C;GAVM;KAAA;uCAYS"}}]
-}
