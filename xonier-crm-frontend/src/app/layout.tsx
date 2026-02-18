@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "../components/providers/theme/Providers";
 import {DM_Sans} from "next/font/google"
+import { Suspense } from "react";
 
 import ReduxProvider from "../store/providers";
 import "react-toastify/dist/ReactToastify.css"
@@ -38,7 +39,9 @@ export default function RootLayout({
 
         <Providers>
           <ReduxProvider>
+            <Suspense fallback={null}>
             <ScrollToTop/>
+            </Suspense>
             <ToastProvider/>
          {children}
         </ReduxProvider>
