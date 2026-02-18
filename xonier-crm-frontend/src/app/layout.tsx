@@ -9,6 +9,7 @@ import "react-toastify/dist/ReactToastify.css"
 import ToastProvider from "../components/providers/TostProvider";
 import CheckAuth from "../components/common/CheckAuth";
 import 'react-loading-skeleton/dist/skeleton.css'
+import ScrollToTop from "../components/common/ScrollToTop";
 
 
 
@@ -37,6 +38,7 @@ export default function RootLayout({
 
         <Providers>
           <ReduxProvider>
+            <ScrollToTop/>
             <ToastProvider/>
          {children}
         </ReduxProvider>

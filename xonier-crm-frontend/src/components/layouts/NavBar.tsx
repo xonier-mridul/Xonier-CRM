@@ -97,7 +97,7 @@ const NavBar = () => {
                   </div>
                   <div className="w-full border-b-[1px] border-gray-200 dark:border-gray-700"></div>
                   <ul>
-                    <li><Link href={""} className="flex items-center gap-4 group"> <span className="h-11 w-11 rounded-md bg-blue-800/10 dark:bg-slate-100 dark:text-slate-900 flex items-center justify-center overflow-hidden"> <FiUser className="text-2xl group-hover:scale-110 transition-all duration-300"/> </span> <div className="flex flex-col">
+                    <li><Link href={`/users/${auth?.user?._id}`} className="flex items-center gap-4 group"> <span className="h-11 w-11 rounded-md bg-blue-800/10 dark:bg-slate-100 dark:text-slate-900 flex items-center justify-center overflow-hidden"> <FiUser className="text-2xl group-hover:scale-110 transition-all duration-300"/> </span> <div className="flex flex-col">
                      <h4 className="text-slate-900 dark:text-white font-semibold group-hover:text-blue-600"> My Profile</h4>
                      <span className="text-gray-500 dark:text-gray-400 text-sm">Account Settings</span>
                       </div> </Link></li>

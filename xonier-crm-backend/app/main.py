@@ -34,6 +34,7 @@ from app.routes.quotation_history_route import router as quote_history_router
 from app.routes.invoice_routes import router as invoice_router
 from app.routes.notes_route import router as note_router
 from app.routes.cusotm_form_field_route import router as custom_field_route
+from app.routes.activity_router import router as activity_route
 
 settings = get_setting()
 
@@ -53,7 +54,7 @@ app = FastAPI(lifespan=lifespan)
 
 
 origins = [
-   settings.CLIENT_URL, "*", "http://192.168.1.22:3000"
+   settings.CLIENT_URL,
 #    settings.CLIENT_URL_ALT
 ]
 
@@ -102,6 +103,7 @@ app.include_router(quote_history_router, prefix="/api/quote-history")
 app.include_router(invoice_router, prefix="/api/invoice")
 app.include_router(note_router, prefix="/api/note")
 app.include_router(custom_field_route, prefix="/api/custom-field")
+app.include_router(activity_route, prefix="/api/activity")
 
 
 app.add_exception_handler(HTTPException, http_exception_handler)

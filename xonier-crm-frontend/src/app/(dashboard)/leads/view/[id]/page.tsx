@@ -13,7 +13,7 @@ import {
 } from "@/src/components/ui/LeadComponent";
 import PrimaryButton from "@/src/components/ui/PrimeryButton";
 import { SIDEBAR_WIDTH } from "@/src/constants/constants";
-import { PERMISSIONS, SALES_STATUS } from "@/src/constants/enum";
+import { COUNTRY_CODE, PERMISSIONS, SALES_STATUS } from "@/src/constants/enum";
 import LeadService from "@/src/services/lead.service";
 import { Lead } from "@/src/types/leads/leads.types";
 import axios from "axios";
@@ -93,7 +93,7 @@ const LeadViewPage = (): JSX.Element => {
     getLeadData();
   }, []);
 
-  const handleDelete = async (id:string) => {
+  const handleDelete = async (id: string) => {
     if (!leadData) return;
 
     try {
@@ -104,13 +104,12 @@ const LeadViewPage = (): JSX.Element => {
       });
 
       if (confirm) {
-        const result = await LeadService.delete(id)
+        const result = await LeadService.delete(id);
 
-        if (result.status === 200){
-           toast.success("Lead deleted successfully");
-        router.push("/leads");
+        if (result.status === 200) {
+          toast.success("Lead deleted successfully");
+          router.push("/leads");
         }
-        
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -133,6 +132,8 @@ const LeadViewPage = (): JSX.Element => {
   const handlePrint = async () => {
     window.print();
   };
+
+
 
   const getPriorityColor = (priority: string) => {
     const colors: Record<string, string> = {
@@ -163,6 +164,8 @@ const LeadViewPage = (): JSX.Element => {
       "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
     );
   };
+
+  // const country = COUNTRY_CODE.map((item, value)=>)
 
   if (isLoading) {
     return (
@@ -235,13 +238,12 @@ const LeadViewPage = (): JSX.Element => {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white capitalize">
                   {leadData?.fullName}
                 </h1>
                 <span
                   className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${getPriorityColor(
-                    leadData?.priority
+                    leadData?.priority,
                   )}`}
                 >
                   <IoFlagOutline className="w-4 h-4" />
@@ -249,7 +251,7 @@ const LeadViewPage = (): JSX.Element => {
                 </span>
                 <span
                   className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                    leadData?.status
+                    leadData?.status,
                   )}`}
                 >
                   <IoStatsChartOutline className="w-4 h-4" />
@@ -269,7 +271,8 @@ const LeadViewPage = (): JSX.Element => {
 
             {/* Action Buttons */}
             <div className="flex flex-wrap items-center gap-2">
-              {hasPermission(PERMISSIONS.updateLead) && (leadData.status !== SALES_STATUS.DELETE ) ? (
+              {hasPermission(PERMISSIONS.updateLead) &&
+              leadData.status !== SALES_STATUS.DELETE ? (
                 <Link
                   href={`/leads/update/${leadData.id}`}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
@@ -284,8 +287,6 @@ const LeadViewPage = (): JSX.Element => {
                 </span>
               )}
 
-             
-
               <button
                 onClick={handlePrint}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded-lg transition-colors cursor-pointer"
@@ -299,10 +300,9 @@ const LeadViewPage = (): JSX.Element => {
                   <IoEllipsisVertical className="w-4 h-4" />
                 </button>
                 <div className="hidden group-hover:block absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10 ">
-                 
                   {hasPermission(PERMISSIONS.deleteLead) && (
                     <button
-                      onClick={()=>handleDelete(leadData.id)}
+                      onClick={() => handleDelete(leadData.id)}
                       className="w-full flex items-center gap-2 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
                     >
                       <MdDeleteOutline className="w-4 h-4" />
@@ -316,7 +316,6 @@ const LeadViewPage = (): JSX.Element => {
         </div>
       </div>
 
-      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <MetricCard
           icon={<IoBusinessOutline className="w-6 h-6" />}
@@ -366,13 +365,10 @@ const LeadViewPage = (): JSX.Element => {
         </div>
       </div>
 
-      
       <div className="flex gap-6">
         <div className="w-2/3 flex flex-col gap-6">
-          
           {activeTab === "overview" && (
             <>
-              
               <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-2 mb-6">
                   <IoInformationCircleOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -412,6 +408,20 @@ const LeadViewPage = (): JSX.Element => {
                     label="Status"
                     value={leadData?.status}
                   />
+                  {leadData?.extraFields &&
+                    Object.entries(leadData.extraFields).map(([key, value]) => (
+                      <InfoItem
+                        key={key}
+                        icon={
+                          <IoInformationCircleOutline className="w-4 h-4" />
+                        }
+                        label={key
+                          .replace(/([A-Z])/g, " $1")
+                          .replace(/^./, (c) => c.toUpperCase())
+                          .trim()}
+                        value={String(value) || "—"}
+                      />
+                    ))}
                 </div>
               </div>
 
@@ -437,7 +447,6 @@ const LeadViewPage = (): JSX.Element => {
                   />
                 </div>
               </div>
-
 
               {(leadData?.message || leadData?.membershipNotes) && (
                 <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
@@ -659,16 +668,12 @@ const MetricCard = ({
         <p className="text-sm text-gray-500 dark:text-gray-400 ">{label}</p>
         <p className="text-xl font-bold text-gray-900 dark:text-white mt-1 capitalize truncate w-42">
           {value}
-          
         </p>
-
-        
       </div>
     </div>
   </div>
 );
 
-// Component for info items with icons
 const InfoItem = ({
   icon,
   label,
@@ -683,13 +688,10 @@ const InfoItem = ({
       {icon && <span className="text-gray-400 dark:text-gray-500">{icon}</span>}
       <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
     </div>
-    <p className="font-medium text-gray-900 dark:text-white capitalize pl-6">
-      {value}
-    </p>
+    <p className="font-medium text-gray-900 dark:text-white pl-6">{value}</p>
   </div>
 );
 
-// Component for profile fields in sidebar
 const ProfileField = ({
   icon,
   label,

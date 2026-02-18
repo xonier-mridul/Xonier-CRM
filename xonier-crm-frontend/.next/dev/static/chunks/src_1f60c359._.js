@@ -273,9 +273,11 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$app$2f$utils$2f$date$2e$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/app/utils/date.utils.ts [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$app$2f$utils$2f$clipboard$2e$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/app/utils/clipboard.utils.ts [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$common$2f$pagination$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/common/pagination.tsx [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/navigation.js [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
 "use client";
+;
 ;
 ;
 ;
@@ -312,10 +314,15 @@ const page = ()=>{
     const [totalLostPages, setTotalLostPages] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(1);
     const [currentTab, setCurrentTab] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(1);
     const { hasPermission } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$usePermissions$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["usePermissions"])();
+    const searchFilters = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useSearchParams"])();
+    const userid = searchFilters.get("userid");
+    console.log("userid: ", userid);
     const getDealData = async ()=>{
         setIsLoading(true);
         try {
-            const result = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$services$2f$deal$2e$service$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].getAll(currentPage, pageLimit);
+            const result = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$services$2f$deal$2e$service$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].getAll(currentPage, pageLimit, {
+                userid
+            });
             if (result.status === 200) {
                 const data = result.data.data;
                 setDealData(data.data);
@@ -343,7 +350,8 @@ const page = ()=>{
         setIsLoading(true);
         try {
             const result = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$services$2f$deal$2e$service$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].getAll(wonCurrentPage, wonPageLimit, {
-                stage: "won"
+                stage: "won",
+                userid
             });
             if (result.status === 200) {
                 const data = result.data.data;
@@ -371,7 +379,8 @@ const page = ()=>{
         setIsLoading(true);
         try {
             const result = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$services$2f$deal$2e$service$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].getAll(lostCurrentPage, lostPageLimit, {
-                stage: "lost"
+                stage: "lost",
+                userid
             });
             if (result.status === 200) {
                 const data = result.data.data;
@@ -459,7 +468,7 @@ const page = ()=>{
                                     children: "All Sales Deals"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                    lineNumber: 178,
+                                    lineNumber: 183,
                                     columnNumber: 15
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -467,13 +476,13 @@ const page = ()=>{
                                     children: "Create, edit or remove Deals"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                    lineNumber: 181,
+                                    lineNumber: 186,
                                     columnNumber: 15
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                            lineNumber: 177,
+                            lineNumber: 182,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -490,7 +499,7 @@ const page = ()=>{
                                             children: "10"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                            lineNumber: 192,
+                                            lineNumber: 197,
                                             columnNumber: 17
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -498,7 +507,7 @@ const page = ()=>{
                                             children: "20"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                            lineNumber: 193,
+                                            lineNumber: 198,
                                             columnNumber: 17
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -506,7 +515,7 @@ const page = ()=>{
                                             children: "30"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                            lineNumber: 194,
+                                            lineNumber: 199,
                                             columnNumber: 17
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -514,13 +523,13 @@ const page = ()=>{
                                             children: "50"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                            lineNumber: 195,
+                                            lineNumber: 200,
                                             columnNumber: 17
                                         }, ("TURBOPACK compile-time value", void 0))
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                    lineNumber: 186,
+                                    lineNumber: 191,
                                     columnNumber: 15
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -530,7 +539,7 @@ const page = ()=>{
                                             className: "text-xl"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                            lineNumber: 198,
+                                            lineNumber: 203,
                                             columnNumber: 17
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -538,13 +547,13 @@ const page = ()=>{
                                             className: "outline-none"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                            lineNumber: 199,
+                                            lineNumber: 204,
                                             columnNumber: 17
                                         }, ("TURBOPACK compile-time value", void 0))
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                    lineNumber: 197,
+                                    lineNumber: 202,
                                     columnNumber: 15
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -555,7 +564,7 @@ const page = ()=>{
                                             className: "group-hover:rotate-90 transition-all duration-300"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                            lineNumber: 208,
+                                            lineNumber: 213,
                                             columnNumber: 19
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         " ",
@@ -563,19 +572,19 @@ const page = ()=>{
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                    lineNumber: 202,
+                                    lineNumber: 207,
                                     columnNumber: 17
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                            lineNumber: 185,
+                            lineNumber: 190,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                    lineNumber: 176,
+                    lineNumber: 181,
                     columnNumber: 11
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
@@ -590,12 +599,12 @@ const page = ()=>{
                                 onClickEvent: ()=>setCurrentTab(1)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                lineNumber: 215,
+                                lineNumber: 220,
                                 columnNumber: 17
                             }, ("TURBOPACK compile-time value", void 0))
                         }, void 0, false, {
                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                            lineNumber: 215,
+                            lineNumber: 220,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -607,12 +616,12 @@ const page = ()=>{
                                 onClickEvent: ()=>handleTabs(2)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                lineNumber: 216,
+                                lineNumber: 221,
                                 columnNumber: 17
                             }, ("TURBOPACK compile-time value", void 0))
                         }, void 0, false, {
                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                            lineNumber: 216,
+                            lineNumber: 221,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -624,18 +633,18 @@ const page = ()=>{
                                 onClickEvent: ()=>handleTabs(3)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                lineNumber: 217,
+                                lineNumber: 222,
                                 columnNumber: 17
                             }, ("TURBOPACK compile-time value", void 0))
                         }, void 0, false, {
                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                            lineNumber: 217,
+                            lineNumber: 222,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                    lineNumber: 214,
+                    lineNumber: 219,
                     columnNumber: 11
                 }, ("TURBOPACK compile-time value", void 0)),
                 currentTab === 1 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -653,7 +662,7 @@ const page = ()=>{
                                                 children: "deal Id"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                lineNumber: 222,
+                                                lineNumber: 227,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -661,7 +670,7 @@ const page = ()=>{
                                                 children: "deal name"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                lineNumber: 225,
+                                                lineNumber: 230,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -672,7 +681,7 @@ const page = ()=>{
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                lineNumber: 231,
+                                                lineNumber: 236,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -680,7 +689,7 @@ const page = ()=>{
                                                 children: "against"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                lineNumber: 236,
+                                                lineNumber: 241,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -688,7 +697,7 @@ const page = ()=>{
                                                 children: "created date"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                lineNumber: 239,
+                                                lineNumber: 244,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -696,18 +705,18 @@ const page = ()=>{
                                                 children: "Actions"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                lineNumber: 242,
+                                                lineNumber: 247,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                        lineNumber: 221,
+                                        lineNumber: 226,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                    lineNumber: 220,
+                                    lineNumber: 225,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
@@ -731,12 +740,12 @@ const page = ()=>{
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 267,
+                                                        lineNumber: 272,
                                                         columnNumber: 25
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 266,
+                                                    lineNumber: 271,
                                                     columnNumber: 23
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -747,14 +756,14 @@ const page = ()=>{
                                                             children: item.dealName
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                            lineNumber: 276,
+                                                            lineNumber: 281,
                                                             columnNumber: 25
                                                         }, ("TURBOPACK compile-time value", void 0)),
                                                         " "
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 275,
+                                                    lineNumber: 280,
                                                     columnNumber: 23
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -764,12 +773,12 @@ const page = ()=>{
                                                         children: item.dealStage.trim()
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 284,
+                                                        lineNumber: 289,
                                                         columnNumber: 25
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 283,
+                                                    lineNumber: 288,
                                                     columnNumber: 23
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -783,12 +792,12 @@ const page = ()=>{
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 287,
+                                                        lineNumber: 292,
                                                         columnNumber: 25
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 286,
+                                                    lineNumber: 291,
                                                     columnNumber: 23
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -800,13 +809,13 @@ const page = ()=>{
                                                             children: date
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                            lineNumber: 295,
+                                                            lineNumber: 300,
                                                             columnNumber: 44
                                                         }, ("TURBOPACK compile-time value", void 0))
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 295,
+                                                    lineNumber: 300,
                                                     columnNumber: 23
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -820,12 +829,12 @@ const page = ()=>{
                                                                     className: "text-xl"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                    lineNumber: 303,
+                                                                    lineNumber: 308,
                                                                     columnNumber: 31
                                                                 }, ("TURBOPACK compile-time value", void 0))
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 299,
+                                                                lineNumber: 304,
                                                                 columnNumber: 29
                                                             }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                 className: "h-9 w-9 flex items-center justify-center rounded-md bg-green-100/80 dark:bg-green-50  text-green-500 opacity-80 cursor-not-allowed",
@@ -835,14 +844,14 @@ const page = ()=>{
                                                                         className: "text-xl"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                        lineNumber: 308,
+                                                                        lineNumber: 313,
                                                                         columnNumber: 31
                                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                                     " "
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 306,
+                                                                lineNumber: 311,
                                                                 columnNumber: 29
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             hasPermission(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PERMISSIONS"].updateLead) && item.status !== __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DEAL_STATUS"].DELETE ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -852,12 +861,12 @@ const page = ()=>{
                                                                     className: "text-xl"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                    lineNumber: 318,
+                                                                    lineNumber: 323,
                                                                     columnNumber: 31
                                                                 }, ("TURBOPACK compile-time value", void 0))
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 312,
+                                                                lineNumber: 317,
                                                                 columnNumber: 29
                                                             }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                 className: "h-9 w-9 flex items-center justify-center rounded-md bg-yellow-100 text-yellow-400 opacity-80 cursor-not-allowed",
@@ -865,30 +874,16 @@ const page = ()=>{
                                                                     className: "text-xl"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                    lineNumber: 325,
+                                                                    lineNumber: 330,
                                                                     columnNumber: 31
                                                                 }, ("TURBOPACK compile-time value", void 0))
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 321,
+                                                                lineNumber: 326,
                                                                 columnNumber: 29
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             hasPermission(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PERMISSIONS"].createQuote) && item.status !== __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DEAL_STATUS"].DELETE ? item.inQuotation ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                 className: "h-9 w-9 flex items-center justify-center rounded-md bg-orange-500 text-white  cursor-no-drop",
-                                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$icons$2f$fa$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FaRegPaperPlane"], {
-                                                                    className: "text-lg"
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                    lineNumber: 333,
-                                                                    columnNumber: 31
-                                                                }, ("TURBOPACK compile-time value", void 0))
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 329,
-                                                                columnNumber: 47
-                                                            }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
-                                                                href: `/deals/quotation/${item.id}`,
-                                                                className: `${item.inQuotation ? "" : "bg-orange-200/80 dark:bg-orange-100 hover:bg-orange-300/70 dark:hover:bg-orange-200 text-orange-500"} h-9 w-9 flex items-center justify-center rounded-md  hover:scale-104`,
                                                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$icons$2f$fa$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FaRegPaperPlane"], {
                                                                     className: "text-lg"
                                                                 }, void 0, false, {
@@ -899,6 +894,20 @@ const page = ()=>{
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
                                                                 lineNumber: 334,
+                                                                columnNumber: 47
+                                                            }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
+                                                                href: `/deals/quotation/${item.id}`,
+                                                                className: `${item.inQuotation ? "" : "bg-orange-200/80 dark:bg-orange-100 hover:bg-orange-300/70 dark:hover:bg-orange-200 text-orange-500"} h-9 w-9 flex items-center justify-center rounded-md  hover:scale-104`,
+                                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$icons$2f$fa$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FaRegPaperPlane"], {
+                                                                    className: "text-lg"
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
+                                                                    lineNumber: 343,
+                                                                    columnNumber: 31
+                                                                }, ("TURBOPACK compile-time value", void 0))
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
+                                                                lineNumber: 339,
                                                                 columnNumber: 39
                                                             }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                 className: "h-9 w-9 flex items-center justify-center rounded-md bg-orange-100 text-orange-400 opacity-80 cursor-not-allowed",
@@ -906,29 +915,29 @@ const page = ()=>{
                                                                     className: "text-lg"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                    lineNumber: 345,
+                                                                    lineNumber: 350,
                                                                     columnNumber: 31
                                                                 }, ("TURBOPACK compile-time value", void 0))
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 341,
+                                                                lineNumber: 346,
                                                                 columnNumber: 29
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 297,
+                                                        lineNumber: 302,
                                                         columnNumber: 25
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 296,
+                                                    lineNumber: 301,
                                                     columnNumber: 23
                                                 }, ("TURBOPACK compile-time value", void 0))
                                             ]
                                         }, item.deal_id, true, {
                                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                            lineNumber: 258,
+                                            lineNumber: 263,
                                             columnNumber: 21
                                         }, ("TURBOPACK compile-time value", void 0));
                                     }) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
@@ -938,12 +947,12 @@ const page = ()=>{
                                             children: "Data not found"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                            lineNumber: 355,
+                                            lineNumber: 360,
                                             columnNumber: 23
                                         }, ("TURBOPACK compile-time value", void 0))
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                        lineNumber: 355,
+                                        lineNumber: 360,
                                         columnNumber: 19
                                     }, ("TURBOPACK compile-time value", void 0)) : Array.from({
                                         length: 10
@@ -960,12 +969,12 @@ const page = ()=>{
                                                         borderRadius: 14
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 366,
+                                                        lineNumber: 371,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 365,
+                                                    lineNumber: 370,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -979,7 +988,7 @@ const page = ()=>{
                                                                 borderRadius: 12
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 370,
+                                                                lineNumber: 375,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$loading$2d$skeleton$2f$dist$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -988,18 +997,18 @@ const page = ()=>{
                                                                 borderRadius: 10
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 371,
+                                                                lineNumber: 376,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 369,
+                                                        lineNumber: 374,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 368,
+                                                    lineNumber: 373,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1010,12 +1019,12 @@ const page = ()=>{
                                                         borderRadius: 14
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 378,
+                                                        lineNumber: 383,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 377,
+                                                    lineNumber: 382,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1026,12 +1035,12 @@ const page = ()=>{
                                                         borderRadius: 14
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 381,
+                                                        lineNumber: 386,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 380,
+                                                    lineNumber: 385,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1042,12 +1051,12 @@ const page = ()=>{
                                                         borderRadius: 14
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 384,
+                                                        lineNumber: 389,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 383,
+                                                    lineNumber: 388,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1061,7 +1070,7 @@ const page = ()=>{
                                                                 borderRadius: 10
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 388,
+                                                                lineNumber: 393,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$loading$2d$skeleton$2f$dist$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -1070,7 +1079,7 @@ const page = ()=>{
                                                                 borderRadius: 10
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 389,
+                                                                lineNumber: 394,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$loading$2d$skeleton$2f$dist$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -1079,36 +1088,36 @@ const page = ()=>{
                                                                 borderRadius: 10
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 390,
+                                                                lineNumber: 395,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 387,
+                                                        lineNumber: 392,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 386,
+                                                    lineNumber: 391,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0))
                                             ]
                                         }, i, true, {
                                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                            lineNumber: 359,
+                                            lineNumber: 364,
                                             columnNumber: 17
                                         }, ("TURBOPACK compile-time value", void 0));
                                     })
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                    lineNumber: 247,
+                                    lineNumber: 252,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                            lineNumber: 219,
+                            lineNumber: 224,
                             columnNumber: 36
                         }, ("TURBOPACK compile-time value", void 0)),
                         " ",
@@ -1119,7 +1128,7 @@ const page = ()=>{
                             className: "w-full"
                         }, void 0, false, {
                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                            lineNumber: 398,
+                            lineNumber: 403,
                             columnNumber: 20
                         }, ("TURBOPACK compile-time value", void 0)),
                         " "
@@ -1140,7 +1149,7 @@ const page = ()=>{
                                                 children: "deal Id"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                lineNumber: 402,
+                                                lineNumber: 407,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1148,7 +1157,7 @@ const page = ()=>{
                                                 children: "deal name"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                lineNumber: 405,
+                                                lineNumber: 410,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1159,7 +1168,7 @@ const page = ()=>{
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                lineNumber: 411,
+                                                lineNumber: 416,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1167,7 +1176,7 @@ const page = ()=>{
                                                 children: "against"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                lineNumber: 416,
+                                                lineNumber: 421,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1175,7 +1184,7 @@ const page = ()=>{
                                                 children: "created date"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                lineNumber: 419,
+                                                lineNumber: 424,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1183,18 +1192,18 @@ const page = ()=>{
                                                 children: "Actions"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                lineNumber: 422,
+                                                lineNumber: 427,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                        lineNumber: 401,
+                                        lineNumber: 406,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                    lineNumber: 400,
+                                    lineNumber: 405,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
@@ -1218,12 +1227,12 @@ const page = ()=>{
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 447,
+                                                        lineNumber: 452,
                                                         columnNumber: 25
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 446,
+                                                    lineNumber: 451,
                                                     columnNumber: 23
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1234,14 +1243,14 @@ const page = ()=>{
                                                             children: item.dealName
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                            lineNumber: 456,
+                                                            lineNumber: 461,
                                                             columnNumber: 25
                                                         }, ("TURBOPACK compile-time value", void 0)),
                                                         " "
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 455,
+                                                    lineNumber: 460,
                                                     columnNumber: 23
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1251,12 +1260,12 @@ const page = ()=>{
                                                         children: item.dealStage.trim()
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 464,
+                                                        lineNumber: 469,
                                                         columnNumber: 25
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 463,
+                                                    lineNumber: 468,
                                                     columnNumber: 23
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1270,12 +1279,12 @@ const page = ()=>{
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 467,
+                                                        lineNumber: 472,
                                                         columnNumber: 25
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 466,
+                                                    lineNumber: 471,
                                                     columnNumber: 23
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1287,13 +1296,13 @@ const page = ()=>{
                                                             children: date
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                            lineNumber: 475,
+                                                            lineNumber: 480,
                                                             columnNumber: 44
                                                         }, ("TURBOPACK compile-time value", void 0))
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 475,
+                                                    lineNumber: 480,
                                                     columnNumber: 23
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1307,12 +1316,12 @@ const page = ()=>{
                                                                     className: "text-xl"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                    lineNumber: 483,
+                                                                    lineNumber: 488,
                                                                     columnNumber: 31
                                                                 }, ("TURBOPACK compile-time value", void 0))
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 479,
+                                                                lineNumber: 484,
                                                                 columnNumber: 29
                                                             }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                 className: "h-9 w-9 flex items-center justify-center rounded-md bg-green-100/80 dark:bg-green-50  text-green-500 opacity-80 cursor-not-allowed",
@@ -1322,14 +1331,14 @@ const page = ()=>{
                                                                         className: "text-xl"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                        lineNumber: 488,
+                                                                        lineNumber: 493,
                                                                         columnNumber: 31
                                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                                     " "
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 486,
+                                                                lineNumber: 491,
                                                                 columnNumber: 29
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             hasPermission(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PERMISSIONS"].updateLead) ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -1339,12 +1348,12 @@ const page = ()=>{
                                                                     className: "text-xl"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                    lineNumber: 498,
+                                                                    lineNumber: 503,
                                                                     columnNumber: 31
                                                                 }, ("TURBOPACK compile-time value", void 0))
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 492,
+                                                                lineNumber: 497,
                                                                 columnNumber: 29
                                                             }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                 className: "h-9 w-9 flex items-center justify-center rounded-md bg-yellow-100 text-yellow-400 opacity-80 cursor-not-allowed",
@@ -1352,29 +1361,29 @@ const page = ()=>{
                                                                     className: "text-xl"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                    lineNumber: 505,
+                                                                    lineNumber: 510,
                                                                     columnNumber: 31
                                                                 }, ("TURBOPACK compile-time value", void 0))
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 501,
+                                                                lineNumber: 506,
                                                                 columnNumber: 29
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 477,
+                                                        lineNumber: 482,
                                                         columnNumber: 25
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 476,
+                                                    lineNumber: 481,
                                                     columnNumber: 23
                                                 }, ("TURBOPACK compile-time value", void 0))
                                             ]
                                         }, item.deal_id, true, {
                                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                            lineNumber: 438,
+                                            lineNumber: 443,
                                             columnNumber: 21
                                         }, ("TURBOPACK compile-time value", void 0));
                                     }) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
@@ -1386,13 +1395,13 @@ const page = ()=>{
                                                 children: "Data not found"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                lineNumber: 515,
+                                                lineNumber: 520,
                                                 columnNumber: 23
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                        lineNumber: 515,
+                                        lineNumber: 520,
                                         columnNumber: 18
                                     }, ("TURBOPACK compile-time value", void 0)) : Array.from({
                                         length: 10
@@ -1409,12 +1418,12 @@ const page = ()=>{
                                                         borderRadius: 14
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 526,
+                                                        lineNumber: 531,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 525,
+                                                    lineNumber: 530,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1428,7 +1437,7 @@ const page = ()=>{
                                                                 borderRadius: 12
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 530,
+                                                                lineNumber: 535,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$loading$2d$skeleton$2f$dist$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -1437,18 +1446,18 @@ const page = ()=>{
                                                                 borderRadius: 10
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 531,
+                                                                lineNumber: 536,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 529,
+                                                        lineNumber: 534,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 528,
+                                                    lineNumber: 533,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1459,12 +1468,12 @@ const page = ()=>{
                                                         borderRadius: 14
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 535,
+                                                        lineNumber: 540,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 534,
+                                                    lineNumber: 539,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1475,12 +1484,12 @@ const page = ()=>{
                                                         borderRadius: 14
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 541,
+                                                        lineNumber: 546,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 540,
+                                                    lineNumber: 545,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1491,12 +1500,12 @@ const page = ()=>{
                                                         borderRadius: 14
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 544,
+                                                        lineNumber: 549,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 543,
+                                                    lineNumber: 548,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1510,7 +1519,7 @@ const page = ()=>{
                                                                 borderRadius: 10
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 548,
+                                                                lineNumber: 553,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$loading$2d$skeleton$2f$dist$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -1519,7 +1528,7 @@ const page = ()=>{
                                                                 borderRadius: 10
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 549,
+                                                                lineNumber: 554,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$loading$2d$skeleton$2f$dist$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -1528,36 +1537,36 @@ const page = ()=>{
                                                                 borderRadius: 10
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 550,
+                                                                lineNumber: 555,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 547,
+                                                        lineNumber: 552,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 546,
+                                                    lineNumber: 551,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0))
                                             ]
                                         }, i, true, {
                                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                            lineNumber: 519,
+                                            lineNumber: 524,
                                             columnNumber: 17
                                         }, ("TURBOPACK compile-time value", void 0));
                                     })
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                    lineNumber: 427,
+                                    lineNumber: 432,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                            lineNumber: 399,
+                            lineNumber: 404,
                             columnNumber: 37
                         }, ("TURBOPACK compile-time value", void 0)),
                         " ",
@@ -1568,7 +1577,7 @@ const page = ()=>{
                             className: "w-full"
                         }, void 0, false, {
                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                            lineNumber: 558,
+                            lineNumber: 563,
                             columnNumber: 20
                         }, ("TURBOPACK compile-time value", void 0)),
                         " "
@@ -1588,7 +1597,7 @@ const page = ()=>{
                                                 children: "deal Id"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                lineNumber: 562,
+                                                lineNumber: 567,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1596,7 +1605,7 @@ const page = ()=>{
                                                 children: "deal name"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                lineNumber: 565,
+                                                lineNumber: 570,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1607,7 +1616,7 @@ const page = ()=>{
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                lineNumber: 571,
+                                                lineNumber: 576,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1615,7 +1624,7 @@ const page = ()=>{
                                                 children: "against"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                lineNumber: 576,
+                                                lineNumber: 581,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1623,7 +1632,7 @@ const page = ()=>{
                                                 children: "created date"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                lineNumber: 579,
+                                                lineNumber: 584,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1631,18 +1640,18 @@ const page = ()=>{
                                                 children: "Actions"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                lineNumber: 582,
+                                                lineNumber: 587,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                        lineNumber: 561,
+                                        lineNumber: 566,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                    lineNumber: 560,
+                                    lineNumber: 565,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
@@ -1666,12 +1675,12 @@ const page = ()=>{
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 607,
+                                                        lineNumber: 612,
                                                         columnNumber: 25
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 606,
+                                                    lineNumber: 611,
                                                     columnNumber: 23
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1682,14 +1691,14 @@ const page = ()=>{
                                                             children: item.dealName
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                            lineNumber: 616,
+                                                            lineNumber: 621,
                                                             columnNumber: 25
                                                         }, ("TURBOPACK compile-time value", void 0)),
                                                         " "
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 615,
+                                                    lineNumber: 620,
                                                     columnNumber: 23
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1699,12 +1708,12 @@ const page = ()=>{
                                                         children: item.dealStage.trim()
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 624,
+                                                        lineNumber: 629,
                                                         columnNumber: 25
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 623,
+                                                    lineNumber: 628,
                                                     columnNumber: 23
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1718,12 +1727,12 @@ const page = ()=>{
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 627,
+                                                        lineNumber: 632,
                                                         columnNumber: 25
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 626,
+                                                    lineNumber: 631,
                                                     columnNumber: 23
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1735,13 +1744,13 @@ const page = ()=>{
                                                             children: date
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                            lineNumber: 635,
+                                                            lineNumber: 640,
                                                             columnNumber: 44
                                                         }, ("TURBOPACK compile-time value", void 0))
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 635,
+                                                    lineNumber: 640,
                                                     columnNumber: 23
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1755,12 +1764,12 @@ const page = ()=>{
                                                                     className: "text-xl"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                    lineNumber: 643,
+                                                                    lineNumber: 648,
                                                                     columnNumber: 31
                                                                 }, ("TURBOPACK compile-time value", void 0))
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 639,
+                                                                lineNumber: 644,
                                                                 columnNumber: 29
                                                             }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                 className: "h-9 w-9 flex items-center justify-center rounded-md bg-green-100/80 dark:bg-green-50  text-green-500 opacity-80 cursor-not-allowed",
@@ -1770,14 +1779,14 @@ const page = ()=>{
                                                                         className: "text-xl"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                        lineNumber: 648,
+                                                                        lineNumber: 653,
                                                                         columnNumber: 31
                                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                                     " "
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 646,
+                                                                lineNumber: 651,
                                                                 columnNumber: 29
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             hasPermission(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PERMISSIONS"].updateLead) ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -1787,12 +1796,12 @@ const page = ()=>{
                                                                     className: "text-xl"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                    lineNumber: 658,
+                                                                    lineNumber: 663,
                                                                     columnNumber: 31
                                                                 }, ("TURBOPACK compile-time value", void 0))
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 652,
+                                                                lineNumber: 657,
                                                                 columnNumber: 29
                                                             }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                 className: "h-9 w-9 flex items-center justify-center rounded-md bg-yellow-100 text-yellow-400 opacity-80 cursor-not-allowed",
@@ -1800,29 +1809,29 @@ const page = ()=>{
                                                                     className: "text-xl"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                    lineNumber: 665,
+                                                                    lineNumber: 670,
                                                                     columnNumber: 31
                                                                 }, ("TURBOPACK compile-time value", void 0))
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 661,
+                                                                lineNumber: 666,
                                                                 columnNumber: 29
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 637,
+                                                        lineNumber: 642,
                                                         columnNumber: 25
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 636,
+                                                    lineNumber: 641,
                                                     columnNumber: 23
                                                 }, ("TURBOPACK compile-time value", void 0))
                                             ]
                                         }, item.deal_id, true, {
                                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                            lineNumber: 598,
+                                            lineNumber: 603,
                                             columnNumber: 21
                                         }, ("TURBOPACK compile-time value", void 0));
                                     }) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
@@ -1834,13 +1843,13 @@ const page = ()=>{
                                                 children: "Data not found"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                lineNumber: 675,
+                                                lineNumber: 680,
                                                 columnNumber: 23
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                        lineNumber: 675,
+                                        lineNumber: 680,
                                         columnNumber: 18
                                     }, ("TURBOPACK compile-time value", void 0)) : Array.from({
                                         length: 10
@@ -1857,12 +1866,12 @@ const page = ()=>{
                                                         borderRadius: 14
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 686,
+                                                        lineNumber: 691,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 685,
+                                                    lineNumber: 690,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1876,7 +1885,7 @@ const page = ()=>{
                                                                 borderRadius: 12
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 690,
+                                                                lineNumber: 695,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$loading$2d$skeleton$2f$dist$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -1885,18 +1894,18 @@ const page = ()=>{
                                                                 borderRadius: 10
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 691,
+                                                                lineNumber: 696,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 689,
+                                                        lineNumber: 694,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 688,
+                                                    lineNumber: 693,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1907,12 +1916,12 @@ const page = ()=>{
                                                         borderRadius: 14
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 698,
+                                                        lineNumber: 703,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 697,
+                                                    lineNumber: 702,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1923,12 +1932,12 @@ const page = ()=>{
                                                         borderRadius: 14
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 701,
+                                                        lineNumber: 706,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 700,
+                                                    lineNumber: 705,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1939,12 +1948,12 @@ const page = ()=>{
                                                         borderRadius: 14
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 704,
+                                                        lineNumber: 709,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 703,
+                                                    lineNumber: 708,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1958,7 +1967,7 @@ const page = ()=>{
                                                                 borderRadius: 10
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 708,
+                                                                lineNumber: 713,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$loading$2d$skeleton$2f$dist$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -1967,7 +1976,7 @@ const page = ()=>{
                                                                 borderRadius: 10
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 709,
+                                                                lineNumber: 714,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$loading$2d$skeleton$2f$dist$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -1976,36 +1985,36 @@ const page = ()=>{
                                                                 borderRadius: 10
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                                lineNumber: 710,
+                                                                lineNumber: 715,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                        lineNumber: 707,
+                                                        lineNumber: 712,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                                    lineNumber: 706,
+                                                    lineNumber: 711,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0))
                                             ]
                                         }, i, true, {
                                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                            lineNumber: 679,
+                                            lineNumber: 684,
                                             columnNumber: 17
                                         }, ("TURBOPACK compile-time value", void 0));
                                     })
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                                    lineNumber: 587,
+                                    lineNumber: 592,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                            lineNumber: 559,
+                            lineNumber: 564,
                             columnNumber: 36
                         }, ("TURBOPACK compile-time value", void 0)),
                         " ",
@@ -2016,7 +2025,7 @@ const page = ()=>{
                             className: "w-full"
                         }, void 0, false, {
                             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-                            lineNumber: 718,
+                            lineNumber: 723,
                             columnNumber: 20
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
@@ -2024,18 +2033,19 @@ const page = ()=>{
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-            lineNumber: 175,
+            lineNumber: 180,
             columnNumber: 7
         }, ("TURBOPACK compile-time value", void 0))
     }, void 0, false, {
         fileName: "[project]/src/app/(dashboard)/deals/page.tsx",
-        lineNumber: 173,
+        lineNumber: 178,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };
-_s(page, "o/kSTyGIII3B6g9f6lP8PhKEriQ=", false, function() {
+_s(page, "W8rkZlcW57PRUYnKDuxUUYO6U3s=", false, function() {
     return [
-        __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$usePermissions$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["usePermissions"]
+        __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$usePermissions$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["usePermissions"],
+        __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useSearchParams"]
     ];
 });
 const __TURBOPACK__default__export__ = page;

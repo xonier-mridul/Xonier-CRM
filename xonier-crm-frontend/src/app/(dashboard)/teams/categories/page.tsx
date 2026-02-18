@@ -360,7 +360,8 @@ const page = (): JSX.Element => {
                 )
               ) : (
                
-                  <tr className=" text-center animate-pulse">
+                Array.from({length: 8}).map((_, i)=>(
+                   <tr key={i} className=" text-center animate-pulse">
                                   <td className="p-4" >
                                     <Skeleton width={30} height={30} borderRadius={12}/>
                                   </td>
@@ -386,6 +387,8 @@ const page = (): JSX.Element => {
                                   </td>
                   
                                 </tr>
+
+                )) 
                 
               )}
             </tbody>

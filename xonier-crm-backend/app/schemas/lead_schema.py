@@ -31,7 +31,7 @@ class LeadBaseSchema(BaseModel):
     industry: Optional[INDUSTRIES] = None
     employeeRole: Optional[str] = None
     employeeSeniority: Optional[EMPLOYEE_SENIORITY] = None
-
+    extraFields: Optional[dict[str, str | int | float | bool | None]] = Field(default=None)
     message: Optional[str] = None
     membershipNotes: Optional[str] = None
 

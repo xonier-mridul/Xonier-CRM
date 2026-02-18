@@ -14,12 +14,15 @@ from app.utils.enquiry_id_generator import generate_enquiry_id
 from app.core.constants import COMPANY_ADDRESS, COMPANY_LOGO_LINK
 from fastapi.encoders import jsonable_encoder
 from app.core.crypto import Encryption
-from app.core.enums import DEAL_STAGES, QuotationStatus, QuotationEventType, DEAL_STATUS
+from app.core.enums import DEAL_STAGES, QuotationStatus, QuotationEventType, DEAL_STATUS, ACTIVITY_ACTION, ACTIVITY_ENTITY_TYPE
 from app.repositories.quotation_history_repository import QuotationHistoryRepository
 from app.repositories.invoice_repository import InvoiceRepository
 from datetime import datetime, timezone
 from fastapi_cache import FastAPICache
 from app.core.constants import DEAL_CACHE_NAMESPACE, DEAL_CACHE_NAMESPACE_BY_ID, LEAD_CACHE_NAMESPACE
+from app.repositories.activity_repository import ActivityRepository
+
+from app.utils.activity_payload import activity_payload
 
 
 class QuotationService:
@@ -32,6 +35,7 @@ class QuotationService:
         self.emailManager = EmailManager()
         self.encryption = Encryption()
         self.invoiceRepo = InvoiceRepository()
+        self.activityRepo = ActivityRepository()
 
     async def create(self, user:Dict[str, Any], payload: Dict[str, Any]):
         async with await self.client.start_session() as session:
@@ -90,7 +94,7 @@ class QuotationService:
                     if new_payload.get("valid") is None:
                         new_payload.pop("valid")
 
-                    print("customer email: ", payload["customerEmail"])
+                    
 
                     await self.emailManager.send_quotation_email(to=payload["customerEmail"], quote_id=quote_id, title=[payload["title"]], customer_name=payload["customerName"], customer_email=payload["customerEmail"], customer_phone=payload["customerPhone"], company_name=payload["companyName"], issue_date=payload["issueDate"], valid_until=payload["valid"], sub_total=payload["subTotal"], total=payload["total"], description=payload["description"], company_logo= COMPANY_LOGO_LINK, company_address=COMPANY_ADDRESS)
                     
@@ -105,6 +109,15 @@ class QuotationService:
 
                     if not update_deal:
                         raise AppException(400, "Deal field not updated")
+                    
+                    activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.QUOTATION, entityId=PydanticObjectId(create.id), action=ACTIVITY_ACTION.CREATED, title="create quotation", metadata={"quoteId": create.quoteId, "leadName": create.title})
+
+
+                    
+                    is_activity = await self.activityRepo.create(data=activity, session=session)
+
+                    if not is_activity:
+                        raise AppException(400, "Activity creation failed")
                     
                     await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE)
                     await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE_BY_ID)
@@ -132,7 +145,7 @@ class QuotationService:
    
             isAdmin = validate_admin(user["userRole"])
 
-            query = {}
+            query = {"quotationStatus": {"$in": [QuotationStatus.ACCEPTED.value, QuotationStatus.DRAFT.value, QuotationStatus.EXPIRED.value, QuotationStatus.REJECTED.value, QuotationStatus.RESEND.value, QuotationStatus.SENT.value, QuotationStatus.UPDATED.value, QuotationStatus.VIEWED.value]}}
 
             if not isAdmin:
                 members = await self.getTeamMem.get_team_members(user["_id"])
@@ -297,6 +310,14 @@ class QuotationService:
                         session=session
                     )
 
+                    activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.QUOTATION.value, entityId=PydanticObjectId(quotation.id), action=ACTIVITY_ACTION.UPDATED.value, title="delete quotation", metadata={"quoteId": quotation.quoteId, **delta})
+
+
+                    is_activity = await self.activityRepo.create(data=activity, session=session)
+
+                    if not is_activity:
+                        raise AppException(400, "Activity creation failed")
+
                     return quotation.model_dump(mode="json")
                     
 
@@ -310,6 +331,7 @@ class QuotationService:
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
+                  
                     if not ObjectId.is_valid(quoteId):
                         raise AppException(400, "Invalid quotation id")
 
@@ -321,6 +343,8 @@ class QuotationService:
 
                     if not quotation:
                         raise AppException(404, "Quotation not found")
+                    
+                    
                     
                     if quotation.quotationStatus == QuotationStatus.DELETE:
                         raise AppException(400, "Quotation deleted, quotation updation failed")
@@ -346,7 +370,6 @@ class QuotationService:
                   
 
                     delta = {}
-
 
                     for field, new_value in payload.items():
                         old_value = getattr(quotation, field, None)
@@ -376,6 +399,8 @@ class QuotationService:
                         session=session
                     )
 
+                    
+
                     if quotation.quotationStatus == QuotationStatus.ACCEPTED:
                         invoice_id = generate_enquiry_id("INV")
                         
@@ -395,6 +420,27 @@ class QuotationService:
 
                         }
                         await self.invoiceRepo.create(data=invoice_payload, session=session)
+
+                        update_deal  = await self.dealRepo.update(id=PydanticObjectId(payload["deal"]), data={"dealStage": DEAL_STAGES.WON.value}, session=session)
+
+                        if not update_deal:
+                            raise AppException(400, "Deal field not updated")
+                        
+                    elif quotation.quotationStatus == QuotationStatus.REJECTED:
+                        update_deal  = await self.dealRepo.update(id=PydanticObjectId(quotation.deal.id), data={"dealStage": DEAL_STAGES.LOST.value}, session=session)
+
+                        if not update_deal:
+                            raise AppException(400, "Deal field not updated")
+
+
+                    
+                    activity = activity_payload(userId=PydanticObjectId(quotation.deal.id), entityType=ACTIVITY_ENTITY_TYPE.QUOTATION.value, entityId=PydanticObjectId(quotation.id), action=ACTIVITY_ACTION.UPDATED.value, title="delete quotation", metadata={"quoteId": quotation.quoteId, **delta})
+
+
+                    is_activity = await self.activityRepo.create(data=activity, session=session)
+
+                    if not is_activity:
+                        raise AppException(400, "Activity creation failed")
 
                     return quotation.model_dump(mode="json")
 
@@ -502,6 +548,14 @@ class QuotationService:
                         session=session
                     )
 
+                    activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.QUOTATION.value, entityId=PydanticObjectId(quotation.id), action=ACTIVITY_ACTION.RESEND.value, title="Resend quotation", metadata={"quoteId": quotation.quoteId, "quotationStatus": QuotationStatus.RESEND})
+
+
+                    is_activity = await self.activityRepo.create(data=activity, session=session)
+
+                    if not is_activity:
+                        raise AppException(400, "Activity creation failed")
+
                     return True
 
                 except AppException:
@@ -565,6 +619,17 @@ class QuotationService:
                         },
                         session=session
                     )
+
+                    activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.QUOTATION, entityId=PydanticObjectId(quotation.id), action=ACTIVITY_ACTION.DELETE.value, title="delete quotation", metadata={"quoteId": quotation.quoteId, "leadName": quotation.title})
+
+
+                    
+                    is_activity = await self.activityRepo.create(data=activity, session=session)
+
+                    if not is_activity:
+                        raise AppException(400, "Activity creation failed")
+
+                    
 
                     await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE)
                     await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE_BY_ID)

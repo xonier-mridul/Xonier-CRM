@@ -538,6 +538,7 @@ const LeadViewPage = ()=>{
         };
         return colors[status] || "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
     };
+    // const country = COUNTRY_CODE.map((item, value)=>)
     if (isLoading) {
         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
             className: "ml-72 mt-14 p-6 flex flex-col gap-6 animate-pulse",
@@ -548,7 +549,7 @@ const LeadViewPage = ()=>{
                     className: "dark:bg-gray-700 w-full"
                 }, void 0, false, {
                     fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                    lineNumber: 170,
+                    lineNumber: 173,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$loading$2d$skeleton$2f$dist$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -557,7 +558,7 @@ const LeadViewPage = ()=>{
                     className: "dark:bg-gray-700 w-full"
                 }, void 0, false, {
                     fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                    lineNumber: 175,
+                    lineNumber: 178,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -572,7 +573,7 @@ const LeadViewPage = ()=>{
                                     className: "dark:bg-gray-700 w-full"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                    lineNumber: 182,
+                                    lineNumber: 185,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$loading$2d$skeleton$2f$dist$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -581,13 +582,13 @@ const LeadViewPage = ()=>{
                                     className: "dark:bg-gray-700 w-full"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                    lineNumber: 187,
+                                    lineNumber: 190,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                            lineNumber: 181,
+                            lineNumber: 184,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -598,24 +599,24 @@ const LeadViewPage = ()=>{
                                 className: "dark:bg-gray-700 w-full"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                lineNumber: 194,
+                                lineNumber: 197,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0))
                         }, void 0, false, {
                             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                            lineNumber: 193,
+                            lineNumber: 196,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                    lineNumber: 180,
+                    lineNumber: 183,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0))
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-            lineNumber: 169,
+            lineNumber: 172,
             columnNumber: 7
         }, ("TURBOPACK compile-time value", void 0));
     }
@@ -631,7 +632,7 @@ const LeadViewPage = ()=>{
                             className: "w-20 h-20 mx-auto text-gray-300 dark:text-gray-600 mb-4"
                         }, void 0, false, {
                             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                            lineNumber: 210,
+                            lineNumber: 213,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -639,7 +640,7 @@ const LeadViewPage = ()=>{
                             children: "Lead Not Found"
                         }, void 0, false, {
                             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                            lineNumber: 211,
+                            lineNumber: 214,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -647,7 +648,7 @@ const LeadViewPage = ()=>{
                             children: "The lead you're looking for doesn't exist or has been removed."
                         }, void 0, false, {
                             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                            lineNumber: 214,
+                            lineNumber: 217,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -658,30 +659,30 @@ const LeadViewPage = ()=>{
                                     className: "w-5 h-5"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                    lineNumber: 221,
+                                    lineNumber: 224,
                                     columnNumber: 15
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 "Go Back"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                            lineNumber: 217,
+                            lineNumber: 220,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                    lineNumber: 209,
+                    lineNumber: 212,
                     columnNumber: 11
                 }, ("TURBOPACK compile-time value", void 0))
             }, void 0, false, {
                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                lineNumber: 208,
+                lineNumber: 211,
                 columnNumber: 9
             }, ("TURBOPACK compile-time value", void 0))
         }, void 0, false, {
             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-            lineNumber: 207,
+            lineNumber: 210,
             columnNumber: 7
         }, ("TURBOPACK compile-time value", void 0));
     }
@@ -706,7 +707,7 @@ const LeadViewPage = ()=>{
                                                 children: leadData?.fullName
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 239,
+                                                lineNumber: 241,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -716,14 +717,14 @@ const LeadViewPage = ()=>{
                                                         className: "w-4 h-4"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                        lineNumber: 247,
+                                                        lineNumber: 249,
                                                         columnNumber: 19
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     leadData?.priority
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 242,
+                                                lineNumber: 244,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -733,20 +734,20 @@ const LeadViewPage = ()=>{
                                                         className: "w-4 h-4"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                        lineNumber: 255,
+                                                        lineNumber: 257,
                                                         columnNumber: 19
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     leadData?.status
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 250,
+                                                lineNumber: 252,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                        lineNumber: 237,
+                                        lineNumber: 240,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -757,7 +758,7 @@ const LeadViewPage = ()=>{
                                                 className: "w-4 h-4"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 265,
+                                                lineNumber: 267,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             "Lead ID: ",
@@ -766,19 +767,19 @@ const LeadViewPage = ()=>{
                                                 children: leadData?.lead_id
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 266,
+                                                lineNumber: 268,
                                                 columnNumber: 26
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                        lineNumber: 259,
+                                        lineNumber: 261,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                lineNumber: 236,
+                                lineNumber: 239,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -792,14 +793,14 @@ const LeadViewPage = ()=>{
                                                 className: "w-4 h-4"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 277,
+                                                lineNumber: 280,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             "Update Lead"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                        lineNumber: 273,
+                                        lineNumber: 276,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "inline-flex items-center gap-2 px-4 py-2 bg-blue-400 opacity-60 text-white rounded-lg cursor-not-allowed",
@@ -808,14 +809,14 @@ const LeadViewPage = ()=>{
                                                 className: "w-4 h-4"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 282,
+                                                lineNumber: 285,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             "Update Lead"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                        lineNumber: 281,
+                                        lineNumber: 284,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -825,12 +826,12 @@ const LeadViewPage = ()=>{
                                             className: "w-4 h-4"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                            lineNumber: 293,
+                                            lineNumber: 294,
                                             columnNumber: 17
                                         }, ("TURBOPACK compile-time value", void 0))
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                        lineNumber: 289,
+                                        lineNumber: 290,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -842,12 +843,12 @@ const LeadViewPage = ()=>{
                                                     className: "w-4 h-4"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                    lineNumber: 299,
+                                                    lineNumber: 300,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0))
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 298,
+                                                lineNumber: 299,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -872,35 +873,35 @@ const LeadViewPage = ()=>{
                                                 }, ("TURBOPACK compile-time value", void 0))
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 301,
+                                                lineNumber: 302,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                        lineNumber: 297,
+                                        lineNumber: 298,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                lineNumber: 271,
+                                lineNumber: 273,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                        lineNumber: 235,
+                        lineNumber: 238,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0))
                 }, void 0, false, {
                     fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                    lineNumber: 234,
+                    lineNumber: 237,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0))
             }, void 0, false, {
                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                lineNumber: 233,
+                lineNumber: 236,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -911,7 +912,7 @@ const LeadViewPage = ()=>{
                             className: "w-6 h-6"
                         }, void 0, false, {
                             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                            lineNumber: 322,
+                            lineNumber: 321,
                             columnNumber: 17
                         }, void 0),
                         label: "Company",
@@ -919,7 +920,7 @@ const LeadViewPage = ()=>{
                         color: "bg-blue-500"
                     }, void 0, false, {
                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                        lineNumber: 321,
+                        lineNumber: 320,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(MetricCard, {
@@ -927,7 +928,7 @@ const LeadViewPage = ()=>{
                             className: "w-5 h-5"
                         }, void 0, false, {
                             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                            lineNumber: 328,
+                            lineNumber: 327,
                             columnNumber: 17
                         }, void 0),
                         label: "Project Type",
@@ -935,7 +936,7 @@ const LeadViewPage = ()=>{
                         color: "bg-purple-500"
                     }, void 0, false, {
                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                        lineNumber: 327,
+                        lineNumber: 326,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(MetricCard, {
@@ -943,7 +944,7 @@ const LeadViewPage = ()=>{
                             className: "w-5 h-5"
                         }, void 0, false, {
                             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                            lineNumber: 334,
+                            lineNumber: 333,
                             columnNumber: 17
                         }, void 0),
                         label: "Location",
@@ -951,7 +952,7 @@ const LeadViewPage = ()=>{
                         color: "bg-green-500"
                     }, void 0, false, {
                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                        lineNumber: 333,
+                        lineNumber: 332,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(MetricCard, {
@@ -959,7 +960,7 @@ const LeadViewPage = ()=>{
                             className: "w-5 h-5"
                         }, void 0, false, {
                             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                            lineNumber: 340,
+                            lineNumber: 339,
                             columnNumber: 17
                         }, void 0),
                         label: "In Deal",
@@ -967,13 +968,13 @@ const LeadViewPage = ()=>{
                         color: leadData?.inDeal ? "bg-emerald-500" : "bg-gray-500"
                     }, void 0, false, {
                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                        lineNumber: 339,
+                        lineNumber: 338,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                lineNumber: 320,
+                lineNumber: 319,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -993,23 +994,23 @@ const LeadViewPage = ()=>{
                                     className: "absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                    lineNumber: 362,
+                                    lineNumber: 361,
                                     columnNumber: 17
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, tab, true, {
                             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                            lineNumber: 351,
+                            lineNumber: 350,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)))
                 }, void 0, false, {
                     fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                    lineNumber: 349,
+                    lineNumber: 348,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0))
             }, void 0, false, {
                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                lineNumber: 348,
+                lineNumber: 347,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1030,7 +1031,7 @@ const LeadViewPage = ()=>{
                                                         className: "w-5 h-5 text-blue-600 dark:text-blue-400"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                        lineNumber: 378,
+                                                        lineNumber: 374,
                                                         columnNumber: 19
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -1038,13 +1039,13 @@ const LeadViewPage = ()=>{
                                                         children: "Lead Information"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                        lineNumber: 379,
+                                                        lineNumber: 375,
                                                         columnNumber: 19
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 377,
+                                                lineNumber: 373,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1055,14 +1056,14 @@ const LeadViewPage = ()=>{
                                                             className: "w-4 h-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                            lineNumber: 386,
+                                                            lineNumber: 382,
                                                             columnNumber: 27
                                                         }, void 0),
                                                         label: "Source",
                                                         value: leadData?.source
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                        lineNumber: 385,
+                                                        lineNumber: 381,
                                                         columnNumber: 19
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(InfoItem, {
@@ -1070,14 +1071,14 @@ const LeadViewPage = ()=>{
                                                             className: "w-4 h-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                            lineNumber: 391,
+                                                            lineNumber: 387,
                                                             columnNumber: 27
                                                         }, void 0),
                                                         label: "Project Type",
                                                         value: leadData?.projectType?.replace("_", " ")
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                        lineNumber: 390,
+                                                        lineNumber: 386,
                                                         columnNumber: 19
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(InfoItem, {
@@ -1085,14 +1086,14 @@ const LeadViewPage = ()=>{
                                                             className: "w-4 h-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                            lineNumber: 396,
+                                                            lineNumber: 392,
                                                             columnNumber: 27
                                                         }, void 0),
                                                         label: "Industry",
                                                         value: leadData?.industry || "—"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                        lineNumber: 395,
+                                                        lineNumber: 391,
                                                         columnNumber: 19
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(InfoItem, {
@@ -1100,14 +1101,14 @@ const LeadViewPage = ()=>{
                                                             className: "w-4 h-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                            lineNumber: 401,
+                                                            lineNumber: 397,
                                                             columnNumber: 27
                                                         }, void 0),
                                                         label: "Language",
                                                         value: leadData?.language || "—"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                        lineNumber: 400,
+                                                        lineNumber: 396,
                                                         columnNumber: 19
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(InfoItem, {
@@ -1115,14 +1116,14 @@ const LeadViewPage = ()=>{
                                                             className: "w-4 h-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                            lineNumber: 406,
+                                                            lineNumber: 402,
                                                             columnNumber: 27
                                                         }, void 0),
                                                         label: "Priority",
                                                         value: leadData?.priority
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                        lineNumber: 405,
+                                                        lineNumber: 401,
                                                         columnNumber: 19
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(InfoItem, {
@@ -1130,26 +1131,41 @@ const LeadViewPage = ()=>{
                                                             className: "w-4 h-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                            lineNumber: 411,
+                                                            lineNumber: 407,
                                                             columnNumber: 27
                                                         }, void 0),
                                                         label: "Status",
                                                         value: leadData?.status
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                        lineNumber: 410,
+                                                        lineNumber: 406,
                                                         columnNumber: 19
-                                                    }, ("TURBOPACK compile-time value", void 0))
+                                                    }, ("TURBOPACK compile-time value", void 0)),
+                                                    leadData?.extraFields && Object.entries(leadData.extraFields).map(([key, value])=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(InfoItem, {
+                                                            icon: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$icons$2f$io5$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["IoInformationCircleOutline"], {
+                                                                className: "w-4 h-4"
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
+                                                                lineNumber: 416,
+                                                                columnNumber: 27
+                                                            }, void 0),
+                                                            label: key.replace(/([A-Z])/g, " $1").replace(/^./, (c)=>c.toUpperCase()).trim(),
+                                                            value: String(value) || "—"
+                                                        }, key, false, {
+                                                            fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
+                                                            lineNumber: 413,
+                                                            columnNumber: 23
+                                                        }, ("TURBOPACK compile-time value", void 0)))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 384,
+                                                lineNumber: 380,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                        lineNumber: 376,
+                                        lineNumber: 372,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1162,7 +1178,7 @@ const LeadViewPage = ()=>{
                                                         className: "w-5 h-5 text-blue-600 dark:text-blue-400"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                        lineNumber: 421,
+                                                        lineNumber: 431,
                                                         columnNumber: 19
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -1170,13 +1186,13 @@ const LeadViewPage = ()=>{
                                                         children: "Employee Details"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                        lineNumber: 422,
+                                                        lineNumber: 432,
                                                         columnNumber: 19
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 420,
+                                                lineNumber: 430,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1187,14 +1203,14 @@ const LeadViewPage = ()=>{
                                                             className: "w-4 h-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                            lineNumber: 429,
+                                                            lineNumber: 439,
                                                             columnNumber: 27
                                                         }, void 0),
                                                         label: "Role",
                                                         value: leadData?.employeeRole || "—"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                        lineNumber: 428,
+                                                        lineNumber: 438,
                                                         columnNumber: 19
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(InfoItem, {
@@ -1202,26 +1218,26 @@ const LeadViewPage = ()=>{
                                                             className: "w-4 h-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                            lineNumber: 434,
+                                                            lineNumber: 444,
                                                             columnNumber: 27
                                                         }, void 0),
                                                         label: "Seniority",
                                                         value: leadData?.employeeSeniority || "—"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                        lineNumber: 433,
+                                                        lineNumber: 443,
                                                         columnNumber: 19
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 427,
+                                                lineNumber: 437,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                        lineNumber: 419,
+                                        lineNumber: 429,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     (leadData?.message || leadData?.membershipNotes) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1234,7 +1250,7 @@ const LeadViewPage = ()=>{
                                                         className: "w-5 h-5 text-blue-600 dark:text-blue-400"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                        lineNumber: 445,
+                                                        lineNumber: 454,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -1242,13 +1258,13 @@ const LeadViewPage = ()=>{
                                                         children: "Notes & Messages"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                        lineNumber: 446,
+                                                        lineNumber: 455,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 444,
+                                                lineNumber: 453,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1264,7 +1280,7 @@ const LeadViewPage = ()=>{
                                                                         className: "w-4 h-4 text-gray-500 dark:text-gray-400"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                                        lineNumber: 455,
+                                                                        lineNumber: 464,
                                                                         columnNumber: 27
                                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1272,13 +1288,13 @@ const LeadViewPage = ()=>{
                                                                         children: "Message"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                                        lineNumber: 456,
+                                                                        lineNumber: 465,
                                                                         columnNumber: 27
                                                                     }, ("TURBOPACK compile-time value", void 0))
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                                lineNumber: 454,
+                                                                lineNumber: 463,
                                                                 columnNumber: 25
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1286,13 +1302,13 @@ const LeadViewPage = ()=>{
                                                                 children: leadData.message
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                                lineNumber: 460,
+                                                                lineNumber: 469,
                                                                 columnNumber: 25
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                        lineNumber: 453,
+                                                        lineNumber: 462,
                                                         columnNumber: 23
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     leadData?.membershipNotes && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1305,7 +1321,7 @@ const LeadViewPage = ()=>{
                                                                         className: "w-4 h-4 text-gray-500 dark:text-gray-400"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                                        lineNumber: 468,
+                                                                        lineNumber: 477,
                                                                         columnNumber: 27
                                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1313,13 +1329,13 @@ const LeadViewPage = ()=>{
                                                                         children: "Membership Notes"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                                        lineNumber: 469,
+                                                                        lineNumber: 478,
                                                                         columnNumber: 27
                                                                     }, ("TURBOPACK compile-time value", void 0))
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                                lineNumber: 467,
+                                                                lineNumber: 476,
                                                                 columnNumber: 25
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1327,25 +1343,25 @@ const LeadViewPage = ()=>{
                                                                 children: leadData.membershipNotes
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                                lineNumber: 473,
+                                                                lineNumber: 482,
                                                                 columnNumber: 25
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                        lineNumber: 466,
+                                                        lineNumber: 475,
                                                         columnNumber: 23
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 451,
+                                                lineNumber: 460,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                        lineNumber: 443,
+                                        lineNumber: 452,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
@@ -1360,7 +1376,7 @@ const LeadViewPage = ()=>{
                                                 className: "w-5 h-5 text-blue-600 dark:text-blue-400"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 488,
+                                                lineNumber: 497,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -1368,13 +1384,13 @@ const LeadViewPage = ()=>{
                                                 children: "Contact Information"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 489,
+                                                lineNumber: 498,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                        lineNumber: 487,
+                                        lineNumber: 496,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1385,14 +1401,14 @@ const LeadViewPage = ()=>{
                                                     className: "w-4 h-4"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                    lineNumber: 496,
+                                                    lineNumber: 505,
                                                     columnNumber: 25
                                                 }, void 0),
                                                 label: "Full Name",
                                                 value: leadData?.fullName
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 495,
+                                                lineNumber: 504,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$LeadComponent$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["MaskEmailField"], {
@@ -1400,7 +1416,7 @@ const LeadViewPage = ()=>{
                                                 value: leadData?.email
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 500,
+                                                lineNumber: 509,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$LeadComponent$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["MaskPhoneField"], {
@@ -1408,7 +1424,7 @@ const LeadViewPage = ()=>{
                                                 value: leadData?.phone
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 501,
+                                                lineNumber: 510,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(InfoItem, {
@@ -1416,14 +1432,14 @@ const LeadViewPage = ()=>{
                                                     className: "w-4 h-4"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                    lineNumber: 503,
+                                                    lineNumber: 512,
                                                     columnNumber: 25
                                                 }, void 0),
                                                 label: "Company",
                                                 value: leadData?.companyName || "—"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 502,
+                                                lineNumber: 511,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(InfoItem, {
@@ -1431,14 +1447,14 @@ const LeadViewPage = ()=>{
                                                     className: "w-4 h-4"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                    lineNumber: 508,
+                                                    lineNumber: 517,
                                                     columnNumber: 25
                                                 }, void 0),
                                                 label: "City",
                                                 value: leadData?.city || "—"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 507,
+                                                lineNumber: 516,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(InfoItem, {
@@ -1446,14 +1462,14 @@ const LeadViewPage = ()=>{
                                                     className: "w-4 h-4"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                    lineNumber: 513,
+                                                    lineNumber: 522,
                                                     columnNumber: 25
                                                 }, void 0),
                                                 label: "Country",
                                                 value: leadData?.country || "—"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 512,
+                                                lineNumber: 521,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(InfoItem, {
@@ -1461,26 +1477,26 @@ const LeadViewPage = ()=>{
                                                     className: "w-4 h-4"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                    lineNumber: 518,
+                                                    lineNumber: 527,
                                                     columnNumber: 25
                                                 }, void 0),
                                                 label: "Postal Code",
                                                 value: leadData?.postalCode || "—"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 517,
+                                                lineNumber: 526,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                        lineNumber: 494,
+                                        lineNumber: 503,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                lineNumber: 486,
+                                lineNumber: 495,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0)),
                             activeTab === "activity" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1493,7 +1509,7 @@ const LeadViewPage = ()=>{
                                                 className: "w-5 h-5 text-blue-600 dark:text-blue-400"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 530,
+                                                lineNumber: 539,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -1501,13 +1517,13 @@ const LeadViewPage = ()=>{
                                                 children: "Activity Timeline"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 531,
+                                                lineNumber: 540,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                        lineNumber: 529,
+                                        lineNumber: 538,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1517,7 +1533,7 @@ const LeadViewPage = ()=>{
                                                 className: "w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-3"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 536,
+                                                lineNumber: 545,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1525,25 +1541,25 @@ const LeadViewPage = ()=>{
                                                 children: "Activity timeline coming soon"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 537,
+                                                lineNumber: 546,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                        lineNumber: 535,
+                                        lineNumber: 544,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                lineNumber: 528,
+                                lineNumber: 537,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                        lineNumber: 371,
+                        lineNumber: 369,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1559,7 +1575,7 @@ const LeadViewPage = ()=>{
                                                 className: "text-xl text-white"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 551,
+                                                lineNumber: 560,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -1567,20 +1583,20 @@ const LeadViewPage = ()=>{
                                                 children: "Creator Information"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 552,
+                                                lineNumber: 561,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                        lineNumber: 550,
+                                        lineNumber: 559,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "border-b border-white/30 w-full mb-4"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                        lineNumber: 556,
+                                        lineNumber: 565,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1591,14 +1607,14 @@ const LeadViewPage = ()=>{
                                                     className: "w-4 h-4"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                    lineNumber: 559,
+                                                    lineNumber: 568,
                                                     columnNumber: 25
                                                 }, void 0),
                                                 label: "Name",
                                                 value: `${leadData.createdBy?.firstName} ${leadData.createdBy?.lastName ?? ""}`
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 558,
+                                                lineNumber: 567,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(ProfileField, {
@@ -1606,14 +1622,14 @@ const LeadViewPage = ()=>{
                                                     className: "w-4 h-4"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                    lineNumber: 566,
+                                                    lineNumber: 575,
                                                     columnNumber: 25
                                                 }, void 0),
                                                 label: "Email",
                                                 value: leadData.createdBy?.email
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 565,
+                                                lineNumber: 574,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(ProfileField, {
@@ -1621,14 +1637,14 @@ const LeadViewPage = ()=>{
                                                     className: "w-4 h-4"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                    lineNumber: 571,
+                                                    lineNumber: 580,
                                                     columnNumber: 25
                                                 }, void 0),
                                                 label: "Phone",
                                                 value: leadData.createdBy?.phone
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 570,
+                                                lineNumber: 579,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(ProfileField, {
@@ -1636,26 +1652,26 @@ const LeadViewPage = ()=>{
                                                     className: "w-4 h-4"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                    lineNumber: 576,
+                                                    lineNumber: 585,
                                                     columnNumber: 25
                                                 }, void 0),
                                                 label: "Company",
                                                 value: leadData.createdBy?.company || "—"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 575,
+                                                lineNumber: 584,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                        lineNumber: 557,
+                                        lineNumber: 566,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                lineNumber: 549,
+                                lineNumber: 558,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1666,7 +1682,7 @@ const LeadViewPage = ()=>{
                                         children: "Quick Stats"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                        lineNumber: 586,
+                                        lineNumber: 595,
                                         columnNumber: 13
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1678,7 +1694,7 @@ const LeadViewPage = ()=>{
                                                 color: leadData.inDeal ? "text-green-600 dark:text-green-400" : "text-gray-600 dark:text-gray-400"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 590,
+                                                lineNumber: 599,
                                                 columnNumber: 15
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(StatItem, {
@@ -1687,7 +1703,7 @@ const LeadViewPage = ()=>{
                                                 color: "text-gray-600 dark:text-gray-400"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 599,
+                                                lineNumber: 608,
                                                 columnNumber: 15
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(StatItem, {
@@ -1696,19 +1712,19 @@ const LeadViewPage = ()=>{
                                                 color: "text-gray-600 dark:text-gray-400"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 604,
+                                                lineNumber: 613,
                                                 columnNumber: 15
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                        lineNumber: 589,
+                                        lineNumber: 598,
                                         columnNumber: 13
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                lineNumber: 585,
+                                lineNumber: 594,
                                 columnNumber: 11
                             }, ("TURBOPACK compile-time value", void 0)),
                             (leadData?.country || leadData?.postalCode) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1721,7 +1737,7 @@ const LeadViewPage = ()=>{
                                                 className: "w-5 h-5 text-blue-600 dark:text-blue-400"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 616,
+                                                lineNumber: 625,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -1729,13 +1745,13 @@ const LeadViewPage = ()=>{
                                                 children: "Location Details"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 617,
+                                                lineNumber: 626,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                        lineNumber: 615,
+                                        lineNumber: 624,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1747,7 +1763,7 @@ const LeadViewPage = ()=>{
                                                 color: "text-gray-600 dark:text-gray-400"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 622,
+                                                lineNumber: 631,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(StatItem, {
@@ -1756,37 +1772,37 @@ const LeadViewPage = ()=>{
                                                 color: "text-gray-600 dark:text-gray-400"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                                lineNumber: 627,
+                                                lineNumber: 636,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                        lineNumber: 621,
+                                        lineNumber: 630,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                                lineNumber: 614,
+                                lineNumber: 623,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                        lineNumber: 546,
+                        lineNumber: 555,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                lineNumber: 370,
+                lineNumber: 368,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0))
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-        lineNumber: 231,
+        lineNumber: 234,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };
@@ -1810,7 +1826,7 @@ const MetricCard = ({ icon, label, value, color })=>/*#__PURE__*/ (0, __TURBOPAC
                     children: icon
                 }, void 0, false, {
                     fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                    lineNumber: 657,
+                    lineNumber: 666,
                     columnNumber: 7
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1821,7 +1837,7 @@ const MetricCard = ({ icon, label, value, color })=>/*#__PURE__*/ (0, __TURBOPAC
                             children: label
                         }, void 0, false, {
                             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                            lineNumber: 659,
+                            lineNumber: 668,
                             columnNumber: 9
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1829,28 +1845,27 @@ const MetricCard = ({ icon, label, value, color })=>/*#__PURE__*/ (0, __TURBOPAC
                             children: value
                         }, void 0, false, {
                             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                            lineNumber: 660,
+                            lineNumber: 669,
                             columnNumber: 9
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                    lineNumber: 658,
+                    lineNumber: 667,
                     columnNumber: 7
                 }, ("TURBOPACK compile-time value", void 0))
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-            lineNumber: 656,
+            lineNumber: 665,
             columnNumber: 5
         }, ("TURBOPACK compile-time value", void 0))
     }, void 0, false, {
         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-        lineNumber: 655,
+        lineNumber: 664,
         columnNumber: 3
     }, ("TURBOPACK compile-time value", void 0));
 _c1 = MetricCard;
-// Component for info items with icons
 const InfoItem = ({ icon, label, value })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "group",
         children: [
@@ -1862,7 +1877,7 @@ const InfoItem = ({ icon, label, value })=>/*#__PURE__*/ (0, __TURBOPACK__import
                         children: icon
                     }, void 0, false, {
                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                        lineNumber: 683,
+                        lineNumber: 688,
                         columnNumber: 16
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1870,31 +1885,30 @@ const InfoItem = ({ icon, label, value })=>/*#__PURE__*/ (0, __TURBOPACK__import
                         children: label
                     }, void 0, false, {
                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                        lineNumber: 684,
+                        lineNumber: 689,
                         columnNumber: 7
                     }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                lineNumber: 682,
+                lineNumber: 687,
                 columnNumber: 5
             }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                className: "font-medium text-gray-900 dark:text-white capitalize pl-6",
+                className: "font-medium text-gray-900 dark:text-white pl-6",
                 children: value
             }, void 0, false, {
                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                lineNumber: 686,
+                lineNumber: 691,
                 columnNumber: 5
             }, ("TURBOPACK compile-time value", void 0))
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-        lineNumber: 681,
+        lineNumber: 686,
         columnNumber: 3
     }, ("TURBOPACK compile-time value", void 0));
 _c2 = InfoItem;
-// Component for profile fields in sidebar
 const ProfileField = ({ icon, label, value })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "flex flex-col gap-1",
         children: [
@@ -1906,7 +1920,7 @@ const ProfileField = ({ icon, label, value })=>/*#__PURE__*/ (0, __TURBOPACK__im
                         children: icon
                     }, void 0, false, {
                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                        lineNumber: 704,
+                        lineNumber: 706,
                         columnNumber: 16
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1914,13 +1928,13 @@ const ProfileField = ({ icon, label, value })=>/*#__PURE__*/ (0, __TURBOPACK__im
                         children: label
                     }, void 0, false, {
                         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                        lineNumber: 705,
+                        lineNumber: 707,
                         columnNumber: 7
                     }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                lineNumber: 703,
+                lineNumber: 705,
                 columnNumber: 5
             }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1928,13 +1942,13 @@ const ProfileField = ({ icon, label, value })=>/*#__PURE__*/ (0, __TURBOPACK__im
                 children: value
             }, void 0, false, {
                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                lineNumber: 707,
+                lineNumber: 709,
                 columnNumber: 5
             }, ("TURBOPACK compile-time value", void 0))
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-        lineNumber: 702,
+        lineNumber: 704,
         columnNumber: 3
     }, ("TURBOPACK compile-time value", void 0));
 _c3 = ProfileField;
@@ -1947,7 +1961,7 @@ const StatItem = ({ label, value, color })=>/*#__PURE__*/ (0, __TURBOPACK__impor
                 children: label
             }, void 0, false, {
                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                lineNumber: 722,
+                lineNumber: 724,
                 columnNumber: 5
             }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1955,13 +1969,13 @@ const StatItem = ({ label, value, color })=>/*#__PURE__*/ (0, __TURBOPACK__impor
                 children: value || "—"
             }, void 0, false, {
                 fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-                lineNumber: 723,
+                lineNumber: 725,
                 columnNumber: 5
             }, ("TURBOPACK compile-time value", void 0))
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/(dashboard)/leads/view/[id]/page.tsx",
-        lineNumber: 721,
+        lineNumber: 723,
         columnNumber: 3
     }, ("TURBOPACK compile-time value", void 0));
 _c4 = StatItem;
