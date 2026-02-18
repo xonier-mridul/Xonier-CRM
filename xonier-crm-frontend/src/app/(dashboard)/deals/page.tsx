@@ -22,6 +22,7 @@ import {  } from "react-icons/md";
 import { handleCopy } from "../../utils/clipboard.utils";
 import { FaRegPaperPlane } from "react-icons/fa";
 import Pagination from "@/src/components/common/pagination";
+import { useSearchParams } from "next/navigation";
 
 const page = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -41,11 +42,15 @@ const page = (): JSX.Element => {
   const [currentTab, setCurrentTab] = useState<number>(1);
 
   const { hasPermission } = usePermissions();
+  const searchFilters = useSearchParams()
+
+  const userid = searchFilters.get("userid")
+  console.log("userid: ", userid)
 
   const getDealData = async () => {
     setIsLoading(true);
     try {
-      const result = await dealService.getAll(currentPage, pageLimit);
+      const result = await dealService.getAll(currentPage, pageLimit, {userid});
 
       if (result.status === 200) {
         const data = result.data.data;
@@ -73,7 +78,7 @@ const page = (): JSX.Element => {
   const getWonDealData = async () => {
     setIsLoading(true);
     try {
-      const result = await dealService.getAll(wonCurrentPage, wonPageLimit, {stage: "won"});
+      const result = await dealService.getAll(wonCurrentPage, wonPageLimit, {stage: "won", userid});
 
       if (result.status === 200) {
         const data = result.data.data;
@@ -101,7 +106,7 @@ const page = (): JSX.Element => {
   const getLostDealData = async () => {
     setIsLoading(true);
     try {
-      const result = await dealService.getAll(lostCurrentPage, lostPageLimit, {stage: "lost"});
+      const result = await dealService.getAll(lostCurrentPage, lostPageLimit, {stage: "lost", userid});
 
       if (result.status === 200) {
         const data = result.data.data;

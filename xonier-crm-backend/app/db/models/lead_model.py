@@ -40,6 +40,7 @@ class LeadsModel(Document):
     country: Optional[COUNTRY_CODE] = None
     postalCode: Optional[int] =  Field(None, gt=1000, lt=999999)
     language: Optional[LANGUAGE_CODE] = None
+    # assignedTo: Optional[List[str]] = None
     
     industry: Optional[INDUSTRIES] = None
     employeeRole: Optional[str] = None
@@ -49,7 +50,7 @@ class LeadsModel(Document):
     membershipNotes: Optional[str] = None
 
     inDeal: bool = False
-    
+    extraFields: Optional[dict[str, str | int | float | bool | None]] = Field(default=None)
     updatedBy: Optional[Link[UserModel]] = None
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updatedAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

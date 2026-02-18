@@ -15,13 +15,20 @@ from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT
 from io import BytesIO
-from datetime import datetime
+from datetime import datetime, date
+from app.repositories.activity_repository import ActivityRepository
+from app.core.enums import ACTIVITY_ACTION, ACTIVITY_ENTITY_TYPE
+from app.db.db import Client
+
+from app.utils.activity_payload import activity_payload
 
 class InvoiceService:
     def __init__(self):
         self.repo = InvoiceRepository()
         self.getTeamMem = GetTeamMembers()
         self.encryption = Encryption()
+        self.activityRepo = ActivityRepository()
+        self.client = Client
 
     async def getAll(self, filters: Dict[str, Any], user: Dict[str, Any]):
         try:
@@ -169,83 +176,90 @@ class InvoiceService:
 
 
     async def download_invoice(self, id: str, user: Dict[str, Any]):
-        try:
-            invoice_id = PydanticObjectId(id)
-            
-            is_super_admin = validate_admin(user.get("userRole", []))
-            
-           
-            access_query = {"_id": invoice_id}
-            
-            if not is_super_admin:
-                members = await self.getTeamMem.get_team_members(user["_id"])
-                allowed_user_ids = []
-                
-                if members:
-                    allowed_user_ids.extend([PydanticObjectId(m) for m in members])
-                
-                allowed_user_ids.append(PydanticObjectId(user["_id"]))
-                
-                access_query.update({
-                    "createdBy.$id": {"$in": allowed_user_ids}
-                })
-            
+        async with await self.client.start_session() as session:
+            async with session.start_transaction():
+                try:
+                    invoice_id = PydanticObjectId(id)
+                    
+                    is_super_admin = validate_admin(user.get("userRole", []))
+                    
+                    print("one")
+                    access_query = {"_id": invoice_id}
+                    
+                    if not is_super_admin:
+                        members = await self.getTeamMem.get_team_members(user["_id"])
+                        allowed_user_ids = []
+                        
+                        if members:
+                            allowed_user_ids.extend([PydanticObjectId(m) for m in members])
+                        
+                        allowed_user_ids.append(PydanticObjectId(user["_id"]))
+                        
+                        access_query.update({
+                            "createdBy.$id": {"$in": allowed_user_ids}
+                        })
+                    
+                    print("tow")
+                    invoice = await self.repo.find_one(
+                        filter=access_query,
+                        populate=["createdBy", "updatedBy", "deal", "quotation"],
+                    )
+                    
+                    if not invoice:
+                        raise AppException(
+                            403,
+                            "You are not authorized to access this invoice or it does not exist"
+                        )
+                    print("three")
+                    invoice_data = jsonable_encoder(
+                        invoice,
+                        exclude={
+                            "createdBy": {"password"},
+                            "updatedBy": {"password"},
+                        },
+                    )
+                    
 
-            invoice = await self.repo.find_one(
-                filter=access_query,
-                populate=["createdBy", "updatedBy", "deal", "quotation"],
-            )
-            
-            if not invoice:
-                raise AppException(
-                    403,
-                    "You are not authorized to access this invoice or it does not exist"
-                )
+                    if invoice_data.get("customerEmail"):
+                        invoice_data["customerEmail"] = self.encryption.decrypt_data(invoice_data["customerEmail"])
+                    if invoice_data.get("customerPhone"):
+                        invoice_data["customerPhone"] = self.encryption.decrypt_data(invoice_data["customerPhone"])
+                    if invoice_data.get("createdBy", {}).get("email"):
+                        invoice_data["createdBy"]["email"] = self.encryption.decrypt_data(invoice_data["createdBy"]["email"])
+                    if invoice_data.get("createdBy", {}).get("phone"):
+                        invoice_data["createdBy"]["phone"] = self.encryption.decrypt_data(invoice_data["createdBy"]["phone"])
 
-            invoice_data = jsonable_encoder(
-                invoice,
-                exclude={
-                    "createdBy": {"password"},
-                    "updatedBy": {"password"},
-                },
-            )
-            
+                    pdf_buffer = await self._generate_invoice_pdf(invoice_data)
 
-            if invoice_data.get("customerEmail"):
-                invoice_data["customerEmail"] = self.encryption.decrypt_data(invoice_data["customerEmail"])
-            if invoice_data.get("customerPhone"):
-                invoice_data["customerPhone"] = self.encryption.decrypt_data(invoice_data["customerPhone"])
-            if invoice_data.get("createdBy", {}).get("email"):
-                invoice_data["createdBy"]["email"] = self.encryption.decrypt_data(invoice_data["createdBy"]["email"])
-            if invoice_data.get("createdBy", {}).get("phone"):
-                invoice_data["createdBy"]["phone"] = self.encryption.decrypt_data(invoice_data["createdBy"]["phone"])
+                    activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.INVOICE.value, entityId=PydanticObjectId(invoice.id), action=ACTIVITY_ACTION.CREATED, title="create quotation", metadata={"quoteId": invoice.invoiceId, "subTotal": invoice.subTotal, "total": invoice.total, "customerName": invoice.customerName, "customerEmail": invoice_data.get("customerEmail")})
 
-            # Generate PDF
-            pdf_buffer = await self._generate_invoice_pdf(invoice_data)
-            
-            # Return the PDF buffer and filename
-            filename = f"invoice_{invoice_data['invoiceId']}_{datetime.now().strftime('%Y%m%d')}.pdf"
-            
-            return {
-                "pdf_buffer": pdf_buffer,
-                "filename": filename,
-                "invoice_id": invoice_data['invoiceId']
-            }
+    
+                    is_activity = await self.activityRepo.create(data=activity, session=session)
 
-        except AppException as e:
-            raise e
+                    if not is_activity:
+                        raise AppException(400, "Activity creation failed")
+                    
+                    
+                    filename = f"invoice_{invoice_data['invoiceId']}_{datetime.now().strftime('%Y%m%d')}.pdf"
+                    
+                    return {
+                        "pdf_buffer": pdf_buffer,
+                        "filename": filename,
+                        "invoice_id": invoice_data['invoiceId']
+                    }
 
-        except Exception as e:
-            print("Invoice download_invoice error:", e)
-            raise AppException(
-                status_code=500,
-                message="Internal server error while generating invoice PDF"
-            )
+                except AppException as e:
+                    raise e
+
+                except Exception as e:
+                    print("Invoice download_invoice error:", e)
+                    raise AppException(
+                        status_code=500,
+                        message="Internal server error while generating invoice PDF"
+                    )
 
     async def _generate_invoice_pdf(self, invoice_data: Dict[str, Any]) -> BytesIO:
-        """
-        Generate a professional PDF invoice using ReportLab
-        """
+     
         try:
             buffer = BytesIO()
             
@@ -356,7 +370,7 @@ class InvoiceService:
                     f"${invoice_data.get('subTotal', 0):.2f}"
                 ])
             else:
-                # Fallback if no deal
+                
                 items_data.append([
                     'Services',
                     f"${invoice_data.get('subTotal', 0):.2f}"
@@ -447,28 +461,25 @@ class InvoiceService:
             )
 
     def _format_date(self, date_value) -> str:
-        """
-        Format date to a readable string
-        """
         if not date_value:
             return "N/A"
         
         try:
-            # Handle datetime objects
+            
             if isinstance(date_value, datetime):
                 return date_value.strftime("%B %d, %Y")
             
-            # Handle date objects
+            
             if isinstance(date_value, date):
                 return date_value.strftime("%B %d, %Y")
             
-            # Handle objects with strftime method
+           
             if hasattr(date_value, 'strftime'):
                 return date_value.strftime("%B %d, %Y")
             
-            # Handle string dates
+
             if isinstance(date_value, str):
-                # Try to parse ISO format string
+
                 date_obj = datetime.fromisoformat(date_value.replace('Z', '+00:00'))
                 return date_obj.strftime("%B %d, %Y")
             

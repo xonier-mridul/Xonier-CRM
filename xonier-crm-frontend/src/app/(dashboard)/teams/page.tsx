@@ -613,7 +613,8 @@ const page = (): JSX.Element => {
                   </tr>
                 )
               ) : (
-                <tr className="animate-pulse">
+                Array.from({length: 8}).map((_, i)=>(
+                   <tr className="animate-pulse">
                   <td className="p-4">
                     <Skeleton height={30} width={50} className="w-full " />
                   </td>
@@ -636,14 +637,7 @@ const page = (): JSX.Element => {
                       />
                     </div>
                   </td>
-                  {/* <td className="p-4">
-                    <Skeleton
-                      height={30}
-                      width={120}
-                      borderRadius={999}
-                      className="w-full "
-                    />
-                  </td> */}
+                  
                   <td className="p-4">
                     <Skeleton
                       height={30}
@@ -660,6 +654,8 @@ const page = (): JSX.Element => {
                     </div>
                   </td>
                 </tr>
+
+                ))
               )}
             </tbody>
           </table>

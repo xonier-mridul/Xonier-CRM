@@ -22,7 +22,7 @@ export const QuoteService = {
   get_by_id: (id:string)=> api.get(`/quote/get-by-id/${id}`),
   create: (payload: QuotationCreatePayload)=> api.post("/quote/create", payload),
   update: (id: string, payload: QuotationUpdatePayload)=> api.put(`/quote/update/${id}`, payload),
-  updateStatus: (id: string, payload: QuoteStatusUpdatePayload)=> api.put(`/quote/update/${id}`, payload),
+  updateStatus: (id: string, payload: QuoteStatusUpdatePayload)=> api.patch(`/quote/update/status/${id}`, payload),
   resend: (id:string)=> api.post(`/quote/resend/${id}`, {}), 
   delete: (id:string)=> api.delete(`/quote/delete/${id}`)
  

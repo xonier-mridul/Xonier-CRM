@@ -536,6 +536,23 @@ class NOTES_ENTITIES(str, Enum):
     GENERAL = "general"
 
 
+class ACTIVITY_ENTITY_TYPE(str, Enum):
+    LEAD = "lead"
+    DEAL = "deal"
+    QUOTATION = "quotation"
+    INVOICE = "invoice"
+
+class ACTIVITY_ACTION(str, Enum):
+    CREATED = "created"
+    UPDATED = "updated"
+    SENT = "sent"
+    RESEND="resend"
+    CONVERTED = "converted"
+    CLOSED_WON = "closed_won"
+    CLOSED_LOST = "closed_lost"
+    DELETE = "delete"
+
+
 
 
 

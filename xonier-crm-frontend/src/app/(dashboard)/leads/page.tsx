@@ -26,6 +26,7 @@ import { FaHandshake } from "react-icons/fa6";
 import { UseDispatch, useSelector } from "react-redux";
 import { RootState } from "@/src/store";
 import Pagination from "@/src/components/common/pagination";
+import { useSearchParams } from "next/navigation";
 
 const page = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -48,11 +49,19 @@ const page = (): JSX.Element => {
 
     const auth = useSelector((state: RootState)=>state.auth)
 
+    const searchParams = useSearchParams()
+    const userid = searchParams.get("userid")
+
+    const query = userid ? {"userid": userid}: {}
+
   const getLeadData = async (): Promise<void> => {
     setIsLoading(true);
     try {
 
-        const result = await LeadService.getAll(currentPage, pageLimit);
+        
+
+
+        const result = await LeadService.getAll(currentPage, pageLimit, query);
         if (result.status === 200) {
           const data = result.data.data;
           setLeadData(data.data);
@@ -80,7 +89,7 @@ const page = (): JSX.Element => {
     setIsLoading(true);
     try {
     
-        const result = await LeadService.getAll(currentWonPage, wonPageLimit, {status: SALES_STATUS.WON});
+        const result = await LeadService.getAll(currentWonPage, wonPageLimit, {status: SALES_STATUS.WON, ...query});
       if (result.status === 200) {
         const data = result.data.data;
         setWonLeadData(data.data);
@@ -109,7 +118,7 @@ const page = (): JSX.Element => {
     setIsLoading(true);
     try {
    
-const result = await LeadService.getAll(currentLostPage, lostPageLimit, {status: SALES_STATUS.LOST});
+const result = await LeadService.getAll(currentLostPage, lostPageLimit, {status: SALES_STATUS.LOST, ...query});
       if (result.status === 200) {
         const data = result.data.data;
         setLostLeadData(data.data);

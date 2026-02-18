@@ -35,10 +35,10 @@ export interface Lead {
   createdAt: string;          
   updatedAt: string;          
   deletedAt?: string | null;
+  extraFields?: Record<string, string | number | boolean | null> | null;
 }
 
 export interface LeadPayload {
-  [key: string]: string | number | null | undefined;
   fullName: string;
   email: string;
   phone: string;
@@ -60,6 +60,8 @@ export interface LeadPayload {
 
   message?: string | null;
   membershipNotes?: string | null;
+
+  extraFields?: Record<string, string | number | boolean | null> | null;
 }
 
 export interface BulkLeadPayload {

@@ -506,3 +506,22 @@ export enum CUSTOM_FIELD_TYPE {
 }
 
 
+export enum ACTIVITY_ENTITY_TYPE {
+  LEAD = "lead",
+  DEAL = "deal",
+  QUOTATION = "quotation",
+  INVOICE = "invoice",
+}
+
+export enum ACTIVITY_ACTION {
+  CREATED = "created",
+  UPDATED = "updated",
+  SENT = "sent",
+  RESEND="resend",
+  CONVERTED = "converted",
+    CLOSED_WON = "closed_won",
+    CLOSED_LOST = "closed_lost",
+    DELETE = "delete",
+}
+
+

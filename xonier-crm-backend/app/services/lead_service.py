@@ -14,9 +14,10 @@ from app.core.constants import (
     SUPER_ADMIN_CODE,
     LEAD_CACHE_NAMESPACE,
     USER_LEAD_CACHE_NAMESPACE,
+    
 )
 from app.db.models.lead_model import LeadsModel 
-from app.core.enums import SALES_STATUS
+from app.core.enums import SALES_STATUS, ACTIVITY_ENTITY_TYPE, ACTIVITY_ACTION
 from app.utils.cache_key_generator import (
     cache_key_generator,
     cache_key_generator_with_id
@@ -25,6 +26,9 @@ from fastapi_cache import FastAPICache
 import json
 from app.utils.get_team_members import GetTeamMembers
 from app.core.crypto import Encryption
+from app.repositories.activity_repository import ActivityRepository
+from app.db.db import Client
+from app.utils.activity_payload import activity_payload
 
 
 class LeadService:
@@ -32,234 +36,252 @@ class LeadService:
         self.repo = LeadRepository()
         self.getTeamMem = GetTeamMembers()
         self.encryption = Encryption()
+        self.activityRepo = ActivityRepository()
+        self.client = Client
 
     async def create(self, payload: Dict[str, Any], createdBy: str):
-        try:
-            hashed_mail = hash_value(payload["email"])
-            hashed_phone = hash_value(payload["phone"])
-            is_exist = await self.repo.find_one(
-                {
-                    "fullName": payload["fullName"],
-                    "hashedEmail": hashed_mail,
-                    "projectType": payload["projectType"],
-                    "hashedPhone": hashed_phone,
-                }
-            )
+        async with await self.client.start_session() as session:
+            async with session.start_transaction():
+                try:
+                    hashed_mail = hash_value(payload["email"])
+                    hashed_phone = hash_value(payload["phone"])
+                    is_exist = await self.repo.find_one(
+                        {
+                            "fullName": payload["fullName"],
+                            "hashedEmail": hashed_mail,
+                            "projectType": payload["projectType"],
+                            "hashedPhone": hashed_phone,
+                        }
+                    )
 
-           
+                
 
-            if is_exist:
-                raise AppException(
-                    400,
-                    "The query already exist with same name, email, phone or project type",
-                )
+                    if is_exist:
+                        raise AppException(
+                            400,
+                            "The query already exist with same name, email, phone or project type",
+                        )
 
-            lead_id = generate_enquiry_id("LEAD")
+                    lead_id = generate_enquiry_id("LEAD")
 
-            new_payload = {
-                **payload,
-                "lead_id": lead_id,
-                "createdBy": PydanticObjectId(createdBy),
-            }
-            new_lead = await self.repo.create(new_payload)
+                    new_payload = {
+                        **payload,
+                        "lead_id": lead_id,
+                        "createdBy": PydanticObjectId(createdBy),
+                    }
+                    new_lead = await self.repo.create(data=new_payload, session=session)
 
-            if not new_lead:
-                raise AppException(400, "Lead creation failed, please try again")
+                    if not new_lead:
+                        raise AppException(400, "Lead creation failed, please try again")
+                    
+                    activity = activity_payload(userId=PydanticObjectId(createdBy), entityType=ACTIVITY_ENTITY_TYPE.LEAD, entityId=PydanticObjectId(new_lead.id), action=ACTIVITY_ACTION.CREATED, title="create lead", metadata={"leadId": new_lead.lead_id, "leadName": new_lead.fullName})
 
-            await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
-            await FastAPICache.get_backend().clear(namespace=USER_LEAD_CACHE_NAMESPACE)
 
-            return new_lead.model_dump(mode="json")
+                    
+                    is_activity = await self.activityRepo.create(data=activity, session=session)
 
-        except AppException:
-            raise
+                    if not is_activity:
+                        raise AppException(400, "Activity creation failed")
 
-        except DuplicateKeyError:
-            raise AppException(status_code=409, message="Lead ID already exist")
+                    await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
+                    await FastAPICache.get_backend().clear(namespace=USER_LEAD_CACHE_NAMESPACE)
 
-        except Exception as e:
-            raise AppException(status_code=500, message=f"Internal server error: {e}")
-        
+                    return new_lead.model_dump(mode="json")
+
+                except AppException:
+                    raise
+
+                except DuplicateKeyError:
+                    raise AppException(status_code=409, message="Lead ID already exist")
+
+                except Exception as e:
+                    raise AppException(status_code=500, message=f"Internal server error: {e}")
+                
 
 
     
     async def bulk_create(self, payload: Dict[str, Any], user: Dict[str, Any]):
-        
-        try:
-           
-            leads_data = payload.get("leads", [])
-            
-            if not leads_data:
-                raise AppException(400, "Leads payload cannot be empty")
-
-            created_by = PydanticObjectId(user["_id"])
-            leads_to_insert: List[LeadsModel] = []
-            skipped: List[Dict[str, Any]] = []
-
-            
-            
-            hash_filters = []
-            for lead in leads_data:
+        async with await self.client.start_session() as session:
+            async with session.start_transaction():
                 try:
-                    email = lead.get("email", "").lower()
-                    phone = lead.get("phone", "")
-                    project_type = lead.get("projectType", "")
+                
+                    leads_data = payload.get("leads", [])
                     
-                    if not email or not phone or not project_type:
-                        skipped.append({
-                            "email": lead.get("email", "N/A"),
-                            "phone": lead.get("phone", "N/A"),
-                            "reason": "Missing required fields"
-                        })
-                        continue
+                    if not leads_data:
+                        raise AppException(400, "Leads payload cannot be empty")
+
+                    created_by = PydanticObjectId(user["_id"])
+                    leads_to_insert: List[LeadsModel] = []
+                    skipped: List[Dict[str, Any]] = []
+
+                    
+                    
+                    hash_filters = []
+                    for lead in leads_data:
+                        try:
+                            email = lead.get("email", "").lower()
+                            phone = lead.get("phone", "")
+                            project_type = lead.get("projectType", "")
+                            
+                            if not email or not phone or not project_type:
+                                skipped.append({
+                                    "email": lead.get("email", "N/A"),
+                                    "phone": lead.get("phone", "N/A"),
+                                    "reason": "Missing required fields"
+                                })
+                                continue
+                                
+                            hash_filters.append({
+                                "hashedEmail": hash_value(email),
+                                "hashedPhone": hash_value(phone),
+                                "projectType": project_type,
+                            })
+                        except Exception as e:
+                            skipped.append({
+                                "email": lead.get("email", "N/A"),
+                                "phone": lead.get("phone", "N/A"),
+                                "reason": f"Error processing: {str(e)}"
+                            })
+
+                    
+                    existing_set = set()
+                    if hash_filters:
+                        print(f"Checking for {len(hash_filters)} potential duplicates...")
                         
-                    hash_filters.append({
-                        "hashedEmail": hash_value(email),
-                        "hashedPhone": hash_value(phone),
-                        "projectType": project_type,
-                    })
-                except Exception as e:
-                    skipped.append({
-                        "email": lead.get("email", "N/A"),
-                        "phone": lead.get("phone", "N/A"),
-                        "reason": f"Error processing: {str(e)}"
-                    })
+                        existing_leads = await LeadsModel.find(
+                            {"$or": hash_filters}
+                        ).to_list()
+                        
+                        print(f"Found {len(existing_leads)} existing leads")
 
-            
-            existing_set = set()
-            if hash_filters:
-                print(f"Checking for {len(hash_filters)} potential duplicates...")
+                        existing_set = {
+                            (l.hashedEmail, l.hashedPhone, l.projectType) 
+                            for l in existing_leads
+                        }
+
+                    for lead in leads_data:
+                        try:
+                            email = lead.get("email", "").lower()
+                            phone = lead.get("phone", "")
+                            project_type = lead.get("projectType", "")
+                            
+                            if any(s.get("email") == lead.get("email") for s in skipped):
+                                continue
+                            
+                            
+                            hashed_email = hash_value(email)
+                            hashed_phone = hash_value(phone)
+                            
+                            encrypt_email = self.encryption.encrypt_data(email)
+                            encrypt_phone = self.encryption.encrypt_data(phone)
+
+                        
+                            if (hashed_email, hashed_phone, project_type) in existing_set:
+                                skipped.append({
+                                    "email": lead.get("email"),
+                                    "phone": phone,
+                                    "projectType": project_type,
+                                    "reason": "Duplicate lead (same email, phone, and project type)"
+                                })
+                                continue
+
+                            
+                            lead_data = {
+                                "fullName": lead.get("fullName"),
+                                "email": encrypt_email,       
+                                "hashedEmail": hashed_email,   
+                                "phone": encrypt_phone,        
+                                "hashedPhone": hashed_phone,   
+                                "priority": lead.get("priority"),
+                                "source": lead.get("source"),
+                                "projectType": project_type,
+                                "status": lead.get("status", "new"),
+                                "lead_id": generate_enquiry_id("LEAD"),
+                                "createdBy": created_by,
+                            }
+                            
+                            
+                            optional_fields = {
+                                "companyName": lead.get("companyName"),
+                                "city": lead.get("city"),
+                                "country": lead.get("country"),
+                                "postalCode": lead.get("postalCode"),
+                                "language": lead.get("language"),
+                                "industry": lead.get("industry"),
+                                "employeeRole": lead.get("employeeRole"),
+                                "employeeSeniority": lead.get("employeeSeniority"),
+                                "message": lead.get("message"),
+                                "membershipNotes": lead.get("membershipNotes"),
+                            }
+                            
+                            
+                            for field_name, field_value in optional_fields.items():
+                                if field_value is not None and field_value != "":
+                                    lead_data[field_name] = field_value
+
+                            
+                            lead_doc = LeadsModel(**lead_data)
+                            leads_to_insert.append(lead_doc)
+                            
+                        except Exception as e:
+                            print(f"Error creating lead: {str(e)}")
+                            import traceback
+                            traceback.print_exc()
+                            skipped.append({
+                                "email": lead.get("email", "N/A"),
+                                "phone": lead.get("phone", "N/A"),
+                                "reason": f"Validation error: {str(e)}"
+                            })
+                            continue
+
                 
-                existing_leads = await LeadsModel.find(
-                    {"$or": hash_filters}
-                ).to_list()
-                
-                print(f"Found {len(existing_leads)} existing leads")
+                    if not leads_to_insert:
+                        print("No leads to insert - all were skipped")
+                        return {
+                            "inserted": 0,
+                            "skipped": len(skipped),
+                            "skippedRecords": skipped,
+                        }
 
-                existing_set = {
-                    (l.hashedEmail, l.hashedPhone, l.projectType) 
-                    for l in existing_leads
-                }
+                    try:
+                        print(f"Inserting {len(leads_to_insert)} leads...")
+                        await LeadsModel.insert_many(documents=leads_to_insert, session=session)
+                        inserted_count = len(leads_to_insert)
 
-            for lead in leads_data:
-                try:
-                    email = lead.get("email", "").lower()
-                    phone = lead.get("phone", "")
-                    project_type = lead.get("projectType", "")
-                    
-                    if any(s.get("email") == lead.get("email") for s in skipped):
-                        continue
-                    
-                    
-                    hashed_email = hash_value(email)
-                    hashed_phone = hash_value(phone)
-                    
-                    encrypt_email = self.encryption.encrypt_data(email)
-                    encrypt_phone = self.encryption.encrypt_data(phone)
+                        
+                        activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD, action=ACTIVITY_ACTION.CREATED, title="create bulk lead", perform=int(inserted_count))
 
-                   
-                    if (hashed_email, hashed_phone, project_type) in existing_set:
-                        skipped.append({
-                            "email": lead.get("email"),
-                            "phone": phone,
-                            "projectType": project_type,
-                            "reason": "Duplicate lead (same email, phone, and project type)"
-                        })
-                        continue
+                        is_activity = await self.activityRepo.create(data=activity, session=session)
+                        if not is_activity:
+                            raise AppException(400, "Activity creation failed")
+                        backend = FastAPICache.get_backend()
+                        await backend.clear(namespace=LEAD_CACHE_NAMESPACE)
+                        await backend.clear(namespace=USER_LEAD_CACHE_NAMESPACE)
+                        
+                    except Exception as e:
+                        print(f"Error during bulk insert: {str(e)}")
+                        import traceback
+                        traceback.print_exc()
+                        raise AppException(500, f"Database insertion failed: {str(e)}")
 
-                    
-                    lead_data = {
-                        "fullName": lead.get("fullName"),
-                        "email": encrypt_email,       
-                        "hashedEmail": hashed_email,   
-                        "phone": encrypt_phone,        
-                        "hashedPhone": hashed_phone,   
-                        "priority": lead.get("priority"),
-                        "source": lead.get("source"),
-                        "projectType": project_type,
-                        "status": lead.get("status", "new"),
-                        "lead_id": generate_enquiry_id("LEAD"),
-                        "createdBy": created_by,
+                    return {
+                        "inserted": inserted_count,
+                        "skipped": len(skipped),
+                        "skippedRecords": skipped,
                     }
-                    
-                    
-                    optional_fields = {
-                        "companyName": lead.get("companyName"),
-                        "city": lead.get("city"),
-                        "country": lead.get("country"),
-                        "postalCode": lead.get("postalCode"),
-                        "language": lead.get("language"),
-                        "industry": lead.get("industry"),
-                        "employeeRole": lead.get("employeeRole"),
-                        "employeeSeniority": lead.get("employeeSeniority"),
-                        "message": lead.get("message"),
-                        "membershipNotes": lead.get("membershipNotes"),
-                    }
-                    
-                    
-                    for field_name, field_value in optional_fields.items():
-                        if field_value is not None and field_value != "":
-                            lead_data[field_name] = field_value
 
-                    
-                    lead_doc = LeadsModel(**lead_data)
-                    leads_to_insert.append(lead_doc)
-                    
+                except AppException:
+                    raise
+
+                except DuplicateKeyError as e:
+                    print(f"Duplicate key error during insertion: {str(e)}")
+                    raise AppException(409, "Duplicate lead detected during insertion")
+
                 except Exception as e:
-                    print(f"Error creating lead: {str(e)}")
+                    print(f"Unexpected error in bulk_create: {str(e)}")
                     import traceback
                     traceback.print_exc()
-                    skipped.append({
-                        "email": lead.get("email", "N/A"),
-                        "phone": lead.get("phone", "N/A"),
-                        "reason": f"Validation error: {str(e)}"
-                    })
-                    continue
-
-           
-            if not leads_to_insert:
-                print("No leads to insert - all were skipped")
-                return {
-                    "inserted": 0,
-                    "skipped": len(skipped),
-                    "skippedRecords": skipped,
-                }
-
-            try:
-                print(f"Inserting {len(leads_to_insert)} leads...")
-                await LeadsModel.insert_many(leads_to_insert)
-                inserted_count = len(leads_to_insert)
-                
-                print(f"Successfully inserted {inserted_count} leads")
-                
-                backend = FastAPICache.get_backend()
-                await backend.clear(namespace=LEAD_CACHE_NAMESPACE)
-                await backend.clear(namespace=USER_LEAD_CACHE_NAMESPACE)
-                
-            except Exception as e:
-                print(f"Error during bulk insert: {str(e)}")
-                import traceback
-                traceback.print_exc()
-                raise AppException(500, f"Database insertion failed: {str(e)}")
-
-            return {
-                "inserted": inserted_count,
-                "skipped": len(skipped),
-                "skippedRecords": skipped,
-            }
-
-        except AppException:
-            raise
-
-        except DuplicateKeyError as e:
-            print(f"Duplicate key error during insertion: {str(e)}")
-            raise AppException(409, "Duplicate lead detected during insertion")
-
-        except Exception as e:
-            print(f"Unexpected error in bulk_create: {str(e)}")
-            import traceback
-            traceback.print_exc()
-            raise AppException(500, f"Internal server error: {str(e)}")
+                    raise AppException(500, f"Internal server error: {str(e)}")
 
 
 
@@ -267,6 +289,8 @@ class LeadService:
         try:
 
             is_admin = False
+
+            is_manager = False
             
 
             for item in user["userRole"]:
@@ -276,7 +300,8 @@ class LeadService:
 
 
 
-            query = {}
+            query = {"status": {"$in": [SALES_STATUS.CONTACTED, SALES_STATUS.NEW, SALES_STATUS.PROPOSAL, SALES_STATUS.QUALIFIED]}}
+
 
             if not is_admin:
                 
@@ -284,6 +309,7 @@ class LeadService:
                 
                 if members:
                     query.update({"createdBy.$id": {"$in": members}})
+                    is_manager = True
 
                 if not members:
                     query.update({"createdBy.$id": PydanticObjectId(user["_id"])})
@@ -306,6 +332,9 @@ class LeadService:
 
             if "type" in filters:
                 query.update({"projectType": filters["type"]})
+            if is_admin or is_manager:
+                if "userid" in filters:
+                    query.update({"createdBy.$id": PydanticObjectId(filters["userid"])})
 
             cache_query = {
                 k: (
@@ -354,7 +383,7 @@ class LeadService:
             if cache:
                 return json.loads(cache)
 
-            
+            print("query: ", query)
             result = await self.repo.get_all(
                 page=int(page),
                 limit=int(limit),
@@ -563,110 +592,128 @@ class LeadService:
     async def update(
         self, leadId: str, payload: Dict[str, Any], user: Dict[str, Any]
     ) -> bool:
-        try:
-            if not ObjectId.is_valid(leadId):
-                raise AppException(400, "Invalid lead id")
+        async with await self.client.start_session() as session:
+            async with session.start_transaction():
+                try:
+                    if not ObjectId.is_valid(leadId):
+                        raise AppException(400, "Invalid lead id")
 
-            is_admin = False
-            is_creator = False
+                    is_admin = False
+                    is_creator = False
 
-            for item in user["userRole"]:
-                if item["code"] == SUPER_ADMIN_CODE:
-                    is_admin = True
-                    break
+                    for item in user["userRole"]:
+                        if item["code"] == SUPER_ADMIN_CODE:
+                            is_admin = True
+                            break
 
-            if not payload:
-                raise AppException(400, "Updated data not found")
+                    if not payload:
+                        raise AppException(400, "Updated data not found")
 
-            lead = await self.repo.find_by_id(
-                PydanticObjectId(leadId), populate=["createdBy"]
-            )
+                    lead = await self.repo.find_by_id(
+                        PydanticObjectId(leadId), populate=["createdBy"]
+                    )
 
-            if not lead:
-                raise AppException(404, "Lead not found")
-            
-            if lead.status == SALES_STATUS.DELETE.value:
-                raise AppException(400, "Action denied, Lead is deleted")
+                    if not lead:
+                        raise AppException(404, "Lead not found")
+                    
+                    if lead.status == SALES_STATUS.DELETE.value:
+                        raise AppException(400, "Action denied, Lead is deleted")
 
-            if str(lead.createdBy.id) == str(user["_id"]):
-                is_creator = True
-            if not is_admin and not is_creator:
-                raise AppException(
-                    403, "Unauthorized, only admin or creator access this"
-                )
+                    if str(lead.createdBy.id) == str(user["_id"]):
+                        is_creator = True
+                    if not is_admin and not is_creator:
+                        raise AppException(
+                            403, "Unauthorized, only admin or creator access this"
+                        )
 
-            for key, val in payload.items():
-                setattr(lead, key, val)
+                    for key, val in payload.items():
+                        setattr(lead, key, val)
 
-            # lead.updatedBy = ObjectId(user["_id"])
-            lead.updatedAt = datetime.now(timezone.utc)
+                    # lead.updatedBy = ObjectId(user["_id"])
+                    lead.updatedAt = datetime.now(timezone.utc)
 
-            await lead.save()
+                    await lead.save(session=session)
 
-            await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
-            await FastAPICache.get_backend().clear(namespace=USER_LEAD_CACHE_NAMESPACE)
-            return True
+                    activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD, entityId=PydanticObjectId(lead.id), action=ACTIVITY_ACTION.UPDATED, title="update lead", metadata={"leadId": lead.lead_id, "leadName": lead.fullName})
 
-        except AppException:
-            raise
+                    is_activity = await self.activityRepo.create(data=activity, session=session)
 
-        except Exception as e:
-            raise AppException(status_code=500, message=f"Internal server error: {e}")
+                    if not is_activity:
+                        raise AppException(400, "Activity log failed")
+
+                    await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
+                    await FastAPICache.get_backend().clear(namespace=USER_LEAD_CACHE_NAMESPACE)
+                    return True
+
+                except AppException:
+                    raise
+
+                except Exception as e:
+                    raise AppException(status_code=500, message=f"Internal server error: {e}")
 
     async def delete(self, leadId: str, user: Dict[str, Any]) -> bool:
-        try:
-            if not ObjectId.is_valid(leadId):
-                raise AppException(400, "Invalid lead id")
+        async with await self.client.start_session() as session:
+            async with session.start_transaction():
+                try:
+                    if not ObjectId.is_valid(leadId):
+                        raise AppException(400, "Invalid lead id")
 
-            is_admin = False
-            is_creator = False
+                    is_admin = False
+                    is_creator = False
 
-            for item in user["userRole"]:
-                if item["code"] == SUPER_ADMIN_CODE:
-                    is_admin = True
-                    break
+                    for item in user["userRole"]:
+                        if item["code"] == SUPER_ADMIN_CODE:
+                            is_admin = True
+                            break
 
-            result = await self.repo.find_by_id(
-                id=PydanticObjectId(leadId), populate=["createdBy", "updatedBy"]
-            )
+                    result = await self.repo.find_by_id(
+                        id=PydanticObjectId(leadId), populate=["createdBy", "updatedBy"]
+                    )
 
-            if not result:
-                raise AppException(404, "Lead data not found")
-            
-            if result.status == SALES_STATUS.DELETE.value:
-                raise AppException(400, "Action denied, Lead is already deleted")
-            
-            if result.inDeal:
-                raise AppException(400, "Lead is in deal, so please delete from the deal")
+                    if not result:
+                        raise AppException(404, "Lead data not found")
+                    
+                    if result.status == SALES_STATUS.DELETE.value:
+                        raise AppException(400, "Action denied, Lead is already deleted")
+                    
+                    if result.inDeal:
+                        raise AppException(400, "Lead is in deal, so please delete from the deal")
 
-            result = result.model_dump(
-                mode="json", exclude={"hashedEmail", "hashedPhone"}
-            )
+                    result = result.model_dump(
+                        mode="json", exclude={"hashedEmail", "hashedPhone"}
+                    )
 
-            if str(result["createdBy"]["id"]) == str(user["_id"]):
-                is_creator = True
+                    if str(result["createdBy"]["id"]) == str(user["_id"]):
+                        is_creator = True
 
-            if not is_admin and not is_creator:
-                raise AppException(
-                    403, "Unauthorized, only admin or creator access this"
-                )
-            payload = {
-                "status": SALES_STATUS.DELETE,
-                "deletedBy": user["_id"],
-                "deletedAt": datetime.now(timezone.utc)
-            }
-            deleted = await self.repo.update(id=PydanticObjectId(leadId), data=payload)
+                    if not is_admin and not is_creator:
+                        raise AppException(
+                            403, "Unauthorized, only admin or creator access this"
+                        )
+                    payload = {
+                        "status": SALES_STATUS.DELETE,
+                        "deletedBy": user["_id"],
+                        "deletedAt": datetime.now(timezone.utc)
+                    }
+                    deleted = await self.repo.update(id=PydanticObjectId(leadId), data=payload, session=session)
 
-            if not deleted:
-                raise AppException(404, "Lead not found for this Id")
+                    if not deleted:
+                        raise AppException(404, "Lead not found for this Id")
+                    
+                    activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD, entityId=PydanticObjectId(result["id"]), action=ACTIVITY_ACTION.DELETE, title="delete lead", metadata={"leadId": result["lead_id"], "leadName": result["fullName"]})
 
-            await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
-            await FastAPICache.get_backend().clear(namespace=USER_LEAD_CACHE_NAMESPACE)
+                    is_activity = await self.activityRepo.create(data=activity, session=session)
 
-            return True
+                    if not is_activity:
+                        raise AppException(400, "Activity log failed")
 
-        except AppException:
-            raise
+                    await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
+                    await FastAPICache.get_backend().clear(namespace=USER_LEAD_CACHE_NAMESPACE)
 
-        except Exception as e:
-            raise AppException(status_code=500, message=f"Internal server error: {e}")
+                    return True
+
+                except AppException:
+                    raise
+
+                except Exception as e:
+                    raise AppException(status_code=500, message=f"Internal server error: {e}")

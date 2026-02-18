@@ -98,6 +98,10 @@ if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelper
 "use strict";
 
 __turbopack_context__.s([
+    "ACTIVITY_ACTION",
+    ()=>ACTIVITY_ACTION,
+    "ACTIVITY_ENTITY_TYPE",
+    ()=>ACTIVITY_ENTITY_TYPE,
     "COUNTRY_CODE",
     ()=>COUNTRY_CODE,
     "CUSTOM_FIELD_TYPE",
@@ -618,6 +622,24 @@ var CUSTOM_FIELD_TYPE = /*#__PURE__*/ function(CUSTOM_FIELD_TYPE) {
     CUSTOM_FIELD_TYPE["CHECKBOX"] = "checkbox";
     return CUSTOM_FIELD_TYPE;
 }({});
+var ACTIVITY_ENTITY_TYPE = /*#__PURE__*/ function(ACTIVITY_ENTITY_TYPE) {
+    ACTIVITY_ENTITY_TYPE["LEAD"] = "lead";
+    ACTIVITY_ENTITY_TYPE["DEAL"] = "deal";
+    ACTIVITY_ENTITY_TYPE["QUOTATION"] = "quotation";
+    ACTIVITY_ENTITY_TYPE["INVOICE"] = "invoice";
+    return ACTIVITY_ENTITY_TYPE;
+}({});
+var ACTIVITY_ACTION = /*#__PURE__*/ function(ACTIVITY_ACTION) {
+    ACTIVITY_ACTION["CREATED"] = "created";
+    ACTIVITY_ACTION["UPDATED"] = "updated";
+    ACTIVITY_ACTION["SENT"] = "sent";
+    ACTIVITY_ACTION["RESEND"] = "resend";
+    ACTIVITY_ACTION["CONVERTED"] = "converted";
+    ACTIVITY_ACTION["CLOSED_WON"] = "closed_won";
+    ACTIVITY_ACTION["CLOSED_LOST"] = "closed_lost";
+    ACTIVITY_ACTION["DELETE"] = "delete";
+    return ACTIVITY_ACTION;
+}({});
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
 }
@@ -652,9 +674,11 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$ico
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$icons$2f$fi$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/react-icons/fi/index.mjs [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$usePermissions$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/hooks/usePermissions.ts [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/constants/enum.ts [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$icons$2f$fa$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/react-icons/fa/index.mjs [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
 "use client";
+;
 ;
 ;
 ;
@@ -763,7 +787,7 @@ const SideBar = ()=>{
                             className: "w-46 dark:hidden"
                         }, void 0, false, {
                             fileName: "[project]/src/components/layouts/SideBar.tsx",
-                            lineNumber: 117,
+                            lineNumber: 118,
                             columnNumber: 9
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -774,13 +798,13 @@ const SideBar = ()=>{
                             className: "w-46 hidden dark:block "
                         }, void 0, false, {
                             fileName: "[project]/src/components/layouts/SideBar.tsx",
-                            lineNumber: 124,
+                            lineNumber: 125,
                             columnNumber: 9
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/layouts/SideBar.tsx",
-                    lineNumber: 116,
+                    lineNumber: 117,
                     columnNumber: 7
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -791,7 +815,7 @@ const SideBar = ()=>{
                             children: "Home"
                         }, void 0, false, {
                             fileName: "[project]/src/components/layouts/SideBar.tsx",
-                            lineNumber: 134,
+                            lineNumber: 135,
                             columnNumber: 9
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
@@ -806,19 +830,19 @@ const SideBar = ()=>{
                                                 className: "text-lg"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                lineNumber: 148,
+                                                lineNumber: 149,
                                                 columnNumber: 15
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             "Dashboard"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                        lineNumber: 140,
+                                        lineNumber: 141,
                                         columnNumber: 13
                                     }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                    lineNumber: 139,
+                                    lineNumber: 140,
                                     columnNumber: 11
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 hasPermission(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PERMISSIONS"].readEvent) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -830,19 +854,19 @@ const SideBar = ()=>{
                                                 className: "text-lg"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                lineNumber: 161,
+                                                lineNumber: 162,
                                                 columnNumber: 15
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             "Calender"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                        lineNumber: 153,
+                                        lineNumber: 154,
                                         columnNumber: 13
                                     }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                    lineNumber: 152,
+                                    lineNumber: 153,
                                     columnNumber: 51
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -854,19 +878,19 @@ const SideBar = ()=>{
                                                 className: "text-lg"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                lineNumber: 175,
+                                                lineNumber: 176,
                                                 columnNumber: 15
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             "Notes"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                        lineNumber: 167,
+                                        lineNumber: 168,
                                         columnNumber: 13
                                     }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                    lineNumber: 166,
+                                    lineNumber: 167,
                                     columnNumber: 11
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 (hasPermission(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PERMISSIONS"].readUser) || hasPermission(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PERMISSIONS"].readRole) || hasPermission(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PERMISSIONS"].createTeam)) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -882,27 +906,27 @@ const SideBar = ()=>{
                                                             className: "text-lg"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                            lineNumber: 190,
+                                                            lineNumber: 191,
                                                             columnNumber: 17
                                                         }, ("TURBOPACK compile-time value", void 0)),
                                                         "Team Management"
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                    lineNumber: 189,
+                                                    lineNumber: 190,
                                                     columnNumber: 15
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$icons$2f$io5$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["IoChevronDown"], {
                                                     className: `transition-transform ${openMenu === "team" ? "rotate-180" : ""}`
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                    lineNumber: 194,
+                                                    lineNumber: 195,
                                                     columnNumber: 15
                                                 }, ("TURBOPACK compile-time value", void 0))
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                            lineNumber: 181,
+                                            lineNumber: 182,
                                             columnNumber: 13
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$components$2f$AnimatePresence$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AnimatePresence"], {
@@ -931,12 +955,12 @@ const SideBar = ()=>{
                                                             children: "Roles"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                            lineNumber: 211,
+                                                            lineNumber: 212,
                                                             columnNumber: 21
                                                         }, ("TURBOPACK compile-time value", void 0))
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                        lineNumber: 210,
+                                                        lineNumber: 211,
                                                         columnNumber: 59
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     hasPermission(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PERMISSIONS"].readTeamCategory) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -946,12 +970,12 @@ const SideBar = ()=>{
                                                             children: "Teams Categories"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                            lineNumber: 223,
+                                                            lineNumber: 224,
                                                             columnNumber: 21
                                                         }, ("TURBOPACK compile-time value", void 0))
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                        lineNumber: 222,
+                                                        lineNumber: 223,
                                                         columnNumber: 66
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     hasPermission(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PERMISSIONS"].readTeam) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -961,12 +985,12 @@ const SideBar = ()=>{
                                                             children: "Teams"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                            lineNumber: 235,
+                                                            lineNumber: 236,
                                                             columnNumber: 21
                                                         }, ("TURBOPACK compile-time value", void 0))
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                        lineNumber: 234,
+                                                        lineNumber: 235,
                                                         columnNumber: 58
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     hasPermission(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PERMISSIONS"].readUser) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -976,29 +1000,29 @@ const SideBar = ()=>{
                                                             children: "Users"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                            lineNumber: 247,
+                                                            lineNumber: 248,
                                                             columnNumber: 21
                                                         }, ("TURBOPACK compile-time value", void 0))
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                        lineNumber: 246,
+                                                        lineNumber: 247,
                                                         columnNumber: 59
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                lineNumber: 203,
+                                                lineNumber: 204,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0))
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                            lineNumber: 201,
+                                            lineNumber: 202,
                                             columnNumber: 13
                                         }, ("TURBOPACK compile-time value", void 0))
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                    lineNumber: 180,
+                                    lineNumber: 181,
                                     columnNumber: 133
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 (hasPermission(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PERMISSIONS"].createEnquiry) || hasPermission(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PERMISSIONS"].readEnquiry) || hasPermission(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PERMISSIONS"].createLead) || hasPermission(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PERMISSIONS"].readLead) || hasPermission(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PERMISSIONS"].createDeal) || hasPermission(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PERMISSIONS"].readDeal)) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -1014,27 +1038,27 @@ const SideBar = ()=>{
                                                             className: "text-lg"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                            lineNumber: 273,
+                                                            lineNumber: 274,
                                                             columnNumber: 17
                                                         }, ("TURBOPACK compile-time value", void 0)),
                                                         "Sales"
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                    lineNumber: 272,
+                                                    lineNumber: 273,
                                                     columnNumber: 15
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$icons$2f$io5$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["IoChevronDown"], {
                                                     className: `transition-transform ${openMenu === "sales" ? "rotate-180" : ""}`
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                    lineNumber: 277,
+                                                    lineNumber: 278,
                                                     columnNumber: 15
                                                 }, ("TURBOPACK compile-time value", void 0))
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                            lineNumber: 264,
+                                            lineNumber: 265,
                                             columnNumber: 13
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$components$2f$AnimatePresence$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AnimatePresence"], {
@@ -1060,15 +1084,15 @@ const SideBar = ()=>{
                                                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
                                                             href: "/enquiry",
                                                             className: `${isActive("/enquiry") ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400" : "border-l-2 border-transparent"} block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`,
-                                                            children: "Enquiry Management"
+                                                            children: "Enquiry"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                            lineNumber: 294,
+                                                            lineNumber: 295,
                                                             columnNumber: 21
                                                         }, ("TURBOPACK compile-time value", void 0))
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                        lineNumber: 293,
+                                                        lineNumber: 294,
                                                         columnNumber: 64
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     hasPermission(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PERMISSIONS"].readLead) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -1078,12 +1102,12 @@ const SideBar = ()=>{
                                                             children: "Leads"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                            lineNumber: 306,
+                                                            lineNumber: 307,
                                                             columnNumber: 21
                                                         }, ("TURBOPACK compile-time value", void 0))
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                        lineNumber: 305,
+                                                        lineNumber: 306,
                                                         columnNumber: 59
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     hasPermission(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PERMISSIONS"].readDeal) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -1093,12 +1117,12 @@ const SideBar = ()=>{
                                                             children: "Deals"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                            lineNumber: 318,
+                                                            lineNumber: 319,
                                                             columnNumber: 21
                                                         }, ("TURBOPACK compile-time value", void 0))
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                        lineNumber: 317,
+                                                        lineNumber: 318,
                                                         columnNumber: 59
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     hasPermission(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PERMISSIONS"].readQuote) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -1108,12 +1132,12 @@ const SideBar = ()=>{
                                                             children: "Quotations"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                            lineNumber: 331,
+                                                            lineNumber: 332,
                                                             columnNumber: 21
                                                         }, ("TURBOPACK compile-time value", void 0))
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                        lineNumber: 330,
+                                                        lineNumber: 331,
                                                         columnNumber: 60
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     hasPermission(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PERMISSIONS"].readInvoice) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -1123,29 +1147,29 @@ const SideBar = ()=>{
                                                             children: "Invoice"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                            lineNumber: 343,
+                                                            lineNumber: 344,
                                                             columnNumber: 21
                                                         }, ("TURBOPACK compile-time value", void 0))
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                        lineNumber: 342,
+                                                        lineNumber: 343,
                                                         columnNumber: 62
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                lineNumber: 286,
+                                                lineNumber: 287,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0))
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                            lineNumber: 284,
+                                            lineNumber: 285,
                                             columnNumber: 13
                                         }, ("TURBOPACK compile-time value", void 0))
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                    lineNumber: 263,
+                                    lineNumber: 264,
                                     columnNumber: 260
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 hasPermission(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$constants$2f$enum$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PERMISSIONS"].readEvent) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -1157,31 +1181,31 @@ const SideBar = ()=>{
                                                 className: "text-lg"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                lineNumber: 367,
+                                                lineNumber: 368,
                                                 columnNumber: 15
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             "Clients"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                        lineNumber: 359,
+                                        lineNumber: 360,
                                         columnNumber: 13
                                     }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                    lineNumber: 358,
+                                    lineNumber: 359,
                                     columnNumber: 51
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/layouts/SideBar.tsx",
-                            lineNumber: 138,
+                            lineNumber: 139,
                             columnNumber: 9
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/layouts/SideBar.tsx",
-                    lineNumber: 133,
+                    lineNumber: 134,
                     columnNumber: 7
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1192,7 +1216,7 @@ const SideBar = ()=>{
                             children: "Auth"
                         }, void 0, false, {
                             fileName: "[project]/src/components/layouts/SideBar.tsx",
-                            lineNumber: 375,
+                            lineNumber: 376,
                             columnNumber: 9
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
@@ -1207,19 +1231,43 @@ const SideBar = ()=>{
                                                 className: "text-lg"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                lineNumber: 384,
+                                                lineNumber: 385,
                                                 columnNumber: 15
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             "Logout"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                        lineNumber: 380,
+                                        lineNumber: 381,
                                         columnNumber: 13
                                     }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                    lineNumber: 379,
+                                    lineNumber: 380,
+                                    columnNumber: 11
+                                }, ("TURBOPACK compile-time value", void 0)),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
+                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
+                                        href: `/users/${auth.user?._id}`,
+                                        className: `${isActive("/reset-password") ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400" : "border-l-2 border-transparent"} w-full flex items-center cursor-pointer gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all capitalize`,
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$icons$2f$fa$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FaRegUser"], {
+                                                className: "text-lg"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/layouts/SideBar.tsx",
+                                                lineNumber: 398,
+                                                columnNumber: 15
+                                            }, ("TURBOPACK compile-time value", void 0)),
+                                            "Profile"
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/components/layouts/SideBar.tsx",
+                                        lineNumber: 390,
+                                        columnNumber: 13
+                                    }, ("TURBOPACK compile-time value", void 0))
+                                }, void 0, false, {
+                                    fileName: "[project]/src/components/layouts/SideBar.tsx",
+                                    lineNumber: 389,
                                     columnNumber: 11
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -1231,42 +1279,42 @@ const SideBar = ()=>{
                                                 className: "text-lg"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                                lineNumber: 397,
+                                                lineNumber: 411,
                                                 columnNumber: 15
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             "Reset password"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                        lineNumber: 389,
+                                        lineNumber: 403,
                                         columnNumber: 13
                                     }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/layouts/SideBar.tsx",
-                                    lineNumber: 388,
+                                    lineNumber: 402,
                                     columnNumber: 11
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/layouts/SideBar.tsx",
-                            lineNumber: 378,
+                            lineNumber: 379,
                             columnNumber: 9
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/layouts/SideBar.tsx",
-                    lineNumber: 374,
+                    lineNumber: 375,
                     columnNumber: 7
                 }, ("TURBOPACK compile-time value", void 0))
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/layouts/SideBar.tsx",
-            lineNumber: 115,
+            lineNumber: 116,
             columnNumber: 7
         }, ("TURBOPACK compile-time value", void 0))
     }, void 0, false, {
         fileName: "[project]/src/components/layouts/SideBar.tsx",
-        lineNumber: 114,
+        lineNumber: 115,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };
@@ -1608,7 +1656,7 @@ const NavBar = ()=>{
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
                                             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
-                                                    href: "",
+                                                    href: `/users/${auth?.user?._id}`,
                                                     className: "flex items-center gap-4 group",
                                                     children: [
                                                         " ",
@@ -1621,14 +1669,14 @@ const NavBar = ()=>{
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/layouts/NavBar.tsx",
                                                                     lineNumber: 100,
-                                                                    columnNumber: 226
+                                                                    columnNumber: 251
                                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                                 " "
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/layouts/NavBar.tsx",
                                                             lineNumber: 100,
-                                                            columnNumber: 84
+                                                            columnNumber: 109
                                                         }, ("TURBOPACK compile-time value", void 0)),
                                                         " ",
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1654,7 +1702,7 @@ const NavBar = ()=>{
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/layouts/NavBar.tsx",
                                                             lineNumber: 100,
-                                                            columnNumber: 315
+                                                            columnNumber: 340
                                                         }, ("TURBOPACK compile-time value", void 0)),
                                                         " "
                                                     ]
