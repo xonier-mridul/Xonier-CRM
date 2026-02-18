@@ -1,3 +1,0 @@
-module.exports=[49909,a=>{"use strict";a.s(["default",0,a=>{let b=a?.response?.data;return b?Array.isArray(b.detail)?b.detail.map(a=>a.msg||"Invalid input"):"string"==typeof b.detail?[b.detail]:"string"==typeof b.message?[b.message]:["Unexpected error occurred"]:["Something went wrong"]}])},99327,a=>{"use strict";var b=a.i(28337);a.s(["TeamService",0,{create:a=>b.default.post("/team/create",a),getAll:a=>b.default.get(`/team/all?${a.page&&`page=${a.page}`}${a.limit&&`&limit=${a.limit}`}`),getById:a=>b.default.get(`/team/get-by-id/${a}`),update:(a,c)=>b.default.put(`/team/update/${a}`,c),delete:a=>b.default.delete(`/team/delete/${a}`)}])}];
-
-//# sourceMappingURL=src_273d47d8._.js.map
