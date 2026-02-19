@@ -150,7 +150,7 @@ class NoteService:
             page = int(filters.get("page") or 1)
             limit = int(filters.get("limit") or 10)
 
-
+            print("one")
             query = {
                 "status": NOTE_STATUS.ACTIVE.value,
                 "visibility": NOTE_VISIBILITY.PRIVATE.value,
@@ -167,8 +167,42 @@ class NoteService:
             if "pinned" in filters:
                 query["isPinned"] = filters["pinned"]
 
-            cache_key = cache_key_generator_with_id(prefix=NOTE_PRIVATE_CACHE_NAMESPACE, filters=query, page=int(page), limit=int(limit), userId=user["_id"])
+            cache_query = {
+                k: (
+                    str(v)
+                    if isinstance(v, PydanticObjectId)
+                    else (
+                        [
+                            str(item) if isinstance(item, PydanticObjectId) else item
+                            for item in v
+                        ]
+                        if isinstance(v, list)
+                        else (
+                            {
+                                nk: (
+                                    [
+                                        str(i) if isinstance(i, PydanticObjectId) else i
+                                        for i in nv
+                                    ]
+                                    if isinstance(nv, list)
+                                    else (
+                                        str(nv)
+                                        if isinstance(nv, PydanticObjectId)
+                                        else nv
+                                    )
+                                )
+                                for nk, nv in v.items()
+                            }
+                            if isinstance(v, dict)
+                            else v
+                        )
+                    )
+                )
+                for k, v in query.items()
+            }
 
+            cache_key = cache_key_generator_with_id(prefix=NOTE_PRIVATE_CACHE_NAMESPACE, filters=cache_query, page=int(page), limit=int(limit), userId=user["_id"])
+           
             cache = await FastAPICache.get_backend().get(key=cache_key)
 
             if cache:
@@ -192,10 +226,11 @@ class NoteService:
          
             return result
 
-        except AppException:
-            raise
+        except AppException as e:
+            
+            raise e
         except Exception as e:
-            raise AppException(500, "Internal server error")
+            raise AppException(500, f"Internal server error: {e}")
 
         
 
