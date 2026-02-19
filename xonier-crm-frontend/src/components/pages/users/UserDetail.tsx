@@ -402,7 +402,6 @@ const ActivityRow = ({ activity }: { activity: Activity }) => {
   );
 };
 
-// ─── DateFilterPanel ──────────────────────────────────────────────────────────
 const DateFilterPanel = ({
   value,
   onApply,
