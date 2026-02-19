@@ -1,15 +1,13 @@
 from beanie import Document, Link, before_event, Save, Insert, Replace, Indexed
-from typing import Annotated, Optional
+from typing import Annotated, Optional, List
 from pydantic import StringConstraints, Field, field_validator
 from app.db.models.user_model import UserModel
-from app.core.enums import PROJECT_TYPES, SALES_STATUS, PRIORITY, SOURCE, LANGUAGE_CODE, COUNTRY_CODE, INDUSTRIES, EMPLOYEE_SENIORITY
+from app.core.enums import PROJECT_TYPES, SALES_STATUS, PRIORITY, SOURCE, LANGUAGE_CODE, COUNTRY_CODE, INDUSTRIES, EMPLOYEE_SENIORITY, LEAD_SOURCE_TYPE
 from datetime import datetime, timezone
 from app.core.security import hash_password, hash_value
 from app.core.crypto import encryptor
 import phonenumbers
 from pymongo import IndexModel
-
-
 
 
 PhoneNumber = Annotated[
@@ -40,7 +38,7 @@ class LeadsModel(Document):
     country: Optional[COUNTRY_CODE] = None
     postalCode: Optional[int] =  Field(None, gt=1000, lt=999999)
     language: Optional[LANGUAGE_CODE] = None
-    # assignedTo: Optional[List[str]] = None
+    
     
     industry: Optional[INDUSTRIES] = None
     employeeRole: Optional[str] = None
@@ -48,9 +46,13 @@ class LeadsModel(Document):
  
     message: Optional[str] = None
     membershipNotes: Optional[str] = None
+    assignedTo: Optional[List[Link[UserModel]]] = Field(default_factory=list)
+    leadSource: LEAD_SOURCE_TYPE = LEAD_SOURCE_TYPE.SELF_CREATED.value
 
     inDeal: bool = False
     extraFields: Optional[dict[str, str | int | float | bool | None]] = Field(default=None)
+    assignedBy: Optional[Link[UserModel]] = None
+    assignedAt: Optional[datetime] = None
     updatedBy: Optional[Link[UserModel]] = None
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updatedAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

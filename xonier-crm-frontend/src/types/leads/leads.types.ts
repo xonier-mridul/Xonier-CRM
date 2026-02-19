@@ -1,4 +1,4 @@
-import { COUNTRY_CODE, EMPLOYEE_SENIORITY, INDUSTRIES, LANGUAGE_CODE, PRIORITY, PROJECT_TYPES, SALES_STATUS, SOURCE } from "@/src/constants/enum";
+import { COUNTRY_CODE, EMPLOYEE_SENIORITY, INDUSTRIES, LANGUAGE_CODE, LEAD_SOURCE_TYPE, PRIORITY, PROJECT_TYPES, SALES_STATUS, SOURCE } from "@/src/constants/enum";
 import { User } from "../auth/auth.types";
 
 export interface Lead {
@@ -13,7 +13,7 @@ export interface Lead {
   source: SOURCE;
   projectType: PROJECT_TYPES;
   status: SALES_STATUS;
-
+  leadSource: LEAD_SOURCE_TYPE
   createdBy: User;          
   updatedBy?: User | null;  
 
@@ -26,6 +26,11 @@ export interface Lead {
   industry?: INDUSTRIES | null;
   employeeRole?: string | null;
   employeeSeniority?: EMPLOYEE_SENIORITY | null;
+
+  assignedTo?: User[] | null;   
+  assignedBy?: User | null;     
+  assignedAt?: string | null;   
+  isAssigned?: boolean;     
 
   message?: string | null;
   membershipNotes?: string | null;
@@ -54,6 +59,7 @@ export interface LeadPayload {
   postalCode?: number | null;
   language?: LANGUAGE_CODE | null;
 
+
   industry?: INDUSTRIES | null;
   employeeRole?: string;
   employeeSeniority?: EMPLOYEE_SENIORITY | null;
@@ -66,4 +72,8 @@ export interface LeadPayload {
 
 export interface BulkLeadPayload {
   leads: LeadPayload[];
+}
+
+export interface UpdateLeadStatusPayload {
+  status: SALES_STATUS
 }

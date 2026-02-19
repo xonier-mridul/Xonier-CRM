@@ -108,6 +108,21 @@ PERMISSIONS = [
         "description": "permission for update lead data",
     },
     {
+        "code": "lead:assign",
+        "module": "lead",
+        "action": "update",
+        "title": "assign lead",
+        "description": "permission for assign lead data",
+    },
+    {
+        "code": "lead:assignView",
+        "module": "lead",
+        "action": "read",
+        "title": "view assign lead information",
+        "description": "permission for view assign lead data",
+    },
+
+    {
         "code": "lead:delete",
         "module": "lead",
         "action": "delete",

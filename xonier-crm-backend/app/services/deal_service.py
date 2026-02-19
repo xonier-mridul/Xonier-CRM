@@ -136,9 +136,11 @@ class DealService:
 
             if is_admin:
                 if "userid" in filters:
+                    if not ObjectId.is_valid(filters["userid"]):
+                        raise AppException(400, "Invalid userId")
                     query.update({"createdBy.$id": PydanticObjectId(filters["userid"])})
 
-            print("query: ", query)
+
             cache_query = {
                 k: (
                     str(v)

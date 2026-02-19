@@ -125,7 +125,9 @@ export enum PERMISSIONS {
   deleteEnquiry = "enquiry:delete",
   createLead = "lead:create",
   readLead = "lead:read",
+  viewAssignLeadInformation = "lead:assignView",
   updateLead = "lead:update",
+  assignLead = "lead:assign",
   deleteLead = "lead:delete",
   createTeam = "team:create",
   readTeam = "team:read",
@@ -522,6 +524,14 @@ export enum ACTIVITY_ACTION {
     CLOSED_WON = "closed_won",
     CLOSED_LOST = "closed_lost",
     DELETE = "delete",
+}
+
+
+export enum LEAD_SOURCE_TYPE{
+    SELF_CREATED = "self_created",
+    ADMIN_CREATED = "admin_created",
+    MANAGER_CREATED = "manager_created",
+    BULK_IMPORTED = "bulk_imported",
 }
 
 

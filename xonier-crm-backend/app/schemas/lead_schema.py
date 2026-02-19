@@ -94,8 +94,15 @@ class LeadsCreateSchema(LeadBaseSchema):
 
 class CreateBulkLeadSchema(BaseModel):
     leads: List[LeadsCreateSchema]
-    
+
+
+class BulkAssignLeadSchema(BaseModel):
+    userId: str
+    leadsId: List[str] 
 
     
 class LeadUpdateSchema(LeadBaseSchema):
     status: Optional[SALES_STATUS] = None
+
+class LeadStatusUpdateSchema(BaseModel):
+    status: SALES_STATUS
