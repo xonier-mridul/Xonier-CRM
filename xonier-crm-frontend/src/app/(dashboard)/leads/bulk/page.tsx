@@ -36,6 +36,7 @@ const BulkLeadUpload = (): JSX.Element => {
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage] = useState<number>(20);
+  
 
   const getFormFields = async (): Promise<void> => {
     setIsLoading(true);
@@ -71,7 +72,7 @@ const BulkLeadUpload = (): JSX.Element => {
     const headers = userFormData.selectedFormFields.map(field => field.key);
     const csvContent = headers.join(',') + '\n';
     
-    // Add example row with placeholders
+
     const exampleRow = userFormData.selectedFormFields.map(field => {
       switch (field.type) {
         case 'email':
@@ -100,7 +101,7 @@ const BulkLeadUpload = (): JSX.Element => {
     toast.success('CSV template downloaded successfully');
   };
 
-  // Validate CSV headers match form fields
+
   const validateHeaders = (headers: string[]): boolean => {
     if (!userFormData?.selectedFormFields) return false;
 
@@ -110,14 +111,14 @@ const BulkLeadUpload = (): JSX.Element => {
 
     const availableHeaders = userFormData.selectedFormFields.map(field => field.key);
 
-    // Check if all required headers are present
+
     const missingRequired = requiredHeaders.filter(h => !headers.includes(h));
     if (missingRequired.length > 0) {
       toast.error(`Missing required columns: ${missingRequired.join(', ')}`);
       return false;
     }
 
-    // Check if there are any invalid headers
+
     const invalidHeaders = headers.filter(h => !availableHeaders.includes(h));
     if (invalidHeaders.length > 0) {
       toast.warning(`Unknown columns will be ignored: ${invalidHeaders.join(', ')}`);
@@ -126,19 +127,19 @@ const BulkLeadUpload = (): JSX.Element => {
     return true;
   };
 
-  // Validate individual lead data
+
   const validateLeadData = (data: ParsedLead[], startIndex: number = 0): ValidationError[] => {
     const errors: ValidationError[] = [];
     
     if (!userFormData?.selectedFormFields) return errors;
 
     data.forEach((lead, index) => {
-      const rowNumber = startIndex + index + 2; // +2 for header row and 0-index
+      const rowNumber = startIndex + index + 2; 
 
       userFormData.selectedFormFields.forEach(field => {
         const value = lead[field.key];
 
-        // Check required fields
+
         if (field.required && (!value || value === '')) {
           errors.push({
             row: rowNumber,
@@ -147,7 +148,6 @@ const BulkLeadUpload = (): JSX.Element => {
           });
         }
 
-        // Type-specific validation
         if (value) {
           switch (field.type) {
             case 'email':
@@ -185,7 +185,7 @@ const BulkLeadUpload = (): JSX.Element => {
               break;
 
             case 'text':
-              // Phone validation
+
               if (field.key === 'phone') {
                 const phoneRegex = /^\+?[1-9]\d{9,14}$/;
                 if (!phoneRegex.test(String(value).replace(/\s/g, ''))) {
@@ -196,7 +196,7 @@ const BulkLeadUpload = (): JSX.Element => {
                   });
                 }
               }
-              // Full name validation
+
               if (field.key === 'fullName' && String(value).trim().length < 5) {
                 errors.push({
                   row: rowNumber,
@@ -213,7 +213,7 @@ const BulkLeadUpload = (): JSX.Element => {
     return errors;
   };
 
-  // Parse CSV file
+
   const parseCSVFile = (file: File) => {
     Papa.parse(file, {
       header: true,
@@ -228,7 +228,7 @@ const BulkLeadUpload = (): JSX.Element => {
 
         const data = results.data as ParsedLead[];
         
-        // Validate data
+
         const errors = validateLeadData(data);
         setValidationErrors(errors);
 
@@ -248,7 +248,7 @@ const BulkLeadUpload = (): JSX.Element => {
     });
   };
 
-  // Handle file selection
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
@@ -261,7 +261,7 @@ const BulkLeadUpload = (): JSX.Element => {
     }
   };
 
-  // Drag and drop handlers
+
   const handleDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -273,7 +273,7 @@ const BulkLeadUpload = (): JSX.Element => {
   const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    // Only set dragging to false if we're leaving the drop zone entirely
+
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX;
     const y = e.clientY;
@@ -286,7 +286,7 @@ const BulkLeadUpload = (): JSX.Element => {
   const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    // Ensure the drag effect is set to copy
+
     e.dataTransfer.dropEffect = 'copy';
   }, []);
 
@@ -306,7 +306,7 @@ const BulkLeadUpload = (): JSX.Element => {
     }
   }, []);
 
-  // Remove file
+
   const handleRemoveFile = () => {
     setFile(null);
     setParsedData([]);
@@ -314,16 +314,15 @@ const BulkLeadUpload = (): JSX.Element => {
     setCurrentPage(1);
   };
 
-  // Delete individual row
   const handleDeleteRow = (globalIndex: number) => {
     const updatedData = parsedData.filter((_, index) => index !== globalIndex);
     setParsedData(updatedData);
     
-    // Re-validate after deletion
+
     const errors = validateLeadData(updatedData);
     setValidationErrors(errors);
     
-    // Adjust current page if needed
+
     const newTotalPages = Math.ceil(updatedData.length / itemsPerPage);
     if (currentPage > newTotalPages && newTotalPages > 0) {
       setCurrentPage(newTotalPages);
@@ -331,13 +330,13 @@ const BulkLeadUpload = (): JSX.Element => {
     
     toast.success('Row deleted successfully');
     
-    // If no data left, reset everything
+
     if (updatedData.length === 0) {
       handleRemoveFile();
     }
   };
 
-  // Delete all rows
+
   const handleDeleteAllRows = () => {
     
     if (window.confirm('Are you sure you want to delete all rows? This action cannot be undone.')) {
@@ -346,7 +345,7 @@ const BulkLeadUpload = (): JSX.Element => {
     }
   };
 
-  // Bulk upload leads
+
   const handleBulkUpload = async () => {
     if (!parsedData.length) {
       toast.error('No data to upload');
@@ -418,7 +417,8 @@ const BulkLeadUpload = (): JSX.Element => {
 
       if (result.status === 201) {
         toast.success(
-          `Successfully created ${result.data.inserted} leads. Skipped ${result.data.skipped} duplicates.`
+          // `Successfully created ${result.data.inserted} leads. Skipped ${result.data.skipped} duplicates.`
+          result.data.message
         );
         
         // Reset state
@@ -437,7 +437,7 @@ const BulkLeadUpload = (): JSX.Element => {
     }
   };
 
-  // Pagination
+
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = parsedData.slice(indexOfFirstItem, indexOfLastItem);
@@ -445,7 +445,7 @@ const BulkLeadUpload = (): JSX.Element => {
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
-  // Get errors for current page
+
   const getErrorsForRow = (globalIndex: number): ValidationError[] => {
     const rowNumber = globalIndex + 2;
     return validationErrors.filter(err => err.row === rowNumber);
@@ -454,7 +454,7 @@ const BulkLeadUpload = (): JSX.Element => {
   return (
     <div className="ml-72 mt-14 p-6 min-h-screen">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
+
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Bulk Lead Upload</h1>
           <p className="text-gray-600 dark:text-gray-500">Upload multiple leads at once using a CSV file</p>

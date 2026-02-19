@@ -17,7 +17,7 @@ from app.core.constants import (
     
 )
 from app.db.models.lead_model import LeadsModel 
-from app.core.enums import SALES_STATUS, ACTIVITY_ENTITY_TYPE, ACTIVITY_ACTION
+from app.core.enums import SALES_STATUS, ACTIVITY_ENTITY_TYPE, ACTIVITY_ACTION, LEAD_SOURCE_TYPE
 from app.utils.cache_key_generator import (
     cache_key_generator,
     cache_key_generator_with_id
@@ -29,6 +29,8 @@ from app.core.crypto import Encryption
 from app.repositories.activity_repository import ActivityRepository
 from app.db.db import Client
 from app.utils.activity_payload import activity_payload
+from app.utils.validate_admin import validate_admin
+from app.repositories.user_repository import UserRepository
 
 
 class LeadService:
@@ -38,11 +40,13 @@ class LeadService:
         self.encryption = Encryption()
         self.activityRepo = ActivityRepository()
         self.client = Client
+        self.userRepo = UserRepository()
 
-    async def create(self, payload: Dict[str, Any], createdBy: str):
+    async def create(self, payload: Dict[str, Any], user: Dict[str, Any]):
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
+                    is_admin = validate_admin(user["userRole"])
                     hashed_mail = hash_value(payload["email"])
                     hashed_phone = hash_value(payload["phone"])
                     is_exist = await self.repo.find_one(
@@ -55,7 +59,6 @@ class LeadService:
                     )
 
                 
-
                     if is_exist:
                         raise AppException(
                             400,
@@ -67,16 +70,19 @@ class LeadService:
                     new_payload = {
                         **payload,
                         "lead_id": lead_id,
-                        "createdBy": PydanticObjectId(createdBy),
+                        "createdBy": PydanticObjectId(user["_id"]),
+                        "leadSource": LEAD_SOURCE_TYPE.ADMIN_CREATED.value if is_admin else LEAD_SOURCE_TYPE.SELF_CREATED.value
                     }
+                    
+
                     new_lead = await self.repo.create(data=new_payload, session=session)
 
                     if not new_lead:
                         raise AppException(400, "Lead creation failed, please try again")
                     
-                    activity = activity_payload(userId=PydanticObjectId(createdBy), entityType=ACTIVITY_ENTITY_TYPE.LEAD, entityId=PydanticObjectId(new_lead.id), action=ACTIVITY_ACTION.CREATED, title="create lead", metadata={"leadId": new_lead.lead_id, "leadName": new_lead.fullName})
+                    activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD, entityId=PydanticObjectId(new_lead.id), action=ACTIVITY_ACTION.CREATED, title="create lead", metadata={"leadId": new_lead.lead_id, "leadName": new_lead.fullName})
 
-
+                    
                     
                     is_activity = await self.activityRepo.create(data=activity, session=session)
 
@@ -104,6 +110,8 @@ class LeadService:
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
+
+                    is_admin = validate_admin(user["userRole"])
                 
                     leads_data = payload.get("leads", [])
                     
@@ -185,7 +193,9 @@ class LeadService:
                                 })
                                 continue
 
-                            
+                            lead_source = LEAD_SOURCE_TYPE.ADMIN_CREATED if is_admin else LEAD_SOURCE_TYPE.SELF_CREATED
+
+
                             lead_data = {
                                 "fullName": lead.get("fullName"),
                                 "email": encrypt_email,       
@@ -198,6 +208,7 @@ class LeadService:
                                 "status": lead.get("status", "new"),
                                 "lead_id": generate_enquiry_id("LEAD"),
                                 "createdBy": created_by,
+                                "leadSource": lead_source,
                             }
                             
                             
@@ -236,7 +247,7 @@ class LeadService:
 
                 
                     if not leads_to_insert:
-                        print("No leads to insert - all were skipped")
+                       
                         return {
                             "inserted": 0,
                             "skipped": len(skipped),
@@ -244,9 +255,12 @@ class LeadService:
                         }
 
                     try:
-                        print(f"Inserting {len(leads_to_insert)} leads...")
+                       
                         await LeadsModel.insert_many(documents=leads_to_insert, session=session)
                         inserted_count = len(leads_to_insert)
+
+                        print("inserted leads: ", leads_to_insert)
+                        print("inserted leads count: ", inserted_count)
 
                         
                         activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD, action=ACTIVITY_ACTION.CREATED, title="create bulk lead", perform=int(inserted_count))
@@ -282,38 +296,185 @@ class LeadService:
                     import traceback
                     traceback.print_exc()
                     raise AppException(500, f"Internal server error: {str(e)}")
+    
+
+    async def bulk_lead_assign(self, payload: Dict[str, Any], user: Dict[str, Any]):
+        async with await self.client.start_session() as session:
+            async with session.start_transaction():
+                try:
+                    validate_admin(user["userRole"])
+
+                    user_id_str = payload.get("userId")
+                    lead_ids_str = payload.get("leadsId", [])
+
+                    if not user_id_str:
+                        raise AppException(400, "userId is required")
+                    if not lead_ids_str:
+                        raise AppException(400, "leadsId cannot be empty")
+
+                    assign_to_user = await self.userRepo.find_one({
+                        "_id": PydanticObjectId(user_id_str),
+                        "deletedAt": None
+                    })
+                    if not assign_to_user:
+                        raise AppException(404, "User not found or inactive")
+
+                    try:
+                        lead_object_ids = [PydanticObjectId(lid) for lid in lead_ids_str]
+                    except Exception:
+                        raise AppException(400, "One or more leadIds are invalid")
+
+                    assign_user_object_id = PydanticObjectId(user_id_str)
+                    admin_object_id = PydanticObjectId(user["_id"])
+
+                    
+                    collection = LeadsModel.get_pymongo_collection()
+
+                    existing_leads = await collection.find(
+                        {
+                            "_id": {"$in": lead_object_ids},
+                            "deletedAt": None
+                        },
+                        {"_id": 1, "lead_id": 1, "assignedTo": 1}
+                    ).to_list(length=None)
+
+                    found_ids = {doc["_id"] for doc in existing_leads}
+                    not_found_ids = [
+                        str(lid) for lid in lead_object_ids if lid not in found_ids
+                    ]
+
+                    skipped: List[Dict[str, Any]] = []
+                    valid_lead_ids: List[PydanticObjectId] = []
+
+                    for lead in existing_leads:
+                        assigned_to_list = lead.get("assignedTo") or []
+                        already_assigned = any(
+                            str(ref.id) == user_id_str
+                            if hasattr(ref, "id")
+                            else str(ref) == user_id_str
+                            for ref in assigned_to_list
+                        )
+                        if already_assigned:
+                            skipped.append({
+                                "leadId": str(lead["_id"]),
+                                "lead_id": lead.get("lead_id", "N/A"),
+                                "reason": "User already assigned to this lead"
+                            })
+                        else:
+                            valid_lead_ids.append(lead["_id"])
+
+                    for lid in not_found_ids:
+                        skipped.append({
+                            "leadId": lid,
+                            "lead_id": "N/A",
+                            "reason": "Lead not found or deleted"
+                        })
+
+                    if not valid_lead_ids:
+                        return {
+                            "assigned": 0,
+                            "skipped": len(skipped),
+                            "skippedRecords": skipped
+                        }
+
+                    await collection.update_many(
+                        {"_id": {"$in": valid_lead_ids}},
+                        {
+                            "$addToSet": {"assignedTo": {
+                                "$ref": "users",
+                                "$id": assign_user_object_id
+                            }},
+                            "$set": {
+                                "assignedBy": {
+                                    "$ref": "users",
+                                    "$id": admin_object_id
+                                },
+                                "assignedAt": datetime.now(timezone.utc),
+                                "isAssigned": True,
+                                "updatedAt": datetime.now(timezone.utc),
+                            }
+                        },
+                        session=session
+                    )
+
+                    assigned_count = len(valid_lead_ids)
+
+                    activity = activity_payload(
+                        userId=admin_object_id,
+                        entityType=ACTIVITY_ENTITY_TYPE.LEAD,
+                        action=ACTIVITY_ACTION.UPDATED,
+                        title="bulk assign leads",
+                        perform=assigned_count,
+                        metadata={
+                            "assignedTo": user_id_str,
+                            "assignedLeads": [str(lid) for lid in valid_lead_ids]
+                        }
+                    )
+                    is_activity = await self.activityRepo.create(data=activity, session=session)
+                    if not is_activity:
+                        raise AppException(400, "Activity creation failed")
+
+                    backend = FastAPICache.get_backend()
+                    await backend.clear(namespace=LEAD_CACHE_NAMESPACE)
+                    await backend.clear(namespace=USER_LEAD_CACHE_NAMESPACE)
+
+                    return {
+                        "assigned": assigned_count,
+                        "skipped": len(skipped),
+                        "skippedRecords": skipped
+                    }
+
+                except AppException:
+                    raise
+
+                except Exception as e:
+                    import traceback
+                    traceback.print_exc()
+                    raise AppException(status_code=500, message=f"Internal server error: {e}")
+                
 
 
 
     async def get_all(self, filters: Dict[str, Any], user: Dict[str, Any]):
         try:
-
             is_admin = False
-
             is_manager = False
-            
 
             for item in user["userRole"]:
                 if item["code"] == SUPER_ADMIN_CODE:
                     is_admin = True
                     break
 
-
-
-            query = {"status": {"$in": [SALES_STATUS.CONTACTED, SALES_STATUS.NEW, SALES_STATUS.PROPOSAL, SALES_STATUS.QUALIFIED]}}
-
+            query = {
+                "status": {
+                    "$in": [
+                        SALES_STATUS.CONTACTED,
+                        SALES_STATUS.NEW,
+                        SALES_STATUS.PROPOSAL,
+                        SALES_STATUS.QUALIFIED
+                    ]
+                }
+            }
 
             if not is_admin:
-                
                 members = await self.getTeamMem.get_team_members(user["_id"])
-                
+                user_object_id = PydanticObjectId(user["_id"])
+
                 if members:
-                    query.update({"createdBy.$id": {"$in": members}})
                     is_manager = True
-
-                if not members:
-                    query.update({"createdBy.$id": PydanticObjectId(user["_id"])})
-
+                    query.update({
+                        "$or": [
+                            {"createdBy.$id": {"$in": members}},
+                            {"assignedTo.$id": user_object_id},
+                        ]
+                    })
+                else:
+                    query.update({
+                        "$or": [
+                            {"createdBy.$id": user_object_id},
+                            {"assignedTo.$id": user_object_id},
+                        ]
+                    })
 
             page = filters.get("page") or 1
             limit = filters.get("limit") or 10
@@ -332,43 +493,26 @@ class LeadService:
 
             if "type" in filters:
                 query.update({"projectType": filters["type"]})
+
             if is_admin or is_manager:
                 if "userid" in filters:
-                    query.update({"createdBy.$id": PydanticObjectId(filters["userid"])})
+                    if not ObjectId.is_valid(filters["userid"]):
+                        raise AppException(400, "Invalid userId")
+                    query.update({
+                        "createdBy.$id": PydanticObjectId(filters["userid"])
+                    })
 
-            cache_query = {
-                k: (
-                    str(v)
-                    if isinstance(v, PydanticObjectId)
-                    else (
-                        [
-                            str(item) if isinstance(item, PydanticObjectId) else item
-                            for item in v
-                        ]
-                        if isinstance(v, list)
-                        else (
-                            {
-                                nk: (
-                                    [
-                                        str(i) if isinstance(i, PydanticObjectId) else i
-                                        for i in nv
-                                    ]
-                                    if isinstance(nv, list)
-                                    else (
-                                        str(nv)
-                                        if isinstance(nv, PydanticObjectId)
-                                        else nv
-                                    )
-                                )
-                                for nk, nv in v.items()
-                            }
-                            if isinstance(v, dict)
-                            else v
-                        )
-                    )
-                )
-                for k, v in query.items()
-            }
+            def serialize_for_cache(v):
+                if isinstance(v, PydanticObjectId):
+                    return str(v)
+                elif isinstance(v, list):
+                    return [serialize_for_cache(i) for i in v]
+                elif isinstance(v, dict):
+                    return {nk: serialize_for_cache(nv) for nk, nv in v.items()}
+                return v
+
+            cache_query = {k: serialize_for_cache(v) for k, v in query.items()}
+            
 
             key = cache_key_generator_with_id(
                 prefix=LEAD_CACHE_NAMESPACE,
@@ -379,11 +523,9 @@ class LeadService:
             )
 
             cache = await FastAPICache.get_backend().get(key)
-
             if cache:
                 return json.loads(cache)
 
-            print("query: ", query)
             result = await self.repo.get_all(
                 page=int(page),
                 limit=int(limit),
@@ -399,7 +541,6 @@ class LeadService:
 
             for item in result["data"]:
                 item["email"] = encryptor.decrypt_data(item["email"])
-                
                 item["phone"] = encryptor.decrypt_data(item["phone"])
 
             await FastAPICache.get_backend().set(
@@ -543,7 +684,7 @@ class LeadService:
                 raise AppException(400, "Invalid lead object id")
 
             result = await self.repo.find_by_id(
-                id=id, populate=["createdBy", "updatedBy"]
+                id=id, populate=["createdBy", "updatedBy", "assignedTo"]
             )
 
             if not result:
@@ -552,6 +693,7 @@ class LeadService:
             is_admin = False
             is_creator = False
             is_manager = False
+            is_assigner = False
 
             for item in user["userRole"]:
                 if item["code"] == SUPER_ADMIN_CODE:
@@ -571,15 +713,23 @@ class LeadService:
             if str(result["createdBy"]["id"]) == str(user["_id"]):
                 is_creator = True
 
-            if not is_admin and not is_creator and not is_manager:
+            for item in result["assignedTo"]:
+                if(str(item["id"])) == str(user["_id"]):
+                    is_assigner = True
+
+            if not is_admin and not is_creator and not is_manager and not is_assigner:
                 raise AppException(
-                    403, "Unauthorized, only admin. manager or creator access lead data"
+                    403, "Unauthorized, only admin, manager, assigner or creator access lead data"
                 )
 
             result["email"] = encryptor.decrypt_data(result["email"])
             result["phone"] = encryptor.decrypt_data(result["phone"])
             result["createdBy"]["email"] = encryptor.decrypt_data(result["createdBy"]["email"])
             result["createdBy"]["phone"] = encryptor.decrypt_data(result["createdBy"]["phone"])
+
+            for item in result["assignedTo"]:
+                item["email"] = encryptor.decrypt_data(item["email"])
+                
 
             return result
 
@@ -600,6 +750,7 @@ class LeadService:
 
                     is_admin = False
                     is_creator = False
+                    is_assigner = False
 
                     for item in user["userRole"]:
                         if item["code"] == SUPER_ADMIN_CODE:
@@ -610,18 +761,29 @@ class LeadService:
                         raise AppException(400, "Updated data not found")
 
                     lead = await self.repo.find_by_id(
-                        PydanticObjectId(leadId), populate=["createdBy"]
+                        PydanticObjectId(leadId), populate=["createdBy", "assignedTo"]
                     )
 
                     if not lead:
                         raise AppException(404, "Lead not found")
+                    
+                    if payload["status"] == SALES_STATUS.DELETE.value:
+                        raise AppException(400, "Action denied, can not set status delete")
+                    
+                    if payload["status"] == SALES_STATUS.WON.value:
+                        raise AppException(400, "Action denied, can not set status won")
                     
                     if lead.status == SALES_STATUS.DELETE.value:
                         raise AppException(400, "Action denied, Lead is deleted")
 
                     if str(lead.createdBy.id) == str(user["_id"]):
                         is_creator = True
-                    if not is_admin and not is_creator:
+
+                    for item in lead.assignedTo:
+                        if(str(item.id)) == str(user["_id"]):
+                            is_assigner = True
+
+                    if not is_admin and not is_creator and not is_assigner:
                         raise AppException(
                             403, "Unauthorized, only admin or creator access this"
                         )
@@ -647,6 +809,68 @@ class LeadService:
 
                 except AppException:
                     raise
+
+                except Exception as e:
+                    raise AppException(status_code=500, message=f"Internal server error: {e}")
+
+    async def update_status(self, leadId:str, user:Dict[str, Any], payload: Dict[str, Any])-> bool:
+        async with await self.client.start_session() as session:
+            async with session.start_transaction():
+        
+                try:
+                    if not ObjectId.is_valid(leadId):
+                        raise AppException(400, "Invalid lead object id")
+                    
+                    is_admin = validate_admin(user["userRole"])
+                    is_creator = False
+
+                    lead = await self.repo.find_by_id(
+                        PydanticObjectId(leadId), populate=["createdBy", "assignedTo"]
+                    )
+
+                    if not lead:
+                        raise AppException(404, "Lead data not found")
+                    
+                    if payload["status"] == SALES_STATUS.DELETE.value:
+                        raise AppException(400, "Action denied, can not set status delete")
+                    
+                    if payload["status"] == SALES_STATUS.WON.value:
+                        raise AppException(400, "Action denied, can not set status won")
+                    
+                    if lead.status == SALES_STATUS.DELETE.value:
+                        raise AppException(400, "Action denied, Lead is deleted")
+
+                    if str(lead.createdBy.id) == str(user["_id"]):
+                        is_creator = True
+                    
+                    for item in lead.assignedTo:
+                        if(str(item.id)) == str(user["_id"]):
+                            is_assigner = True
+
+                    if not is_admin and not is_creator and not is_assigner:
+                        raise AppException(403, "Permission denied, only admin, creator or assigned person can access it")
+                    
+
+                    print("status: ", payload["status"])
+                    lead.status = payload["status"]
+                    lead.updatedAt = datetime.now(timezone.utc)
+
+                    await lead.save(session=session)
+
+                    activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD, entityId=PydanticObjectId(lead.id), action=ACTIVITY_ACTION.UPDATED, title="update lead status", metadata={"leadId": lead.lead_id, "leadName": lead.fullName, "status": lead.status})
+
+                    is_activity = await self.activityRepo.create(data=activity, session=session)
+
+                    if not is_activity:
+                        raise AppException(400, "Activity log failed")
+
+                    await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
+                    await FastAPICache.get_backend().clear(namespace=USER_LEAD_CACHE_NAMESPACE) 
+
+                    return lead.model_dump(mode="json")
+
+                except AppException as e:
+                    raise e
 
                 except Exception as e:
                     raise AppException(status_code=500, message=f"Internal server error: {e}")

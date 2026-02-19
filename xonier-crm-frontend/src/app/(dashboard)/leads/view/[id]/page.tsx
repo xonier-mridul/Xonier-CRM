@@ -51,6 +51,7 @@ import {
   IoCreateOutline,
   IoTimeOutline,
 } from "react-icons/io5";
+import { MdOutlineLeaderboard } from "react-icons/md";
 import { FaRegUser, FaIndustry } from "react-icons/fa";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
@@ -132,8 +133,6 @@ const LeadViewPage = (): JSX.Element => {
   const handlePrint = async () => {
     window.print();
   };
-
-
 
   const getPriorityColor = (priority: string) => {
     const colors: Record<string, string> = {
@@ -269,7 +268,6 @@ const LeadViewPage = (): JSX.Element => {
               </p>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex flex-wrap items-center gap-2">
               {hasPermission(PERMISSIONS.updateLead) &&
               leadData.status !== SALES_STATUS.DELETE ? (
@@ -343,7 +341,6 @@ const LeadViewPage = (): JSX.Element => {
         />
       </div>
 
-      {/* Tabs */}
       <div className="bg-white dark:bg-gray-700 mb-6 rounded-xl border border-gray-200 dark:border-gray-700">
         <div className="flex gap-8 overflow-x-auto px-6 py-3.5">
           {(["overview", "contact", "activity"] as const).map((tab) => (
@@ -447,6 +444,37 @@ const LeadViewPage = (): JSX.Element => {
                   />
                 </div>
               </div>
+
+              {hasPermission(PERMISSIONS.viewAssignLeadInformation) &&<div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-2 mb-6">
+                  <MdOutlineLeaderboard className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Lead Assign Information
+                  </h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {leadData?.assignedTo?.map((item, i) => {
+                    const isAssigned = leadData.assignedAt
+                      ? formatDate(leadData.assignedAt)
+                      : "-";
+                    return (
+                      <>
+                        <InfoItem
+                          icon={<IoBriefcaseOutline className="w-4 h-4" />}
+                          label="Assign to"
+                          value={`${item.firstName} ${item.lastName}` || "—"}
+                        />
+                        <InfoItem
+                          icon={<IoStatsChartOutline className="w-4 h-4" />}
+                          label="Assign at"
+                          value={isAssigned || "—"}
+                        />
+                      </>
+                    );
+                  })}
+                </div>
+              </div>}
 
               {(leadData?.message || leadData?.membershipNotes) && (
                 <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">

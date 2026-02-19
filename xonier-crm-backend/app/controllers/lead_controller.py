@@ -15,7 +15,7 @@ class LeadController:
         try:
             user = request.state.user
 
-            result = await self.service.create(payload=payload, createdBy=user["_id"])
+            result = await self.service.create(payload=payload, user=user)
             return successResponse(201, f"{result.get("fullName")} query created successfully", result)
 
 
@@ -28,6 +28,8 @@ class LeadController:
             user = request.state.user
             
             result = await self.service.bulk_create(payload=payload, user=user)
+
+            
             
             
             inserted = result.get('inserted', 0)
@@ -36,11 +38,27 @@ class LeadController:
             message = f"Successfully created {inserted} lead{'s' if inserted != 1 else ''}"
             if skipped > 0:
                 message += f". Skipped {skipped} duplicate{'s' if skipped != 1 else ''}"
-            
+            print("result: ", message)
             return successResponse(201, message, result)
 
         except AppException as e:
             raise e
+        
+    async def bulk_lead_assign(self, request: Request, payload: Dict[str, Any]):
+        try:
+            user = request.state.user
+
+            result = await self.service.bulk_lead_assign( 
+                payload=payload,
+                user=user
+            )
+
+            return successResponse(200, "Leads assigned successfully", data=result)
+
+        except AppException as e:
+            raise e
+
+        
 
         
     async def get_all(self, request: Request):
@@ -97,7 +115,18 @@ class LeadController:
 
         except AppException as e:
             raise e
+        
+    
+    async def lead_update(self, request: Request, id:str, payload: Dict[str, Any]):
+        try:
+            user = request.state.user
 
+            result = await self.service.update_status(leadId=id, payload=payload, user=user)
+
+            return successResponse(status_code=200, message=f" {result["fullName"]} status updated to {result["status"]} successfully")
+        
+        except AppException as e:
+            raise e
         
     async def delete(self, request: Request, id:str):
         try:

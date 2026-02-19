@@ -553,6 +553,13 @@ class ACTIVITY_ACTION(str, Enum):
     DELETE = "delete"
 
 
+class LEAD_SOURCE_TYPE(str, Enum):
+    SELF_CREATED = "self_created"
+    ADMIN_CREATED = "admin_created"
+    MANAGER_CREATED = "manager_created"
+    BULK_IMPORTED = "bulk_imported"
+
+
 
 
 
