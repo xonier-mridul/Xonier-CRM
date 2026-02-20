@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Request
 from app.core.dependencies import Dependencies
-from app.schemas.team_schema import TeamCategoryCreateSchema
+from app.schemas.team_schema import TeamCategoryCreateSchema, TeamCategoryUpdateSchema, TeamCatStatusUpdateSchema
 from app.controllers.team_category_controller import TeamCategoryController
 
 
@@ -22,6 +22,10 @@ async def get_all(request:Request):
 @router.get("/get-all-without-pagination", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["team_cat:read"]))])
 async def get_all_without_pagination(request: Request):
     return await controller.get_all_without_pagination(request)
+
+@router.put("/update/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["team_cat:update"]))])
+async def update(id:str, request: Request, payload: TeamCategoryUpdateSchema):
+    return await controller.update(id, request, payload.model_dump(mode="json"))
 
 
 @router.delete("/delete/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["team_cat:delete"]))])
