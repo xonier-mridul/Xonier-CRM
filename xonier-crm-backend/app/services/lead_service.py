@@ -618,10 +618,12 @@ class LeadService:
                 user_object_id = PydanticObjectId(user["_id"])
 
                 if members:
+                    print("yes i am manager")
                     is_manager = True
                     query.update({
                         "$or": [
                             {"createdBy.$id": {"$in": members}},
+                            {"assignedTo.$id": {"$in": members}},   
                             {"assignedTo.$id": user_object_id},
                         ]
                     })
@@ -629,6 +631,7 @@ class LeadService:
                     query.update({
                         "$or": [
                             {"createdBy.$id": user_object_id},
+                                 
                             {"assignedTo.$id": user_object_id},
                         ]
                     })
@@ -636,8 +639,8 @@ class LeadService:
             page = filters.get("page") or 1
             limit = filters.get("limit") or 10
 
-            if "status" in filters:
-                query.update({"status": filters["status"]})
+            # if "status" in filters:
+            #     query.update({"status": filters["status"]})
 
             if "leadid" in filters:
                 query.update({"lead_id": filters["leadid"]})
@@ -689,8 +692,11 @@ class LeadService:
             )
 
             cache = await FastAPICache.get_backend().get(key)
+            print("query: ", query)
             if cache:
                 return json.loads(cache)
+            
+
 
             result = await self.repo.get_all(
                 page=int(page),
@@ -720,6 +726,8 @@ class LeadService:
 
         except Exception as e:
             raise AppException(status_code=500, message=f"Internal server error: {e}")
+        
+
 
     async def get_all_by_user(self, filters: Dict[str, Any], user: Dict[str, Any]):
         try:

@@ -92,7 +92,7 @@ class TeamCategoryService:
         try:
             query = {}
 
-            print("filters: ", filters)
+           
 
 
             if "name" in filters:
