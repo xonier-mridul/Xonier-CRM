@@ -155,7 +155,8 @@ export enum PERMISSIONS {
   createEvent = "event:create",
   readEvent = "event:read",
   updateEvent = "event:update",
-  deleteEvent = "event:delete"
+  deleteEvent = "event:delete",
+  readNote = "note:read"
 
 }
 

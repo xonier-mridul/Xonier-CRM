@@ -123,7 +123,8 @@ class NoteService:
                 page=page,
                 limit=limit,
                 filters=query,
-                populate=["createdBy"]
+                populate=["createdBy"],
+                sort=["-createdAt"]
             )
 
             if not result:
@@ -212,7 +213,8 @@ class NoteService:
                 page=page,
                 limit=limit,
                 filters=query,
-                populate=["createdBy"]
+                populate=["createdBy"],
+                sort=["-createdAt"]
             )
 
 
@@ -301,9 +303,13 @@ class NoteService:
             
 
             soft_delete = await self.noteRepo.update(id=PydanticObjectId(id), data=new_payload)
+            
 
             if not soft_delete:
                 raise AppException(400, "Note deletion failed")
+            
+            await FastAPICache.get_backend().clear(namespace=NOTE_CACHE_NAMESPACE)
+            await FastAPICache.get_backend().clear(namespace=NOTE_PRIVATE_CACHE_NAMESPACE)
             
             return True
 

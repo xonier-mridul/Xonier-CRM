@@ -559,9 +559,13 @@ const Page = (): JSX.Element => {
     try {
       const confirm = await ConfirmPopup({title: "Are you sure", text: `Are sure sure to delete ${name}`, btnTxt: "Yes, delete"})
       if (confirm){
-        setNotesData((prev) => prev.filter((note) => note.id !== id));
+        const result = await NoteService.softDelete(id)
+        if(result.status === 200){
+  setNotesData((prev) => prev.filter((note) => note.id !== id));
       setPrivateNotesData((prev) => prev.filter((note) => note.id !== id));
       toast.success("Note deleted successfully");
+        }
+      
       }
       
     } catch (error) {

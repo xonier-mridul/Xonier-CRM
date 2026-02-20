@@ -164,7 +164,7 @@ const SideBar = () => {
             </Link>
           </li>}
 
-          <li>
+         {hasPermission(PERMISSIONS.readNote) &&  <li>
             <Link
               href="/notes"
               className={`${
@@ -176,7 +176,7 @@ const SideBar = () => {
               <TbNotes className="text-lg" />
               Notes
             </Link>
-          </li>
+          </li>}
 
           {(hasPermission(PERMISSIONS.readUser) || hasPermission(PERMISSIONS.readRole) || hasPermission(PERMISSIONS.createTeam)) && <li>
             <button

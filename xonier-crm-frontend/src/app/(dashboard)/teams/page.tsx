@@ -119,10 +119,18 @@ const page = (): JSX.Element => {
   };
 
   useEffect(() => {
-    getCategoryData();
+    
     getUserData();
     getTeamData();
   }, [currentPage, pageLimit]);
+
+  useEffect(() => {
+    if(hasPermission(PERMISSIONS.createTeam)){
+getCategoryData();
+    }
+    
+  }, [])
+  
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
