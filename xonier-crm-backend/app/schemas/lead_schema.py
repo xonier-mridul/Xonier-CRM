@@ -106,3 +106,23 @@ class LeadUpdateSchema(LeadBaseSchema):
 
 class LeadStatusUpdateSchema(BaseModel):
     status: SALES_STATUS
+
+
+class BulkReassignLeadSchema(BaseModel):
+    userId: str
+    leadsId: List[str]
+
+    @field_validator("userId")
+    @classmethod
+    def validate_user_id(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("userId cannot be empty")
+        return v.strip()
+
+    @field_validator("leadsId")
+    @classmethod
+    def validate_leads_id(cls, v: List[str]) -> List[str]:
+        if not v:
+            raise ValueError("leadsId cannot be empty")
+        return v
+

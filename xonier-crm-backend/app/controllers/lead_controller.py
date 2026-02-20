@@ -4,6 +4,7 @@ from typing import Dict, Any, List
 from app.utils.custom_exception import AppException
 from app.utils.custom_response import successResponse
 from app.services.lead_service import LeadService
+from app.schemas.lead_schema import BulkReassignLeadSchema
 
 
 class LeadController:
@@ -43,7 +44,19 @@ class LeadController:
 
         except AppException as e:
             raise e
-        
+
+    async def bulk_reassign_lead(self, request: Request, payload: BulkReassignLeadSchema):
+        try:
+            user = request.state.user
+            result = await self.service.bulk_lead_reassign(
+                payload=payload.model_dump(mode="json"),
+                user=user
+            )
+            return successResponse(200, "Leads reassigned successfully", result)
+
+        except AppException as e:
+            raise e
+
     async def bulk_lead_assign(self, request: Request, payload: Dict[str, Any]):
         try:
             user = request.state.user
