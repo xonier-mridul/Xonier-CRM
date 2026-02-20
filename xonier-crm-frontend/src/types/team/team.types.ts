@@ -25,6 +25,11 @@ export interface TeamCategoryCreatePayload {
     description?: string;
 }
 
+export interface TeamCategoryUpdatePayload {
+    name: string;
+    description?: string;
+}
+
 export interface GetTeamCategoryParams {
     page: number,
     limit: number

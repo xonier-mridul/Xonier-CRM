@@ -198,21 +198,20 @@ const Page = (): JSX.Element => {
               {/* <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">/{teamData.slug}</p> */}
             </div>
           </div>
-          <Link href={`/teams/view/${teamData.id}`} className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium flex items-center gap-2">
-            <IoSettings className="w-4 h-4" />
+          <Link href={`/teams/update/${teamData.id}`} className="px-5 group py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium flex items-center  gap-2">
+            <IoSettings className="w-4 h-4 group-hover:rotate-90" />
             Edit Team
           </Link>
         </div>
       </div>
 
-      {/* Tabs */}
       <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
         <nav className="flex gap-8">
           {(['overview', 'members', 'activity'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`pb-4 px-1 font-medium transition-colors relative ${
+              className={`pb-4 px-1 font-medium transition-colors cursor-pointer relative ${
                 activeTab === tab
                   ? 'text-blue-600 dark:text-blue-400'
                   : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
@@ -346,10 +345,7 @@ const Page = (): JSX.Element => {
                   <IoPersonAdd className="w-4 h-4" />
                   Add Members
                 </Link>
-                <button className="w-full px-4 py-2 text-left text-sm font-medium cursor-not-allowed text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors flex items-center gap-2">
-                  <IoSettings className="w-4 h-4" />
-                  Manage Permissions
-                </button>
+                
                 <button className="w-full px-4 py-2 text-left text-sm font-medium cursor-not-allowed text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors flex items-center gap-2">
                   <IoBarChart className="w-4 h-4" />
                   View Analytics

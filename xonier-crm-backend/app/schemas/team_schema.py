@@ -24,4 +24,12 @@ class TeamUpdateSchema(BaseModel):
 class TeamCategoryCreateSchema(BaseModel):
     name: str = Field(..., min_length=2, max_length=100)
     description: Optional[str] = None
+
+class TeamCategoryUpdateSchema(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100)
+    description: Optional[str] = None
+
+class TeamCatStatusUpdateSchema(BaseModel):
+    isActive: bool
+
     

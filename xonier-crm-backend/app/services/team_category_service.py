@@ -7,6 +7,9 @@ from app.repositories.team_repository import TeamRepository
 from app.db.db import Client
 from fastapi.encoders import jsonable_encoder
 from typing import Optional
+from bson import ObjectId
+from datetime import datetime, timezone
+
 
 
 class TeamCategoryService:
@@ -114,6 +117,67 @@ class TeamCategoryService:
 
         except Exception as e:
             raise AppException(status_code=500, message="internal server error")
+        
+
+    async def update(self, id: str, user: Dict[str, Any], payload: Dict[str, Any]):
+        async with await self.client.start_session() as session:
+            async with session.start_transaction():
+                try:
+                    print("one")
+                    if not ObjectId.is_valid(id):
+                        raise AppException(400, "Invalid category id")
+
+                    is_exist = await self.repo.find_by_id(
+                        id=PydanticObjectId(id), session=session
+                    )
+                    if not is_exist:
+                        raise AppException(404, "Team category not found")
+                    print("tow")
+                    new_name = payload.get("name", "").strip()
+                    new_slug = generate_slug(new_name)
+
+                    
+                    slug_conflict = await self.repo.find_by_slug(
+                        new_slug, None, session
+                    )
+
+                    if slug_conflict and str(slug_conflict.id) != id:
+                        raise AppException(
+                            400,
+                            "A category with this name already exists, please use a different name"
+                        )
+
+                    update_data = {
+                        "name": new_name,
+                        "slug": new_slug,
+                        "updatedBy": user["_id"],
+                        "updatedAt": datetime.now(timezone.utc)
+                    }
+
+                    if "description" in payload:
+                        update_data["description"] = payload["description"]
+
+                    print("updated data ", update_data)
+
+                    updated = await self.repo.update(
+                        id=PydanticObjectId(id),
+                        data=update_data,
+                        session=session
+                    )
+
+                    if not updated:
+                        raise AppException(400, "Team category update failed")
+                    
+                    print("updated: ", updated)
+
+                    return jsonable_encoder(updated)
+
+                except AppException:
+                    raise
+
+                except Exception as e:
+                    raise AppException(status_code=500, message=f"Internal server error: {e}")
+
 
     async def delete(self, id: str)->bool:
         async with await self.client.start_session() as session:
