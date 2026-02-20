@@ -639,8 +639,8 @@ class LeadService:
             page = filters.get("page") or 1
             limit = filters.get("limit") or 10
 
-            # if "status" in filters:
-            #     query.update({"status": filters["status"]})
+            if "status" in filters:
+                query.update({"status": filters["status"]})
 
             if "leadid" in filters:
                 query.update({"lead_id": filters["leadid"]})
