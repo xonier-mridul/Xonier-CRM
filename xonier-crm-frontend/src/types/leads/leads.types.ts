@@ -77,3 +77,8 @@ export interface BulkLeadPayload {
 export interface UpdateLeadStatusPayload {
   status: SALES_STATUS
 }
+
+export interface BulkReassignLeadSchema{
+    userId: string;
+    leadsId: Array<string>
+}
