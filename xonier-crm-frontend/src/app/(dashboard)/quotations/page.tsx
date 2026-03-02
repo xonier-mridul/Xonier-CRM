@@ -401,7 +401,7 @@ const page = (): JSX.Element => {
                       >
                         <td className="p-4">
                           <Link
-                            href={`/deals/view/${item.id}`}
+                            href={`/quotations/view/${item.id}`}
                             className="text-sm cursor-pointer hover:scale-110 transition-all hover:text-blue-300"
                           >
                             {item.quoteId}

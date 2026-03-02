@@ -438,7 +438,10 @@ class LeadService:
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
-                    validate_admin(user["userRole"])
+                    isAdmin = validate_admin(user["userRole"])
+
+                    # if not isAdmin:
+                    #     raise AppException(403, "Only admin can reassign leads")
 
                     user_id_str = payload.get("userId")
                     lead_ids_str = payload.get("leadsId", [])

@@ -226,12 +226,12 @@ const Page = (): JSX.Element => {
         </nav>
       </div>
 
-      {/* Content */}
+      
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Info */}
+          
           <div className="lg:col-span-2 space-y-6">
-            {/* Description Card */}
+            
             <div className="bg-white dark:bg-gray-700 rounded-xl border border-slate-200 dark:border-gray-700 p-6">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">About</h2>
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
@@ -239,7 +239,7 @@ const Page = (): JSX.Element => {
               </p>
             </div>
 
-            {/* Stats Cards */}
+            
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl border border-blue-200 dark:border-blue-800 p-6">
                 <div className="flex items-center justify-between">

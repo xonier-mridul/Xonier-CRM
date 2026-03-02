@@ -115,6 +115,13 @@ PERMISSIONS = [
         "description": "permission for assign lead data",
     },
     {
+        "code": "lead:reassign",
+        "module": "lead",
+        "action": "update",
+        "title": "reassign lead",
+        "description": "permission for reassign lead data",
+    },
+    {
         "code": "lead:assignView",
         "module": "lead",
         "action": "read",

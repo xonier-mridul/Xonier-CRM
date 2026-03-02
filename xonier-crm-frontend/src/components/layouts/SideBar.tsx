@@ -164,7 +164,7 @@ const SideBar = () => {
             </Link>
           </li>}
 
-         {hasPermission(PERMISSIONS.readNote) &&  <li>
+         {hasPermission(PERMISSIONS.readNote) &&  <li> 
             <Link
               href="/notes"
               className={`${
