@@ -292,7 +292,7 @@ const DealViewPage = (): JSX.Element => {
         <MetricCard
           icon={<IoCashOutline className="w-6 h-6" />}
           label="Deal Amount"
-          value={`₹ ${dealData?.amount?.toLocaleString('en-IN')}`}
+          value={`$ ${dealData?.amount?.toLocaleString('en-IN')}`}
           color="bg-green-500"
         />
         <MetricCard
@@ -315,7 +315,7 @@ const DealViewPage = (): JSX.Element => {
         />}
       </div>
 
-      {/* Tabs */}
+     
       <div className="bg-white dark:bg-gray-700 mb-6 rounded-xl border border-gray-200 dark:border-gray-700">
         <div className="flex gap-8 overflow-x-auto px-6 py-3.5">
           {(['overview', 'lead', 'activity'] as const).map((tab) => (
@@ -337,10 +337,10 @@ const DealViewPage = (): JSX.Element => {
         </div>
       </div>
 
-      {/* Main Content */}
+      
       <div className="flex gap-6">
         <div className="w-2/3 flex flex-col gap-6">
-          {/* Deal Information */}
+         
           {activeTab === 'overview' && (
             <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-2 mb-6">
@@ -369,7 +369,7 @@ const DealViewPage = (): JSX.Element => {
                 <InfoItem
                   icon={<IoCashOutline className="w-4 h-4" />}
                   label="Amount"
-                  value={`₹ ${dealData?.amount?.toLocaleString('en-IN')}`}
+                  value={`$ ${dealData?.amount?.toLocaleString('en-IN')}`}
                 />
                 <InfoItem
                   icon={<FaPercent className="w-4 h-4" />}
@@ -444,7 +444,7 @@ const DealViewPage = (): JSX.Element => {
             </div>
           )}
 
-          {/* Lead Information */}
+          
           {activeTab === 'lead' && (
             <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-2 mb-6">
@@ -532,9 +532,9 @@ const DealViewPage = (): JSX.Element => {
           )}
         </div>
 
-        {/* Sidebar */}
+       
         <div className="w-1/3 flex flex-col gap-6">
-          {/* Creator Information */}
+         
           <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl border border-blue-400 shadow-lg">
             <div className="flex items-center gap-2 mb-4">
               <FaRegUser className="text-xl text-white" />

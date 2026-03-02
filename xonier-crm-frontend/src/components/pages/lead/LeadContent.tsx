@@ -50,7 +50,7 @@ const AssignedToPill = ({
     <span
       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
         bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300
-        border border-amber-200 dark:border-amber-700/40 capitalize"
+        border border-amber-200 dark:border-amber-700/40 capitalize hover:scale-105"
     >
       <span className="w-4 h-4 rounded-full bg-amber-400 dark:bg-amber-500 text-white flex items-center justify-center text-[9px] font-bold shrink-0 ">
         {initials || "?"}
@@ -319,7 +319,7 @@ const LeadContent = (): JSX.Element => {
 
   const nonAdminUsers = userData.filter((u) => u.userRole[0]?.code !== SUPER_ADMIN_ROLE_CODE);
 
-  // ── Spinner helper ────────────────────────────────────────
+
   const Spinner = ({ color }: { color: string }) => (
     <svg className={`animate-spin h-4 w-4 ${color}`} fill="none" viewBox="0 0 24 24">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -337,7 +337,7 @@ const LeadContent = (): JSX.Element => {
       </tr>
     ));
 
-  // ── Status badge ──────────────────────────────────────────
+  
   const StatusBadge = ({ status }: { status: string }) => (
     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium capitalize
       ${status === "new" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
@@ -385,7 +385,7 @@ const LeadContent = (): JSX.Element => {
     </div>
   );
 
-  // ── Render standard lead rows ─────────────────────────────
+
   const renderLeadRows = (data: Lead[]) => {
     if (!isLoading && data.length === 0) return (
       <tr><td className="p-8 text-center text-slate-400 text-sm" colSpan={9}>No leads found</td></tr>
@@ -411,11 +411,11 @@ const LeadContent = (): JSX.Element => {
                   </div>
                 </label>
               ) : item.assignedTo?.length ? (
-                <span className="inline-flex items-center justify-center w-[18px] h-[18px] rounded-full bg-green-100 dark:bg-green-900/30" title="Already assigned">
+                <span className="inline-flex items-center justify-center w-4.5 h-4.5 rounded-full bg-green-100 dark:bg-green-900/30" title="Already assigned">
                   <FaCheck className="text-green-500 text-[8px]" />
                 </span>
               ) : (
-                <span className="inline-flex items-center justify-center w-[18px] h-[18px]" title="Self-created leads cannot be assigned">
+                <span className="inline-flex items-center justify-center w-4.5 h-4.5" title="Self-created leads cannot be assigned">
                   <span className="block w-2.5 h-0.5 bg-slate-300 dark:bg-slate-600 rounded-full" />
                 </span>
               )}
@@ -467,6 +467,7 @@ const LeadContent = (): JSX.Element => {
     return assignedLeadData.map((item, i) => {
       const isChecked = selectedReassignIds.has(item.id);
       const assignedUser = item.assignedTo?.[0] as unknown as { firstName?: string; lastName?: string } | null;
+      const assignedUserId = item.assignedTo?.[0] as unknown as { id?: string} | null;
 
       return (
         <tr key={item.lead_id}
@@ -475,14 +476,14 @@ const LeadContent = (): JSX.Element => {
             : i % 2 === 0 ? "bg-white dark:bg-transparent"
             : "bg-amber-50/40 dark:bg-slate-500/30"} w-full transition-colors duration-150`}>
 
-          {/* Reassign checkbox — amber themed */}
-          {hasPermission(PERMISSIONS.assignLead) && (
+          
+          {hasPermission(PERMISSIONS.reassignLead) && (
             <td className="p-4 text-center">
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" className="sr-only" checked={isChecked} onChange={() => handleReassignSelectOne(item.id)} />
-                <div className={`w-[18px] h-[18px] rounded-[4px] border-2 flex items-center justify-center transition-all duration-150
+                <div className={`w-4.5 h-4.5 rounded-sm border-2 flex items-center justify-center transition-all duration-150
                   ${isChecked ? "bg-amber-500 border-amber-500" : "bg-white dark:bg-gray-700 border-slate-300 dark:border-slate-500 hover:border-amber-400"}`}>
-                  {isChecked && <FaCheck className="text-white text-[9px]" />}
+                  {isChecked && <FaCheck className="text-white text-[9px]"/>}
                 </div>
               </label>
             </td>
@@ -505,10 +506,11 @@ const LeadContent = (): JSX.Element => {
 
           
           <td className="p-4">
+            <Link href={`/users/${assignedUserId?.id}`}>
             <AssignedToPill user={assignedUser} />
+            </Link>
           </td>
 
-          {/* Actions — view + edit only (no deal on reassign tab) */}
           <td className="p-4">
             <div className="flex items-center gap-2">
               {hasPermission(PERMISSIONS.readLead) ? (
@@ -536,7 +538,7 @@ const LeadContent = (): JSX.Element => {
     <>
       <div className="ml-72 mt-14 p-6">
 
-        {/* ── Bulk Create Card ── */}
+        
         <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm gap-5 p-6 rounded-xl border border-slate-900/10 w-full flex items-center justify-between">
           <div className="flex flex-col gap-2">
             <h2 className="text-2xl font-bold dark:text-white text-slate-900">Add Bulk Leads</h2>
@@ -553,10 +555,10 @@ const LeadContent = (): JSX.Element => {
           </div>
         </div>
 
-        {/* ── Main Table Card ── */}
+        
         <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full flex flex-col gap-6">
 
-          {/* Header */}
+
           <div className="flex w-full items-center gap-12 justify-between">
             <div className="flex flex-col gap-1.5">
               <h2 className="text-xl font-bold dark:text-white text-slate-900">All Sales Leads</h2>
@@ -588,7 +590,7 @@ const LeadContent = (): JSX.Element => {
             </div>
           </div>
 
-          {/* ── Tabs ── */}
+          
           <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-600 pb-0">
             <TabsButton btnTxt="All Leads" dataLen={leadData.length} no={TAB.ALL} currentVal={currentTab} onClickEvent={() => setCurrentTab(TAB.ALL)} />
             <TabsButton btnTxt="Won Leads" dataLen={wonLeadData.length} no={TAB.WON} currentVal={currentTab} onClickEvent={() => handleTabs(TAB.WON)} />
@@ -693,7 +695,7 @@ const LeadContent = (): JSX.Element => {
                 </div>
                 <button
                   onClick={handleReassignLeads}
-                  disabled={!selectedReassignUserId || isReassigning}
+                  disabled={!selectedReassignUserId || isReassigning || !hasPermission("lead:reassign")}
                   className="bg-white text-amber-600 hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed px-5 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all shadow-sm"
                 >
                   {isReassigning ? <><Spinner color="text-amber-500" /> Reassigning...</> : <><TbArrowsExchange className="text-lg" /> Reassign Leads</>}
@@ -731,7 +733,7 @@ const LeadContent = (): JSX.Element => {
             <table className="w-full rounded-xl overflow-hidden">
               <thead>
                 <tr className="w-full border-b-2 border-amber-200 dark:border-amber-800/40 bg-amber-50 dark:bg-amber-900/20">
-                  {hasPermission(PERMISSIONS.assignLead) && (
+                  {hasPermission(PERMISSIONS.reassignLead) && (
                     <th className="p-4 w-12">
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input ref={reassignSelectAllRef} type="checkbox" className="sr-only" checked={allAssignedSelected} onChange={handleReassignSelectAll} />

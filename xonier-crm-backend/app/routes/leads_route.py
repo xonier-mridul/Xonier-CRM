@@ -26,7 +26,7 @@ async def bulk_lead_assign(request: Request, payload:BulkAssignLeadSchema):
     status_code=200,
     dependencies=[
         Depends(dependencies.authorized),
-        Depends(dependencies.permissions(["lead:assign"]))
+        Depends(dependencies.permissions(["lead:reassign"]))
     ]
 )
 async def bulk_reassign_lead(request: Request, payload: BulkReassignLeadSchema):

@@ -10,6 +10,7 @@ import { AuthService } from "@/src/services/auth.service";
 import Input from "@/src/components/ui/Input";
 import FormButton from "@/src/components/ui/FormButton";
 import { EnquiryService } from "@/src/services/enquiry.service";
+import { useRouter } from "next/navigation";
 
 const page = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -27,6 +28,8 @@ const page = (): JSX.Element => {
     assignTo: "",
     source: "",
   });
+
+  const router = useRouter()
 
   const getUsers = async () => {
     try {
@@ -76,6 +79,7 @@ const page = (): JSX.Element => {
           source: "",
         });
         setErr(null)
+        router.push('/enquiry')
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);

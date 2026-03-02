@@ -26,6 +26,9 @@ from app.core.constants import GET_ME_NAMESPACE
 from fastapi_cache import FastAPICache
 import json
 
+from app.utils.validate_admin import validate_admin
+from app.utils.get_team_members import GetTeamMembers
+
 
 class AuthServices:
     def __init__(self):
@@ -35,6 +38,7 @@ class AuthServices:
         self.role_repo = UserRoleRepository()
         self.email_manager = EmailManager()
         self.settings = get_setting()
+        self.get_team_members = GetTeamMembers()
 
     async def getAll(self, page:int=1, limit:int = 10, filters: Dict[str, Any] = {})->List[UserModel]:
         try:
@@ -53,7 +57,7 @@ class AuthServices:
                query.update({"company": filters["company"]})
             
 
-           users = await self.repo.get_all(page, limit, query, populate=["userRole", "createdBy"])
+           users = await self.repo.get_all(page, limit, query, populate=["userRole", "createdBy"], sort=["-createdAt"])
 
            if not users:
                raise AppException(404, "Users not found")
@@ -134,15 +138,38 @@ class AuthServices:
         except Exception as e:
             raise AppException(status_code=500, message="internal server error")
 
-    async def get_user_by_id(self,id: PydanticObjectId):
+    async def get_user_by_id(self,id: PydanticObjectId, user: Dict[str, Any]):
         try:
-    
-          user = await self.repo.find_by_id(id, populate=["userRole", "createdBy"])
-
-          if not user:
-              raise AppException(404, "User not found for this Id")
           
-          user = jsonable_encoder(user, exclude={"password", "refreshToken"})
+          is_admin = validate_admin(user["userRole"])
+          is_manager = False
+          is_creator = False
+
+          exist_user = await self.repo.find_by_id(id, populate=["userRole", "createdBy"])
+
+          if not exist_user:
+              raise AppException(404, "User not found for this Id")
+
+          if not is_admin:
+              members = await self.get_team_members.get_team_members(user["_id"])
+
+              print("members: ", members)
+
+              if exist_user.id in members:
+                  is_manager = True
+
+                 
+    
+          
+          
+          
+          if str(exist_user.id) == str(user["_id"]):
+              is_creator = True
+
+                 
+          if not is_admin and not is_manager and not is_creator:
+              raise AppException(403, "Permission denied, you can not access this user profile data")
+          user = jsonable_encoder(exist_user, exclude={"password", "refreshToken"})
 
           user["email"] = encryptor.decrypt_data(user["email"])
           user["phone"] = encryptor.decrypt_data(user["phone"])

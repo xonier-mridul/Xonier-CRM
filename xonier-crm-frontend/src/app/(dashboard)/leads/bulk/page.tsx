@@ -421,7 +421,7 @@ const BulkLeadUpload = (): JSX.Element => {
           result.data.message
         );
         
-        // Reset state
+        
         handleRemoveFile();
       }
     } catch (error) {
@@ -537,7 +537,7 @@ const BulkLeadUpload = (): JSX.Element => {
           )}
         </div>
 
-        {/* Validation Errors */}
+       
         {validationErrors.length > 0 && (
           <div className="bg-red-50 dark:bg-gray-700 border border-red-200 rounded-lg p-4 mb-6">
             <div className="flex items-start gap-3">
@@ -563,7 +563,7 @@ const BulkLeadUpload = (): JSX.Element => {
           </div>
         )}
 
-        {/* Preview Table */}
+       
         {parsedData.length > 0 && (
           <div className="bg-white dark:bg-gray-700 rounded-lg border border-slate-900/10 mb-6">
             <div className="p-6 border-b border-gray-200 dark:border-gray-600">
@@ -673,7 +673,7 @@ const BulkLeadUpload = (): JSX.Element => {
               </table>
             </div>
 
-            {/* Pagination */}
+           
             {totalPages > 1 && (
               <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
                 <div className="text-sm text-gray-700">
@@ -689,7 +689,7 @@ const BulkLeadUpload = (): JSX.Element => {
                     Previous
                   </button>
                   
-                  {/* Page numbers */}
+                  
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                     let pageNum;
                     if (totalPages <= 5) {

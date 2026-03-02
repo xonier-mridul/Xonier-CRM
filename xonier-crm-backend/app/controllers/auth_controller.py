@@ -123,9 +123,10 @@ class AuthController:
         except AppException as e:
             raise e
         
-    async def get_user_by_id(self, id: PydanticObjectId ):
+    async def get_user_by_id(self, request:Request, id: PydanticObjectId ):
         try:
-           result = await self.service.get_user_by_id(id)
+           user = request.state.user
+           result = await self.service.get_user_by_id(id, user)
            return successResponse(200, "User fetched successfully", result)
             
         except AppException as e:

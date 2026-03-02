@@ -128,6 +128,7 @@ export enum PERMISSIONS {
   viewAssignLeadInformation = "lead:assignView",
   updateLead = "lead:update",
   assignLead = "lead:assign",
+  reassignLead = "lead:reassign",
   deleteLead = "lead:delete",
   createTeam = "team:create",
   readTeam = "team:read",

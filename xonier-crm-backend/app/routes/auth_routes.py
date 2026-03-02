@@ -29,8 +29,8 @@ async def get_all_for_frontend(request: Request, response):
     return await auth_controller.get_all_for_frontend(request, response) 
 
 @router.get("/user/{id}", status_code=200)
-async def get_user_by_id(id: PydanticObjectId):
-    return await auth_controller.get_user_by_id(id)
+async def get_user_by_id(id: PydanticObjectId, request: Request):
+    return await auth_controller.get_user_by_id(request, id)
 
 @router.post("/login", status_code=200)
 async def register_users(response: Response, data: UserLoginSchema):

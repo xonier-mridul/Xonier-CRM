@@ -406,19 +406,19 @@ const InvoiceViewPage = (): JSX.Element => {
         <MetricCard
           icon={<IoCashOutline className="w-6 h-6" />}
           label="Total Amount"
-          value={`₹ ${invoiceData.total?.toLocaleString("en-IN")}`}
+          value={`$ ${invoiceData.total?.toLocaleString("en-IN")}`}
           color="bg-blue-500"
         />
         <MetricCard
           icon={<IoCheckmarkCircle className="w-6 h-6" />}
           label="Paid Amount"
-          value={`₹ ${(invoiceData.paidAmount || 0)?.toLocaleString("en-IN")}`}
+          value={`$ ${(invoiceData.paidAmount || 0)?.toLocaleString("en-IN")}`}
           color="bg-green-500"
         />
         <MetricCard
           icon={<IoCardOutline className="w-6 h-6" />}
           label="Balance Due"
-          value={`₹ ${balance?.toLocaleString("en-IN")}`}
+          value={`$ ${balance?.toLocaleString("en-IN")}`}
           color={balance > 0 ? "bg-red-500" : "bg-gray-500"}
         />
         <MetricCard
@@ -548,24 +548,24 @@ const InvoiceViewPage = (): JSX.Element => {
                   <InfoItem
                     icon={<IoCashOutline className="w-4 h-4" />}
                     label="Subtotal"
-                    value={`₹ ${invoiceData.subTotal?.toLocaleString("en-IN")}`}
+                    value={`$ ${invoiceData.subTotal?.toLocaleString("en-IN")}`}
                   />
                   <InfoItem
                     icon={<IoCashOutline className="w-4 h-4" />}
                     label="Total"
-                    value={`₹ ${invoiceData.total?.toLocaleString("en-IN")}`}
+                    value={`$ ${invoiceData.total?.toLocaleString("en-IN")}`}
                   />
                   <InfoItem
                     icon={<IoCheckmarkCircle className="w-4 h-4" />}
                     label="Paid Amount"
-                    value={`₹ ${(invoiceData.paidAmount || 0)?.toLocaleString(
+                    value={`$ ${(invoiceData.paidAmount || 0)?.toLocaleString(
                       "en-IN"
                     )}`}
                   />
                   <InfoItem
                     icon={<IoCardOutline className="w-4 h-4" />}
                     label="Balance"
-                    value={`₹ ${balance?.toLocaleString("en-IN")}`}
+                    value={`$ ${balance?.toLocaleString("en-IN")}`}
                   />
                   <InfoItem
                     icon={<IoCalendarOutline className="w-4 h-4" />}
@@ -629,7 +629,7 @@ const InvoiceViewPage = (): JSX.Element => {
                     <InfoItem
                       icon={<IoPricetagOutline className="w-4 h-4" />}
                       label="Deal Amount"
-                      value={`₹ ${invoiceData.deal.amount?.toLocaleString(
+                      value={`$ ${invoiceData.deal.amount?.toLocaleString(
                         "en-IN"
                       )}`}
                     />
@@ -688,7 +688,7 @@ const InvoiceViewPage = (): JSX.Element => {
                     <InfoItem
                       icon={<IoCashOutline className="w-4 h-4" />}
                       label="Quote Total"
-                      value={`₹ ${invoiceData.quotation.total?.toLocaleString(
+                      value={`$ ${invoiceData.quotation.total?.toLocaleString(
                         "en-IN"
                       )}`}
                     />
@@ -743,7 +743,7 @@ const InvoiceViewPage = (): JSX.Element => {
                       </p>
                     </div>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                      ₹ {invoiceData.total?.toLocaleString("en-IN")}
+                      $ {invoiceData.total?.toLocaleString("en-IN")}
                     </p>
                   </div>
 
@@ -755,7 +755,7 @@ const InvoiceViewPage = (): JSX.Element => {
                       </p>
                     </div>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                      ₹ {(invoiceData.paidAmount || 0)?.toLocaleString("en-IN")}
+                      $ {(invoiceData.paidAmount || 0)?.toLocaleString("en-IN")}
                     </p>
                   </div>
 
@@ -779,7 +779,7 @@ const InvoiceViewPage = (): JSX.Element => {
                       </p>
                     </div>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                      ₹ {balance?.toLocaleString("en-IN")}
+                      $ {balance?.toLocaleString("en-IN")}
                     </p>
                   </div>
 
@@ -921,7 +921,7 @@ const InvoiceViewPage = (): JSX.Element => {
                 <div className="flex justify-between">
                   <span className="text-white/80">Remaining</span>
                   <span className="font-semibold">
-                    ₹ {balance.toLocaleString("en-IN")}
+                    $ {balance.toLocaleString("en-IN")}
                   </span>
                 </div>
               )}

@@ -181,8 +181,7 @@ const page = (): JSX.Element => {
         </button>
       </div>
 
-      {err && <ErrorComponent error={err} />}
-      {<SuccessComponent message="" />}
+      
 
       <div
         onDragOver={(e) => {
@@ -229,7 +228,9 @@ const page = (): JSX.Element => {
         </div>
       </div>
 
-      {/* TABLE */}
+     
+
+      
       {data.length > 0 && (
         <div className="bg-white dark:bg-gray-700 rounded-xl overflow-hidden">
           <table className="w-full text-sm">
@@ -263,7 +264,7 @@ const page = (): JSX.Element => {
             </tbody>
           </table>
 
-          {/* PAGINATION */}
+         
           <div className="flex justify-between items-center p-4">
             <span className="text-sm text-gray-500">
               Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
@@ -292,6 +293,8 @@ const page = (): JSX.Element => {
         </div>
         
       )}
+      {err && <ErrorComponent error={err} />}
+      {<SuccessComponent message="" />}
       {data.length > 0 && (
             <form onSubmit={handleSubmit} className="flex justify-end">
               <button
