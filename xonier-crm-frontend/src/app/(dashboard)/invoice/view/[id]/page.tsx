@@ -722,7 +722,7 @@ const InvoiceViewPage = (): JSX.Element => {
             </>
           )}
 
-          {/* Payment Tab */}
+          
           {activeTab === "payment" && (
             <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-2 mb-6">
@@ -733,7 +733,7 @@ const InvoiceViewPage = (): JSX.Element => {
               </div>
 
               <div className="space-y-6">
-                {/* Payment Summary */}
+               
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
@@ -796,7 +796,7 @@ const InvoiceViewPage = (): JSX.Element => {
                   </div>
                 </div>
 
-                {/* Payment Timeline */}
+                
                 <div className="border-t border-gray-200 dark:border-gray-600 pt-6">
                   <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
                     Payment History
@@ -813,11 +813,11 @@ const InvoiceViewPage = (): JSX.Element => {
           )}
         </div>
 
-        {/* Sidebar */}
+        
         <div className="w-1/3 flex flex-col gap-6">
-          {/* Creator Information */}
+          
           {invoiceData.createdBy && (
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl border border-blue-400 shadow-lg">
+            <div className="bg-linear-to-br from-blue-500 to-blue-600 p-6 rounded-xl border border-blue-400 shadow-lg">
               <div className="flex items-center gap-2 mb-4">
                 <FaRegUser className="text-xl text-white" />
                 <h2 className="text-white font-semibold text-xl">
@@ -852,7 +852,7 @@ const InvoiceViewPage = (): JSX.Element => {
             </div>
           )}
 
-          {/* Quick Stats */}
+          
           <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Quick Stats
@@ -882,7 +882,7 @@ const InvoiceViewPage = (): JSX.Element => {
             </div>
           </div>
 
-          {/* Payment Status Card */}
+          
           <div
             className={`p-6 rounded-xl border shadow-lg ${
               invoiceData.status === INVOICE_STATUS.PAID
@@ -935,7 +935,6 @@ const InvoiceViewPage = (): JSX.Element => {
 
 export default InvoiceViewPage;
 
-// Component for metric cards
 const MetricCard = ({
   icon,
   label,
@@ -960,7 +959,7 @@ const MetricCard = ({
   </div>
 );
 
-// Component for info items with icons
+
 const InfoItem = ({
   icon,
   label,
@@ -981,7 +980,7 @@ const InfoItem = ({
   </div>
 );
 
-// Component for profile fields in sidebar
+
 const ProfileField = ({
   icon,
   label,
@@ -1000,7 +999,7 @@ const ProfileField = ({
   </div>
 );
 
-// Component for quick stats
+
 const StatItem = ({
   label,
   value,
