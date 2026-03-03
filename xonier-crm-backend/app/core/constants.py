@@ -7,9 +7,7 @@ JWT_OPTIONS = {
     "secure": False,
     "samesite": "lax",
     "path": "/",
-    
 }
-
 
 
 # AUTH
