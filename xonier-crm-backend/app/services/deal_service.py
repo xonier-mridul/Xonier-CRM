@@ -123,7 +123,7 @@ class DealService:
                     query.update({"createdBy.$id": PydanticObjectId(user["_id"])})
 
             if "dealId" in filters:
-                query.update({"deal_id": filters["dealId"]})
+                query.update({"deal_id": {"$regex":filters["dealId"], "$options": "i"}})
 
             if "name" in filters:
                 query.update({"dealName": {"$regex": filters["name"], "$options": "i"}})
