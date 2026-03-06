@@ -35,6 +35,7 @@ from app.routes.invoice_routes import router as invoice_router
 from app.routes.notes_route import router as note_router
 from app.routes.cusotm_form_field_route import router as custom_field_route
 from app.routes.activity_router import router as activity_route
+from app.routes.prospects_route import router as prospects_route
 
 settings = get_setting()
 
@@ -113,6 +114,7 @@ app.include_router(invoice_router, prefix="/api/invoice")
 app.include_router(note_router, prefix="/api/note")
 app.include_router(custom_field_route, prefix="/api/custom-field")
 app.include_router(activity_route, prefix="/api/activity")
+app.include_router(prospects_route, prefix="/api/prospect")
 
 
 app.add_exception_handler(HTTPException, http_exception_handler)

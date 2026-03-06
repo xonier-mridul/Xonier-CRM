@@ -153,15 +153,11 @@ class AuthServices:
           if not is_admin:
               members = await self.get_team_members.get_team_members(user["_id"])
 
-              print("members: ", members)
+
 
               if exist_user.id in members:
                   is_manager = True
 
-                 
-    
-          
-          
           
           if str(exist_user.id) == str(user["_id"]):
               is_creator = True
@@ -182,6 +178,49 @@ class AuthServices:
 
         except Exception as e:
             raise AppException(status_code=500, message="internal server error")
+    
+
+    async def get_user_profile(self, user: Dict[str, Any]):
+        try:
+          print("yes")
+          is_admin = validate_admin(user["userRole"])
+          is_manager = False
+          is_creator = False
+
+          exist_user = await self.repo.find_by_id(PydanticObjectId(user["_id"]), populate=["userRole", "createdBy"])
+
+          if not exist_user:
+              raise AppException(404, "User not found for this Id")
+
+          if not is_admin:
+              members = await self.get_team_members.get_team_members(user["_id"])
+
+
+
+              if exist_user.id in members:
+                  is_manager = True
+
+          
+          if str(exist_user.id) == str(user["_id"]):
+              is_creator = True
+
+                 
+          if not is_admin and not is_manager and not is_creator:
+              raise AppException(403, "Permission denied, you can not access this user profile data")
+          user = jsonable_encoder(exist_user, exclude={"password", "refreshToken"})
+
+          user["email"] = encryptor.decrypt_data(user["email"])
+          user["phone"] = encryptor.decrypt_data(user["phone"])
+
+          
+          return user
+
+        except Exception as e:
+            raise
+
+        except Exception as e:
+            raise AppException(status_code=500, message="internal server error")
+
 
     async def create(self, user: Dict[str, Any], data: Dict[str, Any]):
         session = await self.client.start_session()

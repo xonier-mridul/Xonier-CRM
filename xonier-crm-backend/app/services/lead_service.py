@@ -621,7 +621,7 @@ class LeadService:
                 user_object_id = PydanticObjectId(user["_id"])
 
                 if members:
-                    print("yes i am manager")
+                    
                     is_manager = True
                     query.update({
                         "$or": [
@@ -698,11 +698,10 @@ class LeadService:
             )
 
             cache = await FastAPICache.get_backend().get(key)
-            print("query: ", query)
+          
             if cache:
                 return json.loads(cache)
             
-
 
             result = await self.repo.get_all(
                 page=int(page),

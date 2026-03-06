@@ -409,7 +409,32 @@ class INDUSTRIES(str, Enum):
     RETAIL="retail"
     CONSULTING="consulting"
     REALESTATE="real_estate"
-    OTHER="other"
+    AGRICULTURE = "agriculture"
+    AUTOMOTIVE = "automotive"
+    BANKING = "banking"
+    BIOTECHNOLOGY = "biotechnology"
+    CHEMICALS = "chemicals"
+    CONSTRUCTION = "construction"
+    
+    ENERGY = "energy"
+    ENTERTAINMENT = "entertainment"
+    FOOD_AND_BEVERAGE = "food & beverage"
+    GOVERNMENT = "government"
+    HOSPITALITY = "hospitality"
+    INSURANCE = "insurance"
+    IT_SERVICES = "it services"
+    LEGAL = "legal"
+    MARKETING_AND_ADVERTISING = "marketing & advertising"
+    MEDIA = "media"
+    NON_PROFIT = "non-profit"
+    PHARMACEUTICALS = "pharmaceuticals"
+    REAL_ESTATE = "real estate"
+
+    SOFTWARE = "software"
+    TELECOMMUNICATIONS = "telecommunications"
+    TRANSPORTATION = "transportation"
+    E_COMMERCE = "e-commerce"
+    OTHER = "other"
 
 class EMPLOYEE_SENIORITY(str, Enum):
     ENTRY_LEVEL="entry_level"
@@ -432,6 +457,7 @@ class FORM_INPUT_TYPE(str, Enum):
     TEXTAREA =  "textarea",
     DATE =  "date",
     CHECKBOX =  "checkbox"
+
 
 class FORM_FIELD_MODULES(str, Enum):
     LEAD = "lead"
@@ -558,6 +584,155 @@ class LEAD_SOURCE_TYPE(str, Enum):
     ADMIN_CREATED = "admin_created"
     MANAGER_CREATED = "manager_created"
     BULK_IMPORTED = "bulk_imported"
+
+
+class NUMBER_OF_EMPLOYEES(str, Enum):
+    LESS_THAN_50 = "50"
+    FROM_50_TO_100 = "50-100"
+    FROM_100_TO_200 = "100-200"
+    FROM_200_TO_300 = "200-300"
+    FROM_300_TO_400 = "300-400"
+    FROM_400_TO_500 = "400-500"
+    FROM_500_TO_1000 = "500-1000"
+    FROM_1000_TO_2000 = "1000-2000"
+    FROM_2000_TO_5000 = "2000-5000"
+
+class DESIGNATION(str, Enum):
+    
+    CEO = "CEO"
+    CTO = "CTO"
+    CFO = "CFO"
+    COO = "COO"
+    CMO = "CMO"
+    CIO = "CIO"
+    FOUNDER = "Founder"
+    CO_FOUNDER = "Co-Founder"
+    DIRECTOR = "Director"
+    VP = "Vice President"
+
+    # Management
+    GENERAL_MANAGER = "General Manager"
+    OPERATIONS_MANAGER = "Operations Manager"
+    SALES_MANAGER = "Sales Manager"
+    MARKETING_MANAGER = "Marketing Manager"
+    HR_MANAGER = "HR Manager"
+    PROJECT_MANAGER = "Project Manager"
+    PRODUCT_MANAGER = "Product Manager"
+    ACCOUNT_MANAGER = "Account Manager"
+
+    # Technical
+    SOFTWARE_ENGINEER = "Software Engineer"
+    SENIOR_SOFTWARE_ENGINEER = "Senior Software Engineer"
+    TECH_LEAD = "Tech Lead"
+    ARCHITECT = "Architect"
+    DEVOPS_ENGINEER = "DevOps Engineer"
+    DATA_SCIENTIST = "Data Scientist"
+    QA_ENGINEER = "QA Engineer"
+
+    # Sales & Marketing
+    SALES_EXECUTIVE = "Sales Executive"
+    BUSINESS_DEVELOPMENT_EXECUTIVE = "Business Development Executive"
+    MARKETING_EXECUTIVE = "Marketing Executive"
+
+    # Support & Others
+    HR_EXECUTIVE = "HR Executive"
+    ADMINISTRATOR = "Administrator"
+    CONSULTANT = "Consultant"
+    INTERN = "Intern"
+    OTHER = "Other"
+
+
+class INFO_TYPE(str, Enum):
+    PEOPLE = "people"
+    COMPANY = "company"
+
+
+
+class TECHNOLOGY(str, Enum):
+    REACT = "react"
+    ANGULAR = "angular"
+    VUE = "vue"
+    NEXT_JS = "next_js"
+    HTML = "html"
+    CSS = "css"
+    JAVASCRIPT = "javascript"
+    TYPESCRIPT = "typescript"
+
+    
+    NODE_JS = "node_js"
+    EXPRESS = "express"
+    DJANGO = "django"
+    FLASK = "flask"
+    FASTAPI = "fastapi"
+    LARAVEL = "laravel"
+    SPRING_BOOT = "spring_boot"
+    DOT_NET = "dot_net"
+    RUBY_ON_RAILS = "ruby_on_rails"
+    PHP = "php"
+
+    
+    MONGODB = "mongodb"
+    MYSQL = "mysql"
+    POSTGRESQL = "postgresql"
+    SQLITE = "sqlite"
+    REDIS = "redis"
+    ELASTICSEARCH = "elasticsearch"
+
+    
+    AWS = "aws"
+    AZURE = "azure"
+    GOOGLE_CLOUD = "google_cloud"
+    DOCKER = "docker"
+    KUBERNETES = "kubernetes"
+    NGINX = "nginx"
+    VERCEL = "vercel"
+    NETLIFY = "netlify"
+
+    
+    WORDPRESS = "wordpress"
+    SHOPIFY = "shopify"
+    MAGENTO = "magento"
+    WEBFLOW = "webflow"
+    WIX = "wix"
+    SQUARESPACE = "squarespace"
+
+    
+    HUBSPOT = "hubspot"
+    SALESFORCE = "salesforce"
+    ZOHO_CRM = "zoho_crm"
+    PIPEDRIVE = "pipedrive"
+    FRESHSALES = "freshsales"
+    MICROSOFT_DYNAMICS = "microsoft_dynamics"
+
+   
+    MAILCHIMP = "mailchimp"
+    ACTIVE_CAMPAIGN = "active_campaign"
+    MARKETO = "marketo"
+    KLAVIYO = "klaviyo"
+
+    
+    GOOGLE_ANALYTICS = "google_analytics"
+    HOTJAR = "hotjar"
+    MIXPANEL = "mixpanel"
+
+    
+    STRIPE = "stripe"
+    PAYPAL = "paypal"
+    RAZORPAY = "razorpay"
+
+    
+    ANDROID = "android"
+    IOS = "ios"
+    REACT_NATIVE = "react_native"
+    FLUTTER = "flutter"
+
+   
+    PYTHON = "python"
+    TENSORFLOW = "tensorflow"
+    PYTORCH = "pytorch"
+    PANDAS = "pandas"
+    NUMPY = "numpy"
+
 
 
 

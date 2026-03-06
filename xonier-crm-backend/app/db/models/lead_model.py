@@ -27,8 +27,9 @@ class LeadsModel(Document):
     hashedEmail: str = Indexed()
     phone: str
     hashedPhone: str = Indexed()
+    
     priority: PRIORITY
-    source: SOURCE
+    source: SOURCE = SOURCE.OTHER
     projectType: PROJECT_TYPES
     createdBy: Link[UserModel]
     status: SALES_STATUS = SALES_STATUS.NEW
@@ -38,7 +39,6 @@ class LeadsModel(Document):
     country: Optional[COUNTRY_CODE] = None
     postalCode: Optional[int] =  Field(None, gt=1000, lt=999999)
     language: Optional[LANGUAGE_CODE] = None
-    
     
     industry: Optional[INDUSTRIES] = None
     employeeRole: Optional[str] = None

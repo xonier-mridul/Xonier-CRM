@@ -9,7 +9,7 @@ dependencies = Dependencies()
 
 enquiryController = EnquiryController()
 
-@router.get("/all", status_code=200, dependencies=[Depends(dependencies.authorized),  Depends(dependencies.permissions(["enquiry:read"])), Depends(dependencies.onlyForAdmin)])
+@router.get("/all", status_code=200, dependencies=[Depends(dependencies.authorized),  Depends(dependencies.permissions(["enquiry:read"]))])
 async def get_all(request: Request):
     return await enquiryController.get_all(request=request)
 
