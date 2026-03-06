@@ -7,7 +7,7 @@ export interface Lead {
 
   fullName: string;
   email: string;              
-  phone: string;              
+  phone: string;
 
   priority: PRIORITY;
   source: SOURCE;

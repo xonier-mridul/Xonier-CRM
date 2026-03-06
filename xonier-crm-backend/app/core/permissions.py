@@ -80,6 +80,13 @@ PERMISSIONS = [
         "description": "permission for update enquiry data",
     },
     {
+        "code": "enquiry:assign",
+        "module": "enquiry",
+        "action": "update",
+        "title": "assign enquiry",
+        "description": "permission for assign enquiry data",
+    },
+    {
         "code": "enquiry:delete",
         "module": "enquiry",
         "action": "delete",
@@ -360,4 +367,33 @@ PERMISSIONS = [
         "title": "delete note",
         "description": "permission for delete note data",
     },
+     {
+        "code": "prospect:create",
+        "module": "prospect",
+        "action": "create",
+        "title": "create prospect",
+        "description": "permission for create prospect data",
+    },
+    {
+        "code": "prospect:read",
+        "module": "prospect",
+        "action": "read",
+        "title": "read prospect",
+        "description": "permission for read prospect data",
+    },
+    {
+        "code": "prospect:update",
+        "module": "prospect",
+        "action": "update",
+        "title": "update prospect",
+        "description": "permission for update prospect data",
+    },
+    {
+        "code": "prospect:delete",
+        "module": "prospect",
+        "action": "delete",
+        "title": "delete prospect",
+        "description": "permission for delete prospect data",
+    },
+    
 ]

@@ -377,15 +377,40 @@ export enum EMPLOYEE_SENIORITY {
 }
 
 export enum INDUSTRIES {
-  TECHNOLOGIES = "technologies",
-  HEALTHCARE = "healthcare",
-  FINANCE = "finance",
-  EDUCATION = "education",
-  MANUFACTURING = "manufacturing",
-  RETAIL = "retail",
-  CONSULTING = "consulting",
-  REAL_ESTATE = "real_estate",
-  OTHER = "other"
+  TECHNOLOGIES= "technologies",
+    HEALTHCARE="healthcare",
+    FINANCE="finance",
+    EDUCATION="education",
+    MANUFACTURING="manufacturing",
+    RETAIL="retail",
+    CONSULTING="consulting",
+    REALESTATE="real_estate",
+    AGRICULTURE = "Agriculture",
+    AUTOMOTIVE = "Automotive",
+    BANKING = "Banking",
+    BIOTECHNOLOGY = "Biotechnology",
+    CHEMICALS = "Chemicals",
+    CONSTRUCTION = "Construction",
+    
+    ENERGY = "Energy",
+    ENTERTAINMENT = "Entertainment",
+    FOOD_AND_BEVERAGE = "Food & Beverage",
+    GOVERNMENT = "Government",
+    HOSPITALITY = "Hospitality",
+    INSURANCE = "Insurance",
+    IT_SERVICES = "IT Services",
+    LEGAL = "Legal",
+    MARKETING_AND_ADVERTISING = "Marketing & Advertising",
+    MEDIA = "Media",
+    NON_PROFIT = "Non-Profit",
+    PHARMACEUTICALS = "Pharmaceuticals",
+    REAL_ESTATE = "Real Estate",
+
+    SOFTWARE = "Software",
+    TELECOMMUNICATIONS = "Telecommunications",
+    TRANSPORTATION = "Transportation",
+    E_COMMERCE = "E-Commerce",
+    OTHER = "Other"
 }
 
 export enum FORM_FIELD_MODULE {
@@ -534,6 +559,138 @@ export enum LEAD_SOURCE_TYPE{
     ADMIN_CREATED = "admin_created",
     MANAGER_CREATED = "manager_created",
     BULK_IMPORTED = "bulk_imported",
+}
+
+
+export enum NUMBER_OF_EMPLOYEES{
+  LESS_THAN_50 = "50",
+    FROM_50_TO_100 = "50-100",
+    FROM_100_TO_200 = "100-200",
+    FROM_200_TO_300 = "200-300",
+    FROM_300_TO_400 = "300-400",
+    FROM_400_TO_500 = "400-500",
+    FROM_500_TO_1000 = "500-1000",
+    FROM_1000_TO_2000 = "1000-2000",
+    FROM_2000_TO_5000 = "2000-5000"
+}
+
+export enum Designation {
+  
+  CEO = "CEO",
+  CTO = "CTO",
+  CFO = "CFO",
+  COO = "COO",
+  CMO = "CMO",
+  CIO = "CIO",
+  FOUNDER = "Founder",
+  CO_FOUNDER = "Co-Founder",
+  DIRECTOR = "Director",
+  VP = "Vice President",
+
+  GENERAL_MANAGER = "General Manager",
+  OPERATIONS_MANAGER = "Operations Manager",
+  SALES_MANAGER = "Sales Manager",
+  MARKETING_MANAGER = "Marketing Manager",
+  HR_MANAGER = "HR Manager",
+  PROJECT_MANAGER = "Project Manager",
+  PRODUCT_MANAGER = "Product Manager",
+  ACCOUNT_MANAGER = "Account Manager",
+
+  SOFTWARE_ENGINEER = "Software Engineer",
+  SENIOR_SOFTWARE_ENGINEER = "Senior Software Engineer",
+  TECH_LEAD = "Tech Lead",
+  ARCHITECT = "Architect",
+  DEVOPS_ENGINEER = "DevOps Engineer",
+  DATA_SCIENTIST = "Data Scientist",
+  QA_ENGINEER = "QA Engineer",
+
+  SALES_EXECUTIVE = "Sales Executive",
+  BUSINESS_DEVELOPMENT_EXECUTIVE = "Business Development Executive",
+  MARKETING_EXECUTIVE = "Marketing Executive",
+
+  HR_EXECUTIVE = "HR Executive",
+  ADMINISTRATOR = "Administrator",
+  CONSULTANT = "Consultant",
+  INTERN = "Intern",
+  OTHER = "Other",
+}
+
+
+export enum TECHNOLOGY {
+
+  REACT = "react",
+  ANGULAR = "angular",
+  VUE = "vue",
+  NEXT_JS = "next_js",
+  HTML = "html",
+  CSS = "css",
+  JAVASCRIPT = "javascript",
+  TYPESCRIPT = "typescript",
+
+  NODE_JS = "node_js",
+  EXPRESS = "express",
+  DJANGO = "django",
+  FLASK = "flask",
+  FASTAPI = "fastapi",
+  LARAVEL = "laravel",
+  SPRING_BOOT = "spring_boot",
+  DOT_NET = "dot_net",
+  RUBY_ON_RAILS = "ruby_on_rails",
+  PHP = "php",
+
+  MONGODB = "mongodb",
+  MYSQL = "mysql",
+  POSTGRESQL = "postgresql",
+  SQLITE = "sqlite",
+  REDIS = "redis",
+  ELASTICSEARCH = "elasticsearch",
+
+  AWS = "aws",
+  AZURE = "azure",
+  GOOGLE_CLOUD = "google_cloud",
+  DOCKER = "docker",
+  KUBERNETES = "kubernetes",
+  NGINX = "nginx",
+  VERCEL = "vercel",
+  NETLIFY = "netlify",
+
+  WORDPRESS = "wordpress",
+  SHOPIFY = "shopify",
+  MAGENTO = "magento",
+  WEBFLOW = "webflow",
+  WIX = "wix",
+  SQUARESPACE = "squarespace",
+
+  HUBSPOT = "hubspot",
+  SALESFORCE = "salesforce",
+  ZOHO_CRM = "zoho_crm",
+  PIPEDRIVE = "pipedrive",
+  FRESHSALES = "freshsales",
+  MICROSOFT_DYNAMICS = "microsoft_dynamics",
+
+  MAILCHIMP = "mailchimp",
+  ACTIVE_CAMPAIGN = "active_campaign",
+  MARKETO = "marketo",
+  KLAVIYO = "klaviyo",
+
+  GOOGLE_ANALYTICS = "google_analytics",
+  HOTJAR = "hotjar",
+  MIXPANEL = "mixpanel",
+
+  STRIPE = "stripe",
+  PAYPAL = "paypal",
+  RAZORPAY = "razorpay",
+
+  ANDROID = "android",
+  IOS = "ios",
+  REACT_NATIVE = "react_native",
+  FLUTTER = "flutter",
+
+  PYTHON = "python",
+  TENSORFLOW = "tensorflow",
+  PYTORCH = "pytorch",
+  PANDAS = "pandas",
+  NUMPY = "numpy",
 }
 
 

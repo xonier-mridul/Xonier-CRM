@@ -132,6 +132,16 @@ class AuthController:
         except AppException as e:
             raise e
         
+    async def get_user_profile(self, request:Request ):
+        try:
+           print("ues")
+           user = request.state.user
+           result = await self.service.get_user_profile(user)
+           return successResponse(200, "User profile fetched successfully", result)
+            
+        except AppException as e:
+            raise e
+        
     async def update(self, request: Request, userId: str, payload: UpdateUserSchema ):
         try:
            user = request.state.user

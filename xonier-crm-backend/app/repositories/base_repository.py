@@ -388,7 +388,32 @@ class BaseRepository:
 
         return result.modified_count
     
+    async def bulk_update(
+    self,
+    filters: Dict[str, Any],
+    data: Dict[str, Any],
+    session: Optional[AsyncIOMotorClientSession] = None,
+    ) -> int:
+        
+        result = await self.model.find(filters).update(
+            {"$set": data}, session=session
+        )
+        return result.modified_count
 
+
+    async def bulk_update_by_ids(
+    self,
+    ids: List[PydanticObjectId],
+    data: Dict[str, Any],
+    session: Optional[AsyncIOMotorClientSession] = None,
+    ) -> int:
+       
+        result = await self.model.find(
+            {"_id": {"$in": ids}}
+        ).update(
+            {"$set": data}, session=session
+        )
+        return result.modified_count
 
 
     async def update_with_encryption(

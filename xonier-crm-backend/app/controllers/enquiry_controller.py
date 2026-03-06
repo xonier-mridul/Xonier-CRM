@@ -14,13 +14,14 @@ class EnquiryController:
     
     async def get_all(self, request: Request):
         try:
+            user = request.state.user
             filters = request.query_params
 
             page = filters.get("page") or 1
             limit = filters.get("limit") or 10
 
 
-            result = await self.service.get_all(int(page), int(limit), filters={**filters})
+            result = await self.service.get_all(int(page), int(limit), filters={**filters}, user=user)
 
             return successResponse(status_code=200, message="All enquiries fetched successfully", data=result)
 
@@ -71,7 +72,7 @@ class EnquiryController:
         try:
            user = request.state.user
 
-           print("paylaod : ", payload)
+           
 
            result = await self.service.bulk_create(PydanticObjectId(user["_id"]), payload)
 
