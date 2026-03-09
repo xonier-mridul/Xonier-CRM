@@ -157,7 +157,11 @@ export enum PERMISSIONS {
   readEvent = "event:read",
   updateEvent = "event:update",
   deleteEvent = "event:delete",
-  readNote = "note:read"
+  readNote = "note:read",
+  readProspects = "prospect:read",
+  createProspects = "prospect:create",
+  deleteProspects = "prospect:delete",
+  updateProspects = "prospect:update",
 
 }
 
