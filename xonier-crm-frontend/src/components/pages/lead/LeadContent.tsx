@@ -1,12 +1,12 @@
 "use client";
-import React, { JSX, useState, useEffect, useRef } from "react";
+import React, { JSX, useState, useEffect, useRef, use } from "react";
 import { IoIosSearch } from "react-icons/io";
 import Link from "next/link";
 import { MdOutlineEdit } from "react-icons/md";
 import { FaRegEye } from "react-icons/fa";
 import { FaPlus, FaXmark, FaCheck } from "react-icons/fa6";
 import { usePermissions } from "@/src/hooks/usePermissions";
-import { LEAD_SOURCE_TYPE, PERMISSIONS, SALES_STATUS } from "@/src/constants/enum";
+import { LEAD_SOURCE_TYPE, PERMISSIONS, SALES_STATUS ,SOURCE,PROJECT_TYPES} from "@/src/constants/enum";
 import axios from "axios";
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import { toast } from "react-toastify";
@@ -61,7 +61,7 @@ const AssignedToPill = ({
 };
 
 const LeadContent = (): JSX.Element => {
- 
+
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [leadData, setLeadData] = useState<Lead[]>([]);
   const [wonLeadData, setWonLeadData] = useState<Lead[]>([]);
@@ -84,6 +84,17 @@ const LeadContent = (): JSX.Element => {
   const [wonTotalPages, setWonTotalPages] = useState<number>(1);
   const [lostTotalPages, setLostTotalPages] = useState<number>(1);
   const [assignedTotalPages, setAssignedTotalPages] = useState<number>(1);
+  const [searchVal, setSearchVal] = useState<string>("");
+  const [projectTypeVal, setPrjectTypeVal] = useState<string>("");
+  const [statusVal, setStatusVal] = useState<string>("");
+  const [sourceVal, setSourceVal] = useState<string>("");
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const [filters, setFilters] = useState<Record<string, string>>({
+    "type": "",
+    "search": "",
+    "status": "",
+    "source": "",
+  });
 
 
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
@@ -102,15 +113,15 @@ const LeadContent = (): JSX.Element => {
 
   const currentLeadData =
     currentTab === TAB.ALL ? leadData
-    : currentTab === TAB.WON ? wonLeadData
-    : currentTab === TAB.LOST ? lostLeadData
-    : assignedLeadData;
+      : currentTab === TAB.WON ? wonLeadData
+        : currentTab === TAB.LOST ? lostLeadData
+          : assignedLeadData;
 
-
+  
   const getLeadData = async (): Promise<void> => {
     setIsLoading(true);
     try {
-      const result = await LeadService.getAll(currentPage, pageLimit, query);
+      const result = await LeadService.getAll(currentPage, pageLimit, {...filters, ...query});
       if (result.status === 200) {
         const data = result.data.data;
         setLeadData(data.data);
@@ -128,7 +139,10 @@ const LeadContent = (): JSX.Element => {
   const getWonLeadData = async (): Promise<void> => {
     setIsLoading(true);
     try {
-      const result = await LeadService.getAll(currentWonPage, wonPageLimit, { status: SALES_STATUS.WON, ...query });
+      const result = await LeadService.getAll(currentWonPage, wonPageLimit, { 
+        ...query, ...filters,
+        status: SALES_STATUS.WON, 
+       });
       if (result.status === 200) {
         const data = result.data.data;
         setWonLeadData(data.data);
@@ -146,7 +160,12 @@ const LeadContent = (): JSX.Element => {
   const getLostLeadData = async (): Promise<void> => {
     setIsLoading(true);
     try {
-      const result = await LeadService.getAll(currentLostPage, lostPageLimit, { status: SALES_STATUS.LOST, ...query });
+      const result = await LeadService.getAll(currentLostPage, lostPageLimit, { 
+        ...query , 
+        ...filters,
+        status: SALES_STATUS.LOST
+
+      });
       if (result.status === 200) {
         const data = result.data.data;
         setLostLeadData(data.data);
@@ -164,10 +183,11 @@ const LeadContent = (): JSX.Element => {
   const getAssignedLeadData = async (): Promise<void> => {
     setIsLoading(true);
     try {
-      
+
       const result = await LeadService.getAll(currentAssignedPage, assignedPageLimit, {
         isAssigned: true,
         ...query,
+        ...filters,
       });
       if (result.status === 200) {
         const data = result.data.data;
@@ -316,6 +336,68 @@ const LeadContent = (): JSX.Element => {
     else if (currentTab === TAB.LOST) { setLostCurrentPage(1); setLostPageLimit(val); }
     else if (currentTab === TAB.ASSIGNED) { setAssignedCurrentPage(1); setAssignedPageLimit(val); }
   };
+  const handleSearch = (val: string) => {
+  setSearchVal(val);
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      setFilters((prev) => ({ ...prev, name: val }));
+    }, 300);
+};
+  const handleProjectType = (val: string): void => {
+    setPrjectTypeVal(val);
+    setFilters({ ...filters, type: val });
+  }
+  const handleStatus = (val: string): void => {
+    setStatusVal(val);
+    setFilters({ ...filters, status: val });
+  }
+  const handleSource = (val: string): void => {
+    setSourceVal(val);
+    setFilters({ ...filters, source: val });
+  }
+  function clearFields() {
+    const selects = document.querySelectorAll<HTMLSelectElement>('select.field');
+    console.log("se: ", selects);
+    selects.forEach((select) => {
+      select.value = "";
+    });
+  }
+  useEffect(() => {
+    if(currentTab === TAB.ALL) getLeadData();
+    else if(currentTab === TAB.WON) getWonLeadData();
+    else if(currentTab === TAB.LOST) getLostLeadData();
+    else if(currentTab === TAB.ASSIGNED) getAssignedLeadData();
+  }, [filters]);
+  useEffect(() => {
+    setFilters({
+      status:"",
+      type:"",
+      source:"",
+      search:"",
+    });
+    setSearchVal("");
+    clearFields();
+  },[currentTab]);
+
+  const options: Record<string,
+    { value: string[]; handlefunction: (value: string) => void }
+  > = {
+    "Project Type": {
+      value: Object.values(PROJECT_TYPES),
+      handlefunction: handleProjectType,
+    },
+    "Status": {
+      value: Object.values(SALES_STATUS),
+      handlefunction: handleStatus,
+    },
+    "Source": {
+      value: Object.values(SOURCE),
+      handlefunction: handleSource,
+    },
+  };
+
 
   const nonAdminUsers = userData.filter((u) => u.userRole[0]?.code !== SUPER_ADMIN_ROLE_CODE);
 
@@ -337,16 +419,16 @@ const LeadContent = (): JSX.Element => {
       </tr>
     ));
 
-  
+
   const StatusBadge = ({ status }: { status: string }) => (
     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium capitalize
       ${status === "new" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
-      : status === "contacted" ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300"
-      : status === "qualified" ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
-      : status === "proposal" ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
-      : status === "won" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
-      : status === "lost" ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
-      : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300"}`}>
+        : status === "contacted" ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300"
+          : status === "qualified" ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
+            : status === "proposal" ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
+              : status === "won" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+                : status === "lost" ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
+                  : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300"}`}>
       {status}
     </span>
   );
@@ -398,7 +480,7 @@ const LeadContent = (): JSX.Element => {
         <tr key={item.lead_id}
           className={`${isChecked ? "bg-blue-50 dark:bg-blue-900/20 border-l-[3px] border-l-blue-500"
             : i % 2 === 0 ? "bg-white dark:bg-transparent"
-            : "bg-blue-100/50 dark:bg-slate-500"} w-full transition-colors duration-150`}>
+              : "bg-blue-100/50 dark:bg-slate-500"} w-full transition-colors duration-150`}>
 
           {hasPermission(PERMISSIONS.assignLead) && currentTab === TAB.ALL && (
             <td className="p-4 text-center">
@@ -445,7 +527,7 @@ const LeadContent = (): JSX.Element => {
     });
   };
 
-  
+
   const renderAssignedRows = () => {
     if (!isLoading && assignedLeadData.length === 0) return (
       <tr>
@@ -467,23 +549,23 @@ const LeadContent = (): JSX.Element => {
     return assignedLeadData.map((item, i) => {
       const isChecked = selectedReassignIds.has(item.id);
       const assignedUser = item.assignedTo?.[0] as unknown as { firstName?: string; lastName?: string } | null;
-      const assignedUserId = item.assignedTo?.[0] as unknown as { id?: string} | null;
+      const assignedUserId = item.assignedTo?.[0] as unknown as { id?: string } | null;
 
       return (
         <tr key={item.lead_id}
           className={`${isChecked
             ? "bg-amber-50 dark:bg-amber-900/10 border-l-[3px] border-l-amber-500"
             : i % 2 === 0 ? "bg-white dark:bg-transparent"
-            : "bg-amber-50/40 dark:bg-slate-500/30"} w-full transition-colors duration-150`}>
+              : "bg-amber-50/40 dark:bg-slate-500/30"} w-full transition-colors duration-150`}>
 
-          
+
           {hasPermission(PERMISSIONS.reassignLead) && (
             <td className="p-4 text-center">
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" className="sr-only" checked={isChecked} onChange={() => handleReassignSelectOne(item.id)} />
                 <div className={`w-4.5 h-4.5 rounded-sm border-2 flex items-center justify-center transition-all duration-150
                   ${isChecked ? "bg-amber-500 border-amber-500" : "bg-white dark:bg-gray-700 border-slate-300 dark:border-slate-500 hover:border-amber-400"}`}>
-                  {isChecked && <FaCheck className="text-white text-[9px]"/>}
+                  {isChecked && <FaCheck className="text-white text-[9px]" />}
                 </div>
               </label>
             </td>
@@ -504,10 +586,10 @@ const LeadContent = (): JSX.Element => {
           </td>
           <td className="p-4"><StatusBadge status={item.status} /></td>
 
-          
+
           <td className="p-4">
             <Link href={`/users/${assignedUserId?.id}`}>
-            <AssignedToPill user={assignedUser} />
+              <AssignedToPill user={assignedUser} />
             </Link>
           </td>
 
@@ -538,7 +620,7 @@ const LeadContent = (): JSX.Element => {
     <>
       <div className="ml-72 mt-14 p-6">
 
-        
+
         <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm gap-5 p-6 rounded-xl border border-slate-900/10 w-full flex items-center justify-between">
           <div className="flex flex-col gap-2">
             <h2 className="text-2xl font-bold dark:text-white text-slate-900">Add Bulk Leads</h2>
@@ -555,7 +637,7 @@ const LeadContent = (): JSX.Element => {
           </div>
         </div>
 
-        
+
         <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full flex flex-col gap-6">
 
 
@@ -576,7 +658,7 @@ const LeadContent = (): JSX.Element => {
               </select>
               <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2">
                 <IoIosSearch className="text-xl" />
-                <input type="text" className="outline-none bg-transparent text-sm w-36" placeholder="Search..." />
+                <input type="text" id="searchbar" className="outline-none bg-transparent text-sm w-36" placeholder="Search..." onChange={(e) => handleSearch(e.target.value)} value={searchVal} />
               </div>
               {hasPermission(PERMISSIONS.createLead) ? (
                 <Link href="/leads/add" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors group">
@@ -590,13 +672,13 @@ const LeadContent = (): JSX.Element => {
             </div>
           </div>
 
-          
+
           <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-600 pb-0">
             <TabsButton btnTxt="All Leads" dataLen={leadData.length} no={TAB.ALL} currentVal={currentTab} onClickEvent={() => setCurrentTab(TAB.ALL)} />
             <TabsButton btnTxt="Won Leads" dataLen={wonLeadData.length} no={TAB.WON} currentVal={currentTab} onClickEvent={() => handleTabs(TAB.WON)} />
             <TabsButton btnTxt="Lost Leads" dataLen={lostLeadData.length} no={TAB.LOST} currentVal={currentTab} onClickEvent={() => handleTabs(TAB.LOST)} />
 
-           
+
             {hasPermission(PERMISSIONS.assignLead) && (
               <button
                 onClick={() => handleTabs(TAB.ASSIGNED)}
@@ -621,7 +703,7 @@ const LeadContent = (): JSX.Element => {
             )}
           </div>
 
-          
+
           {selectedLeadIds.size > 0 && currentTab === TAB.ALL && (
             <div className="w-full bg-blue-600 dark:bg-blue-700 rounded-xl px-5 py-3.5 flex items-center justify-between gap-4 shadow-lg shadow-blue-200/60 dark:shadow-blue-900/30 animate-in slide-in-from-top-2 duration-200">
               <div className="flex items-center gap-3">
@@ -662,7 +744,7 @@ const LeadContent = (): JSX.Element => {
             </div>
           )}
 
-         
+
           {selectedReassignIds.size > 0 && currentTab === TAB.ASSIGNED && (
             <div className="w-full rounded-xl px-5 py-3.5 flex items-center justify-between gap-4 shadow-lg shadow-amber-200/60 dark:shadow-amber-900/30 animate-in slide-in-from-top-2 duration-200"
               style={{ background: "linear-gradient(135deg, #f59e0b 0%, #f97316 100%)" }}>
@@ -704,8 +786,9 @@ const LeadContent = (): JSX.Element => {
             </div>
           )}
 
-          
+
           {currentTab !== TAB.ASSIGNED ? (
+            <div className="overflow-x-scroll">
             <table className="w-full rounded-xl overflow-hidden">
               <thead>
                 <tr className="w-full border-b-2 border-zinc-200 dark:border-zinc-600 bg-blue-50 dark:bg-gray-800">
@@ -721,16 +804,46 @@ const LeadContent = (): JSX.Element => {
                       </label>
                     </th>
                   )}
-                  {["Lead Id", "Client Info", "Phone", "Project Type", "Source", "Status", "Actions"].map((h) => (
-                    <th key={h} className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold tracking-wide">{h}</th>
-                  ))}
+                  {["Lead Id", "Client Info", "Phone", "Project Type", "Source", "Status", "Actions"]
+                    .map((h) => {
+                      const filterConfig = (h!='Status')?(options[h]):(currentTab===TAB.ALL && options[h]);
+
+                      return (
+                        <th
+                          key={h}
+                          className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide"
+                        >
+                          {h}
+                          {filterConfig && (
+                            <>
+                              <br />
+                              <select
+                                onChange={(e) =>
+                                  filterConfig.handlefunction(e.target.value)
+                                }
+                                className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20"
+                              >
+                                <option value="">All</option>
+
+                                {filterConfig.value.map((option) => (
+                                  <option key={option} value={option}>
+                                    {option}
+                                  </option>
+                                ))}
+                              </select>
+                            </>
+                          )}
+                        </th>
+                      );
+                    })}
                 </tr>
               </thead>
               <tbody>{renderLeadRows(currentLeadData)}</tbody>
             </table>
+            </div>
           ) : (
-           
-            <table className="w-full rounded-xl overflow-hidden">
+            <div className="overflow-x-scroll">
+            <table className="w-full rounded-xl overflow-hidden ">
               <thead>
                 <tr className="w-full border-b-2 border-amber-200 dark:border-amber-800/40 bg-amber-50 dark:bg-amber-900/20">
                   {hasPermission(PERMISSIONS.reassignLead) && (
@@ -745,9 +858,36 @@ const LeadContent = (): JSX.Element => {
                       </label>
                     </th>
                   )}
-                  {["Lead Id", "Client Info", "Phone", "Project Type", "Status"].map((h) => (
-                    <th key={h} className="p-4 uppercase text-xs text-start text-amber-600 dark:text-amber-400 font-semibold tracking-wide">{h}</th>
-                  ))}
+                  {["Lead Id", "Client Info", "Phone", "Project Type", "Status"].map((h) => {
+                      const filterConfig = options[h];
+                      return (
+                        <th
+                          key={h}
+                          className="field p-4 uppercase text-xs text-start text-nowrap text-slate-500 dark:text-slate-300 font-semibold tracking-wide"
+                        >
+                          {h}
+                          {filterConfig && (
+                            <>
+                              <br />
+                              <select
+                                onChange={(e) =>
+                                  filterConfig.handlefunction(e.target.value)
+                                }
+                                className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm"
+                              >
+                                <option value="">All</option>
+
+                                {filterConfig.value.map((option) => (
+                                  <option key={option} value={option}>
+                                    {option}
+                                  </option>
+                                ))}
+                              </select>
+                            </>
+                          )}
+                        </th>
+                      );
+                    })}
                   <th className="p-4 uppercase text-xs text-start text-amber-600 dark:text-amber-400 font-semibold tracking-wide">
                     <span className="flex items-center gap-1.5"><RiUserSharedLine /> Assigned To</span>
                   </th>
@@ -756,9 +896,9 @@ const LeadContent = (): JSX.Element => {
               </thead>
               <tbody>{renderAssignedRows()}</tbody>
             </table>
+            </div>
           )}
 
-          
           {currentTab === TAB.ALL && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={(p) => setCurrentPage(p)} className="w-full" />}
           {currentTab === TAB.WON && <Pagination currentPage={currentWonPage} totalPages={wonTotalPages} onPageChange={(p) => setWonCurrentPage(p)} className="w-full" />}
           {currentTab === TAB.LOST && <Pagination currentPage={currentLostPage} totalPages={lostTotalPages} onPageChange={(p) => setLostCurrentPage(p)} className="w-full" />}
