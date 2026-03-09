@@ -1,7 +1,7 @@
 "use client";
 import { SIDEBAR_WIDTH } from "@/src/constants/constants";
 
-import React, { JSX, useState, useEffect } from "react";
+import React, { JSX, useState, useEffect , useRef} from "react";
 import { FaRegEye } from "react-icons/fa";
 import { FaPlus, FaXmark } from "react-icons/fa6";
 import { IoIosSearch } from "react-icons/io";
@@ -22,7 +22,7 @@ import { formatDate } from "@/src/app/utils/date.utils";
 import { handleCopy } from "@/src/app/utils/clipboard.utils";
 import { FaRegPaperPlane } from "react-icons/fa";
 import Pagination from "@/src/components/common/pagination";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";  
 
 const DealContent = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -40,6 +40,11 @@ const DealContent = (): JSX.Element => {
   const [totalWonPages, setTotalWonPages] = useState<number>(1);
   const [totalLostPages, setTotalLostPages] = useState<number>(1);
   const [currentTab, setCurrentTab] = useState<number>(1);
+  const [searchVal, setSearchVal] = useState<string>("");
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const [filters, setFilters] = useState<Record<string, string>>({
+    "name": "",
+  });
 
   const { hasPermission } = usePermissions();
   const searchFilters = useSearchParams()
@@ -51,7 +56,7 @@ const DealContent = (): JSX.Element => {
   const getDealData = async () => {
     setIsLoading(true);
     try {
-      const result = await dealService.getAll(currentPage, pageLimit, {userid});
+      const result = await dealService.getAll(currentPage, pageLimit, {...filters, userid});
 
       if (result.status === 200) {
         const data = result.data.data;
@@ -79,7 +84,7 @@ const DealContent = (): JSX.Element => {
   const getWonDealData = async () => {
     setIsLoading(true);
     try {
-      const result = await dealService.getAll(wonCurrentPage, wonPageLimit, {stage: "won", userid});
+      const result = await dealService.getAll(wonCurrentPage, wonPageLimit, {...filters, stage: "won", userid});
 
       if (result.status === 200) {
         const data = result.data.data;
@@ -107,7 +112,7 @@ const DealContent = (): JSX.Element => {
   const getLostDealData = async () => {
     setIsLoading(true);
     try {
-      const result = await dealService.getAll(lostCurrentPage, lostPageLimit, {stage: "lost", userid});
+      const result = await dealService.getAll(lostCurrentPage, lostPageLimit, {...filters, stage: "lost", userid});
 
       if (result.status === 200) {
         const data = result.data.data;
@@ -168,6 +173,34 @@ const DealContent = (): JSX.Element => {
       setLostPageLimit(v)
     }
   }
+  useEffect(() => {
+    setFilters({
+      name:"",
+    });
+    setSearchVal("");
+  }, [currentTab]);
+  useEffect(() => {
+    if(currentTab === 1){
+      getDealData()
+    }
+    else if(currentTab === 2){
+      getWonDealData()
+    }
+    else if(currentTab === 3){
+      getLostDealData()
+    }
+  },[filters]);
+
+
+  const handleSearch = (val: string) => {
+    setSearchVal(val);
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      setFilters((prev) => ({ ...prev, name: val }));
+    }, 300);
+  };
   
 
   return (
@@ -197,7 +230,7 @@ const DealContent = (): JSX.Element => {
               </select>
               <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2">
                 <IoIosSearch className="text-xl" />
-                <input type="text" className="outline-none" />
+                <input type="text" className="outline-none" value={searchVal} onChange={(e)=>handleSearch(e.target.value)} />
               </div>
               {(
                 <Link
