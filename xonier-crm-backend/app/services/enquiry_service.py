@@ -205,7 +205,7 @@ class EnquiryService:
                 query.update({"enquiry_id": filters["enquiry_id"]})
 
             if "fullName" in filters:
-                query.update({"fullName": filters["fullName"]})
+                query.update({"fullName": {"$regex": filters["fullName"], "$options": "i"}})
 
             if "email" in filters:
                 query.update({"email": filters["email"]})

@@ -8,6 +8,8 @@ export const usePermissions = () => {
     (state: RootState) => state.auth?.user?.userRole || []
   );
 
+  console.log("🔐 roles in usePermissions:", roles);
+
   const hasPermission = useMemo(() => {
     return (permission: string) =>
       checkRole(permission, roles);

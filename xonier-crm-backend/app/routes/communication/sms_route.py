@@ -1,0 +1,16 @@
+from fastapi import APIRouter, Depends, Request
+from app.core.dependencies import Dependencies
+from app.schemas.communication.sms_schema import SEND_SMS_SCHEMA
+from app.controllers.communication.sms_controller import SMSController
+
+
+router = APIRouter()
+
+dependencies = Dependencies()
+
+controller = SMSController()
+
+
+@router.post('/sms/send', status_code=200, dependencies=[Depends(dependencies.authorized)])
+async def send_sms(request: Request, payload: SEND_SMS_SCHEMA ):
+    return await controller.send_sms(request=request, payload=payload)

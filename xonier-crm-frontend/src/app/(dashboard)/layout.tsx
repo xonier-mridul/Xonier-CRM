@@ -21,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`mt-${MARGIN_TOP} p-6 bg-stone-50`}
+        className={`mt-${MARGIN_TOP} p-6 bg-stone-50 dark:bg-gray-800`}
       >
 
         <SideBar/>

@@ -36,9 +36,9 @@ export default function SensitiveField({
       className={`cursor-pointer select-none text-${fontSize} text-blue-400 dark:text-blue-300 hover:underline`}
       title="Click to reveal for 5 seconds"
     >
-      {visible ? (<Link href={link}
+      {value ? (visible ? (<Link href={link}
                                 className="text-sm hover:text-blue-500 dark:hover:text-blue-400 transition-all"
-                              > {value} </Link>)  : maskedValue }
+                              > {value} </Link>)  : maskedValue ): "N/A"}
     </span>
   );
 }

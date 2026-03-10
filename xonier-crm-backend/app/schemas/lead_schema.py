@@ -16,15 +16,15 @@ from app.utils.custom_exception import AppException
 class LeadBaseSchema(BaseModel):
     fullName: str
     email: EmailStr
-    phone: str
+    phone: Optional[str] = None
 
-    priority: PRIORITY
-    source: SOURCE
-    projectType:PROJECT_TYPES
+    priority: Optional[PRIORITY] = PRIORITY.MEDIUM.value
+    source: Optional[SOURCE] = SOURCE.OTHER
+    projectType:Optional[str] = None
 
     companyName: Optional[str] = None
     city: Optional[str] = None
-    country: Optional[COUNTRY_CODE] = None
+    country: Optional[str] = None
     postalCode: Optional[int] = None
     language: Optional[LANGUAGE_CODE] = None
 
@@ -42,20 +42,20 @@ class LeadBaseSchema(BaseModel):
             raise AppException(422, "Full name must be at least 5 characters long")
         return v
 
-    @field_validator("phone")
-    @classmethod
-    def validate_phone(cls, v: Optional[str]):
-        if not v:
-            return v
-        try:
-            phone_number = phonenumbers.parse(v, None)
-            if not phonenumbers.is_valid_number(phone_number):
-                raise AppException(422, "Invalid phone number format. Use country code, e.g. +919876543210")
-        except Exception:
-            raise AppException(422,
-                "Invalid phone number format. Use country code, e.g. +919876543210"
-            )
-        return v
+    # @field_validator("phone")
+    # @classmethod
+    # def validate_phone(cls, v: Optional[str]):
+    #     if not v:
+    #         return v
+    #     try:
+    #         phone_number = phonenumbers.parse(v, None)
+    #         if not phonenumbers.is_valid_number(phone_number):
+    #             raise AppException(422, "Invalid phone number format. Use country code, e.g. +919876543210")
+    #     except Exception:
+    #         raise AppException(422,
+    #             "Invalid phone number format. Use country code, e.g. +919876543210"
+    #         )
+    #     return v
     
     @field_validator("postalCode")
     @classmethod
@@ -72,21 +72,22 @@ class LeadBaseSchema(BaseModel):
 class LeadsCreateSchema(LeadBaseSchema):
     fullName: str
     email: EmailStr
-    phone: str
+    phone: Optional[str] = None
 
-    priority: PRIORITY
-    source: SOURCE
-    projectType: PROJECT_TYPES
+    priority: Optional[PRIORITY] = PRIORITY.MEDIUM.value
+    source: Optional[SOURCE] = SOURCE.OTHER
+    projectType:Optional[str] = None
 
     companyName: Optional[str] = None
     city: Optional[str] = None
-    country: Optional[COUNTRY_CODE] =None
+    country: Optional[str] =None
     postalCode: Optional[int] = Field(None, ge=1000, le=999999)
     language: Optional[LANGUAGE_CODE] =None
 
     industry: Optional[INDUSTRIES] = None
     employeeRole: Optional[str] = None
     employeeSeniority: Optional[EMPLOYEE_SENIORITY] = None
+    extraFields: Optional[dict[str, str | int | float | bool | None]] = Field(default=None)
 
     message: Optional[str] = None
     membershipNotes: Optional[str] = None

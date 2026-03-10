@@ -46,19 +46,18 @@ export interface Lead {
 export interface LeadPayload {
   fullName: string;
   email: string;
-  phone: string;
+  phone?: string | null;
 
-  priority: PRIORITY | "";
-  source: SOURCE | "";
-  projectType: PROJECT_TYPES | "";
-  status: SALES_STATUS | "";
+  priority?: PRIORITY | "";
+  source?: SOURCE | "";
+  projectType?: string | "";
+  status?: SALES_STATUS | "";
 
   companyName?: string;
   city?: string;
-  country?: COUNTRY_CODE | null;
+  country?: string | null;
   postalCode?: number | null;
   language?: LANGUAGE_CODE | null;
-
 
   industry?: INDUSTRIES | null;
   employeeRole?: string;

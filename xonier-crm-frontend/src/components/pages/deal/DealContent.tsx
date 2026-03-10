@@ -1,7 +1,7 @@
 "use client";
 import { SIDEBAR_WIDTH } from "@/src/constants/constants";
 
-import React, { JSX, useState, useEffect } from "react";
+import React, { JSX, useState, useEffect , useRef} from "react";
 import { FaRegEye } from "react-icons/fa";
 import { FaPlus, FaXmark } from "react-icons/fa6";
 import { IoIosSearch } from "react-icons/io";
@@ -22,7 +22,7 @@ import { formatDate } from "@/src/app/utils/date.utils";
 import { handleCopy } from "@/src/app/utils/clipboard.utils";
 import { FaRegPaperPlane } from "react-icons/fa";
 import Pagination from "@/src/components/common/pagination";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";  
 
 const DealContent = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -40,6 +40,11 @@ const DealContent = (): JSX.Element => {
   const [totalWonPages, setTotalWonPages] = useState<number>(1);
   const [totalLostPages, setTotalLostPages] = useState<number>(1);
   const [currentTab, setCurrentTab] = useState<number>(1);
+  const [searchVal, setSearchVal] = useState<string>("");
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const [filters, setFilters] = useState<Record<string, string>>({
+    "name": "",
+  });
 
   const { hasPermission } = usePermissions();
   const searchFilters = useSearchParams()
@@ -51,7 +56,7 @@ const DealContent = (): JSX.Element => {
   const getDealData = async () => {
     setIsLoading(true);
     try {
-      const result = await dealService.getAll(currentPage, pageLimit, {userid});
+      const result = await dealService.getAll(currentPage, pageLimit, {...filters, userid});
 
       if (result.status === 200) {
         const data = result.data.data;
@@ -79,7 +84,7 @@ const DealContent = (): JSX.Element => {
   const getWonDealData = async () => {
     setIsLoading(true);
     try {
-      const result = await dealService.getAll(wonCurrentPage, wonPageLimit, {stage: "won", userid});
+      const result = await dealService.getAll(wonCurrentPage, wonPageLimit, {...filters, stage: "won", userid});
 
       if (result.status === 200) {
         const data = result.data.data;
@@ -107,7 +112,7 @@ const DealContent = (): JSX.Element => {
   const getLostDealData = async () => {
     setIsLoading(true);
     try {
-      const result = await dealService.getAll(lostCurrentPage, lostPageLimit, {stage: "lost", userid});
+      const result = await dealService.getAll(lostCurrentPage, lostPageLimit, {...filters, stage: "lost", userid});
 
       if (result.status === 200) {
         const data = result.data.data;
@@ -168,6 +173,34 @@ const DealContent = (): JSX.Element => {
       setLostPageLimit(v)
     }
   }
+  useEffect(() => {
+    setFilters({
+      name:"",
+    });
+    setSearchVal("");
+  }, [currentTab]);
+  useEffect(() => {
+    if(currentTab === 1){
+      getDealData()
+    }
+    else if(currentTab === 2){
+      getWonDealData()
+    }
+    else if(currentTab === 3){
+      getLostDealData()
+    }
+  },[filters]);
+
+
+  const handleSearch = (val: string) => {
+    setSearchVal(val);
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      setFilters((prev) => ({ ...prev, name: val }));
+    }, 300);
+  };
   
 
   return (
@@ -197,7 +230,7 @@ const DealContent = (): JSX.Element => {
               </select>
               <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2">
                 <IoIosSearch className="text-xl" />
-                <input type="text" className="outline-none" />
+                <input type="text" className="outline-none" value={searchVal} onChange={(e)=>handleSearch(e.target.value)} />
               </div>
               {(
                 <Link
@@ -226,9 +259,7 @@ const DealContent = (): JSX.Element => {
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
                  deal name
                 </th>
-                {/* <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
-                  Pipeline
-                </th> */}
+               
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
                   {" "}
                   Deal stage
@@ -250,9 +281,7 @@ const DealContent = (): JSX.Element => {
                 dealData.map((item, i) => {
                   let rr = i % 2 == 0;
 
-                  // const maskMail = maskEmail(item.email)
-                  // const maskNumber = maskPhone(item.phone)
-
+                 
                   const date = formatDate(item.createDate)
 
                   return (
@@ -278,9 +307,7 @@ const DealContent = (): JSX.Element => {
                         
                       
                       </td>
-                      {/* <td className="p-4">
-                        <span className={`${(item.dealPipeline.trim() === DEAL_PIPELINE.REQUIREMENT_ANALYSIS) ? "bg-orange-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.QUALIFICATION) ? "bg-blue-600" : (item.dealPipeline.trim() === DEAL_PIPELINE.PROPOSAL) ? "bg-cyan-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.NEGOTIATION) ? "bg-teal-600" : (item.dealPipeline.trim() === DEAL_PIPELINE.WON) ? "bg-green-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.LOST) ? "bg-red-500" : "bg-gray-600"} text-white px-4 py-1.5 text-sm rounded-md capitalize`}>{item.dealPipeline.trim()}</span>
-                      </td> */}
+                      
                       <td className="p-4 ">
                         <span className={`${(item.dealStage.trim() === DEAL_STAGES.REQUIREMENT_ANALYSIS) ? "bg-orange-500" : (item.dealStage.trim() === DEAL_STAGES.QUALIFICATION) ? "bg-blue-600" : (item.dealStage.trim() === DEAL_STAGES.PROPOSAL) ? "bg-cyan-500" : (item.dealPipeline.trim() === DEAL_STAGES.NEGOTIATION) ? "bg-teal-600" : (item.dealStage.trim() === DEAL_STAGES.WON) ? "bg-green-500" : (item.dealStage.trim() === DEAL_STAGES.LOST) ? "bg-red-500" : (item.dealStage.trim() === DEAL_STAGES.DELETE) ?  "bg-red-500" : "bg-gray-600"} text-white px-4 py-1.5 text-sm rounded-md capitalize`}>{item.dealStage.trim()}</span>
                       </td>

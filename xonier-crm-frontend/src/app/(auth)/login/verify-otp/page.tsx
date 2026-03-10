@@ -115,8 +115,9 @@ const page = () => {
         toast.success("Logged in successfully");
         sessionStorage.removeItem("loginMail");
         sessionStorage.removeItem("loginPassword");
-        router.push("/dashboard")
+        
         dispatch(login(result.data.data))
+        router.push("/dashboard")
       }
     } catch (error: unknown) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);

@@ -14,7 +14,7 @@ class TelephoneRegisterSchema(BaseModel):
 
         phone = values.get("phoneNumber")
 
-        pattern = r"^\+?[1-9]\d{9,14}$"
+        pattern = r"^\+?[1-9]\d{6,14}$"
 
         if not re.match(pattern, phone):
             raise AppException(422, "Invalid phone number format")

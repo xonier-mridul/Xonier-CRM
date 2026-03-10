@@ -1,7 +1,7 @@
 
 import { register } from "module";
 import api from "../lib/axios";
-import { VerifyLoginOtpPayload, ResendLoginOtpPayload , GetAllUsers, changePasswordPayload, RegisterPayload, UserUpdatePayload, UserStatusPayload, UserPasswordUpdatedByAdminPayload} from "../types";
+import { VerifyLoginOtpPayload, ResendLoginOtpPayload , GetAllUsers, changePasswordPayload, RegisterPayload, UserUpdatePayload, UserStatusPayload, UserPasswordUpdatedByAdminPayload, AssignedPhoneNumber} from "../types";
 import { ParamValue } from "next/dist/server/request/params";
 
 
@@ -21,7 +21,9 @@ export const AuthService = {
     updateStatus: (id: ParamValue, statusPayload: UserStatusPayload)=> api.patch(`/auth/update-status/${id}`, statusPayload),
     changePassword: (data: changePasswordPayload) => api.patch("/auth/reset-password", data),
     changePasswordByAdmin: (id: ParamValue, data: UserPasswordUpdatedByAdminPayload)=> api.patch(`auth/reset-user-password/${id}`,data),
-    softDelete: (id: ParamValue)=> api.patch(`/auth/user/${id}/soft-delete`, {})
+    softDelete: (id: ParamValue)=> api.patch(`/auth/user/${id}/soft-delete`, {}),
+    assignNumber: (id:string, payload: AssignedPhoneNumber)=> api.patch(`/auth/assign-phone-number/${id}`, payload),
+    clearNumber: (id:string)=> api.patch(`/auth/clear-phone-number/${id}`, {})
 
 }
 

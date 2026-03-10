@@ -1,5 +1,6 @@
 import { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
 import { Permissions } from "../roles/roles.types";
+import { TelephoneNumber } from "../communication/telephone.types";
 
 
 export interface AuthState{
@@ -82,6 +83,10 @@ export interface UserPasswordUpdatedByAdminPayload{
   confirmPassword: string
 }
 
+export interface AssignedPhoneNumber{
+  assignedPhoneNumber: string
+}
+
 
 export interface UserRole {
   id: string;
@@ -119,6 +124,7 @@ export interface User {
   status: USER_STATUS;
 
   userRole: UserRole[];
+  assignedPhoneNumber: TelephoneNumber
 
   company: string;
   isActive: boolean;

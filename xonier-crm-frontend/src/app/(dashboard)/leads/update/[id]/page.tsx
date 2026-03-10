@@ -44,10 +44,10 @@ const KNOWN_LEAD_KEYS = new Set([
 const REQUIRED_FIELDS = [
   "fullName",
   "email",
-  "phone",
-  "priority",
+  
+  
   "source",
-  "projectType",
+  
   "status",
 ] as const;
 

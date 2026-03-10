@@ -105,7 +105,6 @@ class LeadService:
                 
 
 
-    
     async def bulk_create(self, payload: Dict[str, Any], user: Dict[str, Any]):
         async with await self.client.start_session() as session:
             async with session.start_transaction():
@@ -122,96 +121,97 @@ class LeadService:
                     leads_to_insert: List[LeadsModel] = []
                     skipped: List[Dict[str, Any]] = []
 
-                    
-                    
                     hash_filters = []
                     for lead in leads_data:
                         try:
                             email = lead.get("email", "").lower()
-                            phone = lead.get("phone", "")
-                            project_type = lead.get("projectType", "")
-                            
-                            if not email or not phone or not project_type:
+
+                            if not email:
                                 skipped.append({
                                     "email": lead.get("email", "N/A"),
-                                    "phone": lead.get("phone", "N/A"),
-                                    "reason": "Missing required fields"
+                                    "reason": "Missing required field: email"
                                 })
                                 continue
-                                
-                            hash_filters.append({
-                                "hashedEmail": hash_value(email),
-                                "hashedPhone": hash_value(phone),
-                                "projectType": project_type,
-                            })
+
+                            filter_entry = {"hashedEmail": hash_value(email)}
+
+                            phone = lead.get("phone", "")
+                            project_type = lead.get("projectType", "")
+
+                            if phone:
+                                filter_entry["hashedPhone"] = hash_value(phone)
+                            if project_type:
+                                filter_entry["projectType"] = project_type
+
+                            hash_filters.append(filter_entry)
+
                         except Exception as e:
                             skipped.append({
                                 "email": lead.get("email", "N/A"),
-                                "phone": lead.get("phone", "N/A"),
                                 "reason": f"Error processing: {str(e)}"
                             })
 
-                    
                     existing_set = set()
                     if hash_filters:
                         print(f"Checking for {len(hash_filters)} potential duplicates...")
-                        
+
                         existing_leads = await LeadsModel.find(
                             {"$or": hash_filters}
                         ).to_list()
-                        
+
                         print(f"Found {len(existing_leads)} existing leads")
 
                         existing_set = {
-                            (l.hashedEmail, l.hashedPhone, l.projectType) 
+                            (l.hashedEmail, getattr(l, "hashedPhone", None), getattr(l, "projectType", None))
                             for l in existing_leads
                         }
 
                     for lead in leads_data:
                         try:
                             email = lead.get("email", "").lower()
-                            phone = lead.get("phone", "")
-                            project_type = lead.get("projectType", "")
-                            
+                            phone = lead.get("phone", "") or ""
+                            project_type = lead.get("projectType", "") or ""
+
                             if any(s.get("email") == lead.get("email") for s in skipped):
                                 continue
-                            
-                            
+
                             hashed_email = hash_value(email)
-                            hashed_phone = hash_value(phone)
+                            hashed_phone = hash_value(phone) if phone else None
                             
                             encrypt_email = self.encryption.encrypt_data(email)
-                            encrypt_phone = self.encryption.encrypt_data(phone)
+                            encrypt_phone = self.encryption.encrypt_data(phone) if phone else None
 
-                        
-                            if (hashed_email, hashed_phone, project_type) in existing_set:
+                            if (hashed_email, hashed_phone, project_type or None) in existing_set:
                                 skipped.append({
                                     "email": lead.get("email"),
-                                    "phone": phone,
-                                    "projectType": project_type,
+                                    "phone": phone or "N/A",
+                                    "projectType": project_type or "N/A",
                                     "reason": "Duplicate lead (same email, phone, and project type)"
                                 })
                                 continue
 
                             lead_source = LEAD_SOURCE_TYPE.ADMIN_CREATED if is_admin else LEAD_SOURCE_TYPE.SELF_CREATED
 
-
                             lead_data = {
                                 "fullName": lead.get("fullName"),
-                                "email": encrypt_email,       
-                                "hashedEmail": hashed_email,   
-                                "phone": encrypt_phone,        
-                                "hashedPhone": hashed_phone,   
+                                "email": encrypt_email,
+                                "hashedEmail": hashed_email,
                                 "priority": lead.get("priority"),
                                 "source": lead.get("source"),
-                                "projectType": project_type,
                                 "status": lead.get("status", "new"),
                                 "lead_id": generate_enquiry_id("LEAD"),
                                 "createdBy": created_by,
                                 "leadSource": lead_source,
                             }
-                            
-                            
+
+                            if encrypt_phone:
+                                lead_data["phone"] = encrypt_phone
+                            if hashed_phone:
+                                lead_data["hashedPhone"] = hashed_phone
+                            if project_type:
+                                lead_data["projectType"] = project_type
+
+                            # Standard optional fields
                             optional_fields = {
                                 "companyName": lead.get("companyName"),
                                 "city": lead.get("city"),
@@ -224,30 +224,30 @@ class LeadService:
                                 "message": lead.get("message"),
                                 "membershipNotes": lead.get("membershipNotes"),
                             }
-                            
-                            
+
                             for field_name, field_value in optional_fields.items():
                                 if field_value is not None and field_value != "":
                                     lead_data[field_name] = field_value
 
-                            
+                            # ✅ ADD EXTRA FIELDS SUPPORT
+                            extra_fields = lead.get("extraFields")
+                            if extra_fields and isinstance(extra_fields, dict) and len(extra_fields) > 0:
+                                lead_data["extraFields"] = extra_fields
+
                             lead_doc = LeadsModel(**lead_data)
                             leads_to_insert.append(lead_doc)
-                            
+
                         except Exception as e:
                             print(f"Error creating lead: {str(e)}")
                             import traceback
                             traceback.print_exc()
                             skipped.append({
                                 "email": lead.get("email", "N/A"),
-                                "phone": lead.get("phone", "N/A"),
                                 "reason": f"Validation error: {str(e)}"
                             })
                             continue
 
-                
                     if not leads_to_insert:
-                       
                         return {
                             "inserted": 0,
                             "skipped": len(skipped),
@@ -255,14 +255,12 @@ class LeadService:
                         }
 
                     try:
-                       
                         await LeadsModel.insert_many(documents=leads_to_insert, session=session)
                         inserted_count = len(leads_to_insert)
 
                         print("inserted leads: ", leads_to_insert)
                         print("inserted leads count: ", inserted_count)
 
-                        
                         activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD, action=ACTIVITY_ACTION.CREATED, title="create bulk lead", perform=int(inserted_count))
 
                         is_activity = await self.activityRepo.create(data=activity, session=session)
@@ -271,7 +269,7 @@ class LeadService:
                         backend = FastAPICache.get_backend()
                         await backend.clear(namespace=LEAD_CACHE_NAMESPACE)
                         await backend.clear(namespace=USER_LEAD_CACHE_NAMESPACE)
-                        
+
                     except Exception as e:
                         print(f"Error during bulk insert: {str(e)}")
                         import traceback
@@ -296,7 +294,6 @@ class LeadService:
                     import traceback
                     traceback.print_exc()
                     raise AppException(500, f"Internal server error: {str(e)}")
-    
 
     async def bulk_lead_assign(self, payload: Dict[str, Any], user: Dict[str, Any]):
         async with await self.client.start_session() as session:
@@ -718,7 +715,8 @@ class LeadService:
 
             for item in result["data"]:
                 item["email"] = encryptor.decrypt_data(item["email"])
-                item["phone"] = encryptor.decrypt_data(item["phone"])
+                if item["phone"]:
+                    item["phone"] = encryptor.decrypt_data(item["phone"])
 
             await FastAPICache.get_backend().set(
                 key=key, value=json.dumps(result), expire=300
@@ -788,7 +786,9 @@ class LeadService:
 
             for item in result["data"]:
                 item["email"] = encryptor.decrypt_data(item["email"])
-                item["phone"] = encryptor.decrypt_data(item["phone"])
+                phone = item.get("phone")
+                if phone:
+                    item["phone"] = encryptor.decrypt_data(item["phone"])
 
             await FastAPICache.get_backend().set(
                 key=key, value=json.dumps(result), expire=300
@@ -886,7 +886,7 @@ class LeadService:
                     
 
             result = result.model_dump(
-                mode="json", exclude={"hashedEmail", "hashedPhone"}
+                mode="json", exclude={"hashedEmail"}
             )
 
             if str(result["createdBy"]["id"]) == str(user["_id"]):
@@ -902,9 +902,14 @@ class LeadService:
                 )
 
             result["email"] = encryptor.decrypt_data(result["email"])
-            result["phone"] = encryptor.decrypt_data(result["phone"])
+            phone = result.get("phone")
+            
+            if phone:
+                result["phone"] = encryptor.decrypt_data(result["phone"])
             result["createdBy"]["email"] = encryptor.decrypt_data(result["createdBy"]["email"])
-            result["createdBy"]["phone"] = encryptor.decrypt_data(result["createdBy"]["phone"])
+            creator_phone = result["createdBy"].get("phone")
+            if creator_phone:
+                result["createdBy"]["phone"] = encryptor.decrypt_data(result["createdBy"]["phone"])
 
             for item in result["assignedTo"]:
                 item["email"] = encryptor.decrypt_data(item["email"])

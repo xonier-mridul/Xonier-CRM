@@ -123,7 +123,7 @@ class AuthServices:
             query.update({"status": USER_STATUS.ACTIVE.value})
            
 
-            result = await self.repo.get_all_without_pagination(query, populate=["userRole", "createdBy"])
+            result = await self.repo.get_all_without_pagination(query, populate=["userRole", "createdBy", "assignedPhoneNumber"])
 
             if not result:
                 raise AppException(404, "Users not found")
@@ -440,7 +440,7 @@ class AuthServices:
             hashed_mail = hash_value(data["email"])
             hashed_otp = hash_value(str(data["otp"]))
             user = await self.repo.find_user_by_hashMail(
-                hashMail=hashed_mail, projections=None, session=session
+                hashMail=hashed_mail, projections=None, populate=["userRole"], session=session
             )
 
             if not user:
@@ -488,8 +488,12 @@ class AuthServices:
 
             await session.commit_transaction()
 
+            usr =  await self.repo.find_by_id_nested(user.id, ["userRole", "userRole.permissions"])
+
+            print("user")
+
             return {
-                "user": jsonable_encoder(user,exclude={"password", "refreshToken"}),
+                "user": jsonable_encoder(usr,exclude={"password", "refreshToken"}),
                 "access_token": access_token,
                 "refresh_token": refresh_token,
             }

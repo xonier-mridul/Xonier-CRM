@@ -25,18 +25,18 @@ class LeadsModel(Document):
     fullName: str = Field(..., min_length=5, max_length=49)
     email: str  
     hashedEmail: str = Indexed()
-    phone: str
-    hashedPhone: str = Indexed()
+    phone: Optional[str] = None
+    hashedPhone: Optional[str] = None
     
-    priority: PRIORITY
-    source: SOURCE = SOURCE.OTHER
-    projectType: PROJECT_TYPES
+    priority: Optional[PRIORITY] = PRIORITY.MEDIUM.value
+    source: SOURCE = SOURCE.OTHER.value
+    projectType: str = None
     createdBy: Link[UserModel]
     status: SALES_STATUS = SALES_STATUS.NEW
 
     companyName: Optional[str] = None
     city: Optional[str] = None
-    country: Optional[COUNTRY_CODE] = None
+    country: Optional[str] = None
     postalCode: Optional[int] =  Field(None, gt=1000, lt=999999)
     language: Optional[LANGUAGE_CODE] = None
     
@@ -93,6 +93,8 @@ class LeadsModel(Document):
             return
         
         if self.id is None:
+            if not self.phone:
+                return
             plain_phone = self.phone
             self.phone = encryptor.encrypt_data(plain_phone)
             self.hashedPhone = hash_value(plain_phone)

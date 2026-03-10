@@ -85,6 +85,9 @@ const SideBar = () => {
     if (pathname.startsWith("/invoice")){
       setOpenMenu("sales")
     }
+    if (pathname.startsWith("/prospects")){
+      setOpenMenu("prospects")
+    }
   }, [pathname]);
 
   const toggleMenu = (menu: string) => {
@@ -106,6 +109,8 @@ const SideBar = () => {
                pathname.startsWith("/deals") || 
                pathname.startsWith("/quotations") ||
                pathname.startsWith("/invoice");
+      case "prospects":
+        return pathname.startsWith("/prospects");
       default:
         return false;
     }
@@ -164,6 +169,53 @@ const SideBar = () => {
             </Link>
           </li>}
 
+          {hasPermission(PERMISSIONS.readProspects) &&<li>
+            <button
+              onClick={() => toggleMenu("prospects")}
+              className={`${
+                isMenuActive("prospects")
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
+              }
+               flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+            >
+              <span className="flex items-center gap-3">
+               <HiOutlineAdjustments className="text-lg" />
+                Prospects
+              </span>
+
+              <IoChevronDown
+                className={`transition-transform ${
+                  openMenu === "prospects" ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            <AnimatePresence>
+              {openMenu === "prospects" && (
+                <motion.ul
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
+                >
+                  {hasPermission(PERMISSIONS.readProspects) && <li>
+                    <Link
+                      href="/prospects/people"
+                      className={`${
+                        isActive("/prospects/people")
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
+                      } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                    >
+                      People
+                    </Link>
+                  </li>}
+                              
+                </motion.ul>
+              )}
+            </AnimatePresence>
+          </li>}
          {hasPermission(PERMISSIONS.readNote) &&  <li> 
             <Link
               href="/notes"

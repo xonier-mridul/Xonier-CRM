@@ -253,17 +253,19 @@ class DealService:
             if not isAdmin and not isCreator and not isManager:
                 raise AppException(403, "Unauthorized, only admin, manager or creator access deal")
             
-            email = result["lead_id"]["email"]
-            phone = result["lead_id"]["phone"]
+            email = result["lead_id"].get("email")
+            phone = result["lead_id"].get("phone")
 
-            userEmail = result["createdBy"]["email"]
-            userPhone = result["createdBy"]["phone"]
-
-            result["lead_id"]["email"] = self.encryption.decrypt_data(email)
-            result["lead_id"]["phone"] = self.encryption.decrypt_data(phone)
-
-            result["createdBy"]["email"] = self.encryption.decrypt_data(userEmail)
-            result["createdBy"]["phone"] = self.encryption.decrypt_data(userPhone)
+            userEmail = result["createdBy"].get("email")
+            userPhone = result["createdBy"].get("phone")
+            if email:
+                result["lead_id"]["email"] = self.encryption.decrypt_data(email)
+            if phone:
+                result["lead_id"]["phone"] = self.encryption.decrypt_data(phone)
+            if userEmail: 
+                result["createdBy"]["email"] = self.encryption.decrypt_data(userEmail)
+            if userPhone:
+                result["createdBy"]["phone"] = self.encryption.decrypt_data(userPhone)
      
             return result
 

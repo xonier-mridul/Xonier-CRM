@@ -5,6 +5,7 @@ from app.repositories.telephone_repository import TelephoneRepository
 from pymongo.errors import DuplicateKeyError
 from app.core.enums import PHONE_NUMBER_STATUS
 from fastapi.encoders import jsonable_encoder
+import re
 
 class TelephoneService:
     def __init__(self):
@@ -46,7 +47,8 @@ class TelephoneService:
             query = {"status": PHONE_NUMBER_STATUS.ACTIVE}
 
             if "number" in filters:
-                 query.update({"phoneNumber": {"$regex": filters["number"], "$options": "i"}})
+                number = re.escape(str(filters["number"]))
+                query.update({"phoneNumber": {"$regex": number, "$options": "i"}})
 
 
             result = await self.repository.get_all(page=int(page), limit=int(limit), filters=query, populate=["createdBy"], sort=["-createdAt"])

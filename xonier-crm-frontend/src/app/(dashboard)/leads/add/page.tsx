@@ -43,10 +43,10 @@ const KNOWN_LEAD_KEYS = new Set([
 const REQUIRED_FIELDS: (keyof LeadPayload)[] = [
   "fullName",
   "email",
-  "phone",
-  "priority",
+  
+  
   "source",
-  "projectType",
+  
   "status",
 ];
 

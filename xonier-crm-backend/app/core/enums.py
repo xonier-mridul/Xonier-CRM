@@ -80,6 +80,7 @@ class PROJECT_TYPES(str, Enum):
 
     IT_CONSULTING = "it_consulting"
     PRODUCT_CONSULTING = "product_consulting"
+    OTHER="other"
 
 class SALES_STATUS(str, Enum):
     NEW = "new"
