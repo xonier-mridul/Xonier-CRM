@@ -134,7 +134,7 @@ class AuthController:
         
     async def get_user_profile(self, request:Request ):
         try:
-           print("ues")
+           
            user = request.state.user
            result = await self.service.get_user_profile(user)
            return successResponse(200, "User profile fetched successfully", result)
@@ -153,7 +153,9 @@ class AuthController:
     async def update_status(self, request: Request, userId: str, payload: Dict[str, Any]):
         try:
             user = request.state.user
-            result  = await self.service.update_status(userId=userId, updatedBy=user["_id"], payload=payload)
+            await self.service.update_status(userId=userId, updatedBy=user["_id"], payload=payload)
+
+            return successResponse(200, "User status updated successfully")
 
         except AppException as e:
             raise e
@@ -169,7 +171,10 @@ class AuthController:
           response.delete_cookie(key="accessToken", **JWT_OPTIONS)
           response.delete_cookie(key="refreshToken", **JWT_OPTIONS)
 
-          user_name= f"{result["firstName"]} {result["lastName"]}"
+          firstName = result.get("firstName") or ""
+          lastName = result.get("lastName") or ""
+
+          user_name= f"{firstName} {lastName}"
 
           return successResponse(200, f"{user_name} Logout successfully")
 
@@ -189,6 +194,46 @@ class AuthController:
 
         except AppException as e:
             raise e
+        
+
+    async def assign_phone_number(self, request: Request, id:str, payload: Dict[str, Any]):
+        try:
+            user = request.state.user
+            
+            result = await self.service.assign_phone_number(id=id, payload=payload, user=user)
+
+            firstname = result.get("firstName") or ""
+            lastname = result.get("lastName") or ""
+
+
+
+
+            return successResponse(200, f"{firstname} {lastname} assigned  phone number successfully")
+
+
+
+        except AppException as e:
+            raise e  
+        
+
+    async def clear_phone_number(self, request: Request, id:str):
+        try:
+            user = request.state.user
+            
+            result = await self.service.clear_phone_number(id=id, user=user)
+
+            firstname = result.get("firstName") or ""
+            lastname = result.get("lastName") or ""
+
+
+
+
+            return successResponse(200, f"{firstname} {lastname} assigned  phone number clear successfully")
+
+
+
+        except AppException as e:
+            raise e  
     
     async def reset_password(self, request: Request, data:Dict[str, Any]):
         try:

@@ -395,5 +395,33 @@ PERMISSIONS = [
         "title": "delete prospect",
         "description": "permission for delete prospect data",
     },
+    {
+        "code": "telephone:create",
+        "module": "telephone",
+        "action": "create",
+        "title": "create telephone",
+        "description": "permission for create telephone number"
+    },
+    {
+        "code": "telephone:read",
+        "module": "telephone",
+        "action": "read",
+        "title": "read telephone",
+        "description": "permission for read telephone number"
+    },
+    {
+        "code": "telephone:update",
+        "module": "telephone",
+        "action": "update",
+        "title": "update telephone",
+        "description": "permission for update telephone number"
+    },
+    {
+        "code": "telephone:delete",
+        "module": "telephone",
+        "action": "delete",
+        "title": "delete telephone",
+        "description": "permission for delete telephone number"
+    }
     
 ]

@@ -734,6 +734,13 @@ class TECHNOLOGY(str, Enum):
     NUMPY = "numpy"
 
 
+class PHONE_NUMBER_STATUS(str, Enum):
+    ACTIVE= "active",
+    INACTIVE="inactive",
+    DELETED="deleted"
+
+
+
 
 
 

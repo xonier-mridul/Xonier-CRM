@@ -369,6 +369,54 @@ const SideBar = () => {
               Clients
             </Link>
           </li>}
+
+           {(hasPermission(PERMISSIONS.readUser) || hasPermission(PERMISSIONS.readRole) || hasPermission(PERMISSIONS.createTeam)) && <li>
+            <button
+              onClick={() => toggleMenu("communication")}
+              className={`${
+                isMenuActive("communication")
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
+              } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+            >
+              <span className="flex items-center gap-3">
+                <AiOutlineTeam className="text-lg" />
+                Communication 
+              </span>
+
+              <IoChevronDown
+                className={`transition-transform ${
+                  openMenu === "communication" ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            <AnimatePresence>
+              {openMenu === "communication" && (
+                <motion.ul
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
+                >
+                  {hasPermission(PERMISSIONS.readRole) && <li>
+                    <Link
+                      href="/telephone"
+                      className={`${
+                        isActive("/telephone")
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
+                      } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                    >
+                      Telephones Numbers
+                    </Link>
+                  </li>}
+                  
+                </motion.ul>
+              )}
+            </AnimatePresence>
+          </li>}
         </ul>
       </div>
 

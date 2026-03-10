@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Response, Request
 
 
 from app.middlewares.auth_middleware import AuthMiddleware
-from app.schemas.user_schema import UserLoginSchema, VerifyLoginOtpSchema, RegisterUserSchema, ResendOTPSchema, UpdateUserSchema, ResetPasswordSchema, UpdateUserStatusSchema, ResetPasswordByAdminSchema
+from app.schemas.user_schema import UserLoginSchema, VerifyLoginOtpSchema, RegisterUserSchema, ResendOTPSchema, UpdateUserSchema, ResetPasswordSchema, UpdateUserStatusSchema, ResetPasswordByAdminSchema, AssignPhoneNumberSchema
 from app.controllers.auth_controller import AuthController
 from app.core.dependencies import Dependencies
 from beanie import PydanticObjectId
@@ -69,6 +69,15 @@ async def logout(request: Request, response: Response):
 @router.patch("/user/{id}/soft-delete", status_code=200, dependencies=[Depends(dependencies.authorized)])
 async def soft_delete(request: Request, id: PydanticObjectId):
     return await auth_controller.soft_delete(request, id)
+
+
+@router.patch("/assign-phone-number/{id}", status_code=200, dependencies=[Depends(dependencies.authorized)])
+async def assign_phone_number(request: Request, id:str, payload: AssignPhoneNumberSchema):
+    return await auth_controller.assign_phone_number(request, id, payload.model_dump(exclude_unset=True))
+
+@router.patch("/clear-phone-number/{id}", status_code=200, dependencies=[Depends(dependencies.authorized)])
+async def clear_phone_number(request: Request, id:str):
+    return await auth_controller.clear_phone_number(request, id)
 
 @router.patch("/reset-password", status_code=200, dependencies=[Depends(dependencies.authorized)])
 async def reset_password(request: Request, data: ResetPasswordSchema):

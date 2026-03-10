@@ -1,9 +1,11 @@
-from pydantic import BaseModel, EmailStr, StringConstraints, field_validator
+from pydantic import BaseModel, EmailStr, StringConstraints, field_validator, model_validator
 from app.core.enums import USER_ROLES, USER_STATUS
 from typing_extensions import Annotated
 from pydantic import Field
 from typing import List
+from app.utils.custom_exception import AppException
 import phonenumbers
+import re
 
 Password = Annotated[str, ...]
 Otp = Annotated[int, Field(gt=100000, lt=999999)]
@@ -216,5 +218,21 @@ class ResetPasswordByAdminSchema(BaseModel):
             )
 
         return v
+    
+
+class AssignPhoneNumberSchema(BaseModel):
+    assignedPhoneNumber: str
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_number(cls, values):
+
+        phone = values.get("assignedPhoneNumber")
+
+        if not phone:
+            raise AppException(422, "Assigned phone number must required")
+
+
+        return values
 
     

@@ -6,7 +6,7 @@ from typing import Dict, Any, List
 from app.core.enums import USER_ROLES, USER_STATUS
 from app.utils.otp_manager import generate_otp
 from app.utils.email_manager import EmailManager
-from app.core.enums import OTP_TYPE, OTP_EXPIRY
+from app.core.enums import OTP_TYPE, OTP_EXPIRY, USER_STATUS
 from datetime import datetime, timezone, timedelta
 from app.core.config import get_setting
 from fastapi.encoders import jsonable_encoder
@@ -17,7 +17,7 @@ from app.repositories.otp_repository import OtpRepository
 from app.db.models.user_model import UserModel
 from app.schemas.user_schema import UpdateUserSchema
 from app.core.security import hash_password
-from bson import ObjectId
+from bson import ObjectId, DBRef
 from app.core.enums import USER_STATUS
 from app.core.constants import SUPER_ADMIN_CODE
 from app.repositories.user_role_repository import UserRoleRepository
@@ -599,7 +599,7 @@ class AuthServices:
             )
             await session.commit_transaction()
 
-           
+            
 
             return user.model_dump()
 
@@ -625,7 +625,7 @@ class AuthServices:
             if not user:
                 raise AppException(404, "User not found")
             
-            print("user role: ", jsonable_encoder(user.userRole))
+            
 
             roles = jsonable_encoder(user.userRole)
 
@@ -661,6 +661,92 @@ class AuthServices:
 
         finally:
             await session.end_session()
+
+
+    async def assign_phone_number(self,id: str, payload: Dict[str, Any], user: Dict[str, Any]):
+        try:
+            if not ObjectId.is_valid(id):
+                raise AppException(400, "Invalid user object id")
+            
+            if not ObjectId.is_valid(payload["assignedPhoneNumber"]):
+                raise AppException(400, "Invalid telephone object id")
+            
+            user = await self.repo.find_by_id(id=PydanticObjectId(id))
+
+            if not user:
+                raise AppException(400, "User not found")
+            
+            if user.assignedPhoneNumber:
+                raise AppException(400, "Phone  already assigned to the user")
+            
+            if user.status == USER_STATUS.DELETED:
+                raise AppException(400, "User is deleted")
+            
+            payload = {
+                "assignedPhoneNumber": DBRef(collection="telephones", id=PydanticObjectId(payload["assignedPhoneNumber"])),
+                "updatedAt": datetime.now(timezone.utc)
+            }
+           
+            update = await self.repo.update(id=PydanticObjectId(id), data=payload)
+
+            if not update:
+                raise AppException(400, "Phone number updation failed")
+            
+            
+
+            return user.model_dump(mode="json")
+
+
+        except AppException as e:
+            
+            raise e
+
+        except Exception as e:
+            
+            raise AppException(status_code=500, message=f"internal server error: {e}")
+        
+
+    async def clear_phone_number(self,id: str, user: Dict[str, Any]):
+        try:
+            if not ObjectId.is_valid(id):
+                raise AppException(400, "Invalid user object id")
+            
+           
+            
+            user = await self.repo.find_by_id(id=PydanticObjectId(id))
+
+            if not user:
+                raise AppException(400, "User not found")
+            
+            if not user.assignedPhoneNumber:
+                raise AppException(400, "Phone data already empty")
+            
+            if user.status == USER_STATUS.DELETED:
+                raise AppException(400, "User is deleted")
+            
+            payload = {
+                "assignedPhoneNumber": None,
+                "updatedAt": datetime.now(timezone.utc)
+            }
+           
+            update = await self.repo.update(id=PydanticObjectId(id), data=payload)
+
+            if not update:
+                raise AppException(400, "Phone number clearation failed")
+            
+            
+
+            return user.model_dump(mode="json")
+
+
+        except AppException as e:
+            
+            raise e
+
+        except Exception as e:
+            
+            raise AppException(status_code=500, message=f"internal server error: {e}")
+
 
     async def reset_password(self, userId: str, data: Dict[str, Any]):
         session = await self.client.start_session()

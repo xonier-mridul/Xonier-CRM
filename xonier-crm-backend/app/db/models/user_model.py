@@ -1,16 +1,17 @@
 from beanie import Document, Indexed, Link, before_event
 from beanie.odm.actions import Save, Replace, Insert
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from typing import Optional, List, TYPE_CHECKING
 from app.core.security import hash_password, hash_value, verify_password
-
+import re
 from app.core.crypto import encryptor
-
+from app.utils.custom_exception import AppException
 from app.core.enums import USER_STATUS
 from app.core.config import get_setting
 
 from datetime import datetime, timezone, timedelta
 from jose import jwt
+
 
 
 EnvSettings = get_setting()
@@ -30,6 +31,7 @@ class UserModel(Document):
     isActive: bool = False
     lastLogin: Optional[datetime] = None
     refreshToken: Optional[str] = None
+    assignedPhoneNumber: Optional[Link["TelephoneNumbersModel"]] = None
     createdBy: Optional[Link["UserModel"]] = None
     updatedBy: Optional[Link["UserModel"]] = None
     deletedBy: Optional[Link["UserModel"]] = None
@@ -113,6 +115,7 @@ class UserModel(Document):
     def update_timestamp_update(self):
         self.updatedAt = datetime.now(timezone.utc)
 
+
     def compare_password(self, password: str)-> bool:
         return verify_password(password, self.password)
     
@@ -141,9 +144,12 @@ class UserModel(Document):
         return jwt.encode(payload, EnvSettings.REFRESH_TOKEN_SECRET, algorithm="HS256")
     
 
+    
+
 
 
 from app.db.models.user_roles_model import UserRoleModel
+from app.db.models.communications.telephone_numbers_model import TelephoneNumbersModel
 UserModel.model_rebuild()
 
 
