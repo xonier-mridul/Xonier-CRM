@@ -14,13 +14,14 @@ import { useParams, useRouter } from "next/navigation";
 import React, { JSX, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import {
-    MdOutlineEdit,
-    MdDeleteOutline,
     MdTimeline,
     MdCategory,
     MdPhoneEnabled,
     MdSms,
-    MdMailOutline
+    MdMailOutline,
+    MdCall,
+    MdMessage,
+    MdEmail
 } from "react-icons/md";
 import {
     IoArrowBack,
@@ -43,9 +44,7 @@ import {
     IoStatsChartOutline,
     IoLanguageOutline,
     IoCodeOutline,
-    IoChatbubbleOutline,
-    IoCreateOutline,
-    IoTimeOutline,
+    IoClose
 } from "react-icons/io5";
 import { MdOutlineLeaderboard } from "react-icons/md";
 import { FaRegUser, FaIndustry } from "react-icons/fa";
@@ -59,9 +58,15 @@ const ProspectViewPage = (): JSX.Element => {
     const [err, setErr] = useState<string | string[]>("");
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [ProspectData, setProspectData] = useState<Prospect | null>(null);
-    const [activeTab, setActiveTab] = useState<
-        "overview" | "contact" | "activity"
-    >("overview");
+    const [showCallModal, setShowCallModal] = useState(false);
+    const [callPhone, setCallPhone] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState<"overview" | "contact" | "activity">("overview");
+    const [showMessageModal, setShowMessageModal] = useState(false);
+    const [messageText, setMessageText] = useState("");
+    const [showMailModal, setShowMailModal] = useState(false);
+    const [email, setEmail] = useState("");
+    const [subject, setSubject] = useState("");
+    const [mailText, setMailText] = useState("");
 
     const { id } = useParams();
     const router = useRouter();
@@ -73,6 +78,7 @@ const ProspectViewPage = (): JSX.Element => {
             const result = await prospectService.getById(id);
             if (result.status === 200) {
                 setProspectData(result.data.data);
+                setCallPhone(result.data.data.phone);
             }
         } catch (error) {
             if (axios.isAxiosError(error)) {
@@ -198,197 +204,221 @@ const ProspectViewPage = (): JSX.Element => {
         );
     }
 
+    // Model Functions
+    const openCallModal = (phone: string) => {
+        setShowCallModal(true);
+    };
+
+    const closeCallModal = () => {
+        setShowCallModal(false);
+    };
+    const openMessageModal = () => {
+        setShowMessageModal(true);
+    };
+
+    const closeMessageModal = () => {
+        setShowMessageModal(false);
+        setMessageText("");
+    };
+    const openMailModal = () => {
+        setShowMailModal(true);
+    };
+
+    const closeMailModal = () => {
+        setShowMailModal(false);
+        setEmail("");
+        setSubject("");
+        setMailText("");
+    };
+
     return (
-        <div className="ml-72 mt-14 p-6 min-h-screen">
-            {/* Header Section */}
-            <div className="mb-6">
-                <div className="bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                        <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                                <h1 className="text-3xl font-bold text-gray-900 dark:text-white capitalize">
-                                    {ProspectData?.fullName}
-                                </h1>
-                                <span
-                                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${getPriorityColor(
-                                        ProspectData?.priority,
-                                    )}`}
+        <>
+            <div className="ml-72 mt-14 p-6 min-h-screen">
+                {/* Header Section */}
+                <div className="mb-6">
+                    <div className="bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white capitalize">
+                                        {ProspectData?.fullName}
+                                    </h1>
+                                    <span
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${getPriorityColor(
+                                            ProspectData?.priority,
+                                        )}`}
+                                    >
+                                        <IoFlagOutline className="w-4 h-4" />
+                                        {ProspectData?.priority}
+                                    </span>
+                                    <span
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                                            ProspectData?.status,
+                                        )}`}
+                                    >
+                                        <IoStatsChartOutline className="w-4 h-4" />
+                                        {ProspectData?.status}
+                                    </span>
+                                </div>
+                                <p
+                                    className="text-gray-500 dark:text-gray-400 cursor-pointer hover:text-blue-500 dark:hover:text-blue-400 transition-colors flex items-center gap-2"
+                                    onClick={() =>
+                                        handleCopy(ProspectData ? ProspectData.id : "text not found")
+                                    }
                                 >
-                                    <IoFlagOutline className="w-4 h-4" />
-                                    {ProspectData?.priority}
-                                </span>
-                                <span
-                                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                                        ProspectData?.status,
-                                    )}`}
-                                >
-                                    <IoStatsChartOutline className="w-4 h-4" />
-                                    {ProspectData?.status}
-                                </span>
+                                    <IoDocumentText className="w-4 h-4" />
+                                    Prospect ID: <span className="font-mono">{ProspectData?.id}</span>
+                                </p>
+
                             </div>
-                            <p
-                                className="text-gray-500 dark:text-gray-400 cursor-pointer hover:text-blue-500 dark:hover:text-blue-400 transition-colors flex items-center gap-2"
-                                onClick={() =>
-                                    handleCopy(ProspectData ? ProspectData.id : "text not found")
-                                }
-                            >
-                                <IoDocumentText className="w-4 h-4" />
-                                Prospect ID: <span className="font-mono">{ProspectData?.id}</span>
-                            </p>
+                            <div className="flex flex-wrap items-center gap-2">
+                                {hasPermission(PERMISSIONS.callProspects) &&
+                                    (
+                                        <button
+                                            onClick={() => openCallModal(ProspectData.phone)}
+                                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-400 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                                        >
+                                            <MdPhoneEnabled className="w-4 h-4" />
+                                        </button>
+                                    )}
+                                {hasPermission(PERMISSIONS.smsProspects) &&
+                                    ProspectData.status !== SALES_STATUS.DELETE ? (
+                                    <button
+                                        onClick={() => openMessageModal()}
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-400 hover:bg-yellow-700 text-white rounded-lg transition-colors"
+                                    >
+                                        <MdSms className="w-4 h-4" />
+                                    </button>
+                                ) : (
+                                    ""
+                                )}
+                                {hasPermission(PERMISSIONS.emailProspects) &&
+                                    ProspectData.status !== SALES_STATUS.DELETE ? (
+                                    <button
+                                        onClick={() => openMailModal()}
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-green-400 hover:bg-green-800 text-white rounded-lg transition-colors"
+                                    >
+                                        <MdMailOutline />
+                                    </button>
+                                ) : (
+                                    <span className="inline-flex items-center gap-2 px-4 py-2 bg-green-400 opacity-60 text-white rounded-lg cursor-not-allowed">
+                                        <MdMailOutline />
+                                    </span>
+                                )}
 
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2">
-                            {hasPermission(PERMISSIONS.callProspects) &&
-                                ProspectData.status !== SALES_STATUS.DELETE ? (
-                                <Link
-                                    href={`/leads/update/${ProspectData.id}`}
-                                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                                >
-                                    <MdPhoneEnabled />
-                                </Link>
-                            ) : (
-                                <span className="inline-flex items-center gap-2 px-4 py-2 bg-blue-400 opacity-60 text-white rounded-lg cursor-not-allowed">
-                                    <MdPhoneEnabled />
-                                </span>
-                            )}
-                            {hasPermission(PERMISSIONS.smsProspects) &&
-                                ProspectData.status !== SALES_STATUS.DELETE ? (
-                                <Link
-                                    href={`/leads/update/${ProspectData.id}`}
-                                    className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-700 text-white rounded-lg transition-colors"
-                                >
-                                    <MdSms />
-                                </Link>
-                            ) : (
-                                <span className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-400 opacity-60 text-white rounded-lg cursor-not-allowed">
-                                    <MdSms />
-                                </span>
-                            )}
-                            {hasPermission(PERMISSIONS.emailProspects) &&
-                                ProspectData.status !== SALES_STATUS.DELETE ? (
-                                <Link
-                                    href={`/leads/update/${ProspectData.id}`}
-                                    className="inline-flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-700 text-white rounded-lg transition-colors"
-                                >
-                                    <MdMailOutline />
-                                </Link>
-                            ) : (
-                                <span className="inline-flex items-center gap-2 px-4 py-2 bg-green-400 opacity-60 text-white rounded-lg cursor-not-allowed">
-                                    <MdMailOutline />
-                                </span>
-                            )}
 
-                           
-                            {/* More Actions Dropdown */}
-                            <div className="relative group">
-                                <button className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-600 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded-lg transition-colors">
-                                    <IoEllipsisVertical className="w-4 h-4" />
-                                </button>
-                                <div className="hidden group-hover:block absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10 ">
-                                   
+                                {/* More Actions Dropdown */}
+                                <div className="relative group">
+                                    <button className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-600 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded-lg transition-colors">
+                                        <IoEllipsisVertical className="w-4 h-4" />
+                                    </button>
+                                    <div className="hidden group-hover:block absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10 ">
+
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <MetricCard
-                    icon={<IoBusinessOutline className="w-6 h-6" />}
-                    label="Company"
-                    value={ProspectData?.companyName || "—"}
-                    color="bg-blue-500"
-                />
-                <MetricCard
-                    icon={<IoCodeOutline className="w-5 h-5" />}
-                    label="Project Type"
-                    value={ProspectData?.projectType?.replace("_", " ") || "—"}
-                    color="bg-purple-500"
-                />
-                <MetricCard
-                    icon={<IoLocationOutline className="w-5 h-5" />}
-                    label="Location"
-                    value={ProspectData?.location?.city || "—"}
-                    color="bg-green-500"
-                />
-                <MetricCard
-                    icon={<IoCheckmarkCircle className="w-5 h-5" />}
-                    label="Is Assigned"
-                    value={ProspectData?.assignTo?.id ? "Yes" : "No"}
-                    color={ProspectData?.assignTo?.id ? "bg-emerald-500" : "bg-gray-500"}
-                />
-            </div>
-
-            <div className="bg-white dark:bg-gray-700 mb-6 rounded-xl border border-gray-200 dark:border-gray-700">
-                <div className="flex gap-8 overflow-x-auto px-6 py-3.5">
-                    {(["overview", "contact", "activity"] as const).map((tab) => (
-                        <button
-                            key={tab}
-                            onClick={() => setActiveTab(tab)}
-                            className={`pb-1.5 px-1 font-medium transition-colors cursor-pointer relative whitespace-nowrap ${activeTab === tab
-                                ? "text-blue-600 dark:text-blue-400"
-                                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                                }`}
-                        >
-                            {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                            {activeTab === tab && (
-                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400"></div>
-                            )}
-                        </button>
-                    ))}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <MetricCard
+                        icon={<IoBusinessOutline className="w-6 h-6" />}
+                        label="Company"
+                        value={ProspectData?.companyName || "—"}
+                        color="bg-blue-500"
+                    />
+                    <MetricCard
+                        icon={<IoCodeOutline className="w-5 h-5" />}
+                        label="Project Type"
+                        value={ProspectData?.projectType?.replace("_", " ") || "—"}
+                        color="bg-purple-500"
+                    />
+                    <MetricCard
+                        icon={<IoLocationOutline className="w-5 h-5" />}
+                        label="Location"
+                        value={ProspectData?.location?.city || "—"}
+                        color="bg-green-500"
+                    />
+                    <MetricCard
+                        icon={<IoCheckmarkCircle className="w-5 h-5" />}
+                        label="Is Assigned"
+                        value={ProspectData?.assignTo?.id ? "Yes" : "No"}
+                        color={ProspectData?.assignTo?.id ? "bg-emerald-500" : "bg-gray-500"}
+                    />
                 </div>
-            </div>
 
-            <div className="flex gap-6">
-                <div className="w-2/3 flex flex-col gap-6">
-                    {activeTab === "overview" && (
-                        <>
-                            <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-                                <div className="flex items-center gap-2 mb-6">
-                                    <IoInformationCircleOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                        Prospect Information
-                                    </h3>
+                <div className="bg-white dark:bg-gray-700 mb-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div className="flex gap-8 overflow-x-auto px-6 py-3.5">
+                        {(["overview", "contact", "activity"] as const).map((tab) => (
+                            <button
+                                key={tab}
+                                onClick={() => setActiveTab(tab)}
+                                className={`pb-1.5 px-1 font-medium transition-colors cursor-pointer relative whitespace-nowrap ${activeTab === tab
+                                    ? "text-blue-600 dark:text-blue-400"
+                                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                                    }`}
+                            >
+                                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                                {activeTab === tab && (
+                                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400"></div>
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="flex gap-6">
+                    <div className="w-2/3 flex flex-col gap-6">
+                        {activeTab === "overview" && (
+                            <>
+                                <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                                    <div className="flex items-center gap-2 mb-6">
+                                        <IoInformationCircleOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                            Prospect Information
+                                        </h3>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        <InfoItem
+                                            icon={<IoInformationCircleOutline className="w-4 h-4" />}
+                                            label="Source"
+                                            value={ProspectData?.source}
+                                        />
+                                        <InfoItem
+                                            icon={<IoCodeOutline className="w-4 h-4" />}
+                                            label="Project Type"
+                                            value={ProspectData?.projectType?.replace("_", " ")}
+                                        />
+                                        <InfoItem
+                                            icon={<FaIndustry className="w-4 h-4" />}
+                                            label="Industry"
+                                            value={(ProspectData?.industry).join(", ") || "—"}
+                                        />
+                                        <InfoItem
+                                            icon={<IoLanguageOutline className="w-4 h-4" />}
+                                            label="Language"
+                                            value={ProspectData?.location?.country || "—"}
+                                        />
+                                        <InfoItem
+                                            icon={<IoFlagOutline className="w-4 h-4" />}
+                                            label="Priority"
+                                            value={ProspectData?.priority}
+                                        />
+                                        <InfoItem
+                                            icon={<IoStatsChartOutline className="w-4 h-4" />}
+                                            label="Status"
+                                            value={ProspectData?.status}
+                                        />
+                                    </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    <InfoItem
-                                        icon={<IoInformationCircleOutline className="w-4 h-4" />}
-                                        label="Source"
-                                        value={ProspectData?.source}
-                                    />
-                                    <InfoItem
-                                        icon={<IoCodeOutline className="w-4 h-4" />}
-                                        label="Project Type"
-                                        value={ProspectData?.projectType?.replace("_", " ")}
-                                    />
-                                    <InfoItem
-                                        icon={<FaIndustry className="w-4 h-4" />}
-                                        label="Industry"
-                                        value={(ProspectData?.industry).join(", ") || "—"}
-                                    />
-                                    <InfoItem
-                                        icon={<IoLanguageOutline className="w-4 h-4" />}
-                                        label="Language"
-                                        value={ProspectData?.location?.country || "—"}
-                                    />
-                                    <InfoItem
-                                        icon={<IoFlagOutline className="w-4 h-4" />}
-                                        label="Priority"
-                                        value={ProspectData?.priority}
-                                    />
-                                    <InfoItem
-                                        icon={<IoStatsChartOutline className="w-4 h-4" />}
-                                        label="Status"
-                                        value={ProspectData?.status}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Employee Details */}
-                            <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                                {/* Employee Details */}
+                                {/* {
+                                ProspectData?.employeeRole && ProspectData?.employeeSeniority && (
+                                    <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
                                 <div className="flex items-center gap-2 mb-6">
                                     <IoBriefcaseOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -396,7 +426,7 @@ const ProspectViewPage = (): JSX.Element => {
                                     </h3>
                                 </div>
 
-                                {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <InfoItem
                                         icon={<IoBriefcaseOutline className="w-4 h-4" />}
                                         label="Role"
@@ -407,43 +437,46 @@ const ProspectViewPage = (): JSX.Element => {
                                         label="Seniority"
                                         value={ProspectData?.employeeSeniority || "—"}
                                     />
-                                </div> */}
+                                </div>
                             </div>
+                                )
+                            } */}
 
-                            {hasPermission(PERMISSIONS.viewAssignProspectInformation) && <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-                                <div className="flex items-center gap-2 mb-6">
-                                    <MdOutlineLeaderboard className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                        Prospect Assign Information
-                                    </h3>
-                                </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {ProspectData?.assignTo ? (() => {
-                                        const isAssigned = ProspectData.assignedAt
-                                            ? formatDate(ProspectData.assignedAt)
-                                            : "-";
+                                {hasPermission(PERMISSIONS.viewAssignProspectInformation) && <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                                    <div className="flex items-center gap-2 mb-6">
+                                        <MdOutlineLeaderboard className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                            Prospect Assign Information
+                                        </h3>
+                                    </div>
 
-                                        return (
-                                            <>
-                                                <InfoItem
-                                                    icon={<IoBriefcaseOutline className="w-4 h-4" />}
-                                                    label="Assign to"
-                                                    value={`${ProspectData.assignTo.firstName} ${ProspectData.assignTo.lastName}` || "—"}
-                                                />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {ProspectData?.assignTo ? (() => {
+                                            const isAssigned = ProspectData.assignedAt
+                                                ? formatDate(ProspectData.assignedAt)
+                                                : "-";
 
-                                                <InfoItem
-                                                    icon={<IoStatsChartOutline className="w-4 h-4" />}
-                                                    label="Assign at"
-                                                    value={isAssigned || "—"}
-                                                />
-                                            </>
-                                        );
-                                    })() : null}
-                                </div>
-                            </div>}
+                                            return (
+                                                <>
+                                                    <InfoItem
+                                                        icon={<IoBriefcaseOutline className="w-4 h-4" />}
+                                                        label="Assign to"
+                                                        value={`${ProspectData.assignTo.firstName} ${ProspectData.assignTo.lastName}` || "—"}
+                                                    />
 
-                            {/* {(ProspectData?.message || ProspectData?.membershipNotes) && (
+                                                    <InfoItem
+                                                        icon={<IoStatsChartOutline className="w-4 h-4" />}
+                                                        label="Assign at"
+                                                        value={isAssigned || "—"}
+                                                    />
+                                                </>
+                                            );
+                                        })() : null}
+                                    </div>
+                                </div>}
+
+                                {/* {(ProspectData?.message || ProspectData?.membershipNotes) && (
                                 <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
                                     <div className="flex items-center gap-2 mb-6">
                                         <IoChatbubbleOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -482,162 +515,418 @@ const ProspectViewPage = (): JSX.Element => {
                                     </div>
                                 </div>
                             )} */}
-                        </>
-                    )}
+                            </>
+                        )}
 
-                    {/* Contact Tab */}
-                    {activeTab === "contact" && (
-                        <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-                            <div className="flex items-center gap-2 mb-6">
-                                <IoPersonOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                    Contact Information
-                                </h3>
-                            </div>
+                        {/* Contact Tab */}
+                        {activeTab === "contact" && (
+                            <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                                <div className="flex items-center gap-2 mb-6">
+                                    <IoPersonOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                        Contact Information
+                                    </h3>
+                                </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <InfoItem
-                                    icon={<IoPersonOutline className="w-4 h-4" />}
-                                    label="Full Name"
-                                    value={ProspectData?.fullName}
-                                />
-                                <MaskEmailField label="Email" value={ProspectData?.email} />
-                                <MaskPhoneField label="Phone" value={ProspectData?.phone} />
-                                <InfoItem
-                                    icon={<IoBusinessOutline className="w-4 h-4" />}
-                                    label="Company"
-                                    value={ProspectData?.companyName || "—"}
-                                />
-                                <InfoItem
-                                    icon={<IoLocationOutline className="w-4 h-4" />}
-                                    label="City"
-                                    value={ProspectData?.location?.city || "—"}
-                                />
-                                <InfoItem
-                                    icon={<IoGlobeOutline className="w-4 h-4" />}
-                                    label="Country"
-                                    value={ProspectData?.location?.country || "—"}
-                                />
-                                <InfoItem
-                                    icon={<IoLocationOutline className="w-4 h-4" />}
-                                    label="Postal Code"
-                                    value={ProspectData?.location.zipcode || "—"}
-                                />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <InfoItem
+                                        icon={<IoPersonOutline className="w-4 h-4" />}
+                                        label="Full Name"
+                                        value={ProspectData?.fullName}
+                                    />
+                                    <MaskEmailField label="Email" value={ProspectData?.email} />
+                                    <MaskPhoneField label="Phone" value={ProspectData?.phone} />
+                                    <InfoItem
+                                        icon={<IoBusinessOutline className="w-4 h-4" />}
+                                        label="Company"
+                                        value={ProspectData?.companyName || "—"}
+                                    />
+                                    <InfoItem
+                                        icon={<IoLocationOutline className="w-4 h-4" />}
+                                        label="City"
+                                        value={ProspectData?.location?.city || "—"}
+                                    />
+                                    <InfoItem
+                                        icon={<IoGlobeOutline className="w-4 h-4" />}
+                                        label="Country"
+                                        value={ProspectData?.location?.country || "—"}
+                                    />
+                                    <InfoItem
+                                        icon={<IoLocationOutline className="w-4 h-4" />}
+                                        label="Postal Code"
+                                        value={ProspectData?.location.zipcode || "—"}
+                                    />
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {/* Activity Tab */}
-                    {activeTab === "activity" && (
-                        <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-                            <div className="flex items-center gap-2 mb-6">
-                                <MdTimeline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                    Activity Timeline
-                                </h3>
+                        {/* Activity Tab */}
+                        {activeTab === "activity" && (
+                            <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                                <div className="flex items-center gap-2 mb-6">
+                                    <MdTimeline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                        Activity Timeline
+                                    </h3>
+                                </div>
+                                <div className="text-center py-12">
+                                    <IoInformationCircleOutline className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
+                                    <p className="text-gray-500 dark:text-gray-400">
+                                        Activity timeline coming soon
+                                    </p>
+                                </div>
                             </div>
-                            <div className="text-center py-12">
-                                <IoInformationCircleOutline className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
-                                <p className="text-gray-500 dark:text-gray-400">
-                                    Activity timeline coming soon
-                                </p>
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* Sidebar */}
-                <div className="w-1/3 flex flex-col gap-6">
-                    {/* Creator Information */}
-                    {ProspectData.createdBy && (
-                        <div className="bg-linear-to-br from-blue-500 to-blue-600 p-6 rounded-xl border border-blue-400 shadow-lg">
-                            <div className="flex items-center gap-2 mb-4">
-                                <FaRegUser className="text-xl text-white" />
-                                <h2 className="text-white font-semibold text-xl">
-                                    Creator Information
-                                </h2>
-                            </div>
-                            <div className="border-b border-white/30 w-full mb-4"></div>
-                            <div className="space-y-4">
-                                <ProfileField
-                                    icon={<IoPersonOutline className="w-4 h-4" />}
-                                    label="Name"
-                                    value={`${ProspectData.createdBy?.firstName} ${ProspectData.createdBy?.lastName ?? ""
-                                        }`}
-                                />
-                                <ProfileField
-                                    icon={<IoMailOutline className="w-4 h-4" />}
-                                    label="Email"
-                                    value={ProspectData.createdBy?.email}
-                                />
-                                <ProfileField
-                                    icon={<IoCallOutline className="w-4 h-4" />}
-                                    label="Phone"
-                                    value={ProspectData.createdBy?.phone}
-                                />
-                                <ProfileField
-                                    icon={<IoBusinessOutline className="w-4 h-4" />}
-                                    label="Company"
-                                    value={ProspectData.createdBy?.company || "—"}
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Quick Stats */}
-                    <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                            Quick Stats
-                        </h3>
-                        <div className="space-y-3">
-                            <StatItem
-                                label="In Deal"
-                                value={ProspectData.assignTo?.id ? "Yes" : "No"}
-                                color={
-                                    ProspectData.assignTo?.id
-                                        ? "text-green-600 dark:text-green-400"
-                                        : "text-gray-600 dark:text-gray-400"
-                                }
-                            />
-                            <StatItem
-                                label="Created"
-                                value={formatDate(ProspectData.createdAt)}
-                                color="text-gray-600 dark:text-gray-400"
-                            />
-                            <StatItem
-                                label="Last Updated"
-                                value={formatDate(ProspectData.updatedAt)}
-                                color="text-gray-600 dark:text-gray-400"
-                            />
-                        </div>
+                        )}
                     </div>
 
-                    {/* Location Info */}
-                    {(ProspectData?.location?.country || ProspectData?.location?.zipcode) && (
-                        <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-                            <div className="flex items-center gap-2 mb-4">
-                                <IoLocationOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                    Location Details
-                                </h3>
+                    {/* Sidebar */}
+                    <div className="w-1/3 flex flex-col gap-6 overflow-hidden">
+                        {/* Creator Information */}
+                        {ProspectData.createdBy && (
+                            <div className="bg-linear-to-br from-blue-500 to-blue-600 p-6 rounded-xl border border-blue-400 shadow-lg ">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <FaRegUser className="text-xl text-white" />
+                                    <h2 className="text-white font-semibold text-xl">
+                                        Creator Information
+                                    </h2>
+                                </div>
+                                <div className="border-b border-white/30 w-full mb-4"></div>
+                                <div className="space-y-4">
+                                    <ProfileField
+                                        icon={<IoPersonOutline className="w-4 h-4" />}
+                                        label="Name"
+                                        value={`${ProspectData.createdBy?.firstName} ${ProspectData.createdBy?.lastName ?? ""
+                                            }`}
+                                    />
+                                    <ProfileField
+                                        icon={<IoMailOutline className="w-4 h-4" />}
+                                        label="Email"
+                                        value={ProspectData.createdBy?.email}
+                                    />
+                                    <ProfileField
+                                        icon={<IoCallOutline className="w-4 h-4" />}
+                                        label="Phone"
+                                        value={ProspectData.createdBy?.phone}
+                                    />
+                                    <ProfileField
+                                        icon={<IoBusinessOutline className="w-4 h-4" />}
+                                        label="Company"
+                                        value={ProspectData.createdBy?.company || "—"}
+                                    />
+                                </div>
                             </div>
+                        )}
+
+                        {/* Quick Stats */}
+                        <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                Quick Stats
+                            </h3>
                             <div className="space-y-3">
                                 <StatItem
-                                    label="Country"
-                                    value={ProspectData?.location?.country ? ProspectData?.location?.country : "-"}
+                                    label="In Deal"
+                                    value={ProspectData.assignTo?.id ? "Yes" : "No"}
+                                    color={
+                                        ProspectData.assignTo?.id
+                                            ? "text-green-600 dark:text-green-400"
+                                            : "text-gray-600 dark:text-gray-400"
+                                    }
+                                />
+                                <StatItem
+                                    label="Created"
+                                    value={formatDate(ProspectData.createdAt)}
                                     color="text-gray-600 dark:text-gray-400"
                                 />
                                 <StatItem
-                                    label="Postal Code"
-                                    value={ProspectData?.location?.zipcode ? ProspectData?.location?.zipcode : null}
+                                    label="Last Updated"
+                                    value={formatDate(ProspectData.updatedAt)}
                                     color="text-gray-600 dark:text-gray-400"
                                 />
                             </div>
                         </div>
-                    )}
+
+                        {/* Location Info */}
+                        {(ProspectData?.location?.country || ProspectData?.location?.zipcode) && (
+                            <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <IoLocationOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                        Location Details
+                                    </h3>
+                                </div>
+                                <div className="space-y-3">
+                                    <StatItem
+                                        label="Country"
+                                        value={ProspectData?.location?.country ? ProspectData?.location?.country : "-"}
+                                        color="text-gray-600 dark:text-gray-400"
+                                    />
+                                    <StatItem
+                                        label="Postal Code"
+                                        value={ProspectData?.location?.zipcode ? ProspectData?.location?.zipcode : null}
+                                        color="text-gray-600 dark:text-gray-400"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
-        </div>
+
+            {/* Modals */}
+            {showCallModal && callPhone && (
+                <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
+
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md">
+
+                        {/* HEADER */}
+                        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5 rounded-t-2xl flex items-center justify-between">
+
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                                    <MdCall className="w-6 h-6 text-white" />
+                                </div>
+
+                                <div>
+                                    <h3 className="text-lg font-bold text-white">Start Call</h3>
+                                    <p className="text-sm text-blue-100">Call this phone number</p>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={closeCallModal}
+                                className="w-9 h-9 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center text-white"
+                            >
+                                <IoClose className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* BODY */}
+                        <div className="p-6 space-y-6">
+
+                            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-5 border border-blue-100 dark:border-blue-800 text-center">
+
+                                <p className="text-xs font-semibold text-gray-500 uppercase mb-2">
+                                    Phone Number
+                                </p>
+
+                                <p className="text-2xl font-bold text-gray-900 dark:text-white font-mono">
+                                    {callPhone}
+                                </p>
+
+                            </div>
+
+                            <div className="flex justify-center">
+                                <button
+                                    className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-lg"
+                                >
+                                    <MdCall className="w-5 h-5" />
+                                    Start Call
+                                </button>
+                            </div>
+
+                        </div>
+
+                        {/* FOOTER */}
+                        <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700/40 rounded-b-2xl flex justify-end">
+
+                            <button
+                                onClick={closeCallModal}
+                                className="px-5 py-2 bg-white dark:bg-gray-700 border rounded-lg"
+                            >
+                                Cancel
+                            </button>
+
+                        </div>
+
+                    </div>
+                </div>
+            )}
+
+            {showMessageModal && callPhone && (
+                <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
+
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md">
+
+                        {/* HEADER */}
+                        <div className="bg-gradient-to-r from-yellow-500 to-amber-500 px-6 py-5 rounded-t-2xl flex items-center justify-between">
+
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                                    <MdMessage className="w-6 h-6 text-white" />
+                                </div>
+
+                                <div>
+                                    <h3 className="text-lg font-bold text-white">Send Message</h3>
+                                    <p className="text-sm text-yellow-100">Send SMS to this number</p>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={closeMessageModal}
+                                className="w-9 h-9 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center text-white"
+                            >
+                                <IoClose className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* BODY */}
+                        <div className="p-6 space-y-5">
+
+                            {/* PHONE NUMBER */}
+                            <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4 border border-yellow-100 dark:border-yellow-800 text-center">
+
+                                <p className="text-xs font-semibold text-gray-500 uppercase mb-2">
+                                    Phone Number
+                                </p>
+
+                                <p className="text-xl font-bold text-gray-900 dark:text-white font-mono">
+                                    {callPhone}
+                                </p>
+
+                            </div>
+
+                            {/* MESSAGE INPUT */}
+                            <div>
+                                <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">
+                                    Message
+                                </label>
+
+                                <textarea
+                                    rows={4}
+                                    value={messageText}
+                                    onChange={(e) => setMessageText(e.target.value)}
+                                    placeholder="Type your message..."
+                                    className="w-full mt-2 p-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-yellow-500 focus:outline-none dark:bg-gray-700"
+                                />
+                            </div>
+
+                            {/* SEND BUTTON */}
+                            <div className="flex justify-center">
+                                <button className="flex items-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl font-semibold shadow-lg">
+                                    <MdMessage className="w-5 h-5" />
+                                    Send Message
+                                </button>
+                            </div>
+
+                        </div>
+
+                        {/* FOOTER */}
+                        <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700/40 rounded-b-2xl flex justify-end">
+
+                            <button
+                                onClick={closeMessageModal}
+                                className="px-5 py-2 bg-white dark:bg-gray-700 border rounded-lg"
+                            >
+                                Cancel
+                            </button>
+
+                        </div>
+
+                    </div>
+                </div>
+            )}
+
+            {showMailModal && callPhone && (
+                <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
+
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg">
+
+                        {/* HEADER */}
+                        <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-5 rounded-t-2xl flex items-center justify-between">
+
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                                    <MdEmail className="w-6 h-6 text-white" />
+                                </div>
+
+                                <div>
+                                    <h3 className="text-lg font-bold text-white">Send Email</h3>
+                                    <p className="text-sm text-green-100">Compose and send an email</p>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={closeMailModal}
+                                className="w-9 h-9 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center text-white"
+                            >
+                                <IoClose className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* BODY */}
+                        <div className="p-6 space-y-5">
+
+                            {/* EMAIL INPUT */}
+                            <div>
+                                <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">
+                                    Email Address
+                                </label>
+
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="example@email.com"
+                                    className="w-full mt-2 p-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 focus:outline-none dark:bg-gray-700"
+                                />
+                            </div>
+
+                            {/* SUBJECT */}
+                            <div>
+                                <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">
+                                    Subject
+                                </label>
+
+                                <input
+                                    type="text"
+                                    value={subject}
+                                    onChange={(e) => setSubject(e.target.value)}
+                                    placeholder="Email subject"
+                                    className="w-full mt-2 p-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 focus:outline-none dark:bg-gray-700"
+                                />
+                            </div>
+
+                            {/* MESSAGE */}
+                            <div>
+                                <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">
+                                    Message
+                                </label>
+
+                                <textarea
+                                    rows={5}
+                                    value={mailText}
+                                    onChange={(e) => setMailText(e.target.value)}
+                                    placeholder="Write your email message..."
+                                    className="w-full mt-2 p-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 focus:outline-none dark:bg-gray-700"
+                                />
+                            </div>
+
+                            {/* SEND BUTTON */}
+                            <div className="flex justify-center">
+                                <button className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold shadow-lg">
+                                    <MdEmail className="w-5 h-5" />
+                                    Send Email
+                                </button>
+                            </div>
+
+                        </div>
+
+                        {/* FOOTER */}
+                        <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700/40 rounded-b-2xl flex justify-end">
+
+                            <button
+                                onClick={closeMailModal}
+                                className="px-5 py-2 bg-white dark:bg-gray-700 border rounded-lg"
+                            >
+                                Cancel
+                            </button>
+
+                        </div>
+
+                    </div>
+                </div>
+            )}
+        </>
     );
 };
 
