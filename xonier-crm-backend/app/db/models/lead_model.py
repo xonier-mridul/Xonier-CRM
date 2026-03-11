@@ -30,7 +30,7 @@ class LeadsModel(Document):
     
     priority: Optional[PRIORITY] = PRIORITY.MEDIUM.value
     source: str 
-    projectType: str = None
+    projectType: Optional[str] = None
     createdBy: Link[UserModel]
     status: SALES_STATUS = SALES_STATUS.NEW
 

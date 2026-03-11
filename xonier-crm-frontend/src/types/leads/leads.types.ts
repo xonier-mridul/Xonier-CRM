@@ -10,7 +10,7 @@ export interface Lead {
   phone: string;
 
   priority: PRIORITY;
-  source: SOURCE;
+  source: string;
   projectType: PROJECT_TYPES;
   status: SALES_STATUS;
   leadSource: LEAD_SOURCE_TYPE
@@ -49,7 +49,7 @@ export interface LeadPayload {
   phone?: string | null;
 
   priority?: PRIORITY | "";
-  source?: SOURCE | "";
+  source?: string | "";
   projectType?: string | "";
   status?: SALES_STATUS | "";
 
