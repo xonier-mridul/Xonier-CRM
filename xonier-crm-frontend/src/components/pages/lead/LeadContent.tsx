@@ -505,7 +505,7 @@ const LeadContent = (): JSX.Element => {
           )}
 
           <td className="p-4">
-            <Link href={`/leads/view/${item.id}`} className="text-sm font-medium hover:text-blue-500 transition-colors">{item.lead_id}</Link>
+            <Link href={`/leads/view/${item.id}`} className="text-sm font-medium hover:text-blue-500 transition-colors text-nowrap">{item.lead_id}</Link>
           </td>
           <td className="flex gap-1 flex-col p-4">
             <h4 className="capitalize font-medium text-sm">{item.fullName}</h4>

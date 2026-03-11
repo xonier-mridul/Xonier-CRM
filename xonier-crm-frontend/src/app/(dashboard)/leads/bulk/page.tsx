@@ -135,7 +135,7 @@ const BulkLeadUpload = (): JSX.Element => {
 
     if (!userFormData?.selectedFormFields) return errors;
 
-    const optionalFields = new Set(['phone', 'priority', 'source', 'projectType', 'country']);
+    const optionalFields = new Set(['phone', 'priority', 'projectType', 'country']);
 
     data.forEach((lead, index) => {
       const rowNumber = startIndex + index + 2;
@@ -177,7 +177,7 @@ const BulkLeadUpload = (): JSX.Element => {
               break;
 
             case 'select':
-              if (field.options && !optionalFields.has(field.key)) {
+              if (field.options && !optionalFields.has(field.key) && field.key !== 'source') {
                 const validValues = field.options.map(opt => opt.value);
                 if (!validValues.includes(String(value))) {
                   errors.push({
@@ -389,7 +389,7 @@ const BulkLeadUpload = (): JSX.Element => {
                   break;
 
                 case 'source':
-                  transformedLead.source = value as SOURCE;
+                  transformedLead.source = String(value);
                   break;
 
                 case 'projectType':
@@ -651,7 +651,7 @@ const BulkLeadUpload = (): JSX.Element => {
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-100 uppercase tracking-wider"
                       >
                         {field.name}
-                        {field.required && !['phone', 'priority', 'source', 'projectType', "country"].includes(field.key) && (
+                        {field.required && !['phone', 'priority', 'projectType', "country"].includes(field.key) && (
                           <span className="text-red-500 ml-1">*</span>
                         )}
                       </th>
