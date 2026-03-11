@@ -652,10 +652,12 @@ class LeadService:
                 query.update({"priority": filters["priority"]})
 
             if "source" in filters:
-                query.update({"source": filters["source"]})
+                query.update({"source": {"$regex": filters["source"], "$options": "i"}})
 
             if "type" in filters:
-                query.update({"projectType": filters["type"]})
+                query.update({"projectType": {"$regex": filters["type"], "$options": "i"}})
+
+                
 
             if is_admin or is_manager:
                 if "userid" in filters:
