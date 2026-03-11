@@ -16,7 +16,9 @@ class TelephoneNumbersModel(Document):
     status: PHONE_NUMBER_STATUS = PHONE_NUMBER_STATUS.ACTIVE
     createdBy: Link["UserModel"]          
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updatedAt: Optional[datetime] = None
     deletedAt: Optional[datetime] = None
+    # updatedBy: Optional[Link["UserModel"]] = None
     deletedBy: Optional[Link["UserModel"]] = None  
 
     class Settings:
