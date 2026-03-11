@@ -29,7 +29,7 @@ class LeadsModel(Document):
     hashedPhone: Optional[str] = None
     
     priority: Optional[PRIORITY] = PRIORITY.MEDIUM.value
-    source: SOURCE = SOURCE.OTHER.value
+    source: str 
     projectType: str = None
     createdBy: Link[UserModel]
     status: SALES_STATUS = SALES_STATUS.NEW

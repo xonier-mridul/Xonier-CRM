@@ -117,7 +117,11 @@ const page = () => {
         sessionStorage.removeItem("loginPassword");
         
         dispatch(login(result.data.data))
-        router.push("/dashboard")
+        // setTimeout(() => {
+        //   router.push("/dashboard")
+        // }, 300);
+        window.location.href = "/dashboard";
+        
       }
     } catch (error: unknown) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);

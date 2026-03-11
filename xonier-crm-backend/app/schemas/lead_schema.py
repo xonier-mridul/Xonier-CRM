@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator, Field, EmailStr
+from pydantic import BaseModel, field_validator, Field, EmailStr, model_validator
 from typing import Optional, List
 import phonenumbers
 from app.core.enums import (
@@ -19,7 +19,7 @@ class LeadBaseSchema(BaseModel):
     phone: Optional[str] = None
 
     priority: Optional[PRIORITY] = PRIORITY.MEDIUM.value
-    source: Optional[SOURCE] = SOURCE.OTHER
+    source: str 
     projectType:Optional[str] = None
 
     companyName: Optional[str] = None
@@ -75,7 +75,7 @@ class LeadsCreateSchema(LeadBaseSchema):
     phone: Optional[str] = None
 
     priority: Optional[PRIORITY] = PRIORITY.MEDIUM.value
-    source: Optional[SOURCE] = SOURCE.OTHER
+    source: str
     projectType:Optional[str] = None
 
     companyName: Optional[str] = None
@@ -91,6 +91,16 @@ class LeadsCreateSchema(LeadBaseSchema):
 
     message: Optional[str] = None
     membershipNotes: Optional[str] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_fields(cls, value):
+        sourcef = value.get("source")
+
+        if not sourcef:
+            raise AppException(422, "source field must required")
+        
+        return value
 
 
 class CreateBulkLeadSchema(BaseModel):
