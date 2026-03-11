@@ -67,8 +67,8 @@ class DealService:
                     raise AppException(404, "Lead not found against lead id")
                 
                 lead.inDeal = True
-                lead.status = SALES_STATUS.WON
-
+                lead.status = SALES_STATUS.WON.value
+                print("lead: ", lead)
                 await lead.save(session=session)
 
                 activity = activity_payload(userId=PydanticObjectId(createdBy), entityType=ACTIVITY_ENTITY_TYPE.DEAL, entityId=PydanticObjectId(deal.id), action=ACTIVITY_ACTION.CREATED, title="create deal", metadata={"dealId": deal.deal_id, "leadName": deal.dealName})

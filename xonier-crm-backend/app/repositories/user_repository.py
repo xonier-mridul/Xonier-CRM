@@ -20,6 +20,13 @@ class UserRepository(BaseRepository):
         return result
     
 
+    async def find_user_with_phone(self, phoneId: str, populate: Optional[List[str]] = None, session: Optional[AsyncIOMotorClientSession]=None):
+
+        result = await self.find(filter={"assignedPhoneNumber.$id": PydanticObjectId(phoneId)}, populate=populate, session=session)
+
+        return result
+    
+
     
     async def check_is_manager(self, userId: PydanticObjectId):
         user = await self.find_by_id(id=userId, populate=["userRole"])
