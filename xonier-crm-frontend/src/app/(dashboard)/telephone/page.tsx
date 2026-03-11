@@ -243,10 +243,15 @@ const Page = () => {
   };
 
   const handleUpdatePhone = async () => {
+    if (!selectedPhone) {
+      toast.error("No phone selected");
+      return;
+    }
+
     try {
-      // await updatePhoneAPI(selectedPhone.id, {
-      //   status: selectedPhone.status,
-      // });
+      await TelephoneServices.update(selectedPhone.id, {
+        status: selectedPhone.status,
+      });
 
       toast.success("Phone status updated!");
       setShowEditModal(false);
@@ -263,8 +268,7 @@ const Page = () => {
     if (!phoneToDelete) return;
 
     try {
-      // await TelephoneServices.delete(phoneToDelete.id);
-
+      await TelephoneServices.delete(phoneToDelete.id);
       toast.success("Phone number deleted successfully");
       closeDeleteModal();
       getTelephonesNumber();

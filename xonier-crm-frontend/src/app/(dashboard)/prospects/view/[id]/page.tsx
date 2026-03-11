@@ -51,7 +51,7 @@ import { FaRegUser, FaIndustry } from "react-icons/fa";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import Skeleton from "react-loading-skeleton";
-import Link from "next/link";
+import RichEditor from "@/src/components/pages/prospect/RichEditor";
 import prospectService from "@/src/services/prospect.service";
 
 const ProspectViewPage = (): JSX.Element => {
@@ -679,7 +679,7 @@ const ProspectViewPage = (): JSX.Element => {
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md">
 
                         {/* HEADER */}
-                        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5 rounded-t-2xl flex items-center justify-between">
+                        <div className="bg-linear-to-r from-blue-600 to-indigo-600 px-6 py-5 rounded-t-2xl flex items-center justify-between">
 
                             <div className="flex items-center gap-3">
                                 <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -727,16 +727,7 @@ const ProspectViewPage = (): JSX.Element => {
                         </div>
 
                         {/* FOOTER */}
-                        <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700/40 rounded-b-2xl flex justify-end">
 
-                            <button
-                                onClick={closeCallModal}
-                                className="px-5 py-2 bg-white dark:bg-gray-700 border rounded-lg"
-                            >
-                                Cancel
-                            </button>
-
-                        </div>
 
                     </div>
                 </div>
@@ -748,7 +739,7 @@ const ProspectViewPage = (): JSX.Element => {
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md">
 
                         {/* HEADER */}
-                        <div className="bg-gradient-to-r from-yellow-500 to-amber-500 px-6 py-5 rounded-t-2xl flex items-center justify-between">
+                        <div className="bg-linear-to-r from-yellow-500 to-amber-500 px-6 py-5 rounded-t-2xl flex items-center justify-between">
 
                             <div className="flex items-center gap-3">
                                 <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -811,16 +802,6 @@ const ProspectViewPage = (): JSX.Element => {
                         </div>
 
                         {/* FOOTER */}
-                        <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700/40 rounded-b-2xl flex justify-end">
-
-                            <button
-                                onClick={closeMessageModal}
-                                className="px-5 py-2 bg-white dark:bg-gray-700 border rounded-lg"
-                            >
-                                Cancel
-                            </button>
-
-                        </div>
 
                     </div>
                 </div>
@@ -832,7 +813,7 @@ const ProspectViewPage = (): JSX.Element => {
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg">
 
                         {/* HEADER */}
-                        <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-5 rounded-t-2xl flex items-center justify-between">
+                        <div className="bg-linear-to-r from-green-600 to-emerald-600 px-6 py-5 rounded-t-2xl flex items-center justify-between">
 
                             <div className="flex items-center gap-3">
                                 <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -892,13 +873,9 @@ const ProspectViewPage = (): JSX.Element => {
                                     Message
                                 </label>
 
-                                <textarea
-                                    rows={5}
-                                    value={mailText}
-                                    onChange={(e) => setMailText(e.target.value)}
-                                    placeholder="Write your email message..."
-                                    className="w-full mt-2 p-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 focus:outline-none dark:bg-gray-700"
-                                />
+                                <div className="mt-2">
+                                    <RichEditor value={mailText} onChange={setMailText} />
+                                </div>
                             </div>
 
                             {/* SEND BUTTON */}
@@ -912,16 +889,6 @@ const ProspectViewPage = (): JSX.Element => {
                         </div>
 
                         {/* FOOTER */}
-                        <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700/40 rounded-b-2xl flex justify-end">
-
-                            <button
-                                onClick={closeMailModal}
-                                className="px-5 py-2 bg-white dark:bg-gray-700 border rounded-lg"
-                            >
-                                Cancel
-                            </button>
-
-                        </div>
 
                     </div>
                 </div>
