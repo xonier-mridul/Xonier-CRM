@@ -23,4 +23,5 @@ export interface Message {
   createdAt: string;
   updatedAt: string;
   isDeleted: boolean;
+  conversion_id : string | null;
 }
