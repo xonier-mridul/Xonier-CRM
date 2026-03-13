@@ -743,6 +743,26 @@ class PHONE_NUMBER_STATUS(str, Enum):
 
 
 
+class MESSAGE_DIRECTION(str, Enum):
+    OUTBOUND = "outbound"      # CRM → Customer
+    INBOUND = "inbound"        # Customer → CRM
+
+class MESSAGE_STATUS(str, Enum):
+    QUEUED = "queued"
+    SENT = "sent"
+    DELIVERED = "delivered"
+    FAILED = "failed"
+    UNDELIVERED = "undelivered"
+    RECEIVED = "received"
+    READ = "read"
+
+class MESSAGE_CHANNEL(str, Enum):
+    TWILIO = "twilio"
+    MSG91 = "msg91"
+    FAST2SMS = "fast2sms"
+
+
+
 
 
 
