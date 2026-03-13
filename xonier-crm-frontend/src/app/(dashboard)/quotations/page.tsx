@@ -358,7 +358,7 @@ const page = (): JSX.Element => {
           </li>
         </ul>
         {currentTab === 1 && (
-          <table className="w-full rounded-xl overflow-hidden ">
+          <table className="w-full rounded-xl  ">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
@@ -508,7 +508,7 @@ const page = (): JSX.Element => {
           </table>
         )}
         {currentTab === 2 && (
-          <table className="w-full rounded-xl overflow-hidden ">
+          <table className="w-full rounded-xl ">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
@@ -656,7 +656,7 @@ const page = (): JSX.Element => {
           </table>
         )}
         {currentTab === 3 && (
-          <table className="w-full rounded-xl overflow-hidden ">
+          <table className="w-full rounded-xl ">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">

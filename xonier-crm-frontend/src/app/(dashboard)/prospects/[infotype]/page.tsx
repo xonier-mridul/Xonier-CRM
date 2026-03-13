@@ -22,10 +22,13 @@ import { maskEmail, maskPhone } from "@/src/app/utils/mask.utils";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import SensitiveField from "@/src/components/common/SensitiveField";
-import { features } from "process";
+import { useParams } from "next/navigation";
 
 const PAGE_LIMIT = 10;
 const LeadContent = (): JSX.Element => {
+  const params = useParams();
+  const info = params?.infotype as string;
+  console.log("info: ", info);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isFetchingMore, setIsFetchingMore] = useState<boolean>(false);
   const [leadData, setLeadData] = useState<Prospect[]>([]);
@@ -33,10 +36,10 @@ const LeadContent = (): JSX.Element => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [searchVal, setSearchVal] = useState<string>("");
-  const [activeColumns, setActiveColumns] = useState<ActiveColumns>(DEF_ACTIVE["company"]);
+  const [activeColumns, setActiveColumns] = useState<ActiveColumns>(DEF_ACTIVE[info]);
   const [showColumnPicker, setShowColumnPicker] = useState<boolean>(false);
-  const [infoType, setInfoType] = useState<string>("company");
-  const [ALL_COLUMNS, setALL_COLUMNS] = useState<any[]>(ALL_COL["company"]);
+  const [infoType, setInfoType] = useState<string>(info);
+  const [ALL_COLUMNS, setALL_COLUMNS] = useState<any[]>(ALL_COL[info]);
   const [openFilter, setOpenFilter] = useState<boolean>(false);
   const [filters, setFilters] = useState<FilterValues>({ fullName: "" });
   const [filterQuery, setFilterQuery] = useState<FilterValues>({});
@@ -665,6 +668,7 @@ const LeadContent = (): JSX.Element => {
               onClose={() => setOpenFilter(false)}
               onFilterChange={(filters) => setFilterQuery(filters)}
               onInfoTypeChange={(infotype) => setInfoType(infotype)}
+              infoValue={info}
             />
           </>
         )

@@ -25,6 +25,7 @@ type Props = {
     onReset?: () => void;
     onFilterChange?: (filters: FilterValues) => void;
     onInfoTypeChange?: (type: "company" | "people")=>void;
+    infoValue: string;
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -411,9 +412,9 @@ const SectionAccordion = ({ section, values, onChange }: {
 
 // ─── Main component (your original Props shape) ───────────────────────────────
 
-export default function FilterSidebar({ open, onClose, onApply, onReset, onFilterChange ,onInfoTypeChange }: Props): JSX.Element {
+export default function FilterSidebar({ open, onClose, onApply, onReset, onFilterChange ,onInfoTypeChange ,infoValue }: Props): JSX.Element {
     const [values, setValues] = useState<FilterValues>(() => buildDefaultValues(filterOptions));
-    const [infoType, setInfoType] = useState<CompanyPeopleToggleType>("company");
+    const [infoType, setInfoType] = useState<CompanyPeopleToggleType>(infoValue as CompanyPeopleToggleType);
     const activeCount = countActiveFilters(values);
 
     const handleChange = (key: string, val: FilterValue) => {

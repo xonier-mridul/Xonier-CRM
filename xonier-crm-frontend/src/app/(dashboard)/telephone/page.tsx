@@ -272,8 +272,8 @@ const Page = () => {
       toast.success("Phone number deleted successfully");
       closeDeleteModal();
       getTelephonesNumber();
-    } catch (error) {
-      toast.error("Failed to delete phone number");
+    } catch (error:any) {
+      toast.error(error.response.data.message);
     }
   };
   const handleDeleteClick = (phone: TelephoneNumber) => {

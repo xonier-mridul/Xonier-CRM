@@ -49,10 +49,10 @@ import {
 import { MdOutlineLeaderboard } from "react-icons/md";
 import { FaRegUser, FaIndustry } from "react-icons/fa";
 import { usePermissions } from "@/src/hooks/usePermissions";
-import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import Skeleton from "react-loading-skeleton";
 import RichEditor from "@/src/components/pages/prospect/RichEditor";
 import prospectService from "@/src/services/prospect.service";
+import CallModal from "@/src/components/pages/prospect/CallModal";
 
 const ProspectViewPage = (): JSX.Element => {
     const [err, setErr] = useState<string | string[]>("");
@@ -67,6 +67,9 @@ const ProspectViewPage = (): JSX.Element => {
     const [email, setEmail] = useState("");
     const [subject, setSubject] = useState("");
     const [mailText, setMailText] = useState("");
+    const [isCalling, setIsCalling] = useState(false);
+    const [ongoingCall, setOngoingCall] = useState(false);
+    const [isSendingMessage, setIsSendingMessage] = useState(false);
 
     const { id } = useParams();
     const router = useRouter();
@@ -211,6 +214,8 @@ const ProspectViewPage = (): JSX.Element => {
 
     const closeCallModal = () => {
         setShowCallModal(false);
+        setIsCalling(false);
+        setOngoingCall(false);
     };
     const openMessageModal = () => {
         setShowMessageModal(true);
@@ -229,6 +234,26 @@ const ProspectViewPage = (): JSX.Element => {
         setEmail("");
         setSubject("");
         setMailText("");
+    };
+    const handleStartCall = async () => {
+        setIsCalling(true);
+    };
+    const handleMessage = async () => {
+        setIsSendingMessage(true);
+        try{
+            console.log("callPhone: ", callPhone);
+            console.log("mailText: ", messageText);
+            if(!callPhone || !messageText) return toast.error("Please fill all fields");
+            await prospectService.sendMessage(callPhone, messageText);
+            toast.success("Message sent successfully");
+        }
+        catch(err){
+            toast.error("Failed to send message");
+        }
+        finally{
+            setIsSendingMessage(false);
+        }
+        
     };
 
     return (
@@ -687,8 +712,15 @@ const ProspectViewPage = (): JSX.Element => {
                                 </div>
 
                                 <div>
-                                    <h3 className="text-lg font-bold text-white">Start Call</h3>
-                                    <p className="text-sm text-blue-100">Call this phone number</p>
+                                    <h3 className="text-lg font-bold text-white">
+                                        {isCalling && "Calling..."}
+                                        {ongoingCall && "Call in progress"}
+                                        {!ongoingCall && !isCalling && "Start Call"}
+                                    </h3>
+                                    {
+                                        (!ongoingCall && !isCalling) && <p className="text-sm text-blue-100">Call this phone number</p>
+
+                                    }
                                 </div>
                             </div>
 
@@ -702,28 +734,55 @@ const ProspectViewPage = (): JSX.Element => {
 
                         {/* BODY */}
                         <div className="p-6 space-y-6">
+                            {(!ongoingCall)
+                                && (
+                                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-5 border border-blue-100 dark:border-blue-800 text-center">
 
-                            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-5 border border-blue-100 dark:border-blue-800 text-center">
+                                        <p className="text-xs font-semibold text-gray-500 uppercase mb-2">
+                                            Phone Number
+                                        </p>
 
-                                <p className="text-xs font-semibold text-gray-500 uppercase mb-2">
-                                    Phone Number
-                                </p>
+                                        <p className="text-2xl font-bold text-gray-900 dark:text-white font-mono">
+                                            {callPhone}
+                                        </p>
 
-                                <p className="text-2xl font-bold text-gray-900 dark:text-white font-mono">
-                                    {callPhone}
-                                </p>
+                                    </div>)}
+                            {
+                                isCalling ? (
 
-                            </div>
+                                    <div className="flex justify-center">
+                                        <button
+                                            onClick={() => {
+                                                setIsCalling(false);
+                                                setOngoingCall(true)
+                                            }}
+                                            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold shadow-lg cursor-not-allowed"
+                                        >
+                                            <MdCall className="w-5 h-5 animate-pulse" />
+                                            Calling...
+                                        </button>
+                                    </div>
 
-                            <div className="flex justify-center">
-                                <button
-                                    className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-lg"
-                                >
-                                    <MdCall className="w-5 h-5" />
-                                    Start Call
-                                </button>
-                            </div>
+                                ) : ongoingCall ? (
 
+                                    <div className="flex justify-center">
+                                        <CallModal phone={callPhone} onClose={closeCallModal} />
+                                    </div>
+
+                                ) : (
+
+                                    <div className="flex justify-center">
+                                        <button
+                                            onClick={handleStartCall}
+                                            className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-lg"
+                                        >
+                                            <MdCall className="w-5 h-5" />
+                                            Start Call
+                                        </button>
+                                    </div>
+
+                                )
+                            }
                         </div>
 
                         {/* FOOTER */}
@@ -793,9 +852,12 @@ const ProspectViewPage = (): JSX.Element => {
 
                             {/* SEND BUTTON */}
                             <div className="flex justify-center">
-                                <button className="flex items-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl font-semibold shadow-lg">
+                                <button 
+                                onClick={handleMessage}
+                                disabled={isSendingMessage}
+                                className="flex items-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl font-semibold shadow-lg">
                                     <MdMessage className="w-5 h-5" />
-                                    Send Message
+                                    {isSendingMessage ? "Sending..." : "Send Message"}
                                 </button>
                             </div>
 
