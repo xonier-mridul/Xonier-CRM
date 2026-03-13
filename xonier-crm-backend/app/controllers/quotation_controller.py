@@ -52,9 +52,10 @@ class QuotationController:
             user = request.state.user
 
             result = await self.service.update(quoteId=id, payload=payload, user=user)
+            
+            
 
-
-            return successResponse(200, "Quotation updated successfully successfully", result)
+            return successResponse(200, "Quotation updated successfully successfully")
 
 
         except AppException as e:

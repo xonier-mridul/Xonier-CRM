@@ -157,7 +157,7 @@ class QuotationService:
                     query.update({"createdBy.$id": PydanticObjectId(user["_id"])})
 
             if "title" in filters:
-                 query["title"] = filters["title"]
+                 query["title"] = {"$regex": filters["title"], "$options": "i"}
 
             if "dealId" in filters:
                  query.update({"deal.$id": PydanticObjectId(filters["dealId"])})
@@ -248,7 +248,7 @@ class QuotationService:
                         populate=["deal", "createdBy"],
                         session=session
                     )
-
+                    
                     if not quotation:
                         raise AppException(404, "Quotation not found")
                     
@@ -276,7 +276,7 @@ class QuotationService:
                   
                     old_data = quotation.model_dump()
 
-                   
+                    
                     delta = {}
 
                     for field, new_value in payload.items():
@@ -295,7 +295,7 @@ class QuotationService:
                     updated_payload = {**payload, "quotationStatus": QuotationStatus.UPDATED ,"updatedBy": PydanticObjectId(user["_id"])}
 
 
-
+                    
                     await self.repo.update(id=PydanticObjectId(quoteId), data=updated_payload, session=session)
 
             
@@ -309,16 +309,16 @@ class QuotationService:
                         },
                         session=session
                     )
+                    
+                    activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.QUOTATION.value, entityId=PydanticObjectId(quotation.id), action=ACTIVITY_ACTION.UPDATED.value, title="update quotation", metadata={"quoteId": quotation.quoteId, **delta})
 
-                    activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.QUOTATION.value, entityId=PydanticObjectId(quotation.id), action=ACTIVITY_ACTION.UPDATED.value, title="delete quotation", metadata={"quoteId": quotation.quoteId, **delta})
-
-
+                    
                     is_activity = await self.activityRepo.create(data=activity, session=session)
-
+                    
                     if not is_activity:
                         raise AppException(400, "Activity creation failed")
-
-                    return quotation.model_dump(mode="json")
+                    
+                    return True
                     
 
                 except AppException:
@@ -350,7 +350,7 @@ class QuotationService:
                         raise AppException(400, "Quotation deleted, quotation updation failed")
                     
                     if quotation.quotationStatus == QuotationStatus.ACCEPTED:
-                        raise AppException(400, "Quotation accepted, quotation updation failed")
+                        raise AppException(400, "Quotation already accepted, quotation updation failed")
                     
                     isAdmin = validate_admin(user["userRole"])
 
@@ -400,7 +400,7 @@ class QuotationService:
                     )
 
                     
-
+                    print("quote: ", quotation.deal.id)
                     if quotation.quotationStatus == QuotationStatus.ACCEPTED:
                         invoice_id = generate_enquiry_id("INV")
                         
@@ -420,8 +420,9 @@ class QuotationService:
 
                         }
                         await self.invoiceRepo.create(data=invoice_payload, session=session)
+                        print("done")
 
-                        update_deal  = await self.dealRepo.update(id=PydanticObjectId(payload["deal"]), data={"dealStage": DEAL_STAGES.WON.value}, session=session)
+                        update_deal  = await self.dealRepo.update(id=PydanticObjectId(quotation.deal.id), data={"dealStage": DEAL_STAGES.WON.value}, session=session)
 
                         if not update_deal:
                             raise AppException(400, "Deal field not updated")
@@ -434,7 +435,7 @@ class QuotationService:
 
 
                     
-                    activity = activity_payload(userId=PydanticObjectId(quotation.deal.id), entityType=ACTIVITY_ENTITY_TYPE.QUOTATION.value, entityId=PydanticObjectId(quotation.id), action=ACTIVITY_ACTION.UPDATED.value, title="delete quotation", metadata={"quoteId": quotation.quoteId, **delta})
+                    activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.QUOTATION.value, entityId=PydanticObjectId(quotation.id), action=ACTIVITY_ACTION.UPDATED.value, title="delete quotation", metadata={"quoteId": quotation.quoteId, **delta})
 
 
                     is_activity = await self.activityRepo.create(data=activity, session=session)

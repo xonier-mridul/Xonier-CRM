@@ -53,6 +53,6 @@ class SMSHistory(Document):
             IndexModel([("prospect_id", ASCENDING)]),        
             IndexModel([("sent_by", ASCENDING)]),
             IndexModel([("status", ASCENDING)]),
-            IndexModel([("provider_message_sid", ASCENDING)], unique=True, name="unique_sid"),
+            IndexModel([("provider_message_sid", ASCENDING)]),
             IndexModel([("createdAt", DESCENDING)]),
         ]

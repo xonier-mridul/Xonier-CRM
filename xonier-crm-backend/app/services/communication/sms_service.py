@@ -3,13 +3,16 @@ from app.utils.custom_exception import AppException
 from app.utils.communication.sms_manager import SMSManager
 from typing import Dict, Any
 from app.db.models.communications.sms_hostory import SMSHistory
+from app.repositories.sms_history_repository import SMSHistoryRepository
 from datetime import datetime, timezone
 from app.core.enums import MESSAGE_STATUS
+import math
 
 
 class SMSService:
     def __init__(self):
         self.sms_manager = SMSManager()
+        self.repo = SMSHistoryRepository()
 
     async def send_sms(self, payload: Dict[str, Any], user: Dict[str, Any]):
         phone_num = user["assignedPhoneNumber"].get("phoneNumber")
@@ -56,4 +59,101 @@ class SMSService:
         
         except Exception as e:
              raise AppException(500, f"Internal server error: {e}")
+
+
+
+    async def get_all_sms_history(self, filters: Dict[str, Any], user: Dict[str, Any]):
+        try:
+            page = int(filters.get("page", 1))
+            limit = int(filters.get("limit", 10))
+            skip = (page - 1) * limit
+
+            query = {"isDeleted": False}
+
+            
+            if "number" in filters:
+                query["$or"] = [
+                    {"sent_to_number": filters["number"]},
+                    {"sent_from_number": filters["number"]},
+                ]
+
+            
+            if "status" in filters:
+                query["status"] = filters["status"]
+
+            
+            if "direction" in filters:
+                query["direction"] = filters["direction"]
+
+            docs = await self.repo.find(
+                filter=query,
+                skip=skip,
+                limit=limit,
+                sort=[("createdAt", -1)],
+                populate=["sent_by"]
+            )
+
+            total = await self.repo.model.find(query).count()
+            total_pages = math.ceil(total / limit)
+
+            return {
+                "data": [doc.model_dump(mode="json") for doc in docs],
+                "page": page,
+                "limit": limit,
+                "total": total,
+                "totalPages": total_pages,
+            }
+
+        except AppException as e:
+            raise e
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+
+
+    async def get_conversation(self, sent_to: str, sent_from: str, filters: Dict[str, Any]):
+        try:
+            if sent_to and not sent_to.startswith("+"):
+               sent_to = "+" + sent_to.strip()
+            if sent_from and not sent_from.startswith("+"):
+                sent_from = "+" + sent_from.strip()
+            page = int(filters.get("page", 1))
+            limit = int(filters.get("limit", 20))
+            skip = (page - 1) * limit
+
+            
+            query = {
+                "isDeleted": {"$ne": True},
+                "$or": [
+                    {"sent_to_number": sent_to, "sent_from_number": sent_from},
+                    {"sent_to_number": sent_from, "sent_from_number": sent_to},
+                ]
+            }
+
+            print("query: ", query)
+
+            docs = await self.repo.find(
+                filter=query,
+                skip=skip,
+                limit=limit,
+                sort=[("createdAt", -1)],
+                populate=["sent_by"]
+            )
+
+            print("doc: ", docs)
+
+            total = await self.repo.model.find(query).count()
+            total_pages = math.ceil(total / limit)
+
+            return {
+                "data": [doc.model_dump(mode="json") for doc in docs],
+                "page": page,
+                "limit": limit,
+                "total": total,
+                "totalPages": total_pages,
+            }
+
+        except AppException as e:
+            raise e
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
 
