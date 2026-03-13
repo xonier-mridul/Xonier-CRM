@@ -11,6 +11,6 @@ dependencies = Dependencies()
 controller = SMSController()
 
 
-@router.post('/sms/send', status_code=200, dependencies=[Depends(dependencies.authorized)])
+@router.post('/send', status_code=200, dependencies=[Depends(dependencies.authorized)])
 async def send_sms(request: Request, payload: SEND_SMS_SCHEMA ):
-    return await controller.send_sms(request=request, payload=payload)
+    return await controller.send_sms(request=request, payload=payload.model_dump(mode="json"))

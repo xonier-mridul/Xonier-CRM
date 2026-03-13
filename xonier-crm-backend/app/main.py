@@ -37,6 +37,8 @@ from app.routes.cusotm_form_field_route import router as custom_field_route
 from app.routes.activity_router import router as activity_route
 from app.routes.prospects_route import router as prospects_route
 from app.routes.teliphone_route import router as telephone_route
+from app.routes.communication.sms_route import router as sms_route
+from app.routes.communication.sms_webhook_route import router as sms_webhook_route
 
 settings = get_setting()
 
@@ -117,6 +119,8 @@ app.include_router(custom_field_route, prefix="/api/custom-field")
 app.include_router(activity_route, prefix="/api/activity")
 app.include_router(prospects_route, prefix="/api/prospect")
 app.include_router(telephone_route, prefix="/api/telephone")
+app.include_router(sms_route, prefix="/api/communication/sms")
+app.include_router(sms_webhook_route, prefix="/api/webhook/sms")
 
 
 app.add_exception_handler(HTTPException, http_exception_handler)

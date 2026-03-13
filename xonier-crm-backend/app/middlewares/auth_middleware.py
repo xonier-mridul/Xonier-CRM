@@ -34,7 +34,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
                 else:
                  
-                    user = await repository.find_by_id(PydanticObjectId(payload["_id"]), ["userRole"])
+                    user = await repository.find_by_id(PydanticObjectId(payload["_id"]), ["userRole", "assignedPhoneNumber"])
                     
                     if user:
                         request.state.user = jsonable_encoder(user, exclude={"password", "refreshToken"})

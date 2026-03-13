@@ -66,8 +66,6 @@ class TelephoneService:
             return jsonable_encoder(result)
 
             
-
-                  
              
         except AppException as e:
             raise e

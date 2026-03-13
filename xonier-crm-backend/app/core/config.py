@@ -46,6 +46,8 @@ class EnvSettings(BaseSettings):
 
     TWILIO_ACCOUNT_SID: str
     TWILIO_ACCOUNT_TOKEN: str
+    TWILIO_MESSAGE_SID: str
+    TWILIO_WEBHOOK_URL_FOR_SMS_STATUS: str
 
 
 
