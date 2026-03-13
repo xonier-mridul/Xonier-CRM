@@ -62,7 +62,10 @@ class InvoiceService:
                     })
 
             if "invoiceId" in filters:
-                query.update({"invoiceId": filters["invoiceId"]})
+                query.update({"invoiceId": {"$regex": filters["invoiceId"], "$options": "i"}})
+
+            if "customer" in filters:
+                query.update({"customerName": {"$regex": filters["customer"], "$options": "i"}})
 
             if "status" in filters:
                 query.update({"status": filters["status"]})

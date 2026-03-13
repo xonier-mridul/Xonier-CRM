@@ -48,20 +48,7 @@ class QuotationSchema(BaseModel):
         return v
     
 
-    @field_validator("customerPhone")
-    @classmethod
-    def validate_phone(cls, v: Optional[str]):
-        if not v:
-            return v
-        try:
-            phone_number = phonenumbers.parse(v, None)
-            if not phonenumbers.is_valid_number(phone_number):
-                raise ValueError()
-        except Exception:
-            raise ValueError(
-                "Invalid phone number format. Use country code, e.g. +919876543210"
-            )
-        return v
+    
     
 
 class QuotationUpdateSchema(BaseModel):

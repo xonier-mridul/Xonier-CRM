@@ -58,3 +58,42 @@ class SMSWebhookService:
 
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+        
+
+    async def handle_sms_reply(self, from_phone: str, to_phone: str, body: str, message_sid: str):
+        try:
+            
+            sms_history = await self.repo.find_one(
+                {"recipient_phone": from_phone}  
+            )
+
+            if not sms_history:
+                raise AppException(400, "No SMS history found for this phone number")
+
+            
+            reply_data = {
+                "provider_message_sid": message_sid,
+                "from_phone": from_phone,
+                "to_phone": to_phone,
+                "message": body,
+                "status": MESSAGE_STATUS.RECEIVED,
+                "direction": "inbound",          
+                "received_at": datetime.now(timezone.utc),
+                "createdAt": datetime.now(timezone.utc),
+                "updatedAt": datetime.now(timezone.utc),
+            }
+
+            
+            if sms_history:
+                reply_data["leadId"] = sms_history.leadId        
+                reply_data["entityId"] = sms_history.entityId   
+
+            await self.repo.create(reply_data)
+
+            return True
+
+        except AppException as e:
+            raise e
+
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")

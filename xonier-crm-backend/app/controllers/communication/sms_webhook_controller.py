@@ -1,5 +1,5 @@
 
-from fastapi import Request
+from fastapi import Request, Response
 from app.utils.custom_exception import AppException
 from app.utils.custom_response import successResponse
 from app.services.communication.sms_webhook_service import SMSWebhookService
@@ -26,14 +26,18 @@ class SMSWebhookController:
             raise e
         
 
-    async def handle_sms_reply(self, request: Request):
+    async def handle_sms_reply(self, request: Request, From: str, To:str, Body:str, MessageSid:str):
         try:
-
-            form_data = await request.form()
-
-            
-
-
+            await self.service.handle_sms_reply(
+                from_phone=From,
+                to_phone=To,
+                body=Body,
+                message_sid=MessageSid
+            )
+            return Response(  
+        content='<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
+        media_type="application/xml"
+    )
 
         except AppException as e:
             raise e
