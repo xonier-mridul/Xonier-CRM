@@ -39,6 +39,7 @@ from app.routes.prospects_route import router as prospects_route
 from app.routes.teliphone_route import router as telephone_route
 from app.routes.communication.sms_route import router as sms_route
 from app.routes.communication.sms_webhook_route import router as sms_webhook_route
+from app.routes.email_template_route import router as email_template_route
 
 settings = get_setting()
 
@@ -121,6 +122,7 @@ app.include_router(prospects_route, prefix="/api/prospect")
 app.include_router(telephone_route, prefix="/api/telephone")
 app.include_router(sms_route, prefix="/api/communication/sms")
 app.include_router(sms_webhook_route, prefix="/api/webhook/sms")
+app.include_router(email_template_route, prefix="/api/email-template")
 
 
 app.add_exception_handler(HTTPException, http_exception_handler)

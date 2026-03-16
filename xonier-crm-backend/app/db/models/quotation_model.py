@@ -68,23 +68,22 @@ class QuotationModel(Document):
 
     @before_event(Insert, Replace, Save)
     def secure_sensitive_fields(self):
-       
+        
         if not self.customerEmail:
             raise ValueError("Customer email is required")
 
-        email_plain = self.customerEmail.lower()
+       
+        if not self.customerEmail.startswith("gAAAAA"):
+            email_plain = self.customerEmail.lower()
+            self.customerEmailHash = hash_value(email_plain)
+            self.customerEmail = encryption.encrypt_data(email_plain)
 
-        
-        self.customerEmailHash = hash_value(email_plain)
-
-        
-        self.customerEmail = encryption.encrypt_data(email_plain)
-
-        
         if self.customerPhone:
-            phone_plain = self.customerPhone
-            self.customerPhoneHash = hash_value(phone_plain)
-            self.customerPhone = encryption.encrypt_data(phone_plain)
+           
+            if not self.customerPhone.startswith("gAAAAA"):
+                phone_plain = self.customerPhone
+                self.customerPhoneHash = hash_value(phone_plain)
+                self.customerPhone = encryption.encrypt_data(phone_plain)
 
     @before_event(Insert, Replace)
     def update_stamp(self):

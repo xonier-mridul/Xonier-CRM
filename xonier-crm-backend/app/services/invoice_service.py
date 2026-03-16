@@ -83,6 +83,7 @@ class InvoiceService:
                 limit=limit,
                 filters=query,
                 populate=["createdBy", "deal_id", "updatedBy"],
+                sort=["-createdAt"]
             )
 
             if not result:
@@ -96,7 +97,7 @@ class InvoiceService:
                 },
             )
 
-
+        
 
             return result
 
@@ -148,6 +149,9 @@ class InvoiceService:
                         "You are not authorized to access this invoice or it does not exist"
                     )
 
+               
+
+
 
                 invoice = jsonable_encoder(
                     invoice,
@@ -157,11 +161,11 @@ class InvoiceService:
                     },
                 )
 
-                # print("invoice: ", invoice["customerEmail"])
-
-                invoice["customerEmail"] = self.encryption.decrypt_data(invoice["customerEmail"])
-                # print("invoice after decryption: ", invoice["customerEmail"])
-                invoice["customerPhone"] = self.encryption.decrypt_data(invoice["customerPhone"])
+                print("invoice: ", self.encryption.decrypt_data(invoice["customerEmail"]))
+                if invoice["customerEmail"]:
+                    invoice["customerEmail"] = self.encryption.decrypt_data(invoice["customerEmail"])
+                if invoice["customerPhone"]:
+                    invoice["customerPhone"] = self.encryption.decrypt_data(invoice["customerPhone"])
                 invoice["createdBy"]["email"] = self.encryption.decrypt_data(invoice["createdBy"]["email"])
                 invoice["createdBy"]["phone"] = self.encryption.decrypt_data(invoice["createdBy"]["phone"])
 
@@ -186,7 +190,7 @@ class InvoiceService:
                     
                     is_super_admin = validate_admin(user.get("userRole", []))
                     
-                    print("one")
+                   
                     access_query = {"_id": invoice_id}
                     
                     if not is_super_admin:

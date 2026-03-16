@@ -74,12 +74,20 @@ class SMSService:
             if "number" in filters:
                 query["$or"] = [
                     {"sent_to_number": filters["number"]},
-                    {"sent_from_number": filters["number"]},
+                    {"sent_from_number": filters["number"]}
                 ]
+
+                
 
             
             if "status" in filters:
                 query["status"] = filters["status"]
+
+            if "dateFrom" in filters:
+                query[""]
+
+            if "dateTo" in filters:
+                query[""]
 
             
             if "direction" in filters:
@@ -129,8 +137,7 @@ class SMSService:
                 ]
             }
 
-            print("query: ", query)
-
+            
             docs = await self.repo.find(
                 filter=query,
                 skip=skip,
@@ -139,7 +146,7 @@ class SMSService:
                 populate=["sent_by"]
             )
 
-            print("doc: ", docs)
+            
 
             total = await self.repo.model.find(query).count()
             total_pages = math.ceil(total / limit)

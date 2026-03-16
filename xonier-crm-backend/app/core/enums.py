@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from enum import Enum
+from typing import Optional
 
 
 class USER_ROLES(str, Enum):
@@ -744,8 +745,8 @@ class PHONE_NUMBER_STATUS(str, Enum):
 
 
 class MESSAGE_DIRECTION(str, Enum):
-    OUTBOUND = "outbound"      # CRM → Customer
-    INBOUND = "inbound"        # Customer → CRM
+    OUTBOUND = "outbound"      
+    INBOUND = "inbound"        
 
 class MESSAGE_STATUS(str, Enum):
     QUEUED = "queued"
@@ -761,9 +762,43 @@ class MESSAGE_CHANNEL(str, Enum):
     MSG91 = "msg91"
     FAST2SMS = "fast2sms"
 
+class TemplateStatus(str, Enum):
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    DRAFT = "draft"
+    ARCHIVED = "archived"
 
 
+class TemplateCategory(str, Enum):
+    MARKETING = "marketing"
+    TRANSACTIONAL = "transactional"
+    FOLLOW_UP = "follow_up"
+    WELCOME = "welcome"
+    INVOICE = "invoice"
+    QUOTATION = "quotation"
+    LEAD = "lead"
+    DEAL = "deal"
+    CUSTOM = "custom"
 
+
+class TemplateVariable(BaseModel):
+    
+    key: str                        
+    label: str                      
+    description: Optional[str]      
+    default_value: Optional[str]    
+    is_required: bool = False
+
+
+class EmailStatus(str, Enum):
+    QUEUED = "queued"
+    SENT = "sent"
+    DELIVERED = "delivered"
+    OPENED = "opened"
+    CLICKED = "clicked"
+    FAILED = "failed"
+    BOUNCED = "bounced"
+    SPAM = "spam"
 
 
 
