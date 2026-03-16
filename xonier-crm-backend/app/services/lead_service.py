@@ -962,6 +962,9 @@ class LeadService:
                     if lead.status == SALES_STATUS.DELETE.value:
                         raise AppException(400, "Action denied, Lead is deleted")
 
+                    if lead.status == SALES_STATUS.WON.value:
+                        raise AppException(400, "Action denied, Lead is Won so you are not update it now")
+
                     if str(lead.createdBy.id) == str(user["_id"]):
                         is_creator = True
 
@@ -1026,6 +1029,9 @@ class LeadService:
                     if lead.status == SALES_STATUS.DELETE.value:
                         raise AppException(400, "Action denied, Lead is deleted")
 
+                    if lead.status == SALES_STATUS.WON.value:
+                        raise AppException(400, "Action denied, Lead is Won so you are not update it now")
+
                     if str(lead.createdBy.id) == str(user["_id"]):
                         is_creator = True
                     
@@ -1037,7 +1043,7 @@ class LeadService:
                         raise AppException(403, "Permission denied, only admin, creator or assigned person can access it")
                     
 
-                    print("status: ", payload["status"])
+                    
                     lead.status = payload["status"]
                     lead.updatedAt = datetime.now(timezone.utc)
 

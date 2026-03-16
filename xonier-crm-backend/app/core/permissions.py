@@ -422,6 +422,77 @@ PERMISSIONS = [
         "action": "delete",
         "title": "delete telephone",
         "description": "permission for delete telephone number"
-    }
+    }, 
+    {
+         "code": "emailTemplate:create",
+        "module": "emailTemplate",
+        "action": "create",
+        "title": "create emailTemplate",
+        "description": "permission for create email template "
+    },
+    {
+         "code": "emailTemplate:read",
+        "module": "emailTemplate",
+        "action": "read",
+        "title": "read emailTemplate",
+        "description": "permission for read email template "
+    },
+    {
+         "code": "emailTemplate:update",
+        "module": "emailTemplate",
+        "action": "update",
+        "title": "update emailTemplate",
+        "description": "permission for update email template "
+    },
+    {
+         "code": "emailTemplate:delete",
+        "module": "emailTemplate",
+        "action": "delete",
+        "title": "delete emailTemplate",
+        "description": "permission for delete email template "
+    },
+    {
+        "code": "sms:send",
+        "module": "sms",
+        "action": "send",
+        "title": "send sms",
+       "description": "permission for send sms "
+    },
+    {
+        "code": "sms:read",
+        "module": "sms",
+        "action": "read",
+        "title": "read sms",
+       "description": "permission for read sms "
+    },
+    {
+        "code": "sms:delete",
+        "module": "sms",
+        "action": "delete",
+        "title": "delete sms",
+       "description": "permission for delete sms "
+    },
+    {
+        "code": "email:send",
+        "module": "email",
+        "action": "send",
+        "title": "send email",
+       "description": "permission for send email "
+    },
+    {
+        "code": "email:read",
+        "module": "email",
+        "action": "read",
+        "title": "read email",
+       "description": "permission for read email "
+    },
+    
+    {
+        "code": "email:delete",
+        "module": "email",
+        "action": "delete",
+        "title": "delete email",
+       "description": "permission for delete email"
+    },
     
 ]

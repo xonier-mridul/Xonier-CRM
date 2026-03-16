@@ -403,6 +403,8 @@ class QuotationService:
                     print("quote: ", quotation.deal.id)
                     if quotation.quotationStatus == QuotationStatus.ACCEPTED:
                         invoice_id = generate_enquiry_id("INV")
+
+                        print("qut: ", quotation.model_dump(mode="json"))
                         
                         invoice_payload = {
                              'invoiceId': invoice_id,
