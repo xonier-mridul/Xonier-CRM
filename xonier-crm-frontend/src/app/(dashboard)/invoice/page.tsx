@@ -3,7 +3,7 @@ import { PERMISSIONS } from "@/src/constants/enum";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import axios from "axios";
 import Link from "next/link";
-import React, { JSX, useEffect, useState } from "react";
+import React, { JSX, useEffect, useState, useRef } from "react";
 import { FaPlus, FaRegEye } from "react-icons/fa";
 import { IoIosSearch } from "react-icons/io";
 import extractErrorMessages from "../../utils/error.utils";
@@ -30,13 +30,15 @@ const page = (): JSX.Element => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [err, setErr] = useState<string[] | string>("");
   const [pageLimit, setPageLimit] = useState<number>(10);
+  const [searchVal, setSearchVal] = useState<string>("");
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const { hasPermission } = usePermissions();
 
   const getInvoiceData = async()=>{
     setIsLoading(true)
     try {
-        const result = await InvoiceService.getAll(currentPage, pageLimit)
+        const result = await InvoiceService.getAll(currentPage, pageLimit, {fullName : searchVal})
         if (result.status === 200){
             const data = result.data.data
             setInvoiceData(data.data)
@@ -59,8 +61,15 @@ const page = (): JSX.Element => {
 
   useEffect(() => {
      getInvoiceData()
-  }, [currentPage, pageLimit])
-
+  }, [currentPage, pageLimit, searchVal]);
+  const handleSearch = (val: string) => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      setSearchVal(val);
+    }, 500);
+  };
 
 
   
@@ -101,7 +110,7 @@ const page = (): JSX.Element => {
             </select>
             <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2">
               <IoIosSearch className="text-xl" />
-              <input type="text" className="outline-none" />
+              <input type="text" className="outline-none" onChange={(e)=> handleSearch(e.target.value)}/>
             </div>
             {hasPermission(PERMISSIONS.createLead) ? (
               <Link
@@ -231,7 +240,7 @@ const page = (): JSX.Element => {
                         >
                           <FaRegEye className="text-xl" />
                         </Link> : <span className="h-9 w-9 flex items-center justify-center rounded-md bg-green-100/80 dark:bg-green-50  text-green-500 opacity-80 cursor-not-allowed"> <FaRegEye className="text-xl" /> </span>}
-                        {hasPermission(PERMISSIONS.updateEnquiry) ? (
+                        {/* {hasPermission(PERMISSIONS.updateEnquiry) ? (
                           <Link
                             href={`/enquiry/update/${item.id}`}
                             className="h-9 w-9 flex items-center justify-center rounded-md
@@ -248,7 +257,7 @@ const page = (): JSX.Element => {
                           >
                             <MdOutlineEdit className="text-xl" />
                           </span>
-                        )}
+                        )} */}
                         {/* <button
                           onClick={() => handleDelete(item.id)}
                           className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-red-100 text-red-500 hover:bg-red-200 hover:scale-104 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-red-100 disabled:opacity-80"

@@ -6,7 +6,7 @@ import { MdOutlineEdit } from "react-icons/md";
 import { FaRegEye } from "react-icons/fa";
 import { FaPlus, FaXmark, FaCheck } from "react-icons/fa6";
 import { usePermissions } from "@/src/hooks/usePermissions";
-import { LEAD_SOURCE_TYPE, PERMISSIONS, SALES_STATUS ,SOURCE,PROJECT_TYPES} from "@/src/constants/enum";
+import { LEAD_SOURCE_TYPE, PERMISSIONS, SALES_STATUS, SOURCE, PROJECT_TYPES } from "@/src/constants/enum";
 import axios from "axios";
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import { toast } from "react-toastify";
@@ -117,11 +117,11 @@ const LeadContent = (): JSX.Element => {
         : currentTab === TAB.LOST ? lostLeadData
           : assignedLeadData;
 
-  
+
   const getLeadData = async (): Promise<void> => {
     setIsLoading(true);
     try {
-      const result = await LeadService.getAll(currentPage, pageLimit, {...filters, ...query});
+      const result = await LeadService.getAll(currentPage, pageLimit, { ...filters, ...query });
       if (result.status === 200) {
         const data = result.data.data;
         setLeadData(data.data);
@@ -139,10 +139,10 @@ const LeadContent = (): JSX.Element => {
   const getWonLeadData = async (): Promise<void> => {
     setIsLoading(true);
     try {
-      const result = await LeadService.getAll(currentWonPage, wonPageLimit, { 
+      const result = await LeadService.getAll(currentWonPage, wonPageLimit, {
         ...query, ...filters,
-        status: SALES_STATUS.WON, 
-       });
+        status: SALES_STATUS.WON,
+      });
       if (result.status === 200) {
         const data = result.data.data;
         setWonLeadData(data.data);
@@ -160,8 +160,8 @@ const LeadContent = (): JSX.Element => {
   const getLostLeadData = async (): Promise<void> => {
     setIsLoading(true);
     try {
-      const result = await LeadService.getAll(currentLostPage, lostPageLimit, { 
-        ...query , 
+      const result = await LeadService.getAll(currentLostPage, lostPageLimit, {
+        ...query,
         ...filters,
         status: SALES_STATUS.LOST
 
@@ -337,14 +337,14 @@ const LeadContent = (): JSX.Element => {
     else if (currentTab === TAB.ASSIGNED) { setAssignedCurrentPage(1); setAssignedPageLimit(val); }
   };
   const handleSearch = (val: string) => {
-  setSearchVal(val);
+    setSearchVal(val);
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
     debounceRef.current = setTimeout(() => {
       setFilters((prev) => ({ ...prev, name: val }));
     }, 300);
-};
+  };
   const handleProjectType = (val: string): void => {
     setPrjectTypeVal(val);
     setFilters({ ...filters, type: val });
@@ -365,37 +365,43 @@ const LeadContent = (): JSX.Element => {
     });
   }
   useEffect(() => {
-    if(currentTab === TAB.ALL) getLeadData();
-    else if(currentTab === TAB.WON) getWonLeadData();
-    else if(currentTab === TAB.LOST) getLostLeadData();
-    else if(currentTab === TAB.ASSIGNED) getAssignedLeadData();
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      if (currentTab === TAB.ALL) getLeadData();
+      else if (currentTab === TAB.WON) getWonLeadData();
+      else if (currentTab === TAB.LOST) getLostLeadData();
+      else if (currentTab === TAB.ASSIGNED) getAssignedLeadData();
+    }, 400);
+    setCurrentPage(1);
   }, [filters]);
   useEffect(() => {
     setFilters({
-      status:"",
-      type:"",
-      source:"",
-      search:"",
+      status: "",
+      type: "",
+      source: "",
+      search: "",
     });
     setSearchVal("");
     clearFields();
-  },[currentTab]);
+  }, [currentTab]);
 
   const options: Record<string,
     { value: string[]; handlefunction: (value: string) => void }
   > = {
-    "Project Type": {
-      value: Object.values(PROJECT_TYPES),
-      handlefunction: handleProjectType,
-    },
+    // "Project Type": {
+    //   value: Object.values(PROJECT_TYPES),
+    //   handlefunction: handleProjectType,
+    // },
     "Status": {
       value: Object.values(SALES_STATUS),
       handlefunction: handleStatus,
     },
-    "Source": {
-      value: Object.values(SOURCE),
-      handlefunction: handleSource,
-    },
+    // "Source": {
+    //   value: Object.values(SOURCE),
+    //   handlefunction: handleSource,
+    // },
   };
 
 
@@ -473,7 +479,7 @@ const LeadContent = (): JSX.Element => {
       <tr><td className="p-8 text-center text-slate-400 text-sm" colSpan={9}>No leads found</td></tr>
     );
     if (isLoading) return <SkeletonRows cols={hasPermission(PERMISSIONS.assignLead) && currentTab === TAB.ALL ? 9 : 8} />;
-
+    debugger;
     return data.map((item, i) => {
       const isChecked = selectedLeadIds.has(item.id);
       return (
@@ -487,7 +493,7 @@ const LeadContent = (): JSX.Element => {
               {item.leadSource === LEAD_SOURCE_TYPE.ADMIN_CREATED && !item.assignedTo?.length ? (
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only" checked={isChecked} onChange={() => handleSelectOne(item.id)} />
-                  <div className={`w-[18px] h-[18px] rounded-[4px] border-2 flex items-center justify-center transition-all duration-150
+                  <div className={`w-4.5 h-4.5 rounded-sm border-2 flex items-center justify-center transition-all duration-150
                     ${isChecked ? "bg-blue-600 border-blue-600" : "bg-white dark:bg-gray-700 border-slate-300 dark:border-slate-500 hover:border-blue-400"}`}>
                     {isChecked && <FaCheck className="text-white text-[9px]" />}
                   </div>
@@ -583,6 +589,9 @@ const LeadContent = (): JSX.Element => {
           </td>
           <td className="p-4">
             <span className="px-2.5 py-1 rounded-full bg-green-100 text-green-600 text-xs font-medium">{item.projectType}</span>
+          </td>
+          <td className="p-4">
+            <span className="px-2.5 py-1 rounded-full bg-yellow-100 text-yellow-600 text-xs font-medium">{item.source}</span>
           </td>
           <td className="p-4"><StatusBadge status={item.status} /></td>
 
@@ -789,76 +798,96 @@ const LeadContent = (): JSX.Element => {
 
           {currentTab !== TAB.ASSIGNED ? (
             <div className="overflow-x-scroll">
-            <table className="w-full rounded-xl overflow-hidden">
-              <thead>
-                <tr className="w-full border-b-2 border-zinc-200 dark:border-zinc-600 bg-blue-50 dark:bg-gray-800">
-                  {hasPermission(PERMISSIONS.assignLead) && currentTab === TAB.ALL && (
-                    <th className="p-4 w-12">
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input ref={selectAllRef} type="checkbox" className="sr-only" checked={isAllSelected} onChange={handleSelectAll} />
-                        <div className={`w-[18px] h-[18px] rounded-[4px] border-2 flex items-center justify-center transition-all duration-150
+              <table className="w-full rounded-xl overflow-hidden">
+                <thead>
+                  <tr className="w-full border-b-2 border-zinc-200 dark:border-zinc-600 bg-blue-50 dark:bg-gray-800">
+                    {hasPermission(PERMISSIONS.assignLead) && currentTab === TAB.ALL && (
+                      <th className="p-4 w-12">
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input ref={selectAllRef} type="checkbox" className="sr-only" checked={isAllSelected} onChange={handleSelectAll} />
+                          <div className={`w-4.5 h-4.5 rounded-sm border-2 flex items-center justify-center transition-all duration-150
                           ${isAllSelected || isIndeterminate ? "bg-blue-600 border-blue-600" : "bg-white dark:bg-gray-700 border-slate-300 hover:border-blue-400"}`}>
-                          {isAllSelected && <FaCheck className="text-white text-[9px]" />}
-                          {isIndeterminate && <span className="block w-2.5 h-0.5 bg-white rounded-full" />}
-                        </div>
-                      </label>
-                    </th>
-                  )}
-                  {["Lead Id", "Client Info", "Phone", "Project Type", "Source", "Status", "Actions"]
-                    .map((h) => {
-                      const filterConfig = (h!='Status')?(options[h]):(currentTab===TAB.ALL && options[h]);
+                            {isAllSelected && <FaCheck className="text-white text-[9px]" />}
+                            {isIndeterminate && <span className="block w-2.5 h-0.5 bg-white rounded-full" />}
+                          </div>
+                        </label>
+                      </th>
+                    )}
+                    {["Lead Id", "Client Info", "Phone", "Project Type", "Source", "Status", "Actions"]
+                      .map((h) => {
+                        const filterConfig = (h != 'Status') ? (options[h]) : (currentTab === TAB.ALL && options[h]);
 
-                      return (
-                        <th
-                          key={h}
-                          className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide"
-                        >
-                          {h}
-                          {filterConfig && (
-                            <>
-                              <br />
-                              <select
-                                onChange={(e) =>
-                                  filterConfig.handlefunction(e.target.value)
-                                }
-                                className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20"
-                              >
-                                <option value="">All</option>
+                        return (
+                          <th
+                            key={h}
+                            className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide"
+                          >
+                            {h}
+                            {filterConfig && (
+                              <>
+                                <br />
+                                <select
+                                  onChange={(e) =>
+                                    filterConfig.handlefunction(e.target.value)
+                                  }
+                                  className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20"
+                                >
+                                  <option value="">All</option>
 
-                                {filterConfig.value.map((option) => (
-                                  <option key={option} value={option}>
-                                    {option}
-                                  </option>
-                                ))}
-                              </select>
-                            </>
-                          )}
-                        </th>
-                      );
-                    })}
-                </tr>
-              </thead>
-              <tbody>{renderLeadRows(currentLeadData)}</tbody>
-            </table>
+                                  {filterConfig.value.map((option) => (
+                                    <option key={option} value={option}>
+                                      {option}
+                                    </option>
+                                  ))}
+                                </select>
+                              </>
+                            )}
+                            {
+                              (h == 'Project Type') && (
+                                (
+                                  <>
+                                    <br />
+                                    <input type="text" className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20" placeholder="Search..." onChange={(e) => handleProjectType(e.target.value)} />
+                                  </>
+                                )
+                              )
+                            }
+                            {
+                              (h == 'Source') && (
+                                (
+                                  <>
+                                    <br />
+                                    <input type="text" className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20" placeholder="Search..." onChange={(e) => handleSource(e.target.value)} />
+                                  </>
+                                )
+                              )
+                            }
+                          </th>
+                        );
+                      })}
+                  </tr>
+                </thead>
+                <tbody>{renderLeadRows(currentLeadData)}</tbody>
+              </table>
             </div>
           ) : (
             <div className="overflow-x-scroll">
-            <table className="w-full rounded-xl overflow-hidden ">
-              <thead>
-                <tr className="w-full border-b-2 border-amber-200 dark:border-amber-800/40 bg-amber-50 dark:bg-amber-900/20">
-                  {hasPermission(PERMISSIONS.reassignLead) && (
-                    <th className="p-4 w-12">
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input ref={reassignSelectAllRef} type="checkbox" className="sr-only" checked={allAssignedSelected} onChange={handleReassignSelectAll} />
-                        <div className={`w-[18px] h-[18px] rounded-[4px] border-2 flex items-center justify-center transition-all duration-150
+              <table className="w-full rounded-xl overflow-hidden ">
+                <thead>
+                  <tr className="w-full border-b-2 border-amber-200 dark:border-amber-800/40 bg-amber-50 dark:bg-amber-900/20">
+                    {hasPermission(PERMISSIONS.reassignLead) && (
+                      <th className="p-4 w-12">
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input ref={reassignSelectAllRef} type="checkbox" className="sr-only" checked={allAssignedSelected} onChange={handleReassignSelectAll} />
+                          <div className={`w-4.5 h-4.5 rounded-sm border-2 flex items-center justify-center transition-all duration-150
                           ${allAssignedSelected || isReassignIndeterminate ? "bg-amber-500 border-amber-500" : "bg-white dark:bg-gray-700 border-slate-300 hover:border-amber-400"}`}>
-                          {allAssignedSelected && <FaCheck className="text-white text-[9px]" />}
-                          {isReassignIndeterminate && <span className="block w-2.5 h-0.5 bg-white rounded-full" />}
-                        </div>
-                      </label>
-                    </th>
-                  )}
-                  {["Lead Id", "Client Info", "Phone", "Project Type", "Status"].map((h) => {
+                            {allAssignedSelected && <FaCheck className="text-white text-[9px]" />}
+                            {isReassignIndeterminate && <span className="block w-2.5 h-0.5 bg-white rounded-full" />}
+                          </div>
+                        </label>
+                      </th>
+                    )}
+                    {["Lead Id", "Client Info", "Phone", "Project Type", "Source", "Status"].map((h) => {
                       const filterConfig = options[h];
                       return (
                         <th
@@ -885,17 +914,34 @@ const LeadContent = (): JSX.Element => {
                               </select>
                             </>
                           )}
+
+                          {
+                            (h == 'Project Type') && (
+                              <>
+                                <br />
+                                <input type="text" className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20" placeholder="Search..." onChange={(e) => handleProjectType(e.target.value)} />
+                              </>
+                            )
+                          }
+                          {
+                            (h == 'Source') && (
+                              <>
+                                <br />
+                                <input type="text" className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20" placeholder="Search..." onChange={(e) => handleSource(e.target.value)} />
+                              </>
+                            )
+                          }
                         </th>
                       );
                     })}
-                  <th className="p-4 uppercase text-xs text-start text-amber-600 dark:text-amber-400 font-semibold tracking-wide">
-                    <span className="flex items-center gap-1.5"><RiUserSharedLine /> Assigned To</span>
-                  </th>
-                  <th className="p-4 uppercase text-xs text-start text-amber-600 dark:text-amber-400 font-semibold tracking-wide">Actions</th>
-                </tr>
-              </thead>
-              <tbody>{renderAssignedRows()}</tbody>
-            </table>
+                    <th className="p-4 uppercase text-xs text-start text-amber-600 dark:text-amber-400 font-semibold tracking-wide">
+                      <span className="flex items-center gap-1.5"><RiUserSharedLine /> Assigned To</span>
+                    </th>
+                    <th className="p-4 uppercase text-xs text-start text-amber-600 dark:text-amber-400 font-semibold tracking-wide">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>{renderAssignedRows()}</tbody>
+              </table>
             </div>
           )}
 
@@ -904,7 +950,7 @@ const LeadContent = (): JSX.Element => {
           {currentTab === TAB.LOST && <Pagination currentPage={currentLostPage} totalPages={lostTotalPages} onPageChange={(p) => setLostCurrentPage(p)} className="w-full" />}
           {currentTab === TAB.ASSIGNED && <Pagination currentPage={currentAssignedPage} totalPages={assignedTotalPages} onPageChange={(p) => setAssignedCurrentPage(p)} className="w-full" />}
         </div>
-      </div>
+      </div >
     </>
   );
 };

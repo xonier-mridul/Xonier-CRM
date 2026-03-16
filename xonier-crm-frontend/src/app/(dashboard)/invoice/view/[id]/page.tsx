@@ -358,12 +358,12 @@ const InvoiceViewPage = (): JSX.Element => {
                 <IoDownloadOutline className="w-4 h-4" />
                 Download
               </button>
-              <button
+              {/* <button
                 onClick={handlePrint}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded-lg transition-colors"
               >
                 <IoPrintOutline className="w-4 h-4" />
-              </button>
+              </button> */}
 
 
               <div className="relative group">
