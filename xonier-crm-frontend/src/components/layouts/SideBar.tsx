@@ -485,7 +485,7 @@ const SideBar = () => {
                 )}
               </AnimatePresence>
             </li>}
-             {(hasPermission(PERMISSIONS.readUser) || hasPermission(PERMISSIONS.readRole) || hasPermission(PERMISSIONS.createTeam)) && <li>
+             {(hasPermission(PERMISSIONS.readTemplate) || hasPermission(PERMISSIONS.createTemplate) || hasPermission(PERMISSIONS.readEmailLog)) && <li>
                       <button
                         onClick={() => toggleMenu("emailManagement")}
                         className={`${isMenuActive("emailManagement")
@@ -505,7 +505,7 @@ const SideBar = () => {
                       </button>
 
                       <AnimatePresence>
-                        {openMenu === "emailManagement" && (
+                        {(openMenu === "emailManagement" && (hasPermission(PERMISSIONS.readTemplate) || hasPermission(PERMISSIONS.createTemplate) )) && (
                           <motion.ul
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: "auto", opacity: 1 }}
@@ -524,7 +524,7 @@ const SideBar = () => {
                                 Templates
                               </Link>
                             </li>}
-                            {hasPermission(PERMISSIONS.readRole) && <li>
+                            {hasPermission(PERMISSIONS.readEmailLog) && <li>
                               <Link
                                 href="/emailManagement/outbox"
                                 className={`${isActive("/emailManagement/outbox")

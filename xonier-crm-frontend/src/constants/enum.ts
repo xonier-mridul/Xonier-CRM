@@ -167,6 +167,11 @@ export enum PERMISSIONS {
   callProspects = "prospect:call",
   emailProspects = "prospect:email",
   smsProspects = "prospect:sms",
+  createTemplate = "emailTemplate:create",
+  readTemplate = "emailTemplate:read",
+  updateTemplate = "emailTemplate:update",
+  deleteTemplate = "emailTemplate:delete",
+  readEmailLog = "emailLog:read",
 
 }
 

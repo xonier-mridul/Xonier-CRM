@@ -5,6 +5,8 @@ export interface Message {
   sent_by: {
     ref: string;
     id: string;
+    firstName: string;
+    lastName: string;
   };
   sent_to_number: string;
   sent_from_number: string;

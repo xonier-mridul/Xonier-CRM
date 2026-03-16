@@ -160,13 +160,16 @@ const page = (): JSX.Element => {
   const [wonTotalPages, setWonTotalPages] = useState<number>(1);
   const [lostTotalPages, setLostTotalPages] = useState<number>(1);
   const [currentTab, setCurrentTab] = useState<number>(1);
+  const [searchVal, setSearchVal] = useState<string>("");
+  const [TosearchVal, setToSearchVal] = useState<string>("");
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const { hasPermission } = usePermissions();
 
   const getQuotationData = async () => {
     setIsLoading(true);
     try {
-      const result = await QuoteService.getAll(currentPage, pageLimit);
+      const result = await QuoteService.getAll(currentPage, pageLimit, {fullName : searchVal});
       if (result.status === 200) {
         const data = result.data.data;
         setQuoteData(data.data);
@@ -190,7 +193,7 @@ const page = (): JSX.Element => {
   const getWonQuotationData = async () => {
     setIsLoading(true);
     try {
-      const result = await QuoteService.getAll(currentPage, pageLimit, {"status":QuotationStatus.ACCEPTED});
+      const result = await QuoteService.getAll(currentPage, pageLimit, {"status":QuotationStatus.ACCEPTED, fullName : searchVal});
       if (result.status === 200) {
         const data = result.data.data;
         setWonQuoteData(data.data);
@@ -214,7 +217,7 @@ const page = (): JSX.Element => {
   const getLostQuotationData = async () => {
     setIsLoading(true);
     try {
-      const result = await QuoteService.getAll(currentPage, pageLimit, {"status":QuotationStatus.REJECTED});
+      const result = await QuoteService.getAll(currentPage, pageLimit, {"status":QuotationStatus.REJECTED, fullName : searchVal});
       if (result.status === 200) {
         const data = result.data.data;
         setLostQuoteData(data.data);
@@ -287,7 +290,30 @@ const page = (): JSX.Element => {
   useEffect(() => {
     getWonQuotationData()
   }, [wonCurrentPage, wonPageLimit])
-  
+  const handleSearch = (val: string) => {
+    setSearchVal(val);
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      setToSearchVal(val);
+    }, 500);
+  };
+  useEffect(() => {
+    if(currentTab === 1){
+      getQuotationData()
+    }
+    else if(currentTab === 2){
+      getWonQuotationData()
+    }
+    else if(currentTab === 3){
+      getLostQuotationData()
+    }
+  }, [TosearchVal]);
+  useEffect(() => {
+    setToSearchVal("");
+    setSearchVal("");
+  },[currentTab]);
 
  
 
@@ -317,7 +343,7 @@ const page = (): JSX.Element => {
             </select>
             <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2">
               <IoIosSearch className="text-xl" />
-              <input type="text" className="outline-none bg-transparent" />
+              <input type="text" className="outline-none bg-transparent" value={searchVal} onChange={(e)=> handleSearch(e.target.value)}/>
             </div>
             <Link
               href={"/leads"}

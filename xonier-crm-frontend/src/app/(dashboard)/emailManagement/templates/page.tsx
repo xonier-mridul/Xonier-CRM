@@ -1,6 +1,6 @@
 "use client";
 
-import React, { JSX, useEffect, useState } from "react";
+import React, { JSX, useEffect, useState, useRef } from "react";
 import { IoIosSearch } from "react-icons/io";
 import { FaPlus } from "react-icons/fa6";
 import { FaRegEye } from "react-icons/fa";
@@ -8,6 +8,8 @@ import { MdOutlineEdit, MdDeleteOutline } from "react-icons/md";
 import Link from "next/link";
 import Skeleton from "react-loading-skeleton";
 import Pagination from "@/src/components/common/pagination";
+import { usePermissions } from "@/src/hooks/usePermissions";
+import { PERMISSIONS } from "@/src/constants/enum";
 
 type Template = {
   id: string;
@@ -23,7 +25,13 @@ const Page = (): JSX.Element => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageLimit, setPageLimit] = useState<number>(10);
   const [totalPages, setTotalPages] = useState<number>(1);
-
+  const [searchVal, setSearchVal] = useState<string>("");
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const { hasPermission } = usePermissions();
+  const canCreate = hasPermission(PERMISSIONS.createTemplate);
+  const canRead = hasPermission(PERMISSIONS.readTemplate);
+  const canUpdate = hasPermission(PERMISSIONS.updateTemplate);
+  const canDelete = hasPermission(PERMISSIONS.deleteTemplate);
   const getTemplates = async () => {
     setIsLoading(true);
 
@@ -49,10 +57,18 @@ const Page = (): JSX.Element => {
       setIsLoading(false);
     }, 800);
   };
+  const handleSearch = (val: string) => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      setSearchVal(val);
+    }, 500);
+  };
 
   useEffect(() => {
     getTemplates();
-  }, [currentPage, pageLimit]);
+  }, [currentPage, pageLimit, searchVal]);
 
   return (
     <div className="ml-72 mt-14 p-6">
@@ -68,10 +84,11 @@ const Page = (): JSX.Element => {
             Create and manage AI email templates
           </p>
         </div>
-
+        
         <Link
-          href="/emailManagement/templates/add"
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md flex items-center gap-2 group"
+          href={(canCreate) ? "/emailManagement/templates/add" : ""}
+          className={"bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md flex items-center gap-2 group " + ((canCreate) ? "" : "opacity-50 cursor-not-allowed")}
+          
         >
           <FaPlus className="group-hover:rotate-90 transition-all duration-300" />
           Create Template
@@ -79,7 +96,7 @@ const Page = (): JSX.Element => {
       </div>
 
       {/* TABLE CARD */}
-      <div className="bg-white dark:bg-gray-700 flex flex-col gap-5 p-6 rounded-xl border border-slate-900/10 w-full">
+      {canRead && (<div className="bg-white dark:bg-gray-700 flex flex-col gap-5 p-6 rounded-xl border border-slate-900/10 w-full">
 
         <div className="flex items-center gap-12 justify-between">
 
@@ -106,7 +123,7 @@ const Page = (): JSX.Element => {
 
             <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2">
               <IoIosSearch className="text-xl" />
-              <input type="text" className="outline-none bg-transparent" />
+              <input type="text" className="outline-none bg-transparent" placeholder="Search..." onChange={(e)=>handleSearch(e)} />
             </div>
           </div>
         </div>
@@ -182,20 +199,22 @@ const Page = (): JSX.Element => {
                         <div className="flex items-center gap-2">
 
                           <Link
-                            href={`/emailManagement/templates/view/${item.id}`}
+                            href={(canRead)?'#':`/emailManagement/templates/view/${item.id}`}
                             className="h-9 w-9 flex items-center justify-center rounded-md bg-green-100 hover:bg-green-200 text-green-500"
                           >
                             <FaRegEye className="text-xl" />
                           </Link>
 
                           <Link
-                            href={`/emailManagement/templates/update/${item.id}`}
+                            href={(canUpdate)?'#':`/emailManagement/templates/update/${item.id}`}
                             className="h-9 w-9 flex items-center justify-center rounded-md bg-yellow-200 hover:bg-yellow-300 text-yellow-500"
                           >
                             <MdOutlineEdit className="text-xl" />
                           </Link>
 
                           <button
+                            disabled={(!canDelete)}
+                            
                             className="h-9 w-9 flex items-center justify-center rounded-md bg-red-100 hover:bg-red-200 text-red-500"
                           >
                             <MdDeleteOutline className="text-xl" />
@@ -254,7 +273,7 @@ const Page = (): JSX.Element => {
           onPageChange={(page) => setCurrentPage(page)}
         />
 
-      </div>
+      </div>)}
     </div>
   );
 };
