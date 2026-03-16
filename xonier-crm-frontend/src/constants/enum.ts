@@ -391,40 +391,40 @@ export enum EMPLOYEE_SENIORITY {
 }
 
 export enum INDUSTRIES {
-  TECHNOLOGIES= "technologies",
-    HEALTHCARE="healthcare",
-    FINANCE="finance",
-    EDUCATION="education",
-    MANUFACTURING="manufacturing",
-    RETAIL="retail",
-    CONSULTING="consulting",
-    REALESTATE="real_estate",
-    AGRICULTURE = "Agriculture",
-    AUTOMOTIVE = "Automotive",
-    BANKING = "Banking",
-    BIOTECHNOLOGY = "Biotechnology",
-    CHEMICALS = "Chemicals",
-    CONSTRUCTION = "Construction",
-    
-    ENERGY = "Energy",
-    ENTERTAINMENT = "Entertainment",
-    FOOD_AND_BEVERAGE = "Food & Beverage",
-    GOVERNMENT = "Government",
-    HOSPITALITY = "Hospitality",
-    INSURANCE = "Insurance",
-    IT_SERVICES = "IT Services",
-    LEGAL = "Legal",
-    MARKETING_AND_ADVERTISING = "Marketing & Advertising",
-    MEDIA = "Media",
-    NON_PROFIT = "Non-Profit",
-    PHARMACEUTICALS = "Pharmaceuticals",
-    REAL_ESTATE = "Real Estate",
+  TECHNOLOGIES = "technologies",
+  HEALTHCARE = "healthcare",
+  FINANCE = "finance",
+  EDUCATION = "education",
+  MANUFACTURING = "manufacturing",
+  RETAIL = "retail",
+  CONSULTING = "consulting",
+  REALESTATE = "real_estate",
+  AGRICULTURE = "Agriculture",
+  AUTOMOTIVE = "Automotive",
+  BANKING = "Banking",
+  BIOTECHNOLOGY = "Biotechnology",
+  CHEMICALS = "Chemicals",
+  CONSTRUCTION = "Construction",
 
-    SOFTWARE = "Software",
-    TELECOMMUNICATIONS = "Telecommunications",
-    TRANSPORTATION = "Transportation",
-    E_COMMERCE = "E-Commerce",
-    OTHER = "Other"
+  ENERGY = "Energy",
+  ENTERTAINMENT = "Entertainment",
+  FOOD_AND_BEVERAGE = "Food & Beverage",
+  GOVERNMENT = "Government",
+  HOSPITALITY = "Hospitality",
+  INSURANCE = "Insurance",
+  IT_SERVICES = "IT Services",
+  LEGAL = "Legal",
+  MARKETING_AND_ADVERTISING = "Marketing & Advertising",
+  MEDIA = "Media",
+  NON_PROFIT = "Non-Profit",
+  PHARMACEUTICALS = "Pharmaceuticals",
+  REAL_ESTATE = "Real Estate",
+
+  SOFTWARE = "Software",
+  TELECOMMUNICATIONS = "Telecommunications",
+  TRANSPORTATION = "Transportation",
+  E_COMMERCE = "E-Commerce",
+  OTHER = "Other"
 }
 
 export enum FORM_FIELD_MODULE {
@@ -460,10 +460,10 @@ export enum DEAL_TYPE {
   OTHER = "other",
 }
 
-export enum DEAL_STATUS{
-  ACTIVE="active",
-  INACTIVE="inactive",
-  DELETE="delete"
+export enum DEAL_STATUS {
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+  DELETE = "delete"
 }
 
 export enum FORECAST_CATEGORY {
@@ -486,17 +486,17 @@ export enum QuotationStatus {
   DELETE = "delete"
 }
 
-export enum QUOTATION_EVENT_TYPE{
-    CREATED = "created",
-    UPDATED = "updated",
-    STATUS_CHANGED = "status_changed",
-    EMAIL_SENT = "email_sent",
-    RESEND = "resend",
-    VIEWED = "viewed",
-    ACCEPTED = "accepted",
-    REJECTED = "rejected",
-    EXPIRED = "expired",
-    DELETE = "delete",
+export enum QUOTATION_EVENT_TYPE {
+  CREATED = "created",
+  UPDATED = "updated",
+  STATUS_CHANGED = "status_changed",
+  EMAIL_SENT = "email_sent",
+  RESEND = "resend",
+  VIEWED = "viewed",
+  ACCEPTED = "accepted",
+  REJECTED = "rejected",
+  EXPIRED = "expired",
+  DELETE = "delete",
 }
 
 
@@ -560,36 +560,36 @@ export enum ACTIVITY_ACTION {
   CREATED = "created",
   UPDATED = "updated",
   SENT = "sent",
-  RESEND="resend",
+  RESEND = "resend",
   CONVERTED = "converted",
-    CLOSED_WON = "closed_won",
-    CLOSED_LOST = "closed_lost",
-    DELETE = "delete",
+  CLOSED_WON = "closed_won",
+  CLOSED_LOST = "closed_lost",
+  DELETE = "delete",
 }
 
 
-export enum LEAD_SOURCE_TYPE{
-    SELF_CREATED = "self_created",
-    ADMIN_CREATED = "admin_created",
-    MANAGER_CREATED = "manager_created",
-    BULK_IMPORTED = "bulk_imported",
+export enum LEAD_SOURCE_TYPE {
+  SELF_CREATED = "self_created",
+  ADMIN_CREATED = "admin_created",
+  MANAGER_CREATED = "manager_created",
+  BULK_IMPORTED = "bulk_imported",
 }
 
 
-export enum NUMBER_OF_EMPLOYEES{
+export enum NUMBER_OF_EMPLOYEES {
   LESS_THAN_50 = "50",
-    FROM_50_TO_100 = "50-100",
-    FROM_100_TO_200 = "100-200",
-    FROM_200_TO_300 = "200-300",
-    FROM_300_TO_400 = "300-400",
-    FROM_400_TO_500 = "400-500",
-    FROM_500_TO_1000 = "500-1000",
-    FROM_1000_TO_2000 = "1000-2000",
-    FROM_2000_TO_5000 = "2000-5000"
+  FROM_50_TO_100 = "50-100",
+  FROM_100_TO_200 = "100-200",
+  FROM_200_TO_300 = "200-300",
+  FROM_300_TO_400 = "300-400",
+  FROM_400_TO_500 = "400-500",
+  FROM_500_TO_1000 = "500-1000",
+  FROM_1000_TO_2000 = "1000-2000",
+  FROM_2000_TO_5000 = "2000-5000"
 }
 
 export enum Designation {
-  
+
   CEO = "CEO",
   CTO = "CTO",
   CFO = "CFO",
@@ -709,9 +709,9 @@ export enum TECHNOLOGY {
 
 
 export enum PHONE_NUMBER_STATUS {
-    ACTIVE= "active",
-    INACTIVE="inactive",
-    DELETED="deleted"
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+  DELETED = "deleted"
 }
 
 
@@ -912,4 +912,22 @@ export enum COUNTRY {
   YEMEN = "Yemen",
   ZAMBIA = "Zambia",
   ZIMBABWE = "Zimbabwe"
+}
+export enum TemplateStatus {
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+  DRAFT = "draft",
+  ARCHIVED = "archived",
+}
+
+export enum TemplateCategory {
+  MARKETING = "marketing",
+  TRANSACTIONAL = "transactional",
+  FOLLOW_UP = "follow up",
+  WELCOME = "welcome",
+  INVOICE = "invoice",
+  QUOTATION = "quotation",
+  LEAD = "lead",
+  DEAL = "deal",
+  CUSTOM = "custom",
 }

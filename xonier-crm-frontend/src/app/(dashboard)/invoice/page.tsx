@@ -240,7 +240,7 @@ const page = (): JSX.Element => {
                         >
                           <FaRegEye className="text-xl" />
                         </Link> : <span className="h-9 w-9 flex items-center justify-center rounded-md bg-green-100/80 dark:bg-green-50  text-green-500 opacity-80 cursor-not-allowed"> <FaRegEye className="text-xl" /> </span>}
-                        {hasPermission(PERMISSIONS.updateEnquiry) ? (
+                        {/* {hasPermission(PERMISSIONS.updateEnquiry) ? (
                           <Link
                             href={`/enquiry/update/${item.id}`}
                             className="h-9 w-9 flex items-center justify-center rounded-md
@@ -257,7 +257,7 @@ const page = (): JSX.Element => {
                           >
                             <MdOutlineEdit className="text-xl" />
                           </span>
-                        )}
+                        )} */}
                         {/* <button
                           onClick={() => handleDelete(item.id)}
                           className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-red-100 text-red-500 hover:bg-red-200 hover:scale-104 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-red-100 disabled:opacity-80"

@@ -1,5 +1,6 @@
 import api from "@/src/lib/axios";
 import { ParamValue } from "next/dist/server/request/params";
+import { Template } from "@/src/types/communication/mail.types";
 export const MailService = {
     getAll: (page?: number, limit?: number, filters?: Record<string, any>) => {
     const params = new URLSearchParams();
@@ -15,6 +16,20 @@ export const MailService = {
     return api.get(`/communication/email/history?${params.toString()}`);
   },
   getLogById: (id: ParamValue) => api.get(`/communication/email/history/get-by-id/${id}`),
+  getAllTemplates: (currentPage: number, pageLimit: number, searchVal: string) => {
+    const params = new URLSearchParams();
+    params.append("page", String(currentPage));
+    params.append("limit", String(pageLimit));
+    if (searchVal!='') {
+      params.append("name", String(searchVal));
+    }
+    debugger;
+    return api.get("/email-template/all"+`?${params.toString()}`);
+  },
+  createTemplate: (payload: Template) => api.post("/email-template/create", payload),
+  updateTemplate: (id: ParamValue, payload: Template) => api.patch(`/email-template/update/${id}`, payload),
+  getById : (id:ParamValue)=> api.get(`/email-template/get/${id}`),
+  deleteTemplate : (id:ParamValue)=> api.delete(`/email-template/delete/${id}`)
 };
 
 export default MailService;
