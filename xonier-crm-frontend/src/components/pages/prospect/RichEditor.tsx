@@ -361,7 +361,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
   content: value,
   immediatelyRender: false, // ✅ important for Next.js
   onUpdate: ({ editor }) => {
-    onChange(editor.getHTML());
+    onChange?.(editor.getHTML());
   },
 });
 
@@ -372,7 +372,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
       },
       getHTML: () => editor?.getHTML() ?? "",
       setContent: (html: string) => {
-        editor?.commands.setContent(html, false);
+        editor?.commands.setContent(html, { emitUpdate: false });
       },
       focus: () => {
         editor?.commands.focus();
@@ -388,7 +388,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
         value !== lastExternalValue.current &&
         value !== editor.getHTML()
       ) {
-        editor.commands.setContent(value, false);
+        editor.commands.setContent(value, { emitUpdate: false });
         lastExternalValue.current = value;
       }
     }, [value, editor]);
