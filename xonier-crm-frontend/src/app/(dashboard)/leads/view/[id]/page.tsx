@@ -18,7 +18,8 @@ import LeadService from "@/src/services/lead.service";
 import { Lead } from "@/src/types/leads/leads.types";
 import axios from "axios";
 import { useParams, useRouter } from "next/navigation";
-import React, { JSX, useEffect, useState } from "react";
+import React, { JSX, useEffect, useState,useRef } from "react";
+import { useReactToPrint } from "react-to-print";
 import { toast } from "react-toastify";
 import {
   MdOutlineEdit,
@@ -62,6 +63,7 @@ const LeadViewPage = (): JSX.Element => {
   const [err, setErr] = useState<string | string[]>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [leadData, setLeadData] = useState<Lead | null>(null);
+  const [isPrinting, setIsPrinting] = useState(false);
   const [activeTab, setActiveTab] = useState<
     "overview" | "contact" | "activity"
   >("overview");
@@ -69,6 +71,7 @@ const LeadViewPage = (): JSX.Element => {
   const { id } = useParams();
   const router = useRouter();
   const { hasPermission } = usePermissions();
+  const componentRef = useRef<HTMLDivElement>(null);
 
   const getLeadData = async () => {
     setIsLoading(true);
@@ -130,9 +133,17 @@ const LeadViewPage = (): JSX.Element => {
     toast.info("Download functionality coming soon");
   };
 
-  const handlePrint = async () => {
-    window.print();
-  };
+ const handlePrint = useReactToPrint({
+  contentRef: componentRef,
+  documentTitle: `Lead-${leadData?.lead_id}`,
+  onBeforePrint: () => {
+    return new Promise<void>((resolve) => {
+      setIsPrinting(true);
+      resolve();
+    });
+  },
+  onAfterPrint: () => setIsPrinting(false),
+});
 
   const getPriorityColor = (priority: string) => {
     const colors: Record<string, string> = {
@@ -164,40 +175,18 @@ const LeadViewPage = (): JSX.Element => {
     );
   };
 
-  // const country = COUNTRY_CODE.map((item, value)=>)
-
   if (isLoading) {
     return (
       <div className="ml-72 mt-14 p-6 flex flex-col gap-6 animate-pulse">
-        <Skeleton
-          height={120}
-          borderRadius={12}
-          className="dark:bg-gray-700 w-full"
-        />
-        <Skeleton
-          height={60}
-          borderRadius={12}
-          className="dark:bg-gray-700 w-full"
-        />
+        <Skeleton height={120} borderRadius={12} className="dark:bg-gray-700 w-full" />
+        <Skeleton height={60} borderRadius={12} className="dark:bg-gray-700 w-full" />
         <div className="flex items-start gap-6">
           <div className="w-2/3 flex flex-col gap-6">
-            <Skeleton
-              height={300}
-              borderRadius={12}
-              className="dark:bg-gray-700 w-full"
-            />
-            <Skeleton
-              height={200}
-              borderRadius={12}
-              className="dark:bg-gray-700 w-full"
-            />
+            <Skeleton height={300} borderRadius={12} className="dark:bg-gray-700 w-full" />
+            <Skeleton height={200} borderRadius={12} className="dark:bg-gray-700 w-full" />
           </div>
           <div className="w-1/3">
-            <Skeleton
-              height={400}
-              borderRadius={12}
-              className="dark:bg-gray-700 w-full"
-            />
+            <Skeleton height={400} borderRadius={12} className="dark:bg-gray-700 w-full" />
           </div>
         </div>
       </div>
@@ -230,7 +219,22 @@ const LeadViewPage = (): JSX.Element => {
   }
 
   return (
-    <div className="ml-72 mt-14 p-6 min-h-screen">
+  <div className="ml-72 mt-14 p-6 min-h-screen">
+    {/* Global print styles: fixes gap-based whitespace at page breaks */}
+    <style>{`
+      @media print {
+        /* Convert flex+gap layout to block so gaps don't create dead space at page breaks */
+        .print-col-stack { display: block !important; }
+        .print-col-stack > * { margin-bottom: 1.5rem; width: 100% !important; }
+
+        /* Prevent section headings from being orphaned at bottom of page */
+        h3 { break-after: avoid; }
+
+        /* Metric grid: force 4 columns */
+        .metric-grid { grid-template-columns: repeat(4, 1fr) !important; }
+      }
+    `}</style>
+    <div ref={componentRef} className="print:p-6">
       {/* Header Section */}
       <div className="mb-6">
         <div className="bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
@@ -268,7 +272,8 @@ const LeadViewPage = (): JSX.Element => {
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            {/* Hide action buttons when printing */}
+            <div className="flex flex-wrap items-center gap-2 print:hidden">
               {hasPermission(PERMISSIONS.updateLead) &&
               leadData.status !== SALES_STATUS.DELETE ? (
                 <Link
@@ -285,19 +290,19 @@ const LeadViewPage = (): JSX.Element => {
                 </span>
               )}
 
-              <button
+              {/* <button
                 onClick={handlePrint}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded-lg transition-colors cursor-pointer"
               >
                 <IoPrintOutline className="w-4 h-4" />
-              </button>
+              </button> */}
 
               {/* More Actions Dropdown */}
               <div className="relative group">
                 <button className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-600 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded-lg transition-colors">
                   <IoEllipsisVertical className="w-4 h-4" />
                 </button>
-                <div className="hidden group-hover:block absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10 ">
+                <div className="hidden group-hover:block absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10">
                   {hasPermission(PERMISSIONS.deleteLead) && (
                     <button
                       onClick={() => handleDelete(leadData.id)}
@@ -314,7 +319,7 @@ const LeadViewPage = (): JSX.Element => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="metric-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <MetricCard
           icon={<IoBusinessOutline className="w-6 h-6" />}
           label="Company"
@@ -341,32 +346,37 @@ const LeadViewPage = (): JSX.Element => {
         />
       </div>
 
-      <div className="bg-white dark:bg-gray-700 mb-6 rounded-xl border border-gray-200 dark:border-gray-700">
-        <div className="flex gap-8 overflow-x-auto px-6 py-3.5">
-          {(["overview", "contact", "activity"] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`pb-1.5 px-1 font-medium transition-colors cursor-pointer relative whitespace-nowrap ${
-                activeTab === tab
-                  ? "text-blue-600 dark:text-blue-400"
-                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-              }`}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-              {activeTab === tab && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400"></div>
-              )}
-            </button>
-          ))}
+      {/* Hide tab nav when printing */}
+      {!isPrinting && (
+        <div className="bg-white dark:bg-gray-700 mb-6 rounded-xl border border-gray-200 dark:border-gray-700">
+          <div className="flex gap-8 overflow-x-auto px-6 py-3.5">
+            {(["overview", "contact", "activity"] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`pb-1.5 px-1 font-medium transition-colors cursor-pointer relative whitespace-nowrap ${
+                  activeTab === tab
+                    ? "text-blue-600 dark:text-blue-400"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                }`}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                {activeTab === tab && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400"></div>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="flex gap-6">
-        <div className="w-2/3 flex flex-col gap-6">
-          {activeTab === "overview" && (
+      {/* FIX: Stack columns vertically on print, using block layout to avoid gap whitespace at page breaks */}
+      <div className="flex gap-6 print-col-stack">
+        <div className="w-2/3 print:w-full flex flex-col gap-6">
+          {(activeTab === "overview" || isPrinting) && (
             <>
-              <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+              {/* break-inside-avoid: keep whole section on one page if it fits; if too tall, content flows naturally without forced gaps */}
+              <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700 break-inside-avoid">
                 <div className="flex items-center gap-2 mb-6">
                   <IoInformationCircleOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -374,7 +384,7 @@ const LeadViewPage = (): JSX.Element => {
                   </h3>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 print:grid-cols-3 gap-6">
                   <InfoItem
                     icon={<IoInformationCircleOutline className="w-4 h-4" />}
                     label="Source"
@@ -409,9 +419,7 @@ const LeadViewPage = (): JSX.Element => {
                     Object.entries(leadData.extraFields).map(([key, value]) => (
                       <InfoItem
                         key={key}
-                        icon={
-                          <IoInformationCircleOutline className="w-4 h-4" />
-                        }
+                        icon={<IoInformationCircleOutline className="w-4 h-4" />}
                         label={key
                           .replace(/([A-Z])/g, " $1")
                           .replace(/^./, (c) => c.toUpperCase())
@@ -423,7 +431,7 @@ const LeadViewPage = (): JSX.Element => {
               </div>
 
               {/* Employee Details */}
-              <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+              <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700 break-inside-avoid">
                 <div className="flex items-center gap-2 mb-6">
                   <IoBriefcaseOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -431,7 +439,7 @@ const LeadViewPage = (): JSX.Element => {
                   </h3>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-6">
                   <InfoItem
                     icon={<IoBriefcaseOutline className="w-4 h-4" />}
                     label="Role"
@@ -445,39 +453,41 @@ const LeadViewPage = (): JSX.Element => {
                 </div>
               </div>
 
-              {hasPermission(PERMISSIONS.viewAssignLeadInformation) &&<div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-                <div className="flex items-center gap-2 mb-6">
-                  <MdOutlineLeaderboard className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Lead Assign Information
-                  </h3>
-                </div>
+              {hasPermission(PERMISSIONS.viewAssignLeadInformation) && (
+                <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700 break-inside-avoid">
+                  <div className="flex items-center gap-2 mb-6">
+                    <MdOutlineLeaderboard className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      Lead Assign Information
+                    </h3>
+                  </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {leadData?.assignedTo?.map((item, i) => {
-                    const isAssigned = leadData.assignedAt
-                      ? formatDate(leadData.assignedAt)
-                      : "-";
-                    return (
-                      <>
-                        <InfoItem
-                          icon={<IoBriefcaseOutline className="w-4 h-4" />}
-                          label="Assign to"
-                          value={`${item.firstName} ${item.lastName}` || "—"}
-                        />
-                        <InfoItem
-                          icon={<IoStatsChartOutline className="w-4 h-4" />}
-                          label="Assign at"
-                          value={isAssigned || "—"}
-                        />
-                      </>
-                    );
-                  })}
+                  <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-6">
+                    {leadData?.assignedTo?.map((item, i) => {
+                      const isAssigned = leadData.assignedAt
+                        ? formatDate(leadData.assignedAt)
+                        : "-";
+                      return (
+                        <React.Fragment key={i}>
+                          <InfoItem
+                            icon={<IoBriefcaseOutline className="w-4 h-4" />}
+                            label="Assign to"
+                            value={`${item.firstName} ${item.lastName}` || "—"}
+                          />
+                          <InfoItem
+                            icon={<IoStatsChartOutline className="w-4 h-4" />}
+                            label="Assign at"
+                            value={isAssigned || "—"}
+                          />
+                        </React.Fragment>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>}
+              )}
 
               {(leadData?.message || leadData?.membershipNotes) && (
-                <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700 break-inside-avoid">
                   <div className="flex items-center gap-2 mb-6">
                     <IoChatbubbleOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -487,7 +497,7 @@ const LeadViewPage = (): JSX.Element => {
 
                   <div className="space-y-4">
                     {leadData?.message && (
-                      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg break-inside-avoid">
                         <div className="flex items-center gap-2 mb-2">
                           <IoChatbubbleOutline className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                           <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -500,7 +510,7 @@ const LeadViewPage = (): JSX.Element => {
                       </div>
                     )}
                     {leadData?.membershipNotes && (
-                      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg break-inside-avoid">
                         <div className="flex items-center gap-2 mb-2">
                           <IoDocumentText className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                           <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -519,8 +529,8 @@ const LeadViewPage = (): JSX.Element => {
           )}
 
           {/* Contact Tab */}
-          {activeTab === "contact" && (
-            <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+          {(activeTab === "contact" || isPrinting) && (
+            <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700 break-inside-avoid">
               <div className="flex items-center gap-2 mb-6">
                 <IoPersonOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -528,7 +538,7 @@ const LeadViewPage = (): JSX.Element => {
                 </h3>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-6">
                 <InfoItem
                   icon={<IoPersonOutline className="w-4 h-4" />}
                   label="Full Name"
@@ -560,8 +570,8 @@ const LeadViewPage = (): JSX.Element => {
             </div>
           )}
 
-          {/* Activity Tab */}
-          {activeTab === "activity" && (
+          {/* Activity Tab — hidden when printing */}
+          {activeTab === "activity" && !isPrinting && (
             <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-2 mb-6">
                 <MdTimeline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -579,11 +589,11 @@ const LeadViewPage = (): JSX.Element => {
           )}
         </div>
 
-        {/* Sidebar */}
-        <div className="w-1/3 flex flex-col gap-6">
+        {/* Sidebar - full width on print */}
+        <div className="w-1/3 print:w-full flex flex-col gap-6">
           {/* Creator Information */}
           {leadData.createdBy && (
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl border border-blue-400 shadow-lg">
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl border border-blue-400 shadow-lg break-inside-avoid">
               <div className="flex items-center gap-2 mb-4">
                 <FaRegUser className="text-xl text-white" />
                 <h2 className="text-white font-semibold text-xl">
@@ -619,7 +629,7 @@ const LeadViewPage = (): JSX.Element => {
           )}
 
           {/* Quick Stats */}
-          <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700 break-inside-avoid">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Quick Stats
             </h3>
@@ -648,7 +658,7 @@ const LeadViewPage = (): JSX.Element => {
 
           {/* Location Info */}
           {(leadData?.country || leadData?.postalCode) && (
-            <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700 break-inside-avoid">
               <div className="flex items-center gap-2 mb-4">
                 <IoLocationOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -672,6 +682,7 @@ const LeadViewPage = (): JSX.Element => {
         </div>
       </div>
     </div>
+  </div>
   );
 };
 
@@ -693,7 +704,7 @@ const MetricCard = ({
     <div className="flex items-center gap-3 overflow-hidden">
       <div className={`${color} p-3 rounded-lg text-white`}>{icon}</div>
       <div className="flex-1 group:">
-        <p className="text-sm text-gray-500 dark:text-gray-400 ">{label}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
         <p className="text-xl font-bold text-gray-900 dark:text-white mt-1 capitalize truncate w-42">
           {value}
         </p>

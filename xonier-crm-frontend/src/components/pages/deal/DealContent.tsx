@@ -180,6 +180,7 @@ const DealContent = (): JSX.Element => {
     setSearchVal("");
   }, [currentTab]);
   useEffect(() => {
+    setCurrentPage(1);
     if(currentTab === 1){
       getDealData()
     }
@@ -206,7 +207,7 @@ const DealContent = (): JSX.Element => {
   return (
     <div className={`ml-72 mt-14 p-6`}>
       
-      <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm  p-6 rounded-xl border-[1px] border-slate-900/10 w-full flex flex-col gap-7 items-center justify-between">
+      <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm  p-6 rounded-xl border border-slate-900/10 w-full flex flex-col gap-7 items-center justify-between">
           <div className="flex w-full items-center gap-12 justify-between">
             <div className="flex flex-col gap-1.5">
               <h2 className="text-xl font-bold  dark:text-white text-slate-900 capitalize">
@@ -220,7 +221,7 @@ const DealContent = (): JSX.Element => {
               <select
                 name="limit"
                 id="limit"
-                className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10"
+                className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10"
                 onChange={(e) => handlePageLimit(Number(e.target.value))}
               >
                 <option value="10">10</option>
@@ -228,7 +229,7 @@ const DealContent = (): JSX.Element => {
                 <option value="30">30</option>
                 <option value="40">50</option>
               </select>
-              <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2">
+              <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2">
                 <IoIosSearch className="text-xl" />
                 <input type="text" className="outline-none" value={searchVal} onChange={(e)=>handleSearch(e.target.value)} />
               </div>

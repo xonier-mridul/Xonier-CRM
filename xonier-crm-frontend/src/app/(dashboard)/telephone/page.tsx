@@ -6,8 +6,8 @@ import extractErrorMessages from "@/src/app/utils/error.utils";
 import axios from "axios";
 import { TelephoneServices } from "@/src/services/communication/telephone.service";
 import { IoIosSearch } from "react-icons/io";
-import { FaPlus, FaRegEye, FaXmark } from "react-icons/fa6";
-import { MdOutlineEdit, MdDeleteOutline, MdOutlineContentCopy, MdPhone, MdPerson, MdCalendarToday, MdCheckCircle, MdCancel } from "react-icons/md";
+import { FaPlus, FaRegEye, FaXmark, FaUsers } from "react-icons/fa6";
+import { MdOutlineEdit, MdDeleteOutline, MdOutlineContentCopy, MdPhone, MdPerson, MdCalendarToday, MdCheckCircle, MdCancel, MdEdit } from "react-icons/md";
 import { IoClose, IoPhonePortrait } from "react-icons/io5";
 import { HiUserAdd } from "react-icons/hi";
 import { handleCopy } from "@/src/app/utils/clipboard.utils";
@@ -46,6 +46,9 @@ const Page = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isAssigning, setIsAssigning] = useState<boolean>(false);
   const [clearingUserId, setClearingUserId] = useState<string | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [phoneToDelete, setPhoneToDelete] = useState<TelephoneNumber | null>(null);
 
   const getTelephonesNumber = async () => {
     setIsLoading(true);
@@ -172,6 +175,7 @@ const Page = () => {
   };
 
   const openAssignModal = (phone: TelephoneNumber) => {
+    closeViewModal();
     setAssignPhone(phone);
     setSelectedUser(null);
     setUserSearch("");
@@ -209,22 +213,22 @@ const Page = () => {
     }
   };
 
-  const handleClearNumber = async (userId: string, name: string, number:string, e: React.MouseEvent) => {
+  const handleClearNumber = async (userId: string, name: string, number: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setClearingUserId(userId);
     try {
 
-      const confirm = await ConfirmPopup({title: "Are you sure", text: `Are you sure to remove ${number} phone number from ${name} user`, btnTxt:"Yes, Remove"})
+      const confirm = await ConfirmPopup({ title: "Are you sure", text: `Are you sure to remove ${number} phone number from ${name} user`, btnTxt: "Yes, Remove" })
 
-      if(confirm){
-      const result = await AuthService.clearNumber(userId);
-      if (result.status === 200 || result.status === 201) {
-        toast.success("Phone number cleared successfully");
-        getAllUsers();
-        getTelephonesNumber();
+      if (confirm) {
+        const result = await AuthService.clearNumber(userId);
+        if (result.status === 200 || result.status === 201) {
+          toast.success("Phone number cleared successfully");
+          getAllUsers();
+          getTelephonesNumber();
+        }
       }
-      }
-      
+
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) {
@@ -238,6 +242,54 @@ const Page = () => {
     }
   };
 
+  const handleUpdatePhone = async () => {
+    if (!selectedPhone) {
+      toast.error("No phone selected");
+      return;
+    }
+
+    try {
+      await TelephoneServices.update(selectedPhone.id, {
+        status: selectedPhone.status,
+      });
+
+      toast.success("Phone status updated!");
+      setShowEditModal(false);
+    } catch (error) {
+      toast.error("Failed to update status");
+    }
+  };
+
+  const handleEdit = (phone: TelephoneNumber) => {
+    setSelectedPhone(phone);
+    setShowEditModal(true);
+  };
+  const handleDeletePhone = async () => {
+    if (!phoneToDelete) return;
+
+    try {
+      await TelephoneServices.delete(phoneToDelete.id);
+      toast.success("Phone number deleted successfully");
+      closeDeleteModal();
+      getTelephonesNumber();
+    } catch (error:any) {
+      toast.error(error.response.data.message);
+    }
+  };
+  const handleDeleteClick = (phone: TelephoneNumber) => {
+    setPhoneToDelete(phone);
+    setShowDeleteModal(true);
+  };
+
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+    setPhoneToDelete(null);
+  };
+  const closeEditModal = () => {
+    setShowEditModal(false);
+    setSelectedPhone(null);
+  };
+
   const filteredUsers = userData.filter((user) => {
     const fullName = `${user.firstName} ${user.lastName ?? ""}`.toLowerCase();
     const email = user.email.toLowerCase();
@@ -248,7 +300,7 @@ const Page = () => {
   return (
     <>
       <div className="ml-72 mt-14 p-6">
-        <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border-[1px] border-slate-900/10 w-full flex flex-col gap-7 items-center justify-between">
+        <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full flex flex-col gap-7 items-center justify-between">
           <div className="flex w-full items-center gap-12 justify-between">
             <div className="flex flex-col gap-1.5">
               <h2 className="text-xl font-bold dark:text-white text-slate-900 capitalize">
@@ -263,7 +315,7 @@ const Page = () => {
                 name="limit"
                 id="limit"
                 value={pageLimit}
-                className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10"
+                className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10"
                 onChange={(e) => setPageLimit(Number(e.target.value))}
               >
                 <option value="10">10</option>
@@ -272,7 +324,7 @@ const Page = () => {
                 <option value="50">50</option>
               </select>
 
-              <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2">
+              <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2">
                 <IoIosSearch className="text-xl" />
                 <input
                   type="text"
@@ -323,33 +375,31 @@ const Page = () => {
                     return (
                       <tr
                         key={phone.id}
-                        className={`${
-                          isEven
-                            ? "bg-white dark:bg-transparent"
-                            : "bg-blue-100/50 dark:bg-slate-500"
-                        } w-full`}
+                        className={`${isEven
+                          ? "bg-white dark:bg-transparent"
+                          : "bg-blue-100/50 dark:bg-slate-500"
+                          } w-full`}
                       >
                         <td className="p-4">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-semibold font-mono">{phone.phoneNumber}</span>
                             <button
                               onClick={() => handleCopy(phone.phoneNumber)}
-                              className="text-gray-400 hover:text-blue-500 transition-colors"
+                              className="text-gray-400 hover:text-blue-500 transition-colors ms-auto"
                             >
-                              <MdOutlineContentCopy className="text-sm" />
+                              <MdOutlineContentCopy className="text-sm " />
                             </button>
                           </div>
                         </td>
 
                         <td className="p-4">
                           <span
-                            className={`${
-                              phone.status === PHONE_NUMBER_STATUS.ACTIVE
-                                ? "bg-green-500"
-                                : phone.status === PHONE_NUMBER_STATUS.INACTIVE
+                            className={`${phone.status === PHONE_NUMBER_STATUS.ACTIVE
+                              ? "bg-green-500"
+                              : phone.status === PHONE_NUMBER_STATUS.INACTIVE
                                 ? "bg-gray-600"
                                 : "bg-red-500"
-                            } text-white px-4 py-1.5 text-sm rounded-md capitalize`}
+                              } text-white px-4 py-1.5 text-sm rounded-md capitalize`}
                           >
                             {phone.status}
                           </span>
@@ -376,6 +426,7 @@ const Page = () => {
 
                             {phone.status !== PHONE_NUMBER_STATUS.DELETED && (
                               <button
+                                onClick={() => handleEdit(phone)}
                                 className="h-9 w-9 flex items-center justify-center rounded-md bg-yellow-200/80 dark:bg-yellow-100 hover:bg-yellow-300/70 dark:hover:bg-yellow-200 text-yellow-500 hover:scale-104 transition-transform cursor-pointer"
                               >
                                 <MdOutlineEdit className="text-xl" />
@@ -383,7 +434,10 @@ const Page = () => {
                             )}
 
                             {phone.status !== PHONE_NUMBER_STATUS.DELETED && (
-                              <button className="h-9 w-9 flex items-center justify-center rounded-md bg-red-200/80 dark:bg-red-100 hover:bg-red-300/70 dark:hover:bg-red-200 text-red-500 hover:scale-104 transition-transform cursor-pointer" title="Delete phone number">
+                              <button
+                                onClick={() => handleDeleteClick(phone)}
+                                className="h-9 w-9 flex items-center justify-center rounded-md bg-red-200/80 dark:bg-red-100 hover:bg-red-300/70 dark:hover:bg-red-200 text-red-500 hover:scale-104 transition-transform cursor-pointer" title="Delete phone number">
+
                                 <MdDeleteOutline className="text-xl" />
                               </button>
                             )}
@@ -415,11 +469,10 @@ const Page = () => {
                   return (
                     <tr
                       key={i}
-                      className={`${
-                        isEven
-                          ? "bg-white dark:bg-transparent"
-                          : "bg-blue-100/50 dark:bg-slate-500"
-                      } w-full`}
+                      className={`${isEven
+                        ? "bg-white dark:bg-transparent"
+                        : "bg-blue-100/50 dark:bg-slate-500"
+                        } w-full`}
                     >
                       <td className="p-4">
                         <Skeleton width={140} height={30} borderRadius={14} />
@@ -460,7 +513,7 @@ const Page = () => {
       {showViewModal && selectedPhone && (
         <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5 rounded-t-2xl flex items-center justify-between">
+            <div className="sticky top-0 bg-linear-to-r from-blue-600 to-indigo-600 px-6 py-5 rounded-t-2xl flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                   <IoPhonePortrait className="w-6 h-6 text-white" />
@@ -479,7 +532,7 @@ const Page = () => {
             </div>
 
             <div className="p-6 space-y-6">
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-blue-100 dark:border-blue-800">
+              <div className="bg-linear-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-blue-100 dark:border-blue-800">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
@@ -516,13 +569,12 @@ const Page = () => {
                     </p>
                   </div>
                   <span
-                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold ${
-                      selectedPhone.status === PHONE_NUMBER_STATUS.ACTIVE
-                        ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400"
-                        : selectedPhone.status === PHONE_NUMBER_STATUS.INACTIVE
+                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold ${selectedPhone.status === PHONE_NUMBER_STATUS.ACTIVE
+                      ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400"
+                      : selectedPhone.status === PHONE_NUMBER_STATUS.INACTIVE
                         ? "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
                         : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400"
-                    }`}
+                      }`}
                   >
                     {selectedPhone.status === PHONE_NUMBER_STATUS.ACTIVE && <MdCheckCircle className="w-4 h-4" />}
                     {selectedPhone.status === PHONE_NUMBER_STATUS.INACTIVE && <MdCancel className="w-4 h-4" />}
@@ -541,7 +593,7 @@ const Page = () => {
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                    <div className="w-10 h-10 bg-linear-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
                       {typeof selectedPhone.createdBy === "string"
                         ? "?"
                         : `${selectedPhone.createdBy.firstName?.[0] ?? ""}${selectedPhone.createdBy.lastName?.[0] ?? ""}`}
@@ -550,7 +602,7 @@ const Page = () => {
                       <p className="text-sm font-semibold text-gray-900 dark:text-white">
                         {getCreatorName(selectedPhone.createdBy)}
                       </p>
-                     
+
                     </div>
                   </div>
                 </div>
@@ -579,6 +631,69 @@ const Page = () => {
                   <p className="text-xs font-mono text-gray-500 dark:text-gray-400 break-all">{selectedPhone.id}</p>
                 </div>
               </div>
+              <div className="grid  gap-4">
+                <div className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-5 border border-slate-100 dark:border-gray-700">
+                  <div className="flex items-center gap-3 mb-3">
+                    <FaUsers />
+                    <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Assigned Users
+                    </p>
+                    <div className="flex items-center gap-2 ml-auto">
+                      <button
+                        onClick={() => {
+                          closeViewModal();
+                          openAssignModal(selectedPhone);
+                        }}
+                        className="flex items-center justify-center w-8 h-8 rounded-lg bg-yellow-200 hover:bg-yellow-300 text-yellow-700 hover:text-yellow-800 transition cursor-pointer border-yellow-700"
+                        title=""
+                      >
+                        <MdEdit className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  {/* ---- */}
+                  <div className="pt-3">
+                    {userData?.filter(
+                      (user) =>
+                        user?.assignedPhoneNumber?.phoneNumber ===
+                        selectedPhone.phoneNumber
+                    ).length > 0 ? (
+
+                      <div className="flex flex-col gap-3">
+
+                        {userData
+                          .filter(
+                            (user) =>
+                              user?.assignedPhoneNumber?.phoneNumber ===
+                              selectedPhone.phoneNumber
+                          )
+                          .map((user) => (
+                            <div
+                              key={user.id}
+                              className="flex items-center gap-3 bg-white dark:bg-gray-800 p-3 rounded-lg border-slate-300"
+                            >
+                              <div className="w-9 h-9 rounded-full bg-indigo-500 text-white flex items-center justify-center text-sm font-bold">
+                                {user.firstName?.[0]}
+                                {user.lastName?.[0]}
+                              </div>
+
+                              <div>
+                                <p className="text-sm font-semibold">
+                                  {user.firstName} {user.lastName}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+
+                    ) : (
+                      <p className="text-sm text-gray-400">
+                        No users assigned
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="px-6 py-4 bg-slate-50 dark:bg-gray-700/30 border-t border-slate-100 dark:border-gray-700 rounded-b-2xl flex justify-end gap-3">
@@ -598,10 +713,161 @@ const Page = () => {
         </div>
       )}
 
+      {showEditModal && selectedPhone && (
+        <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+
+            {/* Header */}
+            <div className="sticky top-0 bg-linear-to-r from-yellow-500 to-amber-500 px-6 py-5 rounded-t-2xl flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                  <MdEdit className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white">Edit Phone Number</h3>
+                  <p className="text-sm text-yellow-100">Update phone details</p>
+                </div>
+              </div>
+
+              <button
+                onClick={closeEditModal}
+                className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors group cursor-pointer"
+              >
+                <IoClose className="w-6 h-6 group-hover:rotate-90" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-6">
+
+              {/* Phone Number */}
+              <div className="bg-linear-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 rounded-2xl p-6 border border-yellow-100 dark:border-yellow-800">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  Phone Number
+                </p>
+
+                <input
+                  type="text"
+                  value={selectedPhone.phoneNumber}
+                  disabled
+                  className="w-full text-2xl font-bold font-mono bg-transparent border border-yellow-200 rounded-lg px-4 py-2 focus:outline-none"
+                />
+              </div>
+
+              {/* Status Update */}
+              <div className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-5 border border-slate-100 dark:border-gray-700">
+
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-9 h-9 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center">
+                    <MdCheckCircle className="w-5 h-5 text-yellow-500" />
+                  </div>
+
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Update Status
+                  </p>
+                </div>
+
+                <select
+                  value={selectedPhone.status}
+                  onChange={(e) =>
+                    setSelectedPhone({
+                      ...selectedPhone,
+                      status: e.target.value as PHONE_NUMBER_STATUS,
+                    })
+                  }
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-yellow-500"
+                >
+                  <option value={PHONE_NUMBER_STATUS.ACTIVE}>Active</option>
+                  <option value={PHONE_NUMBER_STATUS.INACTIVE}>Inactive</option>
+                </select>
+              </div>
+
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 bg-slate-50 dark:bg-gray-700/30 border-t border-slate-100 dark:border-gray-700 rounded-b-2xl flex justify-end gap-3">
+
+              <button
+                onClick={closeEditModal}
+                className="px-5 py-2.5 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium transition-colors border border-slate-200 dark:border-gray-600"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleUpdatePhone}
+                className="px-5 py-2.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl font-medium transition-colors shadow-lg shadow-yellow-200 dark:shadow-yellow-900/30"
+              >
+                Update Status
+              </button>
+
+            </div>
+          </div>
+        </div>
+      )}
+      {showDeleteModal && phoneToDelete && (
+        <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full">
+
+            {/* Header */}
+            <div className="bg-linear-to-r from-red-600 to-rose-500 px-6 py-5 rounded-t-2xl flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <MdDeleteOutline className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white">Delete Phone Number</h3>
+                  <p className="text-sm text-red-100">This action cannot be undone</p>
+                </div>
+              </div>
+
+              <button
+                onClick={closeDeleteModal}
+                className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white"
+              >
+                <IoClose className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6">
+              <p className="text-gray-700 dark:text-gray-300 text-sm">
+                Are you sure you want to delete this phone number?
+              </p>
+
+              <div className="mt-4 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                <p className="font-mono text-lg font-semibold text-red-600 dark:text-red-400">
+                  {phoneToDelete.phoneNumber}
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 bg-slate-50 dark:bg-gray-700/30 border-t border-slate-100 dark:border-gray-700 rounded-b-2xl flex justify-end gap-3">
+
+              <button
+                onClick={closeDeleteModal}
+                className="px-5 py-2.5 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl border"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleDeletePhone}
+                className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium shadow-lg shadow-red-200 dark:shadow-red-900/30"
+              >
+                Delete Number
+              </button>
+
+            </div>
+          </div>
+        </div>
+      )}
+
       {showCreateModal && (
         <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full">
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5 rounded-t-2xl flex items-center justify-between">
+            <div className="bg-linear-to-r from-blue-600 to-indigo-600 px-6 py-5 rounded-t-2xl flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                   <FaPlus className="w-6 h-6 text-white" />
@@ -673,7 +939,7 @@ const Page = () => {
       {showAssignModal && assignPhone && (
         <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col">
-            <div className="bg-gradient-to-r from-blue-600 to-cyan-400 px-6 py-5 rounded-t-2xl flex items-center justify-between flex-shrink-0">
+            <div className="bg-linear-to-r from-purple-600 to-purple-300 px-6 py-5 rounded-t-2xl flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                   <HiUserAdd className="w-6 h-6 text-white" />
@@ -692,8 +958,8 @@ const Page = () => {
             </div>
 
             <div className="p-6 flex flex-col gap-4 overflow-hidden flex-1">
-              <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2 flex-shrink-0">
-                <IoIosSearch className="text-xl text-gray-400 flex-shrink-0" />
+              <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2 shrink-0">
+                <IoIosSearch className="text-xl text-gray-400 shrink-0" />
                 <input
                   type="text"
                   placeholder="Search by name or email..."
@@ -702,7 +968,7 @@ const Page = () => {
                   onChange={(e) => setUserSearch(e.target.value)}
                 />
                 {userSearch && (
-                  <button onClick={() => setUserSearch("")} className="text-gray-400 hover:text-gray-600 flex-shrink-0">
+                  <button onClick={() => setUserSearch("")} className="text-gray-400 hover:text-gray-600 shrink-0">
                     <IoClose className="w-4 h-4" />
                   </button>
                 )}
@@ -720,22 +986,20 @@ const Page = () => {
                       <div
                         key={user.id}
                         onClick={() => !hasNumber && setSelectedUser(isSelected ? null : user)}
-                        className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${
-                          hasNumber
-                            ? "border-transparent bg-slate-50 dark:bg-gray-700/50 opacity-80 cursor-not-allowed"
-                            : isSelected
+                        className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${hasNumber
+                          ? "border-transparent bg-slate-50 dark:bg-gray-700/50 opacity-80 cursor-not-allowed"
+                          : isSelected
                             ? "border-cyan-500 bg-cyan-50 dark:bg-cyan-900/20 cursor-pointer"
                             : "border-transparent bg-slate-50 dark:bg-gray-700/50 hover:border-purple-200 hover:bg-cyan-50/50 dark:hover:bg-cyan-900/10 cursor-pointer"
-                        }`}
+                          }`}
                       >
                         <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 ${
-                            hasNumber
-                              ? "bg-gradient-to-br from-orange-400 to-orange-500"
-                              : isSelected
-                              ? "bg-gradient-to-br from-cyan-500 to-cyan-600"
-                              : "bg-gradient-to-br from-gray-400 to-gray-500"
-                          }`}
+                          className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 ${hasNumber
+                            ? "bg-linear-to-br from-orange-400 to-orange-500"
+                            : isSelected
+                              ? "bg-linear-to-br from-cyan-500 to-cyan-600"
+                              : "bg-linear-to-br from-gray-400 to-gray-500"
+                            }`}
                         >
                           {initials || "?"}
                         </div>
@@ -749,9 +1013,9 @@ const Page = () => {
                         </div>
                         {hasNumber ? (
                           <button
-                            onClick={(e) => { e.stopPropagation(); handleClearNumber(user.id, `${user.firstName} ${user.lastName} `, user.assignedPhoneNumber.phoneNumber , e); }}
+                            onClick={(e) => { e.stopPropagation(); handleClearNumber(user.id, `${user.firstName} ${user.lastName} `, user.assignedPhoneNumber.phoneNumber, e); }}
                             disabled={isClearing}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                           >
                             {isClearing ? (
                               <div className="w-3 h-3 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
@@ -761,7 +1025,7 @@ const Page = () => {
                             {isClearing ? "Clearing..." : "Clear"}
                           </button>
                         ) : isSelected ? (
-                          <MdCheckCircle className="w-5 h-5 text-cyan-500 flex-shrink-0" />
+                          <MdCheckCircle className="w-5 h-5 text-cyan-500 shrink-0" />
                         ) : null}
                       </div>
                     );
@@ -775,7 +1039,7 @@ const Page = () => {
               </div>
             </div>
 
-            <div className="px-6 py-4 bg-slate-50 dark:bg-gray-700/30 border-t border-slate-100 dark:border-gray-700 rounded-b-2xl flex items-center justify-between gap-3 flex-shrink-0">
+            <div className="px-6 py-4 bg-slate-50 dark:bg-gray-700/30 border-t border-slate-100 dark:border-gray-700 rounded-b-2xl flex items-center justify-between gap-3 shrink-0">
               <div className="text-sm text-gray-500 dark:text-gray-400">
                 {selectedUser ? (
                   <span className="text-purple-600 dark:text-purple-400 font-medium">

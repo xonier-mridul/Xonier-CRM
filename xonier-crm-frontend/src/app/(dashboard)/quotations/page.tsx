@@ -160,13 +160,16 @@ const page = (): JSX.Element => {
   const [wonTotalPages, setWonTotalPages] = useState<number>(1);
   const [lostTotalPages, setLostTotalPages] = useState<number>(1);
   const [currentTab, setCurrentTab] = useState<number>(1);
+  const [searchVal, setSearchVal] = useState<string>("");
+  const [TosearchVal, setToSearchVal] = useState<string>("");
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const { hasPermission } = usePermissions();
 
   const getQuotationData = async () => {
     setIsLoading(true);
     try {
-      const result = await QuoteService.getAll(currentPage, pageLimit);
+      const result = await QuoteService.getAll(currentPage, pageLimit, {fullName : searchVal});
       if (result.status === 200) {
         const data = result.data.data;
         setQuoteData(data.data);
@@ -190,7 +193,7 @@ const page = (): JSX.Element => {
   const getWonQuotationData = async () => {
     setIsLoading(true);
     try {
-      const result = await QuoteService.getAll(currentPage, pageLimit, {"status":QuotationStatus.ACCEPTED});
+      const result = await QuoteService.getAll(currentPage, pageLimit, {"status":QuotationStatus.ACCEPTED, fullName : searchVal});
       if (result.status === 200) {
         const data = result.data.data;
         setWonQuoteData(data.data);
@@ -214,7 +217,7 @@ const page = (): JSX.Element => {
   const getLostQuotationData = async () => {
     setIsLoading(true);
     try {
-      const result = await QuoteService.getAll(currentPage, pageLimit, {"status":QuotationStatus.REJECTED});
+      const result = await QuoteService.getAll(currentPage, pageLimit, {"status":QuotationStatus.REJECTED, fullName : searchVal});
       if (result.status === 200) {
         const data = result.data.data;
         setLostQuoteData(data.data);
@@ -287,7 +290,30 @@ const page = (): JSX.Element => {
   useEffect(() => {
     getWonQuotationData()
   }, [wonCurrentPage, wonPageLimit])
-  
+  const handleSearch = (val: string) => {
+    setSearchVal(val);
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      setToSearchVal(val);
+    }, 500);
+  };
+  useEffect(() => {
+    if(currentTab === 1){
+      getQuotationData()
+    }
+    else if(currentTab === 2){
+      getWonQuotationData()
+    }
+    else if(currentTab === 3){
+      getLostQuotationData()
+    }
+  }, [TosearchVal]);
+  useEffect(() => {
+    setToSearchVal("");
+    setSearchVal("");
+  },[currentTab]);
 
  
 
@@ -317,7 +343,7 @@ const page = (): JSX.Element => {
             </select>
             <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2">
               <IoIosSearch className="text-xl" />
-              <input type="text" className="outline-none bg-transparent" />
+              <input type="text" className="outline-none bg-transparent" value={searchVal} onChange={(e)=> handleSearch(e.target.value)}/>
             </div>
             <Link
               href={"/leads"}
@@ -358,7 +384,7 @@ const page = (): JSX.Element => {
           </li>
         </ul>
         {currentTab === 1 && (
-          <table className="w-full rounded-xl overflow-hidden ">
+          <table className="w-full rounded-xl  ">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
@@ -508,7 +534,7 @@ const page = (): JSX.Element => {
           </table>
         )}
         {currentTab === 2 && (
-          <table className="w-full rounded-xl overflow-hidden ">
+          <table className="w-full rounded-xl ">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
@@ -656,7 +682,7 @@ const page = (): JSX.Element => {
           </table>
         )}
         {currentTab === 3 && (
-          <table className="w-full rounded-xl overflow-hidden ">
+          <table className="w-full rounded-xl ">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">

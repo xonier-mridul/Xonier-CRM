@@ -1,7 +1,7 @@
 "use client";
 import { EnquiryData } from "@/src/types/enquiry/enquiry.types";
 import axios from "axios";
-import React, { JSX, useState, useEffect } from "react";
+import React, { JSX, useState, useEffect, useRef } from "react";
 import extractErrorMessages from "../../utils/error.utils";
 import { toast } from "react-toastify";
 import { EnquiryService } from "@/src/services/enquiry.service";
@@ -33,6 +33,9 @@ const page = (): JSX.Element => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageLimit, setPageLimit] = useState<number>(10);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [searchVal, setSearchVal] = useState<string>("");
+  const [TosearchVal, setToSearchVal] = useState<string>("");
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const { hasPermission } = usePermissions();
 
@@ -41,11 +44,11 @@ const page = (): JSX.Element => {
   const getEnquiryData = async () => {
     setIsLoading(true);
     try {
-      console.log("isAdmin: ", auth.isAdmin)
       if(auth.isAdmin){
       const result = await EnquiryService.getAll({
         page: currentPage,
         limit: pageLimit,
+        fullName : searchVal
       });
       if (result.status === 200) {
         let data = result.data.data;
@@ -79,7 +82,17 @@ const page = (): JSX.Element => {
 
   useEffect(() => {
     getEnquiryData();
-  }, [pageLimit, currentPage]);
+  }, [pageLimit, currentPage, TosearchVal]);
+
+   const handleSearch = (val: string) => {
+    setSearchVal(val);
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      setToSearchVal(val);
+    }, 500);
+  };
 
   const handleDelete = async (id: string) => {
     try {
@@ -152,7 +165,7 @@ const page = (): JSX.Element => {
             </select>
             <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2">
               <IoIosSearch className="text-xl" />
-              <input type="text" className="outline-none" />
+              <input type="text" className="outline-none" placeholder="Search..."  onChange={(e) => handleSearch(e.target.value)} value={searchVal} />
             </div>
             {hasPermission(PERMISSIONS.createEnquiry) ? <Link
               href={"/enquiry/add"}
