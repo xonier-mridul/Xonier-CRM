@@ -1,5 +1,5 @@
 from app.repositories.base_repository import BaseRepository
-from app.db.models.email_history_model import EmailHistoryModel
+from app.db.models.communications.email_history_model import EmailHistoryModel
 
 
 class EmailHistoryRepository(BaseRepository):

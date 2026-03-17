@@ -24,11 +24,8 @@ class EnquiryService:
         try:
             session.start_transaction()
 
-            if not ObjectId.is_valid(payload["assignTo"]):
-                raise AppException(
-                    400,
-                    "Invalid assignTo user ObjectId, make sure it is user object id",
-                )
+            if payload.get("assignTo") and not ObjectId.is_valid(payload["assignTo"]):
+                raise AppException(400, "Invalid assignTo user ObjectId, make sure it is user object id")
 
             enquiry_id: str = generate_enquiry_id()
 
@@ -67,7 +64,7 @@ class EnquiryService:
 
         except Exception as e:
             await session.abort_transaction()
-            raise AppException(status_code=500, message="internal server error: {e}")
+            raise AppException(status_code=500, message=f"internal server error: {e}")
 
         finally:
             await session.end_session()
@@ -138,7 +135,7 @@ class EnquiryService:
                     return {
                         "insertedCount": len(valid_docs),
                         "failedCount": len(failed_rows),
-                        "failedRows": failed_rows,
+                        "failedRows": failed_rows
                     }
 
                 except AppException:
@@ -307,7 +304,7 @@ class EnquiryService:
             raise AppException(status_code=500, message="internal server error")
 
     async def update(
-        self, updatedBy: PydanticObjectId, id: PydanticObjectId, payload: Dict[str, Any]
+    self, updatedBy: PydanticObjectId, id: PydanticObjectId, payload: Dict[str, Any]
     ) -> bool:
         session = await self.client.start_session()
         try:
@@ -318,9 +315,12 @@ class EnquiryService:
             if not is_exist:
                 raise AppException(404, "Enquiry not found")
 
-            newPayload: Dict[str, Any] = {**payload, "updatedBy": updatedBy}
+            
+            if payload.get("assignTo") and not ObjectId.is_valid(payload["assignTo"]):
+                raise AppException(400, "Invalid assignTo user ObjectId")
 
-            print("payload: ", payload)
+            
+            newPayload: Dict[str, Any] = {**payload, "updatedBy": updatedBy}
 
             update = await self.repo.update(id=id, data=newPayload, session=session)
 
@@ -332,13 +332,12 @@ class EnquiryService:
             return True
 
         except AppException:
-
             await session.abort_transaction()
             raise
 
         except Exception as e:
             await session.abort_transaction()
-            raise AppException(status_code=500, message="internal server error")
+            raise AppException(status_code=500, message=f"Internal server error: {e}") # ✅ Fixed f string
 
         finally:
             await session.end_session()

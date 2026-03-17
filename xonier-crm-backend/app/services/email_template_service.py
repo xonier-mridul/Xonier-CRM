@@ -5,7 +5,7 @@ from beanie import PydanticObjectId
 from fastapi.encoders import jsonable_encoder
 from jinja2 import Environment, BaseLoader, TemplateSyntaxError
 from datetime import datetime, timezone
-from app.db.models.email_history_model import EmailHistoryModel
+from app.db.models.communications.email_history_model import EmailHistoryModel
 
 from app.repositories.email_template_repository import EmailTemplateRepository
 from app.db.models.email_template_model import TemplateStatus

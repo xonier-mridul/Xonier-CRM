@@ -1,6 +1,6 @@
 from beanie import Link, PydanticObjectId
 from pydantic import BaseModel, StringConstraints, EmailStr, Field, field_validator, model_validator, HttpUrl
-from typing import Optional, Annotated, List
+from typing import Optional, Annotated, List, Dict, Any
 from app.core.enums import PROJECT_TYPES, PRIORITY, SOURCE, DESIGNATION, NUMBER_OF_EMPLOYEES, INDUSTRIES, TECHNOLOGY, INFO_TYPE, COUNTRY_CODE
 from app.db.models.user_model import UserModel
 import re
@@ -24,6 +24,18 @@ class OtherSocialLinks(BaseModel):
     platform: str
     url: HttpUrl
 
+class ExtraFieldSchema(BaseModel):
+    label: str = Field(..., min_length=1, max_length=100)
+    value: Any = Field(...)
+
+    @field_validator("label")
+    @classmethod
+    def validate_label(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("Label cannot be empty")
+        return v
+
 
 class SocialLinks(BaseModel):
     linkedin:  Optional[HttpUrl] = None
@@ -36,7 +48,7 @@ class SocialLinks(BaseModel):
     other: Optional[List[OtherSocialLinks]] = None
 
 class Location(BaseModel):
-    country: Optional[COUNTRY_CODE] = None
+    country: Optional[str] = None
     state: Optional[str] = None
     city: Optional[str] = None
     zipcode: Optional[str] = None
@@ -84,12 +96,13 @@ class EnquiryRegisterSchema(BaseModel):
     infoType: INFO_TYPE
     location: Optional[Location] = None
     numberOfEmployees: Optional[NUMBER_OF_EMPLOYEES] = None
-    industry: List[INDUSTRIES]
-    technologies: Optional[List[TECHNOLOGY]] = []
+    industry: List[str]
+    technologies: Optional[List[str]] = []
     keywords: Optional[List[str]] = []
-    projectType: PROJECT_TYPES
+    projectType: str
     priority: PRIORITY
-    source: SOURCE
+    source: str
+    extra_fields: Optional[List[ExtraFieldSchema]] = Field(default=[])
     assignTo: Optional[str] = None
     message: Optional[str] = None
 
@@ -167,9 +180,10 @@ class UpdateEnquirySchema(BaseModel):
     technologies: Optional[List[TECHNOLOGY]] = []
     keywords: Optional[List[str]] = []
     industry: List[INDUSTRIES]
-    projectType: PROJECT_TYPES
+    projectType: str
     priority: PRIORITY
-    source: SOURCE
+    source: str
+    extra_fields: Optional[List[ExtraFieldSchema]] = Field(default=[])
     assignTo: Optional[str] = None
     message: Optional[str] = None
 

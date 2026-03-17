@@ -1,5 +1,5 @@
 from beanie import Document, Link, before_event,Save, Replace, Insert, Indexed
-from typing import Optional, Annotated, List
+from typing import Optional, Annotated, List, Dict, Any
 from app.core.enums import PROJECT_TYPES, SALES_STATUS, PRIORITY, SOURCE, NUMBER_OF_EMPLOYEES, INDUSTRIES, DESIGNATION, INFO_TYPE, TECHNOLOGY, COUNTRY_CODE
 from app.db.models.user_model import UserModel
 from datetime import datetime, timedelta, timezone
@@ -38,7 +38,7 @@ class SocialLinks(BaseModel):
     
 
 class Location(BaseModel):
-    country: Optional[COUNTRY_CODE] = None
+    country: Optional[str] = None
     state: Optional[str] = None
     city: Optional[str] = None
     zipcode: Optional[str] = None
@@ -88,23 +88,24 @@ class EnquiryModel(Document):
     socialLinks: Optional[SocialLinks] = None
     location: Optional[Location] = None
     numberOfEmployees: Optional[NUMBER_OF_EMPLOYEES] = None
-    industry: List[INDUSTRIES]
-    technologies: Optional[List[TECHNOLOGY]] = []
+    industry: List[str]
+    technologies: Optional[List[str]] = []
     keywords: Optional[List[str]] = []
 
     priority: PRIORITY
 
-    projectType: PROJECT_TYPES
+    projectType: str
     status: SALES_STATUS = SALES_STATUS.NEW
     isActive: bool = True
     priority: PRIORITY
-    source: SOURCE
+    source: str
     message: Optional[str] = None
     assignTo: Optional[Link[UserModel]] = None
     assignBy: Optional[Link[UserModel]] = None
     assignedAt: Optional[datetime] = None
     createdBy: Link[UserModel]
     updatedBy: Optional[Link[UserModel]] = None
+    extra_fields: Optional[List[Dict[str, Any]]] = Field(default=[])
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updatedAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     deletedAt: Optional[datetime] = None
