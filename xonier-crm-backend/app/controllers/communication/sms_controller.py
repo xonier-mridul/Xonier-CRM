@@ -33,6 +33,19 @@ class SMSController:
             return successResponse(200, "SMS history fetched successfully", result)
         except AppException as e:
             raise e
+        
+
+    async def get_sms_by_id(self, request: Request, id:str):
+        try:
+            user = request.state.user
+
+            result = await self.service.get_sms_by_id(id=id, user=user)
+
+            return successResponse(200, "SMS fetched successfully", result)
+
+        except AppException as e:
+            raise e
+
 
     async def get_conversation(self, request: Request):
         try:

@@ -11,16 +11,21 @@ dependencies = Dependencies()
 controller = SMSController()
 
 
-@router.post('/send', status_code=200, dependencies=[Depends(dependencies.authorized)])
+@router.post('/send', status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["sms:send"]))])
 async def send_sms(request: Request, payload: SEND_SMS_SCHEMA ):
     return await controller.send_sms(request=request, payload=payload.model_dump(mode="json"))
 
 
-@router.get('/history', status_code=200, dependencies=[Depends(dependencies.authorized)])
+@router.get('/history', status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["sms:read"]))])
 async def get_all_sms_history(request: Request):
     return await controller.get_all_sms_history(request=request)
 
 
-@router.get('/conversation', status_code=200, dependencies=[Depends(dependencies.authorized)])
+@router.get('/get-by-id/{id}', status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["sms:read"]))])
+async def get_sms_by_id(request: Request, id:str):
+    return await controller.get_sms_by_id(request=request, id=id)
+
+
+@router.get('/conversation', status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["sms:read"]))])
 async def get_conversation(request: Request):
     return await controller.get_conversation(request=request)

@@ -7,6 +7,7 @@ from app.repositories.sms_history_repository import SMSHistoryRepository
 from datetime import datetime, timezone
 from app.core.enums import MESSAGE_STATUS
 import math
+from bson import ObjectId
 
 
 class SMSService:
@@ -117,6 +118,22 @@ class SMSService:
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
 
+    
+    async def get_sms_by_id(self, id:str, user: Dict[str, Any]):
+        try:
+            if not ObjectId.is_valid(id):
+                raise AppException(200, "Invalid SMS Object Id")
+
+          
+
+            
+
+        except AppException as e:
+            
+            raise e
+        
+        except Exception as e:
+             raise AppException(500, f"Internal server error: {e}")
 
     async def get_conversation(self, sent_to: str, sent_from: str, filters: Dict[str, Any]):
         try:
