@@ -309,13 +309,13 @@ const BulkMailModal = ({
     }
     setIsSending(true);
     try {
-      await Promise.all(
-        leads.map((lead) =>
-          prospectService.sendEmail
-            ? prospectService.sendEmail(lead.email, subject, mailText)
-            : Promise.resolve()
-        )
-      );
+      // await Promise.all(
+      //   leads.map((lead) =>
+      //     prospectService.sendEmail
+      //       ? prospectService.sendEmail(lead.email, subject, mailText)
+      //       : Promise.resolve()
+      //   )
+      // );
       setSent(true);
       toast.success(`Email sent to ${leads.length} lead${leads.length > 1 ? "s" : ""}`);
       setTimeout(onClose, 1500);
