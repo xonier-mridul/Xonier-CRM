@@ -25,8 +25,8 @@ export interface EnquiryData {
   createdBy: UserRef;
   updatedBy?: UserRef | null;
 
-  createdAt: string;   
-  updatedAt: string;   
+  createdAt: string;
+  updatedAt: string;
   deletedAt?: string | null;
 }
 
@@ -34,15 +34,15 @@ export interface EnquiryData {
 
 
 export interface GetEnquiryPayload {
-    page: number
-    limit: number
-    enquiry_id?: string
-    fullName?: string
-    email?: string
-    phone?:string
-    companyName?:string
-    projectType?:string
-    priority?:string
+  page: number
+  limit: number
+  enquiry_id?: string
+  fullName?: string
+  email?: string
+  phone?: string
+  companyName?: string
+  projectType?: string
+  priority?: string
 
 }
 
@@ -58,7 +58,7 @@ export interface CreateEnquiryPayload {
   priority: PRIORITY;
   source: SOURCE;
 
-  assignTo?: string | null; 
+  assignTo?: string | null;
   message?: string | null;
 }
 
@@ -76,7 +76,7 @@ export interface UpdateEnquiryFromData {
   projectType: PROJECT_TYPES | string;
   priority: PRIORITY | string;
   source: SOURCE | string;
-  assignTo?: string | null; 
+  assignTo?: string | null;
   message?: string | null;
 }
 
@@ -86,11 +86,25 @@ export interface UpdateEnquiryPayload {
   email: string;
   phone: string;
   companyName?: string | null;
+  designation?: string | null;
   projectType: PROJECT_TYPES;
   priority: PRIORITY;
   source: SOURCE;
-  assignTo?: string | null; 
+  assignTo?: string | null;
   message?: string | null;
+  industry?: string[] | null;
+  keywords?: string[] | null;
+  technologies?: string[] | null;
+  numberOfEmployees?: string | null;
+  infoType?: string | null;
+  location?: {
+    country?: string | null;
+    state?: string | null;
+    city?: string | null;
+    zipcode?: string | null;
+  } | null;
+  socialLinks?: string[] | null;
+  extra_fields?: Record<string, any> | null;
 }
 
 export interface UpdateEnquiryCompProps {
