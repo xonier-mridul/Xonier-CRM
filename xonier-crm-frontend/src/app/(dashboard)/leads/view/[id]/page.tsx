@@ -370,12 +370,12 @@ const LeadViewPage = (): JSX.Element => {
         </div>
       )}
 
-      {/* FIX: Stack columns vertically on print, using block layout to avoid gap whitespace at page breaks */}
+      
       <div className="flex gap-6 print-col-stack">
         <div className="w-2/3 print:w-full flex flex-col gap-6">
           {(activeTab === "overview" || isPrinting) && (
             <>
-              {/* break-inside-avoid: keep whole section on one page if it fits; if too tall, content flows naturally without forced gaps */}
+             
               <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700 break-inside-avoid">
                 <div className="flex items-center gap-2 mb-6">
                   <IoInformationCircleOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -384,7 +384,7 @@ const LeadViewPage = (): JSX.Element => {
                   </h3>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 print:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 print:grid-cols-2 gap-6">
                   <InfoItem
                     icon={<IoInformationCircleOutline className="w-4 h-4" />}
                     label="Source"

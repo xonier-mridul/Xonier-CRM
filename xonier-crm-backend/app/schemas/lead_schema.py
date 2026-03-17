@@ -38,8 +38,8 @@ class LeadBaseSchema(BaseModel):
     @field_validator("fullName", mode="before")
     @classmethod
     def name_min_length(cls, v: Optional[str]):
-        if v and len(v.strip()) < 5:
-            raise AppException(422, "Full name must be at least 5 characters long")
+        if v and len(v.strip()) < 1:
+            raise AppException(422, "Full name must be at least 1 characters long")
         return v
 
     # @field_validator("phone")

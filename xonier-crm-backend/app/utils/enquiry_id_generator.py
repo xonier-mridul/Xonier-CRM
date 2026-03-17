@@ -2,8 +2,8 @@ from datetime import datetime, timezone
 import uuid
 
 def generate_enquiry_id(prefix: str = "ENQ") -> str:
+    now = datetime.now(timezone.utc)
+    timestamp = int(now.timestamp() * 1000)  
+    random_part = uuid.uuid4().hex[:6]
 
-    year = datetime.now(timezone.utc).year
-    mon = datetime.now(timezone.utc).month
-    unique_part = uuid.uuid4().int % 1_000_000 
-    return f"{prefix}{mon}-{year}-{unique_part:06d}"
+    return f"{prefix}{now.month}-{now.year}-{timestamp}-{random_part}"

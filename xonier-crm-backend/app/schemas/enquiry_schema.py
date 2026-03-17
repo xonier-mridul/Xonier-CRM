@@ -112,16 +112,16 @@ class EnquiryRegisterSchema(BaseModel):
         digits_only = value.replace("+", "")
 
         if not digits_only.isdigit():
-            raise ValueError("Phone number must contain only digits")
+            raise AppException(422, "Phone number must contain only digits")
 
         if len(digits_only) < 10:
-            raise ValueError("Phone number must be at least 10 digits")
+            raise AppException("Phone number must be at least 10 digits")
 
         if len(digits_only) > 15:
-            raise ValueError("Phone number must not exceed 15 digits")
+            raise AppException("Phone number must not exceed 15 digits")
 
         if not re.match(r"^\+?[1-9]\d{9,14}$", value):
-            raise ValueError(
+            raise AppException(
                 "Invalid phone number format. Use 9876543210 or +919876543210"
             )
 
@@ -179,7 +179,7 @@ class UpdateEnquirySchema(BaseModel):
     numberOfEmployees: Optional[NUMBER_OF_EMPLOYEES] = None
     technologies: Optional[List[TECHNOLOGY]] = []
     keywords: Optional[List[str]] = []
-    industry: List[INDUSTRIES]
+    industry: List[str]
     projectType: str
     priority: PRIORITY
     source: str
@@ -193,16 +193,16 @@ class UpdateEnquirySchema(BaseModel):
         digits_only = value.replace("+", "")
 
         if not digits_only.isdigit():
-            raise ValueError("Phone number must contain only digits")
+            raise AppException("Phone number must contain only digits")
 
         if len(digits_only) < 10:
-            raise ValueError("Phone number must be at least 10 digits")
+            raise AppException("Phone number must be at least 10 digits")
 
         if len(digits_only) > 15:
-            raise ValueError("Phone number must not exceed 15 digits")
+            raise AppException("Phone number must not exceed 15 digits")
 
         if not re.match(r"^\+?[1-9]\d{9,14}$", value):
-            raise ValueError(
+            raise AppException(
                 "Invalid phone number format. Use 9876543210 or +919876543210"
             )
 
