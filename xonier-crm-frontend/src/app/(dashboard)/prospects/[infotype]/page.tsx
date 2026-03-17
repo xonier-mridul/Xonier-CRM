@@ -24,8 +24,8 @@ import Link from "next/link";
 import SensitiveField from "@/src/components/common/SensitiveField";
 import { useParams } from "next/navigation";
 import { IoClose } from "react-icons/io5";
-import CallModal from "@/src/components/pages/prospect/CallModal";
-import RichEditor from "@/src/components/pages/prospect/RichEditor";
+import  BulkMailModal from "@/src/components/pages/prospect/BulkMailModal";
+import BulkSmsModal from "@/src/components/pages/prospect/BulkSmsModal";
 
 const PAGE_LIMIT = 10;
 
@@ -128,11 +128,11 @@ const BulkCallModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]">
 
         {/* ── Header ── */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5 rounded-t-2xl flex items-center justify-between shrink-0">
+        <div className="bg-linear-to-r from-blue-600 to-indigo-600 px-6 py-5 rounded-t-2xl flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center">
               <MdCall className="w-5 h-5 text-white" />
@@ -289,241 +289,7 @@ const BulkCallModal = ({
   );
 };
 
-// ─── Bulk Mail Modal ──────────────────────────────────────────────────────────
-const BulkMailModal = ({
-  leads,
-  onClose,
-}: {
-  leads: Prospect[];
-  onClose: () => void;
-}) => {
-  const [subject, setSubject] = useState("");
-  const [mailText, setMailText] = useState("");
-  const [isSending, setIsSending] = useState(false);
-  const [sent, setSent] = useState(false);
 
-  const handleSend = async () => {
-    if (!subject.trim() || !mailText.trim()) {
-      toast.warning("Please fill in subject and message");
-      return;
-    }
-    setIsSending(true);
-    try {
-      // await Promise.all(
-      //   leads.map((lead) =>
-      //     prospectService.sendEmail
-      //       ? prospectService.sendEmail(lead.email, subject, mailText)
-      //       : Promise.resolve()
-      //   )
-      // );
-      setSent(true);
-      toast.success(`Email sent to ${leads.length} lead${leads.length > 1 ? "s" : ""}`);
-      setTimeout(onClose, 1500);
-    } catch {
-      toast.error("Failed to send some emails");
-    } finally {
-      setIsSending(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-5 rounded-t-2xl flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-              <MdEmail className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-white">Bulk Email</h3>
-              <p className="text-sm text-green-100">
-                Sending to {leads.length} lead{leads.length > 1 ? "s" : ""}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-9 h-9 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center text-white"
-          >
-            <IoClose className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="p-6 space-y-4">
-          {/* Recipient chips */}
-          <div>
-            <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Recipients</p>
-            <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto">
-              {leads.map((lead) => (
-                <span
-                  key={lead.id}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-full text-xs font-medium border border-green-200 dark:border-green-800"
-                >
-                  <span className="w-4 h-4 bg-green-500 text-white rounded-full flex items-center justify-center text-[9px] font-bold shrink-0">
-                    {lead.fullName?.[0]?.toUpperCase()}
-                  </span>
-                  {lead.fullName}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Subject */}
-          <div>
-            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">Subject</label>
-            <input
-              type="text"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              placeholder="Email subject"
-              className="w-full mt-1.5 p-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 focus:outline-none dark:bg-gray-700 text-sm"
-            />
-          </div>
-
-          {/* Message */}
-          <div>
-            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">Message</label>
-            <div className="mt-1.5">
-              <RichEditor value={mailText} onChange={setMailText} />
-            </div>
-          </div>
-
-          {/* Send */}
-          <div className="flex justify-end gap-3 pt-1">
-            <button
-              onClick={onClose}
-              className="px-4 py-2.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSend}
-              disabled={isSending || sent}
-              className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-lg font-semibold text-sm shadow-md transition-colors"
-            >
-              <MdEmail className="w-4 h-4" />
-              {isSending ? "Sending..." : sent ? "Sent!" : `Send to ${leads.length} Lead${leads.length > 1 ? "s" : ""}`}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ─── Bulk SMS Modal ───────────────────────────────────────────────────────────
-const BulkSmsModal = ({
-  leads,
-  onClose,
-}: {
-  leads: Prospect[];
-  onClose: () => void;
-}) => {
-  const [messageText, setMessageText] = useState("");
-  const [isSending, setIsSending] = useState(false);
-  const [sent, setSent] = useState(false);
-
-  const handleSend = async () => {
-    if (!messageText.trim()) {
-      toast.warning("Please enter a message");
-      return;
-    }
-    setIsSending(true);
-    try {
-      await Promise.all(
-        leads.map((lead) => prospectService.sendMessage(lead.phone, messageText))
-      );
-      setSent(true);
-      toast.success(`SMS sent to ${leads.length} lead${leads.length > 1 ? "s" : ""}`);
-      setTimeout(onClose, 1500);
-    } catch {
-      toast.error("Failed to send some messages");
-    } finally {
-      setIsSending(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-yellow-500 to-amber-500 px-6 py-5 rounded-t-2xl flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-              <MdMessage className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-white">Bulk SMS</h3>
-              <p className="text-sm text-yellow-100">
-                Sending to {leads.length} lead{leads.length > 1 ? "s" : ""}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-9 h-9 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center text-white"
-          >
-            <IoClose className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="p-6 space-y-4">
-          {/* Recipient chips */}
-          <div>
-            <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Recipients</p>
-            <div className="flex flex-wrap gap-2 max-h-20 overflow-y-auto">
-              {leads.map((lead) => (
-                <span
-                  key={lead.id}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 rounded-full text-xs font-medium border border-yellow-200 dark:border-yellow-800"
-                >
-                  <span className="w-4 h-4 bg-yellow-500 text-white rounded-full flex items-center justify-center text-[9px] font-bold shrink-0">
-                    {lead.fullName?.[0]?.toUpperCase()}
-                  </span>
-                  {lead.fullName}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Message */}
-          <div>
-            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">Message</label>
-            <textarea
-              rows={4}
-              value={messageText}
-              onChange={(e) => setMessageText(e.target.value)}
-              placeholder="Type your message..."
-              className="w-full mt-1.5 p-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-yellow-500 focus:outline-none dark:bg-gray-700 text-sm resize-none"
-            />
-            <p className="text-xs text-gray-400 text-right mt-1">{messageText.length} chars</p>
-          </div>
-
-          {/* Send */}
-          <div className="flex justify-end gap-3">
-            <button
-              onClick={onClose}
-              className="px-4 py-2.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSend}
-              disabled={isSending || sent}
-              className="flex items-center gap-2 px-6 py-2.5 bg-yellow-500 hover:bg-yellow-600 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-lg font-semibold text-sm shadow-md transition-colors"
-            >
-              <MdMessage className="w-4 h-4" />
-              {isSending ? "Sending..." : sent ? "Sent!" : `Send to ${leads.length} Lead${leads.length > 1 ? "s" : ""}`}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 const LeadContent = (): JSX.Element => {
@@ -573,7 +339,7 @@ const LeadContent = (): JSX.Element => {
   const bottomRef = useRef<HTMLTableRowElement | null>(null);
   const selectAllRef = useRef<HTMLInputElement>(null);
 
-  const isAllSelected = assignableLeads.length === selectedLeadIds.size;
+  const isAllSelected = assignableLeads.length === selectedLeadIds.size && selectedLeadIds.size > 0;
   const isIndeterminate = selectedLeadIds.size > 0 && !isAllSelected;
 
   const isAllCommSelected = leadData.length > 0 && leadData.length === commSelectedIds.size;
@@ -1176,7 +942,7 @@ const LeadContent = (): JSX.Element => {
                 {commSelectedLeads.slice(0, 5).map((lead, i) => (
                   <div
                     key={lead.id}
-                    className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 border-2 border-white dark:border-gray-800 flex items-center justify-center text-white text-[10px] font-bold shrink-0"
+                    className="w-7 h-7 rounded-full bg-linear-to-br from-indigo-400 to-purple-500 border-2 border-white dark:border-gray-800 flex items-center justify-center text-white text-[10px] font-bold shrink-0"
                     title={lead.fullName}
                     style={{ zIndex: 5 - i }}
                   >

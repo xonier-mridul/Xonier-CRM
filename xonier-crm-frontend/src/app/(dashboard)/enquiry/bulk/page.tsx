@@ -1,6 +1,5 @@
 "use client";
-import { SIDEBAR_WIDTH } from "@/src/constants/constants";
-import React, { FormEvent, JSX, useState } from "react";
+import React, { FormEvent, JSX, useState, useMemo } from "react";
 import { HiDownload } from "react-icons/hi";
 import { FaUpload, FaFileCsv, FaTrash } from "react-icons/fa";
 import { UpdateEnquiryPayload } from "@/src/types/enquiry/enquiry.types";
@@ -9,12 +8,100 @@ import extractErrorMessages from "@/src/app/utils/error.utils";
 import { toast } from "react-toastify";
 import { EnquiryService } from "@/src/services/enquiry.service";
 import ErrorComponent from "@/src/components/ui/ErrorComponent";
-import SuccessComponent from "@/src/components/ui/SuccessComponent";
-import FormButton from "@/src/components/ui/FormButton";
 import { FiUpload } from "react-icons/fi";
 import { useRouter } from "next/navigation";
+import { DESIGNATION, NUMBER_OF_EMPLOYEES, PRIORITY, PROJECT_TYPES, SOURCE, INFO_TYPE } from "@/src/constants/enum";
+import DesignationModal from "@/src/components/pages/enquiry/DesignationModal"; // 👈 new import
 
 const ITEMS_PER_PAGE = 10;
+
+const ARRAY_FIELDS = [
+  "industry",
+  "keywords",
+  "technologies",
+  "socialLinks",
+  "extra_fields",
+] as const;
+
+interface RowError {
+  field: string;
+  message: string;
+}
+
+const PHONE_REGEX = /^\+?[1-9]\d{9,14}$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const validateRow = (row: UpdateEnquiryPayload): RowError[] => {
+  const errors: RowError[] = [];
+
+  if (!row.fullName?.trim())
+    errors.push({ field: "fullName", message: "Full name is required" });
+
+  if (!row.email?.trim())
+    errors.push({ field: "email", message: "Email is required" });
+  else if (!EMAIL_REGEX.test(row.email.trim()))
+    errors.push({ field: "email", message: "Invalid email format" });
+
+  if (!row.phone?.trim())
+    errors.push({ field: "phone", message: "Phone is required" });
+  else if (!PHONE_REGEX.test(row.phone.trim()))
+    errors.push({ field: "phone", message: "Phone must be 10–15 digits, optionally starting with +" });
+
+  if (!row.designation)
+    errors.push({ field: "designation", message: "Designation is required" });
+  else if (!Object.values(DESIGNATION).includes(row.designation as DESIGNATION))
+    errors.push({ field: "designation", message: `Invalid designation: "${row.designation}"` });
+
+  if (!row.priority)
+    errors.push({ field: "priority", message: "Priority is required" });
+  else if (!Object.values(PRIORITY).includes(row.priority as PRIORITY))
+    errors.push({ field: "priority", message: `Invalid priority: "${row.priority}"` });
+
+  if (!row.projectType)
+    errors.push({ field: "projectType", message: "Project type is required" });
+  else if (!Object.values(PROJECT_TYPES).includes(row.projectType as PROJECT_TYPES))
+    errors.push({ field: "projectType", message: `Invalid project type: "${row.projectType}"` });
+
+  if (!row.source)
+    errors.push({ field: "source", message: "Source is required" });
+  else if (!Object.values(SOURCE).includes(row.source as SOURCE))
+    errors.push({ field: "source", message: `Invalid source: "${row.source}"` });
+
+  if (row.infoType && !Object.values(INFO_TYPE).includes(row.infoType as INFO_TYPE))
+    errors.push({ field: "infoType", message: `Invalid infoType: "${row.infoType}"` });
+
+  if (!Array.isArray(row.industry) || row.industry.length === 0)
+    errors.push({ field: "industry", message: "At least one industry is required" });
+
+  if (
+    row.numberOfEmployees &&
+    !Object.values(NUMBER_OF_EMPLOYEES).includes(row.numberOfEmployees as NUMBER_OF_EMPLOYEES)
+  )
+    errors.push({ field: "numberOfEmployees", message: `Invalid value: "${row.numberOfEmployees}"` });
+
+  return errors;
+};
+
+const parseCellAsArray = (value: string | null | undefined): string[] => {
+  if (!value || value.trim() === "") return [];
+  return value.split(/[|;]/).map((v) => v.trim()).filter(Boolean);
+};
+
+const normaliseDesignation = (raw: string | null | undefined): DESIGNATION => {
+  if (!raw) return DESIGNATION.OTHER;
+  const match = Object.values(DESIGNATION).find(
+    (d) => d.toLowerCase() === raw.trim().toLowerCase()
+  );
+  return match ?? (raw.trim() as DESIGNATION);
+};
+
+const normaliseNumberOfEmployees = (
+  raw: string | null | undefined
+): NUMBER_OF_EMPLOYEES | null => {
+  if (!raw) return null;
+  const match = Object.values(NUMBER_OF_EMPLOYEES).find((n) => n === raw.trim());
+  return match ?? null;
+};
 
 const page = (): JSX.Element => {
   const [data, setData] = useState<UpdateEnquiryPayload[]>([]);
@@ -23,65 +110,74 @@ const page = (): JSX.Element => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [err, setErr] = useState<string[] | string>("");
+  const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+  const [isDesignationModalOpen, setIsDesignationModalOpen] = useState(false); // 👈 new state
 
+  const router = useRouter();
+
+  const rowErrors = useMemo(() => data.map((row) => validateRow(row)), [data]);
+  const invalidCount = rowErrors.filter((e) => e.length > 0).length;
   const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
-  const router = useRouter()
+
   const paginatedData = data.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
 
+  const paginatedErrors = rowErrors.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const deleteRow = (globalIdx: number) => {
+    setData((prev) => prev.filter((_, i) => i !== globalIdx));
+    const newTotal = data.length - 1;
+    const newTotalPages = Math.ceil(newTotal / ITEMS_PER_PAGE);
+    if (currentPage > newTotalPages && newTotalPages > 0)
+      setCurrentPage(newTotalPages);
+  };
+
+  const deleteInvalidRows = () => {
+    setData((prev) => prev.filter((_, i) => rowErrors[i].length === 0));
+    setCurrentPage(1);
+  };
+
   const generateDummyCSV = () => {
     const rows = [
       [
-        "fullName",
-        "email",
-        "phone",
-        "companyName",
-        "projectType",
-        "priority",
-        "source",
-        "message",
+        "fullName", "email", "phone", "companyName", "designation", "assignTo",
+        "projectType", "priority", "source", "industry", "keywords", "technologies",
+        "numberOfEmployees", "infoType", "country", "state", "city", "zipcode", "message",
       ],
       [
-        "Rahul Sharma",
-        "rahul@test.com",
-        "9999999999",
-        "ABC Pvt Ltd",
-        "website",
-        "high",
-        "website",
-        "Need business website",
+        "Mirdul", "mirdul@gmail.com", "7878787878", "Xonier", "CEO",
+        "69a54cb1e753098c6aaddef3", "crm", "medium", "instagram_ads",
+        "technology", "tech|crm", "react|node", "2000-5000", "people",
+        "india", "punjab", "chandigarh", "160001", "",
       ],
       [
-        "Neha Verma",
-        "neha@test.com",
-        "8888888888",
-        "XYZ Corp",
-        "mobile_app",
-        "medium",
-        "google_ads",
-        "Mobile app enquiry",
+        "Rahul Sharma", "rahul@test.com", "9999999999", "ABC Pvt Ltd", "Director",
+        "69a54cb1e753098c6aaddef3", "website", "high", "website",
+        "it|consulting", "web|seo", "nextjs|tailwind", "50-100", "company",
+        "india", "delhi", "new delhi", "110001", "Need business website",
       ],
       [
-        "Amit Singh",
-        "amit@test.com",
-        "7777777777",
-        "StartupX",
-        "ai_ml",
-        "high",
-        "linkedin_ads",
-        "AI solution",
+        "Neha Verma", "neha@test.com", "8888888888", "XYZ Corp", "CTO",
+        "69a54cb1e753098c6aaddef3", "mobile_app", "medium", "google_ads",
+        "software", "mobile|app", "flutter|dart", "100-200", "people",
+        "india", "maharashtra", "mumbai", "400001", "Mobile app enquiry",
       ],
       [
-        "Priya Mehta",
-        "priya@test.com",
-        "6666666666",
-        "",
-        "crm",
-        "low",
-        "referral",
-        "CRM requirement",
+        "Amit Singh", "amit@test.com", "7777777777", "StartupX", "Founder",
+        "69a54cb1e753098c6aaddef3", "ai_ml", "high", "linkedin_ads",
+        "ai|ml", "ml|ai", "python|tensorflow", "500-1000", "people",
+        "india", "karnataka", "bangalore", "560001", "AI solution needed",
+      ],
+      [
+        "Priya Mehta", "priya@test.com", "6666666666", "", "HR Manager",
+        "69a54cb1e753098c6aaddef3", "crm", "low", "referral",
+        "consulting", "crm|erp", "salesforce", "500-1000", "company",
+        "india", "gujarat", "ahmedabad", "380001", "CRM requirement",
       ],
     ];
     return rows.map((r) => r.join(",")).join("\n");
@@ -104,14 +200,37 @@ const page = (): JSX.Element => {
 
     return lines.map((line) => {
       const values = line.split(",").map((v) => v.trim());
-      const obj: any = {};
-      headers.forEach((h, i) => (obj[h] = values[i] || null));
-      return obj;
+      const obj: Record<string, unknown> = {};
+      headers.forEach((h, i) => { obj[h] = values[i] ?? null; });
+
+      ARRAY_FIELDS.forEach((field) => {
+        if (field in obj) obj[field] = parseCellAsArray(obj[field] as string);
+      });
+
+      obj.designation = normaliseDesignation(obj.designation as string);
+      obj.numberOfEmployees = normaliseNumberOfEmployees(obj.numberOfEmployees as string);
+
+      obj.location = {
+        country: (obj.country as string) || null,
+        state: (obj.state as string) || null,
+        city: (obj.city as string) || null,
+        zipcode: (obj.zipcode as string) || null,
+      };
+      delete obj.country;
+      delete obj.state;
+      delete obj.city;
+      delete obj.zipcode;
+
+      Object.keys(obj).forEach((k) => {
+        if (obj[k] === "" || obj[k] === undefined) obj[k] = null;
+      });
+
+      return obj as unknown as UpdateEnquiryPayload;
     });
   };
 
   const handleFile = async (file: File) => {
-    if (!file.name.endsWith(".csv")) return alert("Only CSV allowed");
+    if (!file.name.endsWith(".csv")) return alert("Only CSV files are allowed");
     setSelectedFile(file);
     const parsed = await parseCSV(file);
     setData(parsed);
@@ -122,6 +241,7 @@ const page = (): JSX.Element => {
     setSelectedFile(null);
     setData([]);
     setCurrentPage(1);
+    setErr("");
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -133,24 +253,21 @@ const page = (): JSX.Element => {
       return;
     }
 
+    if (invalidCount > 0) {
+      toast.error(`Fix or remove ${invalidCount} invalid row(s) before submitting`);
+      return;
+    }
+
     setIsLoading(true);
-
     try {
-      const payload = {
-        enquiries: data,
-      };
-
-      const result = await EnquiryService.bulkCreate(payload);
-
+      const result = await EnquiryService.bulkCreate({ enquiries: data });
       if (result.status === 201) {
         toast.success("Bulk enquiries created successfully");
         resetUpload();
-        setData([])
-        router.push("/enquiry")
+        router.push("/enquiry");
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
-
       if (axios.isAxiosError(error)) {
         const messages = extractErrorMessages(error);
         setErr(messages);
@@ -164,152 +281,371 @@ const page = (): JSX.Element => {
   };
 
   return (
-    <div className={`ml-72 mt-14 p-6 space-y-6`}>
-      <div className="bg-white dark:bg-gray-700 rounded-xl p-6 flex justify-between items-center">
-        <div className="flex flex-col gap-3">
-          <h2 className="text-2xl font-bold">Bulk Enquiries</h2>
-          <p className="text-gray-500 dark:text-gray-200">
-            Upload CSV to create enquiries in bulk, download the sample sheet and update it
-          </p>
+    <div className="ml-72 mt-14 p-6 space-y-6">
+
+      {/* ── Designation Modal ── */}
+      <DesignationModal
+        isOpen={isDesignationModalOpen}
+        onClose={() => setIsDesignationModalOpen(false)}
+      />
+
+      {/* ── Header card ── */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+        <div className="bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-700 dark:to-indigo-700 px-8 py-5">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-lg">
+              📊
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white tracking-tight">
+                Bulk Enquiries
+              </h2>
+              <p className="text-xs text-violet-200 mt-0.5">
+                Upload a CSV to create multiple enquiries at once
+              </p>
+            </div>
+          </div>
         </div>
 
-        <button
-          onClick={downloadCSV}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-md flex items-center gap-2"
-        >
-          <HiDownload /> Download Sample
-        </button>
+        <div className="px-8 py-4 flex items-center justify-between border-b border-gray-100 dark:border-gray-800">
+          <div className="text-sm text-gray-500 dark:text-gray-400 space-y-0.5">
+            <p>Download the sample sheet, fill it in, then upload it below.</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">
+              Array fields (industry, keywords, technologies) use{" "}
+              <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">|</code>{" "}
+              as separator &nbsp;·&nbsp; e.g.{" "}
+              <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">
+                react|nextjs|tailwind
+              </code>
+            </p>
+          </div>
+
+          {/* ── Buttons ── */}
+          <div className="flex items-center gap-2 ml-6 flex-shrink-0">
+            {/* 👇 Changed: was downloadDesignations(), now opens modal */}
+            <button
+              onClick={() => setIsDesignationModalOpen(true)}
+              className="flex items-center gap-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm border border-gray-200 dark:border-gray-700 whitespace-nowrap"
+            >
+              <span className="text-violet-500">🏷️</span> Designations
+            </button>
+
+            <button
+              onClick={downloadCSV}
+              className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap"
+            >
+              <HiDownload className="text-base" /> Download Sample
+            </button>
+          </div>
+        </div>
       </div>
 
-      
-
+      {/* ── Drop zone ── */}
       <div
-        onDragOver={(e) => {
-          e.preventDefault();
-          setIsDragging(true);
-        }}
+        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={(e) => {
           e.preventDefault();
           setIsDragging(false);
           e.dataTransfer.files[0] && handleFile(e.dataTransfer.files[0]);
         }}
-        className={`bg-white dark:bg-gray-700 rounded-xl p-12 border-2 border-dashed transition
-          ${isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"}`}
+        className={`bg-white dark:bg-gray-900 rounded-2xl border-2 border-dashed transition-all duration-200 p-12
+          ${isDragging
+            ? "border-violet-400 bg-violet-50 dark:bg-violet-900/10 scale-[1.01]"
+            : "border-gray-200 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-700"
+          }`}
       >
-        <div className="flex flex-col items-center gap-3">
-          <FaFileCsv className="text-4xl text-gray-400 dark:text-gray-300" />
-          <p className="text-gray-600 dark:text-gray-300">Drag & drop your CSV file here</p>
+        <div className="flex flex-col items-center gap-4">
+          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-colors
+            ${isDragging ? "bg-violet-100 dark:bg-violet-900/30" : "bg-gray-100 dark:bg-gray-800"}`}>
+            <FaFileCsv className={`text-3xl transition-colors
+              ${isDragging ? "text-violet-500" : "text-gray-400 dark:text-gray-500"}`} />
+          </div>
+
+          <div className="text-center">
+            <p className="font-semibold text-gray-700 dark:text-gray-200">
+              {isDragging ? "Drop your CSV here" : "Drag & drop your CSV file"}
+            </p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+              or click the button below to browse
+            </p>
+          </div>
 
           <input
-            type="file"
-            accept=".csv"
-            className="hidden"
-            id="csvUpload"
+            type="file" accept=".csv" className="hidden" id="csvUpload"
             onChange={(e) => e.target.files && handleFile(e.target.files[0])}
           />
 
           <label
             htmlFor="csvUpload"
-            className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2 hover:bg-blue-700"
+            className="cursor-pointer flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors shadow-sm"
           >
             <FaUpload /> Choose File
           </label>
 
           {selectedFile && (
-            <div className="flex items-center gap-3 mt-3 bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded-md">
-              <span className="text-sm font-medium">{selectedFile.name}</span>
-              <span className="text-xs text-gray-500">{data.length} rows</span>
-              <button onClick={resetUpload} className="text-red-500">
-                <FaTrash />
+            <div className="flex items-center gap-3 mt-1 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 px-4 py-2.5 rounded-xl">
+              <FaFileCsv className="text-violet-500 text-lg" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                {selectedFile.name}
+              </span>
+              <span className="text-xs bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300 px-2 py-0.5 rounded-full font-medium">
+                {data.length} rows
+              </span>
+              <button
+                onClick={resetUpload}
+                className="w-6 h-6 flex items-center justify-center rounded-md bg-red-50 dark:bg-red-900/20 text-red-400 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/40 transition-all ml-1"
+              >
+                <FaTrash className="text-xs" />
               </button>
             </div>
           )}
         </div>
       </div>
 
-     
-
-      
+      {/* ── Preview table ── */}
       {data.length > 0 && (
-        <div className="bg-white dark:bg-gray-700 rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-100 dark:bg-gray-800">
-              <tr>
-                {[
-                  "Name",
-                  "Email",
-                  "Phone",
-                  "Project",
-                  "Priority",
-                  "Source",
-                ].map((h) => (
-                  <th key={h} className="p-3 text-left uppercase text-xs">
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedData.map((item, i) => (
-                <tr key={i} className="border-t hover:bg-gray-50 dark:hover:bg-gray-800">
-                  <td className="p-3">{item.fullName}</td>
-                  <td className="p-3">{item.email}</td>
-                  <td className="p-3">{item.phone}</td>
-                  <td className="p-3 capitalize">{item.projectType}</td>
-                  <td className="p-3 capitalize">{item.priority}</td>
-                  <td className="p-3 capitalize">{item.source}</td>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
+          <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <h3 className="font-semibold text-gray-800 dark:text-gray-100 text-sm">Preview</h3>
+              <span className="text-xs text-gray-400 bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-full">
+                {data.length} records
+              </span>
+              {invalidCount > 0 && (
+                <span className="text-xs bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 px-2.5 py-1 rounded-full font-medium">
+                  ⚠ {invalidCount} invalid
+                </span>
+              )}
+              {invalidCount === 0 && data.length > 0 && (
+                <span className="text-xs bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-800 px-2.5 py-1 rounded-full font-medium">
+                  ✓ All rows valid
+                </span>
+              )}
+            </div>
+
+            {invalidCount > 0 && (
+              <button
+                type="button"
+                onClick={deleteInvalidRows}
+                className="flex items-center gap-2 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 border border-red-200 dark:border-red-800 px-3 py-1.5 rounded-lg transition-all"
+              >
+                <FaTrash className="text-xs" />
+                Delete {invalidCount} Invalid Row{invalidCount > 1 ? "s" : ""}
+              </button>
+            )}
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 dark:bg-gray-800/60">
+                <tr>
+                  {["#", "Name", "Email", "Phone", "Designation", "Project", "Priority", "Source", "Industry", ""].map((h) => (
+                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      {h}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                {paginatedData.map((item, pageIdx) => {
+                  const globalIdx = (currentPage - 1) * ITEMS_PER_PAGE + pageIdx;
+                  const errors = paginatedErrors[pageIdx];
+                  const isInvalid = errors.length > 0;
+                  const fieldHasError = (field: string) => errors.some((e) => e.field === field);
 
-         
-          <div className="flex justify-between items-center p-4">
-            <span className="text-sm text-gray-500">
-              Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
-              {Math.min(currentPage * ITEMS_PER_PAGE, data.length)} of{" "}
-              {data.length}
+                  return (
+                    <tr
+                      key={globalIdx}
+                      onMouseEnter={() => setHoveredRow(globalIdx)}
+                      onMouseLeave={() => setHoveredRow(null)}
+                      className={`transition-colors relative
+                        ${isInvalid
+                          ? "bg-red-50/60 dark:bg-red-900/10 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          : "hover:bg-gray-50 dark:hover:bg-gray-800/40"
+                        }`}
+                    >
+                      <td className="px-4 py-3 relative">
+                        <div className="flex items-center gap-1.5">
+                          {isInvalid && (
+                            <div className="relative group">
+                              <span className="w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center cursor-help flex-shrink-0">
+                                !
+                              </span>
+                              <div className="absolute z-50 left-0 top-full mt-1 w-72 bg-gray-900 dark:bg-gray-950 text-white text-xs rounded-xl shadow-2xl p-3 space-y-1.5 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity border border-red-800">
+                                <p className="font-bold text-red-400 mb-1.5 flex items-center gap-1">
+                                  <span>⚠</span> {errors.length} error{errors.length > 1 ? "s" : ""} in this row
+                                </p>
+                                {errors.map((e, i) => (
+                                  <div key={i} className="flex items-start gap-1.5">
+                                    <span className="text-red-400 mt-0.5 flex-shrink-0">•</span>
+                                    <span>
+                                      <span className="font-semibold text-red-300">{e.field}:</span>{" "}
+                                      <span className="text-gray-300">{e.message}</span>
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          <span className={`text-xs ${isInvalid ? "text-red-400" : "text-gray-400"}`}>
+                            {globalIdx + 1}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <span className={`font-medium ${fieldHasError("fullName") ? "text-red-600 dark:text-red-400" : "text-gray-800 dark:text-gray-100"}`}>
+                          {item.fullName || <span className="italic text-red-400 text-xs">missing</span>}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <span className={`${fieldHasError("email") ? "text-red-500 dark:text-red-400 underline decoration-dotted" : "text-gray-500 dark:text-gray-400"}`}>
+                          {item.email || <span className="italic text-red-400 text-xs">missing</span>}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <span className={`${fieldHasError("phone") ? "text-red-500 dark:text-red-400 underline decoration-dotted" : "text-gray-500 dark:text-gray-400"}`}>
+                          {item.phone || <span className="italic text-red-400 text-xs">missing</span>}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border
+                          ${fieldHasError("designation")
+                            ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800"
+                            : "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-100 dark:border-indigo-800"
+                          }`}>
+                          {item.designation || "—"}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <span className={`capitalize text-xs ${fieldHasError("projectType") ? "text-red-500 dark:text-red-400 font-medium" : "text-gray-600 dark:text-gray-300"}`}>
+                          {item.projectType || <span className="italic text-red-400">missing</span>}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-3">
+                        {fieldHasError("priority") ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800">
+                            {item.priority || "missing"}
+                          </span>
+                        ) : (
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border
+                            ${item.priority === "high"
+                              ? "bg-red-50 text-red-600 border-red-100 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800"
+                              : item.priority === "medium"
+                                ? "bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800"
+                                : "bg-green-50 text-green-600 border-green-100 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
+                            }`}>
+                            {item.priority}
+                          </span>
+                        )}
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <span className={`capitalize text-xs ${fieldHasError("source") ? "text-red-500 dark:text-red-400 font-medium" : "text-gray-600 dark:text-gray-300"}`}>
+                          {item.source || <span className="italic text-red-400">missing</span>}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-1">
+                          {Array.isArray(item.industry) && item.industry.length > 0
+                            ? item.industry.filter(Boolean).map((ind, idx) => (
+                              <span key={idx} className={`inline-flex px-2 py-0.5 rounded-full text-xs border
+                                ${fieldHasError("industry")
+                                  ? "bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border-red-200 dark:border-red-800"
+                                  : "bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-300 border-violet-100 dark:border-violet-800"
+                                }`}>
+                                {ind}
+                              </span>
+                            ))
+                            : <span className="italic text-red-400 text-xs">missing</span>
+                          }
+                        </div>
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <button
+                          type="button"
+                          onClick={() => deleteRow(globalIdx)}
+                          className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all
+                            ${isInvalid
+                              ? "bg-red-100 dark:bg-red-900/30 text-red-500 hover:bg-red-200 dark:hover:bg-red-900/60"
+                              : "bg-gray-100 dark:bg-gray-800 text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500"
+                            }`}
+                          title="Delete this row"
+                        >
+                          <FaTrash className="text-[10px]" />
+                        </button>
+                      </td>
+
+                      {isInvalid && (
+                        <td className="absolute left-0 top-0 bottom-0 w-0.5 bg-red-500 rounded-l" />
+                      )}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="flex justify-between items-center px-6 py-4 border-t border-gray-100 dark:border-gray-800">
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              Showing{" "}
+              <span className="font-medium text-gray-700 dark:text-gray-200">
+                {(currentPage - 1) * ITEMS_PER_PAGE + 1}
+              </span>–
+              <span className="font-medium text-gray-700 dark:text-gray-200">
+                {Math.min(currentPage * ITEMS_PER_PAGE, data.length)}
+              </span>{" "}
+              of{" "}
+              <span className="font-medium text-gray-700 dark:text-gray-200">{data.length}</span>
             </span>
-
-            <div className="flex gap-2">
+            <div className="flex gap-1">
+              <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}
+                className="px-3 py-1.5 rounded-lg text-sm bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                ‹
+              </button>
               {Array.from({ length: totalPages }).map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setCurrentPage(i + 1)}
-                  className={`px-3 py-1 rounded ${
-                    currentPage === i + 1
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-200 hover:bg-gray-300 dark:hover:bg-gray-800"
-                  }`}
-                >
+                <button key={i} onClick={() => setCurrentPage(i + 1)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
+                    ${currentPage === i + 1 ? "bg-violet-600 text-white shadow-sm" : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"}`}>
                   {i + 1}
                 </button>
               ))}
+              <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
+                className="px-3 py-1.5 rounded-lg text-sm bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                ›
+              </button>
             </div>
           </div>
-
-          
         </div>
-        
       )}
+
       {err && <ErrorComponent error={err} />}
-      {<SuccessComponent message="" />}
+
       {data.length > 0 && (
-            <form onSubmit={handleSubmit} className="flex justify-end">
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-fit flex items-center justify-center gap-2
-        rounded-md px-4 py-2 font-medium
-        bg-blue-600 text-white
-        hover:bg-blue-700 hover:cursor-pointer
-        disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-               <FiUpload /> {isLoading ? "Uploading..." : "Create Enquiries"}
-              </button>
-            </form>
+        <form onSubmit={handleSubmit} className="flex justify-end items-center gap-3">
+          {invalidCount > 0 && (
+            <p className="text-sm text-red-500 dark:text-red-400">
+              {invalidCount} invalid row{invalidCount > 1 ? "s" : ""} must be fixed or removed before submitting
+            </p>
           )}
+          <button
+            type="submit"
+            disabled={isLoading || invalidCount > 0}
+            className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold px-6 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <FiUpload />
+            {isLoading ? "Uploading..." : `Create ${data.length} Enquir${data.length > 1 ? "ies" : "y"}`}
+          </button>
+        </form>
+      )}
     </div>
   );
 };

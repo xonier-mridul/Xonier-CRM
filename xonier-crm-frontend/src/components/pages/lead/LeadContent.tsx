@@ -479,7 +479,7 @@ const LeadContent = (): JSX.Element => {
       <tr><td className="p-8 text-center text-slate-400 text-sm" colSpan={9}>No leads found</td></tr>
     );
     if (isLoading) return <SkeletonRows cols={hasPermission(PERMISSIONS.assignLead) && currentTab === TAB.ALL ? 9 : 8} />;
-    debugger;
+    
     return data.map((item, i) => {
       const isChecked = selectedLeadIds.has(item.id);
       return (

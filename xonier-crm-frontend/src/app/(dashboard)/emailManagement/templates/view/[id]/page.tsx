@@ -7,6 +7,8 @@ import axios from "axios";
 import { Template, Variable } from "@/src/types/communication/mail.types";
 import { MailService } from "@/src/services/communication/mail.service";
 import extractErrorMessages from "@/src/app/utils/error.utils";
+import { PERMISSIONS } from "@/src/constants/enum";
+import { usePermissions } from "@/src/hooks/usePermissions";
 
 const labelBase =
   "block text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1.5";
@@ -262,7 +264,7 @@ export default function Page() {
   const router = useRouter();
   const params = useParams();
   const id     = params?.id as string;
-
+  const { hasPermission } = usePermissions();
   const [isLoading,    setIsLoading]    = useState(false);
   const [templateData, setTemplateData] = useState<Template | null>(null);
 
@@ -332,10 +334,11 @@ export default function Page() {
 
         {/* Actions */}
         <div className="flex items-center gap-2.5 flex-shrink-0 mt-1">
-        
-          <button
+        {
+          (hasPermission(PERMISSIONS.updateTemplate)&&(
+            <button
             type="button"
-            onClick={() => router.push(`/emailManagement/templates/${id}/edit`)}
+            onClick={() => router.push(`/emailManagement/templates/update/${id}`)}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white transition-all duration-150 cursor-pointer hover:shadow-lg hover:scale-[1.03] active:scale-100"
             style={{ background: "linear-gradient(135deg,#7C3AED,#6D28D9)" }}
           >
@@ -344,6 +347,9 @@ export default function Page() {
             </svg>
             Edit Template
           </button>
+          ))
+        }
+          
         </div>
       </div>
 
@@ -472,19 +478,6 @@ export default function Page() {
             )}
 
             <Divider />
-
-            {/* Footer actions */}
-            <button
-              type="button"
-              onClick={() => router.push(`/emailManagement/templates/${id}/edit`)}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white transition-all duration-150 cursor-pointer hover:shadow-md hover:scale-[1.02] active:scale-100"
-              style={{ background: "linear-gradient(135deg,#7C3AED,#6D28D9)" }}
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-              </svg>
-              Edit Template
-            </button>
           </div>
         </div>
 
