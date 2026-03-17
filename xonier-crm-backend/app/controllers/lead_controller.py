@@ -39,7 +39,7 @@ class LeadController:
             message = f"Successfully created {inserted} lead{'s' if inserted != 1 else ''}"
             if skipped > 0:
                 message += f". Skipped {skipped} duplicate{'s' if skipped != 1 else ''}"
-            print("result: ", message)
+            
             return successResponse(201, message, result)
 
         except AppException as e:

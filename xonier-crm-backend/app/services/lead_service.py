@@ -211,7 +211,7 @@ class LeadService:
                             if project_type:
                                 lead_data["projectType"] = project_type
 
-                            # Standard optional fields
+                           
                             optional_fields = {
                                 "companyName": lead.get("companyName"),
                                 "city": lead.get("city"),
@@ -229,7 +229,7 @@ class LeadService:
                                 if field_value is not None and field_value != "":
                                     lead_data[field_name] = field_value
 
-                            # ✅ ADD EXTRA FIELDS SUPPORT
+                           
                             extra_fields = lead.get("extraFields")
                             if extra_fields and isinstance(extra_fields, dict) and len(extra_fields) > 0:
                                 lead_data["extraFields"] = extra_fields
@@ -258,8 +258,7 @@ class LeadService:
                         await LeadsModel.insert_many(documents=leads_to_insert, session=session)
                         inserted_count = len(leads_to_insert)
 
-                        print("inserted leads: ", leads_to_insert)
-                        print("inserted leads count: ", inserted_count)
+                      
 
                         activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD, action=ACTIVITY_ACTION.CREATED, title="create bulk lead", perform=int(inserted_count))
 

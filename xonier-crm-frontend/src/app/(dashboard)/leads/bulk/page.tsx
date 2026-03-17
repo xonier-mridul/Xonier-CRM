@@ -1,16 +1,32 @@
-"use client"
-import extractErrorMessages from '@/src/app/utils/error.utils';
-import LeadService from '@/src/services/lead.service';
-import { UserFormService } from '@/src/services/userForm.service';
-import { UserForm } from '@/src/types/userForm/userForm.types';
-import { BulkLeadPayload, LeadPayload } from '@/src/types/leads/leads.types';
-import { COUNTRY_CODE, EMPLOYEE_SENIORITY, INDUSTRIES, LANGUAGE_CODE, PRIORITY, SALES_STATUS, SOURCE } from '@/src/constants/enum';
-import axios from 'axios';
-import React, { JSX, useState, useEffect, useCallback } from 'react'
-import { toast } from 'react-toastify';
-import Papa from 'papaparse';
-import { Upload, Download, X, FileText, AlertCircle, CheckCircle, Trash2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+"use client";
+import extractErrorMessages from "@/src/app/utils/error.utils";
+import LeadService from "@/src/services/lead.service";
+import { UserFormService } from "@/src/services/userForm.service";
+import { UserForm } from "@/src/types/userForm/userForm.types";
+import { BulkLeadPayload, LeadPayload } from "@/src/types/leads/leads.types";
+import {
+  COUNTRY_CODE,
+  EMPLOYEE_SENIORITY,
+  INDUSTRIES,
+  LANGUAGE_CODE,
+  PRIORITY,
+  SALES_STATUS,
+  SOURCE,
+} from "@/src/constants/enum";
+import axios from "axios";
+import React, { JSX, useState, useEffect, useCallback } from "react";
+import { toast } from "react-toastify";
+import Papa from "papaparse";
+import {
+  Upload,
+  Download,
+  X,
+  FileText,
+  AlertCircle,
+  CheckCircle,
+  Trash2,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface ParsedLead {
   [key: string]: string | number;
@@ -30,13 +46,16 @@ const BulkLeadUpload = (): JSX.Element => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [parsedData, setParsedData] = useState<ParsedLead[]>([]);
-  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+  const [validationErrors, setValidationErrors] = useState<ValidationError[]>(
+    [],
+  );
   const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage] = useState<number>(20);
 
-  const router = useRouter()
+  const router = useRouter();
 
   const getFormFields = async (): Promise<void> => {
     setIsLoading(true);
@@ -62,150 +81,164 @@ const BulkLeadUpload = (): JSX.Element => {
     getFormFields();
   }, []);
 
-
-
-
   const downloadCSVTemplate = () => {
     if (!userFormData?.selectedFormFields) {
       toast.error("Form fields not loaded");
       return;
     }
 
-    const headers = userFormData.selectedFormFields.map(field => field.key);
-    const csvContent = headers.join(',') + '\n';
+    const headers = userFormData.selectedFormFields.map((field) => field.key);
+    const csvContent = headers.join(",") + "\n";
 
-    const exampleRow = userFormData.selectedFormFields.map(field => {
-      switch (field.type) {
-        case 'email':
-          return 'example@email.com';
-        case 'text':
-          return field.key === 'phone' ? '+919876543210' : `example_${field.key}`;
-        case 'number':
-          return '12345';
-        case 'select':
-          if (['priority', 'source', 'projectType'].includes(field.key)) {
-            return field.options?.[0]?.value || '';
-          }
-          return field.options?.[0]?.value || '';
-        default:
-          return '';
-      }
-    }).join(',');
+    const exampleRow = userFormData.selectedFormFields
+      .map((field) => {
+        switch (field.type) {
+          case "email":
+            return "example@email.com";
+          case "text":
+            return field.key === "phone"
+              ? "+919876543210"
+              : `example_${field.key}`;
+          case "number":
+            return "12345";
+          case "select":
+            if (["priority", "source", "projectType"].includes(field.key)) {
+              return field.options?.[0]?.value || "";
+            }
+            return field.options?.[0]?.value || "";
+          default:
+            return "";
+        }
+      })
+      .join(",");
 
-    const blob = new Blob([csvContent + exampleRow], { type: 'text/csv' });
+    const blob = new Blob([csvContent + exampleRow], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = 'lead_template.csv';
+    a.download = "lead_template.csv";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
 
-    toast.success('CSV template downloaded successfully');
+    toast.success("CSV template downloaded successfully");
   };
 
+  // const validateHeaders = (headers: string[]): boolean => {
+  //   if (!userFormData?.selectedFormFields) return false;
 
-  const validateHeaders = (headers: string[]): boolean => {
-    if (!userFormData?.selectedFormFields) return false;
+  //   const requiredHeaders = userFormData.selectedFormFields
+  //     .filter(field => field.required)
+  //     .map(field => field.key);
 
-    const requiredHeaders = userFormData.selectedFormFields
-      .filter(field => field.required)
-      .map(field => field.key);
+  //   const availableHeaders = userFormData.selectedFormFields.map(field => field.key);
 
-    const availableHeaders = userFormData.selectedFormFields.map(field => field.key);
+  //   const missingRequired = requiredHeaders.filter(h => !headers.includes(h));
+  //   if (missingRequired.length > 0) {
+  //     toast.error(`Missing required columns: ${missingRequired.join(', ')}`);
+  //     return false;
+  //   }
 
-    const missingRequired = requiredHeaders.filter(h => !headers.includes(h));
-    if (missingRequired.length > 0) {
-      toast.error(`Missing required columns: ${missingRequired.join(', ')}`);
-      return false;
-    }
+  //   const invalidHeaders = headers.filter(h => !availableHeaders.includes(h));
+  //   if (invalidHeaders.length > 0) {
+  //     toast.warning(`Unknown columns will be ignored: ${invalidHeaders.join(', ')}`);
+  //   }
 
-    const invalidHeaders = headers.filter(h => !availableHeaders.includes(h));
-    if (invalidHeaders.length > 0) {
-      toast.warning(`Unknown columns will be ignored: ${invalidHeaders.join(', ')}`);
-    }
+  //   return true;
+  // };
 
-    return true;
-  };
-
-
-  const validateLeadData = (data: ParsedLead[], startIndex: number = 0): ValidationError[] => {
+  const validateLeadData = (
+    data: ParsedLead[],
+    startIndex: number = 0,
+  ): ValidationError[] => {
     const errors: ValidationError[] = [];
 
     if (!userFormData?.selectedFormFields) return errors;
 
-    const optionalFields = new Set(['phone', 'priority', 'projectType', 'country']);
+    const optionalFields = new Set([
+      "phone",
+      "priority",
+      "projectType",
+      "country",
+    ]);
 
     data.forEach((lead, index) => {
       const rowNumber = startIndex + index + 2;
 
-      userFormData.selectedFormFields.forEach(field => {
+      userFormData.selectedFormFields.forEach((field) => {
         const value = lead[field.key];
 
         const isBackendOptional = optionalFields.has(field.key);
 
-        if (field.required && !isBackendOptional && (!value || value === '')) {
+        if (field.required && !isBackendOptional && (!value || value === "")) {
           errors.push({
             row: rowNumber,
             field: field.key,
-            message: `${field.name} is required`
+            message: `${field.name} is required`,
           });
         }
 
-        if (value && value !== '') {
+        if (value && value !== "") {
           switch (field.type) {
-            case 'email':
+            case "email":
               const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
               if (!emailRegex.test(String(value))) {
                 errors.push({
                   row: rowNumber,
                   field: field.key,
-                  message: 'Invalid email format'
+                  message: "Invalid email format",
                 });
               }
               break;
 
-            case 'number':
+            case "number":
               if (isNaN(Number(value))) {
                 errors.push({
                   row: rowNumber,
                   field: field.key,
-                  message: 'Must be a number'
+                  message: "Must be a number",
                 });
               }
               break;
 
-            case 'select':
-              if (field.options && !optionalFields.has(field.key) && field.key !== 'source') {
-                const validValues = field.options.map(opt => opt.value);
+            case "select":
+              if (
+                field.options &&
+                !optionalFields.has(field.key) &&
+                field.key !== "source"
+              ) {
+                const validValues = field.options.map((opt) => opt.value);
                 if (!validValues.includes(String(value))) {
                   errors.push({
                     row: rowNumber,
                     field: field.key,
-                    message: `Invalid value. Must be one of: ${validValues.join(', ')}`
+                    message: `Invalid value. Must be one of: ${validValues.join(", ")}`,
                   });
                 }
               }
               break;
 
-            case 'text':
-              if (field.key === 'phone') {
-                const phoneRegex = /^\+?[1-9]\d{9,14}$/;
-                if (!phoneRegex.test(String(value).replace(/\s/g, ''))) {
-                  errors.push({
-                    row: rowNumber,
-                    field: field.key,
-                    message: 'Invalid phone format (e.g., +919876543210)'
-                  });
-                }
-              }
+            case "text":
+              // if (field.key === "phone") {
+              //   const phone = String(value).trim();
 
-              if (field.key === 'fullName' && String(value).trim().length < 5) {
+              //   const allowedRegex = /^[0-9+()\-\s]+$/;
+
+              //   if (!allowedRegex.test(phone)) {
+              //     errors.push({
+              //       row: rowNumber,
+              //       field: field.key,
+              //       message: "Phone number contains invalid characters",
+              //     });
+              //   }
+              // }
+
+              if (field.key === "fullName" && String(value).trim().length < 1) {
                 errors.push({
                   row: rowNumber,
                   field: field.key,
-                  message: 'Full name must be at least 5 characters'
+                  message: "Full name must be at least 1 characters",
                 });
               }
               break;
@@ -217,6 +250,38 @@ const BulkLeadUpload = (): JSX.Element => {
     return errors;
   };
 
+  // const parseCSVFile = (file: File) => {
+  //   Papa.parse(file, {
+  //     header: true,
+  //     skipEmptyLines: true,
+  //     complete: (results) => {
+  //       const headers = results.meta.fields || [];
+
+  //       // if (!validateHeaders(headers)) {
+  //       //   setFile(null);
+  //       //   return;
+  //       // }
+
+  //       const data = results.data as ParsedLead[];
+
+  //       const errors = validateLeadData(data);
+  //       setValidationErrors(errors);
+
+  //       if (errors.length > 0) {
+  //         toast.warning(`Found ${errors.length} validation errors. Please review and fix them.`);
+  //       } else {
+  //         toast.success(`Successfully parsed ${data.length} leads`);
+  //       }
+
+  //       setParsedData(data);
+  //       setCurrentPage(1);
+  //     },
+  //     error: (error) => {
+  //       toast.error(`Error parsing CSV: ${error.message}`);
+  //       setFile(null);
+  //     }
+  //   });
+  // };
 
   const parseCSVFile = (file: File) => {
     Papa.parse(file, {
@@ -224,46 +289,41 @@ const BulkLeadUpload = (): JSX.Element => {
       skipEmptyLines: true,
       complete: (results) => {
         const headers = results.meta.fields || [];
-
-        if (!validateHeaders(headers)) {
-          setFile(null);
-          return;
-        }
-
         const data = results.data as ParsedLead[];
+
+        setCsvHeaders(headers);
+        setParsedData(data);
+        setCurrentPage(1);
 
         const errors = validateLeadData(data);
         setValidationErrors(errors);
 
         if (errors.length > 0) {
-          toast.warning(`Found ${errors.length} validation errors. Please review and fix them.`);
+          toast.warning(`Found ${errors.length} validation errors`);
         } else {
           toast.success(`Successfully parsed ${data.length} leads`);
         }
-
-        setParsedData(data);
-        setCurrentPage(1);
       },
       error: (error) => {
         toast.error(`Error parsing CSV: ${error.message}`);
         setFile(null);
-      }
+      },
     });
   };
-
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      if (selectedFile.type !== 'text/csv' && !selectedFile.name.endsWith('.csv')) {
-        toast.error('Please upload a CSV file');
+      if (
+        selectedFile.type !== "text/csv" &&
+        !selectedFile.name.endsWith(".csv")
+      ) {
+        toast.error("Please upload a CSV file");
         return;
       }
       setFile(selectedFile);
       parseCSVFile(selectedFile);
     }
   };
-
 
   const handleDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -281,7 +341,12 @@ const BulkLeadUpload = (): JSX.Element => {
     const x = e.clientX;
     const y = e.clientY;
 
-    if (x <= rect.left || x >= rect.right || y <= rect.top || y >= rect.bottom) {
+    if (
+      x <= rect.left ||
+      x >= rect.right ||
+      y <= rect.top ||
+      y >= rect.bottom
+    ) {
       setIsDragging(false);
     }
   }, []);
@@ -289,7 +354,7 @@ const BulkLeadUpload = (): JSX.Element => {
   const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    e.dataTransfer.dropEffect = 'copy';
+    e.dataTransfer.dropEffect = "copy";
   }, []);
 
   const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
@@ -299,15 +364,17 @@ const BulkLeadUpload = (): JSX.Element => {
 
     const droppedFile = e.dataTransfer.files[0];
     if (droppedFile) {
-      if (droppedFile.type !== 'text/csv' && !droppedFile.name.endsWith('.csv')) {
-        toast.error('Please upload a CSV file');
+      if (
+        droppedFile.type !== "text/csv" &&
+        !droppedFile.name.endsWith(".csv")
+      ) {
+        toast.error("Please upload a CSV file");
         return;
       }
       setFile(droppedFile);
       parseCSVFile(droppedFile);
     }
   }, []);
-
 
   const handleRemoveFile = () => {
     setFile(null);
@@ -328,128 +395,294 @@ const BulkLeadUpload = (): JSX.Element => {
       setCurrentPage(newTotalPages);
     }
 
-    toast.success('Row deleted successfully');
+    toast.success("Row deleted successfully");
 
     if (updatedData.length === 0) {
       handleRemoveFile();
     }
   };
 
-
   const handleDeleteAllRows = () => {
-    if (window.confirm('Are you sure you want to delete all rows? This action cannot be undone.')) {
+    if (
+      window.confirm(
+        "Are you sure you want to delete all rows? This action cannot be undone.",
+      )
+    ) {
       handleRemoveFile();
-      toast.success('All rows deleted');
+      toast.success("All rows deleted");
     }
   };
 
+  const handleDeleteInvalidRows = () => {
+    const invalidRowNumbers = new Set(validationErrors.map((err) => err.row));
+    const updatedData = parsedData.filter(
+      (_, index) => !invalidRowNumbers.has(index + 2),
+    );
+    const deletedCount = parsedData.length - updatedData.length;
+
+    setParsedData(updatedData);
+
+    const errors = validateLeadData(updatedData);
+    setValidationErrors(errors);
+
+    const newTotalPages = Math.ceil(updatedData.length / itemsPerPage);
+    if (currentPage > newTotalPages && newTotalPages > 0) {
+      setCurrentPage(newTotalPages > 0 ? newTotalPages : 1);
+    }
+
+    toast.success(
+      `${deletedCount} invalid row${deletedCount !== 1 ? "s" : ""} deleted`,
+    );
+
+    if (updatedData.length === 0) {
+      handleRemoveFile();
+    }
+  };
+
+  // const handleBulkUpload = async () => {
+  //   if (!parsedData.length) {
+  //     toast.error('No data to upload');
+  //     return;
+  //   }
+
+  //   if (validationErrors.length > 0) {
+  //     toast.error('Please fix validation errors before uploading');
+  //     return;
+  //   }
+
+  //   setIsUploading(true);
+  //   try {
+  //     const leadsPayload: LeadPayload[] = parsedData.map(lead => {
+  //       const standardFields = new Set([
+  //         'fullName', 'email', 'phone', 'priority', 'source', 'projectType',
+  //         'status', 'companyName', 'city', 'country', 'postalCode', 'language',
+  //         'industry', 'employeeRole', 'employeeSeniority', 'message', 'membershipNotes'
+  //       ]);
+
+  //       const transformedLead: LeadPayload = {
+  //         fullName: String(lead.fullName || ''),
+  //         email: String(lead.email || ''),
+  //       };
+
+  //       const extraFields: Record<string, string | number | boolean | null> = {};
+
+  //       userFormData?.selectedFormFields.forEach(field => {
+  //         const value = lead[field.key];
+
+  //         if (value !== undefined && value !== '') {
+  //           if (standardFields.has(field.key)) {
+  //             switch (field.key) {
+  //               case 'phone':
+  //                 transformedLead.phone = String(value);
+  //                 break;
+
+  //               case 'priority':
+  //                 transformedLead.priority = value as PRIORITY;
+  //                 break;
+
+  //               case 'source':
+  //                 transformedLead.source = String(value);
+  //                 break;
+
+  //               case 'projectType':
+  //                 transformedLead.projectType = String(value);
+  //                 break;
+
+  //               case 'status':
+  //                 transformedLead.status = value as SALES_STATUS;
+  //                 break;
+
+  //               case 'companyName':
+  //               case 'city':
+  //               case 'employeeRole':
+  //               case 'message':
+  //               case 'membershipNotes':
+  //                 transformedLead[field.key] = String(value);
+  //                 break;
+
+  //               case 'postalCode':
+  //                 transformedLead.postalCode = Number(value);
+  //                 break;
+
+  //               case 'country':
+  //                 transformedLead.country = String(value);
+  //                 break;
+
+  //               case 'language':
+  //                 transformedLead.language = value as LANGUAGE_CODE;
+  //                 break;
+
+  //               case 'industry':
+  //                 transformedLead.industry = value as INDUSTRIES;
+  //                 break;
+
+  //               case 'employeeSeniority':
+  //                 transformedLead.employeeSeniority = value as EMPLOYEE_SENIORITY;
+  //                 break;
+  //             }
+  //           } else {
+  //             switch (field.type) {
+  //               case 'number':
+  //                 extraFields[field.key] = Number(value);
+  //                 break;
+  //               case 'checkbox':
+  //                 extraFields[field.key] = Boolean(value);
+  //                 break;
+  //               default:
+  //                 extraFields[field.key] = String(value);
+  //             }
+  //           }
+  //         }
+  //       });
+
+  //       if (Object.keys(extraFields).length > 0) {
+  //         transformedLead.extraFields = extraFields;
+  //       }
+
+  //       return transformedLead;
+  //     });
+
+  //     const payload: BulkLeadPayload = { leads: leadsPayload };
+
+  //     const result = await LeadService.bulkCreate(payload);
+
+  //     if (result.status === 201) {
+  //       toast.success(result.data.message);
+  //       handleRemoveFile();
+  //       router.push("/leads")
+  //     }
+  //   } catch (error) {
+  //     process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+  //     if (axios.isAxiosError(error)) {
+  //       const messages = extractErrorMessages(error);
+  //       toast.error(Array.isArray(messages) ? messages[0] : messages);
+  //     } else {
+  //       toast.error("Something went wrong");
+  //     }
+  //   } finally {
+  //     setIsUploading(false);
+  //   }
+  // };
 
   const handleBulkUpload = async () => {
     if (!parsedData.length) {
-      toast.error('No data to upload');
+      toast.error("No data to upload");
       return;
     }
 
     if (validationErrors.length > 0) {
-      toast.error('Please fix validation errors before uploading');
+      toast.error("Please fix validation errors before uploading");
       return;
     }
 
     setIsUploading(true);
-    try {
-      const leadsPayload: LeadPayload[] = parsedData.map(lead => {
-       
-        const standardFields = new Set([
-          'fullName', 'email', 'phone', 'priority', 'source', 'projectType',
-          'status', 'companyName', 'city', 'country', 'postalCode', 'language',
-          'industry', 'employeeRole', 'employeeSeniority', 'message', 'membershipNotes'
-        ]);
 
-        const transformedLead: LeadPayload = {
-          fullName: String(lead.fullName || ''),
-          email: String(lead.email || ''),
+    try {
+      const coreFields = new Set([
+        "fullName",
+        "email",
+        "phone",
+        "priority",
+        "source",
+        "projectType",
+        "status",
+        "companyName",
+        "city",
+        "country",
+        "postalCode",
+        "language",
+        "industry",
+        "employeeRole",
+        "employeeSeniority",
+        "message",
+        "membershipNotes",
+      ]);
+
+      const leadsPayload: LeadPayload[] = parsedData.map((row) => {
+        const lead: LeadPayload = {
+          fullName: String(row.fullName || ""),
+          email: String(row.email || ""),
         };
 
-       
-        const extraFields: Record<string, string | number | boolean | null> = {};
+        const extraFields: Record<string, string | number | boolean | null> =
+          {};
 
-        userFormData?.selectedFormFields.forEach(field => {
-          const value = lead[field.key];
+        Object.entries(row).forEach(([key, value]) => {
+          if (value === undefined || value === "") return;
 
-          if (value !== undefined && value !== '') {
-            
-            if (standardFields.has(field.key)) {
-              switch (field.key) {
-                case 'phone':
-                  transformedLead.phone = String(value);
-                  break;
+          if (coreFields.has(key)) {
+            switch (key) {
+              case "phone":
+                lead.phone = String(value);
+                break;
 
-                case 'priority':
-                  transformedLead.priority = value as PRIORITY;
-                  break;
+              case "priority":
+                lead.priority = value as PRIORITY;
+                break;
 
-                case 'source':
-                  transformedLead.source = String(value);
-                  break;
+              case "source":
+                lead.source = String(value);
+                break;
 
-                case 'projectType':
-                  transformedLead.projectType = String(value);
-                  break;
+              case "projectType":
+                lead.projectType = String(value);
+                break;
 
-                case 'status':
-                  transformedLead.status = value as SALES_STATUS;
-                  break;
+              case "status":
+                lead.status = value as SALES_STATUS;
+                break;
 
-                case 'companyName':
-                case 'city':
-                case 'employeeRole':
-                case 'message':
-                case 'membershipNotes':
-                  transformedLead[field.key] = String(value);
-                  break;
+              case "companyName":
+              case "city":
+              case "employeeRole":
+              case "message":
+              case "membershipNotes":
+                (lead as any)[key] = String(value);
+                break;
 
-                case 'postalCode':
-                  transformedLead.postalCode = Number(value);
-                  break;
+              case "postalCode":
+                lead.postalCode = Number(value);
+                break;
 
-                case 'country':
-                  transformedLead.country = String(value);
-                  break;
+              case "country":
+                lead.country = String(value);
+                break;
 
-                case 'language':
-                  transformedLead.language = value as LANGUAGE_CODE;
-                  break;
+              case "language":
+                lead.language = value as LANGUAGE_CODE;
+                break;
 
-                case 'industry':
-                  transformedLead.industry = value as INDUSTRIES;
-                  break;
+              case "industry":
+                lead.industry = value as INDUSTRIES;
+                break;
 
-                case 'employeeSeniority':
-                  transformedLead.employeeSeniority = value as EMPLOYEE_SENIORITY;
-                  break;
-              }
+              case "employeeSeniority":
+                lead.employeeSeniority = value as EMPLOYEE_SENIORITY;
+                break;
+            }
+          } else {
+            const parsedValue = String(value).trim();
+
+            if (parsedValue === "") return;
+
+            if (!isNaN(Number(parsedValue))) {
+              extraFields[key] = Number(parsedValue);
+            } else if (
+              parsedValue.toLowerCase() === "true" ||
+              parsedValue.toLowerCase() === "false"
+            ) {
+              extraFields[key] = parsedValue.toLowerCase() === "true";
             } else {
-             
-              switch (field.type) {
-                case 'number':
-                  extraFields[field.key] = Number(value);
-                  break;
-                case 'checkbox':
-                  extraFields[field.key] = Boolean(value);
-                  break;
-                default:
-                  extraFields[field.key] = String(value);
-              }
+              extraFields[key] = parsedValue;
             }
           }
         });
 
-       
         if (Object.keys(extraFields).length > 0) {
-          transformedLead.extraFields = extraFields;
+          lead.extraFields = extraFields;
         }
 
-        return transformedLead;
+        return lead;
       });
 
       const payload: BulkLeadPayload = { leads: leadsPayload };
@@ -459,10 +692,9 @@ const BulkLeadUpload = (): JSX.Element => {
       if (result.status === 201) {
         toast.success(result.data.message);
         handleRemoveFile();
-        router.push("/leads")
+        router.push("/leads");
       }
     } catch (error) {
-      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) {
         const messages = extractErrorMessages(error);
         toast.error(Array.isArray(messages) ? messages[0] : messages);
@@ -474,7 +706,6 @@ const BulkLeadUpload = (): JSX.Element => {
     }
   };
 
-
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = parsedData.slice(indexOfFirstItem, indexOfLastItem);
@@ -484,24 +715,30 @@ const BulkLeadUpload = (): JSX.Element => {
 
   const getErrorsForRow = (globalIndex: number): ValidationError[] => {
     const rowNumber = globalIndex + 2;
-    return validationErrors.filter(err => err.row === rowNumber);
+    return validationErrors.filter((err) => err.row === rowNumber);
   };
 
   return (
     <div className="ml-72 mt-14 p-6 min-h-screen">
       <div className="max-w-7xl mx-auto">
-
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Bulk Lead Upload</h1>
-          <p className="text-gray-600 dark:text-gray-500">Upload multiple leads at once using a CSV file</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Bulk Lead Upload
+          </h1>
+          <p className="text-gray-600 dark:text-gray-500">
+            Upload multiple leads at once using a CSV file
+          </p>
         </div>
 
         <div className="bg-white dark:bg-gray-700 rounded-lg border border-slate-900/10 p-6 mb-6">
           <div className="flex items-start justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Step 1: Download Template</h2>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                Step 1: Download Template
+              </h2>
               <p className="text-gray-600 dark:text-gray-500 mb-4">
-                Download the CSV template with the correct column headers based on your form fields.
+                Download the CSV template with the correct column headers based
+                on your form fields.
               </p>
             </div>
             <button
@@ -516,7 +753,9 @@ const BulkLeadUpload = (): JSX.Element => {
         </div>
 
         <div className="bg-white rounded-lg border border-slate-900/10 dark:bg-gray-700 p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Step 2: Upload CSV File</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+            Step 2: Upload CSV File
+          </h2>
 
           {!file ? (
             <div
@@ -526,8 +765,8 @@ const BulkLeadUpload = (): JSX.Element => {
               onDrop={handleDrop}
               className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${
                 isDragging
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-300 hover:border-gray-400'
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-300 hover:border-gray-400"
               }`}
             >
               <Upload className="mx-auto mb-4 text-gray-400" size={48} />
@@ -546,7 +785,9 @@ const BulkLeadUpload = (): JSX.Element => {
                   Choose File
                 </span>
               </label>
-              <p className="text-sm text-gray-500 mt-4">Only CSV files are accepted</p>
+              <p className="text-sm text-gray-500 mt-4">
+                Only CSV files are accepted
+              </p>
             </div>
           ) : (
             <div className="border border-gray-200 dark:border-gray-500 rounded-lg p-4">
@@ -554,9 +795,12 @@ const BulkLeadUpload = (): JSX.Element => {
                 <div className="flex items-center gap-3">
                   <FileText className="text-blue-600" size={32} />
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-gray-200">{file.name}</p>
+                    <p className="font-medium text-gray-900 dark:text-gray-200">
+                      {file.name}
+                    </p>
                     <p className="text-sm text-gray-500">
-                      {(file.size / 1024).toFixed(2)} KB • {parsedData.length} rows
+                      {(file.size / 1024).toFixed(2)} KB • {parsedData.length}{" "}
+                      rows
                     </p>
                   </div>
                 </div>
@@ -574,7 +818,10 @@ const BulkLeadUpload = (): JSX.Element => {
         {validationErrors.length > 0 && (
           <div className="bg-red-50 dark:bg-gray-700 border border-red-200 rounded-lg p-4 mb-6">
             <div className="flex items-start gap-3">
-              <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
+              <AlertCircle
+                className="text-red-600 flex-shrink-0 mt-0.5"
+                size={20}
+              />
               <div className="flex-1">
                 <h3 className="font-semibold text-red-900 mb-2">
                   Validation Errors ({validationErrors.length})
@@ -601,12 +848,25 @@ const BulkLeadUpload = (): JSX.Element => {
             <div className="p-6 border-b border-gray-200 dark:border-gray-600">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">Step 3: Review Data</h2>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">
+                    Step 3: Review Data
+                  </h2>
                   <p className="text-gray-600 dark:text-gray-400">
-                    Review your data before uploading ({parsedData.length} total rows)
+                    Review your data before uploading ({parsedData.length} total
+                    rows)
                   </p>
                 </div>
                 <div className="flex gap-3">
+                  {validationErrors.length > 0 && (
+                    <button
+                      onClick={handleDeleteInvalidRows}
+                      className="flex items-center gap-2 px-4 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors font-medium border border-orange-300"
+                    >
+                      <AlertCircle size={18} />
+                      Delete Invalid Rows (
+                      {new Set(validationErrors.map((e) => e.row)).size})
+                    </button>
+                  )}
                   <button
                     onClick={handleDeleteAllRows}
                     className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium border border-red-300"
@@ -645,15 +905,12 @@ const BulkLeadUpload = (): JSX.Element => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-100 uppercase tracking-wider">
                       Row
                     </th>
-                    {userFormData?.selectedFormFields.map((field) => (
+                    {csvHeaders.map((header) => (
                       <th
-                        key={field.id}
+                        key={header}
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-100 uppercase tracking-wider"
                       >
-                        {field.name}
-                        {field.required && !['phone', 'priority', 'projectType', "country"].includes(field.key) && (
-                          <span className="text-red-500 ml-1">*</span>
-                        )}
+                        {header}
                       </th>
                     ))}
                   </tr>
@@ -667,7 +924,11 @@ const BulkLeadUpload = (): JSX.Element => {
                     return (
                       <tr
                         key={index}
-                        className={hasError ? 'bg-red-50 dark:bg-red-500' : 'hover:bg-gray-50 dark:hover:bg-gray-600'}
+                        className={
+                          hasError
+                            ? "bg-red-50 dark:bg-red-500"
+                            : "hover:bg-gray-50 dark:hover:bg-gray-600"
+                        }
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <button
@@ -675,28 +936,38 @@ const BulkLeadUpload = (): JSX.Element => {
                             className="p-1.5 hover:bg-red-100 rounded-lg transition-colors group"
                             title="Delete this row"
                           >
-                            <Trash2 size={16} className="text-gray-400 group-hover:text-red-600" />
+                            <Trash2
+                              size={16}
+                              className="text-gray-400 group-hover:text-red-600"
+                            />
                           </button>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                           {globalIndex + 1}
                           {hasError && (
-                            <AlertCircle className="inline-block ml-2 text-red-500" size={16} />
+                            <AlertCircle
+                              className="inline-block ml-2 text-red-500"
+                              size={16}
+                            />
                           )}
                         </td>
-                        {userFormData?.selectedFormFields.map((field) => {
-                          const value = lead[field.key];
-                          const fieldError = rowErrors.find(err => err.field === field.key);
+                        {csvHeaders.map((header) => {
+                          const value = lead[header];
+                          const fieldError = rowErrors.find(
+                            (err) => err.field === header,
+                          );
 
                           return (
                             <td
-                              key={field.id}
+                              key={header}
                               className={`px-6 py-4 whitespace-nowrap text-sm ${
-                                fieldError ? 'text-red-900 font-medium' : 'text-gray-900 dark:text-white'
+                                fieldError
+                                  ? "text-red-900 font-medium"
+                                  : "text-gray-900 dark:text-white"
                               }`}
                               title={fieldError?.message}
                             >
-                              {value || '-'}
+                              {value || "-"}
                             </td>
                           );
                         })}
@@ -710,7 +981,8 @@ const BulkLeadUpload = (): JSX.Element => {
             {totalPages > 1 && (
               <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
                 <div className="text-sm text-gray-700">
-                  Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, parsedData.length)} of{' '}
+                  Showing {indexOfFirstItem + 1} to{" "}
+                  {Math.min(indexOfLastItem, parsedData.length)} of{" "}
                   {parsedData.length} entries
                 </div>
                 <div className="flex gap-2">
@@ -740,8 +1012,8 @@ const BulkLeadUpload = (): JSX.Element => {
                         onClick={() => paginate(pageNum)}
                         className={`px-4 py-2 border rounded-lg text-sm font-medium ${
                           currentPage === pageNum
-                            ? 'bg-blue-600 text-white border-blue-600'
-                            : 'border-gray-300 text-gray-700 dark:text-gray-200 hover:bg-gray-50'
+                            ? "bg-blue-600 text-white border-blue-600"
+                            : "border-gray-300 text-gray-700 dark:text-gray-200 hover:bg-gray-50"
                         }`}
                       >
                         {pageNum}

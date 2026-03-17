@@ -22,7 +22,7 @@ PhoneNumber = Annotated[
 
 class LeadsModel(Document):
     lead_id: str
-    fullName: str = Field(..., min_length=5, max_length=49)
+    fullName: str = Field(..., min_length=1, max_length=49)
     email: str  
     hashedEmail: str = Indexed()
     phone: Optional[str] = None
