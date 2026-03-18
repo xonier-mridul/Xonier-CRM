@@ -2,7 +2,7 @@ import { DefaultActive } from "@/src/types/prospect/prospect.type";
 export const ALL_COL: any = {
     "company": [
         { key: "id", label: "ID", required: true },
-        { key: "enquiry_id", label: "Enquiry ID", required: true },
+        { key: "enquiry_id", label: "Enquiry ID", required: false },
         { key: "fullName", label: "Full Name", required: true },
         { key: "email", label: "Email", required: false },
         { key: "phone", label: "Phone", required: false },
@@ -38,11 +38,13 @@ export const ALL_COL: any = {
         { key: "socialLinks.instagram", label: "Instagram", required: false },
         { key: "socialLinks.youtube", label: "YouTube", required: false },
         { key: "socialLinks.website", label: "Website", required: false },
+        { key: "createdAt", label: "Created At", required: false },
+        { key: "createdBy.firstName", label: "Created By", required: false },
 
         { key: "actions", label: "Actions", required: true },
     ],
     "people": [
-        { key: "enquiry_id", label: "Enquiry ID", required: true },
+        { key: "enquiry_id", label: "Enquiry ID", required: false },
         { key: "fullName", label: "Name", required: true },
         { key: "designation", label: "Designation", required: false },
         { key: "companyName", label: "Company", required: false },
@@ -52,12 +54,14 @@ export const ALL_COL: any = {
         { key: "linkedin", label: "LinkedIn", required: false },
         { key: "status", label: "Status", required: false },
         { key: "actions", label: "Actions", required: true },
+        { key: "createdAt", label: "Created At", required: false },
+        { key: "createdBy.firstName", label: "Created By", required: false },
     ],
 };
 
 export const DEF_ACTIVE: DefaultActive = {
     "people": {
-        enquiry_id: true,
+        enquiry_id: false,
         fullName: true,
         designation: true,
         companyName: true,
@@ -67,10 +71,12 @@ export const DEF_ACTIVE: DefaultActive = {
         linkedin: true,
         status: true,
         actions: true,
+        createdAt: false,
+        createdBy: false,
     },
     company: {
         id: false,
-        enquiry_id: true,
+        enquiry_id: false,
         fullName: true,
         email: true,
         phone: true,
@@ -107,6 +113,8 @@ export const DEF_ACTIVE: DefaultActive = {
         "socialLinks.other": false,
 
         deletedAt: false,
+        createdAt: true,
+        createdBy: true,
 
         actions: true
     }

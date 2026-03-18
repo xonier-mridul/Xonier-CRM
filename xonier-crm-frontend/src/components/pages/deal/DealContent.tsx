@@ -17,6 +17,8 @@ import TabsButton from "@/src/components/ui/TabsButton";
 import { MdOutlineEdit, MdDeleteOutline, MdOutlineLeaderboard } from "react-icons/md";
 import Link from "next/link";
 import { formatDate } from "@/src/app/utils/date.utils";
+import DateFilterButton from "@/src/components/common/dateFilter";
+import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 
 
 import { handleCopy } from "@/src/app/utils/clipboard.utils";
@@ -42,6 +44,7 @@ const DealContent = (): JSX.Element => {
   const [currentTab, setCurrentTab] = useState<number>(1);
   const [searchVal, setSearchVal] = useState<string>("");
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const [dateFilter, setDateFilter] = useState<DateFilter>({ fromDate: "", toDate: "" });
   const [filters, setFilters] = useState<Record<string, string>>({
     "name": "",
   });
@@ -56,7 +59,7 @@ const DealContent = (): JSX.Element => {
   const getDealData = async () => {
     setIsLoading(true);
     try {
-      const result = await dealService.getAll(currentPage, pageLimit, {...filters, userid});
+      const result = await dealService.getAll(currentPage, pageLimit, {...filters, userid,...dateFilter});
 
       if (result.status === 200) {
         const data = result.data.data;
@@ -84,7 +87,7 @@ const DealContent = (): JSX.Element => {
   const getWonDealData = async () => {
     setIsLoading(true);
     try {
-      const result = await dealService.getAll(wonCurrentPage, wonPageLimit, {...filters, stage: "won", userid});
+      const result = await dealService.getAll(wonCurrentPage, wonPageLimit, {...filters, stage: "won", userid,...dateFilter});
 
       if (result.status === 200) {
         const data = result.data.data;
@@ -112,7 +115,7 @@ const DealContent = (): JSX.Element => {
   const getLostDealData = async () => {
     setIsLoading(true);
     try {
-      const result = await dealService.getAll(lostCurrentPage, lostPageLimit, {...filters, stage: "lost", userid});
+      const result = await dealService.getAll(lostCurrentPage, lostPageLimit, {...filters, stage: "lost", userid,...dateFilter});
 
       if (result.status === 200) {
         const data = result.data.data;
@@ -190,7 +193,7 @@ const DealContent = (): JSX.Element => {
     else if(currentTab === 3){
       getLostDealData()
     }
-  },[filters]);
+  },[filters,dateFilter]);
 
 
   const handleSearch = (val: string) => {
@@ -231,7 +234,10 @@ const DealContent = (): JSX.Element => {
               </select>
               <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2">
                 <IoIosSearch className="text-xl" />
-                <input type="text" className="outline-none" value={searchVal} onChange={(e)=>handleSearch(e.target.value)} />
+                <input type="text" className="outline-none" placeholder="Search..." value={searchVal} onChange={(e)=>handleSearch(e.target.value)} />
+              </div>
+              <div>
+                <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} theme="dark" />
               </div>
               {(
                 <Link
@@ -254,9 +260,9 @@ const DealContent = (): JSX.Element => {
           {(currentTab === 1) &&<> <table className="w-full rounded-xl overflow-hidden">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
-                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                {/* <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
                   deal Id
-                </th>
+                </th> */}
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
                  deal name
                 </th>
@@ -294,7 +300,7 @@ const DealContent = (): JSX.Element => {
                           : "bg-blue-100/50 dark:bg-slate-500"
                       } w-full`}
                     >
-                      <td className="p-4">
+                      {/* <td className="p-4">
                         <Link
                           href={`/deals/view/${item.id}`}
                           className="text-xs cursor-pointer hover:scale-110 transition-all hover:text-blue-300"
@@ -302,7 +308,7 @@ const DealContent = (): JSX.Element => {
                           {" "}
                           {item.deal_id}
                         </Link>
-                      </td>
+                      </td> */}
                       <td className="flex gap-1 flex-col p-4">
                         <h4 className="capitalize text-sm">{item.dealName}</h4>{" "}
                         
@@ -428,9 +434,9 @@ const DealContent = (): JSX.Element => {
           {(currentTab === 2) && <> <table className="w-full rounded-xl overflow-hidden">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
-                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                {/* <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
                   deal Id
-                </th>
+                </th> */}
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
                  deal name
                 </th>
@@ -472,7 +478,7 @@ const DealContent = (): JSX.Element => {
                           : "bg-blue-100/50 dark:bg-slate-500"
                       } w-full`}
                     >
-                      <td className="p-4">
+                      {/* <td className="p-4">
                         <Link
                           href={`/deals/view/${item.id}`}
                           className="text-sm cursor-pointer hover:scale-110 transition-all hover:text-blue-300"
@@ -480,7 +486,7 @@ const DealContent = (): JSX.Element => {
                           {" "}
                           {item.deal_id}
                         </Link>
-                      </td>
+                      </td> */}
                       <td className="flex gap-1 flex-col p-4">
                         <h4 className="capitalize">{item.dealName}</h4>{" "}
                         
@@ -588,9 +594,9 @@ const DealContent = (): JSX.Element => {
           {(currentTab === 3) && <><table className="w-full rounded-xl overflow-hidden">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
-                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                {/* <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
                   deal Id
-                </th>
+                </th> */}
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
                  deal name
                 </th>
@@ -632,7 +638,7 @@ const DealContent = (): JSX.Element => {
                           : "bg-blue-100/50 dark:bg-slate-500"
                       } w-full`}
                     >
-                      <td className="p-4">
+                      {/* <td className="p-4">
                         <Link
                           href={`/deals/view/${item.id}`}
                           className="text-sm cursor-pointer hover:scale-110 transition-all hover:text-blue-300"
@@ -640,7 +646,7 @@ const DealContent = (): JSX.Element => {
                           {" "}
                           {item.deal_id}
                         </Link>
-                      </td>
+                      </td> */}
                       <td className="flex gap-1 flex-col p-4">
                         <h4 className="capitalize">{item.dealName}</h4>{" "}
                         

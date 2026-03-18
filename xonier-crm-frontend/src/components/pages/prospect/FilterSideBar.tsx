@@ -15,6 +15,9 @@ import {
     CompanyPeopleToggleType
 } from "@/src/types/prospect/filterSideBar.types";
 import filterOptions from "./filterOption";
+import DateFilterButton from "@/src/components/common/dateFilter";
+import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
+
 
 // ─── Props (your original shape) ─────────────────────────────────────────────
 
@@ -415,6 +418,7 @@ const SectionAccordion = ({ section, values, onChange }: {
 export default function FilterSidebar({ open, onClose, onApply, onReset, onFilterChange ,onInfoTypeChange ,infoValue }: Props): JSX.Element {
     const [values, setValues] = useState<FilterValues>(() => buildDefaultValues(filterOptions));
     const [infoType, setInfoType] = useState<CompanyPeopleToggleType>(infoValue as CompanyPeopleToggleType);
+    const [dateFilter, setDateFilter] = useState<DateFilter>({ fromDate: "", toDate: "" });
     const activeCount = countActiveFilters(values);
 
     const handleChange = (key: string, val: FilterValue) => {
@@ -473,7 +477,8 @@ export default function FilterSidebar({ open, onClose, onApply, onReset, onFilte
                         />
 
                     </div>
-
+                    <div className="flex items-center gap-6 flex-wrap justify-end">
+                    </div>
                     {/* Filters — dynamic sections from filterOptions */}
                     <div className="flex-1 overflow-y-auto">
                         {(filterOptions.sections.filter((section) => (section.type == "both" || section.type == infoType))).map((section) => (
@@ -484,6 +489,7 @@ export default function FilterSidebar({ open, onClose, onApply, onReset, onFilte
                                 onChange={handleChange}
                             />
                         ))}
+                    
                     </div>
 
                     {/* Footer */}

@@ -23,6 +23,10 @@ import {
   IoCardOutline,
   IoAlertCircleOutline,
 } from 'react-icons/io5';
+import DateFilterButton from "@/src/components/common/dateFilter";
+import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
+import CreatedAt from "@/src/components/common/CreatedAt";
+import StatusBadge from "@/src/components/common/Status";
 
 const page = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -32,13 +36,14 @@ const page = (): JSX.Element => {
   const [pageLimit, setPageLimit] = useState<number>(10);
   const [searchVal, setSearchVal] = useState<string>("");
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const [dateFilter, setDateFilter] = useState<DateFilter>({ fromDate: "", toDate: "" });
 
   const { hasPermission } = usePermissions();
 
   const getInvoiceData = async()=>{
     setIsLoading(true)
     try {
-        const result = await InvoiceService.getAll(currentPage, pageLimit, {fullName : searchVal})
+        const result = await InvoiceService.getAll(currentPage, pageLimit, {fullName : searchVal,...dateFilter})
         if (result.status === 200){
             const data = result.data.data
             setInvoiceData(data.data)
@@ -61,7 +66,7 @@ const page = (): JSX.Element => {
 
   useEffect(() => {
      getInvoiceData()
-  }, [currentPage, pageLimit, searchVal]);
+  }, [currentPage, pageLimit, searchVal,dateFilter]);
   const handleSearch = (val: string) => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
@@ -110,7 +115,10 @@ const page = (): JSX.Element => {
             </select>
             <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2">
               <IoIosSearch className="text-xl" />
-              <input type="text" className="outline-none" onChange={(e)=> handleSearch(e.target.value)}/>
+              <input type="text" className="outline-none" placeholder="Search..." onChange={(e)=> handleSearch(e.target.value)}/>
+            </div>
+            <div>
+              <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} theme="dark" />
             </div>
             {hasPermission(PERMISSIONS.createLead) ? (
               <Link
@@ -137,9 +145,9 @@ const page = (): JSX.Element => {
         <table className="w-full rounded-xl overflow-hidden">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
-                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                {/* <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
                   Invoice Id
-                </th>
+                </th> */}
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
                   Client Info
                 </th>
@@ -179,9 +187,9 @@ const page = (): JSX.Element => {
                         : "bg-blue-100/50 dark:bg-slate-500"
                     } w-full`}
                   >
-                    <td className="p-4">
+                    {/* <td className="p-4">
                       <Link href={`/invoice/view/${item.id}`} className="text-sm cursor-pointer hover:text-blue-500" > {item.invoiceId}</Link>
-                    </td>
+                    </td> */}
                     <td className="flex gap-1 flex-col p-4">
                       <h4>{item.customerName}</h4>{" "}
                       
