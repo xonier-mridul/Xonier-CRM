@@ -30,8 +30,7 @@ class LeadController:
             
             result = await self.service.bulk_create(payload=payload, user=user)
 
-            
-            
+        
             
             inserted = result.get('inserted', 0)
             skipped = result.get('skipped', 0)

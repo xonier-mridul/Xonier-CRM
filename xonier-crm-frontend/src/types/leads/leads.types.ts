@@ -31,6 +31,7 @@ export interface Lead {
   assignedBy?: User | null;     
   assignedAt?: string | null;   
   isAssigned?: boolean;     
+  dataTag?: string | null;
 
   message?: string | null;
   membershipNotes?: string | null;
@@ -58,6 +59,7 @@ export interface LeadPayload {
   country?: string | null;
   postalCode?: number | null;
   language?: LANGUAGE_CODE | null;
+  
 
   industry?: INDUSTRIES | null;
   employeeRole?: string;
@@ -70,6 +72,7 @@ export interface LeadPayload {
 }
 
 export interface BulkLeadPayload {
+  dataTag?: string | null;
   leads: LeadPayload[];
 }
 

@@ -7,7 +7,7 @@ from app.schemas.communication.email_schema import (
     SendBulkEmailSchema,
     ResendEmailSchema,
     UpdateEmailSchema,
-    BulkDeleteEmailSchema,
+    BulkDeleteEmailSchema
 )
 
 router = APIRouter(prefix="/api/email")

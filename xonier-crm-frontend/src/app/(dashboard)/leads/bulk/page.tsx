@@ -25,6 +25,7 @@ import {
   AlertCircle,
   CheckCircle,
   Trash2,
+  Tag,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -46,11 +47,10 @@ const BulkLeadUpload = (): JSX.Element => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [parsedData, setParsedData] = useState<ParsedLead[]>([]);
-  const [validationErrors, setValidationErrors] = useState<ValidationError[]>(
-    [],
-  );
+  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
+  const [dataTag, setDataTag] = useState<string>("");
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage] = useState<number>(20);
@@ -125,29 +125,6 @@ const BulkLeadUpload = (): JSX.Element => {
     toast.success("CSV template downloaded successfully");
   };
 
-  // const validateHeaders = (headers: string[]): boolean => {
-  //   if (!userFormData?.selectedFormFields) return false;
-
-  //   const requiredHeaders = userFormData.selectedFormFields
-  //     .filter(field => field.required)
-  //     .map(field => field.key);
-
-  //   const availableHeaders = userFormData.selectedFormFields.map(field => field.key);
-
-  //   const missingRequired = requiredHeaders.filter(h => !headers.includes(h));
-  //   if (missingRequired.length > 0) {
-  //     toast.error(`Missing required columns: ${missingRequired.join(', ')}`);
-  //     return false;
-  //   }
-
-  //   const invalidHeaders = headers.filter(h => !availableHeaders.includes(h));
-  //   if (invalidHeaders.length > 0) {
-  //     toast.warning(`Unknown columns will be ignored: ${invalidHeaders.join(', ')}`);
-  //   }
-
-  //   return true;
-  // };
-
   const validateLeadData = (
     data: ParsedLead[],
     startIndex: number = 0,
@@ -168,7 +145,6 @@ const BulkLeadUpload = (): JSX.Element => {
 
       userFormData.selectedFormFields.forEach((field) => {
         const value = lead[field.key];
-
         const isBackendOptional = optionalFields.has(field.key);
 
         if (field.required && !isBackendOptional && (!value || value === "")) {
@@ -220,20 +196,6 @@ const BulkLeadUpload = (): JSX.Element => {
               break;
 
             case "text":
-              // if (field.key === "phone") {
-              //   const phone = String(value).trim();
-
-              //   const allowedRegex = /^[0-9+()\-\s]+$/;
-
-              //   if (!allowedRegex.test(phone)) {
-              //     errors.push({
-              //       row: rowNumber,
-              //       field: field.key,
-              //       message: "Phone number contains invalid characters",
-              //     });
-              //   }
-              // }
-
               if (field.key === "fullName" && String(value).trim().length < 1) {
                 errors.push({
                   row: rowNumber,
@@ -249,39 +211,6 @@ const BulkLeadUpload = (): JSX.Element => {
 
     return errors;
   };
-
-  // const parseCSVFile = (file: File) => {
-  //   Papa.parse(file, {
-  //     header: true,
-  //     skipEmptyLines: true,
-  //     complete: (results) => {
-  //       const headers = results.meta.fields || [];
-
-  //       // if (!validateHeaders(headers)) {
-  //       //   setFile(null);
-  //       //   return;
-  //       // }
-
-  //       const data = results.data as ParsedLead[];
-
-  //       const errors = validateLeadData(data);
-  //       setValidationErrors(errors);
-
-  //       if (errors.length > 0) {
-  //         toast.warning(`Found ${errors.length} validation errors. Please review and fix them.`);
-  //       } else {
-  //         toast.success(`Successfully parsed ${data.length} leads`);
-  //       }
-
-  //       setParsedData(data);
-  //       setCurrentPage(1);
-  //     },
-  //     error: (error) => {
-  //       toast.error(`Error parsing CSV: ${error.message}`);
-  //       setFile(null);
-  //     }
-  //   });
-  // };
 
   const parseCSVFile = (file: File) => {
     Papa.parse(file, {
@@ -310,6 +239,7 @@ const BulkLeadUpload = (): JSX.Element => {
       },
     });
   };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
@@ -381,6 +311,8 @@ const BulkLeadUpload = (): JSX.Element => {
     setParsedData([]);
     setValidationErrors([]);
     setCurrentPage(1);
+    setDataTag("");
+    setCsvHeaders([]);
   };
 
   const handleDeleteRow = (globalIndex: number) => {
@@ -439,131 +371,6 @@ const BulkLeadUpload = (): JSX.Element => {
     }
   };
 
-  // const handleBulkUpload = async () => {
-  //   if (!parsedData.length) {
-  //     toast.error('No data to upload');
-  //     return;
-  //   }
-
-  //   if (validationErrors.length > 0) {
-  //     toast.error('Please fix validation errors before uploading');
-  //     return;
-  //   }
-
-  //   setIsUploading(true);
-  //   try {
-  //     const leadsPayload: LeadPayload[] = parsedData.map(lead => {
-  //       const standardFields = new Set([
-  //         'fullName', 'email', 'phone', 'priority', 'source', 'projectType',
-  //         'status', 'companyName', 'city', 'country', 'postalCode', 'language',
-  //         'industry', 'employeeRole', 'employeeSeniority', 'message', 'membershipNotes'
-  //       ]);
-
-  //       const transformedLead: LeadPayload = {
-  //         fullName: String(lead.fullName || ''),
-  //         email: String(lead.email || ''),
-  //       };
-
-  //       const extraFields: Record<string, string | number | boolean | null> = {};
-
-  //       userFormData?.selectedFormFields.forEach(field => {
-  //         const value = lead[field.key];
-
-  //         if (value !== undefined && value !== '') {
-  //           if (standardFields.has(field.key)) {
-  //             switch (field.key) {
-  //               case 'phone':
-  //                 transformedLead.phone = String(value);
-  //                 break;
-
-  //               case 'priority':
-  //                 transformedLead.priority = value as PRIORITY;
-  //                 break;
-
-  //               case 'source':
-  //                 transformedLead.source = String(value);
-  //                 break;
-
-  //               case 'projectType':
-  //                 transformedLead.projectType = String(value);
-  //                 break;
-
-  //               case 'status':
-  //                 transformedLead.status = value as SALES_STATUS;
-  //                 break;
-
-  //               case 'companyName':
-  //               case 'city':
-  //               case 'employeeRole':
-  //               case 'message':
-  //               case 'membershipNotes':
-  //                 transformedLead[field.key] = String(value);
-  //                 break;
-
-  //               case 'postalCode':
-  //                 transformedLead.postalCode = Number(value);
-  //                 break;
-
-  //               case 'country':
-  //                 transformedLead.country = String(value);
-  //                 break;
-
-  //               case 'language':
-  //                 transformedLead.language = value as LANGUAGE_CODE;
-  //                 break;
-
-  //               case 'industry':
-  //                 transformedLead.industry = value as INDUSTRIES;
-  //                 break;
-
-  //               case 'employeeSeniority':
-  //                 transformedLead.employeeSeniority = value as EMPLOYEE_SENIORITY;
-  //                 break;
-  //             }
-  //           } else {
-  //             switch (field.type) {
-  //               case 'number':
-  //                 extraFields[field.key] = Number(value);
-  //                 break;
-  //               case 'checkbox':
-  //                 extraFields[field.key] = Boolean(value);
-  //                 break;
-  //               default:
-  //                 extraFields[field.key] = String(value);
-  //             }
-  //           }
-  //         }
-  //       });
-
-  //       if (Object.keys(extraFields).length > 0) {
-  //         transformedLead.extraFields = extraFields;
-  //       }
-
-  //       return transformedLead;
-  //     });
-
-  //     const payload: BulkLeadPayload = { leads: leadsPayload };
-
-  //     const result = await LeadService.bulkCreate(payload);
-
-  //     if (result.status === 201) {
-  //       toast.success(result.data.message);
-  //       handleRemoveFile();
-  //       router.push("/leads")
-  //     }
-  //   } catch (error) {
-  //     process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
-  //     if (axios.isAxiosError(error)) {
-  //       const messages = extractErrorMessages(error);
-  //       toast.error(Array.isArray(messages) ? messages[0] : messages);
-  //     } else {
-  //       toast.error("Something went wrong");
-  //     }
-  //   } finally {
-  //     setIsUploading(false);
-  //   }
-  // };
-
   const handleBulkUpload = async () => {
     if (!parsedData.length) {
       toast.error("No data to upload");
@@ -604,8 +411,7 @@ const BulkLeadUpload = (): JSX.Element => {
           email: String(row.email || ""),
         };
 
-        const extraFields: Record<string, string | number | boolean | null> =
-          {};
+        const extraFields: Record<string, string | number | boolean | null> = {};
 
         Object.entries(row).forEach(([key, value]) => {
           if (value === undefined || value === "") return;
@@ -615,23 +421,18 @@ const BulkLeadUpload = (): JSX.Element => {
               case "phone":
                 lead.phone = String(value);
                 break;
-
               case "priority":
                 lead.priority = value as PRIORITY;
                 break;
-
               case "source":
                 lead.source = String(value);
                 break;
-
               case "projectType":
                 lead.projectType = String(value);
                 break;
-
               case "status":
                 lead.status = value as SALES_STATUS;
                 break;
-
               case "companyName":
               case "city":
               case "employeeRole":
@@ -639,30 +440,24 @@ const BulkLeadUpload = (): JSX.Element => {
               case "membershipNotes":
                 (lead as any)[key] = String(value);
                 break;
-
               case "postalCode":
                 lead.postalCode = Number(value);
                 break;
-
               case "country":
                 lead.country = String(value);
                 break;
-
               case "language":
                 lead.language = value as LANGUAGE_CODE;
                 break;
-
               case "industry":
                 lead.industry = value as INDUSTRIES;
                 break;
-
               case "employeeSeniority":
                 lead.employeeSeniority = value as EMPLOYEE_SENIORITY;
                 break;
             }
           } else {
             const parsedValue = String(value).trim();
-
             if (parsedValue === "") return;
 
             if (!isNaN(Number(parsedValue))) {
@@ -685,7 +480,10 @@ const BulkLeadUpload = (): JSX.Element => {
         return lead;
       });
 
-      const payload: BulkLeadPayload = { leads: leadsPayload };
+      const payload: BulkLeadPayload = {
+        leads: leadsPayload,
+        ...(dataTag.trim() ? { dataTag: dataTag.trim() } : {}),
+      };
 
       const result = await LeadService.bulkCreate(payload);
 
@@ -790,26 +588,62 @@ const BulkLeadUpload = (): JSX.Element => {
               </p>
             </div>
           ) : (
-            <div className="border border-gray-200 dark:border-gray-500 rounded-lg p-4">
-              <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3">
+              <div className="border border-gray-200 dark:border-gray-500 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <FileText className="text-blue-600" size={32} />
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-gray-200">
+                        {file.name}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {(file.size / 1024).toFixed(2)} KB • {parsedData.length} rows
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleRemoveFile}
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                  >
+                    <X size={20} className="text-gray-600 dark:text-gray-300" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="border border-gray-200 dark:border-gray-500 rounded-lg p-4">
                 <div className="flex items-center gap-3">
-                  <FileText className="text-blue-600" size={32} />
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-gray-200">
-                      {file.name}
+                  <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex-shrink-0">
+                    <Tag size={17} className="text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div className="flex-shrink-0">
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                      Data Tag
                     </p>
-                    <p className="text-sm text-gray-500">
-                      {(file.size / 1024).toFixed(2)} KB • {parsedData.length}{" "}
-                      rows
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Optional — group this batch for easy filtering later
                     </p>
                   </div>
+                  <div className="flex-1 ml-2 relative">
+                    <input
+                      type="text"
+                      value={dataTag}
+                      onChange={(e) => setDataTag(e.target.value)}
+                      placeholder="e.g. Q2-Campaign, Mumbai-Expo-2025"
+                      maxLength={60}
+                      className="w-full px-3 py-2 pr-8 text-sm rounded-lg border border-gray-300 dark:border-gray-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                    />
+                    {dataTag && (
+                      <button
+                        type="button"
+                        onClick={() => setDataTag("")}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                      >
+                        <X size={13} />
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <button
-                  onClick={handleRemoveFile}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <X size={20} className="text-gray-600" />
-                </button>
               </div>
             </div>
           )}
@@ -818,10 +652,7 @@ const BulkLeadUpload = (): JSX.Element => {
         {validationErrors.length > 0 && (
           <div className="bg-red-50 dark:bg-gray-700 border border-red-200 rounded-lg p-4 mb-6">
             <div className="flex items-start gap-3">
-              <AlertCircle
-                className="text-red-600 flex-shrink-0 mt-0.5"
-                size={20}
-              />
+              <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
               <div className="flex-1">
                 <h3 className="font-semibold text-red-900 mb-2">
                   Validation Errors ({validationErrors.length})
@@ -851,9 +682,14 @@ const BulkLeadUpload = (): JSX.Element => {
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">
                     Step 3: Review Data
                   </h2>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    Review your data before uploading ({parsedData.length} total
-                    rows)
+                  <p className="text-gray-600 dark:text-gray-400 flex items-center gap-2 flex-wrap">
+                    Review your data before uploading ({parsedData.length} total rows)
+                    {dataTag.trim() && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+                        <Tag size={10} />
+                        {dataTag.trim()}
+                      </span>
+                    )}
                   </p>
                 </div>
                 <div className="flex gap-3">

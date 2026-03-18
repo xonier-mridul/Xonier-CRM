@@ -8,6 +8,8 @@ from datetime import datetime, timezone
 from app.core.enums import MESSAGE_STATUS
 import math
 from bson import ObjectId
+from app.utils.validate_admin import validate_admin
+from beanie import PydanticObjectId
 
 
 class SMSService:
@@ -123,10 +125,19 @@ class SMSService:
         try:
             if not ObjectId.is_valid(id):
                 raise AppException(200, "Invalid SMS Object Id")
-
-          
-
             
+
+            is_admin = validate_admin(user["userRole"])
+
+
+
+            message = await self.repo.find_by_id(id=PydanticObjectId(id))
+
+            if not message:
+                raise AppException(404, "Message not found in database")
+            
+            return message.model_dump(mode="json")
+
 
         except AppException as e:
             

@@ -27,6 +27,7 @@ class LeadBaseSchema(BaseModel):
     country: Optional[str] = None
     postalCode: Optional[int] = None
     language: Optional[LANGUAGE_CODE] = None
+    dataTag: Optional[str] = None
 
     industry: Optional[INDUSTRIES] = None
     employeeRole: Optional[str] = None
@@ -77,6 +78,7 @@ class LeadsCreateSchema(LeadBaseSchema):
     priority: Optional[PRIORITY] = PRIORITY.MEDIUM.value
     source: str
     projectType:Optional[str] = None
+    dataTag: Optional[str] = None
 
     companyName: Optional[str] = None
     city: Optional[str] = None
@@ -104,7 +106,19 @@ class LeadsCreateSchema(LeadBaseSchema):
 
 
 class CreateBulkLeadSchema(BaseModel):
+    
     leads: List[LeadsCreateSchema]
+    dataTag: Optional[str] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def data_tag_lowercase(cls, value):
+        tag = value.get("dataTag")
+        
+        if tag:
+            value["dataTag"] = tag.strip().lower()
+
+        return value
 
 
 class BulkAssignLeadSchema(BaseModel):

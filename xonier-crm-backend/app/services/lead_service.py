@@ -113,6 +113,7 @@ class LeadService:
                     is_admin = validate_admin(user["userRole"])
                 
                     leads_data = payload.get("leads", [])
+                    data_tag = payload.get("dataTag", None)
                     
                     if not leads_data:
                         raise AppException(400, "Leads payload cannot be empty")
@@ -223,6 +224,7 @@ class LeadService:
                                 "employeeSeniority": lead.get("employeeSeniority"),
                                 "message": lead.get("message"),
                                 "membershipNotes": lead.get("membershipNotes"),
+                                "dataTag": data_tag
                             }
 
                             for field_name, field_value in optional_fields.items():
@@ -643,6 +645,9 @@ class LeadService:
 
             if "leadid" in filters:
                 query.update({"lead_id": {"$regex": filters["leadid"], "$options": "i"}})
+
+            if "tag" in filters:
+                query.update({"dataTag": {"$regex": filters["tag"], "$options": "i"}})
             
             if "name" in filters:
                 query.update({"fullName": {"$regex": filters["name"], "$options": "i"}})

@@ -18,9 +18,14 @@ import ErrorComponent from "@/src/components/ui/ErrorComponent";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { SALES_STATUS } from "@/src/constants/enum";
+import { Plus, Trash2, X } from "lucide-react";
 
-// All keys that belong to the known LeadPayload — anything outside this set
-// goes into extraFields when the form is submitted.
+interface NewCustomField {
+  tempId: string;
+  key: string;
+  value: string;
+}
+
 const KNOWN_LEAD_KEYS = new Set([
   "fullName",
   "email",
@@ -44,10 +49,7 @@ const KNOWN_LEAD_KEYS = new Set([
 const REQUIRED_FIELDS = [
   "fullName",
   "email",
-  
-  
   "source",
-  
   "status",
 ] as const;
 
@@ -81,6 +83,8 @@ const page = (): JSX.Element => {
   const [userFormField, setUserFormField] = useState<CustomField[]>([]);
   const [statusData, setStatusData] = useState({ status: SALES_STATUS.NEW });
   const [statusLoading, setStatusLoading] = useState<boolean>(false);
+  const [extraFieldKeys, setExtraFieldKeys] = useState<string[]>([]);
+  const [newCustomFields, setNewCustomFields] = useState<NewCustomField[]>([]);
 
   const router = useRouter();
   const { id } = useParams();
@@ -95,6 +99,9 @@ const page = (): JSX.Element => {
       if (result.status === 200) {
         const data = result.data.data;
         setStatusData({ status: data.status ?? SALES_STATUS.NEW });
+
+        const extra = data.extraFields ?? {};
+        setExtraFieldKeys(Object.keys(extra));
 
         setFlatFormData({
           fullName: data.fullName ?? "",
@@ -114,8 +121,7 @@ const page = (): JSX.Element => {
           employeeSeniority: data.employeeSeniority ?? null,
           message: data.message ?? null,
           membershipNotes: data.membershipNotes ?? null,
-
-          ...(data.extraFields ?? {}),
+          ...extra,
         });
       }
     } catch (error) {
@@ -155,12 +161,37 @@ const page = (): JSX.Element => {
   };
 
   const handleStatusChange = (e: ChangeEvent<FormElement>) => {
-  setStatusData({ status: e.target.value as SALES_STATUS });
-};
+    setStatusData({ status: e.target.value as SALES_STATUS });
+  };
+
   useEffect(() => {
     getFormFields();
     getLeadData();
   }, []);
+
+  const handleAddNewField = () => {
+    setNewCustomFields((prev) => [
+      ...prev,
+      { tempId: `new_field_${Date.now()}`, key: "", value: "" },
+    ]);
+  };
+
+  const handleNewFieldKeyChange = (tempId: string, rawKey: string) => {
+    const key = rawKey.replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_]/g, "");
+    setNewCustomFields((prev) =>
+      prev.map((f) => (f.tempId === tempId ? { ...f, key } : f)),
+    );
+  };
+
+  const handleNewFieldValueChange = (tempId: string, value: string) => {
+    setNewCustomFields((prev) =>
+      prev.map((f) => (f.tempId === tempId ? { ...f, value } : f)),
+    );
+  };
+
+  const handleRemoveNewField = (tempId: string) => {
+    setNewCustomFields((prev) => prev.filter((f) => f.tempId !== tempId));
+  };
 
   const buildPayload = (): LeadPayload => {
     const knownFields: Record<string, unknown> = {};
@@ -171,6 +202,12 @@ const page = (): JSX.Element => {
         knownFields[key] = value;
       } else {
         extraFields[key] = value;
+      }
+    }
+
+    for (const field of newCustomFields) {
+      if (field.key.trim()) {
+        extraFields[field.key.trim()] = field.value;
       }
     }
 
@@ -245,7 +282,7 @@ const page = (): JSX.Element => {
       const result = await LeadService.updateStatus(String(id), statusData);
 
       if (result.status === 200) {
-        toast.success(` status updated to ${statusData.status} successfully`);
+        toast.success(`status updated to ${statusData.status} successfully`);
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
@@ -266,13 +303,29 @@ const page = (): JSX.Element => {
 
   const SALES_STATUS_OPTIONS: SelectOption[] = Object.values(SALES_STATUS)
     .filter((status) => status !== SALES_STATUS.DELETE)
-    .filter((status)=> status !== SALES_STATUS.WON)
+    .filter((status) => status !== SALES_STATUS.WON)
     .map((status) => ({
       label: status.charAt(0).toUpperCase() + status.slice(1),
       value: status,
     }));
 
+  const knownFormFieldKeys = new Set(userFormField.map((f) => f.key));
+  const orphanExtraKeys = extraFieldKeys.filter(
+    (key) => !knownFormFieldKeys.has(key),
+  );
 
+  const formatExtraFieldLabel = (key: string): string => {
+    return key
+      .replace(/([A-Z])/g, " $1")
+      .replace(/_/g, " ")
+      .replace(/^\w/, (c) => c.toUpperCase())
+      .trim();
+  };
+
+  const getExtraFieldType = (value: string | number | null): string => {
+    if (typeof value === "number") return "number";
+    return "text";
+  };
 
   return (
     <div className={`ml-72 mt-14 p-6 `}>
@@ -300,7 +353,6 @@ const page = (): JSX.Element => {
             />
           </div>
 
-          
           {isMissingRequiredFields && (
             <InformationComponent message="Full Name, Email, Phone, Source, Priority, Project Type and Status fields are mandatory" />
           )}
@@ -308,45 +360,119 @@ const page = (): JSX.Element => {
           <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-8">
             {!isLoading ? (
               userFormField && userFormField.length > 0 ? (
-                userFormField.map((item) => {
-                  const fieldValue = flatFormData[item.key] ?? "";
+                <>
+                  {userFormField.map((item) => {
+                    const fieldValue = flatFormData[item.key] ?? "";
 
-                  if (
-                    item.type === "text" ||
-                    item.type === "email" ||
-                    item.type === "number"
-                  ) {
-                    return (
-                      <Input
-                        key={item.id}
-                        name={item.key}
-                        type={item.type}
-                        label={item.name}
-                        placeholder={item.placeholder ?? ""}
-                        value={fieldValue as string}
-                        onChange={handleChange}
-                        required={item.required}
-                      />
-                    );
-                  }
+                    if (
+                      item.type === "text" ||
+                      item.type === "email" ||
+                      item.type === "number"
+                    ) {
+                      return (
+                        <Input
+                          key={item.id}
+                          name={item.key}
+                          type={item.type}
+                          label={item.name}
+                          placeholder={item.placeholder ?? ""}
+                          value={fieldValue as string}
+                          onChange={handleChange}
+                          required={item.required}
+                        />
+                      );
+                    }
 
-                  if (item.type === "select") {
-                    return (
-                      <Select
-                        key={item.id}
-                        name={item.key}
-                        label={item.name}
-                        options={item.options ?? []}
-                        placeholder={item.placeholder ?? "Select"}
-                        value={fieldValue as string}
-                        onChange={handleChange}
-                        required={item.required}
-                      />
-                    );
-                  }
+                    if (item.type === "select") {
+                      return (
+                        <Select
+                          key={item.id}
+                          name={item.key}
+                          label={item.name}
+                          options={item.options ?? []}
+                          placeholder={item.placeholder ?? "Select"}
+                          value={fieldValue as string}
+                          onChange={handleChange}
+                          required={item.required}
+                        />
+                      );
+                    }
 
-                  return null;
-                })
+                    return null;
+                  })}
+
+                  {(orphanExtraKeys.length > 0 || newCustomFields.length > 0) && (
+                    <>
+                      <div className="col-span-2">
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 h-px bg-slate-200 dark:bg-gray-500" />
+                          <span className="text-sm font-medium text-slate-500 dark:text-slate-300 whitespace-nowrap">
+                            Additional Fields
+                          </span>
+                          <div className="flex-1 h-px bg-slate-200 dark:bg-gray-500" />
+                        </div>
+                      </div>
+
+                      {orphanExtraKeys.map((key) => {
+                        const value = flatFormData[key] ?? "";
+                        return (
+                          <Input
+                            key={key}
+                            name={key}
+                            type={getExtraFieldType(value as string | number | null)}
+                            label={formatExtraFieldLabel(key)}
+                            placeholder={`Enter ${formatExtraFieldLabel(key)}`}
+                            value={String(value ?? "")}
+                            onChange={handleChange}
+                            required={false}
+                          />
+                        );
+                      })}
+
+                      {newCustomFields.map((field) => (
+                        <div key={field.tempId} className="col-span-1 flex flex-col gap-2">
+                          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                            New Field
+                          </label>
+                          <div className="flex gap-2 items-center">
+                            <input
+                              type="text"
+                              placeholder="Field name"
+                              value={field.key}
+                              onChange={(e) => handleNewFieldKeyChange(field.tempId, e.target.value)}
+                              className="w-2/5 px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-gray-500 bg-white dark:bg-gray-600 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Value"
+                              value={field.value}
+                              onChange={(e) => handleNewFieldValueChange(field.tempId, e.target.value)}
+                              className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-gray-500 bg-white dark:bg-gray-600 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveNewField(field.tempId)}
+                              className="p-2 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex-shrink-0"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+
+                  <div className="col-span-2">
+                    <button
+                      type="button"
+                      onClick={handleAddNewField}
+                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 border border-dashed border-blue-400 dark:border-blue-500 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                    >
+                      <Plus size={16} />
+                      Add More Field
+                    </button>
+                  </div>
+                </>
               ) : (
                 <div className="flex items-center flex-col justify-center col-span-2 py-5">
                   <Image
@@ -379,8 +505,7 @@ const page = (): JSX.Element => {
               </>
             )}
 
-            <div className="col-span-2">{err && <ErrorComponent error={err} />}
-</div>
+            <div className="col-span-2">{err && <ErrorComponent error={err} />}</div>
             <FormButton
               className="col-span-2"
               isLoading={loading}
@@ -390,6 +515,7 @@ const page = (): JSX.Element => {
             </FormButton>
           </form>
         </div>
+
         <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm flex flex-col gap-8 p-6 rounded-xl border border-slate-900/10 w-full">
           <div className="flex items-center gap-5 justify-between">
             <div className="flex flex-col gap-2">

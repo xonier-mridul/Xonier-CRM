@@ -33,6 +33,7 @@ class LeadsModel(Document):
     projectType: Optional[str] = None
     createdBy: Link[UserModel]
     status: SALES_STATUS = SALES_STATUS.NEW
+    dataTag: Optional[str] = None
 
     companyName: Optional[str] = None
     city: Optional[str] = None
