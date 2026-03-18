@@ -753,7 +753,7 @@ class LeadService:
         except Exception as e:
             raise AppException(status_code=500, message=f"Internal server error: {e}")
 
-            
+
 
     async def get_all_by_user(self, filters: Dict[str, Any], user: Dict[str, Any]):
         try:
@@ -1154,3 +1154,137 @@ class LeadService:
 
                 except Exception as e:
                     raise AppException(status_code=500, message=f"Internal server error: {e}")
+
+
+
+
+    async def bulkDelete(self, payload: Dict[str, Any], user: Dict[str, Any]):
+        async with await self.client.start_session() as session:
+            async with session.start_transaction():
+                try:
+                    leadsIds = payload.get("leadsIds")
+ 
+                    if not leadsIds:
+                        raise AppException(400, "Leads ids not found")
+ 
+                    for id in leadsIds:
+                        if not ObjectId.is_valid(id):
+                            raise AppException(400, f"Invalid Object id: {id}")
+ 
+                    is_admin = validate_admin(user["userRole"])
+                    is_manager = False
+                    members = []
+ 
+                    if not is_admin:
+                        members = await self.getTeamMem.get_team_members(user["_id"])
+                        if members:
+                            is_manager = True
+ 
+                    user_object_id = PydanticObjectId(user["_id"])
+ 
+                    leads = await self.repo.find_many(
+                        filters={"_id": {"$in": [PydanticObjectId(id) for id in leadsIds]}},
+                        populate=["createdBy"]
+                    )
+ 
+                    found_ids = {str(lead.id) for lead in leads} if leads else set()
+                    missing_ids = [id for id in leadsIds if id not in found_ids]
+ 
+                    failed_leads = []
+ 
+                    for id in missing_ids:
+                        failed_leads.append({
+                            "id": id,
+                            "lead_id": None,
+                            "reason": "Lead not found"
+                        })
+ 
+                    eligible_leads = []
+ 
+                    for lead in (leads or []):
+                        if lead.status == SALES_STATUS.DELETE.value:
+                            failed_leads.append({
+                                "id": str(lead.id),
+                                "lead_id": lead.lead_id,
+                                "reason": "Lead is already deleted"
+                            })
+                            continue
+ 
+                        if lead.inDeal:
+                            failed_leads.append({
+                                "id": str(lead.id),
+                                "lead_id": lead.lead_id,
+                                "reason": "Lead is in a deal, remove from deal first"
+                            })
+                            continue
+ 
+                        if not is_admin:
+                            lead_creator_id = PydanticObjectId(lead.createdBy.id)
+                            is_creator = lead_creator_id == user_object_id
+                            is_team_member_lead = lead_creator_id in members if members else False
+ 
+                            if not is_creator and not is_manager and not is_team_member_lead:
+                                failed_leads.append({
+                                    "id": str(lead.id),
+                                    "lead_id": lead.lead_id,
+                                    "reason": "Unauthorized, only admin, manager or creator can delete this lead"
+                                })
+                                continue
+ 
+                        eligible_leads.append(lead)
+ 
+                    deleted_count = 0
+ 
+                    if eligible_leads:
+                        eligible_ids = [PydanticObjectId(lead.id) for lead in eligible_leads]
+ 
+                        delete_payload = {
+                            "status": SALES_STATUS.DELETE,
+                            "deletedBy": user["_id"],
+                            "deletedAt": datetime.now(timezone.utc)
+                        }
+ 
+                        deleted = await self.repo.bulk_update(
+                            filters={"_id": {"$in": eligible_ids}},
+                            data=delete_payload,
+                            session=session
+                        )
+ 
+                        if not deleted:
+                            raise AppException(400, "Bulk delete operation failed")
+ 
+                        activities = [
+                            activity_payload(
+                                userId=user_object_id,
+                                entityType=ACTIVITY_ENTITY_TYPE.LEAD,
+                                entityId=PydanticObjectId(lead.id),
+                                action=ACTIVITY_ACTION.DELETE,
+                                title="bulk delete lead",
+                                metadata={"leadId": lead.lead_id, "leadName": lead.fullName}
+                            )
+                            for lead in eligible_leads
+                        ]
+ 
+                        is_activity = await self.activityRepo.bulk_create(data=activities, session=session)
+ 
+                        if not is_activity:
+                            raise AppException(400, "Activity log failed")
+ 
+                        deleted_count = len(eligible_leads)
+ 
+                        await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
+                        await FastAPICache.get_backend().clear(namespace=USER_LEAD_CACHE_NAMESPACE)
+ 
+                    return {
+                        "totalRequested": len(leadsIds),
+                        "deletedCount": deleted_count,
+                        "failedCount": len(failed_leads),
+                        "failedLeads": failed_leads
+                    }
+ 
+                except AppException:
+                    raise
+ 
+                except Exception as e:
+                    raise AppException(status_code=500, message=f"Internal server error: {e}")
+ 

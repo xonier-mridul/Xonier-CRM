@@ -11,6 +11,7 @@ from pymongo.errors import BulkWriteError
 from bson import ObjectId
 from app.utils.validate_admin import validate_admin
 from app.utils.get_team_members import GetTeamMembers
+from datetime import datetime, timezone
 
 
 class EnquiryService:
@@ -230,6 +231,27 @@ class EnquiryService:
 
             if "priority" in filters:
                 query.update({"priority", filters["priority"]})
+
+            if "fromDate" in filters or "toDate" in filters:
+                date_filter = {}
+                if "fromDate" in filters:
+                    try:
+                        from_dt = datetime.fromisoformat(str(filters["fromDate"]))
+                        from_dt = from_dt.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
+                        date_filter["$gte"] = from_dt
+                    except (ValueError, TypeError):
+                        raise AppException(400, "Invalid fromDate format. Use ISO format: YYYY-MM-DD")
+
+                if "toDate" in filters:
+                    try:
+                        to_dt = datetime.fromisoformat(str(filters["toDate"]))
+                        to_dt = to_dt.replace(hour=23, minute=59, second=59, microsecond=999999, tzinfo=timezone.utc)
+                        date_filter["$lte"] = to_dt
+                    except (ValueError, TypeError):
+                        raise AppException(400, "Invalid toDate format. Use ISO format: YYYY-MM-DD")
+
+                if date_filter:
+                    query.update({"createdAt": date_filter})
 
             
             result = await self.repo.get_all(

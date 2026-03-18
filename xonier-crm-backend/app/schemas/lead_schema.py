@@ -150,4 +150,14 @@ class BulkReassignLeadSchema(BaseModel):
         if not v:
             raise ValueError("leadsId cannot be empty")
         return v
+    
+class BulkDeleteSchema(BaseModel):
+    leadsIds: List[str]
+
+    @field_validator("leadsIda")
+    @classmethod
+    def validate_leads_id(cls, v: List[str]) -> List[str]:
+        if not v:
+            raise ValueError("leadsIda cannot be empty")
+        return v
 
