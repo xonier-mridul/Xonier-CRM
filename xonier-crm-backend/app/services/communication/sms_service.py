@@ -18,9 +18,15 @@ class SMSService:
         self.repo = SMSHistoryRepository()
 
     async def send_sms(self, payload: Dict[str, Any], user: Dict[str, Any]):
-        phone_num = user["assignedPhoneNumber"].get("phoneNumber")
-        if not phone_num:
-                raise AppException(400, "User not have assigned phone number")
+        if user["assignedPhoneNumber"]:
+            phone_num = user["assignedPhoneNumber"].get("phoneNumber")
+            if not phone_num:
+                raise AppException(400, "User not have assigned valid phone number")
+            
+        else:
+            raise AppException(400, "User not have assigned phone number")
+
+        
         user_id = user["_id"]
 
         history = SMSHistory(
@@ -40,6 +46,8 @@ class SMSService:
 
             if not send:
                 raise AppException(400, "SMS send failed")
+
+            
             
             history.provider_message_sid = send["sid"]
             history.status = send["status"]
@@ -124,14 +132,14 @@ class SMSService:
     async def get_sms_by_id(self, id:str, user: Dict[str, Any]):
         try:
             if not ObjectId.is_valid(id):
-                raise AppException(200, "Invalid SMS Object Id")
+                raise AppException(400, "Invalid SMS Object Id")
             
 
             is_admin = validate_admin(user["userRole"])
 
 
 
-            message = await self.repo.find_by_id(id=PydanticObjectId(id))
+            message = await self.repo.find_by_id(id=PydanticObjectId(id), populate=["sent_by"])
 
             if not message:
                 raise AppException(404, "Message not found in database")

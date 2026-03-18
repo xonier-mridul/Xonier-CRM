@@ -619,12 +619,11 @@ class LeadService:
                 user_object_id = PydanticObjectId(user["_id"])
 
                 if members:
-                    
                     is_manager = True
                     query.update({
                         "$or": [
                             {"createdBy.$id": {"$in": members}},
-                            {"assignedTo.$id": {"$in": members}},   
+                            {"assignedTo.$id": {"$in": members}},
                             {"assignedTo.$id": user_object_id},
                         ]
                     })
@@ -632,7 +631,6 @@ class LeadService:
                     query.update({
                         "$or": [
                             {"createdBy.$id": user_object_id},
-                                 
                             {"assignedTo.$id": user_object_id},
                         ]
                     })
@@ -648,7 +646,7 @@ class LeadService:
 
             if "tag" in filters:
                 query.update({"dataTag": {"$regex": filters["tag"], "$options": "i"}})
-            
+
             if "name" in filters:
                 query.update({"fullName": {"$regex": filters["name"], "$options": "i"}})
 
@@ -661,7 +659,26 @@ class LeadService:
             if "type" in filters:
                 query.update({"projectType": {"$regex": filters["type"], "$options": "i"}})
 
-                
+            if "fromDate" in filters or "toDate" in filters:
+                date_filter = {}
+                if "fromDate" in filters:
+                    try:
+                        from_dt = datetime.fromisoformat(str(filters["fromDate"]))
+                        from_dt = from_dt.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
+                        date_filter["$gte"] = from_dt
+                    except (ValueError, TypeError):
+                        raise AppException(400, "Invalid fromDate format. Use ISO format: YYYY-MM-DD")
+
+                if "toDate" in filters:
+                    try:
+                        to_dt = datetime.fromisoformat(str(filters["toDate"]))
+                        to_dt = to_dt.replace(hour=23, minute=59, second=59, microsecond=999999, tzinfo=timezone.utc)
+                        date_filter["$lte"] = to_dt
+                    except (ValueError, TypeError):
+                        raise AppException(400, "Invalid toDate format. Use ISO format: YYYY-MM-DD")
+
+                if date_filter:
+                    query.update({"createdAt": date_filter})
 
             if is_admin or is_manager:
                 if "userid" in filters:
@@ -673,16 +690,18 @@ class LeadService:
 
             if "isAssigned" in filters:
                 is_assigned_val = filters["isAssigned"]
-                
+
                 if is_assigned_val is True or str(is_assigned_val).lower() == "true":
                     query.update({
                         "isAssigned": True,
-                        "assignedTo": {"$exists": True, "$ne": []}  
+                        "assignedTo": {"$exists": True, "$ne": []}
                     })
 
             def serialize_for_cache(v):
                 if isinstance(v, PydanticObjectId):
                     return str(v)
+                elif isinstance(v, datetime):
+                    return v.isoformat()
                 elif isinstance(v, list):
                     return [serialize_for_cache(i) for i in v]
                 elif isinstance(v, dict):
@@ -690,7 +709,6 @@ class LeadService:
                 return v
 
             cache_query = {k: serialize_for_cache(v) for k, v in query.items()}
-            
 
             key = cache_key_generator_with_id(
                 prefix=LEAD_CACHE_NAMESPACE,
@@ -701,10 +719,9 @@ class LeadService:
             )
 
             cache = await FastAPICache.get_backend().get(key)
-          
+
             if cache:
                 return json.loads(cache)
-            
 
             result = await self.repo.get_all(
                 page=int(page),
@@ -735,8 +752,8 @@ class LeadService:
 
         except Exception as e:
             raise AppException(status_code=500, message=f"Internal server error: {e}")
-        
 
+            
 
     async def get_all_by_user(self, filters: Dict[str, Any], user: Dict[str, Any]):
         try:
