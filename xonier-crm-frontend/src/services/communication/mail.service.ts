@@ -23,13 +23,16 @@ export const MailService = {
     if (searchVal!='') {
       params.append("name", String(searchVal));
     }
-    debugger;
     return api.get("/email-template/all"+`?${params.toString()}`);
+  },
+  sendEmail: (email: string, subject: string, message: string) =>{
+    api.post("/communication/email/send", { email, subject, message })
   },
   createTemplate: (payload: Template) => api.post("/email-template/create", payload),
   updateTemplate: (id: ParamValue, payload: Template) => api.patch(`/email-template/update/${id}`, payload),
   getById : (id:ParamValue)=> api.get(`/email-template/get/${id}`),
-  deleteTemplate : (id:ParamValue)=> api.delete(`/email-template/delete/${id}`)
+  deleteTemplate : (id:ParamValue)=> api.delete(`/email-template/delete/${id}`),
+  bulkMail:(payload:any) => api.post("/email/send/bulk",payload)
 };
 
 export default MailService;

@@ -78,7 +78,7 @@ const TBtn = ({
 );
 
 const TDivider = () => (
-  <div className="w-px h-4 bg-slate-200 dark:bg-gray-600 mx-1 self-center flex-shrink-0" />
+  <div className="w-px h-4 bg-slate-200 dark:bg-gray-600 mx-1 self-center shrink-0" />
 );
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -263,7 +263,7 @@ const RichToolbar = ({ editor }: { editor: Editor | null }) => {
       {/* ── Link input row (conditional) ─────────────────────────── */}
       {linkOpen && (
         <div className="flex items-center gap-2 px-3 py-2 border-t border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-800">
-          <svg className="w-4 h-4 text-violet-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-4 h-4 text-violet-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
           </svg>
           <input
@@ -297,37 +297,6 @@ const RichToolbar = ({ editor }: { editor: Editor | null }) => {
     </div>
   );
 };
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// EXPORTED COMPONENT
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/**
- * RichTextEditor
- *
- * A self-contained Tiptap-based rich text editor.
- *
- * @example — basic controlled usage
- * ```tsx
- * const [body, setBody] = useState("");
- * <RichTextEditor value={body} onChange={setBody} placeholder="Write here…" />
- * ```
- *
- * @example — inserting content at cursor from a parent (e.g. variable chips)
- * ```tsx
- * const editorRef = useRef<RichTextEditorHandle>(null);
- *
- * // insert a template variable at the current cursor
- * editorRef.current?.insertAtCursor("{{customer_name}}");
- *
- * <RichTextEditor ref={editorRef} value={body} onChange={setBody} />
- * ```
- *
- * @example — AI generation: replace the entire content
- * ```tsx
- * editorRef.current?.setContent("<p>Hello <strong>{{name}}</strong></p>");
- * ```
- */
 const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
   (
     {
@@ -358,8 +327,9 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
     Link,
     CharacterCount,
   ],
+  editable: !readOnly,
   content: value,
-  immediatelyRender: false, // ✅ important for Next.js
+  immediatelyRender: false, 
   onUpdate: ({ editor }) => {
     onChange?.(editor.getHTML());
   },
@@ -449,7 +419,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
 
           {/* Editable area */}
           <div className="dark:bg-gray-800">
-            <EditorContent editor={editor}  className=" min-h-[200px]"/>
+            <EditorContent editor={editor}  className=" min-h-50"/>
           </div>
 
           {/* Footer */}

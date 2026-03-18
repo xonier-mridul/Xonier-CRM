@@ -14,13 +14,7 @@ import { Route } from "lucide-react";
 
 // ─── Default Variables ────────────────────────────────────────────────────────
 const DEFAULT_VARIABLES: Variable[] = [
-  { key: "customer_name", label: "Customer Name", description: "Full name of the customer", default_value: "Customer", is_required: true },
-  { key: "name",          label: "User Name",      description: "Name of the user",          default_value: "",         is_required: false },
-  { key: "email",         label: "User Email",     description: "Email address of the user", default_value: "",         is_required: false },
-  { key: "company",       label: "Company Name",   description: "Name of the company",       default_value: "",         is_required: false },
-  { key: "phone",         label: "Phone Number",   description: "Contact phone number",      default_value: "",         is_required: false },
-  { key: "designation",   label: "Designation",    description: "Job title or designation",  default_value: "",         is_required: false },
-];
+ ];
 
 // ─── Shared styles ────────────────────────────────────────────────────────────
 const fieldBase =
