@@ -569,7 +569,7 @@ const BulkLeadUpload = (): JSX.Element => {
             >
               <Upload className="mx-auto mb-4 text-gray-400" size={48} />
               <p className="text-lg font-medium text-gray-700 dark:text-gray-400 mb-2">
-                Drag and drop your CSV file here
+                please drag and drop your CSV file here
               </p>
               <p className="text-gray-500 mb-4">or</p>
               <label className="inline-block">
@@ -613,10 +613,10 @@ const BulkLeadUpload = (): JSX.Element => {
 
               <div className="border border-gray-200 dark:border-gray-500 rounded-lg p-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex-shrink-0">
+                  <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 shrink-0">
                     <Tag size={17} className="text-blue-600 dark:text-blue-400" />
                   </div>
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
                       Data Tag
                     </p>
@@ -652,7 +652,7 @@ const BulkLeadUpload = (): JSX.Element => {
         {validationErrors.length > 0 && (
           <div className="bg-red-50 dark:bg-gray-700 border border-red-200 rounded-lg p-4 mb-6">
             <div className="flex items-start gap-3">
-              <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
+              <AlertCircle className="text-red-600 shrink-0 mt-0.5" size={20} />
               <div className="flex-1">
                 <h3 className="font-semibold text-red-900 mb-2">
                   Validation Errors ({validationErrors.length})
