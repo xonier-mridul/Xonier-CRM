@@ -438,14 +438,14 @@ const BulkMailModal = ({
 
                   {/* Subject */}
                   <div>
-                    <label className="text-sm font-semibold text-gray-900 dark:text-white block mb-2 items-center gap-2">
-                      <MdEmail className="w-4 h-4" /> Subject Line
+                    <label className="flex text-sm font-semibold text-gray-900 dark:text-white  mb-2 items-center gap-2">
+                      <MdEmail className="w-4 h-4" />Subject
                     </label>
                     <input
                       type="text"
                       value={subject}
-                      onChange={(e) => setSubject(e.target.value)}
-                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 dark:text-white text-gray-900 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 outline-none transition"
+                      disabled= {true}
+                      className="cursor-not-allowed w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 dark:text-white text-gray-900 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 outline-none transition"
                       placeholder="Email subject..."
                     />
                     {extractedVariables.length > 0 && (
