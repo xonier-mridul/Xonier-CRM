@@ -95,6 +95,12 @@ const LeadContent = (): JSX.Element => {
     "status": "",
     "source": "",
   });
+  const pageLimitMap :Record<number, number> = {
+  [TAB.ALL]: pageLimit,
+  [TAB.WON]: wonPageLimit,
+  [TAB.LOST]: lostPageLimit,
+  [TAB.ASSIGNED]: assignedPageLimit,
+};
 
 
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
@@ -479,7 +485,7 @@ const LeadContent = (): JSX.Element => {
       <tr><td className="p-8 text-center text-slate-400 text-sm" colSpan={9}>No leads found</td></tr>
     );
     if (isLoading) return <SkeletonRows cols={hasPermission(PERMISSIONS.assignLead) && currentTab === TAB.ALL ? 9 : 8} />;
-    debugger;
+    
     return data.map((item, i) => {
       const isChecked = selectedLeadIds.has(item.id);
       return (
@@ -588,12 +594,12 @@ const LeadContent = (): JSX.Element => {
             <SensitiveField value={item.phone} link={`tel:${item.phone}`} maskedValue={maskPhone(item.phone)} fontSize="sm" />
           </td>
           <td className="p-4">
-            <span className="px-2.5 py-1 rounded-full bg-green-100 text-green-600 text-xs font-medium">{item.projectType}</span>
+            <span className="px-2.5 py-1 rounded-full bg-green-100 text-green-600 text-xs font-medium">{item.projectType||"N/A"}</span>
           </td>
           <td className="p-4">
-            <span className="px-2.5 py-1 rounded-full bg-yellow-100 text-yellow-600 text-xs font-medium">{item.source}</span>
+            <span className="px-2.5 py-1 rounded-full bg-yellow-100 text-yellow-600 text-xs font-medium">{item.source || "N/A"}</span>
           </td>
-          <td className="p-4"><StatusBadge status={item.status} /></td>
+          <td className="p-4"><StatusBadge status={item.status || "N/A"} /></td>
 
 
           <td className="p-4">
@@ -657,6 +663,7 @@ const LeadContent = (): JSX.Element => {
             </div>
             <div className="flex items-center gap-4">
               <select
+                value={pageLimitMap[currentTab] ?? pageLimit}
                 className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm"
                 onChange={(e) => handlePageLimit(Number(e.target.value))}
               >

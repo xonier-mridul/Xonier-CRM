@@ -931,3 +931,56 @@ export enum TemplateCategory {
   DEAL = "deal",
   CUSTOM = "custom",
 }
+
+export enum DESIGNATION {
+  CEO = "CEO",
+  CTO = "CTO",
+  CFO = "CFO",
+  COO = "COO",
+  CMO = "CMO",
+  CIO = "CIO",
+  FOUNDER = "Founder",
+  CO_FOUNDER = "Co-Founder",
+  DIRECTOR = "Director",
+  VICE_PRESIDENT = "Vice President",
+  GENERAL_MANAGER = "General Manager",
+  OPERATIONS_MANAGER = "Operations Manager",
+  SALES_MANAGER = "Sales Manager",
+  MARKETING_MANAGER = "Marketing Manager",
+  HR_MANAGER = "HR Manager",
+  PROJECT_MANAGER = "Project Manager",
+  PRODUCT_MANAGER = "Product Manager",
+  ACCOUNT_MANAGER = "Account Manager",
+  SOFTWARE_ENGINEER = "Software Engineer",
+  SENIOR_SOFTWARE_ENGINEER = "Senior Software Engineer",
+  TECH_LEAD = "Tech Lead",
+  ARCHITECT = "Architect",
+  DEVOPS_ENGINEER = "DevOps Engineer",
+  DATA_SCIENTIST = "Data Scientist",
+  QA_ENGINEER = "QA Engineer",
+  SALES_EXECUTIVE = "Sales Executive",
+  BUSINESS_DEVELOPMENT_EXECUTIVE = "Business Development Executive",
+  MARKETING_EXECUTIVE = "Marketing Executive",
+  HR_EXECUTIVE = "HR Executive",
+  ADMINISTRATOR = "Administrator",
+  CONSULTANT = "Consultant",
+  INTERN = "Intern",
+  OTHER = "Other",
+}
+
+export enum NUMBER_OF_EMPLOYEES {
+  FIFTY = "50",
+  FIFTY_TO_100 = "50-100",
+  HUNDRED_TO_200 = "100-200",
+  TWO_HUNDRED_TO_300 = "200-300",
+  THREE_HUNDRED_TO_400 = "300-400",
+  FOUR_HUNDRED_TO_500 = "400-500",
+  FIVE_HUNDRED_TO_1000 = "500-1000",
+  THOUSAND_TO_2000 = "1000-2000",
+  TWO_THOUSAND_TO_5000 = "2000-5000",
+}
+
+export enum INFO_TYPE {
+  PEOPLE = "people",
+  COMPANY = "company",
+}

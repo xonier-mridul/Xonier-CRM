@@ -28,6 +28,8 @@ import { FiUserCheck } from "react-icons/fi";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSIONS } from "@/src/constants/enum";
 import { FaRegUser } from "react-icons/fa";
+import { CiMail } from "react-icons/ci";
+import { IoMailOutline } from "react-icons/io5";
 
 const SideBar = () => {
   const pathname = usePathname();
@@ -88,10 +90,10 @@ const SideBar = () => {
     if (pathname.startsWith("/prospects")) {
       setOpenMenu("prospects")
     }
-    if (pathname.startsWith("/people")||pathname.startsWith("/prospects")) {
+    if (pathname.startsWith("/people") || pathname.startsWith("/prospects")) {
       setOpenMenu("prospects")
     }
-    if (pathname.startsWith("/emailManagement/template")||pathname.startsWith("/emailManagement/outbox")) {
+    if (pathname.startsWith("/emailManagement/template") || pathname.startsWith("/emailManagement/outbox")) {
       setOpenMenu("emailManagement")
     }
     if (pathname.startsWith("/message") || pathname.startsWith("/telephone")) {
@@ -121,7 +123,7 @@ const SideBar = () => {
       case "prospects":
         return pathname.startsWith("/prospects");
       case "emailManagement":
-        return pathname.startsWith("/templates")||pathname.startsWith("/emailManagement")|| pathname.startsWith("/outbox");
+        return pathname.startsWith("/templates") || pathname.startsWith("/emailManagement") || pathname.startsWith("/outbox");
       case "communication":
         return pathname.startsWith("/message") || pathname.startsWith("/telephone");
       default:
@@ -159,8 +161,8 @@ const SideBar = () => {
               <Link
                 href="/dashboard"
                 className={`${isActive("/dashboard")
-                    ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
-                    : "border-l-2 border-transparent"
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
                   } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
               >
                 <BiHome className="text-lg" />
@@ -171,8 +173,8 @@ const SideBar = () => {
               <Link
                 href="/calender"
                 className={`${isActive("/calender")
-                    ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
-                    : "border-l-2 border-transparent"
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
                   } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
               >
                 <SlCalender className="text-lg" />
@@ -184,8 +186,8 @@ const SideBar = () => {
               <button
                 onClick={() => toggleMenu("prospects")}
                 className={`${isMenuActive("prospects")
-                    ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
-                    : "border-l-2 border-transparent"
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
                   }
                flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
               >
@@ -212,8 +214,8 @@ const SideBar = () => {
                       <Link
                         href="/prospects/people"
                         className={`${isActive("/prospects/people")
-                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
-                            : "border-l-2 border-transparent"
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
                         People
@@ -222,16 +224,16 @@ const SideBar = () => {
                     }
                     {
                       hasPermission(PERMISSIONS.readProspects) && <li>
-                      <Link
-                        href="/prospects/company"
-                        className={`${isActive("/prospects/company")
+                        <Link
+                          href="/prospects/company"
+                          className={`${isActive("/prospects/company")
                             ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
                             : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
-                      >
-                        Company
-                      </Link>
-                    </li>
+                            } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                        >
+                          Company
+                        </Link>
+                      </li>
                     }
 
                   </motion.ul>
@@ -242,8 +244,8 @@ const SideBar = () => {
               <Link
                 href="/notes"
                 className={`${isActive("/notes")
-                    ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
-                    : "border-l-2 border-transparent"
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
                   } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
               >
                 <TbNotes className="text-lg" />
@@ -255,8 +257,8 @@ const SideBar = () => {
               <button
                 onClick={() => toggleMenu("team")}
                 className={`${isMenuActive("team")
-                    ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
-                    : "border-l-2 border-transparent"
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
                   } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
@@ -283,8 +285,8 @@ const SideBar = () => {
                       <Link
                         href="/roles"
                         className={`${isActive("/roles")
-                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
-                            : "border-l-2 border-transparent"
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
                         Roles
@@ -294,8 +296,8 @@ const SideBar = () => {
                       <Link
                         href="/teams/categories"
                         className={`${isActive("/teams/categories")
-                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
-                            : "border-l-2 border-transparent"
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
                         Teams Categories
@@ -305,8 +307,8 @@ const SideBar = () => {
                       <Link
                         href="/teams"
                         className={`${(isActive("/teams") && !isActive("/teams/categories"))
-                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
-                            : "border-l-2 border-transparent"
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
                         Teams
@@ -316,8 +318,8 @@ const SideBar = () => {
                       <Link
                         href="/users"
                         className={`${isActive("/users")
-                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
-                            : "border-l-2 border-transparent"
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
                         Users
@@ -332,8 +334,8 @@ const SideBar = () => {
               <button
                 onClick={() => toggleMenu("sales")}
                 className={`${isMenuActive("sales")
-                    ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
-                    : "border-l-2 border-transparent"
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
                   } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
@@ -360,8 +362,8 @@ const SideBar = () => {
                       <Link
                         href="/enquiry"
                         className={`${isActive("/enquiry")
-                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
-                            : "border-l-2 border-transparent"
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
                         Enquiry
@@ -371,8 +373,8 @@ const SideBar = () => {
                       <Link
                         href="/leads"
                         className={`${isActive("/leads")
-                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
-                            : "border-l-2 border-transparent"
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
                         Leads
@@ -382,8 +384,8 @@ const SideBar = () => {
                       <Link
                         href="/deals"
                         className={`${isActive("/deals")
-                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
-                            : "border-l-2 border-transparent"
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
                         Deals
@@ -394,8 +396,8 @@ const SideBar = () => {
                       <Link
                         href="/quotations"
                         className={`${isActive("/quotations")
-                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
-                            : "border-l-2 border-transparent"
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
                         Quotations
@@ -405,8 +407,8 @@ const SideBar = () => {
                       <Link
                         href="/invoice"
                         className={`${isActive("/invoice")
-                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
-                            : "border-l-2 border-transparent"
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
                         Invoice
@@ -420,8 +422,8 @@ const SideBar = () => {
               <Link
                 href="/clients"
                 className={`${isActive("/clients")
-                    ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
-                    : "border-l-2 border-transparent"
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
                   } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
               >
                 <FiUserCheck className="text-lg" />
@@ -433,8 +435,8 @@ const SideBar = () => {
               <button
                 onClick={() => toggleMenu("communication")}
                 className={`${isMenuActive("communication")
-                    ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
-                    : "border-l-2 border-transparent"
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
                   } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
@@ -449,7 +451,7 @@ const SideBar = () => {
               </button>
 
               <AnimatePresence>
-                {(openMenu === "communication" ) && (
+                {(openMenu === "communication") && (
                   <motion.ul
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
@@ -461,8 +463,8 @@ const SideBar = () => {
                       <Link
                         href="/telephone"
                         className={`${isActive("/telephone")
-                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
-                            : "border-l-2 border-transparent"
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
                         Telephones Numbers
@@ -472,73 +474,73 @@ const SideBar = () => {
                       <Link
                         href="/message"
                         className={`${isActive("/message")
-                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
-                            : "border-l-2 border-transparent"
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
                         Messages
                       </Link>
                     </li>}
-                   
+
 
                   </motion.ul>
                 )}
               </AnimatePresence>
             </li>}
-             {(hasPermission(PERMISSIONS.readTemplate) || hasPermission(PERMISSIONS.createTemplate) || hasPermission(PERMISSIONS.readEmailLog)) && <li>
-                      <button
-                        onClick={() => toggleMenu("emailManagement")}
-                        className={`${isMenuActive("emailManagement")
-                            ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
-                            : "border-l-2 border-transparent"
-                          } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+            {(hasPermission(PERMISSIONS.readTemplate) || hasPermission(PERMISSIONS.createTemplate) || hasPermission(PERMISSIONS.readEmailLog)) && <li>
+              <button
+                onClick={() => toggleMenu("emailManagement")}
+                className={`${isMenuActive("emailManagement")
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
+                  } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+              >
+                <span className="flex items-center gap-3">
+                  <IoMailOutline className="text-lg" />
+                  Email Management
+                </span>
+
+                <IoChevronDown
+                  className={`transition-transform ${openMenu === "emailManagement" ? "rotate-180" : ""
+                    }`}
+                />
+              </button>
+
+              <AnimatePresence>
+                {(openMenu === "emailManagement" && (hasPermission(PERMISSIONS.readTemplate) || hasPermission(PERMISSIONS.createTemplate))) && (
+                  <motion.ul
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.25 }}
+                    className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
+                  >
+                    {hasPermission(PERMISSIONS.readRole) && <li>
+                      <Link
+                        href="/emailManagement/templates"
+                        className={`${isActive("/emailManagement/templates")
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
+                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
-                        <MdEmail />
-                        <span className="flex items-center gap-3 text-wrap-non">
-                          Emial Management
-                        </span>
-
-                        <IoChevronDown
-                          className={`transition-transform ${openMenu === "emailManagement" ? "rotate-180" : ""
-                            }`}
-                        />
-                      </button>
-
-                      <AnimatePresence>
-                        {(openMenu === "emailManagement" && (hasPermission(PERMISSIONS.readTemplate) || hasPermission(PERMISSIONS.createTemplate) )) && (
-                          <motion.ul
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.25 }}
-                            className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
-                          >
-                            {hasPermission(PERMISSIONS.readRole) && <li>
-                              <Link
-                                href="/emailManagement/templates"
-                                className={`${isActive("/emailManagement/templates")
-                                    ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
-                                    : "border-l-2 border-transparent"
-                                  } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
-                              >
-                                Templates
-                              </Link>
-                            </li>}
-                            {hasPermission(PERMISSIONS.readEmailLog) && <li>
-                              <Link
-                                href="/emailManagement/outbox"
-                                className={`${isActive("/emailManagement/outbox")
-                                    ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
-                                    : "border-l-2 border-transparent"
-                                  } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
-                              >
-                                Outbox
-                              </Link>
-                            </li>}
-                          </motion.ul>
-                        )}
-                      </AnimatePresence>
+                        Templates
+                      </Link>
                     </li>}
+                    {hasPermission(PERMISSIONS.readEmailLog) && <li>
+                      <Link
+                        href="/emailManagement/outbox"
+                        className={`${isActive("/emailManagement/outbox")
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
+                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                      >
+                        Outbox
+                      </Link>
+                    </li>}
+                  </motion.ul>
+                )}
+              </AnimatePresence>
+            </li>}
           </ul>
         </div>
 
@@ -560,8 +562,8 @@ const SideBar = () => {
               <Link
                 href={`/users/${auth.user?._id}`}
                 className={`${isActive("/reset-password")
-                    ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
-                    : "border-l-2 border-transparent"
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
                   } w-full flex items-center cursor-pointer gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all capitalize`}
               >
                 <FaRegUser className="text-lg" />
@@ -572,8 +574,8 @@ const SideBar = () => {
               <Link
                 href={"/reset-password"}
                 className={`${isActive("/reset-password")
-                    ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
-                    : "border-l-2 border-transparent"
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
                   } w-full flex items-center cursor-pointer gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all capitalize`}
               >
                 <RiLockPasswordLine className="text-lg" />
