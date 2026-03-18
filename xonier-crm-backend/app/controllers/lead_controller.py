@@ -29,7 +29,6 @@ class LeadController:
             user = request.state.user
             
             result = await self.service.bulk_create(payload=payload, user=user)
-
         
             
             inserted = result.get('inserted', 0)
@@ -151,4 +150,28 @@ class LeadController:
         
         except AppException as e:
             raise e 
+        
+    async def bulkDelete(self, request: Request, payload: Dict[str, Any]):
+        try:
+            user = request.state.user
+ 
+            result = await self.service.bulk_delete(payload=payload, user=user)
+ 
+            deleted = result["deletedCount"]
+            failed = result["failedCount"]
+ 
+            if deleted == 0:
+                message = "No leads were deleted"
+            elif failed == 0:
+                message = f"All {deleted} lead{'s' if deleted > 1 else ''} deleted successfully"
+            else:
+                message = f"{deleted} lead{'s' if deleted > 1 else ''} deleted, {failed} failed"
+ 
+            return successResponse(200, message, result)
+ 
+        except AppException as e:
+            raise e
+ 
+
+        
         

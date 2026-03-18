@@ -169,7 +169,7 @@ const page = (): JSX.Element => {
   const getQuotationData = async () => {
     setIsLoading(true);
     try {
-      const result = await QuoteService.getAll(currentPage, pageLimit, {fullName : searchVal});
+      const result = await QuoteService.getAll(currentPage, pageLimit, {title : searchVal});
       if (result.status === 200) {
         const data = result.data.data;
         setQuoteData(data.data);
@@ -193,7 +193,7 @@ const page = (): JSX.Element => {
   const getWonQuotationData = async () => {
     setIsLoading(true);
     try {
-      const result = await QuoteService.getAll(currentPage, pageLimit, {"status":QuotationStatus.ACCEPTED, fullName : searchVal});
+      const result = await QuoteService.getAll(currentPage, pageLimit, {"status":QuotationStatus.ACCEPTED, title : searchVal});
       if (result.status === 200) {
         const data = result.data.data;
         setWonQuoteData(data.data);
@@ -217,7 +217,7 @@ const page = (): JSX.Element => {
   const getLostQuotationData = async () => {
     setIsLoading(true);
     try {
-      const result = await QuoteService.getAll(currentPage, pageLimit, {"status":QuotationStatus.REJECTED, fullName : searchVal});
+      const result = await QuoteService.getAll(currentPage, pageLimit, {"status":QuotationStatus.REJECTED, title : searchVal});
       if (result.status === 200) {
         const data = result.data.data;
         setLostQuoteData(data.data);
