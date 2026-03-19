@@ -36,6 +36,7 @@ import  StatusBadge  from "@/src/components/common/Status";
 import CreatedAt from "@/src/components/common/CreatedAt";  
 import DateFilterButton from "@/src/components/common/dateFilter";
 import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
+import TagBadge from "@/src/components/common/tagBadge";
 
 const TAB = { ALL: 1, WON: 2, LOST: 3, ASSIGNED: 4 } as const;
 
@@ -93,11 +94,13 @@ const LeadContent = (): JSX.Element => {
   const [sourceVal, setSourceVal] = useState<string>("");
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const [dateFilter, setDateFilter] = useState<DateFilter>({ fromDate: "", toDate: "" });
+  const [dataTagVal, setDataTagVal] = useState<string>("");
   const [filters, setFilters] = useState<Record<string, string>>({
     "type": "",
     "search": "",
     "status": "",
     "source": "",
+    "tag": "",
   });
   const pageLimitMap :Record<number, number> = {
   [TAB.ALL]: pageLimit,
@@ -370,6 +373,10 @@ const LeadContent = (): JSX.Element => {
     setSourceVal(val);
     setFilters({ ...filters, source: val });
   }
+  const handleDataTag = (val: string): void => {
+    setDataTagVal(val);
+    setFilters({ ...filters, tag: val });
+  }
   function clearFields() {
     const selects = document.querySelectorAll<HTMLSelectElement>('select.field');
     console.log("se: ", selects);
@@ -529,6 +536,7 @@ const LeadContent = (): JSX.Element => {
             <span className="bg-yellow-400 text-slate-800 px-2.5 py-1 text-xs font-medium rounded-md">{item.source}</span>
           </td>
           <td className="p-4"><StatusBadge status={item.status} /></td>
+          <td className="p-4"><TagBadge tag={item.dataTag || "N/A"} /></td>
           <td className="p-4"><CreatedAt timestamp={item.createdAt} /></td>
           <td className="p-4">{item.createdBy?.firstName}</td>
           <td><RowActions item={item} /></td>
@@ -625,6 +633,7 @@ const LeadContent = (): JSX.Element => {
             </div>
 
           </td>
+          <td className="p-4"><TagBadge tag={item.dataTag?.join(", ") || "N/A"} /></td>
           <td className="p-4"><CreatedAt timestamp={item.createdAt} /></td>
           <td className="p-4">{item.createdBy?.firstName}</td>
         </tr>
@@ -824,7 +833,7 @@ const LeadContent = (): JSX.Element => {
                         </label>
                       </th>
                     )}
-                    {["Client Info", "Phone", "Project Type", "Source", "Status","Created Date","Created By", "Actions"]
+                    {["Client Info", "Phone", "Project Type", "Source", "Status","Data Tag","Created Date","Created By", "Actions"]
                       .map((h) => {
                         const filterConfig = (h != 'Status') ? (options[h]) : (currentTab === TAB.ALL && options[h]);
 
@@ -873,6 +882,16 @@ const LeadContent = (): JSX.Element => {
                                 )
                               )
                             }
+                            {
+                              (h == 'Data Tag') && (
+                                (
+                                  <>
+                                    <br />
+                                    <input type="text" className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20" placeholder="Search..." onChange={(e) => handleDataTag(e.target.value)} />
+                                  </>
+                                )
+                              )
+                            }
                           </th>
                         );
                       })}
@@ -898,7 +917,7 @@ const LeadContent = (): JSX.Element => {
                         </label>
                       </th>
                     )}
-                    {["Lead Id", "Client Info", "Phone", "Project Type", "Source", "Status","Created Date","Created By"].map((h) => {
+                    {["Lead Id", "Client Info", "Phone", "Project Type", "Source", "Status","Data Tag","Created Date","Created By"].map((h) => {
                       const filterConfig = options[h];
                       return (
                         <th
