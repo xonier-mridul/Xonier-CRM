@@ -148,7 +148,7 @@ class LeadController:
 
             connectStatus = result.get("connectStatus")
 
-            return successResponse(status_code=200, message=f" {result["fullName"]} connect status updated to {connectStatus} successfully")
+            return successResponse(status_code=200, message=f" {result["fullName"]} connect status updated to {connectStatus} successfully", data=result)
         
         except AppException as e:
             raise e

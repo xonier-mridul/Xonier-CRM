@@ -61,11 +61,20 @@ class InvoiceService:
                         "createdBy.$id": PydanticObjectId(user["_id"])
                     })
 
-            if "invoiceId" in filters:
-                query.update({"invoiceId": {"$regex": filters["invoiceId"], "$options": "i"}})
+            if "search" in filters and filters["search"].strip():
+                regex = {"$regex": filters["search"].strip(), "$options": "i"}
 
-            if "customer" in filters:
-                query.update({"customerName": {"$regex": filters["customer"], "$options": "i"}})
+                search_query = {"$or" : [
+                    {"customerName" : regex},
+                    {"invoiceId": regex},
+                    {"companyName": regex}]}
+
+                query.update(search_query)
+
+
+            
+
+            
 
             if "status" in filters:
                 query.update({"status": filters["status"]})
@@ -122,8 +131,8 @@ class InvoiceService:
 
             return result
 
-        except AppException:
-            raise
+        except AppException as e:
+            raise e
 
         except Exception as e:
             print("Invoice getAll error:", e)
@@ -171,9 +180,6 @@ class InvoiceService:
                     )
 
                
-
-
-
                 invoice = jsonable_encoder(
                     invoice,
                     exclude={

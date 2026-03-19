@@ -165,6 +165,17 @@ class QuotationService:
             if "status" in filters:
                 query.update({"quotationStatus": filters["status"]})
 
+            if "search" in filters and filters["search"].strip():
+                search_regex = {"$regex": filters["search"].strip(), "$options": "i"}
+                query.update({
+                    "$or": [
+                        {"quoteId": search_regex},
+                        {"title": search_regex},
+                        {"customerName": search_regex},
+                        {"companyName": search_regex},
+                    ]
+                })
+
             if "fromDate" in filters or "toDate" in filters:
                 date_filter = {}
                 if "fromDate" in filters:
@@ -221,8 +232,9 @@ class QuotationService:
             quotation = quotation.model_dump(mode="json")
 
             quotation["customerEmail"] = self.encryption.decrypt_data(quotation["customerEmail"])
-
-            quotation["customerPhone"] = self.encryption.decrypt_data(quotation["customerPhone"])
+            
+            if quotation["customerPhone"]:
+                quotation["customerPhone"] = self.encryption.decrypt_data(quotation["customerPhone"])
 
             quotation["createdBy"]["email"] = self.encryption.decrypt_data(quotation["createdBy"]["email"])
            
@@ -250,8 +262,8 @@ class QuotationService:
                 "Permission denied. Only Admin, Creator, or Manager can access this quotation"
             )
 
-        except AppException:
-            raise
+        except AppException as e:
+            raise e
 
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")

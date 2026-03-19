@@ -46,7 +46,9 @@ class EnquiryController:
         
     async def get_by_id(self, request: Request, id: str):
         try:
-            result = await self.service.get_by_id(PydanticObjectId(id))
+            user = request.state.user
+            result = await self.service.get_by_id(PydanticObjectId(id), user)
+
 
             return successResponse(status_code=200, message="Inquiry get successfully", data=result)
 

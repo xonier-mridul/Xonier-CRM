@@ -177,7 +177,7 @@ class UpdateEnquirySchema(BaseModel):
     socialLinks: Optional[SocialLinks] = None
     location: Optional[Location] = None
     numberOfEmployees: Optional[NUMBER_OF_EMPLOYEES] = None
-    technologies: Optional[List[TECHNOLOGY]] = []
+    technologies: Optional[List[str]] = []
     keywords: Optional[List[str]] = []
     industry: List[str]
     projectType: str

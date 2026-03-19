@@ -324,7 +324,7 @@ const DealContent = (): JSX.Element => {
                           onClick={()=>handleCopy(item?.lead_id?.lead_id)}
                         >
                           {" "}
-                          {item?.lead_id?.lead_id}
+                          {item?.lead_id?.lead_id ?? "N/A"}
                         </span>
                       </td>
                       <td className="p-4"> <span className="px-3 py-1.5 rounded-md bg-blue-100 text-xs text-blue-600 font-medium">{date}</span></td>
