@@ -20,8 +20,6 @@ class QuotationModel(Document):
     description: Optional[str] = None
 
     deal: Link[DealModel]
-
-
     customerName: str
 
     customerEmail: str

@@ -165,6 +165,17 @@ class QuotationService:
             if "status" in filters:
                 query.update({"quotationStatus": filters["status"]})
 
+            if "search" in filters and filters["search"].strip():
+                search_regex = {"$regex": filters["search"].strip(), "$options": "i"}
+                query.update({
+                    "$or": [
+                        {"quoteId": search_regex},
+                        {"title": search_regex},
+                        {"customerName": search_regex},
+                        {"companyName": search_regex},
+                    ]
+                })
+
             if "fromDate" in filters or "toDate" in filters:
                 date_filter = {}
                 if "fromDate" in filters:
