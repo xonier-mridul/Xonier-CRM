@@ -8,7 +8,7 @@ from fastapi.encoders import jsonable_encoder
 from app.schemas.enquiry_schema import EnquiryRegisterSchema
 from pydantic import ValidationError
 from pymongo.errors import BulkWriteError
-from bson import ObjectId
+from bson import ObjectId, DBRef
 from app.utils.validate_admin import validate_admin
 from app.utils.get_team_members import GetTeamMembers
 from datetime import datetime, timezone
@@ -379,7 +379,7 @@ class EnquiryService:
                 raise AppException(400, "Invalid assignTo user ObjectId")
 
             
-            newPayload: Dict[str, Any] = {**payload, "updatedBy": updatedBy}
+            newPayload: Dict[str, Any] = {**payload, "updatedBy": updatedBy, "assignTo": DBRef(collection="users", id=payload.get("assignTo")) if payload.get("assignTo") else None}
 
             update = await self.repo.update(id=id, data=newPayload, session=session)
 
@@ -396,7 +396,7 @@ class EnquiryService:
 
         except Exception as e:
             await session.abort_transaction()
-            raise AppException(status_code=500, message=f"Internal server error: {e}") # ✅ Fixed f string
+            raise AppException(status_code=500, message=f"Internal server error: {e}") 
 
         finally:
             await session.end_session()
