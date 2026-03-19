@@ -38,8 +38,9 @@ export const ALL_COL: any = {
         { key: "socialLinks.instagram", label: "Instagram", required: false },
         { key: "socialLinks.youtube", label: "YouTube", required: false },
         { key: "socialLinks.website", label: "Website", required: false },
-        { key: "createdAt", label: "Created At", required: false },
-        { key: "createdBy.firstName", label: "Created By", required: false },
+        { key: "dataTags", label: "Data Tags", required: false },
+        { key: "createdAt", label: "Created At", required: true },
+        { key: "createdBy.firstName", label: "Created By", required: true },
 
         { key: "actions", label: "Actions", required: true },
     ],
@@ -53,9 +54,10 @@ export const ALL_COL: any = {
         { key: "location", label: "Location", required: false },
         { key: "linkedin", label: "LinkedIn", required: false },
         { key: "status", label: "Status", required: false },
+        { key: "dataTags", label: "Data Tags", required: false },
+        { key: "createdAt", label: "Created At", required: true },
+        { key: "createdBy.firstName", label: "Created By", required: true },
         { key: "actions", label: "Actions", required: true },
-        { key: "createdAt", label: "Created At", required: false },
-        { key: "createdBy.firstName", label: "Created By", required: false },
     ],
 };
 
@@ -70,9 +72,10 @@ export const DEF_ACTIVE: DefaultActive = {
         location: true,
         linkedin: true,
         status: true,
+        dataTags: false,
+        createdAt: true,
+        "createdBy.firstName": true,
         actions: true,
-        createdAt: false,
-        createdBy: false,
     },
     company: {
         id: false,
@@ -111,10 +114,10 @@ export const DEF_ACTIVE: DefaultActive = {
         "socialLinks.youtube": false,
         "socialLinks.website": false,
         "socialLinks.other": false,
-
+        "dataTags": false,
         deletedAt: false,
         createdAt: true,
-        createdBy: true,
+        "createdBy.firstName": true,
 
         actions: true
     }

@@ -40,6 +40,7 @@ export interface Prospect {
   source: string;
   message?: string | null;
   assignTo?: User | null;
+  dataTag?: string | null;
 
   createdBy: {
     id: string;

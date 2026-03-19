@@ -28,6 +28,7 @@ export interface EnquiryData {
   createdAt: string;
   updatedAt: string;
   deletedAt?: string | null;
+  extra_fields?: { label: string; value: string }[];
 }
 
 

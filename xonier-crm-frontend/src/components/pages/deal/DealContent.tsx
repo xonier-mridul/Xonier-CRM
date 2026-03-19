@@ -237,7 +237,7 @@ const DealContent = (): JSX.Element => {
                 <input type="text" className="outline-none" placeholder="Search..." value={searchVal} onChange={(e)=>handleSearch(e.target.value)} />
               </div>
               <div>
-                <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} theme="dark" />
+                <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
               </div>
               {(
                 <Link

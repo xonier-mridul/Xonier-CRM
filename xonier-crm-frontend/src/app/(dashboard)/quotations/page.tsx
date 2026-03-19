@@ -172,7 +172,7 @@ const page = (): JSX.Element => {
   const getQuotationData = async () => {
     setIsLoading(true);
     try {
-      const result = await QuoteService.getAll(currentPage, pageLimit, {fullName : searchVal,...dateFilter});
+      const result = await QuoteService.getAll(currentPage, pageLimit, {search : searchVal,...dateFilter});
       if (result.status === 200) {
         const data = result.data.data;
         setQuoteData(data.data);
@@ -196,7 +196,7 @@ const page = (): JSX.Element => {
   const getWonQuotationData = async () => {
     setIsLoading(true);
     try {
-      const result = await QuoteService.getAll(currentPage, pageLimit, {"status":QuotationStatus.ACCEPTED, fullName : searchVal,...dateFilter});
+      const result = await QuoteService.getAll(currentPage, pageLimit, {"status":QuotationStatus.ACCEPTED, search : searchVal,...dateFilter});
       if (result.status === 200) {
         const data = result.data.data;
         setWonQuoteData(data.data);
@@ -220,7 +220,7 @@ const page = (): JSX.Element => {
   const getLostQuotationData = async () => {
     setIsLoading(true);
     try {
-      const result = await QuoteService.getAll(currentPage, pageLimit, {"status":QuotationStatus.REJECTED, fullName : searchVal,...dateFilter});
+      const result = await QuoteService.getAll(currentPage, pageLimit, {"status":QuotationStatus.REJECTED, search : searchVal,...dateFilter});
       if (result.status === 200) {
         const data = result.data.data;
         setLostQuoteData(data.data);
@@ -349,7 +349,7 @@ const page = (): JSX.Element => {
               <input type="text" className="outline-none bg-transparent" placeholder="Search..." value={searchVal} onChange={(e)=> handleSearch(e.target.value)}/>
             </div>
             <div>
-              <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} theme="dark" />
+              <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
             </div>
             <Link
               href={"/leads"}
