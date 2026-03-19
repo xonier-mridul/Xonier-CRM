@@ -154,7 +154,7 @@ class BulkReassignLeadSchema(BaseModel):
 class BulkDeleteSchema(BaseModel):
     leadsIds: List[str]
 
-    @field_validator("leadsIda")
+    @field_validator("leadsIds")
     @classmethod
     def validate_leads_id(cls, v: List[str]) -> List[str]:
         if not v:
