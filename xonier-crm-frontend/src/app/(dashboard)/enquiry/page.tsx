@@ -23,7 +23,10 @@ import { HiDownload } from "react-icons/hi";
 import PrimaryButton from "@/src/components/ui/PrimeryButton";
 import { LiaMailBulkSolid } from "react-icons/lia";
 import Skeleton from "react-loading-skeleton";
-
+import StatusBadge from "@/src/components/common/Status";
+import DateFilterButton from "@/src/components/common/dateFilter";
+import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
+import CreatedAt from "@/src/components/common/CreatedAt";
 
 
 const page = (): JSX.Element => {
@@ -36,27 +39,32 @@ const page = (): JSX.Element => {
   const [searchVal, setSearchVal] = useState<string>("");
   const [TosearchVal, setToSearchVal] = useState<string>("");
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const [dateFilter, setDateFilter] = useState<DateFilter>({ fromDate: "", toDate: "" });
+
 
   const { hasPermission } = usePermissions();
 
-  const auth = useSelector((state: RootState)=> state.auth)
+  const auth = useSelector((state: RootState) => state.auth)
 
   const getEnquiryData = async () => {
     setIsLoading(true);
     try {
-      if(auth.isAdmin){
-      const result = await EnquiryService.getAll({
-        page: currentPage,
-        limit: pageLimit,
-        fullName : searchVal
-      });
-      if (result.status === 200) {
-        let data = result.data.data;
-        setEnquiryData(data.data);
-        setCurrentPage(data.page);
-        setPageLimit(data.limit);
-        setTotalPages(data.totalPages);
-      }}else{
+      if (auth.isAdmin) {
+        const result = await EnquiryService.getAll({
+          page: currentPage,
+          limit: pageLimit,
+          fullName: searchVal,
+          fromDate: dateFilter.fromDate,
+          toDate: dateFilter.toDate
+        });
+        if (result.status === 200) {
+          let data = result.data.data;
+          setEnquiryData(data.data);
+          setCurrentPage(data.page);
+          setPageLimit(data.limit);
+          setTotalPages(data.totalPages);
+        }
+      } else {
         const result = await EnquiryService.getAllByCreator(currentPage, pageLimit);
         if (result.status === 200) {
           let data = result.data.data;
@@ -82,9 +90,9 @@ const page = (): JSX.Element => {
 
   useEffect(() => {
     getEnquiryData();
-  }, [pageLimit, currentPage, TosearchVal]);
+  }, [pageLimit, currentPage, TosearchVal,dateFilter]);
 
-   const handleSearch = (val: string) => {
+  const handleSearch = (val: string) => {
     setSearchVal(val);
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
@@ -121,25 +129,26 @@ const page = (): JSX.Element => {
     }
   };
   const handleCopy = async (text: string) => {
-      await navigator.clipboard.writeText(text);
-      toast.success("text copied successfully")
-    };
+    await navigator.clipboard.writeText(text);
+    toast.success("text copied successfully")
+  };
 
   return (
     <div className={`ml-72 mt-14 p-6`}>
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm  gap-5 p-6 rounded-xl border-[1px] border-slate-900/10 w-full flex items-center justify-between">
-         <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2">
           <h2 className="text-2xl font-bold  dark:text-white text-slate-900 capitalize">
-              Add bulk enquiries
-            </h2>
-            <p className="text-gray-500 dark:text-gray-400">
-              You want to create bulk enquiries via CSV file
-            </p>
-         </div>
-         <div className="flex items-center justify-end gap-3 ">
-          <PrimaryButton text="Create Bulk Enquiry" link="/enquiry/bulk" icon={<LiaMailBulkSolid />}/>
-         </div>
-         
+            Add bulk enquiries
+          </h2>
+          <p className="text-gray-500 dark:text-gray-400">
+            You want to create bulk enquiries via CSV file
+          </p>
+        </div>
+        {(hasPermission(PERMISSIONS.createEnquiry) ) && 
+          <div className="flex items-center justify-end gap-3 ">
+            <PrimaryButton text="Create Bulk Enquiry" link="/enquiry/bulk" icon={<LiaMailBulkSolid />} />
+          </div>
+        }
       </div>
       <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm flex flex-col gap-5 p-6 rounded-xl border-[1px] border-slate-900/10 w-full ">
         <div className="flex items-center gap-12 justify-between">
@@ -165,7 +174,10 @@ const page = (): JSX.Element => {
             </select>
             <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2">
               <IoIosSearch className="text-xl" />
-              <input type="text" className="outline-none" placeholder="Search..."  onChange={(e) => handleSearch(e.target.value)} value={searchVal} />
+              <input type="text" className="outline-none" placeholder="Search..." onChange={(e) => handleSearch(e.target.value)} value={searchVal} />
+            </div>
+            <div>
+              <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} theme="dark" />
             </div>
             {hasPermission(PERMISSIONS.createEnquiry) ? <Link
               href={"/enquiry/add"}
@@ -180,138 +192,147 @@ const page = (): JSX.Element => {
                           flex items-center gap-2  opacity-80 cursor-not-allowed"><FaPlus className=" transition-all duration-300" />Create New Enquiry</span>}
           </div>
         </div>
-        <table className="w-full rounded-xl overflow-hidden">
-          <thead>
-            <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
-              <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+        <div className="w-full rounded-xl overflow-hidden">
+          <table className="w-full rounded-xl text-nowrap overflow-x-scroll">
+            <thead>
+              <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
+                {/* <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
                 Enquiry Id
-              </th>
-              <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
-                Client Info
-              </th>
-              <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
-                {" "}
-                Project Type
-              </th>
+              </th> */}
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                  Client Info
+                </th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                  {" "}
+                  Project Type
+                </th>
 
-              <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
-                Source
-              </th>
-              <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
-                Status
-              </th>
-              <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="">
-            {!isLoading ? ((enquiryData && Array.isArray(enquiryData) && enquiryData.length > 0) ? (
-              enquiryData.map((item, i) => {
-                let rr = i % 2 == 0;
+                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                  Source
+                </th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                  Status
+                </th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                  Created At
+                </th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                  Created By
+                </th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="">
+              {!isLoading ? ((enquiryData && Array.isArray(enquiryData) && enquiryData.length > 0) ? (
+                enquiryData.map((item, i) => {
+                  let rr = i % 2 == 0;
 
-                return (
-                  <tr
-                    key={item.enquiry_id}
-                    className={`${
-                      rr
-                        ? "bg-white dark:bg-transparent"
-                        : "bg-blue-100/50 dark:bg-slate-500"
-                    } w-full`}
-                  >
-                    <td className="p-4">
+                  return (
+                    <tr
+                      key={item.enquiry_id}
+                      className={`${rr
+                          ? "bg-white dark:bg-transparent"
+                          : "bg-blue-100/50 dark:bg-slate-500"
+                        } w-full`}
+                    >
+                      {/* <td className="p-4">
                       <span className="text-sm cursor-copy" onClick={()=> handleCopy(item.enquiry_id)}> {item.enquiry_id}</span>
-                    </td>
-                    <td className="flex gap-1 flex-col p-4">
-                      <h4>{item.fullName}</h4>{" "}
-                      <Link href={`mailto:${item.email}`} className="text-xs">
-                        {item.email}
-                      </Link>{" "}
-                    </td>
-                    <td className="p-4 ">
-                      <span className="px-3 py-1 rounded-full bg-green-100 text-green-500 text-sm">
-                        {item.projectType}
-                      </span>
-                    </td>
-                    <td className="p-4 ">
-                      <span
-                        className={`bg-yellow-400 text-slate-800 px-3 py-1.5 text-sm rounded-sm`}
-                      >
-                        {" "}
-                        {item.source}
-                      </span>
-                    </td>
-                    <td className="p-4"> {item.status} </td>
-                    <td>
-                      <div className="flex items-center gap-2">
-                        {hasPermission(PERMISSIONS.readEnquiry) ? <Link
-                          href={`/enquiry/view/${item.id}`}
-                          className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-green-100/80 dark:bg-green-50 hover:bg-green-200/70 dark:hover:bg-green-100 text-green-500 hover:scale-104"
+                    </td> */}
+                      <td className="flex gap-1 flex-col p-4">
+                        <h4>{item.fullName}</h4>{" "}
+                        <Link href={`mailto:${item.email}`} className="text-xs">
+                          {item.email}
+                        </Link>{" "}
+                      </td>
+                      <td className="p-4 ">
+                        <span className="px-3 py-1 rounded-full bg-green-100 text-green-500 text-sm">
+                          {item.projectType}
+                        </span>
+                      </td>
+                      <td className="p-4 ">
+                        <span
+                          className={`bg-yellow-400 text-slate-800 px-3 py-1.5 text-sm rounded-sm`}
                         >
-                          <FaRegEye className="text-xl" />
-                        </Link> : <span className="h-9 w-9 flex items-center justify-center rounded-md bg-green-100/80 dark:bg-green-50  text-green-500 opacity-80 cursor-not-allowed"> <FaRegEye className="text-xl" /> </span>}
-                        {hasPermission(PERMISSIONS.updateEnquiry) ? (
-                          <Link
-                            href={`/enquiry/update/${item.id}`}
-                            className="h-9 w-9 flex items-center justify-center rounded-md
+                          {" "}
+                          {item.source}
+                        </span>
+                      </td>
+                      <td className="p-4"> <StatusBadge status={item.status} /></td>
+                      <td className="p-4"><CreatedAt timestamp={item.createdAt} /></td>
+                      <td className="p-4">{item.createdBy?.firstName}</td>
+                      <td>
+                        <div className="flex items-center gap-2">
+                          {hasPermission(PERMISSIONS.readEnquiry) ? <Link
+                            href={`/enquiry/view/${item.id}`}
+                            className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-green-100/80 dark:bg-green-50 hover:bg-green-200/70 dark:hover:bg-green-100 text-green-500 hover:scale-104"
+                          >
+                            <FaRegEye className="text-xl" />
+                          </Link> : <span className="h-9 w-9 flex items-center justify-center rounded-md bg-green-100/80 dark:bg-green-50  text-green-500 opacity-80 cursor-not-allowed"> <FaRegEye className="text-xl" /> </span>}
+                          {hasPermission(PERMISSIONS.updateEnquiry) ? (
+                            <Link
+                              href={`/enquiry/update/${item.id}`}
+                              className="h-9 w-9 flex items-center justify-center rounded-md
                bg-yellow-200/80 dark:bg-yellow-100
                hover:bg-yellow-300/70 dark:hover:bg-yellow-200
                text-yellow-500 hover:scale-104"
-                          >
-                            <MdOutlineEdit className="text-xl" />
-                          </Link>
-                        ) : (
-                          <span
-                            className="h-9 w-9 flex items-center justify-center rounded-md
+                            >
+                              <MdOutlineEdit className="text-xl" />
+                            </Link>
+                          ) : (
+                            <span
+                              className="h-9 w-9 flex items-center justify-center rounded-md
                bg-yellow-100 text-yellow-400 opacity-80 cursor-not-allowed"
+                            >
+                              <MdOutlineEdit className="text-xl" />
+                            </span>
+                          )}
+                          <button
+                            onClick={() => handleDelete(item.id)}
+                            className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-red-100 text-red-500 hover:bg-red-200 hover:scale-104 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-red-100 disabled:opacity-80"
+                            disabled={!hasPermission(PERMISSIONS.deleteEnquiry)}
                           >
-                            <MdOutlineEdit className="text-xl" />
-                          </span>
-                        )}
-                        <button
-                          onClick={() => handleDelete(item.id)}
-                          className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-red-100 text-red-500 hover:bg-red-200 hover:scale-104 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-red-100 disabled:opacity-80"
-                          disabled={!hasPermission(PERMISSIONS.deleteEnquiry)}
-                        >
-                          {" "}
-                          <MdDeleteOutline className="text-xl" />{" "}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
-            ): <tr><td className="p-4 text-center" colSpan={6}>Data not found</td></tr>) : (
-              <tr className="p-4">
-                <td className="text-center p-4">
-                   <Skeleton width={120} height={30} borderRadius={14}/>
-                </td>
-                <td className="p-4">
-                  <div className="flex flex-col gap-1">
-                   <Skeleton width={120} height={28} borderRadius={12}/>
-                   <Skeleton width={80} height={12} borderRadius={10} />
-                  </div>
-                </td>
-                <td className="p-4">
-                  <Skeleton width={120} height={30} borderRadius={14}/>
-                </td>
-                <td className="p-4">
-                  <Skeleton width={120} height={30} borderRadius={14}/>
-                </td>
-                <td className="p-4">
-                  <Skeleton width={120} height={30} borderRadius={14}/>
-                </td>
-                <td className="p-4">
-                  <div className="flex items-center gap-2">
-                  <Skeleton width={32} height={32} borderRadius={10}/>
-                  <Skeleton width={32} height={32} borderRadius={10}/>
-                  <Skeleton width={32} height={32} borderRadius={10}/>
-                  </div>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                            {" "}
+                            <MdDeleteOutline className="text-xl" />{" "}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : <tr><td className="p-4 text-center" colSpan={6}>Data not found</td></tr>) : (
+                <tr className="p-4">
+                  <td className="text-center p-4">
+                    <Skeleton width={120} height={30} borderRadius={14} />
+                  </td>
+                  <td className="p-4">
+                    <div className="flex flex-col gap-1">
+                      <Skeleton width={120} height={28} borderRadius={12} />
+                      <Skeleton width={80} height={12} borderRadius={10} />
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <Skeleton width={120} height={30} borderRadius={14} />
+                  </td>
+                  <td className="p-4">
+                    <Skeleton width={120} height={30} borderRadius={14} />
+                  </td>
+                  <td className="p-4">
+                    <Skeleton width={120} height={30} borderRadius={14} />
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center gap-2">
+                      <Skeleton width={32} height={32} borderRadius={10} />
+                      <Skeleton width={32} height={32} borderRadius={10} />
+                      <Skeleton width={32} height={32} borderRadius={10} />
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}

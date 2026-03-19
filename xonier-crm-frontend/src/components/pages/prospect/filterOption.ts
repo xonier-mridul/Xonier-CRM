@@ -226,7 +226,7 @@ const filterOptions: FilterConfig = {
       type : "both",
       fields: [
         {
-          key: "status_value",
+          key: "status",
           type: "checkbox_group",
           options: Object.values(SALES_STATUS).map((status) => ({ label: status, value: status })),
         },

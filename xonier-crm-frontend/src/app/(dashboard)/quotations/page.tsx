@@ -16,6 +16,8 @@ import { PERMISSIONS, QuotationStatus } from "@/src/constants/enum";
 import { QuoteService } from "@/src/services/quote.service";
 import { formatDate } from "../../utils/date.utils";
 import { handleCopy } from "../../utils/clipboard.utils";
+import DateFilterButton from "@/src/components/common/dateFilter";
+import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 
 
 const STATUS_CONFIG = {
@@ -162,6 +164,7 @@ const page = (): JSX.Element => {
   const [currentTab, setCurrentTab] = useState<number>(1);
   const [searchVal, setSearchVal] = useState<string>("");
   const [TosearchVal, setToSearchVal] = useState<string>("");
+  const [dateFilter, setDateFilter] = useState<DateFilter>({ fromDate: "", toDate: "" });
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const { hasPermission } = usePermissions();
@@ -169,7 +172,7 @@ const page = (): JSX.Element => {
   const getQuotationData = async () => {
     setIsLoading(true);
     try {
-      const result = await QuoteService.getAll(currentPage, pageLimit, {title : searchVal});
+      const result = await QuoteService.getAll(currentPage, pageLimit, {fullName : searchVal,...dateFilter});
       if (result.status === 200) {
         const data = result.data.data;
         setQuoteData(data.data);
@@ -193,7 +196,7 @@ const page = (): JSX.Element => {
   const getWonQuotationData = async () => {
     setIsLoading(true);
     try {
-      const result = await QuoteService.getAll(currentPage, pageLimit, {"status":QuotationStatus.ACCEPTED, title : searchVal});
+      const result = await QuoteService.getAll(currentPage, pageLimit, {"status":QuotationStatus.ACCEPTED, fullName : searchVal,...dateFilter});
       if (result.status === 200) {
         const data = result.data.data;
         setWonQuoteData(data.data);
@@ -217,7 +220,7 @@ const page = (): JSX.Element => {
   const getLostQuotationData = async () => {
     setIsLoading(true);
     try {
-      const result = await QuoteService.getAll(currentPage, pageLimit, {"status":QuotationStatus.REJECTED, title : searchVal});
+      const result = await QuoteService.getAll(currentPage, pageLimit, {"status":QuotationStatus.REJECTED, fullName : searchVal,...dateFilter});
       if (result.status === 200) {
         const data = result.data.data;
         setLostQuoteData(data.data);
@@ -309,7 +312,7 @@ const page = (): JSX.Element => {
     else if(currentTab === 3){
       getLostQuotationData()
     }
-  }, [TosearchVal]);
+  }, [TosearchVal,dateFilter]);
   useEffect(() => {
     setToSearchVal("");
     setSearchVal("");
@@ -343,7 +346,10 @@ const page = (): JSX.Element => {
             </select>
             <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2">
               <IoIosSearch className="text-xl" />
-              <input type="text" className="outline-none bg-transparent" value={searchVal} onChange={(e)=> handleSearch(e.target.value)}/>
+              <input type="text" className="outline-none bg-transparent" placeholder="Search..." value={searchVal} onChange={(e)=> handleSearch(e.target.value)}/>
+            </div>
+            <div>
+              <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} theme="dark" />
             </div>
             <Link
               href={"/leads"}
@@ -387,9 +393,9 @@ const page = (): JSX.Element => {
           <table className="w-full rounded-xl  ">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                {/* <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
                   Quote Id
-                </th>
+                </th> */}
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
                   Quote Title
                 </th>
@@ -401,6 +407,9 @@ const page = (): JSX.Element => {
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
                   Created Date
+                </th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                  Created By
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
                   Actions
@@ -425,14 +434,14 @@ const page = (): JSX.Element => {
                             : "bg-blue-100/50 dark:bg-slate-500"
                         } w-full`}
                       >
-                        <td className="p-4">
+                        {/* <td className="p-4">
                           <Link
                             href={`/quotations/view/${item.id}`}
                             className="text-sm cursor-pointer hover:scale-110 transition-all hover:text-blue-300"
                           >
                             {item.quoteId}
                           </Link>
-                        </td>
+                        </td> */}
                         <td className="flex gap-1 flex-col p-4">
                           <h4 className="capitalize">{item.title}</h4>
                         </td>
@@ -451,6 +460,7 @@ const page = (): JSX.Element => {
                             {date}
                           </span>
                         </td>
+                        <td className="p-4">{item.createdBy?.firstName}</td>
                         <td>
                           <div className="flex items-center gap-2">
                             {hasPermission(PERMISSIONS.readLead) ? (
@@ -537,9 +547,9 @@ const page = (): JSX.Element => {
           <table className="w-full rounded-xl ">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                {/* <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
                   Quote Id
-                </th>
+                </th> */}
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
                   Quote Title
                 </th>
@@ -575,14 +585,14 @@ const page = (): JSX.Element => {
                             : "bg-blue-100/50 dark:bg-slate-500"
                         } w-full`}
                       >
-                        <td className="p-4">
+                        {/* <td className="p-4">
                           <Link
                             href={`/deals/view/${item.id}`}
                             className="text-sm cursor-pointer hover:scale-110 transition-all hover:text-blue-300"
                           >
                             {item.quoteId}
                           </Link>
-                        </td>
+                        </td> */}
                         <td className="flex gap-1 flex-col p-4">
                           <h4 className="capitalize">{item.title}</h4>
                         </td>
@@ -685,9 +695,9 @@ const page = (): JSX.Element => {
           <table className="w-full rounded-xl ">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                {/* <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
                   Quote Id
-                </th>
+                </th> */}
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
                   Quote Title
                 </th>
@@ -723,14 +733,14 @@ const page = (): JSX.Element => {
                             : "bg-blue-100/50 dark:bg-slate-500"
                         } w-full`}
                       >
-                        <td className="p-4">
+                        {/* <td className="p-4">
                           <Link
                             href={`/deals/view/${item.id}`}
                             className="text-sm cursor-pointer hover:scale-110 transition-all hover:text-blue-300"
                           >
                             {item.quoteId}
                           </Link>
-                        </td>
+                        </td> */}
                         <td className="flex gap-1 flex-col p-4">
                           <h4 className="capitalize">{item.title}</h4>
                         </td>
