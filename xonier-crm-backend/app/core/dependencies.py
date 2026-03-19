@@ -61,7 +61,7 @@ class Dependencies:
                 token = request.cookies.get("accessToken")
 
            if not token:
-               raise AppException(401, "Token not found")
+               raise AppException(401, "You are logged out, please legged in again")
            payload = verify_access_token(token)
            
            if not payload:

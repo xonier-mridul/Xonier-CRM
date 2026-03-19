@@ -12,6 +12,7 @@ from bson import ObjectId
 from app.utils.validate_admin import validate_admin
 from app.utils.get_team_members import GetTeamMembers
 from datetime import datetime, timezone
+from app.core.crypto import Encryption
 
 
 class EnquiryService:
@@ -19,6 +20,7 @@ class EnquiryService:
         self.repo = EnquiryRepository()
         self.client = Client
         self.getTeamMembers = GetTeamMembers()
+        self.crypto = Encryption()
 
     async def create(self, createdBy: PydanticObjectId, payload: Dict[str, Any]):
         session = await self.client.start_session()
@@ -151,15 +153,41 @@ class EnquiryService:
 
                     raise AppException(500, f"Internal server error: {e}")
 
-    async def get_by_id(self, id: PydanticObjectId):
+    async def get_by_id(self, id: PydanticObjectId, user:Dict[str, Any]):
         try:
+            is_admin = validate_admin(user["userRole"])
+            is_manager = False
+            is_creator = False
+
+            if not is_admin:
+                members = await self.getTeamMembers.get_team_members(user["_id"])
+
+                if members:
+                    is_manager = True
 
             result = await self.repo.find_by_id(id, ["createdBy", "assignTo"])
 
             if not result:
                 raise AppException(400, "Enquiry not found")
+            
 
-            return result.model_dump(mode="json")
+            result = result.model_dump(mode="json")
+
+            if str(user["_id"]) == str(result["createdBy"]["id"]):
+                is_creator = True
+
+            if not is_admin and not is_manager and not is_creator:
+                raise AppException(403, "Permission denied, you not authorized for access enquiry data")
+            
+            if result["createdBy"].get("email"):
+                result["createdBy"]["email"] = self.crypto.decrypt_data(result["createdBy"]["email"])
+
+            if result["createdBy"].get("phone"):
+                result["createdBy"]["phone"] = self.crypto.decrypt_data(result["createdBy"]["phone"])
+             
+
+
+            return result
 
         except AppException:
             raise

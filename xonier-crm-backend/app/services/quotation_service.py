@@ -232,8 +232,9 @@ class QuotationService:
             quotation = quotation.model_dump(mode="json")
 
             quotation["customerEmail"] = self.encryption.decrypt_data(quotation["customerEmail"])
-
-            quotation["customerPhone"] = self.encryption.decrypt_data(quotation["customerPhone"])
+            
+            if quotation["customerPhone"]:
+                quotation["customerPhone"] = self.encryption.decrypt_data(quotation["customerPhone"])
 
             quotation["createdBy"]["email"] = self.encryption.decrypt_data(quotation["createdBy"]["email"])
            
@@ -261,8 +262,8 @@ class QuotationService:
                 "Permission denied. Only Admin, Creator, or Manager can access this quotation"
             )
 
-        except AppException:
-            raise
+        except AppException as e:
+            raise e
 
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
