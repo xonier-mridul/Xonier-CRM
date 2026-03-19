@@ -2,7 +2,7 @@ from beanie import Document, Link, before_event, Save, Insert, Replace, Indexed
 from typing import Annotated, Optional, List
 from pydantic import StringConstraints, Field, field_validator
 from app.db.models.user_model import UserModel
-from app.core.enums import PROJECT_TYPES, SALES_STATUS, PRIORITY, SOURCE, LANGUAGE_CODE, COUNTRY_CODE, INDUSTRIES, EMPLOYEE_SENIORITY, LEAD_SOURCE_TYPE
+from app.core.enums import PROJECT_TYPES, SALES_STATUS, PRIORITY, SOURCE, LANGUAGE_CODE, COUNTRY_CODE, INDUSTRIES, EMPLOYEE_SENIORITY, LEAD_SOURCE_TYPE, CONTACT_STATUS
 from datetime import datetime, timezone
 from app.core.security import hash_password, hash_value
 from app.core.crypto import encryptor
@@ -40,7 +40,7 @@ class LeadsModel(Document):
     country: Optional[str] = None
     postalCode: Optional[int] =  Field(None, gt=1000, lt=999999)
     language: Optional[LANGUAGE_CODE] = None
-    
+    connectStatus: Optional[CONTACT_STATUS] = CONTACT_STATUS.NOT_REACHED.value
     industry: Optional[INDUSTRIES] = None
     employeeRole: Optional[str] = None
     employeeSeniority: Optional[EMPLOYEE_SENIORITY] = None

@@ -801,4 +801,12 @@ class EmailStatus(str, Enum):
     SPAM = "spam"
 
 
+class CONTACT_STATUS(str, Enum):
+    CONNECTED = "connected"
+    NOT_CONNECTED = "not_connected"
+    INTERESTED= "interested"
+    NOT_INTERESTED = "not_interested"
+    NOT_REACHED = "not_reached"
+
+
 
