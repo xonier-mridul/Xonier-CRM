@@ -184,6 +184,15 @@ class EnquiryService:
 
             if result["createdBy"].get("phone"):
                 result["createdBy"]["phone"] = self.crypto.decrypt_data(result["createdBy"]["phone"])
+            
+            assigned = result.get("assignTo")
+            if assigned:
+                if assigned.get("email"):
+                    result["assignTo"]["email"] = self.crypto.decrypt_data(result["assignTo"]["email"])
+
+                if assigned.get("phone"):
+                    result["assignTo"]["phone"] = self.crypto.decrypt_data(result["assignTo"]["phone"])
+               
              
 
 
