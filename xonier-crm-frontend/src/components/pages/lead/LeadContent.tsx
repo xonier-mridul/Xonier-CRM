@@ -633,7 +633,7 @@ const LeadContent = (): JSX.Element => {
             </div>
 
           </td>
-          <td className="p-4"><TagBadge tag={item.dataTag?.join(", ") || "N/A"} /></td>
+          <td className="p-4"><TagBadge tag={item.dataTag || "N/A"} /></td>
           <td className="p-4"><CreatedAt timestamp={item.createdAt} /></td>
           <td className="p-4">{item.createdBy?.firstName}</td>
         </tr>
