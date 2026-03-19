@@ -22,7 +22,7 @@ export const ALL_COL: any = {
         { key: "isActive", label: "Active", required: false },
         { key: "source", label: "Source", required: false },
         { key: "message", label: "Message", required: false },
-        { key: "assignTo", label: "Assigned To", required: false },
+        { key: "assignTo.firstName", label: "Assign To", required: false },
 
         // Location
         { key: "location.country", label: "Country", required: false },
