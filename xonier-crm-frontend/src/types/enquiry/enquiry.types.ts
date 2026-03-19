@@ -43,6 +43,8 @@ export interface GetEnquiryPayload {
   companyName?: string
   projectType?: string
   priority?: string
+  fromDate?: string
+  toDate?: string
 
 }
 

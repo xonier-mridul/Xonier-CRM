@@ -26,6 +26,10 @@ import { useParams } from "next/navigation";
 import { IoClose } from "react-icons/io5";
 import  BulkMailModal from "@/src/components/pages/prospect/BulkMailModal";
 import BulkSmsModal from "@/src/components/pages/prospect/BulkSmsModal";
+import DateFilterButton from "@/src/components/common/dateFilter";
+import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
+import StatusBadge from "@/src/components/common/Status";
+import CreatedAt from "@/src/components/common/CreatedAt";
 
 const PAGE_LIMIT = 10;
 
@@ -314,6 +318,7 @@ const LeadContent = (): JSX.Element => {
   const [assignableUsers, setAssignableUsers] = useState<User[]>([]);
   const [isAssigning, setIsAssigning] = useState<boolean>(false);
   const [assignableLeads, setAssignableLeads] = useState<Prospect[]>([]);
+  const [dateFilter, setDateFilter] = useState<DateFilter>({ fromDate: "", toDate: "" });
 
   // Separate communication selection (independent from assign selection)
   const [commSelectedIds, setCommSelectedIds] = useState<Set<string>>(new Set());
@@ -428,8 +433,8 @@ const LeadContent = (): JSX.Element => {
     }
   };
 
-  useEffect(() => { fetchData(1, filters, true); getAssignableUsers(); }, []);
-  useEffect(() => { rowRefs.current.clear(); setHasMore(true); fetchData(1, filters, true); }, [filters]);
+  useEffect(() => { fetchData(1, {...filters, ...dateFilter}, true); getAssignableUsers(); }, []);
+  useEffect(() => { rowRefs.current.clear(); setHasMore(true); fetchData(1, {...filters, ...dateFilter}, true); }, [filters, dateFilter]);
 
   useEffect(() => {
     if (!bottomRef.current) return;
@@ -451,7 +456,7 @@ const LeadContent = (): JSX.Element => {
   }, [leadData, hasMore]);
 
   useEffect(() => { return () => { if (observerRef.current) observerRef.current.disconnect(); }; }, []);
-  useEffect(() => { fetchData(1, { ...filters, ...filterQuery }, true); }, [filterQuery]);
+  useEffect(() => { fetchData(1, { ...filters, ...filterQuery ,...dateFilter }, true); }, [filterQuery, dateFilter]);
   useEffect(() => { setALL_COLUMNS(ALL_COL[infoType]); setActiveColumns(DEF_ACTIVE[infoType]); }, [infoType]);
 
   const handleSearch = (val: string) => {
@@ -507,7 +512,7 @@ const LeadContent = (): JSX.Element => {
       if (result.status === 200) {
         toast.success(result.data.message);
         clearAssignSelection();
-        await fetchData(1, filters, true);
+        await fetchData(1, {...filters, ...dateFilter}, true);
       }
     } catch (error) {
       if (axios.isAxiosError(error)) { const m = extractErrorMessages(error); setErr(m); toast.error(`${m}`); }
@@ -515,18 +520,6 @@ const LeadContent = (): JSX.Element => {
     } finally { setIsAssigning(false); }
   };
 
-  const StatusBadge = ({ status }: { status: string }) => (
-    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium capitalize
-      ${status === "new" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
-        : status === "contacted" ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300"
-        : status === "qualified" ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
-        : status === "proposal" ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
-        : status === "won" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
-        : status === "lost" ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
-        : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300"}`}>
-      {status}
-    </span>
-  );
 
   const RowActions = ({ item }: { item: Prospect }) => {
     const isCommChecked = commSelectedIds.has(item.id);
@@ -671,8 +664,11 @@ const LeadContent = (): JSX.Element => {
                 )}
               </div>
 
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full flex items-center gap-2 text-sm font-medium transition-colors">⬆</button>
+              {/* <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full flex items-center gap-2 text-sm font-medium transition-colors">⬆</button> */}
               <button className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-full flex items-center gap-2 text-sm font-medium transition-colors">⬇</button>
+              <div>
+                <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} theme="dark" />
+              </div>
 
               <div className="ml-auto flex items-center gap-2">
                 <button
@@ -821,8 +817,9 @@ const LeadContent = (): JSX.Element => {
                               else if (key === "email") content = <SensitiveField value={item.email} link={`mailto:${item.email}`} maskedValue={maskEmail(item.email)} fontSize="sm" />;
                               else if (key === "phone") content = <SensitiveField value={value} link={`tel:${value}`} maskedValue={maskPhone(value)} fontSize="sm" />;
                               else if (key === "actions") content = <RowActions item={item} />;
+                              else if (key === "createdAt") content = <CreatedAt timestamp={value} />;
                               else content = <span className="capitalize text-sm whitespace-nowrap">{value ?? "-"}</span>;
-                              return <td key={key} className="p-4">{content}</td>;
+                              return <td key={key} className="p-4 text-nowrap">{content}</td>;
                             })}
                           </tr>
                         );

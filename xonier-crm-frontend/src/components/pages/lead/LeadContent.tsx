@@ -32,7 +32,10 @@ import { HiOutlineUserGroup } from "react-icons/hi2";
 import { SUPER_ADMIN_ROLE_CODE } from "@/src/constants/constants";
 import { TbArrowsExchange } from "react-icons/tb";
 import { RiUserSharedLine } from "react-icons/ri";
-
+import  StatusBadge  from "@/src/components/common/Status";
+import CreatedAt from "@/src/components/common/CreatedAt";  
+import DateFilterButton from "@/src/components/common/dateFilter";
+import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 
 const TAB = { ALL: 1, WON: 2, LOST: 3, ASSIGNED: 4 } as const;
 
@@ -89,6 +92,7 @@ const LeadContent = (): JSX.Element => {
   const [statusVal, setStatusVal] = useState<string>("");
   const [sourceVal, setSourceVal] = useState<string>("");
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const [dateFilter, setDateFilter] = useState<DateFilter>({ fromDate: "", toDate: "" });
   const [filters, setFilters] = useState<Record<string, string>>({
     "type": "",
     "search": "",
@@ -127,7 +131,7 @@ const LeadContent = (): JSX.Element => {
   const getLeadData = async (): Promise<void> => {
     setIsLoading(true);
     try {
-      const result = await LeadService.getAll(currentPage, pageLimit, { ...filters, ...query });
+      const result = await LeadService.getAll(currentPage, pageLimit, { ...filters, ...query ,...dateFilter });
       if (result.status === 200) {
         const data = result.data.data;
         setLeadData(data.data);
@@ -148,6 +152,7 @@ const LeadContent = (): JSX.Element => {
       const result = await LeadService.getAll(currentWonPage, wonPageLimit, {
         ...query, ...filters,
         status: SALES_STATUS.WON,
+        ...dateFilter
       });
       if (result.status === 200) {
         const data = result.data.data;
@@ -169,7 +174,8 @@ const LeadContent = (): JSX.Element => {
       const result = await LeadService.getAll(currentLostPage, lostPageLimit, {
         ...query,
         ...filters,
-        status: SALES_STATUS.LOST
+        status: SALES_STATUS.LOST,
+        ...dateFilter
 
       });
       if (result.status === 200) {
@@ -194,6 +200,7 @@ const LeadContent = (): JSX.Element => {
         isAssigned: true,
         ...query,
         ...filters,
+        ...dateFilter
       });
       if (result.status === 200) {
         const data = result.data.data;
@@ -381,7 +388,7 @@ const LeadContent = (): JSX.Element => {
       else if (currentTab === TAB.ASSIGNED) getAssignedLeadData();
     }, 400);
     setCurrentPage(1);
-  }, [filters]);
+  }, [filters,dateFilter]);
   useEffect(() => {
     setFilters({
       status: "",
@@ -391,6 +398,7 @@ const LeadContent = (): JSX.Element => {
     });
     setSearchVal("");
     clearFields();
+    setDateFilter({ fromDate: "", toDate: "" });
   }, [currentTab]);
 
   const options: Record<string,
@@ -432,18 +440,6 @@ const LeadContent = (): JSX.Element => {
     ));
 
 
-  const StatusBadge = ({ status }: { status: string }) => (
-    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium capitalize
-      ${status === "new" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
-        : status === "contacted" ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300"
-          : status === "qualified" ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
-            : status === "proposal" ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
-              : status === "won" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
-                : status === "lost" ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
-                  : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300"}`}>
-      {status}
-    </span>
-  );
 
   const RowActions = ({ item }: { item: Lead }) => (
     <div className="flex items-center gap-2 p-4">
@@ -492,7 +488,7 @@ const LeadContent = (): JSX.Element => {
         <tr key={item.lead_id}
           className={`${isChecked ? "bg-blue-50 dark:bg-blue-900/20 border-l-[3px] border-l-blue-500"
             : i % 2 === 0 ? "bg-white dark:bg-transparent"
-              : "bg-blue-100/50 dark:bg-slate-500"} w-full transition-colors duration-150`}>
+              : "bg-blue-100/50 dark:bg-slate-500"} w-full transition-colors duration-150 text-nowrap`}>
 
           {hasPermission(PERMISSIONS.assignLead) && currentTab === TAB.ALL && (
             <td className="p-4 text-center">
@@ -516,9 +512,9 @@ const LeadContent = (): JSX.Element => {
             </td>
           )}
 
-          <td className="p-4">
+          {/* <td className="p-4">
             <Link href={`/leads/view/${item.id}`} className="text-sm font-medium hover:text-blue-500 transition-colors text-nowrap">{item.lead_id}</Link>
-          </td>
+          </td> */}
           <td className="flex gap-1 flex-col p-4">
             <h4 className="capitalize font-medium text-sm">{item.fullName}</h4>
             <SensitiveField value={item.email} link={`mailto:${item.email}`} maskedValue={maskEmail(item.email)} fontSize="sm" />
@@ -533,6 +529,8 @@ const LeadContent = (): JSX.Element => {
             <span className="bg-yellow-400 text-slate-800 px-2.5 py-1 text-xs font-medium rounded-md">{item.source}</span>
           </td>
           <td className="p-4"><StatusBadge status={item.status} /></td>
+          <td className="p-4"><CreatedAt timestamp={item.createdAt} /></td>
+          <td className="p-4">{item.createdBy?.firstName}</td>
           <td><RowActions item={item} /></td>
         </tr>
       );
@@ -568,7 +566,7 @@ const LeadContent = (): JSX.Element => {
           className={`${isChecked
             ? "bg-amber-50 dark:bg-amber-900/10 border-l-[3px] border-l-amber-500"
             : i % 2 === 0 ? "bg-white dark:bg-transparent"
-              : "bg-amber-50/40 dark:bg-slate-500/30"} w-full transition-colors duration-150`}>
+              : "bg-amber-50/40 dark:bg-slate-500/30"} w-full transition-colors duration-150 text-nowrap`}>
 
 
           {hasPermission(PERMISSIONS.reassignLead) && (
@@ -583,9 +581,9 @@ const LeadContent = (): JSX.Element => {
             </td>
           )}
 
-          <td className="p-4">
+          {/* <td className="p-4">
             <Link href={`/leads/view/${item.id}`} className="text-sm font-medium hover:text-blue-500 transition-colors">{item.lead_id}</Link>
-          </td>
+          </td> */}
           <td className="flex gap-1 flex-col p-4">
             <h4 className="capitalize font-medium text-sm">{item.fullName}</h4>
             <SensitiveField value={item.email} link={`mailto:${item.email}`} maskedValue={maskEmail(item.email)} fontSize="sm" />
@@ -625,7 +623,10 @@ const LeadContent = (): JSX.Element => {
                 <span className="h-9 w-9 flex items-center justify-center rounded-md bg-yellow-100 text-yellow-400 opacity-50 cursor-not-allowed"><MdOutlineEdit className="text-lg" /></span>
               )}
             </div>
+
           </td>
+          <td className="p-4"><CreatedAt timestamp={item.createdAt} /></td>
+          <td className="p-4">{item.createdBy?.firstName}</td>
         </tr>
       );
     });
@@ -676,6 +677,9 @@ const LeadContent = (): JSX.Element => {
                 <IoIosSearch className="text-xl" />
                 <input type="text" id="searchbar" className="outline-none bg-transparent text-sm w-36" placeholder="Search..." onChange={(e) => handleSearch(e.target.value)} value={searchVal} />
               </div>
+              <div>
+                <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} theme="dark" />
+              </div>
               {hasPermission(PERMISSIONS.createLead) ? (
                 <Link href="/leads/add" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors group">
                   <FaPlus className="group-hover:rotate-90 transition-transform duration-300" /> Create Lead
@@ -689,7 +693,7 @@ const LeadContent = (): JSX.Element => {
           </div>
 
 
-          <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-600 pb-0">
+          <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-600 pb-3">
             <TabsButton btnTxt="All Leads" dataLen={leadData.length} no={TAB.ALL} currentVal={currentTab} onClickEvent={() => setCurrentTab(TAB.ALL)} />
             <TabsButton btnTxt="Won Leads" dataLen={wonLeadData.length} no={TAB.WON} currentVal={currentTab} onClickEvent={() => handleTabs(TAB.WON)} />
             <TabsButton btnTxt="Lost Leads" dataLen={lostLeadData.length} no={TAB.LOST} currentVal={currentTab} onClickEvent={() => handleTabs(TAB.LOST)} />
@@ -820,7 +824,7 @@ const LeadContent = (): JSX.Element => {
                         </label>
                       </th>
                     )}
-                    {["Lead Id", "Client Info", "Phone", "Project Type", "Source", "Status", "Actions"]
+                    {["Client Info", "Phone", "Project Type", "Source", "Status","Created Date","Created By", "Actions"]
                       .map((h) => {
                         const filterConfig = (h != 'Status') ? (options[h]) : (currentTab === TAB.ALL && options[h]);
 
@@ -894,7 +898,7 @@ const LeadContent = (): JSX.Element => {
                         </label>
                       </th>
                     )}
-                    {["Lead Id", "Client Info", "Phone", "Project Type", "Source", "Status"].map((h) => {
+                    {["Lead Id", "Client Info", "Phone", "Project Type", "Source", "Status","Created Date","Created By"].map((h) => {
                       const filterConfig = options[h];
                       return (
                         <th

@@ -14,7 +14,9 @@ export const EnquiryService = {
         `${data.phone ? `phone=${data.phone}&` : ""}` +
         `${data.companyName ? `companyName=${data.companyName}&` : ""}` +
         `${data.projectType ? `projectType=${data.projectType}&` : ""}` +
-        `${data.priority ? `priority=${data.priority}&` : ""}`
+        `${data.priority ? `priority=${data.priority}&` : ""}`+
+        `${data.fromDate ? `fromDate=${data.fromDate}&` : ""}` +  
+        `${data.toDate ? `toDate=${data.toDate}&` : ""}` 
     ),
     getAllByCreator:(page?: number, limit?: number, filters?: Record<string, any>) => {
     const params = new URLSearchParams();
