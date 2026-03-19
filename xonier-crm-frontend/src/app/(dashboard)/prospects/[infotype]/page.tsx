@@ -554,7 +554,7 @@ const LeadContent = (): JSX.Element => {
               <button className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-full flex items-center gap-2 text-sm font-medium transition-colors">⬇</button>
 
               {/* Date Filter */}
-              <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} theme="dark" />
+              <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
 
               {/* Sidebar toggle */}
               <button

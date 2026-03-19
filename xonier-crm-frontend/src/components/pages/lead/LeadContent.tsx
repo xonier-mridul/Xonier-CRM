@@ -687,7 +687,7 @@ const LeadContent = (): JSX.Element => {
                 <input type="text" id="searchbar" className="outline-none bg-transparent text-sm w-36" placeholder="Search..." onChange={(e) => handleSearch(e.target.value)} value={searchVal} />
               </div>
               <div>
-                <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} theme="dark" />
+                <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
               </div>
               {hasPermission(PERMISSIONS.createLead) ? (
                 <Link href="/leads/add" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors group">

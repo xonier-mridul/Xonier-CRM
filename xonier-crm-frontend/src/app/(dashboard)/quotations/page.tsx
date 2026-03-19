@@ -349,7 +349,7 @@ const page = (): JSX.Element => {
               <input type="text" className="outline-none bg-transparent" placeholder="Search..." value={searchVal} onChange={(e)=> handleSearch(e.target.value)}/>
             </div>
             <div>
-              <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} theme="dark" />
+              <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
             </div>
             <Link
               href={"/leads"}

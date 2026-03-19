@@ -177,7 +177,7 @@ const page = (): JSX.Element => {
               <input type="text" className="outline-none" placeholder="Search..." onChange={(e) => handleSearch(e.target.value)} value={searchVal} />
             </div>
             <div>
-              <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} theme="dark" />
+              <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter}  />
             </div>
             {hasPermission(PERMISSIONS.createEnquiry) ? <Link
               href={"/enquiry/add"}
