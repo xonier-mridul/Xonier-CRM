@@ -112,18 +112,19 @@ export default function Page() {
           value={data?.delivered_at || "-"}
         />
 
-        <InfoCard
+        {/* <InfoCard
           icon={<Clock size={18} />}
           label="Read At"
           value={data?.read_at || "-"}
-        />
+        /> */}
 
-        <InfoCard
+        {(data?.status === "failed") && 
+          <InfoCard
           icon={<AlertCircle size={18} />}
           label="Failed At"
           value={data?.failed_at || "-"}
         />
-
+}
         <InfoCard
           icon={<DollarSign size={18} />}
           label="Cost"

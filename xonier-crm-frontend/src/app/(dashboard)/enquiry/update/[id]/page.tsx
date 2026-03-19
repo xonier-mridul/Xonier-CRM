@@ -684,7 +684,7 @@ const page = (): JSX.Element => {
                 }
               >
                 <option value="">Select range</option>
-                {[...new Set(Object.values(NUMBER_OF_EMPLOYEES).filter((n) => n !== ""))].map((n, i) => (
+                {[...new Set(Object.values(NUMBER_OF_EMPLOYEES))].map((n, i) => (
                   <option key={`${n}-${i}`} value={n}>
                     {n}
                   </option>

@@ -3,7 +3,15 @@ import { User, UserRef } from "../auth/auth.types";
 import { Dispatch, FormEvent, SetStateAction } from "react";
 
 
-
+interface SocialLinks {
+  linkedin?: string | null;
+  twitter?: string | null;
+  github?: string | null;
+  facebook?: string | null;
+  instagram?: string | null;
+  youtube?: string | null;
+  website?: string | null;  
+}
 export interface EnquiryData {
   id: string;
   enquiry_id: string;
@@ -12,18 +20,34 @@ export interface EnquiryData {
   email: string;
   phone: string;
   companyName?: string | null;
+  designation?: string | null;
+  infoType?: string | null;
+  numberOfEmployees?: string | null;
+  industry?: string[] | null;
+  technologies?: string[] | null;
+  keywords?: string[] | null;
 
   projectType: PROJECT_TYPES;
   status: SALES_STATUS;
   isActive: boolean;
   priority: PRIORITY;
   source: SOURCE;
+  location?: {
+    country?: string | null;
+    state?: string | null;
+    city?: string | null;
+    postalCode?: string | null;
+    address?: string | null;
+    latitude?: string | null;
+    longitude?: string | null;
+    timezone?: string | null;
+  } | null;
 
   message?: string | null;
-
-  assignTo?: UserRef | null;
-  createdBy: UserRef;
-  updatedBy?: UserRef | null;
+  socialLinks?: SocialLinks | null;
+  assignTo?: User | null;
+  createdBy: User;
+  updatedBy?: User | null;
 
   createdAt: string;
   updatedAt: string;
@@ -60,6 +84,8 @@ export interface CreateEnquiryPayload {
   projectType: PROJECT_TYPES;
   priority: PRIORITY;
   source: SOURCE;
+  socialLinks?: SocialLinks | null;
+
 
   assignTo?: string | null;
   message?: string | null;
@@ -106,7 +132,7 @@ export interface UpdateEnquiryPayload {
     city?: string | null;
     zipcode?: string | null;
   } | null;
-  socialLinks?: string[] | null;
+  socialLinks?: SocialLinks | null;
   extra_fields?: Record<string, any> | null;
 }
 
