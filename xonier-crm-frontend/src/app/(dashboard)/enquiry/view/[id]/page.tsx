@@ -482,10 +482,7 @@ const EnquiryViewPage = (): JSX.Element => {
                         <InfoItem
                           key={i}
                           icon={<IoInformationCircleOutline className="w-4 h-4" />}
-                          label={field.key
-                            .replace(/([A-Z])/g, " $1")
-                            .replace(/^./, (c) => c.toUpperCase())
-                            .trim()}
+                          label={field.label}
                           value={field.value || "—"}
                         />
                       ))}
