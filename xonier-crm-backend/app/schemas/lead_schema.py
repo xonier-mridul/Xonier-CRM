@@ -9,7 +9,7 @@ from app.core.enums import (
     LANGUAGE_CODE,
     COUNTRY_CODE,
     INDUSTRIES,
-    EMPLOYEE_SENIORITY,
+    EMPLOYEE_SENIORITY, CONTACT_STATUS
 )
 from app.utils.custom_exception import AppException
 
@@ -131,6 +131,20 @@ class LeadUpdateSchema(LeadBaseSchema):
 
 class LeadStatusUpdateSchema(BaseModel):
     status: SALES_STATUS
+
+class LeadConnectStatusUpdateSchema(BaseModel):
+    status: CONTACT_STATUS
+
+    @field_validator("status", mode="before")
+    @classmethod
+    def validate_status(cls, v):
+        try:
+            return CONTACT_STATUS(v)
+        except ValueError:
+            raise AppException(
+                422,
+                "Invalid status. Use: connected, not_connected, interested, not_interested, not_reached"
+            )
 
 
 class BulkReassignLeadSchema(BaseModel):

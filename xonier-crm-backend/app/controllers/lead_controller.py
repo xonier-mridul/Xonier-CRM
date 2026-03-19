@@ -139,6 +139,20 @@ class LeadController:
         except AppException as e:
             raise e
         
+
+    async def update_connect_status(self, request: Request, id:str, payload: Dict[str, Any]):
+        try:
+            user = request.state.user
+
+            result = await self.service.update_connect_status(leadId=id, payload=payload, user=user)
+
+            connectStatus = result.get("connectStatus")
+
+            return successResponse(status_code=200, message=f" {result["fullName"]} connect status updated to {connectStatus} successfully")
+        
+        except AppException as e:
+            raise e
+        
     async def delete(self, request: Request, id:str):
         try:
 

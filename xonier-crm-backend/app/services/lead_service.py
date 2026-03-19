@@ -1023,7 +1023,7 @@ class LeadService:
                 except Exception as e:
                     raise AppException(status_code=500, message=f"Internal server error: {e}")
 
-    async def update_status(self, leadId:str, user:Dict[str, Any], payload: Dict[str, Any])-> bool:
+    async def update_status(self, leadId:str, user:Dict[str, Any], payload: Dict[str, Any]):
         async with await self.client.start_session() as session:
             async with session.start_transaction():
         
@@ -1070,7 +1070,7 @@ class LeadService:
 
                     await lead.save(session=session)
 
-                    activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD, entityId=PydanticObjectId(lead.id), action=ACTIVITY_ACTION.UPDATED, title="update lead status", metadata={"leadId": lead.lead_id, "leadName": lead.fullName, "status": lead.status})
+                    activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD.value, entityId=PydanticObjectId(lead.id), action=ACTIVITY_ACTION.UPDATED.value, title="update lead status", metadata={"leadId": lead.lead_id, "leadName": lead.fullName, "status": lead.status})
 
                     is_activity = await self.activityRepo.create(data=activity, session=session)
 
@@ -1087,6 +1087,74 @@ class LeadService:
 
                 except Exception as e:
                     raise AppException(status_code=500, message=f"Internal server error: {e}")
+
+
+    async def update_connect_status(self, leadId:str, user:Dict[str, Any], payload: Dict[str, Any]):
+        async with await self.client.start_session() as session:
+            async with session.start_transaction():
+        
+                try:
+                    if not ObjectId.is_valid(leadId):
+                        raise AppException(400, "Invalid lead object id")
+                    
+                    
+                    is_admin = validate_admin(user["userRole"])
+                    is_creator = False
+
+                    lead = await self.repo.find_by_id(
+                        PydanticObjectId(leadId), populate=["createdBy", "assignedTo"]
+                    )
+
+                    if not lead:
+                        raise AppException(404, "Lead data not found")
+                    
+                    if payload["status"] == SALES_STATUS.DELETE.value:
+                        raise AppException(400, "Action denied, can not set status delete")
+                    
+                    if payload["status"] == SALES_STATUS.WON.value:
+                        raise AppException(400, "Action denied, can not set status won")
+                    
+                    if lead.status == SALES_STATUS.DELETE.value:
+                        raise AppException(400, "Action denied, Lead is deleted")
+
+                    if lead.status == SALES_STATUS.WON.value:
+                        raise AppException(400, "Action denied, Lead is Won so you are not update it now")
+
+                    if str(lead.createdBy.id) == str(user["_id"]):
+                        is_creator = True
+                    
+                    for item in lead.assignedTo:
+                        if(str(item.id)) == str(user["_id"]):
+                            is_assigner = True
+
+                    if not is_admin and not is_creator and not is_assigner:
+                        raise AppException(403, "Permission denied, only admin, creator or assigned person can access it")
+                    
+                    
+                    lead.connectStatus = payload["status"]
+                    lead.updatedAt = datetime.now(timezone.utc)
+
+                    await lead.save(session=session)
+
+                    activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD.value, entityId=PydanticObjectId(lead.id), action=ACTIVITY_ACTION.UPDATED.value, title="update lead connect status", metadata={"leadId": lead.lead_id, "leadName": lead.fullName, "status": lead.status, "connectStatus": lead.connectStatus})
+
+                    is_activity = await self.activityRepo.create(data=activity, session=session)
+
+                    if not is_activity:
+                        raise AppException(400, "Activity log failed")
+
+                    await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
+                    await FastAPICache.get_backend().clear(namespace=USER_LEAD_CACHE_NAMESPACE) 
+
+                    return lead.model_dump(mode="json")
+
+
+                except AppException as e:
+                    raise e
+
+                except Exception as e:
+                    raise AppException(status_code=500, message=f"Internal server error: {e}")
+
 
     async def delete(self, leadId: str, user: Dict[str, Any]) -> bool:
         async with await self.client.start_session() as session:

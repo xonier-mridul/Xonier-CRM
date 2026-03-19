@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Request
 from app.core.dependencies import Dependencies
-from app.schemas.lead_schema import LeadsCreateSchema, LeadUpdateSchema, LeadBaseSchema, CreateBulkLeadSchema, BulkAssignLeadSchema, LeadStatusUpdateSchema, BulkReassignLeadSchema, BulkDeleteSchema
+from app.schemas.lead_schema import LeadsCreateSchema, LeadUpdateSchema, LeadBaseSchema, CreateBulkLeadSchema, BulkAssignLeadSchema, LeadStatusUpdateSchema, BulkReassignLeadSchema, BulkDeleteSchema, LeadConnectStatusUpdateSchema
 from app.controllers.lead_controller import LeadController
 
 router = APIRouter()
@@ -56,6 +56,10 @@ async def update(request: Request, id:str, payload: LeadUpdateSchema ):
 @router.patch("/update/{id}/status", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["lead:update"]))])
 async def update_status(request:Request, id:str, payload: LeadStatusUpdateSchema):
     return await leadController.lead_update(request, id, payload.model_dump(exclude_unset=True))
+
+@router.patch("/update/{id}/connect-status", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["lead:update"]))])
+async def update_connect_status(Request: Request, id: str, payload: LeadConnectStatusUpdateSchema):
+    return await leadController.update_connect_status(request=Request, id=id, payload=payload.model_dump(mode="json"))
 
 @router.delete("/delete/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["lead:delete"]))])
 async def delete(request: Request, id: str):
