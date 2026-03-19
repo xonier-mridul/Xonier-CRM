@@ -166,7 +166,7 @@ export enum PERMISSIONS {
   viewAssignProspectInformation = "prospect:assignView",
   callProspects = "prospect:call",
   emailProspects = "prospect:email",
-  smsProspects = "prospect:sms",
+  smsProspects = "send:sms",
   createTemplate = "emailTemplate:create",
   readTemplate = "emailTemplate:read",
   updateTemplate = "emailTemplate:update",

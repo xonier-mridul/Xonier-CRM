@@ -1,13 +1,10 @@
+import { User } from "../auth/auth.types";
+
 export interface Message {
   id?: string;
   provider_message_sid: string | null;
   conversation_id: string | null;
-  sent_by: {
-    ref: string;
-    id: string;
-    firstName: string;
-    lastName: string;
-  };
+  sent_by: User | null;
   sent_to_number: string;
   sent_from_number: string;
   message: string;

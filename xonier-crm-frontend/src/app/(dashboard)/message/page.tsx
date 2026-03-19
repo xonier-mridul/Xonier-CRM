@@ -293,7 +293,7 @@ export default function Page() {
                         ? <span className="px-2 py-1 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded font-mono text-xs">{log.conversion_id}</span>
                         : <span className="text-gray-400">—</span>}
                     </td>
-                    <td className="p-4 whitespace-nowrap">{log.sent_by ? `${log.sent_by.firstName ?? ''} ${log.sent_by.lastName ?? ''}`.trim() || log.sent_by.ref || "-" : "-"}</td>
+                    <td className="p-4 whitespace-nowrap">{log.sent_by ? `${log.sent_by.firstName ?? ''} ${log.sent_by.lastName ?? ''}`.trim()  || "-" : "-"}</td>
                     <td className="p-4 whitespace-nowrap">{log.sent_at || "-"}</td>
                     <td className="p-4 whitespace-nowrap">
                       <a href={`/message/${log.id}`} className="h-9 w-9 flex items-center justify-center rounded-md bg-green-100 hover:bg-green-200 text-green-600">

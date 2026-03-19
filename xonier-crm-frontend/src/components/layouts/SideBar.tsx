@@ -431,7 +431,7 @@ const SideBar = () => {
               </Link>
             </li>}
 
-            {(hasPermission(PERMISSIONS.readUser) || hasPermission(PERMISSIONS.readRole) || hasPermission(PERMISSIONS.createTeam)) && <li>
+            {(hasPermission(PERMISSIONS.telephone)) && <li>
               <button
                 onClick={() => toggleMenu("communication")}
                 className={`${isMenuActive("communication")
