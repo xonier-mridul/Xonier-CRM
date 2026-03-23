@@ -124,6 +124,7 @@ export enum PERMISSIONS {
   readEnquiry = "enquiry:read",
   updateEnquiry = "enquiry:update",
   deleteEnquiry = "enquiry:delete",
+  assignEnquiry = "enquiry:assign",
   createLead = "lead:create",
   readLead = "lead:read",
   viewAssignLeadInformation = "lead:assignView",

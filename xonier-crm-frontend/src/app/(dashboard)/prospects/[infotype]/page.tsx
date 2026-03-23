@@ -419,7 +419,7 @@ const LeadContent = (): JSX.Element => {
     else setCommSelectedIds(new Set(leadData.map((l) => l.id)));
   };
 
-  const handleAssignLeads = async () => {
+  const handleAssignEnquirys = async () => {
     if (!selectedUserId) { toast.warning("Please select a user to assign leads to"); return; }
     if (selectedLeadIds.size === 0) { toast.warning("Please select at least one lead"); return; }
     setIsAssigning(true);
@@ -597,7 +597,7 @@ const LeadContent = (): JSX.Element => {
                   </select>
                 </div>
                 <button
-                  onClick={handleAssignLeads}
+                  onClick={handleAssignEnquirys}
                   disabled={!selectedUserId || isAssigning}
                   className="bg-white text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed px-5 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all shadow-sm"
                 >
@@ -615,7 +615,7 @@ const LeadContent = (): JSX.Element => {
               <table className="w-full">
                 <thead>
                   <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
-                    {hasPermission(PERMISSIONS.assignLead) && (
+                    {hasPermission(PERMISSIONS.assignEnquiry) && (
                       <th className="p-4 w-12 whitespace-nowrap">
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input ref={selectAllRef} type="checkbox" className="sr-only" checked={isAllSelected} onChange={handleSelectAll} />
@@ -649,7 +649,7 @@ const LeadContent = (): JSX.Element => {
                   {isLoading ? (
                     Array.from({ length: 5 }).map((_, i) => (
                       <tr key={`skel-${i}`} className={`${i % 2 === 0 ? "bg-white dark:bg-transparent" : "bg-blue-100/50 dark:bg-slate-500"} w-full`}>
-                        {hasPermission(PERMISSIONS.assignLead) && <td className="p-4"><Skeleton width={30} height={24} borderRadius={10} /></td>}
+                        {hasPermission(PERMISSIONS.assignEnquiry) && <td className="p-4"><Skeleton width={30} height={24} borderRadius={10} /></td>}
                         {Object.entries(activeColumns).map(([key, isActive]) =>
                           isActive ? <td key={key} className="p-4"><Skeleton width={120} height={24} borderRadius={10} /></td> : null
                         )}
@@ -661,7 +661,7 @@ const LeadContent = (): JSX.Element => {
                         const isChecked = selectedLeadIds.has(item.id);
                         return (
                           <tr key={item.id} className={`${i % 2 === 0 ? "bg-white dark:bg-transparent" : "bg-blue-100/50 dark:bg-slate-500"} w-full`}>
-                            {hasPermission(PERMISSIONS.assignLead) && (
+                            {hasPermission(PERMISSIONS.assignEnquiry) && (
                               <td className="p-4 text-center">
                                 {!item.assignTo?.id ? (
                                   <label className="relative inline-flex items-center cursor-pointer">
@@ -700,7 +700,7 @@ const LeadContent = (): JSX.Element => {
                       {/* Fetching-more skeletons */}
                       {isFetchingMore && Array.from({ length: 3 }).map((_, i) => (
                         <tr key={`more-${i}`} className={`${(leadData.length + i) % 2 === 0 ? "bg-white dark:bg-transparent" : "bg-blue-100/50 dark:bg-slate-500"} w-full`}>
-                          {hasPermission(PERMISSIONS.assignLead) && <td className="p-4"><Skeleton width={30} height={24} borderRadius={10} /></td>}
+                          {hasPermission(PERMISSIONS.assignEnquiry) && <td className="p-4"><Skeleton width={30} height={24} borderRadius={10} /></td>}
                           {Object.entries(activeColumns).map(([key, isActive]) =>
                             isActive ? <td key={key} className="p-4"><Skeleton width={120} height={24} borderRadius={10} /></td> : null
                           )}
