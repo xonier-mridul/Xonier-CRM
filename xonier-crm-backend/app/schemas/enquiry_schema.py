@@ -264,5 +264,21 @@ class BulkAssignSchema(BaseModel):
             raise AppException(422, "enquiry ids field must be required")
 
         return value
+    
+
+class BulkReassignSchema(BaseModel):
+    enquiryIds: List[str]
+    assignedTo: str
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_bulk_assign_payload(cls, value):
+        if not value.get("assignedTo"):
+            raise AppException(422, "assigned to field must be required")
+
+        if not value.get("enquiryIds"):
+            raise AppException(422, "enquiry ids field must be required")
+
+        return value
 
 

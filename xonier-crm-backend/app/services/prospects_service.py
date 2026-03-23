@@ -4,23 +4,29 @@ from app.utils.custom_exception import AppException
 from app.utils.validate_admin import validate_admin
 from app.repositories.enquiry_repository import EnquiryRepository
 from app.repositories.user_repository import UserRepository
+from app.repositories.activity_repository import ActivityRepository
 from beanie import PydanticObjectId
-from app.core.enums import INFO_TYPE
+from app.core.enums import INFO_TYPE, ACTIVITY_ACTION, ACTIVITY_ENTITY_TYPE
 from fastapi.encoders import jsonable_encoder
 from bson import ObjectId, DBRef
 from app.utils.get_team_members import GetTeamMembers
 from app.core.crypto import Encryption
 from app.core.security import hash_value
 from datetime import datetime, timezone
+from bson import ObjectId
+from app.utils.activity_payload import activity_payload
+from app.db.db import Client
+import asyncio
 
 
 class ProspectsService:
     def __init__(self):
         self.repo = EnquiryRepository()
+        self.client= Client
         self.userRepo = UserRepository()
         self.getTeamMembers = GetTeamMembers()
         self.encryption = Encryption()
-
+        self.activityRepo = ActivityRepository()
 
 
     async def get_all_active(self, filters: Dict[str, Any], user: Dict[str, Any]):
@@ -48,7 +54,8 @@ class ProspectsService:
             if "fullName" in filters:
                 query.update({"fullName": {"$regex": filters["fullName"], "$options": "i"}})
 
-            
+            if "status" in filters:
+                query.update({"status": {"$regex": filters["status"], "$options": "i"}})
 
             if "country" in filters:
                 query.update({"location.country": filters["country"]})
@@ -72,6 +79,27 @@ class ProspectsService:
 
             if "priority" in filters:
                 query.update({"priority": filters["priority"]})  
+
+            if "fromDate" in filters or "toDate" in filters:
+                date_filter = {}
+                if "fromDate" in filters:
+                    try:
+                        from_dt = datetime.fromisoformat(str(filters["fromDate"]))
+                        from_dt = from_dt.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
+                        date_filter["$gte"] = from_dt
+                    except (ValueError, TypeError):
+                        raise AppException(400, "Invalid fromDate format. Use ISO format: YYYY-MM-DD")
+
+                if "toDate" in filters:
+                    try:
+                        to_dt = datetime.fromisoformat(str(filters["toDate"]))
+                        to_dt = to_dt.replace(hour=23, minute=59, second=59, microsecond=999999, tzinfo=timezone.utc)
+                        date_filter["$lte"] = to_dt
+                    except (ValueError, TypeError):
+                        raise AppException(400, "Invalid toDate format. Use ISO format: YYYY-MM-DD")
+
+                if date_filter:
+                    query.update({"createdAt": date_filter})
 
             result = await self.repo.get_all(
                 page=int(page),
@@ -148,8 +176,18 @@ class ProspectsService:
             if not is_admin and not is_manager and not is_creator:
                 raise AppException(403, "Permission denied, you not access prospect data")
             
+            result = jsonable_encoder(prospect.model_dump(mode="json"))
 
-            return jsonable_encoder(prospect.model_dump(mode="json"))
+            creator = result.get("createdBy")
+
+            if creator:
+                if creator.get("email"):
+                    result["createdBy"]["email"] = self.encryption.decrypt_data(result["createdBy"]["email"])
+
+                if creator.get("phone"):
+                    result["createdBy"]["phone"] = self.encryption.decrypt_data(result["createdBy"]["phone"])
+
+            return result
             
 
             
@@ -158,8 +196,6 @@ class ProspectsService:
 
         except Exception as e:
             raise AppException(status_code=500, message=f"internal server error {e}")
-        
-
           
 
     
@@ -168,7 +204,6 @@ class ProspectsService:
             assigned_to = payload.get("assignedTo")
             enquiry_ids = payload.get("enquiryIds", [])
 
-            
             if not assigned_to:
                 raise AppException(400, "assignedTo is required")
 
@@ -178,45 +213,221 @@ class ProspectsService:
             if not ObjectId.is_valid(assigned_to):
                 raise AppException(400, "Invalid assignedTo user ID")
 
-            
             for eid in enquiry_ids:
                 if not ObjectId.is_valid(eid):
                     raise AppException(400, f"Invalid enquiry ID: {eid}")
 
-            
             assigned_user = await self.userRepo.find_by_id(id=PydanticObjectId(assigned_to))
 
             if not assigned_user:
-                raise AppException(404, f"User with id {assigned_to.id} not found")
-            
-            
+                raise AppException(404, f"User with id {assigned_to} not found")
+
             object_ids = [PydanticObjectId(eid) for eid in enquiry_ids]
 
-
-            update_data = {
-                "assignTo": DBRef(collection="users", id=PydanticObjectId(assigned_to)),
-                "assignBy": DBRef(collection="users", id=PydanticObjectId(user["_id"])),
-                "assignedAt": datetime.now(timezone.utc)
-            }
-
-            
-            modified_count = await self.repo.bulk_update_by_ids(
-                ids=object_ids,
-                data=update_data
+            enquiries = await self.repo.find_many(
+                filters={"_id": {"$in": object_ids}}
             )
 
-            if not modified_count:
-                raise AppException(400, "Bulk assign failed, no documents were updated")
-            
-            assigned_user = assigned_user.model_dump(mode="json")
+            if not enquiries:
+                raise AppException(404, "No enquiries found for the provided ids")
 
-            first_name = assigned_user.get("firstName") or ""
-            last_name = assigned_user.get("lastName") or ""  
+            async with await self.client.start_session() as session:
+                async with session.start_transaction():
+                    try:
+                        update_data = {
+                            "assignTo": DBRef(collection="users", id=PydanticObjectId(assigned_to)),
+                            "assignBy": DBRef(collection="users", id=PydanticObjectId(user["_id"])),
+                            "assignedAt": datetime.now(timezone.utc)
+                        }
+
+                        modified_count = await self.repo.bulk_update_by_ids(
+                            ids=object_ids,
+                            data=update_data,
+                            session=session
+                        )
+
+                        if not modified_count:
+                            raise AppException(400, "Bulk assign failed, no documents were updated")
+
+                        activity_tasks = []
+                        for enquiry in enquiries:
+                            activity = activity_payload(
+                                userId=PydanticObjectId(user["_id"]),
+                                entityType=ACTIVITY_ENTITY_TYPE.ENQUIRY.value,
+                                entityId=PydanticObjectId(enquiry.id),
+                                action=ACTIVITY_ACTION.ASSIGN.value,
+                                title="Bulk assign enquiry",
+                                metadata={
+                                    "enquiryId": enquiry.enquiry_id,
+                                    "assignedTo": assigned_to,
+                                }
+                            )
+                            activity_tasks.append(
+                                self.activityRepo.create(data=activity, session=session)
+                            )
+
+                        activity_results = await asyncio.gather(*activity_tasks, return_exceptions=True)
+
+                        for result in activity_results:
+                            if isinstance(result, Exception):
+                                raise AppException(400, f"Activity creation failed: {result}")
+
+                    except AppException:
+                        await session.abort_transaction()
+                        raise
+
+                    except Exception as e:
+                        await session.abort_transaction()
+                        raise AppException(500, f"Transaction failed: {e}")
+
+            assigned_user_data = assigned_user.model_dump(mode="json")
+            first_name = assigned_user_data.get("firstName") or ""
+            last_name = assigned_user_data.get("lastName") or ""
 
             return {
-                "user": f"{first_name} {last_name}",
+                "user": f"{first_name} {last_name}".strip(),
                 "assignedTo": assigned_to,
                 "modifiedCount": modified_count
+            }
+
+        except AppException as e:
+            raise e
+
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+        
+
+    async def bulk_reassign(self, user: Dict[str, Any], payload: Dict[str, Any]):
+        try:
+            assigned_to = payload.get("assignedTo")
+            enquiry_ids = payload.get("enquiryIds", [])
+
+            if not assigned_to:
+                raise AppException(400, "assignedTo is required")
+
+            if not enquiry_ids:
+                raise AppException(400, "enquiryIds is required and must not be empty")
+
+            if not ObjectId.is_valid(assigned_to):
+                raise AppException(400, "Invalid assignedTo user ID")
+
+            for eid in enquiry_ids:
+                if not ObjectId.is_valid(eid):
+                    raise AppException(400, f"Invalid enquiry ID: {eid}")
+
+            assigned_user = await self.userRepo.find_by_id(id=PydanticObjectId(assigned_to))
+
+            if not assigned_user:
+                raise AppException(404, f"User with id {assigned_to} not found")
+
+            object_ids = [PydanticObjectId(eid) for eid in enquiry_ids]
+
+            enquiries = await self.repo.find_many(
+                filters={"_id": {"$in": object_ids}}
+            )
+
+            if not enquiries:
+                raise AppException(404, "No enquiries found for the provided ids")
+
+            found_ids = {str(e.id) for e in enquiries}
+            missing_ids = [eid for eid in enquiry_ids if eid not in found_ids]
+
+            failed = []
+            eligible_ids = []
+            eligible_enquiries = []
+
+            for eid in missing_ids:
+                failed.append({
+                    "id": eid,
+                    "reason": "Enquiry not found"
+                })
+
+            for enquiry in enquiries:
+                if not enquiry.assignTo:
+                    failed.append({
+                        "id": str(enquiry.id),
+                        "enquiry_id": enquiry.enquiry_id,
+                        "reason": "Enquiry prospects is not assigned to anyone, use bulk assign instead"
+                    })
+                    continue
+
+                eligible_ids.append(PydanticObjectId(enquiry.id))
+                eligible_enquiries.append(enquiry)
+
+            modified_count = 0
+
+            async with await self.client.start_session() as session:
+                async with session.start_transaction():
+                    try:
+                        if eligible_ids:
+                            update_data = {
+                                "assignTo": DBRef(collection="users", id=str(assigned_to)),
+                                "assignBy": DBRef(collection="users", id=str(user["_id"])),
+                                "assignedAt": datetime.now(timezone.utc),
+                            }
+
+                            modified_count = await self.repo.bulk_update_by_ids(
+                                ids=eligible_ids,
+                                data=update_data,
+                                session=session
+                            )
+
+                            if modified_count == 0:
+                                raise AppException(400, "Bulk reassign failed, no documents were updated")
+
+                            
+                            activity_tasks = []
+                            for enquiry in eligible_enquiries:
+                                activity = activity_payload(
+                                    userId=PydanticObjectId(user["_id"]),
+                                    entityType=ACTIVITY_ENTITY_TYPE.ENQUIRY.value,
+                                    entityId=PydanticObjectId(enquiry.id),
+                                    action=ACTIVITY_ACTION.REASSIGN.value,
+                                    title="Bulk reassign enquiry",
+                                    metadata={
+                                        "enquiryId": enquiry.enquiry_id,
+                                        "reassignedTo": assigned_to,
+                                    }
+                                )
+                                activity_tasks.append(
+                                    self.activityRepo.create(data=activity, session=session)
+                                )
+
+                            activity_results = await asyncio.gather(*activity_tasks, return_exceptions=True)
+
+                            for result in activity_results:
+                                if isinstance(result, Exception):
+                                    raise AppException(400, f"Activity creation failed: {result}")
+
+                    except AppException:
+                        await session.abort_transaction()
+                        raise
+
+                    except Exception as e:
+                        await session.abort_transaction()
+                        raise AppException(500, f"Transaction failed: {e}")
+
+            assigned_user_data = assigned_user.model_dump(mode="json")
+            first_name = assigned_user_data.get("firstName") or ""
+            last_name = assigned_user_data.get("lastName") or ""
+
+            failed_count = len(failed)
+            message = ""
+
+            if modified_count == 0:
+                message = "No enquiries were reassigned"
+            elif failed_count == 0:
+                message = f"All {modified_count} enquiri{'es' if modified_count > 1 else 'y'} reassigned successfully to {first_name} {last_name}"
+            else:
+                message = f"{modified_count} enquiri{'es' if modified_count > 1 else 'y'} reassigned to {first_name} {last_name}, {failed_count} failed"
+
+            return {
+                "user": f"{first_name} {last_name}".strip(),
+                "assignedTo": assigned_to,
+                "modifiedCount": modified_count,
+                "failedCount": failed_count,
+                "failedEnquiries": failed,
+                "message": message
             }
 
         except AppException as e:

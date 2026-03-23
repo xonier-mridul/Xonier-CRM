@@ -50,3 +50,18 @@ class ProspectsController:
 
         except AppException as e:
             raise e
+        
+
+    async def bulk_reassign(self, request: Request, payload: Dict[str, Any]):
+        try:
+            user = request.state.user
+ 
+            result = await self.service.bulk_reassign(user=user, payload=payload)
+ 
+            return successResponse(200, result["message"], result)
+ 
+        except AppException as e:
+            raise e
+ 
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")

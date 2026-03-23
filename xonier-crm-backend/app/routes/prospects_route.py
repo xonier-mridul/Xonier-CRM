@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Request
 from app.core.dependencies import Dependencies
 from app.controllers.prospects_controller import ProspectsController
-from app.schemas.enquiry_schema import BulkAssignSchema
+from app.schemas.enquiry_schema import BulkAssignSchema, BulkReassignSchema
 
 
 
@@ -24,3 +24,8 @@ async def get_by_id(id: str, request: Request):
 @router.post("/bulk-assign", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["enquiry:assign"]))])
 async def bulk_assign(request: Request, payload: BulkAssignSchema):
     return await controller.bulk_assign(request, payload.model_dump())
+
+
+@router.post("/bulk-reassign", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["enquiry:assign"]))])
+async def bulk_reassign(request: Request, payload: BulkReassignSchema):
+    return await controller.bulk_reassign(request=request, payload=payload.model_dump(mode="json"))

@@ -570,6 +570,7 @@ class ACTIVITY_ENTITY_TYPE(str, Enum):
     DEAL = "deal"
     QUOTATION = "quotation"
     INVOICE = "invoice"
+    
 
 class ACTIVITY_ACTION(str, Enum):
     CREATED = "created"
@@ -580,6 +581,8 @@ class ACTIVITY_ACTION(str, Enum):
     CLOSED_WON = "closed_won"
     CLOSED_LOST = "closed_lost"
     DELETE = "delete"
+    ASSIGN = "assign"
+    REASSIGN = "reassign"
 
 
 class LEAD_SOURCE_TYPE(str, Enum):
