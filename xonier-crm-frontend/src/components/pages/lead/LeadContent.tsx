@@ -868,7 +868,7 @@ const LeadContent = (): JSX.Element => {
 
           {currentTab !== TAB.ASSIGNED ? (
             <div className="overflow-x-scroll">
-              <table className="w-full rounded-xl overflow-hidden">
+              <table className="w-full rounded-xl ">
                 <thead>
                   <tr className="w-full border-b-2 border-zinc-200 dark:border-zinc-600 bg-blue-50 dark:bg-gray-800">
                     {hasPermission(PERMISSIONS.assignLead) && currentTab === TAB.ALL && (
@@ -952,7 +952,7 @@ const LeadContent = (): JSX.Element => {
             </div>
           ) : (
             <div className="overflow-x-scroll">
-              <table className="w-full rounded-xl overflow-hidden ">
+              <table className="w-full rounded-xl ">
                 <thead>
                   <tr className="w-full border-b-2 border-amber-200 dark:border-amber-800/40 bg-amber-50 dark:bg-amber-900/20">
                     {hasPermission(PERMISSIONS.reassignLead) && (
