@@ -13,9 +13,9 @@ export const MailService = {
         }
       });
     }
-    return api.get(`/communication/email/history?${params.toString()}`);
+    return api.get(`/email/all/?${params.toString()}`);
   },
-  getLogById: (id: ParamValue) => api.get(`/communication/email/history/get-by-id/${id}`),
+  getLogById: (id: ParamValue) => api.get(`/email/get/${id}`),
   getAllTemplates: (currentPage: number, pageLimit: number, searchVal: string) => {
     const params = new URLSearchParams();
     params.append("page", String(currentPage));

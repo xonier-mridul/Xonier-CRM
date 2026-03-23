@@ -288,14 +288,25 @@ const page = (): JSX.Element => {
                               <MdOutlineEdit className="text-xl" />
                             </span>
                           )}
-                          <button
-                            onClick={() => handleDelete(item.id)}
-                            className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-red-100 text-red-500 hover:bg-red-200 hover:scale-104 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-red-100 disabled:opacity-80"
-                            disabled={!hasPermission(PERMISSIONS.deleteEnquiry)}
-                          >
-                            {" "}
-                            <MdDeleteOutline className="text-xl" />{" "}
-                          </button>
+                          {
+                            hasPermission(PERMISSIONS.deleteEnquiry) ?
+                           ( <button
+                              onClick={() => handleDelete(item.id)}
+                              className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-red-100 text-red-500 hover:bg-red-200 hover:scale-104 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-red-100 disabled:opacity-80"
+                              disabled={!hasPermission(PERMISSIONS.deleteEnquiry)}
+                            >
+                              {" "}
+                              <MdDeleteOutline className="text-xl" />{" "}
+                            </button>) : (
+                              <button
+                              className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-red-100 text-red-500 hover:bg-red-200 hover:scale-104 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-red-100 disabled:opacity-50"
+                              disabled={!hasPermission(PERMISSIONS.deleteEnquiry)}
+                            >
+                              {" "}
+                              <MdDeleteOutline className="text-xl" />{" "}
+                            </button>
+                            )
+                          }
                         </div>
                       </td>
                     </tr>

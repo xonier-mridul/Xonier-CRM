@@ -120,26 +120,6 @@ const page = (): JSX.Element => {
             <div>
               <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
             </div>
-            {hasPermission(PERMISSIONS.createLead) ? (
-              <Link
-                href={"/leads/add"}
-                className="bg-blue-600 hover:bg-blue-700
-                                            text-white px-5 py-2 rounded-md
-                                            flex items-center gap-2 group"
-              >
-                <FaPlus className="group-hover:rotate-90 transition-all duration-300" />{" "}
-                Create New Leads
-              </Link>
-            ) : (
-              <span
-                className="bg-blue-600 
-                                            text-white px-5 py-2 rounded-md
-                                            flex items-center gap-2  opacity-80 cursor-not-allowed"
-              >
-                <FaPlus className=" transition-all duration-300" />
-                Create New Enquiry
-              </span>
-            )}
           </div>
         </div>
         <table className="w-full rounded-xl overflow-hidden">
@@ -242,7 +222,7 @@ const page = (): JSX.Element => {
 </td>
                     <td>
                       <div className="flex items-center gap-2">
-                        {hasPermission(PERMISSIONS.readEnquiry) ? <Link
+                        {hasPermission(PERMISSIONS.readInvoice) ? <Link
                           href={`/invoice/view/${item.id}`}
                           className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-green-100/80 dark:bg-green-50 hover:bg-green-200/70 dark:hover:bg-green-100 text-green-500 hover:scale-104"
                         >

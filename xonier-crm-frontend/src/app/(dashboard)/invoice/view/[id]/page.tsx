@@ -336,7 +336,8 @@ const InvoiceViewPage = (): JSX.Element => {
               {invoiceData.status !== INVOICE_STATUS.PAID && (
                 <button
                   onClick={handleMarkAsPaid}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                  disabled={!hasPermission(PERMISSIONS.markPaidInvoice)}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <IoCheckmarkCircle className="w-4 h-4" />
                   Mark as Paid
@@ -371,9 +372,9 @@ const InvoiceViewPage = (): JSX.Element => {
                   <IoEllipsisVertical className="w-4 h-4" />
                 </button>
                 <div className="hidden group-hover:block absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10">
-                  {hasPermission(PERMISSIONS.updateInvoice) ? (
+                  {/* {hasPermission(PERMISSIONS.updateInvoice) ? (
                     <Link
-                      href={`/invoices/update/${invoiceData.id}`}
+                      href={`/invoices/update/${id}`}
                       className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                     >
                       <IoCreateOutline className="w-4 h-4" />
@@ -384,7 +385,7 @@ const InvoiceViewPage = (): JSX.Element => {
                       <IoCreateOutline className="w-4 h-4" />
                       Edit
                     </span>
-                  )}
+                  )} */}
                   {hasPermission(PERMISSIONS.deleteInvoice) && (
                     <button
                       onClick={handleDelete}

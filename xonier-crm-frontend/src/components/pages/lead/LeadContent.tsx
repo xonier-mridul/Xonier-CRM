@@ -6,7 +6,7 @@ import { MdOutlineEdit } from "react-icons/md";
 import { FaRegEye } from "react-icons/fa";
 import { FaPlus, FaXmark, FaCheck } from "react-icons/fa6";
 import { usePermissions } from "@/src/hooks/usePermissions";
-import { LEAD_SOURCE_TYPE, PERMISSIONS, SALES_STATUS, SOURCE, PROJECT_TYPES } from "@/src/constants/enum";
+import { LEAD_SOURCE_TYPE, PERMISSIONS, SALES_STATUS, SOURCE, PROJECT_TYPES , STATUS_CONFIG} from "@/src/constants/enum";
 import axios from "axios";
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import { toast } from "react-toastify";
@@ -32,11 +32,13 @@ import { HiOutlineUserGroup } from "react-icons/hi2";
 import { SUPER_ADMIN_ROLE_CODE } from "@/src/constants/constants";
 import { TbArrowsExchange } from "react-icons/tb";
 import { RiUserSharedLine } from "react-icons/ri";
-import  StatusBadge  from "@/src/components/common/Status";
-import CreatedAt from "@/src/components/common/CreatedAt";  
+import StatusBadge from "@/src/components/common/Status";
+import CreatedAt from "@/src/components/common/CreatedAt";
 import DateFilterButton from "@/src/components/common/dateFilter";
 import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 import TagBadge from "@/src/components/common/tagBadge";
+import StatusDropdown from "@/src/components/pages/lead/StatusDropdown";
+import { LeadEngagementStatus } from "@/src/types/leads/leads.types";
 
 const TAB = { ALL: 1, WON: 2, LOST: 3, ASSIGNED: 4 } as const;
 
@@ -102,12 +104,12 @@ const LeadContent = (): JSX.Element => {
     "source": "",
     "tag": "",
   });
-  const pageLimitMap :Record<number, number> = {
-  [TAB.ALL]: pageLimit,
-  [TAB.WON]: wonPageLimit,
-  [TAB.LOST]: lostPageLimit,
-  [TAB.ASSIGNED]: assignedPageLimit,
-};
+  const pageLimitMap: Record<number, number> = {
+    [TAB.ALL]: pageLimit,
+    [TAB.WON]: wonPageLimit,
+    [TAB.LOST]: lostPageLimit,
+    [TAB.ASSIGNED]: assignedPageLimit,
+  };
 
 
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
@@ -134,7 +136,7 @@ const LeadContent = (): JSX.Element => {
   const getLeadData = async (): Promise<void> => {
     setIsLoading(true);
     try {
-      const result = await LeadService.getAll(currentPage, pageLimit, { ...filters, ...query ,...dateFilter });
+      const result = await LeadService.getAll(currentPage, pageLimit, { ...filters, ...query, ...dateFilter });
       if (result.status === 200) {
         const data = result.data.data;
         setLeadData(data.data);
@@ -337,6 +339,33 @@ const LeadContent = (): JSX.Element => {
     }
   };
 
+  const updateLeadStatus = async (id: string, newStatus: LeadEngagementStatus): Promise<void> => {
+    try {
+      const result = await LeadService.updateEngagementStatus(id, {status:newStatus});
+
+      if (result.status === 200) {
+        toast.success(
+          `Lead status updated to ${newStatus} successfully`
+        );
+
+        setLeadData((prevData) =>
+          prevData.map((lead) =>
+            lead.id === id ? { ...lead, connectStatus: newStatus } : lead
+          )
+        );
+      }
+    } catch (error) {
+      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+      if (axios.isAxiosError(error)) {
+        const messages = extractErrorMessages(error);
+        setErr(messages);
+        toast.error(`${messages}`);
+      } else {
+        setErr(["Something went wrong"]);
+      }
+    }
+  };
+
   const handleTabs = async (no: number): Promise<void> => {
     setCurrentTab(no);
     clearAssignSelection();
@@ -395,7 +424,7 @@ const LeadContent = (): JSX.Element => {
       else if (currentTab === TAB.ASSIGNED) getAssignedLeadData();
     }, 400);
     setCurrentPage(1);
-  }, [filters,dateFilter]);
+  }, [filters, dateFilter]);
   useEffect(() => {
     setFilters({
       status: "",
@@ -488,7 +517,7 @@ const LeadContent = (): JSX.Element => {
       <tr><td className="p-8 text-center text-slate-400 text-sm" colSpan={9}>No leads found</td></tr>
     );
     if (isLoading) return <SkeletonRows cols={hasPermission(PERMISSIONS.assignLead) && currentTab === TAB.ALL ? 9 : 8} />;
-    
+
     return data.map((item, i) => {
       const isChecked = selectedLeadIds.has(item.id);
       return (
@@ -540,6 +569,14 @@ const LeadContent = (): JSX.Element => {
           <td className="p-4"><CreatedAt timestamp={item.createdAt} /></td>
           <td className="p-4">{item.createdBy?.firstName}</td>
           <td><RowActions item={item} /></td>
+          {( hasPermission(PERMISSIONS.updateLead)) ? 
+          <StatusDropdown
+            currentStatus={item.connectStatus as LeadEngagementStatus}
+            Id={item.id}
+            onStatusUpdate={updateLeadStatus}
+          /> :
+          <StatusBadge status={item.connectStatus || "N/A"} />
+          }
         </tr>
       );
     });
@@ -600,7 +637,7 @@ const LeadContent = (): JSX.Element => {
             <SensitiveField value={item.phone} link={`tel:${item.phone}`} maskedValue={maskPhone(item.phone)} fontSize="sm" />
           </td>
           <td className="p-4">
-            <span className="px-2.5 py-1 rounded-full bg-green-100 text-green-600 text-xs font-medium">{item.projectType||"N/A"}</span>
+            <span className="px-2.5 py-1 rounded-full bg-green-100 text-green-600 text-xs font-medium">{item.projectType || "N/A"}</span>
           </td>
           <td className="p-4">
             <span className="px-2.5 py-1 rounded-full bg-yellow-100 text-yellow-600 text-xs font-medium">{item.source || "N/A"}</span>
@@ -636,6 +673,14 @@ const LeadContent = (): JSX.Element => {
           <td className="p-4"><TagBadge tag={item.dataTag || "N/A"} /></td>
           <td className="p-4"><CreatedAt timestamp={item.createdAt} /></td>
           <td className="p-4">{item.createdBy?.firstName}</td>
+            {( hasPermission(PERMISSIONS.updateLead)) ? 
+            <StatusDropdown
+              currentStatus={item.connectStatus as LeadEngagementStatus}
+              Id={item.id}
+              onStatusUpdate={updateLeadStatus}
+            /> :
+            <td className="p-4"><StatusBadge status={item.connectStatus || "N/A"} /></td>
+            }         
         </tr>
       );
     });
@@ -833,7 +878,7 @@ const LeadContent = (): JSX.Element => {
                         </label>
                       </th>
                     )}
-                    {["Client Info", "Phone", "Project Type", "Source", "Status","Data Tag","Created Date","Created By", "Actions"]
+                    {["Client Info", "Phone", "Project Type", "Source", "Status", "Data Tag", "Created Date", "Created By", "Actions", "Engagement Status"]
                       .map((h) => {
                         const filterConfig = (h != 'Status') ? (options[h]) : (currentTab === TAB.ALL && options[h]);
 
@@ -917,7 +962,7 @@ const LeadContent = (): JSX.Element => {
                         </label>
                       </th>
                     )}
-                    {["Lead Id", "Client Info", "Phone", "Project Type", "Source", "Status","Data Tag","Created Date","Created By"].map((h) => {
+                    {["Lead Id", "Client Info", "Phone", "Project Type", "Source", "Status", "Data Tag", "Created Date", "Created By", "Engagement Status"].map((h) => {
                       const filterConfig = options[h];
                       return (
                         <th

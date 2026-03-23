@@ -1,7 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MdEmail, MdCheckCircle, MdArrowForward, MdDescription, MdSettings, MdVisibility, MdEdit } from "react-icons/md";
+import {
+  MdEmail,
+  MdCheckCircle,
+  MdArrowForward,
+  MdDescription,
+  MdSettings,
+  MdVisibility,
+  MdEdit,
+} from "react-icons/md";
 import { IoClose } from "react-icons/io5";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { Prospect } from "@/src/types/prospect/prospect.type";
@@ -10,7 +18,8 @@ import RichEditor from "@/src/components/pages/prospect/RichEditor";
 import MailService from "@/src/services/communication/mail.service";
 import { Template } from "@/src/types/communication/mail.types";
 
-// 🔹 Build bulk mail payload for backend
+// ── Helpers ────────────────────────────────────────────────────────────────
+
 const buildBulkMailPayload = (
   templateId: string,
   leads: Prospect[],
@@ -18,55 +27,31 @@ const buildBulkMailPayload = (
   systemVariables: Record<string, string>,
   getLeadFieldValue: (lead: any, path: string) => string
 ) => {
-  // Separate variables by mode
   const commonVariables: Record<string, string> = { ...systemVariables };
   const differentModeVars: string[] = [];
   const predefinedModeVars: Array<{ name: string; fieldMapping: string }> = [];
 
   Object.entries(variableConfig).forEach(([varName, config]) => {
-    if (config.mode === "common") {
-      commonVariables[varName] = config.commonValue || "";
-    } else if (config.mode === "different") {
-      differentModeVars.push(varName);
-    } else if (config.mode === "predefined") {
-      predefinedModeVars.push({
-        name: varName,
-        fieldMapping: config.fieldMapping || "",
-      });
-    }
+    if (config.mode === "common") commonVariables[varName] = config.commonValue || "";
+    else if (config.mode === "different") differentModeVars.push(varName);
+    else if (config.mode === "predefined")
+      predefinedModeVars.push({ name: varName, fieldMapping: config.fieldMapping || "" });
   });
 
-  // Build recipients with per-lead variables
   const recipients = leads.map((lead) => {
     const recipientVariables: Record<string, string> = {};
-
-    // Add different mode variables
-    differentModeVars.forEach((varName) => {
-      const config = variableConfig[varName];
-      recipientVariables[varName] = config.perLeadValues?.[lead.id] || "";
+    differentModeVars.forEach((v) => {
+      recipientVariables[v] = variableConfig[v].perLeadValues?.[lead.id] || "";
     });
-
-    // Add predefined (mapped) variables
     predefinedModeVars.forEach(({ name, fieldMapping }) => {
       recipientVariables[name] = getLeadFieldValue(lead, fieldMapping);
     });
-
-    return {
-      email: lead.email,
-      variables: recipientVariables,
-    };
+    return { email: lead.email, variables: recipientVariables };
   });
 
-  return {
-    template_id: templateId,
-    variables: commonVariables,
-    recipients,
-    cc_emails: [],
-    bcc_emails: [],
-  };
+  return { template_id: templateId, variables: commonVariables, recipients, cc_emails: [], bcc_emails: [] };
 };
 
-// 🔹 Fetch templates
 const getAllTemplates = async () => {
   try {
     const result = await MailService.getAllTemplates(1, 50, "");
@@ -75,32 +60,27 @@ const getAllTemplates = async () => {
       return Array.isArray(data) ? data : [];
     }
     return [];
-  } catch (error) {
+  } catch {
     return [];
   }
 };
 
-// 🔹 Constant variables (ENUM type)
 const CONSTANT_VARS: Record<string, string> = {};
 
-// 🔹 Replace {{variable}}
-const replaceVariables = (
-  template: string,
-  variables: Record<string, string>
-) => {
+const replaceVariables = (template: string, variables: Record<string, string>) => {
   let result = template;
   Object.keys(variables).forEach((key) => {
-    const regex = new RegExp(`{{${key}}}`, "g");
-    result = result.replace(regex, variables[key] || "");
+    result = result.replace(new RegExp(`{{${key}}}`, "g"), variables[key] || "");
   });
   return result;
 };
 
-// 🔹 Extract variables from template
 const extractVariables = (template: string): string[] => {
   const matches = template.match(/{{(\w+)}}/g) || [];
   return [...new Set(matches.map((m) => m.replace(/{{|}}/g, "")))];
 };
+
+// ── Types ──────────────────────────────────────────────────────────────────
 
 type VariableMode = "common" | "different" | "predefined";
 
@@ -115,14 +95,17 @@ interface VariableConfig {
   [variableName: string]: VariableSettings;
 }
 
-const BulkMailModal = ({
-  leads,
-  onClose,
-}: {
-  leads: Prospect[];
-  onClose: () => void;
-}) => {
-  // ============ STATE ============
+// ── Shared input classes ───────────────────────────────────────────────────
+
+const inputCls =
+  "w-full px-3.5 py-2.5 rounded-lg border border-emerald-100 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-800 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-300 dark:focus:ring-emerald-500 transition";
+
+const selectCls =
+  "w-full px-3.5 py-2.5 rounded-lg border border-emerald-100 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-800 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 dark:focus:ring-emerald-500 transition disabled:opacity-50 disabled:cursor-not-allowed";
+
+// ── Component ──────────────────────────────────────────────────────────────
+
+const BulkMailModal = ({ leads, onClose }: { leads: Prospect[]; onClose: () => void }) => {
   const [subject, setSubject] = useState("");
   const [mailText, setMailText] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -135,332 +118,244 @@ const BulkMailModal = ({
   const [extractedVariables, setExtractedVariables] = useState<string[]>([]);
   const [variableConfig, setVariableConfig] = useState<VariableConfig>({});
 
-  const [activeTab, setActiveTab] = useState<"template" | "variables" | "preview">(
-    "template"
-  );
+  const [activeTab, setActiveTab] = useState<"template" | "variables" | "preview">("template");
 
-  // ============ EFFECTS ============
+  // ── Effects ──
 
   useEffect(() => {
-    const fetchTemplates = async () => {
+    (async () => {
       try {
         setIsLoadingTemplates(true);
         const result = await getAllTemplates();
         setTemplates(Array.isArray(result) ? result : []);
-      } catch (error) {
+      } catch {
         toast.error("Failed to load templates");
       } finally {
         setIsLoadingTemplates(false);
       }
-    };
-    fetchTemplates();
+    })();
   }, []);
 
   useEffect(() => {
-    if (selectedTemplate) {
-      const subjectVars = extractVariables(selectedTemplate.subject || "");
-      const bodyVars = extractVariables(selectedTemplate.html_body || "");
-      const allVars = [...new Set([...subjectVars, ...bodyVars])];
-
-      setExtractedVariables(allVars);
-
-      const newConfig: VariableConfig = {};
-      allVars.forEach((varName) => {
-        newConfig[varName] = {
-          mode: "common",
-          commonValue: "",
-          perLeadValues: {},
-        };
-      });
-      setVariableConfig(newConfig);
-    }
+    if (!selectedTemplate) return;
+    const allVars = [
+      ...new Set([
+        ...extractVariables(selectedTemplate.subject || ""),
+        ...extractVariables(selectedTemplate.html_body || ""),
+      ]),
+    ];
+    setExtractedVariables(allVars);
+    const cfg: VariableConfig = {};
+    allVars.forEach((v) => { cfg[v] = { mode: "common", commonValue: "", perLeadValues: {} }; });
+    setVariableConfig(cfg);
   }, [selectedTemplate]);
 
-  // ============ HANDLERS ============
+  // ── Handlers ──
 
-  const handleTemplateSelect = (templateId: string) => {
-    const selected = templates.find((t) => t.id === templateId);
-    if (selected) {
-      setSelectedTemplate(selected);
-      setSubject(selected.subject || "");
-      setMailText(selected.html_body || "");
-    }
+  const handleTemplateSelect = (id: string) => {
+    const t = templates.find((t) => t.id === id);
+    if (t) { setSelectedTemplate(t); setSubject(t.subject || ""); setMailText(t.html_body || ""); }
   };
 
-  const handleVariableModeChange = (varName: string, newMode: VariableMode) => {
+  const handleVariableModeChange = (varName: string, newMode: VariableMode) =>
     setVariableConfig((prev) => ({
       ...prev,
-      [varName]: {
-        mode: newMode,
-        commonValue: "",
-        fieldMapping: "",
-        perLeadValues: {},
-      },
+      [varName]: { mode: newMode, commonValue: "", fieldMapping: "", perLeadValues: {} },
     }));
-  };
 
-  const handleCommonValueChange = (varName: string, value: string) => {
+  const handleCommonValueChange = (varName: string, value: string) =>
+    setVariableConfig((prev) => ({ ...prev, [varName]: { ...prev[varName], commonValue: value } }));
+
+  const handleFieldMappingChange = (varName: string, fieldPath: string) =>
+    setVariableConfig((prev) => ({ ...prev, [varName]: { ...prev[varName], fieldMapping: fieldPath } }));
+
+  const handlePerLeadValueChange = (varName: string, leadId: string, value: string) =>
     setVariableConfig((prev) => ({
       ...prev,
-      [varName]: {
-        ...prev[varName],
-        commonValue: value,
-      },
+      [varName]: { ...prev[varName], perLeadValues: { ...prev[varName].perLeadValues, [leadId]: value } },
     }));
-  };
-
-  const handleFieldMappingChange = (varName: string, fieldPath: string) => {
-    setVariableConfig((prev) => ({
-      ...prev,
-      [varName]: {
-        ...prev[varName],
-        fieldMapping: fieldPath,
-      },
-    }));
-  };
-
-  const handlePerLeadValueChange = (
-    varName: string,
-    leadId: string,
-    value: string
-  ) => {
-    setVariableConfig((prev) => ({
-      ...prev,
-      [varName]: {
-        ...prev[varName],
-        perLeadValues: {
-          ...prev[varName].perLeadValues,
-          [leadId]: value,
-        },
-      },
-    }));
-  };
 
   const getLeadFieldValue = (lead: any, path: string): string => {
     const keys = path.replace("lead.", "").split(".");
-    let value = lead;
-    for (const key of keys) {
-      value = value?.[key];
-    }
-    return value || "";
+    let val = lead;
+    for (const k of keys) val = val?.[k];
+    return val || "";
   };
 
-  const getLeadFields = (): Array<{ name: string; value: string }> => {
-    if (leads.length === 0) return [];
-    const firstLead = leads[0];
-    return (Object.keys(firstLead) as (keyof Prospect)[])
-      .filter((key) => typeof firstLead[key] === "string")
-      .map((field) => ({
-        name: field,
-        value: `lead.${field}`,
-      }));
+  const getLeadFields = () => {
+    if (!leads.length) return [];
+    return (Object.keys(leads[0]) as (keyof Prospect)[])
+      .filter((k) => typeof leads[0][k] === "string")
+      .map((field) => ({ name: field, value: `lead.${field}` }));
   };
 
-  const getUniqueFieldValues = (fieldPath: string): string[] => {
-    const values = leads
-      .map((lead) => getLeadFieldValue(lead, fieldPath))
-      .filter((v) => v);
-    return [...new Set(values)];
-  };
+  const getUniqueFieldValues = (fieldPath: string) =>
+    [...new Set(leads.map((l) => getLeadFieldValue(l, fieldPath)).filter(Boolean))];
 
   const leadFields = getLeadFields();
 
-  const isVariablesComplete = (): boolean => {
-    return extractedVariables.every((varName) => {
-      const config = variableConfig[varName];
-      if (!config) return false;
-
-      if (config.mode === "common") {
-        return config.commonValue?.trim() !== "";
-      } else if (config.mode === "predefined") {
-        return config.fieldMapping !== "";
-      } else if (config.mode === "different") {
-        return leads.every(
-          (lead) =>
-            config.perLeadValues?.[lead.id]?.trim() !== ""
-        );
-      }
+  const isVariablesComplete = () =>
+    extractedVariables.every((varName) => {
+      const c = variableConfig[varName];
+      if (!c) return false;
+      if (c.mode === "common") return !!c.commonValue?.trim();
+      if (c.mode === "predefined") return !!c.fieldMapping;
+      if (c.mode === "different") return leads.every((l) => !!c.perLeadValues?.[l.id]?.trim());
       return false;
     });
-  };
 
-  // ============ SEND EMAILS ============
+  // ── Send ──
+
   const handleSend = async () => {
-    if (!subject.trim() || !mailText.trim()) {
-      toast.warning("Please fill in subject and message");
-      return;
-    }
-
-    // Validate variables only if template has variables
-    if (extractedVariables.length > 0 && !isVariablesComplete()) {
-      toast.warning("Please configure all variables");
-      return;
-    }
+    if (!subject.trim() || !mailText.trim()) { toast.warning("Please fill in subject and message"); return; }
+    if (extractedVariables.length > 0 && !isVariablesComplete()) { toast.warning("Please configure all variables"); return; }
 
     setIsSending(true);
-
     try {
       const payload = buildBulkMailPayload(
-        selectedTemplate?.id || "",
-        leads,
-        variableConfig,
-        CONSTANT_VARS,
-        getLeadFieldValue
+        selectedTemplate?.id || "", leads, variableConfig, CONSTANT_VARS, getLeadFieldValue
       );
       const response = await MailService.bulkMail(payload);
       const result = response.data;
-
       if (result?.success) {
-        const successCount = result?.data?.success_count || 0;
-        const failedCount = result?.data?.failed_count || 0;
-
+        const s = result?.data?.success_count || 0;
+        const f = result?.data?.failed_count || 0;
         setSent(true);
-
-        if (failedCount === 0) {
-          toast.success(` All ${successCount} emails sent successfully`);
-        } else if (successCount > 0) {
-          toast.warning(` ${successCount} sent, ${failedCount} failed`);
-        } else {
-          toast.error(` All emails failed to send`);
-        }
+        if (f === 0) toast.success(`All ${s} emails sent successfully`);
+        else if (s > 0) toast.warning(`${s} sent, ${f} failed`);
+        else toast.error("All emails failed to send");
         setTimeout(onClose, 1500);
       } else {
         toast.error(result?.message || "Failed to send emails");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to send emails");
     } finally {
       setIsSending(false);
     }
   };
 
-  // ============ RENDER ============
-  return (
-    <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-4xl h-[95vh] flex flex-col">
+  // ── Render ──
 
-        {/* Header */}
-        <div className="bg-linear-to-r from-green-600 via-green-500 to-emerald-400 dark:from-green-700 dark:via-green-600 dark:to-emerald-500 px-6 py-5 rounded-t-xl flex items-center justify-between shrink-0">
+  return (
+    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl ring-1 ring-emerald-100 dark:ring-slate-700 w-full max-w-4xl h-[95vh] flex flex-col overflow-hidden">
+
+        {/* ── Header ── */}
+        <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-slate-800 dark:to-slate-800 border-b border-emerald-100 dark:border-slate-700 px-6 py-4 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="bg-white/20 dark:bg-black/20 p-2 rounded-lg">
-              <MdEmail className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
+              <MdEmail className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">Bulk Email Campaign</h3>
-              <p className="text-sm text-green-50 dark:text-green-100">
-                {leads.length} recipient{leads.length !== 1 ? "s" : ""} • {extractedVariables.length} variable{extractedVariables.length !== 1 ? "s" : ""}
+              <h3 className="text-base font-bold text-gray-900 dark:text-white tracking-tight">
+                Bulk Email Campaign
+              </h3>
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-0.5">
+                {leads.length} recipient{leads.length !== 1 ? "s" : ""}
+                {extractedVariables.length > 0 &&
+                  ` · ${extractedVariables.length} variable${extractedVariables.length !== 1 ? "s" : ""}`}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-white/80 dark:text-white/60 hover:text-white dark:hover:text-white/80 transition p-1"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-emerald-50 dark:hover:bg-slate-700 transition"
           >
-            <IoClose className="w-6 h-6" />
+            <IoClose className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Tabs Navigation */}
+        {/* ── Tab Nav ── */}
         {selectedTemplate && (
-          <div className="flex gap-0 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-6">
-            <button
-              onClick={() => setActiveTab("template")}
-              className={`px-4 py-3 font-medium text-sm border-b-2 transition flex items-center gap-2 ${activeTab === "template"
-                ? "border-green-600 dark:border-green-500 text-green-600 dark:text-green-400"
-                : "border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-                }`}
-            >
-              <MdDescription className="w-4 h-4" /> Template
-            </button>
-            {extractedVariables.length > 0 && (
+          <div className="flex border-b border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-900 px-6 shrink-0">
+            {(
+              [
+                { key: "template", icon: <MdDescription className="w-3.5 h-3.5" />, label: "Template" },
+                ...(extractedVariables.length > 0
+                  ? [{ key: "variables", icon: <MdSettings className="w-3.5 h-3.5" />, label: `Variables (${extractedVariables.length})` }]
+                  : []),
+                { key: "preview", icon: <MdVisibility className="w-3.5 h-3.5" />, label: "Preview" },
+              ] as { key: "template" | "variables" | "preview"; icon: React.ReactNode; label: string }[]
+            ).map((tab) => (
               <button
-                onClick={() => setActiveTab("variables")}
-                className={`px-4 py-3 font-medium text-sm border-b-2 transition flex items-center gap-2 ${activeTab === "variables"
-                  ? "border-green-600 dark:border-green-500 text-green-600 dark:text-green-400"
-                  : "border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-                  }`}
-              >
-                <MdSettings className="w-4 h-4" /> Variables ({extractedVariables.length})
-              </button>
-            )}
-            <button
-              onClick={() => setActiveTab("preview")}
-              className={`px-4 py-3 font-medium text-sm border-b-2 transition flex items-center gap-2 ${activeTab === "preview"
-                ? "border-green-600 dark:border-green-500 text-green-600 dark:text-green-400"
-                : "border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap ${
+                  activeTab === tab.key
+                    ? "border-emerald-500 text-emerald-600 dark:text-emerald-400"
+                    : "border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
                 }`}
-            >
-              <MdVisibility className="w-4 h-4" /> Preview
-            </button>
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
           </div>
         )}
 
-        {/* Content Area */}
-        <div className="flex-1 overflow-y-auto">
+        {/* ── Content ── */}
+        <div className="flex-1 overflow-y-auto bg-gray-50/40 dark:bg-slate-900">
 
           {/* TEMPLATE TAB */}
           {activeTab === "template" && (
             <div className="p-6 space-y-5">
               <div>
-                <label className="text-sm font-semibold text-gray-900 dark:text-white block mb-2">
-                  Select Email Template
+                <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider block mb-2">
+                  Email Template
                 </label>
                 <select
                   value={selectedTemplate?.id || ""}
                   onChange={(e) => handleTemplateSelect(e.target.value)}
                   disabled={isLoadingTemplates}
-                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 dark:text-white text-gray-900 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={selectCls}
                 >
                   <option value="">
-                    {isLoadingTemplates ? "Loading templates..." : "Choose a template..."}
+                    {isLoadingTemplates ? "Loading templates…" : "Choose a template…"}
                   </option>
-                  {Array.isArray(templates) && templates.length > 0
-                    ? templates.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name}
-                      </option>
-                    ))
-                    : !isLoadingTemplates && (
-                      <option disabled>No templates available</option>
-                    )}
+                  {templates.map((t) => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                  {!isLoadingTemplates && templates.length === 0 && (
+                    <option disabled>No templates available</option>
+                  )}
                 </select>
               </div>
 
               {selectedTemplate && (
                 <>
                   {extractedVariables.length === 0 && (
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
-                      <p className="text-sm text-blue-900 dark:text-blue-200">
-                        ✅ No variables found in this template. You can send the email directly to all leads.
+                    <div className="flex items-start gap-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 rounded-xl p-4">
+                      <MdCheckCircle className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+                      <p className="text-sm text-emerald-800 dark:text-emerald-300">
+                        No variables found in this template. You can send directly to all leads.
                       </p>
                     </div>
                   )}
 
-                  {/* Subject */}
                   <div>
-                    <label className="flex text-sm font-semibold text-gray-900 dark:text-white  mb-2 items-center gap-2">
-                      <MdEmail className="w-4 h-4" />Subject
+                    <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                      <MdEmail className="w-3.5 h-3.5" /> Subject
                     </label>
                     <input
                       type="text"
                       value={subject}
-                      disabled= {true}
-                      className="cursor-not-allowed w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 dark:text-white text-gray-900 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 outline-none transition"
-                      placeholder="Email subject..."
+                      disabled
+                      className={`${inputCls} cursor-not-allowed opacity-70`}
+                      placeholder="Email subject…"
                     />
                     {extractedVariables.length > 0 && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                        Variables found: {extractedVariables.map(v => `{{${v}}}`).join(", ")}
+                      <p className="text-[11px] text-emerald-600 dark:text-emerald-500 mt-1.5 font-medium">
+                        Variables: {extractedVariables.map((v) => `{{${v}}}`).join(", ")}
                       </p>
                     )}
                   </div>
 
-                  {/* Message */}
                   <div>
-                    <label className="text-sm font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-                      <MdEdit className="w-4 h-4" /> Message Content
+                    <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                      <MdEdit className="w-3.5 h-3.5" /> Message Content
                     </label>
-                    <div className="dark:bg-slate-800 rounded-lg overflow-hidden border border-gray-300 dark:border-slate-600">
+                    <div className="rounded-xl overflow-hidden border border-emerald-100 dark:border-slate-600 bg-white dark:bg-slate-800">
                       <RichEditor value={mailText} onChange={setMailText} />
                     </div>
                   </div>
@@ -471,186 +366,149 @@ const BulkMailModal = ({
 
           {/* VARIABLES TAB */}
           {activeTab === "variables" && extractedVariables.length > 0 && (
-            <div className="p-6 space-y-6">
-              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                <p className="text-sm text-green-900 dark:text-green-200">
-                  ℹ️ Configure each variable individually. Choose how each variable should be populated for all leads.
+            <div className="p-6 space-y-5">
+              <div className="flex items-start gap-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 rounded-xl p-4">
+                <MdSettings className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+                <p className="text-sm text-emerald-800 dark:text-emerald-300">
+                  Configure how each template variable gets populated for every lead.
                 </p>
               </div>
 
-              {/* Variables List */}
-              <div className="space-y-5">
+              <div className="space-y-4">
                 {extractedVariables.map((varName) => {
                   const config = variableConfig[varName] || { mode: "common" };
-                  return (
-                    <div key={varName} className="border border-gray-300 dark:border-slate-600 rounded-lg p-4 bg-gray-50 dark:bg-slate-800">
+                  const isDone =
+                    (config.mode === "common" && !!config.commonValue?.trim()) ||
+                    (config.mode === "predefined" && !!config.fieldMapping) ||
+                    (config.mode === "different" && leads.every((l) => !!config.perLeadValues?.[l.id]?.trim()));
 
-                      {/* Variable Name */}
-                      <div className="mb-4">
-                        <p className="text-sm font-bold text-gray-900 dark:text-white">
-                          Variable: <code className="text-green-600 dark:text-green-400">{`{{${varName}}}`}</code>
-                        </p>
+                  return (
+                    <div
+                      key={varName}
+                      className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 overflow-hidden"
+                    >
+                      {/* Variable header */}
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50 dark:border-slate-700 bg-gray-50/60 dark:bg-slate-800/80">
+                        <code className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded text-xs font-mono">
+                          {`{{${varName}}}`}
+                        </code>
+                        {isDone && (
+                          <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                            <MdCheckCircle className="w-3.5 h-3.5" /> Configured
+                          </span>
+                        )}
                       </div>
 
-                      {/* Mode Selection */}
-                      <div className="space-y-2 mb-4">
-                        <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">How to fill this variable?</p>
-                        <div className="grid grid-cols-3 gap-2">
-
-                          {/* Common Mode */}
+                      <div className="p-4 space-y-4">
+                        {/* Mode buttons */}
+                        <div className="flex gap-2">
+                          {/* Common */}
                           <button
-                            onClick={() =>
-                              handleVariableModeChange(varName, "common")
-                            }
-                            className={`p-3 rounded-lg border-2 transition text-left ${config.mode === "common"
-                              ? "border-green-500 bg-green-50 dark:bg-green-900/20 dark:border-green-600"
-                              : "border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500 hover:bg-gray-100 dark:hover:bg-slate-700"
-                              }`}
+                            type="button"
+                            onClick={() => handleVariableModeChange(varName, "common")}
+                            className={`flex-1 p-3 rounded-xl border-2 text-left transition-all duration-150 ${
+                              config.mode === "common"
+                                ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-600"
+                                : "border-gray-100 dark:border-slate-600 bg-white dark:bg-slate-700 hover:border-emerald-200 dark:hover:border-slate-500"
+                            }`}
                           >
-                            <p className="text-xs font-bold text-gray-900 dark:text-white">🔵 Common</p>
-                            <p className="text-[11px] text-gray-600 dark:text-gray-400">Same for all</p>
+                            <p className="text-xs font-bold text-gray-800 dark:text-white">🔵 Common</p>
+                            <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">Same for all</p>
                           </button>
-
-                          {/* Different Mode */}
+                          {/* Different */}
                           <button
-                            onClick={() =>
-                              handleVariableModeChange(varName, "different")
-                            }
-                            className={`p-3 rounded-lg border-2 transition text-left ${config.mode === "different"
-                              ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20 dark:border-purple-600"
-                              : "border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500 hover:bg-gray-100 dark:hover:bg-slate-700"
-                              }`}
+                            type="button"
+                            onClick={() => handleVariableModeChange(varName, "different")}
+                            className={`flex-1 p-3 rounded-xl border-2 text-left transition-all duration-150 ${
+                              config.mode === "different"
+                                ? "border-violet-400 bg-violet-50 dark:bg-violet-900/20 dark:border-violet-600"
+                                : "border-gray-100 dark:border-slate-600 bg-white dark:bg-slate-700 hover:border-emerald-200 dark:hover:border-slate-500"
+                            }`}
                           >
-                            <p className="text-xs font-bold text-gray-900 dark:text-white">👥 Different</p>
-                            <p className="text-[11px] text-gray-600 dark:text-gray-400">Per lead</p>
+                            <p className="text-xs font-bold text-gray-800 dark:text-white">👥 Different</p>
+                            <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">Per lead</p>
                           </button>
-
-                          {/* Predefined Mode */}
+                          {/* Predefined */}
                           <button
-                            onClick={() =>
-                              handleVariableModeChange(varName, "predefined")
-                            }
-                            className={`p-3 rounded-lg border-2 transition text-left ${config.mode === "predefined"
-                              ? "border-orange-500 bg-orange-50 dark:bg-orange-900/20 dark:border-orange-600"
-                              : "border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500 hover:bg-gray-100 dark:hover:bg-slate-700"
-                              }`}
+                            type="button"
+                            onClick={() => handleVariableModeChange(varName, "predefined")}
+                            className={`flex-1 p-3 rounded-xl border-2 text-left transition-all duration-150 ${
+                              config.mode === "predefined"
+                                ? "border-amber-400 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-600"
+                                : "border-gray-100 dark:border-slate-600 bg-white dark:bg-slate-700 hover:border-emerald-200 dark:hover:border-slate-500"
+                            }`}
                           >
-                            <p className="text-xs font-bold text-gray-900 dark:text-white">📋 Predefined</p>
-                            <p className="text-[11px] text-gray-600 dark:text-gray-400">From lead data</p>
+                            <p className="text-xs font-bold text-gray-800 dark:text-white">📋 Predefined</p>
+                            <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">From lead data</p>
                           </button>
                         </div>
-                      </div>
 
-                      {/* Mode-specific Input */}
-                      {config.mode === "common" && (
-                        <div>
-                          <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-2">
-                            Enter value for all leads
-                          </label>
+                        {/* Common input */}
+                        {config.mode === "common" && (
                           <input
                             type="text"
                             placeholder={`Value for ${varName}`}
                             value={config.commonValue || ""}
-                            onChange={(e) =>
-                              handleCommonValueChange(varName, e.target.value)
-                            }
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 dark:text-white text-gray-900 text-sm focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 outline-none"
+                            onChange={(e) => handleCommonValueChange(varName, e.target.value)}
+                            className={inputCls}
                           />
-                        </div>
-                      )}
+                        )}
 
-                      {config.mode === "different" && (
-                        <div>
-                          <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-3">
-                            Enter value for each lead
-                          </label>
-                          <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
+                        {/* Different inputs */}
+                        {config.mode === "different" && (
+                          <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
                             {leads.map((lead) => (
                               <div key={lead.id} className="flex items-center gap-2">
-                                <span className="text-xs font-medium text-gray-600 dark:text-gray-400 min-w-fit truncate">
-                                  {lead.fullName || lead.email}:
+                                <span className="text-xs text-gray-500 dark:text-gray-400 min-w-[100px] truncate font-medium">
+                                  {lead.fullName || lead.email}
                                 </span>
                                 <input
                                   type="text"
                                   placeholder={varName}
-                                  value={
-                                    config.perLeadValues?.[lead.id] || ""
-                                  }
-                                  onChange={(e) =>
-                                    handlePerLeadValueChange(
-                                      varName,
-                                      lead.id,
-                                      e.target.value
-                                    )
-                                  }
-                                  className="flex-1 px-2 py-1.5 border border-gray-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 dark:text-white text-gray-900 text-sm focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 outline-none"
+                                  value={config.perLeadValues?.[lead.id] || ""}
+                                  onChange={(e) => handlePerLeadValueChange(varName, lead.id, e.target.value)}
+                                  className={`${inputCls} flex-1 focus:ring-violet-300 dark:focus:ring-violet-500`}
                                 />
                               </div>
                             ))}
                           </div>
-                        </div>
-                      )}
+                        )}
 
-                      {config.mode === "predefined" && (
-                        <div>
-                          <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-2">
-                            Select lead field to use
-                          </label>
-                          <select
-                            value={config.fieldMapping || ""}
-                            onChange={(e) =>
-                              handleFieldMappingChange(varName, e.target.value)
-                            }
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 dark:text-white text-gray-900 text-sm focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 outline-none"
-                          >
-                            <option value="">Select a field...</option>
-                            {leadFields.map((field) => {
-                              const sampleValue = getLeadFieldValue(leads[0], field.value);
-                              return (
-                                <option key={field.value} value={field.value}>
-                                  {field.name}
-                                  {sampleValue ? ` (e.g., "${sampleValue}")` : ""}
-                                </option>
-                              );
-                            })}
-                          </select>
+                        {/* Predefined select */}
+                        {config.mode === "predefined" && (
+                          <div className="space-y-3">
+                            <select
+                              value={config.fieldMapping || ""}
+                              onChange={(e) => handleFieldMappingChange(varName, e.target.value)}
+                              className={`${selectCls} focus:ring-amber-300 dark:focus:ring-amber-500`}
+                            >
+                              <option value="">Select a field…</option>
+                              {leadFields.map((field) => {
+                                const sample = getLeadFieldValue(leads[0], field.value);
+                                return (
+                                  <option key={field.value} value={field.value}>
+                                    {field.name}{sample ? ` (e.g. "${sample}")` : ""}
+                                  </option>
+                                );
+                              })}
+                            </select>
 
-                          {/* Show unique values available in this field */}
-                          {config.fieldMapping && (
-                            <div className="mt-3 p-2 bg-orange-50 dark:bg-orange-900/20 rounded border border-orange-200 dark:border-orange-800">
-                              <p className="text-xs font-semibold text-orange-900 dark:text-orange-300 mb-2">
-                                Available values:
-                              </p>
-                              <div className="flex flex-wrap gap-1">
-                                {getUniqueFieldValues(config.fieldMapping).map(
-                                  (value, idx) => (
-                                    <span
-                                      key={idx}
-                                      className="text-xs px-2 py-1 bg-white dark:bg-orange-900/40 text-orange-900 dark:text-orange-200 rounded border border-orange-300 dark:border-orange-700"
-                                    >
-                                      {value}
+                            {config.fieldMapping && (
+                              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/50 rounded-lg p-3">
+                                <p className="text-xs font-semibold text-amber-700 dark:text-amber-300 mb-2">
+                                  Sample values
+                                </p>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {getUniqueFieldValues(config.fieldMapping).map((val, i) => (
+                                    <span key={i} className="text-xs px-2 py-0.5 bg-white dark:bg-amber-900/40 text-amber-700 dark:text-amber-200 rounded-full border border-amber-200 dark:border-amber-700">
+                                      {val}
                                     </span>
-                                  )
-                                )}
+                                  ))}
+                                </div>
                               </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Status Indicator */}
-                      <div className="mt-3 flex items-center gap-2 text-xs">
-                        {config.mode === "common" && config.commonValue?.trim() && (
-                          <><MdCheckCircle className="w-4 h-4 text-green-600 dark:text-green-500" /> <span className="text-green-700 dark:text-green-400">Configured</span></>
+                            )}
+                          </div>
                         )}
-                        {config.mode === "predefined" && config.fieldMapping && (
-                          <><MdCheckCircle className="w-4 h-4 text-green-600 dark:text-green-500" /> <span className="text-green-700 dark:text-green-400">Mapped to {config.fieldMapping.replace("lead.", "")}</span></>
-                        )}
-                        {config.mode === "different" && leads.every(
-                          (lead) => config.perLeadValues?.[lead.id]?.trim()
-                        ) && (
-                            <><MdCheckCircle className="w-4 h-4 text-green-600 dark:text-green-500" /> <span className="text-green-700 dark:text-green-400">All leads filled</span></>
-                          )}
                       </div>
                     </div>
                   );
@@ -660,60 +518,50 @@ const BulkMailModal = ({
           )}
 
           {/* PREVIEW TAB */}
-          {activeTab === "preview" && extractedVariables.length > 0 && (
+          {activeTab === "preview" && (
             <div className="p-6 space-y-4">
-              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                <p className="text-sm text-green-900 dark:text-green-200 flex items-center gap-2">
-                  <MdVisibility className="w-4 h-4" />
-                  Preview how the email will look for each lead with all variables replaced.
+              <div className="flex items-start gap-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 rounded-xl p-4">
+                <MdVisibility className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+                <p className="text-sm text-emerald-800 dark:text-emerald-300">
+                  Preview how the email renders per lead with all variables resolved.
                 </p>
               </div>
 
-              {/* Preview for each lead */}
-              <div className="space-y-4 max-h-full overflow-y-auto">
+              <div className="space-y-4">
                 {leads.map((lead) => {
                   const variables: Record<string, string> = { ...CONSTANT_VARS };
-
                   extractedVariables.forEach((varName) => {
-                    const config = variableConfig[varName];
-                    if (config.mode === "common") {
-                      variables[varName] = config.commonValue || "";
-                    } else if (config.mode === "predefined") {
-                      variables[varName] = getLeadFieldValue(lead, config.fieldMapping || "");
-                    } else if (config.mode === "different") {
-                      variables[varName] = config.perLeadValues?.[lead.id] || "";
-                    }
+                    const c = variableConfig[varName];
+                    if (c.mode === "common") variables[varName] = c.commonValue || "";
+                    else if (c.mode === "predefined") variables[varName] = getLeadFieldValue(lead, c.fieldMapping || "");
+                    else if (c.mode === "different") variables[varName] = c.perLeadValues?.[lead.id] || "";
                   });
 
-                  const previewSubject = replaceVariables(subject, variables);
-                  const previewHtml = replaceVariables(mailText, variables);
-
                   return (
-                    <div key={lead.id} className="border border-gray-300 dark:border-slate-600 rounded-lg overflow-hidden">
-                      <div className="bg-gray-100 dark:bg-slate-800 px-4 py-3 border-b border-gray-300 dark:border-slate-600">
-                        <p className="font-semibold text-gray-900 dark:text-white text-sm">
-                          {lead.fullName || lead.email}
-                        </p>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">{lead.email}</p>
+                    <div key={lead.id} className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 overflow-hidden">
+                      <div className="flex items-center gap-3 px-4 py-3 bg-emerald-50/60 dark:bg-slate-800 border-b border-emerald-100 dark:border-slate-700">
+                        <div className="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                          {(lead.fullName || lead.email)?.[0]?.toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-800 dark:text-white">{lead.fullName || lead.email}</p>
+                          <p className="text-xs text-gray-400 dark:text-gray-500">{lead.email}</p>
+                        </div>
                       </div>
 
-                      <div className="p-4 space-y-3 bg-white dark:bg-slate-900">
+                      <div className="p-4 space-y-3">
                         <div>
-                          <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Subject:</p>
-                          <p className="text-sm bg-gray-50 dark:bg-slate-800 p-2 rounded text-gray-900 dark:text-white border border-gray-200 dark:border-slate-600">
-                            {previewSubject || "(empty)"}
+                          <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5">Subject</p>
+                          <p className="text-sm bg-gray-50 dark:bg-slate-700 border border-gray-100 dark:border-slate-600 rounded-lg px-3 py-2 text-gray-800 dark:text-white">
+                            {replaceVariables(subject, variables) || "(empty)"}
                           </p>
                         </div>
-
                         <div>
-                          <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Message:</p>
-                          <div className="text-sm bg-gray-50 dark:bg-slate-800 p-3 rounded border border-gray-200 dark:border-slate-600 prose dark:prose-invert max-w-none text-gray-900 dark:text-gray-300">
-                            <div
-                              dangerouslySetInnerHTML={{
-                                __html: previewHtml || "(empty)",
-                              }}
-                            />
-                          </div>
+                          <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5">Message</p>
+                          <div
+                            className="text-sm bg-gray-50 dark:bg-slate-700 border border-gray-100 dark:border-slate-600 rounded-lg px-3 py-3 text-gray-800 dark:text-gray-200 prose dark:prose-invert max-w-none"
+                            dangerouslySetInnerHTML={{ __html: replaceVariables(mailText, variables) || "(empty)" }}
+                          />
                         </div>
                       </div>
                     </div>
@@ -724,75 +572,90 @@ const BulkMailModal = ({
           )}
         </div>
 
-        {/* Footer Actions */}
-        <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 shrink-0 rounded-b-xl">
-          <button
-            onClick={onClose}
-            disabled={isSending || sent}
-            className="px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-700 hover:bg-gray-100 dark:hover:bg-slate-600 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Cancel
-          </button>
+        {/* ── Footer ── */}
+        <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-900 shrink-0">
+          <p className="text-xs text-gray-400 dark:text-gray-500">
+            {leads.length} recipient{leads.length !== 1 ? "s" : ""} selected
+          </p>
 
-          {/* If no variables, show Send button directly */}
-          {extractedVariables.length === 0 && activeTab === "template" && (
+          <div className="flex gap-2">
             <button
-              onClick={handleSend}
-              disabled={isSending || sent || !selectedTemplate}
-              className="px-6 py-2.5 bg-linear-to-r from-green-600 to-emerald-600 dark:from-green-700 dark:to-emerald-700 hover:from-green-700 hover:to-emerald-700 dark:hover:from-green-600 dark:hover:to-emerald-600 text-white rounded-lg transition font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={onClose}
+              disabled={isSending || sent}
+              className="px-4 py-2 rounded-lg border border-gray-200 dark:border-slate-600 text-sm font-medium text-gray-600 dark:text-gray-300 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSending ? (
-                <>
-                  <AiOutlineLoading3Quarters className="w-4 h-4 animate-spin" /> Sending...
-                </>
-              ) : sent ? (
-                <>
-                  <MdCheckCircle className="w-4 h-4" /> Sent!
-                </>
-              ) : (
-                `Send to ${leads.length} lead${leads.length > 1 ? "s" : ""}`
-              )}
+              Cancel
             </button>
-          )}
 
-          {/* If variables exist, show Preview then Send flow */}
-          {extractedVariables.length > 0 && (
-            <>
-              {activeTab === "variables" && (
-                <button
-                  onClick={() => setActiveTab("preview")}
-                  disabled={!isVariablesComplete() || isSending || sent}
-                  className="px-4 py-2.5 bg-green-600 dark:bg-green-700 hover:bg-green-700 dark:hover:bg-green-600 text-white rounded-lg transition font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Preview <MdArrowForward className="w-4 h-4" />
-                </button>
-              )}
+            {/* Direct send when no variables */}
+            {extractedVariables.length === 0 && activeTab === "template" && (
+              <SendButton
+                onClick={handleSend}
+                disabled={isSending || sent || !selectedTemplate}
+                isSending={isSending}
+                sent={sent}
+                count={leads.length}
+              />
+            )}
 
-              {activeTab === "preview" && (
-                <button
-                  onClick={handleSend}
-                  disabled={isSending || sent || !selectedTemplate}
-                  className="px-6 py-2.5 bg-linear-to-r from-green-600 to-emerald-600 dark:from-green-700 dark:to-emerald-700 hover:from-green-700 hover:to-emerald-700 dark:hover:from-green-600 dark:hover:to-emerald-600 text-white rounded-lg transition font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSending ? (
-                    <>
-                      <AiOutlineLoading3Quarters className="w-4 h-4 animate-spin" /> Sending...
-                    </>
-                  ) : sent ? (
-                    <>
-                      <MdCheckCircle className="w-4 h-4" /> Sent!
-                    </>
-                  ) : (
-                    `Send to ${leads.length} lead${leads.length > 1 ? "s" : ""}`
-                  )}
-                </button>
-              )}
-            </>
-          )}
+            {/* Variables flow */}
+            {extractedVariables.length > 0 && (
+              <>
+                {activeTab === "variables" && (
+                  <button
+                    onClick={() => setActiveTab("preview")}
+                    disabled={!isVariablesComplete() || isSending || sent}
+                    className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white text-sm font-medium flex items-center gap-1.5 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Preview <MdArrowForward className="w-4 h-4" />
+                  </button>
+                )}
+                {activeTab === "preview" && (
+                  <SendButton
+                    onClick={handleSend}
+                    disabled={isSending || sent || !selectedTemplate}
+                    isSending={isSending}
+                    sent={sent}
+                    count={leads.length}
+                  />
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 };
+
+// ── Send Button ────────────────────────────────────────────────────────────
+
+const SendButton = ({
+  onClick,
+  disabled,
+  isSending,
+  sent,
+  count,
+}: {
+  onClick: () => void;
+  disabled: boolean;
+  isSending: boolean;
+  sent: boolean;
+  count: number;
+}) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className="px-5 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white text-sm font-medium flex items-center gap-1.5 transition shadow-sm shadow-emerald-200 dark:shadow-none disabled:opacity-40 disabled:cursor-not-allowed"
+  >
+    {isSending ? (
+      <><AiOutlineLoading3Quarters className="w-4 h-4 animate-spin" /> Sending…</>
+    ) : sent ? (
+      <><MdCheckCircle className="w-4 h-4" /> Sent!</>
+    ) : (
+      `Send to ${count} lead${count !== 1 ? "s" : ""}`
+    )}
+  </button>
+);
 
 export default BulkMailModal;

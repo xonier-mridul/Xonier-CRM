@@ -549,14 +549,15 @@ getCategoryData();
                         <td className="first-letter:uppercase p-4">
                           <div className="flex gap-2 flex-wrap">
                             {item?.members?.map((item, index) => (
-                              <Link
+                              ( item.firstName ) && (
+                                <Link
                                 href={`/users/${item.id}`}
                                 key={index}
                                 className="bg-blue-100 hover:bg-blue-200 hover:scale-105 dark:bg-blue-200   text-blue-700 border border-blue-200 text-[13px] px-3 py-1 rounded-full transition-all capitalize duration"
                               >
                                 {" "}
                                 {item.firstName} {item.lastName}{" "}
-                              </Link>
+                              </Link>)
                             ))}
                           </div>
                         </td>

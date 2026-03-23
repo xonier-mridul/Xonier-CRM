@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Message } from "@/src/types/communication/message.types";
-import { MessageService}  from "@/src/services/communication/message.servicie";
+import { MessageService } from "@/src/services/communication/message.servicie";
 import {
   Phone,
   Send,
@@ -12,8 +12,38 @@ import {
   Clock,
   AlertCircle,
   DollarSign,
+  User,
+  Hash,
+  ArrowUpRight,
+  ArrowDownLeft,
+  RefreshCw,
+  Building2,
 } from "lucide-react";
+import { MessageSquareX } from "lucide-react";
 
+// ─── Status config ─────────────────────────────────────────────────────────
+const STATUS_STYLE: Record<string, { bg: string; text: string; dot: string }> = {
+  sent:      { bg: "bg-purple-50 dark:bg-purple-900/20", text: "text-purple-700 dark:text-purple-300", dot: "bg-purple-500" },
+  delivered: { bg: "bg-emerald-50 dark:bg-emerald-900/20", text: "text-emerald-700 dark:text-emerald-300", dot: "bg-emerald-500" },
+  queued:    { bg: "bg-amber-50 dark:bg-amber-900/20", text: "text-amber-700 dark:text-amber-300", dot: "bg-amber-500" },
+  failed:    { bg: "bg-red-50 dark:bg-red-900/20", text: "text-red-700 dark:text-red-300", dot: "bg-red-500" },
+  read:      { bg: "bg-blue-50 dark:bg-blue-900/20", text: "text-blue-700 dark:text-blue-300", dot: "bg-blue-500" },
+};
+
+const getStatus = (status: string) =>
+  STATUS_STYLE[status] ?? {
+    bg: "bg-gray-100 dark:bg-gray-700",
+    text: "text-gray-600 dark:text-gray-300",
+    dot: "bg-gray-400",
+  };
+
+const fmt = (val: string | null | undefined) => {
+  if (!val) return "—";
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? val : d.toLocaleString();
+};
+
+// ─── Page ──────────────────────────────────────────────────────────────────
 export default function Page() {
   const params = useParams();
   const id = params.id;
@@ -21,151 +51,208 @@ export default function Page() {
   const [data, setData] = useState<Message | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const statusStyle = {
-    sent: "bg-purple-100 text-purple-700",
-    delivered: "bg-green-100 text-green-700",
-    queued: "bg-yellow-100 text-yellow-700",
-    failed: "bg-red-100 text-red-700",
-  };
-
-  const fetchMessage = async () => {
-    try {
-      setIsLoading(true);
-
-      const res = await MessageService.getById(id);
-
-      if (res.data) {
-        setData(res.data.data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch message:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (id) fetchMessage();
+    if (!id) return;
+    (async () => {
+      try {
+        setIsLoading(true);
+        const res = await MessageService.getById(id);
+        if (res?.data) setData(res.data.data);
+      } catch (e) {
+        console.error("Failed to fetch message:", e);
+      } finally {
+        setIsLoading(false);
+      }
+    })();
   }, [id]);
+
+  // ── Loading ──
+  if (isLoading) {
+    return (
+      <div className="ml-72 mt-14 p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-28 rounded-xl bg-gray-100 dark:bg-gray-700" />
+          <div className="grid md:grid-cols-2 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-20 rounded-xl bg-gray-100 dark:bg-gray-700" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Not found ──
+  if (!isLoading && !data) {
+    return (
+      <div className="ml-72 mt-14 p-6 flex justify-center items-center min-h-[60vh]">
+        <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl p-8 shadow-xl border border-gray-100 dark:border-gray-700 text-center">
+          <div className="w-14 h-14 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <MessageSquareX size={26} className="text-red-500" />
+          </div>
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+            Message Not Found
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+            This SMS log doesn't exist or may have been removed.
+          </p>
+          <a
+            href="/emailManagement/sms"
+            className="inline-block px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition"
+          >
+            Go Back
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  const statusCfg = getStatus(data!.status);
 
   return (
     <div className="ml-72 mt-14 p-6 space-y-6">
 
-      {/* HEADER */}
-      <div className="bg-white dark:bg-gray-700 rounded-xl border border-slate-200 p-6 flex items-center justify-between shadow-sm">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-white">
-            SMS Details
-          </h2>
-          <p className="text-gray-500 dark:text-gray-300 text-sm">
-            View full information about this message
-          </p>
+      {/* ── Header ── */}
+      <div className="bg-white dark:bg-gray-700 rounded-xl border border-gray-100 dark:border-gray-600 p-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">SMS Details</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+              Full information about this message
+            </p>
+          </div>
+          <span
+            className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold w-fit ${statusCfg.bg} ${statusCfg.text}`}
+          >
+            <span className={`w-2 h-2 rounded-full ${statusCfg.dot}`} />
+            {data!.status.charAt(0).toUpperCase() + data!.status.slice(1)}
+          </span>
         </div>
 
-        {!isLoading && data && (
-          <span
-            className={`px-4 py-1 rounded-full text-sm font-medium ${
-              statusStyle[data.status as keyof typeof statusStyle]
+        {/* Quick stat strip */}
+        <div className="mt-5 pt-5 border-t border-gray-100 dark:border-gray-600 grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <StatPill
+            icon={data!.direction === "outbound" ? <ArrowUpRight size={14} /> : <ArrowDownLeft size={14} />}
+            label="Direction"
+            value={data!.direction ?? "—"}
+          />
+          <StatPill icon={<RefreshCw size={14} />} label="Channel" value={data!.channel ?? "—"} />
+          <StatPill
+            icon={<DollarSign size={14} />}
+            label="Cost"
+            value={data!.cost ? `${data!.cost} ${data!.cost_currency}` : `— ${data!.cost_currency ?? ""}`}
+          />
+          <StatPill
+            icon={<Hash size={14} />}
+            label="Conversation"
+            value={data!.conversation_id ?? "—"}
+          />
+        </div>
+      </div>
+
+      {/* ── Delivery Info ── */}
+      <Section title="Delivery Information" icon={<Send size={16} />}>
+        <div className="grid md:grid-cols-2 gap-4">
+          <InfoCard icon={<Phone size={16} />} label="To Number" value={data!.sent_to_number} />
+          <InfoCard icon={<Phone size={16} />} label="From Number" value={data!.sent_from_number} />
+          <InfoCard icon={<MessageSquare size={16} />} label="Direction" value={data!.direction} />
+          <InfoCard icon={<CheckCircle size={16} />} label="Channel" value={data!.channel} />
+          <InfoCard icon={<Hash size={16} />} label="Provider SID" value={data!.provider_message_sid} />
+          {data!.conversation_id && (
+            <InfoCard icon={<Hash size={16} />} label="Conversation ID" value={data!.conversation_id} />
+          )}
+        </div>
+      </Section>
+
+      {/* ── Timeline ── */}
+      <Section title="Timeline" icon={<Clock size={16} />}>
+        <div className="grid md:grid-cols-2 gap-4">
+          <InfoCard icon={<Clock size={16} />} label="Created At" value={fmt(data!.createdAt)} />
+          <InfoCard icon={<Send size={16} />} label="Sent At" value={fmt(data!.sent_at)} />
+          <InfoCard icon={<CheckCircle size={16} />} label="Delivered At" value={fmt(data!.delivered_at)} />
+          <InfoCard icon={<MessageSquare size={16} />} label="Read At" value={fmt(data!.read_at)} />
+          {data!.status === "failed" && (
+            <InfoCard icon={<AlertCircle size={16} />} label="Failed At" value={fmt(data!.failed_at)} />
+          )}
+          <InfoCard icon={<Clock size={16} />} label="Last Updated" value={fmt(data!.updatedAt)} />
+        </div>
+      </Section>
+
+      {/* ── Sent By ── */}
+      {data!.sent_by && (
+        <Section title="Sent By" icon={<User size={16} />}>
+          <div className="grid md:grid-cols-2 gap-4">
+            <InfoCard
+              icon={<User size={16} />}
+              label="Name"
+              value={`${data!.sent_by.firstName} ${data!.sent_by.lastName}`}
+            />
+            <InfoCard
+              icon={<Building2 size={16} />}
+              label="Company"
+              value={data!.sent_by.company}
+            />
+          </div>
+        </Section>
+      )}
+
+      {/* ── Message Bubble ── */}
+      <Section title="Message" icon={<MessageSquare size={16} />}>
+        <div className="flex">
+          <div
+            className={`text-sm p-4 rounded-2xl max-w-xl leading-relaxed whitespace-pre-line shadow-sm ${
+              data!.direction === "outbound"
+                ? "bg-blue-500 text-white rounded-bl-sm ml-auto"
+                : "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white rounded-br-sm"
             }`}
           >
-            {data.status}
-          </span>
-        )}
-      </div>
-
-      {/* INFO GRID */}
-      <div className="grid md:grid-cols-2 gap-6">
-
-        <InfoCard
-          icon={<Phone size={18} />}
-          label="To Number"
-          value={data?.sent_to_number || "-"}
-        />
-
-        <InfoCard
-          icon={<Send size={18} />}
-          label="From Number"
-          value={data?.sent_from_number || "-"}
-        />
-
-        <InfoCard
-          icon={<MessageSquare size={18} />}
-          label="Direction"
-          value={data?.direction || "-"}
-        />
-
-        <InfoCard
-          icon={<CheckCircle size={18} />}
-          label="Channel"
-          value={data?.channel || "-"}
-        />
-
-        <InfoCard
-          icon={<Clock size={18} />}
-          label="Sent At"
-          value={data?.sent_at || "-"}
-        />
-
-        <InfoCard
-          icon={<Clock size={18} />}
-          label="Delivered At"
-          value={data?.delivered_at || "-"}
-        />
-
-        {/* <InfoCard
-          icon={<Clock size={18} />}
-          label="Read At"
-          value={data?.read_at || "-"}
-        /> */}
-
-        {(data?.status === "failed") && 
-          <InfoCard
-          icon={<AlertCircle size={18} />}
-          label="Failed At"
-          value={data?.failed_at || "-"}
-        />
-}
-        <InfoCard
-          icon={<DollarSign size={18} />}
-          label="Cost"
-          value={
-            data?.cost ? `${data.cost} ${data.cost_currency}` : "-"
-          }
-        />
-
-        <InfoCard
-          icon={<MessageSquare size={18} />}
-          label="Provider SID"
-          value={data?.provider_message_sid || "-"}
-        />
-
-      </div>
-
-      {/* MESSAGE CARD */}
-      <div className="bg-white dark:bg-gray-700 rounded-xl border border-slate-200 p-6 shadow-sm">
-        <h3 className="text-lg font-semibold mb-4 dark:text-white">
-          Message
-        </h3>
-
-        <div className="flex">
-          <div className="bg-blue-100 dark:bg-blue-900 text-sm p-4 rounded-lg max-w-xl text-slate-800 dark:text-white shadow-sm">
-            {data?.message || "--- No message found ---"}
+            {data!.message || "— No message content —"}
           </div>
         </div>
-      </div>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-2 text-right">
+          {data!.direction === "outbound" ? "Outbound" : "Inbound"} · {fmt(data!.sent_at)}
+        </p>
+      </Section>
 
-      {/* ERROR MESSAGE */}
-      {data?.error_message && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6">
-          <h3 className="text-red-600 font-semibold mb-2">
-            Error Message
-          </h3>
-
-          <p className="text-red-700 text-sm">
-            {data.error_message}
-          </p>
+      {/* ── Error ── */}
+      {(data!.error_message || data!.error_code) && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/40 rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-2">
+            <AlertCircle size={16} className="text-red-500" />
+            <h3 className="text-sm font-semibold text-red-700 dark:text-red-400">Error Details</h3>
+          </div>
+          {data!.error_code && (
+            <p className="text-xs text-red-500 dark:text-red-400 mb-1">
+              Code: <code className="font-mono">{data!.error_code}</code>
+            </p>
+          )}
+          {data!.error_message && (
+            <p className="text-sm text-red-600 dark:text-red-300">{data!.error_message}</p>
+          )}
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Sub-components ────────────────────────────────────────────────────────
+
+function Section({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="bg-white dark:bg-gray-700 rounded-xl border border-gray-100 dark:border-gray-600 shadow-sm overflow-hidden">
+      <div className="flex items-center gap-2 px-5 py-3.5 border-b border-gray-100 dark:border-gray-600 bg-gray-50/60 dark:bg-gray-700/60">
+        <span className="text-blue-500 dark:text-blue-400">{icon}</span>
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-white">{title}</h3>
+      </div>
+      <div className="p-5">{children}</div>
     </div>
   );
 }
@@ -176,25 +263,42 @@ function InfoCard({
   icon,
 }: {
   label: string;
-  value: string | null;
+  value: string | null | undefined;
   icon: React.ReactNode;
 }) {
   return (
-    <div className="bg-white dark:bg-gray-700 border border-slate-200 dark:border-gray-600 rounded-xl p-4 flex items-start gap-3 shadow-sm">
-
-      <div className="bg-blue-100 dark:bg-blue-900 p-2 rounded-md text-blue-600">
+    <div className="bg-white dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl p-4 flex items-start gap-3 shadow-sm">
+      <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded-lg text-blue-500 dark:text-blue-400 shrink-0">
         {icon}
       </div>
-
-      <div>
-        <p className="text-xs text-gray-500 dark:text-gray-400">
+      <div className="min-w-0">
+        <p className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">
           {label}
         </p>
-        <p className="text-sm font-semibold text-slate-800 dark:text-white">
-          {value}
+        <p className="text-sm font-medium text-gray-800 dark:text-white break-all">
+          {value || "—"}
         </p>
       </div>
+    </div>
+  );
+}
 
+function StatPill({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string | number;
+}) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <div className="text-gray-400 dark:text-gray-500">{icon}</div>
+      <div>
+        <p className="text-xs text-gray-400 dark:text-gray-500">{label}</p>
+        <p className="text-sm font-semibold text-gray-800 dark:text-white capitalize">{value}</p>
+      </div>
     </div>
   );
 }

@@ -239,7 +239,7 @@ const DealContent = (): JSX.Element => {
               <div>
                 <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
               </div>
-              {(
+              {(hasPermission(PERMISSIONS.readLead)) && (
                 <Link
                   href={"/leads"}
                   className="bg-blue-600 hover:bg-blue-700
@@ -330,7 +330,7 @@ const DealContent = (): JSX.Element => {
                       <td className="p-4"> <span className="px-3 py-1.5 rounded-md bg-blue-100 text-xs text-blue-600 font-medium">{date}</span></td>
                       <td>
                         <div className="flex items-center gap-2">
-                          {hasPermission(PERMISSIONS.readLead) ? (
+                          {hasPermission(PERMISSIONS.readDeal) ? (
                             <Link
                               href={`/deals/view/${item.id}`}
                               className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-green-100/80 dark:bg-green-50 hover:bg-green-200/70 dark:hover:bg-green-100 text-green-500 hover:scale-104"
@@ -343,7 +343,7 @@ const DealContent = (): JSX.Element => {
                               <FaRegEye className="text-xl" />{" "}
                             </span>
                           )}
-                          {(hasPermission(PERMISSIONS.updateLead) && (item.status !== DEAL_STATUS.DELETE)) ? (
+                          {(hasPermission(PERMISSIONS.updateDeal) && (item.status !== DEAL_STATUS.DELETE)) ? (
                             <Link
                               href={`/deals/update/${item.id}`}
                               className="h-9 w-9 flex items-center justify-center rounded-md bg-yellow-200/80 dark:bg-yellow-100

@@ -260,7 +260,7 @@ const Page = (): JSX.Element => {
                                     ? `/emailManagement/templates/update/${item.id}`
                                     : "#"
                                 }
-                                className="h-9 w-9 flex items-center justify-center rounded-md bg-yellow-200 hover:bg-yellow-300 text-yellow-500"
+                                className={"h-9 w-9 flex items-center justify-center rounded-md bg-yellow-200 hover:bg-yellow-300 text-yellow-500 " + (canUpdate ? "" : "opacity-50 cursor-not-allowed")}
                               >
                                 <MdOutlineEdit className="text-xl" />
                               </Link>
@@ -271,7 +271,7 @@ const Page = (): JSX.Element => {
                                   setSelectedId(item.id);
                                   setShowDeleteModal(true);
                                 }}
-                                className="h-9 w-9 flex items-center justify-center rounded-md bg-red-100 hover:bg-red-200 text-red-500 disabled:opacity-50"
+                              className="h-9 w-9 flex items-center justify-center rounded-md bg-red-100 hover:bg-red-200 text-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 <MdDeleteOutline className="text-xl" />
                               </button>
