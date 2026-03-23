@@ -7,7 +7,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import Color from "@tiptap/extension-color";
-import {TextStyle} from "@tiptap/extension-text-style";
+import { TextStyle } from "@tiptap/extension-text-style";
 import Link from "@tiptap/extension-link";
 import CharacterCount from "@tiptap/extension-character-count";
 
@@ -86,21 +86,21 @@ const TDivider = () => (
 // ═══════════════════════════════════════════════════════════════════════════════
 const RichToolbar = ({ editor }: { editor: Editor | null }) => {
   const [linkOpen, setLinkOpen] = useState(false);
-  const [linkUrl, setLinkUrl]   = useState("");
+  const [linkUrl, setLinkUrl] = useState("");
 
   if (!editor) return null;
 
   const applyLink = () => {
     if (linkUrl) editor.chain().focus().extendMarkRange("link").setLink({ href: linkUrl }).run();
-    else         editor.chain().focus().extendMarkRange("link").unsetLink().run();
+    else editor.chain().focus().extendMarkRange("link").unsetLink().run();
     setLinkOpen(false);
     setLinkUrl("");
   };
 
   const headingValue =
     editor.isActive("heading", { level: 1 }) ? "1" :
-    editor.isActive("heading", { level: 2 }) ? "2" :
-    editor.isActive("heading", { level: 3 }) ? "3" : "0";
+      editor.isActive("heading", { level: 2 }) ? "2" :
+        editor.isActive("heading", { level: 3 }) ? "3" : "0";
 
   return (
     <div className="border-b border-slate-200 dark:border-gray-600 rounded-t-xl overflow-hidden bg-slate-50 dark:bg-gray-750">
@@ -135,11 +135,11 @@ const RichToolbar = ({ editor }: { editor: Editor | null }) => {
         <TDivider />
 
         {/* Text formatting */}
-        <TBtn onClick={() => editor.chain().focus().toggleBold().run()}       active={editor.isActive("bold")}      title="Bold (Ctrl+B)">        <b>B</b>   </TBtn>
-        <TBtn onClick={() => editor.chain().focus().toggleItalic().run()}     active={editor.isActive("italic")}    title="Italic (Ctrl+I)">       <i>I</i>   </TBtn>
-        <TBtn onClick={() => editor.chain().focus().toggleUnderline().run()}  active={editor.isActive("underline")} title="Underline (Ctrl+U)">    <u>U</u>   </TBtn>
-        <TBtn onClick={() => editor.chain().focus().toggleStrike().run()}     active={editor.isActive("strike")}    title="Strikethrough">         <s>S</s>   </TBtn>
-        <TBtn onClick={() => editor.chain().focus().toggleCode().run()}       active={editor.isActive("code")}      title="Inline Code">
+        <TBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} title="Bold (Ctrl+B)">        <b>B</b>   </TBtn>
+        <TBtn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive("italic")} title="Italic (Ctrl+I)">       <i>I</i>   </TBtn>
+        <TBtn onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive("underline")} title="Underline (Ctrl+U)">    <u>U</u>   </TBtn>
+        <TBtn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive("strike")} title="Strikethrough">         <s>S</s>   </TBtn>
+        <TBtn onClick={() => editor.chain().focus().toggleCode().run()} active={editor.isActive("code")} title="Inline Code">
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
           </svg>
@@ -148,49 +148,49 @@ const RichToolbar = ({ editor }: { editor: Editor | null }) => {
         <TDivider />
 
         {/* Alignment */}
-        <TBtn onClick={() => editor.chain().focus().setTextAlign("left").run()}   active={editor.isActive({ textAlign: "left" })}   title="Align Left">
+        <TBtn onClick={() => editor.chain().focus().setTextAlign("left").run()} active={editor.isActive({ textAlign: "left" })} title="Align Left">
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-            <rect x="3" y="5"  width="18" height="2"/><rect x="3" y="10" width="12" height="2"/>
-            <rect x="3" y="15" width="18" height="2"/><rect x="3" y="20" width="12" height="2"/>
+            <rect x="3" y="5" width="18" height="2" /><rect x="3" y="10" width="12" height="2" />
+            <rect x="3" y="15" width="18" height="2" /><rect x="3" y="20" width="12" height="2" />
           </svg>
         </TBtn>
         <TBtn onClick={() => editor.chain().focus().setTextAlign("center").run()} active={editor.isActive({ textAlign: "center" })} title="Center">
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-            <rect x="3" y="5"  width="18" height="2"/><rect x="6" y="10" width="12" height="2"/>
-            <rect x="3" y="15" width="18" height="2"/><rect x="6" y="20" width="12" height="2"/>
+            <rect x="3" y="5" width="18" height="2" /><rect x="6" y="10" width="12" height="2" />
+            <rect x="3" y="15" width="18" height="2" /><rect x="6" y="20" width="12" height="2" />
           </svg>
         </TBtn>
-        <TBtn onClick={() => editor.chain().focus().setTextAlign("right").run()}  active={editor.isActive({ textAlign: "right" })}  title="Align Right">
+        <TBtn onClick={() => editor.chain().focus().setTextAlign("right").run()} active={editor.isActive({ textAlign: "right" })} title="Align Right">
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-            <rect x="3" y="5"  width="18" height="2"/><rect x="9" y="10" width="12" height="2"/>
-            <rect x="3" y="15" width="18" height="2"/><rect x="9" y="20" width="12" height="2"/>
+            <rect x="3" y="5" width="18" height="2" /><rect x="9" y="10" width="12" height="2" />
+            <rect x="3" y="15" width="18" height="2" /><rect x="9" y="20" width="12" height="2" />
           </svg>
         </TBtn>
 
         <TDivider />
 
         {/* Lists + extras */}
-        <TBtn onClick={() => editor.chain().focus().toggleBulletList().run()}  active={editor.isActive("bulletList")}  title="Bullet List">
+        <TBtn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive("bulletList")} title="Bullet List">
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-            <circle cx="4" cy="7"  r="1.5"/><rect x="8" y="6"  width="13" height="2"/>
-            <circle cx="4" cy="12" r="1.5"/><rect x="8" y="11" width="13" height="2"/>
-            <circle cx="4" cy="17" r="1.5"/><rect x="8" y="16" width="13" height="2"/>
+            <circle cx="4" cy="7" r="1.5" /><rect x="8" y="6" width="13" height="2" />
+            <circle cx="4" cy="12" r="1.5" /><rect x="8" y="11" width="13" height="2" />
+            <circle cx="4" cy="17" r="1.5" /><rect x="8" y="16" width="13" height="2" />
           </svg>
         </TBtn>
         <TBtn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive("orderedList")} title="Numbered List">
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-            <text x="2" y="9"  fontSize="7" fontWeight="bold">1.</text><rect x="9" y="6"  width="12" height="2"/>
-            <text x="2" y="14" fontSize="7" fontWeight="bold">2.</text><rect x="9" y="11" width="12" height="2"/>
-            <text x="2" y="19" fontSize="7" fontWeight="bold">3.</text><rect x="9" y="16" width="12" height="2"/>
+            <text x="2" y="9" fontSize="7" fontWeight="bold">1.</text><rect x="9" y="6" width="12" height="2" />
+            <text x="2" y="14" fontSize="7" fontWeight="bold">2.</text><rect x="9" y="11" width="12" height="2" />
+            <text x="2" y="19" fontSize="7" fontWeight="bold">3.</text><rect x="9" y="16" width="12" height="2" />
           </svg>
         </TBtn>
         <TBtn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive("blockquote")} title="Blockquote">
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5 3.5 3.5 0 01-2.748-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5 3.5 3.5 0 01-2.748-1.179z"/>
+            <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5 3.5 3.5 0 01-2.748-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5 3.5 3.5 0 01-2.748-1.179z" />
           </svg>
         </TBtn>
         <TBtn onClick={() => editor.chain().focus().setHorizontalRule().run()} active={false} title="Horizontal Rule">
-          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="11" width="20" height="2" rx="1"/></svg>
+          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="11" width="20" height="2" rx="1" /></svg>
         </TBtn>
 
         <TDivider />
@@ -202,13 +202,13 @@ const RichToolbar = ({ editor }: { editor: Editor | null }) => {
           title="Insert Link"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
           </svg>
         </TBtn>
         {editor.isActive("link") && (
           <TBtn onClick={() => editor.chain().focus().unsetLink().run()} active={false} title="Remove Link">
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
             </svg>
           </TBtn>
         )}
@@ -222,7 +222,7 @@ const RichToolbar = ({ editor }: { editor: Editor | null }) => {
         >
           <svg className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 pointer-events-none" viewBox="0 0 24 24" fill="currentColor">
             <text x="4" y="17" fontSize="14" fontWeight="bold">A</text>
-            <rect x="4" y="19" width="16" height="2.5" rx="1"/>
+            <rect x="4" y="19" width="16" height="2.5" rx="1" />
           </svg>
           <input
             type="color"
@@ -236,12 +236,12 @@ const RichToolbar = ({ editor }: { editor: Editor | null }) => {
         {/* Undo / Redo */}
         <TBtn onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} title="Undo (Ctrl+Z)">
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
           </svg>
         </TBtn>
         <TBtn onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} title="Redo (Ctrl+Y)">
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10H11a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6"/>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10H11a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6" />
           </svg>
         </TBtn>
 
@@ -250,7 +250,7 @@ const RichToolbar = ({ editor }: { editor: Editor | null }) => {
         {/* Clear formatting */}
         <TBtn onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()} title="Clear Formatting">
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </TBtn>
 
@@ -264,7 +264,7 @@ const RichToolbar = ({ editor }: { editor: Editor | null }) => {
       {linkOpen && (
         <div className="flex items-center gap-2 px-3 py-2 border-t border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-800">
           <svg className="w-4 h-4 text-violet-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
           </svg>
           <input
             autoFocus
@@ -273,7 +273,7 @@ const RichToolbar = ({ editor }: { editor: Editor | null }) => {
             value={linkUrl}
             onChange={(e) => setLinkUrl(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter")  { e.preventDefault(); applyLink(); }
+              if (e.key === "Enter") { e.preventDefault(); applyLink(); }
               if (e.key === "Escape") { setLinkOpen(false); }
             }}
             className="flex-1 text-sm bg-transparent text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none"
@@ -312,28 +312,28 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
     },
     ref
   ) => {
-  const editor = useEditor({
-  extensions: [
-    StarterKit,
-    Placeholder.configure({
-      placeholder: "Write your email here...",
-    }),
-    Underline,
-    TextAlign.configure({
-      types: ["heading", "paragraph"],
-    }),
-    TextStyle,
-    Color,
-    Link,
-    CharacterCount,
-  ],
-  editable: !readOnly,
-  content: value,
-  immediatelyRender: false, 
-  onUpdate: ({ editor }) => {
-    onChange?.(editor.getHTML());
-  },
-});
+    const editor = useEditor({
+      extensions: [
+        StarterKit,
+        Placeholder.configure({
+          placeholder: "Write your email here...",
+        }),
+        Underline,
+        TextAlign.configure({
+          types: ["heading", "paragraph"],
+        }),
+        TextStyle,
+        Color,
+        Link,
+        CharacterCount,
+      ],
+      editable: !readOnly,
+      content: value,
+      immediatelyRender: false,
+      onUpdate: ({ editor }) => {
+        onChange?.(editor.getHTML());
+      },
+    });
 
     // Expose imperative API to parent via ref
     useImperativeHandle(ref, () => ({
@@ -418,8 +418,14 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
           {!readOnly && <RichToolbar editor={editor} />}
 
           {/* Editable area */}
-          <div className="dark:bg-gray-800">
-            <EditorContent editor={editor}  className=" min-h-50"/>
+          <div
+            style={{ minHeight: `${minHeight}px` }}
+            onClick={() => editor?.commands.focus()}
+          >
+            <EditorContent
+              editor={editor}
+              className="rte-content px-4 py-3 h-full"
+            />
           </div>
 
           {/* Footer */}
@@ -428,7 +434,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
               <p className="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1.5 flex-wrap">
                 {readOnly ? (
                   <span className="flex items-center gap-1">
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                     Read-only
                   </span>
                 ) : (
