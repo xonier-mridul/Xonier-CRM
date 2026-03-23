@@ -568,7 +568,6 @@ const LeadContent = (): JSX.Element => {
           <td className="p-4"><TagBadge tag={item.dataTag || "N/A"} /></td>
           <td className="p-4"><CreatedAt timestamp={item.createdAt} /></td>
           <td className="p-4">{item.createdBy?.firstName}</td>
-          <td><RowActions item={item} /></td>
           {( hasPermission(PERMISSIONS.updateLead)) ? 
           <StatusDropdown
             currentStatus={item.connectStatus as LeadEngagementStatus}
@@ -577,6 +576,7 @@ const LeadContent = (): JSX.Element => {
           /> :
           <StatusBadge status={item.connectStatus || "N/A"} />
           }
+          <td><RowActions item={item} /></td>
         </tr>
       );
     });
@@ -642,16 +642,32 @@ const LeadContent = (): JSX.Element => {
           <td className="p-4">
             <span className="px-2.5 py-1 rounded-full bg-yellow-100 text-yellow-600 text-xs font-medium">{item.source || "N/A"}</span>
           </td>
+         
           <td className="p-4"><StatusBadge status={item.status || "N/A"} /></td>
 
 
-          <td className="p-4">
+          
+
+         
+          <td className="p-4"><TagBadge tag={item.dataTag || "N/A"} /></td>
+          <td className="p-4"><CreatedAt timestamp={item.createdAt} /></td>
+          <td className="p-4">{item.createdBy?.firstName}</td>
+            {( hasPermission(PERMISSIONS.updateLead)) ? 
+            <td>
+            <StatusDropdown
+              currentStatus={item.connectStatus as LeadEngagementStatus}
+              Id={item.id}
+              onStatusUpdate={updateLeadStatus}
+            />
+            </td> :
+            <td className="p-4"><StatusBadge status={item.connectStatus || "N/A"} /></td>
+            }  
+            <td className="p-4">
             <Link href={`/users/${assignedUserId?.id}`}>
               <AssignedToPill user={assignedUser} />
             </Link>
-          </td>
-
-          <td className="p-4">
+          </td> 
+             <td className="p-4">
             <div className="flex items-center gap-2">
               {hasPermission(PERMISSIONS.readLead) ? (
                 <Link href={`/leads/view/${item.id}`} className="h-9 w-9 flex items-center justify-center rounded-md bg-green-100/80 dark:bg-green-50 hover:bg-green-200/70 text-green-500 hover:scale-105 transition-transform">
@@ -669,18 +685,7 @@ const LeadContent = (): JSX.Element => {
               )}
             </div>
 
-          </td>
-          <td className="p-4"><TagBadge tag={item.dataTag || "N/A"} /></td>
-          <td className="p-4"><CreatedAt timestamp={item.createdAt} /></td>
-          <td className="p-4">{item.createdBy?.firstName}</td>
-            {( hasPermission(PERMISSIONS.updateLead)) ? 
-            <StatusDropdown
-              currentStatus={item.connectStatus as LeadEngagementStatus}
-              Id={item.id}
-              onStatusUpdate={updateLeadStatus}
-            /> :
-            <td className="p-4"><StatusBadge status={item.connectStatus || "N/A"} /></td>
-            }         
+          </td>      
         </tr>
       );
     });
@@ -878,7 +883,7 @@ const LeadContent = (): JSX.Element => {
                         </label>
                       </th>
                     )}
-                    {["Client Info", "Phone", "Project Type", "Source", "Status", "Data Tag", "Created Date", "Created By", "Actions", "Engagement Status"]
+                    {["Client Info", "Phone", "Project Type", "Source", "Status", "Data Tag", "Created Date", "Created By", "Engagement Status", "Actions"]
                       .map((h) => {
                         const filterConfig = (h != 'Status') ? (options[h]) : (currentTab === TAB.ALL && options[h]);
 
@@ -962,7 +967,7 @@ const LeadContent = (): JSX.Element => {
                         </label>
                       </th>
                     )}
-                    {["Lead Id", "Client Info", "Phone", "Project Type", "Source", "Status", "Data Tag", "Created Date", "Created By", "Engagement Status"].map((h) => {
+                    {[ "Client Info", "Phone", "Project Type", "Source", "Status", "Data Tag", "Created Date", "Created By", "Engagement Status"].map((h) => {
                       const filterConfig = options[h];
                       return (
                         <th
