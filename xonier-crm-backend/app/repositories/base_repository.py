@@ -450,6 +450,44 @@ class BaseRepository:
 
         await user.save(session=session)
         return user
+    
+
+    async def find_many(
+        self,
+        filters: Dict[str, Any],
+        populate: Optional[List[str]] = None,
+        session: Optional[AsyncIOMotorClientSession] = None,
+    ):
+        populate = populate or []
+ 
+        query = self.model.find(filters, session=session)
+ 
+        docs = await query.to_list()
+ 
+        if not docs:
+            return []
+ 
+        for doc in docs:
+            for field in populate:
+                value = getattr(doc, field, None)
+ 
+                if value is None:
+                    continue
+ 
+                if hasattr(value, "fetch"):
+                    fetched = await value.fetch()
+                    setattr(doc, field, fetched)
+ 
+                elif isinstance(value, list):
+                    fetched_items = []
+                    for item in value:
+                        if hasattr(item, "fetch"):
+                            fetched_items.append(await item.fetch())
+                        else:
+                            fetched_items.append(item)
+                    setattr(doc, field, fetched_items)
+ 
+        return docs
 
 
     async def delete_by_id(

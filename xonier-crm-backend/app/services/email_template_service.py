@@ -70,19 +70,18 @@ class EmailTemplateService:
                 {"created_by.$id": PydanticObjectId(user["_id"])}
             ]
 
-            if "status" in filters:
-                query["status"] = filters["status"]
+            if "search" in filters and filters["search"].strip():
+                regex = {"$regex": filters["search"].strip(), "$options": "i"}
 
-            if "category" in filters:
-                query["category"] = filters["category"]
+                search_query = {"$or" : [
+                    {"status" : regex},
+                    {"name": regex},
+                    {"slug": regex},
+                    {"category": regex},
+                    {"subject": regex}]}
 
-            if "search" in filters:
-                search = re.escape(filters["search"])
-                query["$or"] = [
-                    {"name": {"$regex": search, "$options": "i"}},
-                    {"description": {"$regex": search, "$options": "i"}},
-                    {"tags": {"$regex": search, "$options": "i"}},
-                ]
+                query.update(search_query)
+
 
             result = await self.repo.get_all(
                 page=int(page),

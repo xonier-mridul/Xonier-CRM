@@ -137,6 +137,77 @@ class AuthServices:
 
         except Exception as e:
             raise AppException(status_code=500, message="internal server error")
+    
+    async def get_all_deleted_users(self, page: int = 1, limit: int = 10, user: Dict[str, Any] = {}, filters: Dict[str, Any] = {}):
+        try:
+            is_admin = validate_admin(user["userRole"])
+ 
+            if not is_admin:
+                raise AppException(403, "Unauthorized, only admin can access deleted users")
+ 
+            query = {"status": USER_STATUS.DELETED.value}
+ 
+            if "name" in filters:
+                query["firstName"] = {"$regex": filters["name"], "$options": "i"}
+ 
+            if "email" in filters:
+                hashed_email = hash_value(filters["email"].lower())
+                query["hashedEmail"] = hashed_email
+ 
+            if "fromDate" in filters or "toDate" in filters:
+                date_filter = {}
+                if "fromDate" in filters:
+                    try:
+                        from_dt = datetime.fromisoformat(str(filters["fromDate"]))
+                        from_dt = from_dt.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
+                        date_filter["$gte"] = from_dt
+                    except (ValueError, TypeError):
+                        raise AppException(400, "Invalid fromDate format. Use ISO format: YYYY-MM-DD")
+ 
+                if "toDate" in filters:
+                    try:
+                        to_dt = datetime.fromisoformat(str(filters["toDate"]))
+                        to_dt = to_dt.replace(hour=23, minute=59, second=59, microsecond=999999, tzinfo=timezone.utc)
+                        date_filter["$lte"] = to_dt
+                    except (ValueError, TypeError):
+                        raise AppException(400, "Invalid toDate format. Use ISO format: YYYY-MM-DD")
+ 
+                if date_filter:
+                    query["deletedAt"] = date_filter
+ 
+            result = await self.repo.get_all(
+                page=page,
+                limit=limit,
+                filters=query,
+                populate=["userRole", "deletedBy", "createdBy"],
+                sort=["-deletedAt"]
+            )
+ 
+            if not result:
+                raise AppException(404, "No deleted users found")
+ 
+            result = jsonable_encoder(result)
+ 
+            for item in result["data"]:
+                item["email"] = encryptor.decrypt_data(item["email"])
+                if item.get("phone"):
+                    item["phone"] = encryptor.decrypt_data(item["phone"])
+                item.pop("password", None)
+                item.pop("refreshToken", None)
+                item.pop("hashedEmail", None)
+                item.pop("hashedPhone", None)
+ 
+            return result
+ 
+        except AppException:
+            raise
+ 
+        except Exception as e:
+            raise AppException(status_code=500, message=f"internal server error: {e}")
+ 
+
+        
+
 
     async def get_user_by_id(self,id: PydanticObjectId, user: Dict[str, Any]):
         try:
@@ -390,7 +461,7 @@ class AuthServices:
                     )
             
             otp = generate_otp(6)
-            print("otp: ", otp)
+            
             hashed_otp = hash_value(str(otp))
 
             send_email = await self.email_manager.send_otp_email(
@@ -628,8 +699,6 @@ class AuthServices:
 
             if not user:
                 raise AppException(404, "User not found")
-            
-            
 
             roles = jsonable_encoder(user.userRole)
 
@@ -666,6 +735,155 @@ class AuthServices:
         finally:
             await session.end_session()
 
+    async def permanent_delete(self, userId: PydanticObjectId, user: Dict[str, Any]):
+        session = await self.client.start_session()
+        try:
+            session.start_transaction()
+ 
+            is_admin = validate_admin(user["userRole"])
+ 
+            if not is_admin:
+                raise AppException(403, "Unauthorized, only admin can permanently delete users")
+ 
+            target_user = await self.repo.find_by_id(userId, ["userRole"], session=session)
+ 
+            if not target_user:
+                raise AppException(404, "User not found")
+ 
+            roles = jsonable_encoder(target_user.userRole)
+ 
+            for item in roles:
+                if item["code"] == SUPER_ADMIN_CODE:
+                    raise AppException(400, "Super Admin user deletion not allowed")
+ 
+            if target_user.status != USER_STATUS.DELETED.value:
+                raise AppException(400, "Only soft-deleted users can be permanently deleted. Please soft delete the user first.")
+ 
+            deleted = await self.repo.delete_by_id(userId, session=session)
+ 
+            if not deleted:
+                raise AppException(400, "Permanent deletion failed")
+ 
+            await session.commit_transaction()
+ 
+            return True
+ 
+        except AppException:
+            await session.abort_transaction()
+            raise
+ 
+        except Exception as e:
+            await session.abort_transaction()
+            raise AppException(status_code=500, message=f"internal server error: {e}")
+ 
+        finally:
+            await session.end_session()
+    
+    async def bulk_permanent_delete(self, payload: Dict[str, Any], user: Dict[str, Any]):
+        session = await self.client.start_session()
+        try:
+            
+            session.start_transaction()
+ 
+            is_admin = validate_admin(user["userRole"])
+ 
+            if not is_admin:
+                raise AppException(403, "Unauthorized, only admin can permanently delete users")
+            
+            user_ids = payload.get("userIds", [])
+ 
+            if not user_ids:
+                raise AppException(400, "userIds are required")
+            
+            for uid in user_ids:
+                
+                if not ObjectId.is_valid(uid):
+                    raise AppException(400, f"Invalid user ObjectId: {uid}")
+ 
+            user_object_ids = [PydanticObjectId(uid) for uid in user_ids]
+ 
+            users = await self.repo.find_many(
+                filters={"_id": {"$in": user_object_ids}},
+                populate=["userRole"]
+            )
+ 
+            if not users:
+                raise AppException(404, "No users found for the provided ids")
+ 
+            found_ids = {str(u.id) for u in users}
+            missing_ids = [uid for uid in user_ids if uid not in found_ids]
+ 
+            failed_users = []
+ 
+            for uid in missing_ids:
+                failed_users.append({
+                    "id": uid,
+                    "reason": "User not found"
+                })
+ 
+            eligible_users = []
+ 
+            for target in users:
+                roles = jsonable_encoder(target.userRole)
+ 
+                is_super_admin = any(r["code"] == SUPER_ADMIN_CODE for r in roles)
+                if is_super_admin:
+                    failed_users.append({
+                        "id": str(target.id),
+                        "reason": "Super Admin user deletion not allowed"
+                    })
+                    continue
+ 
+                if target.status != USER_STATUS.DELETED.value:
+                    failed_users.append({
+                        "id": str(target.id),
+                        "reason": "User is not soft-deleted. Please soft delete first before permanent deletion"
+                    })
+                    continue
+ 
+                eligible_users.append(target)
+ 
+            deleted_count = 0
+ 
+            if eligible_users:
+                eligible_ids = [PydanticObjectId(u.id) for u in eligible_users]
+ 
+                for uid in eligible_ids:
+                    await self.repo.delete_by_id(uid, session=session)
+ 
+                deleted_count = len(eligible_users)
+ 
+            await session.commit_transaction()
+ 
+            deleted = deleted_count
+            failed = len(failed_users)
+ 
+            if deleted == 0:
+                message = "No users were permanently deleted"
+            elif failed == 0:
+                message = f"All {deleted} user{'s' if deleted > 1 else ''} permanently deleted successfully"
+            else:
+                message = f"{deleted} user{'s' if deleted > 1 else ''} permanently deleted, {failed} failed"
+ 
+            return {
+                "message": message,
+                "totalRequested": len(user_ids),
+                "deletedCount": deleted_count,
+                "failedCount": len(failed_users),
+                "failedUsers": failed_users
+            }
+ 
+        except AppException:
+            await session.abort_transaction()
+            raise
+ 
+        except Exception as e:
+            await session.abort_transaction()
+            raise AppException(status_code=500, message=f"internal server error: {e}")
+ 
+        finally:
+            await session.end_session()
+ 
 
     async def assign_phone_number(self,id: str, payload: Dict[str, Any], user: Dict[str, Any]):
         try:

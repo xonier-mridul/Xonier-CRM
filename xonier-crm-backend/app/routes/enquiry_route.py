@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Depends
 from app.controllers.enquiry_controller import EnquiryController
-from app.schemas.enquiry_schema import EnquiryRegisterSchema, UpdateEnquirySchema, BulkEnquiryRegisterSchema
+from app.schemas.enquiry_schema import EnquiryRegisterSchema, UpdateEnquirySchema, BulkEnquiryRegisterSchema, BulkAssignSchema
 from app.core.dependencies import Dependencies
 
 
@@ -18,9 +18,13 @@ async def get_all_by_creator(request: Request):
     return await enquiryController.get_all_by_creator(request)
 
 
-@router.get("/get-by-id/{id}", status_code=200, dependencies=[Depends(dependencies.authorized)])
+@router.get("/get-by-id/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["enquiry:read"]))])
 async def get_by_id(request: Request, id:str):
     return await enquiryController.get_by_id(request, id)
+
+@router.post("/bulk-assign", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["enquiry:read"]))])
+async def bulk_assign(request: Request, payload: BulkAssignSchema):
+    return await enquiryController.bulk_assign(request=request, payload=payload.model_dump(mode="json"))
 
 @router.post("/create", status_code=201, dependencies=[Depends(dependencies.authorized)])
 async def register_enquiry(request: Request, payload: EnquiryRegisterSchema):
