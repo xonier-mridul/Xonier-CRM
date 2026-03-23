@@ -164,14 +164,22 @@ export enum PERMISSIONS {
   deleteProspects = "prospect:delete",
   updateProspects = "prospect:update",
   viewAssignProspectInformation = "prospect:assignView",
-  callProspects = "prospect:call",
-  emailProspects = "prospect:email",
-  smsProspects = "send:sms",
+  callProspects = "call:call",
+  emailProspects = "email:send",
+  smsProspects = "sms:send",
   createTemplate = "emailTemplate:create",
   readTemplate = "emailTemplate:read",
   updateTemplate = "emailTemplate:update",
   deleteTemplate = "emailTemplate:delete",
-  readEmailLog = "emailLog:read",
+  readEmailLog = "email:read",
+  telephone = "telephone:read",
+  telephoneCreate = "telephone:create",
+  telephoneUpdate = "telephone:update",
+  telephoneDelete = "telephone:delete",
+  telephoneAssign = "telephone:assign",
+  smsReadLog = "sms:read",
+  smsViewLog = "sms:viewlog",
+  readClient = "client:read",
 
 }
 
@@ -983,4 +991,12 @@ export enum NUMBER_OF_EMPLOYEES {
 export enum INFO_TYPE {
   PEOPLE = "people",
   COMPANY = "company",
+}
+
+export enum STATUS_CONFIG {
+  INTERESTED = "interested",
+  NOT_INTERESTED = "not_interested",
+  CONNECTED = "connected",
+  NOT_CONNECTED = "not_connected",
+  NOT_REACHED = "not_reached",
 }

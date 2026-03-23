@@ -18,6 +18,7 @@ import { formatDate } from "../../utils/date.utils";
 import { handleCopy } from "../../utils/clipboard.utils";
 import DateFilterButton from "@/src/components/common/dateFilter";
 import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
+import StatusBadge from "@/src/components/common/Status";
 
 
 const STATUS_CONFIG = {
@@ -351,13 +352,14 @@ const page = (): JSX.Element => {
             <div>
               <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
             </div>
+            {(hasPermission(PERMISSIONS.readLead)) && 
             <Link
               href={"/leads"}
               className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md flex items-center gap-2 group"
             >
               <MdOutlineLeaderboard className="group-hover:rotate-90 transition-all duration-300" />
               All Leads
-            </Link>
+            </Link>}
           </div>
         </div>
         <ul className="w-full flex items-center gap-5">
@@ -447,13 +449,13 @@ const page = (): JSX.Element => {
                         </td>
                         <td className="p-4">{item.customerName}</td>
                         <td className="p-4">
-                          {(item.quotationStatus !== QuotationStatus.DELETE) ? <StatusDropdown
+                          {(item.quotationStatus !== QuotationStatus.DELETE && hasPermission(PERMISSIONS.updateQuote)) ? <StatusDropdown
                             currentStatus={item.quotationStatus}
                             quoteId={item.id}
                             onStatusUpdate={updateQuoteStatus}
-                          /> : <span className="text-white bg-red-600 px-4 py-1.5 text-sm rounded-md capitalize flex items-center gap-2 opacity-60 cursor-not-allowed min-w-[120px] justify-between">
-                             Deleted
-                            </span>}
+                          /> : 
+                          <StatusBadge status={item.quotationStatus} />
+                          }
                         </td>
                         <td className="p-4">
                           <span className="px-4 py-1.5 rounded-md bg-blue-200 text-sm text-blue-600 font-medium">
@@ -463,7 +465,7 @@ const page = (): JSX.Element => {
                         <td className="p-4">{item.createdBy?.firstName}</td>
                         <td>
                           <div className="flex items-center gap-2">
-                            {hasPermission(PERMISSIONS.readLead) ? (
+                            {hasPermission(PERMISSIONS.readQuote) ? (
                               <Link
                                 href={`/quotations/view/${item.id}`}
                                 className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-green-100/80 dark:bg-green-50 hover:bg-green-200/70 dark:hover:bg-green-100 text-green-500 hover:scale-104"
@@ -475,7 +477,7 @@ const page = (): JSX.Element => {
                                 <FaRegEye className="text-xl" />
                               </span>
                             )}
-                            {hasPermission(PERMISSIONS.updateLead) ? (
+                            {hasPermission(PERMISSIONS.updateQuote) ? (
                               <Link
                                 href={`/quotations/update/${item.id}`}
                                 className="h-9 w-9 flex items-center justify-center rounded-md bg-yellow-200/80 dark:bg-yellow-100 hover:bg-yellow-300/70 dark:hover:bg-yellow-200 text-yellow-500 hover:scale-104"

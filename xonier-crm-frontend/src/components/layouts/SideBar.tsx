@@ -330,7 +330,7 @@ const SideBar = () => {
               </AnimatePresence>
             </li>}
 
-            {(hasPermission(PERMISSIONS.createEnquiry) || hasPermission(PERMISSIONS.readEnquiry) || hasPermission(PERMISSIONS.createLead) || hasPermission(PERMISSIONS.readLead) || hasPermission(PERMISSIONS.createDeal) || hasPermission(PERMISSIONS.readDeal)) && <li>
+            {( hasPermission(PERMISSIONS.readEnquiry) || hasPermission(PERMISSIONS.readLead) || hasPermission(PERMISSIONS.readDeal) || hasPermission(PERMISSIONS.readQuote) || hasPermission(PERMISSIONS.readInvoice)) && <li>
               <button
                 onClick={() => toggleMenu("sales")}
                 className={`${isMenuActive("sales")
@@ -358,7 +358,7 @@ const SideBar = () => {
                     transition={{ duration: 0.25 }}
                     className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
                   >
-                    {hasPermission(PERMISSIONS.createEnquiry) && <li>
+                  {hasPermission(PERMISSIONS.readEnquiry) && <li>
                       <Link
                         href="/enquiry"
                         className={`${isActive("/enquiry")
@@ -418,7 +418,7 @@ const SideBar = () => {
                 )}
               </AnimatePresence>
             </li>}
-            {hasPermission(PERMISSIONS.readEvent) && <li>
+            {hasPermission(PERMISSIONS.readClient) && <li>
               <Link
                 href="/clients"
                 className={`${isActive("/clients")
@@ -431,7 +431,7 @@ const SideBar = () => {
               </Link>
             </li>}
 
-            {(hasPermission(PERMISSIONS.telephone)) && <li>
+            {((hasPermission(PERMISSIONS.telephone))|| hasPermission(PERMISSIONS.smsReadLog) )&& <li>
               <button
                 onClick={() => toggleMenu("communication")}
                 className={`${isMenuActive("communication")
@@ -459,7 +459,7 @@ const SideBar = () => {
                     transition={{ duration: 0.25 }}
                     className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
                   >
-                    {hasPermission(PERMISSIONS.readRole) && <li>
+                    {hasPermission(PERMISSIONS.telephone)  && <li>
                       <Link
                         href="/telephone"
                         className={`${isActive("/telephone")
@@ -470,7 +470,7 @@ const SideBar = () => {
                         Telephones Numbers
                       </Link>
                     </li>}
-                    {hasPermission(PERMISSIONS.readRole) && <li>
+                    {hasPermission(PERMISSIONS.smsReadLog) && <li>
                       <Link
                         href="/message"
                         className={`${isActive("/message")
@@ -515,7 +515,7 @@ const SideBar = () => {
                     transition={{ duration: 0.25 }}
                     className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
                   >
-                    {hasPermission(PERMISSIONS.readRole) && <li>
+                    {(hasPermission(PERMISSIONS.readTemplate)|| hasPermission(PERMISSIONS.createTemplate)) && <li>
                       <Link
                         href="/emailManagement/templates"
                         className={`${isActive("/emailManagement/templates")

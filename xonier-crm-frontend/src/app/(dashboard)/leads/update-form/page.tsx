@@ -77,10 +77,11 @@ const page = (): JSX.Element => {
       if (result.status === 200) {
         const selectedFields:CustomField[] = result.data.data.selectedFormFields ?? [];
         const selectedFieldsIds = selectedFields.map(item=>item.id)
-        const required = selectedFields.filter((item)=> item.required === true)
+        const required = selectedFields.filter((item)=> item.required === true || item.id === "6974a52d515f3aec8648561a")
         setUserFormData(result.data.data);
-        setUserFormField(selectedFields);
-        setSelectedFieldsIds(selectedFieldsIds)
+        setUserFormField(selectedFields);setSelectedFieldsIds(prev => [
+          ...new Set([...prev, ...selectedFieldsIds])
+        ]);
         setRequiredIds(required)
       }
     } catch (error) {
@@ -122,6 +123,19 @@ const page = (): JSX.Element => {
     try {
       const result = await FormFieldService.getLeadsAll();
       if (result.status === 200) {
+        const req:string[] = [];
+        result.data.data.forEach((item:any,i:number)=>{
+          if(item.required === true){
+            req.push(item.id)
+          }
+          if(item.id === "6974a52d515f3aec8648561a"){
+            req.push(item.id);
+            result.data.data[i].required = true;
+          }
+        })
+        setSelectedFieldsIds(prev => [
+          ...new Set([...prev, ...req])
+        ]);
         setAllFormField(result.data.data);
       }
     } catch (error) {
@@ -642,7 +656,7 @@ const handleCreateCustomField = async (e: FormEvent) => {
                   </li>
                 );
               })
-            : Array.from({ length: 6 }).map((item, i) => (
+            : Array.from({ length: 4 }).map((item, i) => (
                 <div key={i} className="flex items-center gap-4">
                   <Skeleton
                     height={15}
@@ -703,7 +717,7 @@ const handleCreateCustomField = async (e: FormEvent) => {
             )
           ) : (
             <>
-              {Array.from({ length: 6 }).map((_, i) => (
+              {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="flex flex-col gap-2">
                   <Skeleton
                     height={18}

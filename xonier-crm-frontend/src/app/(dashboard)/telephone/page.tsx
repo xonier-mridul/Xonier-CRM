@@ -20,6 +20,8 @@ import { PHONE_NUMBER_STATUS } from "@/src/constants/enum";
 import { AuthService } from "@/src/services/auth.service";
 import { AssignedPhoneNumber } from "@/src/types";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
+import { PERMISSIONS } from "@/src/constants/enum";
+import { usePermissions } from "@/src/hooks/usePermissions";
 
 const Page = () => {
   const [telephoneData, setTelephoneData] = useState<TelephoneNumber[]>([]);
@@ -49,6 +51,7 @@ const Page = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [phoneToDelete, setPhoneToDelete] = useState<TelephoneNumber | null>(null);
+  const { hasPermission } = usePermissions();
 
   const getTelephonesNumber = async () => {
     setIsLoading(true);
@@ -335,13 +338,13 @@ const Page = () => {
                 />
               </div>
 
-              <button
+              {(hasPermission(PERMISSIONS.telephoneCreate)) && <button
                 onClick={openCreateModal}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md flex items-center gap-2 group"
               >
                 <FaPlus className="group-hover:rotate-90 transition-all duration-300" />
                 Add Number
-              </button>
+              </button>}
             </div>
           </div>
 
@@ -424,7 +427,7 @@ const Page = () => {
                               <FaRegEye className="text-xl" />
                             </button>
 
-                            {phone.status !== PHONE_NUMBER_STATUS.DELETED && (
+                            {(hasPermission(PERMISSIONS.telephoneUpdate) &&phone.status !== PHONE_NUMBER_STATUS.DELETED) && (
                               <button
                                 onClick={() => handleEdit(phone)}
                                 className="h-9 w-9 flex items-center justify-center rounded-md bg-yellow-200/80 dark:bg-yellow-100 hover:bg-yellow-300/70 dark:hover:bg-yellow-200 text-yellow-500 hover:scale-104 transition-transform cursor-pointer"
@@ -433,7 +436,7 @@ const Page = () => {
                               </button>
                             )}
 
-                            {phone.status !== PHONE_NUMBER_STATUS.DELETED && (
+                            {((hasPermission(PERMISSIONS.telephoneDelete)) && phone.status !== PHONE_NUMBER_STATUS.DELETED) && (
                               <button
                                 onClick={() => handleDeleteClick(phone)}
                                 className="h-9 w-9 flex items-center justify-center rounded-md bg-red-200/80 dark:bg-red-100 hover:bg-red-300/70 dark:hover:bg-red-200 text-red-500 hover:scale-104 transition-transform cursor-pointer" title="Delete phone number">
@@ -442,7 +445,7 @@ const Page = () => {
                               </button>
                             )}
 
-                            {phone.status !== PHONE_NUMBER_STATUS.DELETED && (
+                            {(hasPermission(PERMISSIONS.telephoneAssign)) && phone.status !== PHONE_NUMBER_STATUS.DELETED && (
                               <button
                                 onClick={() => openAssignModal(phone)}
                                 className="h-9 w-9 flex items-center justify-center rounded-md bg-purple-200/80 dark:bg-purple-100 hover:bg-purple-300/70 dark:hover:bg-purple-200 text-purple-500 hover:scale-104 transition-transform cursor-pointer"
@@ -639,7 +642,7 @@ const Page = () => {
                       Assigned Users
                     </p>
                     <div className="flex items-center gap-2 ml-auto">
-                      <button
+                      {(hasPermission(PERMISSIONS.telephoneAssign)) && <button
                         onClick={() => {
                           closeViewModal();
                           openAssignModal(selectedPhone);
@@ -648,7 +651,7 @@ const Page = () => {
                         title=""
                       >
                         <MdEdit className="w-4 h-4" />
-                      </button>
+                      </button>}
                     </div>
                   </div>
                   {/* ---- */}
@@ -703,11 +706,11 @@ const Page = () => {
               >
                 Close
               </button>
-              {selectedPhone.status !== PHONE_NUMBER_STATUS.DELETED && (
+              {/* {selectedPhone.status !== PHONE_NUMBER_STATUS.DELETED && (
                 <button className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-blue-200 dark:shadow-blue-900/30">
                   Edit Number
                 </button>
-              )}
+              )} */}
             </div>
           </div>
         </div>

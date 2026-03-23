@@ -403,6 +403,13 @@ PERMISSIONS = [
         "description": "permission for create telephone number"
     },
     {
+        "code": "telephone:assign",
+        "module": "telephone",
+        "action": "assign",
+        "title": "assign telephone",
+        "description": "permission for assign telephone number"
+    },
+    {
         "code": "telephone:read",
         "module": "telephone",
         "action": "read",
@@ -473,6 +480,13 @@ PERMISSIONS = [
        "description": "permission for delete sms "
     },
     {
+        "code": "sms:viewlog",
+        "module": "sms",
+        "action": "viewlog",
+        "title": "view sms log",
+       "description": "permission for view sms log "
+    },
+    {
         "code": "email:send",
         "module": "email",
         "action": "send",
@@ -494,5 +508,12 @@ PERMISSIONS = [
         "title": "delete email",
        "description": "permission for delete email"
     },
+    {
+        "code": "call:call",
+        "module": "call",
+        "action": "call",
+        "title": "call",
+       "description": "permission for call"
+    }
     
 ]
