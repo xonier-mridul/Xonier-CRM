@@ -46,7 +46,7 @@ const LeadService = {
   update: (id: ParamValue, payload: LeadPayload)=> api.put(`/lead/update/${id}`, payload),
   updateStatus: (id:string, payload: UpdateLeadStatusPayload) =>api.patch(`/lead/update/${id}/status`, payload),
   delete: (id: string)=> api.delete(`/lead/delete/${id}`),
-  updateEngagementStatus: (id: string, payload:LeadEngagementStatusPayload ) =>api.patch(`/api/lead/update/${id}/connect-status`, payload),
+  updateEngagementStatus: (id: string, payload:LeadEngagementStatusPayload ) =>api.patch(`/lead/update/${id}/connect-status`, payload),
 };
 
 
