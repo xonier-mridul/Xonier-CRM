@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+
+<head>
+    <meta charset="utf-8">
+    <title>Trackeroo - Live Location Tracking</title>
+    <meta name="author" content="#">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="app/css/app.css">
+    <link rel="stylesheet" href="app/css/jquery.fancybox.min.css">
+    <link rel="stylesheet" href="app/css/textanimation.css">
+    <!-- Favicon and Touch Icons  -->
+    <link rel="shortcut icon" href="assets/images/favico.png">
+    <link rel="apple-touch-icon-precomposed" href="assets/images/favico.png">
+</head>
+
+<body class="body header-fixed counter-scroll">
+    <div class="preload preload-container">
+        <svg class="pl" width="240" height="240" viewBox="0 0 240 240">
+            <circle class="pl__ring pl__ring--a" cx="120" cy="120" r="105" fill="none" stroke="#000" stroke-width="20"
+                stroke-dasharray="0 660" stroke-dashoffset="-330" stroke-linecap="round"></circle>
+            <circle class="pl__ring pl__ring--b" cx="120" cy="120" r="35" fill="none" stroke="#000" stroke-width="20"
+                stroke-dasharray="0 220" stroke-dashoffset="-110" stroke-linecap="round"></circle>
+            <circle class="pl__ring pl__ring--c" cx="85" cy="120" r="70" fill="none" stroke="#000" stroke-width="20"
+                stroke-dasharray="0 440" stroke-linecap="round"></circle>
+            <circle class="pl__ring pl__ring--d" cx="155" cy="120" r="70" fill="none" stroke="#000" stroke-width="20"
+                stroke-dasharray="0 440" stroke-linecap="round"></circle>
+        </svg>
+    </div>
+
+    <!-- /preload -->
+
+    <div id="wrapper">
+        <div id="pagee" class="clearfix">
+
+            <!-- Main Header -->
+            <header class="main-header header-style3 flex">
+                <!-- Header Lower -->
+                <div id="header">
+                    <div class="tf-container">
+                        <div class="header-top">
+                            <div class="header-top-wrap flex-two">
+                                <div class="header-top-right">
+                                    <ul class=" flex-three">
+                                        <li class="flex-three">
+                                            <i class="icon-Group-32"></i>
+                                            <span>Call Us: +91-8700914459</span>
+                                        </li>
+                                        <li class="flex-three">
+                                            <i class="icon-mail"></i>
+                                            <span>Mail Us: hello@hrjee.com</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="header-top-left flex-two">
+
+                                    <div class="follow-social flex-two">
+                                        <ul class="flex-two">
+                                            <li><a href="#"><i class="icon-icon"></i></a></li>
+                                        </ul>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="header-lower">
+                            <div class="tf-container full">
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div class="inner-container flex justify-space align-center">
+                                            <!-- Logo Box -->
+
+                                            <div class="logo-box">
+                                                <div class="logo">
+                                                    <a href="index.html">
+                                                        <img loading="lazy" src="assets/images/logo.png" alt="Logo">
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <div class="nav-outer flex align-center">
+                                                <!-- Main Menu -->
+                                                <nav class="main-menu show navbar-expand-md">
+                                                    <div class="navbar-collapse collapse clearfix"
+                                                        id="navbarSupportedContent">
+                                                        <ul class="navigation clearfix">
+                                                            <li class="">
+                                                                <a href="about.html">About Us</a>
+                                                            </li>
+                                                            <li class="">
+                                                                <a href="features.html">Product Feature</a>
+                                                            </li>
+                                                            <li class="dropdown2 current">
+                                                                <a href="#">Industries</a>
+                                                                <ul>
+                                                                    <li><a href="construction-industry.html">Construction</a></li>
+                                                                    <li><a href="manufacturing-industry.html">Manufacturing</a></li>
+                                                                    <li><a href="healthcare-industry.html">Healthcare</a></li>
+                                                                    <li><a href="education-industry.html">Education</a></li>
+                                                                    <li><a href="retail-chains.html">Retail Chains</a></li>
+                                                                    <li><a href="security-agencies.html">Security Agencies</a></li>
+                                                                    <li class="current"><a href="hospitality-industry.html">Hospitality</a></li>
+                                                                    <li><a href="transportation-logistics.html">Transportation and Logistics</a></li>
+                                                                    <li><a href="manpower-staffing.html">Manpower & Staffing</a></li>
+                                                                    <li><a href="sports-fitness.html">Sports & Fitness</a></li>
+                                                                    
+                                                                </ul>
+                                                                <div class="dropdown2-btn"></div>
+                                                            </li>
+
+                                                            <li class=""><a href="blog.html">User Cases</a></li>
+                                                            <li><a href="pricing.html">Pricing</a></li>
+                                                            <li><a href="contact.html">Contact Us</a></li>
+                                                        </ul>
+                                                    </div>
+                                                </nav>
+                                                <!-- Main Menu End-->
+                                            </div>
+                                            <div class="header-account flex align-center">
+
+                                                <div class="address-wrap-right flex-three ">
+
+                                                    <div class="content">
+                                                        <a href="demo.html" class="tf-btn  btn-dark gap-8 rounded-16"
+                                                            style="--tecko-button-width: 241.859px;">
+
+                                                            <span class="text-body-2 fw-6">Request a Demo</span>
+                                                            <i class="icon-arrow-right"></i>
+                                                            <span class="bg-effect"
+                                                                style="top: 38.5px; left: -1.13281px;"></span>
+                                                        </a>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                            <div class="mobile-nav-toggler mobile-button">
+                                                <i class="icon-bar"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- End Header Lower -->
+
+                <!-- Mobile Menu  -->
+                <div class="close-btn"><span class="icon flaticon-cancel-1"></span></div>
+                <div class="mobile-menu">
+                    <div class="menu-backdrop"></div>
+                    <nav class="menu-box">
+                        <div class="nav-logo"><a href="index.html">
+                                <img loading="lazy" src="assets/images/logo2.png" alt=""></a></div>
+                        <div class="bottom-canvas">
+                            <div class="menu-outer">
+                            </div>
+                        </div>
+                    </nav>
+                </div>
+                <!-- End Mobile Menu -->
+
+            </header>
+            <!-- End Main Header -->
+            <main id="main">
+
+                <section class="breadcumb-section">
+                    <div class="tf-container">
+                        <div class="row">
+                            <div class="col-lg-12 center z-index1">
+                                <h1 class="title">Hospitality Industries</h1>
+                                <ul class="breadcumb-list flex-five">
+                                    <li><a href="index.html">Home</a></li>
+                                    <li><span>Hospitality Industries</span></li>
+                                </ul>
+                                <img class="bcrumb-ab" src="assets/images/page/mask-bcrumb.png" alt="">
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+                <section class="contact-us">
+                    <div class="tf-container">
+                        <div class="row mb-60 align-items-center">
+                            <div class="col-md-6">
+                                <h2 class="mb-4">Recipe to track time and attendance for success in
+                                    <span class="text-success">Hospitality Industry</span>
+                                </h2>
+                                <p class="mb-4">Introducing the <b>Time and Attendance App for Hospitality Industry</b>,
+                                    an efficient tool to empower your business. Get instant access to the availability
+                                    of your staff in real-time.
+                                </p>
+                                <a href="#" class="btn-main-small"> Start for free <i class="icon-arrow-right"></i></a>
+                            </div>
+                            <div class="col-md-6">
+                                <img src="assets/images/features/industries.gif" alt="">
+                            </div>
+
+                        </div>
+
+                    </div>
+                </section>
+                <section class="contact-us bg-4 pd-main">
+                    <div class="tf-container">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <img src="assets/images/features/indus1.gif" alt="">
+                            </div>
+                            <div class="col-md-6">
+                                <h2 class="mb-4">Whisk Through Schedules like a Cappuccino </h2>
+                                <p class="mb-4"> <b>Attendance Tracking App for Hospitality Industry</b> Enables
+                                    Employees to Record Work Hours Through Phone.
+                                </p>
+                                <ul class="industries-list">
+                                    <li>Utilize a Restaurant Scheduling App to Effectively Manage Work Schedules
+                                        According to Your Team's Availability and Skills.
+                                    </li>
+                                    <li>Effortlessly Generate Work Schedules with the Help of Convenient Templates,
+                                        Recurring Shifts, Shift Swaps, and Other Useful Features.
+                                    </li>
+                                    <li>Utilize Automated Scheduling to Eliminate Costly Errors and Ensure Smooth
+                                        Operations.
+                                    </li>
+                                </ul>
+                                <a href="#" class="btn-main-small"> Start for free <i class="icon-arrow-right"></i></a>
+                            </div>
+
+
+                        </div>
+
+                    </div>
+                </section>
+                <section class="contact-us">
+                    <div class="tf-container">
+                        <div class="row mb-60 align-items-center">
+                            <div class="col-md-6">
+                                <h2 class="mb-4">Stay on Track with GPS Location and Geofence </h2>
+                                <ul class="industries-list">
+                                    <li> Easily Handle Work Hours for Multiple Events at Once using Trackeroo's Accurate and
+                                        User-Friendly GPS Time Clock.
+                                    </li>
+                                    <li>Make Sure Your Employees Arrive at the Correct Location on Time with Geofence
+                                        Monitoring.
+                                    </li>
+                                    <li> Simplify Your Payroll Process by Utilizing <b>attendance management system for
+                                            Hospitality Industry</b>. Get Daily and Monthly Reports.
+                                    </li>
+                                    <li>Harness the Power of Data-Driven Reports to Gain Valuable Insights for Making
+                                        Informed Business Growth Strategies.
+                                    </li>
+                                </ul>
+                                <a href="#" class="btn-main-small"> Start for free <i class="icon-arrow-right"></i></a>
+                            </div>
+                            <div class="col-md-6">
+                                <img src="assets/images/features/indus2.gif" alt="">
+                            </div>
+
+                        </div>
+
+                    </div>
+                </section>
+                <section class="relative tf-widget-activities pd-main overflow-hidden">
+                    <img src="assets/images/page/mask-activiti.png" alt="image" class="mask-top">
+                    <div class="tf-container">
+                        <div class="row z-index3 relative">
+                            <div class="col-lg-12">
+                                <div class="tab-content" id="myTabContents">
+                                    <div class="" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab"
+                                        tabindex="0">
+                                        <div class="tabs-activities-content flex">
+                                            <div class="activities-image">
+                                                <img src="assets/images/about-us/about-h4.jpeg" alt="Image">
+                                            </div>
+                                            <div class="activities-content relative">
+                                                <h4 class="mb-4 text-white">Why don't you put us to the test? </h4>
+                                                <h3 class="title-activitis text-white">Trackeroo is 100% free for upto
+                                                    10 users for two weeks.
+                                                </h3>
+
+                                                <div class="flex-three btn-wrap-activitis">
+                                                    <a href="demo.html" class="get-call">Start your Free Trial now <i
+                                                            class="icon icon-arrow-right"></i></a>
+                                                </div>
+                                                <img src="assets/images/page/mask-tap.png" alt="image" class="mask-tab">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section class="contact-us">
+                    <div class="tf-container">
+                        <div class="row mb-60 align-items-center">
+                            <div class="col-md-6">
+                                <img src="assets/images/features/indus4.gif" alt="">
+                            </div>
+                            <div class="col-md-6">
+                                <h2 class="mb-4">Trace the Path of Event Trails with all in one Trackeroo App
+                                </h2>
+                                <ul class="industries-list">
+                                    <li> Empowers You to Monitor Employee Movements in Real-Time, Ensuring Smooth
+                                        Coordination and Enhanced Security at Events.
+                                    </li>
+                                    <li> With Live Location Sharing, Managers Can Swiftly Respond to Any Developments on
+                                        the Ground.
+                                    </li>
+                                    <li> Keeps a Comprehensive Record of Historical Movements, Enabling Event Managers
+                                        to Assess Past Activities and Evaluate Employee Performance for Ongoing
+                                        Enhancements.
+                                    </li>
+                                    <li>Enhances Accountability Among Employees and Bolsters Event Security by
+                                        Constantly Tracking Their Movements Throughout the Event.
+                                    </li>
+                                </ul>
+                                <a href="#" class="btn-main-small"> Start for free <i class="icon-arrow-right"></i></a>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </section>
+                <section class="contact-us bg-4 pd-main">
+                    <div class="tf-container">
+                        <div class="row mb-60 align-items-center">
+                            <div class="col-md-6">
+                                <h2 class="mb-4">Inspire Excellence Through Recognition & Rewards
+                                </h2>
+                                <ul class="industries-list">
+                                    <li>Show Appreciation for Employee Commitment through Digital Recognition and
+                                        Achievement Badges.
+                                    </li>
+                                    <li>Cultivate a Culture of Excellence by Acknowledging Individuals, whether it's in
+                                        Private or Public Settings.
+                                    </li>
+                                    <li>With Our Attendance Tracking System for Hospitality Industry, Celebrate Team
+                                        Successes and Value Achievements.
+                                    </li>
+                                    <li>Boost Motivation by Rewarding Efforts with Tokens that can be exchanged for
+                                        Preferred Gift Cards
+                                    </li>
+                                </ul>
+                                <a href="#" class="btn-main-small"> Start for free <i class="icon-arrow-right"></i></a>
+                            </div>
+                            <div class="col-md-6">
+                                <img src="assets/images/features/indus5.gif" alt="">
+                            </div>
+
+                        </div>
+
+                    </div>
+                </section>
+                <section class="contact-us pd-main">
+                    <div class="tf-container">
+                        <div class="row mb-60 align-items-center">
+
+                            <div class="col-md-12">
+                                <h3 class="mb-4">Recipe To Track Time And Attendance For Success In The Hospitality
+                                    Industry
+                                </h3>
+
+                                <div class="">
+                                    <p>Introducing Trackeroo, one of the ideal <strong>Time and Attendance App for the
+                                            Hospitality Industry</strong>, an
+                                        all-in-one solution to help you boost your business. It allows for immediate
+                                        access to the actual availability
+                                        of employees while providing efficient organizational operation in the
+                                        management of the labor force.</p>
+                                    <p>It makes tracking employees’ attendance in the workplace easy and accurate.
+                                        Support your team with our right tool
+                                        for proper time management.</p>
+                                    <h4>&nbsp;</h4>
+                                    <h4><strong>Glide Through Schedules Smoothly</strong></h4>
+                                    <p>&nbsp;</p>
+                                    <p>Our unique solution lets employees log work hours on their mobile devices without
+                                        hassle. With just a few taps on
+                                        a smartphone, you can save time and better understand employee attendance.</p>
+                                    <p>So, it can lighten your workplace’s load, help you access real-time attendance
+                                        data and immediately respond to
+                                        any deviations. It can help you in;</p>
+                                    <h4><strong>Optimized Restaurant Scheduling</strong></h4>
+                                    <p>&nbsp;</p>
+                                    <p>You can use our high-quality <strong>Restaurant Scheduling App</strong> to plan
+                                        your work schedules in
+                                        correlation with your employees’ availability and specialization. It enables you
+                                        to introduce changes and manage
+                                        workforce requirements using a perfect instrument.</p>
+                                    <p>Consequently, you will know more about shift scheduling and improve your
+                                        correspondence to high-demand days.
+                                        Avoid overstaffing and work for customers’ satisfaction.”</p>
+                                    <h4><strong>Easily Work Schedule Creation</strong></h4>
+                                    <p>&nbsp;</p>
+                                    <p>Our scheduling templates allow you to create work schedules with little help due
+                                        to their convenient templates,
+                                        recurring shift options, shift swaps, and other useful features. Using pre-set
+                                        templates and shift management
+                                        options, you can make your scheduling easier and more perfect and minimize
+                                        errors.</p>
+                                    <h4><strong>Automated Scheduling for Smooth Operations</strong></h4>
+                                    <p>&nbsp;</p>
+                                    <p>Using our employee attendance management system, you can use dynamic scheduling
+                                        to avoid costly errors and keep
+                                        your business on track.</p>
+                                    <p>With integrated algorithms that automatically adjust schedules depending on
+                                        real-time data and set parameters,
+                                        your productivity will increase along with the reduction of administrative
+                                        workload. Get the reliability of an
+                                        efficient system that allows for error-free business continuity.</p>
+                                    <p>&nbsp;</p>
+                                    <h4><strong>Stay Within Boundaries with Our Attendance Tracking Software</strong>
+                                    </h4>
+                                    <p>&nbsp;</p>
+                                    <p>Due to features like GPS tracking or Geofencing, our software is considered the
+                                        perfect
+                                        <strong>Attendance-tracking app for the Hospitality Industry in India</strong>.
+                                    </p>
+                                    <h4><strong>Manage Work Hours Efficiently</strong></h4>
+                                    <p>&nbsp;</p>
+                                    <p>With the help of GPS Time Clock, a feature of Trackeroo that is perfect for managing
+                                        employee attendance in
+                                        different locations and events, we can control work hours for other events
+                                        simultaneously. In addition, it
+                                        guarantees correct time records, allows for avoiding conflicts in scheduling and
+                                        increases work efficiency.</p>
+                                    <h4><strong>Ensure Timely Arrivals</strong></h4>
+                                    <p>&nbsp;</p>
+                                    <p>We use GPS technology to ensure an employee is at the right site at the right
+                                        time, unlike manual tracking, which
+                                        is more time-consuming and less accurate. With automated alerts and location
+                                        confirmation, you can reduce
+                                        lateness and increase location accuracy. Make your employees’ location tracking
+                                        easier and more reliable.</p>
+                                    <h4><strong>Simplify Payroll Management</strong></h4>
+                                    <p>&nbsp;</p>
+                                    <p>It is a chance to improve your payroll processes with our powerful<strong>
+                                            attendance management software for the
+                                            Hospitality Industry</strong>. You will automatically generate daily and
+                                        monthly reports to guarantee
+                                        correct payment and finance handling.</p>
+                                    <p>You can also easily integrate with any existing payroll systems and reduce
+                                        mistakes. This way, enjoy a faster,
+                                        error-free payroll process and better financial control.</p>
+                                    <h4><strong>Data-Driven Growth Insights</strong></h4>
+                                    <p>&nbsp;</p>
+                                    <p>Powerful data-driven reports can help you grow your business effectively. Our
+                                        system offers tools to obtain
+                                        valuable information to assist decision-making, monitor crucial metrics and
+                                        trends, and manage and improve
+                                        operations, thus contributing to long-term business success.</p>
+                                    <h4><strong>Enjoy Your Time Off with Trackeroo’s Easy Leave Administration</strong>
+                                    </h4>
+                                    <p>&nbsp;</p>
+                                    <p>In addition to basic features, employees can easily submit time-off requests
+                                        through the app. The leave
+                                        application process is easy due to the app’s self-explanatory nature.</p>
+                                    <p>They will also be able to receive notifications regarding the status of their
+                                        leave application. Therefore, the
+                                        efficient processing of leave applications can increase rates of satisfaction.
+                                    </p>
+                                    <h4><strong>Swift Approval for Supervisors</strong></h4>
+                                    <p>&nbsp;</p>
+                                    <p>Supervisors can conveniently start and approve leave applications quickly,
+                                        avoiding time wastage between
+                                        management and staff. Then, they can use our online leave calendar to plan team
+                                        resources to prevent delays. So
+                                        your teams can coordinate efficiently using our leave management system.</p>
+                                    <h4><strong>Instant Leave Balances</strong></h4>
+                                    <p>&nbsp;</p>
+                                    <p>Our system gives instant information on the amount of leave remaining and reduces
+                                        cases of misunderstanding or
+                                        confusion about the available leave. This way, employees can easily access their
+                                        leave status and be
+                                        well-informed. It maintains the level of trust between the employees and the
+                                        employer. In practice, the update
+                                        and notification feature clarifies what is remaining.</p>
+                                    <h4><strong>Trace Every Step with the Unified Trackeroo App</strong></h4>
+                                    <p>&nbsp;</p>
+                                    <p>Stay updated with our innovative system, which tracks the employees for better
+                                        coordination and security at the
+                                        event venue. Our <strong>employee track app</strong> allows constant staff
+                                        monitoring and proper resource
+                                        management. The value of being aware of all on-ground activities must be
+                                        considered.</p>
+                                    <p>Want more efficient event management? Our system can help.</p>
+                                    <h4><strong>Immediate Response with Live Location</strong></h4>
+                                    <p>&nbsp;</p>
+                                    <p>Live location sharing helps managers quickly address changes or challenges during
+                                        events. It becomes easy to make
+                                        appropriate decisions and take timely actions wherever the coordinating staff
+                                        is.</p>
+                                    <p>Our software strengthens your capacity to coordinate dynamic settings and respond
+                                        effectively to emerging
+                                        demands. It equally empowers your team to be continuously ready for any
+                                        development.</p>
+                                    <h4><strong>Detailed Historical Records</strong></h4>
+                                    <p>&nbsp;</p>
+                                    <p>To better forecast the event, you can keep records of how things have worked out
+                                        in the past. It will help create
+                                        records of the steps taken by former employees and analyze the company’s general
+                                        performance.</p>
+                                    <p>Historical records are beneficial for analyzing patterns and better planning for
+                                        future incidents. Employees
+                                        should use trends and patterns realized from event analysis to adjust strategies
+                                        and improve overall results.
+                                    </p>
+                                    <h4><strong>Boost Accountability and Security</strong></h4>
+                                    <p>&nbsp;</p>
+                                    <p>Our system increases employee accountability and provides event security by
+                                        continuously tracking movements
+                                        throughout the event. Constant monitoring helps staff adhere to their
+                                        responsibilities and stay within
+                                        designated areas.</p>
+                                    <p>With ongoing oversight, security protocols are enhanced, and event management is
+                                        improved. Vigilant tracking
+                                        builds a safer and more controlled environment.</p>
+                                    <p><strong><em>Come forward and do not miss the chance to benefit from the Best
+                                                Attendance Software for Hotels and
+                                                Restaurants that makes your hospitality wonderful in India. We are
+                                                always here to help you supervise
+                                                your employees in a better way!</em></strong></p>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </section>
+
+
+
+                <section class="mb--93">
+                    <div class="tf-container">
+                        <div class="callt-to-action flex-two">
+                            <div class="callt-to-action-content flex-three">
+                                <div class="image">
+                                    <img src="assets/images/page/ready.png" alt="Image">
+                                </div>
+                                <div class="content">
+                                    <h2 class="title-call">Start Tracking Smarter Today </h2>
+                                    <p class="des text-white"> Use Trackeroo and experience powerful live location
+                                        tracking like never before.
+
+                                    </p>
+                                </div>
+                            </div>
+                            <img src="assets/images/page/vector4.png" alt="" class="shape-ab">
+                            <div class="callt-to-action-button">
+                                <a href="demo.html" class="get-call">Request a Demo</a>
+                            </div>
+                        </div>
+                    </div>
+
+                </section>
+
+            </main>
+
+
+            <footer class="footer footer-style1">
+                <div class="tf-container">
+                    <div class="footer-main">
+                        <div class="footer-logo">
+                            <div class="logo-footer">
+                                <img loading="lazy" src="assets/images/logo2.png" alt="">
+                            </div>
+                            <p class="des-footer">Trackeroo - Real-Time Location Tracking, Made Easy
+                            <ul class="footer-info">
+                                <li class="flex-three">
+                                    <i class="icon-noun-mail-5780740-1"></i>
+                                    <p>info@trackeroo.com</p>
+                                </li>
+                                <li class="flex-three">
+                                    <i class="icon-Group-9"></i>
+                                    <p>+91-8700914459</p>
+                                </li>
+                                <li class="flex-three">
+                                    <i class="icon-Layer-19"></i>
+                                    <p>H-161, Office No: 202, Second Floor, H Block, Sector 63, Noida</p>
+                                </li>
+                            </ul>
+
+                        </div>
+                        <div class="footer-service">
+                            <h5 class="title">Services Req</h5>
+
+                            <ul class="footer-menu">
+                                <li>
+                                    <a href="about.html">About Us</a>
+                                </li>
+                                <li>
+                                    <a href="features.html">Product Features</a>
+                                </li>
+                                <li>
+                                    <a href="industries.html">Industries </a>
+                                </li>
+                                <li>
+                                    <a href="blog.html">User Cases</a>
+                                </li>
+                                <li>
+                                    <a href="pricing.html">Pricing</a>
+                                </li>
+                                <li>
+                                    <a href="contact.html">Contact</a>
+                                </li>
+                            </ul>
+
+                        </div>
+                        <div class="footer-gallery">
+                            <h5 class="title">Gallery</h5>
+
+                            <div class="gallery-img">
+                                <a href="assets/images/gallery/gl1.jpg" data-fancybox="gallery">
+                                    <img loading="lazy" src="assets/images/blog/bl-h4-1.jpg" alt="image gallery">
+                                </a>
+                                <a href="assets/images/gallery/gl2.jpg" data-fancybox="gallery">
+                                    <img loading="lazy" src="assets/images/blog/bl-h4-2.avif" alt="image gallery">
+                                </a>
+                                <a href="assets/images/gallery/gl3.jpg" data-fancybox="gallery">
+                                    <img loading="lazy" src="assets/images/location-tracking.jpg" alt="image gallery">
+                                </a>
+                                <a href="assets/images/gallery/gl4.jpg" data-fancybox="gallery">
+                                    <img loading="lazy" src="assets/images/blog/bl-h6.jpg" alt="image gallery">
+                                </a>
+                                <a href="assets/images/gallery/gl5.jpg" data-fancybox="gallery">
+                                    <img loading="lazy" src="assets/images/blog/bl-h5.webp" alt="image gallery">
+                                </a>
+                                <a href="assets/images/gallery/gl6.jpg" data-fancybox="gallery">
+                                    <img loading="lazy" src="assets/images/blog/bl-h4.jpg" alt="image gallery">
+                                </a>
+                            </div>
+
+                        </div>
+                        <div class="footer-newsletter">
+                            <h5 class="title">Newsletter</h5>
+                            <form action="#" id="footer-form">
+                                <div class="input-wrap flex-three">
+                                    <input type="email" placeholder="Enter Email Adress">
+                                    <button type="submit"><i class="icon-paper-plane"></i></button>
+                                </div>
+                                <div class="check-form flex-three">
+                                    <i class="icon-Vector-121"></i>
+                                    <p>I agree to all your terms and policies</p>
+                                </div>
+
+                            </form>
+                            <ul class="social-ft flex-three">
+                                <li>
+                                    <a href="#">
+                                        <i class="icon-icon-2" title="Facebook"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#">
+                                        <i class="icon-x" title="X"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#">
+                                        <i class="icon-8" title="Instagram"></i>
+                                    </a>
+                                </li>
+
+                            </ul>
+
+                        </div>
+                    </div>
+
+                    <div class="row footer-bottom">
+                        <div class="col-md-6">
+                            <p class="copy-right">Copyright © 2025 by <a href="#" class="text-main">Trackeroo.</a> All
+                                Rights Reserved</p>
+                        </div>
+                        <div class="col-md-6">
+
+                        </div>
+                    </div>
+                </div>
+            </footer>
+
+            <!-- Bottom -->
+        </div>
+        <!-- /#page -->
+    </div>
+
+    <!-- Modal Popup Bid -->
+
+    <a id="scroll-top" class="button-go"></a>
+
+
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasRightLabel">Offcanvas right</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            ...
+        </div>
+    </div>
+
+    <!-- Javascript -->
+    <script src="app/js/jquery.min.js"></script>
+    <script src="app/js/jquery.nice-select.min.js"></script>
+    <script src="app/js/bootstrap.min.js"></script>
+    <script src="app/js/jquery.magnific-popup.min.js"></script>
+    <script src="app/js/swiper-bundle.min.js"></script>
+    <script src="app/js/swiper.js"></script>
+    <script src="app/js/plugin.js"></script>
+    <script src="app/js/jquery.fancybox.js"></script>
+    <script src="app/js/countto.js"></script>
+    <script src="app/js/price-ranger.js"></script>
+    <script src="app/js/textanimation.js"></script>
+    <script src="app/js/shortcodes.js"></script>
+    <script src="app/js/main.js"></script>
+
+</body>
+
+</html>

@@ -1,7 +1,25 @@
 from beanie import Link, PydanticObjectId
-from pydantic import BaseModel, StringConstraints, EmailStr, Field, field_validator, model_validator, HttpUrl
+from pydantic import (
+    BaseModel,
+    StringConstraints,
+    EmailStr,
+    Field,
+    field_validator,
+    model_validator,
+    HttpUrl,
+)
 from typing import Optional, Annotated, List, Dict, Any
-from app.core.enums import PROJECT_TYPES, PRIORITY, SOURCE, DESIGNATION, NUMBER_OF_EMPLOYEES, INDUSTRIES, TECHNOLOGY, INFO_TYPE, COUNTRY_CODE
+from app.core.enums import (
+    PROJECT_TYPES,
+    PRIORITY,
+    SOURCE,
+    DESIGNATION,
+    NUMBER_OF_EMPLOYEES,
+    INDUSTRIES,
+    TECHNOLOGY,
+    INFO_TYPE,
+    COUNTRY_CODE,
+)
 from app.db.models.user_model import UserModel
 import re
 from app.utils.custom_exception import AppException
@@ -16,13 +34,14 @@ PhoneNumber = Annotated[
         min_length=10,
         max_length=15,
         pattern=r"^\+?[1-9]\d{9,14}$",
-        
-    )
+    ),
 ]
+
 
 class OtherSocialLinks(BaseModel):
     platform: str
     url: HttpUrl
+
 
 class ExtraFieldSchema(BaseModel):
     label: str = Field(..., min_length=1, max_length=100)
@@ -38,14 +57,15 @@ class ExtraFieldSchema(BaseModel):
 
 
 class SocialLinks(BaseModel):
-    linkedin:  Optional[HttpUrl] = None
-    twitter:   Optional[HttpUrl] = None
-    github:    Optional[HttpUrl] = None
-    facebook:  Optional[HttpUrl] = None
+    linkedin: Optional[HttpUrl] = None
+    twitter: Optional[HttpUrl] = None
+    github: Optional[HttpUrl] = None
+    facebook: Optional[HttpUrl] = None
     instagram: Optional[HttpUrl] = None
-    youtube:   Optional[HttpUrl] = None
-    website:   Optional[HttpUrl] = None 
+    youtube: Optional[HttpUrl] = None
+    website: Optional[HttpUrl] = None
     other: Optional[List[OtherSocialLinks]] = None
+
 
 class Location(BaseModel):
     country: Optional[str] = None
@@ -57,35 +77,39 @@ class Location(BaseModel):
     @classmethod
     def not_empty(cls, v: Optional[str]) -> Optional[str]:
         if v is not None and not v.strip():
-            raise AppException(422,"Field must not be blank")
+            raise AppException(422, "Field must not be blank")
         return v.strip() if v else v
 
     @model_validator(mode="after")
     def validate_zipcode_for_country(self) -> "Location":
-       
+
         if not self.zipcode or not self.country:
             return self
 
-        country_key = self.country.value if hasattr(self.country, "value") else str(self.country)
+        country_key = (
+            self.country.value if hasattr(self.country, "value") else str(self.country)
+        )
         zipcode = self.zipcode.strip().upper()
 
         if country_key in ZIPCODE_PATTERNS:
             pattern, example = ZIPCODE_PATTERNS[country_key]
             if not re.fullmatch(pattern, zipcode, re.IGNORECASE):
-                raise AppException(422,
+                raise AppException(
+                    422,
                     f"Invalid zipcode '{self.zipcode}' for country '{country_key}'. "
-                    f"Expected format: {example}"
+                    f"Expected format: {example}",
                 )
         elif not re.fullmatch(r"^[A-Z0-9\s\-]{3,10}$", zipcode, re.IGNORECASE):
-            raise AppException(422,
+            raise AppException(
+                422,
                 f"Zipcode '{self.zipcode}' doesn't look valid. "
-                "Expected 3–10 alphanumeric characters."
+                "Expected 3–10 alphanumeric characters.",
             )
 
         self.zipcode = zipcode
         return self
- 
-    
+
+
 class EnquiryRegisterSchema(BaseModel):
     fullName: str
     email: EmailStr
@@ -126,32 +150,29 @@ class EnquiryRegisterSchema(BaseModel):
             )
 
         return value
-    
 
-    
     @model_validator(mode="before")
     @classmethod
     def validate_project_type(cls, values):
         if not values.get("projectType"):
             raise AppException(422, "Project type field must be required")
-        
+
         # if values.get("projectType") not in PROJECT_TYPES.__members__:
         #    print("vv: ", PROJECT_TYPES.__members__)
         #    raise AppException(422, "Project type field must be a valid enum")
 
         if not values.get("priority"):
             raise AppException(422, "Priority field must be required")
-        
+
         # if values.get("priority") != PRIORITY:
         #     raise AppException(422, "Priority field must be a valid enum")
 
         if not values.get("source"):
             raise AppException(422, "Source  field must be required")
-        
+
         # if values.get("source") != SOURCE:
         #     raise AppException(422, "Source  field must be a valid enum")
         return values
-    
 
 
 class BulkEnquiryRegisterSchema(BaseModel):
@@ -164,8 +185,6 @@ class BulkEnquiryRegisterSchema(BaseModel):
             raise ValueError("Enquiries list cannot be empty")
         return value
 
-
-    
 
 class UpdateEnquirySchema(BaseModel):
     fullName: str
@@ -207,49 +226,41 @@ class UpdateEnquirySchema(BaseModel):
             )
 
         return value
-    
 
     @model_validator(mode="before")
     @classmethod
     def validate_project_update_type(cls, values):
         if not values.get("projectType"):
             raise AppException(422, "Project type field must be required")
-        
+
         # if values.get("projectType") != PROJECT_TYPES:
         #     raise AppException(422, "Project type field must be a valid enum")
 
         if not values.get("priority"):
             raise AppException(422, "Priority field must be required")
-        
+
         # if values.get("priority") != PRIORITY:
         #     raise AppException(422, "Priority field must be a valid enum")
 
         if not values.get("source"):
             raise AppException(422, "Source  field must be required")
-        
+
         # if values.get("source") != SOURCE:
         #     raise AppException(422, "Source  field must be a valid enum")
         return values
-    
+
 
 class BulkAssign(BaseModel):
     enquiryIds: List[str]
     assignedTo: str
 
-
     @model_validator(mode="before")
     @classmethod
     def validate_bulk_assign_payload(cls, value):
         if not value.get("assignedTo"):
-            raise AppException(422,"assigned to field must be required")
-        
+            raise AppException(422, "assigned to field must be required")
+
         if not value.get("enquiryIds"):
             raise AppException(422, "enquiry ids field must be required")
-        
 
         return value
-
-
-
-
-    
