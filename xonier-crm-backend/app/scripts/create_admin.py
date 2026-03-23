@@ -24,7 +24,7 @@ async def create_admin():
         email=email,
         phone="9999999999",
         password="Admin@123",
-        userRole=["694a785575e0545dffcbe3db"],
+        userRole=["69c1150ecb432b0eb168d343"],
         company="xonier technologies",
         isActive=True,
         isEmailVerified=True

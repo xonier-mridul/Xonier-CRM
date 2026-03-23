@@ -111,7 +111,7 @@ const page = (): JSX.Element => {
       if (axios.isAxiosError(error)) {
         const messages = extractErrorMessages(error);
         setErr(messages);
-        toast.error(`${messages}`);
+        
       } else {
         setErr(["Something went wrong"]);
       }

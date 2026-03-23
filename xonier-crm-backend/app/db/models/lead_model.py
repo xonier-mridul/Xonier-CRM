@@ -49,7 +49,7 @@ class LeadsModel(Document):
     membershipNotes: Optional[str] = None
     assignedTo: Optional[List[Link[UserModel]]] = Field(default_factory=list)
     leadSource: LEAD_SOURCE_TYPE = LEAD_SOURCE_TYPE.SELF_CREATED.value
-
+    isAssigned: bool = False
     inDeal: bool = False
     extraFields: Optional[dict[str, str | int | float | bool | None]] = Field(default=None)
     assignedBy: Optional[Link[UserModel]] = None

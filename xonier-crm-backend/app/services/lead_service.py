@@ -611,7 +611,8 @@ class LeadService:
                         SALES_STATUS.PROPOSAL,
                         SALES_STATUS.QUALIFIED
                     ]
-                }
+                },
+               
             }
 
             if not is_admin:
