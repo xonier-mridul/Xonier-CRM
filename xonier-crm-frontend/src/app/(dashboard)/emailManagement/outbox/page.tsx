@@ -1,58 +1,41 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { IoIosSearch } from "react-icons/io";
 import { FiRefreshCw } from "react-icons/fi";
 import { FaRegEye } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
+import EmailService from "@/src/services/communication/mail.service";
+import StatusBadge from "@/src/components/common/Status";
+import CreatedAt from "@/src/components/common/CreatedAt";
 
 type Email = {
-  id: number;
+  id: string;
   to: string;
+  bcc_emails: string[];
+  cc_emails: string[];
+  from_email: string;
+  from_name: string;
+  provider:string;
+  sent_at: string;
+  send_by: string;
+  status:string;
   subject: string;
-  template: string;
-  status: "SENT" | "PENDING" | "FAILED";
-  sentAt: string;
+  template:{
+    id:string;
+    name:string;
+    subject:string;
+  };
+  to_emails: string[];
+  updated_at: string;
 };
 
-const mockEmails: Email[] = [
-  {
-    id: 1,
-    to: "john@example.com",
-    subject: "Welcome to our platform",
-    template: "Welcome Template",
-    status: "SENT",
-    sentAt: "2026-03-12 10:30",
-  },
-  {
-    id: 2,
-    to: "emma@company.com",
-    subject: "Meeting Demo Invitation",
-    template: "Demo Meeting Template",
-    status: "PENDING",
-    sentAt: "-",
-  },
-  {
-    id: 3,
-    to: "david@startup.com",
-    subject: "Follow up regarding our demo",
-    template: "Follow Up Template",
-    status: "FAILED",
-    sentAt: "2026-03-11 17:10",
-  },
-];
 
 export default function Page() {
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const [emails, setEmails] = useState(mockEmails);
-
-  const filteredEmails = emails.filter(
-    (email) =>
-      email.to.toLowerCase().includes(search.toLowerCase()) ||
-      email.subject.toLowerCase().includes(search.toLowerCase()) ||
-      email.template.toLowerCase().includes(search.toLowerCase())
-  );
+  const [emails, setEmails] = useState<Email[]>([]);
 
   const getStatusStyle = (status: Email["status"]) => {
     switch (status) {
@@ -68,9 +51,23 @@ export default function Page() {
   };
 
   const handleRefresh = () => {
-    setEmails([...mockEmails]);
+    featchEmails();
   };
-
+  useEffect(() => {
+    featchEmails();
+  }, []);
+  const featchEmails = async () => {
+    try {
+      const result = await EmailService.getAll();
+      if (result.status === 200) {
+        const data = result.data.data?.data;
+        debugger;
+        setEmails(data);
+      }
+    } catch (error) {
+        toast.error("Failed to load emails");
+    }
+  };
   return (
     <div className="ml-72 mt-14 p-6">
 
@@ -126,7 +123,8 @@ export default function Page() {
         </div>
 
         {/* TABLE */}
-        <table className="w-full rounded-xl overflow-hidden">
+        <div className="w-full overflow-x-scroll">
+        <table className="w-full rounded-xl  text-nowrap">
 
           <thead>
             <tr className="border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
@@ -160,8 +158,8 @@ export default function Page() {
 
           <tbody>
 
-            {filteredEmails.length > 0 ? (
-              filteredEmails.map((email, i) => {
+            {emails?.length > 0 ? (
+              emails.map((email, i) => {
 
                 const rr = i % 2 === 0;
 
@@ -175,11 +173,11 @@ export default function Page() {
                     }`}
                   >
 
-                    <td className="p-4">{email.to}</td>
+                    <td className="p-4">{email.to_emails.join(", ")}</td>
 
                     <td className="p-4">{email.subject}</td>
 
-                    <td className="p-4">{email.template}</td>
+                    <td className="p-4">{email.template?.name}</td>
 
                     <td className="p-4">
                       <span
@@ -187,11 +185,11 @@ export default function Page() {
                           email.status
                         )}`}
                       >
-                        {email.status}
+                        <StatusBadge status={email.status} />
                       </span>
                     </td>
 
-                    <td className="p-4">{email.sentAt}</td>
+                    <td className="p-4"><CreatedAt timestamp={email.sent_at} /></td>
 
                     <td className="p-4">
 
@@ -224,6 +222,7 @@ export default function Page() {
           </tbody>
 
         </table>
+        </div>
 
       </div>
     </div>

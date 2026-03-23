@@ -296,7 +296,7 @@ const ProspectViewPage = (): JSX.Element => {
                                 </p>
 
                             </div>
-                            <div className="flex flex-wrap items-center gap-2">
+                            {/* <div className="flex flex-wrap items-center gap-2">
                                 {hasPermission(PERMISSIONS.callProspects) &&
                                     (
                                         <button
@@ -332,7 +332,6 @@ const ProspectViewPage = (): JSX.Element => {
                                 )}
 
 
-                                {/* More Actions Dropdown */}
                                 <div className="relative group">
                                     <button className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-600 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded-lg transition-colors">
                                         <IoEllipsisVertical className="w-4 h-4" />
@@ -341,7 +340,7 @@ const ProspectViewPage = (): JSX.Element => {
 
                                     </div>
                                 </div>
-                            </div>
+                            </div> */}
 
                         </div>
                     </div>

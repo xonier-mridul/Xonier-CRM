@@ -174,6 +174,10 @@ const page = (): JSX.Element => {
     setErr("");
     setLoading(true);
     try {
+      if(formData.dealName === ""){
+        toast.error("Deal name is required")
+        return
+      }
       const result = await dealService.create(formData);
       if (result.status === 201) {
         toast.success(`${formData.dealName} deal created successfully`);
@@ -461,7 +465,7 @@ const page = (): JSX.Element => {
               disabled={loading || selectedFieldsIds.length <= 0 || !hasPermission(PERMISSIONS.createDeal)}
             >
               <MdOutlineCloudUpload className="text-lg" />{" "}
-              {loading ? "Updating..." : "Create deals"}
+              {loading ? "Updating..." : "Create deal"}
             </button>
 
             <button

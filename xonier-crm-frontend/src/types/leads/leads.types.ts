@@ -37,7 +37,7 @@ export interface Lead {
   membershipNotes?: string | null;
 
   inDeal?: boolean
-
+  connectStatus?: string | null;
   createdAt: string;          
   updatedAt: string;          
   deletedAt?: string | null;
@@ -83,4 +83,15 @@ export interface UpdateLeadStatusPayload {
 export interface BulkReassignLeadSchema{
     userId: string;
     leadsId: Array<string>
+}
+export enum LeadEngagementStatus {
+  INTERESTED = "interested",
+  NOT_INTERESTED = "not_interested",
+  CONNECTED = "connected",
+  NOT_CONNECTED = "not_connected",
+  NOT_REACHED = "not_reached",
+}
+
+export interface LeadEngagementStatusPayload {
+  status: LeadEngagementStatus
 }

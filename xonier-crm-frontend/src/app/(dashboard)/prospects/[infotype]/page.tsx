@@ -441,12 +441,12 @@ const LeadContent = (): JSX.Element => {
     const isCommChecked = commSelectedIds.has(item.id);
     return (
       <span className="flex items-center gap-1.5 p-2">
-        <label className="relative inline-flex items-center cursor-pointer mr-1" title="Select for bulk communication">
+       {(hasPermission(PERMISSIONS.callProspects) || hasPermission(PERMISSIONS.smsProspects)||hasPermission(PERMISSIONS.emailProspects)) && <label className="relative inline-flex items-center cursor-pointer mr-1" title="Select for bulk communication">
           <input type="checkbox" className="sr-only" checked={isCommChecked} onChange={() => toggleCommSelect(item.id)} />
           <div className={`w-4 h-4 rounded-sm border-2 flex items-center justify-center transition-all duration-150 ${isCommChecked ? "bg-slate-600 border-slate-600" : "bg-white dark:bg-gray-700 border-slate-300 dark:border-slate-500 hover:border-slate-500"}`}>
             {isCommChecked && <FaCheck className="text-white text-[8px]" />}
           </div>
-        </label>
+        </label>}
 
         {hasPermission(PERMISSIONS.readProspects) ? (
           <Link href={`/prospects/view/${item.id}`} className="h-8 w-8 flex items-center justify-center rounded-md bg-green-100/80 dark:bg-green-900/30 hover:bg-green-200 text-green-600 hover:scale-105 transition-transform" title="View">
@@ -628,7 +628,7 @@ const LeadContent = (): JSX.Element => {
                     )}
                     {visibleCols.map((col) => (
                       <th key={col.key} className={`p-4 uppercase text-xs text-slate-500 dark:text-slate-100 whitespace-nowrap ${col.key === "actions" ? "text-center" : "text-start"}`}>
-                        {col.key === "actions" ? (
+                        {(hasPermission(PERMISSIONS.callProspects) || hasPermission(PERMISSIONS.smsProspects)||hasPermission(PERMISSIONS.emailProspects)) && col.key === "actions" ? (
                           <div className="flex items-center gap-4 px-2">
                             <label className="relative inline-flex items-center cursor-pointer" title="Select all for communication">
                               <input ref={commSelectAllRef} type="checkbox" className="sr-only" checked={isAllCommSelected} onChange={handleSelectAllComm} />
