@@ -357,7 +357,7 @@ const Page = (): JSX.Element => {
         />
       )}
 
-      <div className="ml-72 mt-14 p-8 min-h-screen" style={{ background: "#F8F7FF" }}>
+      <div className="ml-72 mt-14 p-8 min-h-screen dark:bg-black rounded-2xl bg-gray-100">
 
         {/* ── Page Header ─────────────────────────────────────────── */}
         <div className="mb-7 flex items-start justify-between">
@@ -487,8 +487,10 @@ const Page = (): JSX.Element => {
               <label className={labelBase}>AI Prompt</label>
               <textarea
                 rows={3}
-                placeholder="Describe changes you'd like to regenerate the body…"
-                value={form.aiPrompt}
+                // placeholder="Describe changes you'd like to regenerate the body…"
+                placeholder={"Ai template genration functionality is coming soon..."}
+                disabled 
+                // value={form.aiPrompt}
                 onChange={(e) => setForm({ ...form, aiPrompt: e.target.value })}
                 className={`${fieldBase} resize-none`}
               />

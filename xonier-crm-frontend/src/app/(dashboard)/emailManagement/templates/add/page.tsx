@@ -1,88 +1,190 @@
 "use client";
 
 import React, { JSX, useState, useRef, useCallback, FormEvent, KeyboardEvent } from "react";
+import { useRouter } from "next/navigation";
 import { TemplateCategory } from "@/src/constants/enum";
 import { MailService } from "@/src/services/communication/mail.service";
 import { Template, Variable, CustomVarForm } from "@/src/types/communication/mail.types";
-
-// ── Import the standalone rich editor ────────────────────────────────────────
 import RichTextEditor, { RichTextEditorHandle } from "@/src/components/pages/prospect/RichEditor";
-import { all } from "axios";
 import { toast } from "react-toastify";
-import { Route } from "lucide-react";
-// (adjust the path to wherever you placed RichTextEditor.tsx in your project)
 
 // ─── Default Variables ────────────────────────────────────────────────────────
-const DEFAULT_VARIABLES: Variable[] = [
- ];
+const DEFAULT_VARIABLES: Variable[] = [];
 
-// ─── Shared styles ────────────────────────────────────────────────────────────
-const fieldBase =
-  "w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm placeholder-slate-400 " +
-  "focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400 " +
-  "transition-all duration-150 shadow-sm hover:border-slate-300 " +
-  "dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 " +
-  "dark:focus:ring-violet-500 dark:hover:border-gray-500";
+// ── Shared styles (mirrors CreateEnquiry exactly) ────────────────────────────
+const selectClass = (hasErr?: boolean) => `
+  w-full px-3 py-2 rounded-lg border transition-all duration-200
+  bg-white dark:bg-gray-800 text-black dark:text-white
+  border-gray-200 dark:border-gray-700
+  disabled:opacity-60 disabled:cursor-not-allowed
+  focus:outline-none focus:border-violet-400 dark:focus:border-violet-500 focus:ring-2 focus:ring-violet-400/20
+  ${hasErr ? "border-red-400 focus:border-red-400 focus:ring-red-400/20" : ""}
+`;
 
-const labelBase =
-  "block text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1.5";
+const textareaClass = (hasErr?: boolean) => `
+  w-full px-3 py-2 rounded-lg border transition-all duration-200
+  bg-white dark:bg-gray-800 text-black dark:text-white
+  border-gray-200 dark:border-gray-700
+  disabled:opacity-60 disabled:cursor-not-allowed
+  focus:outline-none focus:border-violet-400 dark:focus:border-violet-500 focus:ring-2 focus:ring-violet-400/20
+  placeholder-gray-400 dark:placeholder-gray-500 resize-none
+  ${hasErr ? "border-red-400 focus:border-red-400 focus:ring-red-400/20" : ""}
+`;
+
+const inputClass = (hasErr?: boolean) => `
+  w-full px-3 py-2 rounded-lg border transition-all duration-200
+  bg-white dark:bg-gray-800 text-black dark:text-white
+  border-gray-200 dark:border-gray-700
+  focus:outline-none focus:border-violet-400 dark:focus:border-violet-500 focus:ring-2 focus:ring-violet-400/20
+  placeholder-gray-400 dark:placeholder-gray-500
+  ${hasErr ? "border-red-400 focus:border-red-400 focus:ring-red-400/20" : ""}
+`;
+
+// ── Section Heading ───────────────────────────────────────────────────────────
+const SectionHeading = ({ title, icon }: { title: string; icon?: string }) => (
+  <div className="col-span-1 md:col-span-2 mt-4">
+    <div className="flex items-center gap-2 mb-1">
+      {icon && <span className="text-base">{icon}</span>}
+      <h3 className="text-xs font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest">
+        {title}
+      </h3>
+    </div>
+    <div className="h-px bg-gradient-to-r from-violet-300 via-violet-100 to-transparent dark:from-violet-700 dark:via-violet-900 dark:to-transparent" />
+  </div>
+);
+
+// ── Field Label ───────────────────────────────────────────────────────────────
+const FieldLabel = ({ children, required }: { children: React.ReactNode; required?: boolean }) => (
+  <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-1">
+    {children}
+    {required && <span className="text-violet-500">*</span>}
+  </label>
+);
+
+// ── Tag Input ─────────────────────────────────────────────────────────────────
+const TagInput = ({ tags, onChange }: { tags: string[]; onChange: (t: string[]) => void }) => {
+  const [input, setInput] = useState("");
+
+  const add = (val: string) => {
+    const t = val.trim().replace(/,/g, "");
+    if (t && !tags.includes(t)) onChange([...tags, t]);
+    setInput("");
+  };
+  const remove = (t: string) => onChange(tags.filter((x) => x !== t));
+  const kd = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" || e.key === ",") { e.preventDefault(); add(input); }
+    if (e.key === "Backspace" && !input && tags.length) onChange(tags.slice(0, -1));
+  };
+
+  return (
+    <div
+      className="flex flex-wrap gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700
+        bg-white dark:bg-gray-800 focus-within:border-violet-400 dark:focus-within:border-violet-500
+        focus-within:ring-2 focus-within:ring-violet-400/20 min-h-[44px] transition-all duration-200 cursor-text"
+      onClick={() => document.getElementById("template-tag-input")?.focus()}
+    >
+      {tags.map((t) => (
+        <span
+          key={t}
+          className="inline-flex items-center gap-1 bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-xs px-2.5 py-1 rounded-full font-medium border border-violet-200 dark:border-violet-700"
+        >
+          {t}
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); remove(t); }}
+            className="hover:text-red-500 font-bold leading-none ml-0.5 transition-colors"
+          >
+            ×
+          </button>
+        </span>
+      ))}
+      <input
+        id="template-tag-input"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={kd}
+        onBlur={() => input.trim() && add(input)}
+        placeholder={tags.length === 0 ? "Type and press Enter or , to add…" : "Add more…"}
+        className="flex-1 min-w-[160px] bg-transparent text-sm text-black dark:text-white placeholder-gray-400 outline-none py-0.5 px-1"
+      />
+    </div>
+  );
+};
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// CUSTOM VARIABLE MODAL
+// CUSTOM VARIABLE MODAL  (create + edit)
 // ═══════════════════════════════════════════════════════════════════════════════
 const CustomVariableModal = ({
   onClose,
-  onAdd,
+  onSave,
+  initial,
+  isEdit = false,
 }: {
   onClose: () => void;
-  onAdd: (v: Variable) => void;
+  onSave: (v: Variable) => void;
+  initial?: Variable;
+  isEdit?: boolean;
 }) => {
-  const [form, setForm] = useState<CustomVarForm>({
-    key: "", label: "", description: "", default_value: "", is_required: false,
-  });
+  const [form, setForm] = useState<CustomVarForm>(
+    initial
+      ? {
+          key: initial.key,
+          label: initial.label,
+          description: initial.description ?? "",
+          default_value: initial.default_value ?? "",
+          is_required: initial.is_required ?? false,
+        }
+      : { key: "", label: "", description: "", default_value: "", is_required: false }
+  );
   const [errors, setErrors] = useState<Partial<Record<keyof CustomVarForm, string>>>({});
 
   const slugify = (v: string) =>
     v.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "");
 
-  const handleAdd = () => {
+  const handleSave = () => {
     const e: typeof errors = {};
     if (!form.key.trim())   e.key   = "Key is required";
     if (!form.label.trim()) e.label = "Label is required";
     if (Object.keys(e).length) { setErrors(e); return; }
-    onAdd({ ...form, isCustom: true });
+    onSave({ ...form, isCustom: true });
     onClose();
   };
 
-  const mf =
-    "w-full px-3.5 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 " +
-    "transition-all duration-150 placeholder-yellow-400/50 text-yellow-900";
+  const mf = (hasErr?: boolean) => `
+    w-full px-3 py-2 rounded-lg border text-sm transition-all duration-200
+    bg-yellow-50 dark:bg-yellow-950 text-yellow-900 dark:text-yellow-100
+    placeholder-yellow-400/60 dark:placeholder-yellow-600
+    focus:outline-none focus:ring-2
+    ${hasErr
+      ? "border-red-400 bg-red-50 dark:bg-red-950 focus:ring-red-400"
+      : "border-yellow-300 dark:border-yellow-700 hover:border-yellow-400 dark:hover:border-yellow-600 focus:ring-yellow-400 dark:focus:ring-yellow-500"
+    }
+  `;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center px-4"
-      style={{ background: "rgba(0,0,0,0.50)", backdropFilter: "blur(6px)" }}
+      className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm"
       onClick={(ev) => { if (ev.target === ev.currentTarget) onClose(); }}
     >
-      <div
-        className="relative w-full max-w-md rounded-2xl shadow-2xl overflow-hidden"
-        style={{ background: "#FEFCE8", border: "1.5px solid #EAB308" }}
-      >
+      <div className="relative w-full max-w-md rounded-2xl shadow-2xl overflow-hidden bg-yellow-50 dark:bg-yellow-950 border border-yellow-300 dark:border-yellow-800">
+
         {/* Header */}
-        <div
-          className="px-6 py-4 flex items-center justify-between"
-          style={{ background: "linear-gradient(135deg,#EAB308,#CA8A04)" }}
-        >
+        <div className="px-6 py-4 flex items-center justify-between bg-gradient-to-r from-yellow-400 to-yellow-500 dark:from-yellow-600 dark:to-yellow-700">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-white font-bold text-lg">✦</div>
+            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-white text-lg font-bold">
+              {isEdit ? "✎" : "✦"}
+            </div>
             <div>
-              <p className="font-extrabold text-white text-base">Create Custom Variable</p>
+              <p className="font-bold text-white text-base">
+                {isEdit ? "Edit Variable" : "Create Custom Variable"}
+              </p>
               <p className="text-yellow-100 text-xs mt-0.5">Define a reusable dynamic placeholder</p>
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-xl bg-white/20 hover:bg-white/35 flex items-center justify-center text-white font-bold text-xl cursor-pointer transition-colors"
+            className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center text-white text-xl font-bold cursor-pointer transition-colors"
           >
             ×
           </button>
@@ -90,23 +192,25 @@ const CustomVariableModal = ({
 
         {/* Body */}
         <div className="px-6 py-5 flex flex-col gap-4">
+
           {/* Key */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-yellow-800 mb-1.5">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-bold uppercase tracking-widest text-yellow-800 dark:text-yellow-300">
               Key <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               placeholder="e.g. order_id"
               value={form.key}
+              disabled={isEdit}
               onChange={(e) => setForm({ ...form, key: slugify(e.target.value) })}
-              className={`${mf} ${errors.key ? "border-red-400 bg-red-50" : "border-yellow-300 bg-yellow-50 hover:border-yellow-400"}`}
+              className={`${mf(!!errors.key)} ${isEdit ? "opacity-60 cursor-not-allowed" : ""}`}
             />
-            {errors.key && <p className="text-red-500 text-xs mt-1">{errors.key}</p>}
+            {errors.key && <p className="text-red-500 text-xs">{errors.key}</p>}
             {form.key && (
-              <p className="text-yellow-700 text-xs mt-1.5 flex items-center gap-1.5">
+              <p className="text-yellow-700 dark:text-yellow-400 text-xs flex items-center gap-1.5 mt-0.5">
                 <span className="opacity-60">Inserts as:</span>
-                <code className="font-mono bg-yellow-100 border border-yellow-200 px-1.5 py-0.5 rounded-md text-yellow-900 font-semibold">
+                <code className="font-mono bg-yellow-100 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 px-1.5 py-0.5 rounded text-yellow-900 dark:text-yellow-200 font-semibold">
                   {`{{${form.key}}}`}
                 </code>
               </p>
@@ -114,8 +218,8 @@ const CustomVariableModal = ({
           </div>
 
           {/* Label */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-yellow-800 mb-1.5">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-bold uppercase tracking-widest text-yellow-800 dark:text-yellow-300">
               Label <span className="text-red-500">*</span>
             </label>
             <input
@@ -123,20 +227,20 @@ const CustomVariableModal = ({
               placeholder="e.g. Order ID"
               value={form.label}
               onChange={(e) => setForm({ ...form, label: e.target.value })}
-              className={`${mf} ${errors.label ? "border-red-400 bg-red-50" : "border-yellow-300 bg-yellow-50 hover:border-yellow-400"}`}
+              className={mf(!!errors.label)}
             />
-            {errors.label && <p className="text-red-500 text-xs mt-1">{errors.label}</p>}
+            {errors.label && <p className="text-red-500 text-xs">{errors.label}</p>}
           </div>
 
           {/* Description + Default */}
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-widest text-yellow-800 mb-1.5">Description</label>
-              <input type="text" placeholder="Optional" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={`${mf} border-yellow-300 bg-yellow-50 hover:border-yellow-400`} />
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-bold uppercase tracking-widest text-yellow-800 dark:text-yellow-300">Description</label>
+              <input type="text" placeholder="Optional" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={mf()} />
             </div>
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-widest text-yellow-800 mb-1.5">Default Value</label>
-              <input type="text" placeholder="Fallback" value={form.default_value} onChange={(e) => setForm({ ...form, default_value: e.target.value })} className={`${mf} border-yellow-300 bg-yellow-50 hover:border-yellow-400`} />
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-bold uppercase tracking-widest text-yellow-800 dark:text-yellow-300">Default Value</label>
+              <input type="text" placeholder="Fallback" value={form.default_value} onChange={(e) => setForm({ ...form, default_value: e.target.value })} className={mf()} />
             </div>
           </div>
 
@@ -144,19 +248,36 @@ const CustomVariableModal = ({
           <label className="flex items-center gap-3 cursor-pointer select-none group">
             <div className="relative flex-shrink-0">
               <input type="checkbox" className="sr-only" checked={form.is_required} onChange={(e) => setForm({ ...form, is_required: e.target.checked })} />
-              <div className="w-11 h-6 rounded-full transition-colors duration-200 shadow-inner" style={{ background: form.is_required ? "#EAB308" : "#D1D5DB" }} />
-              <div className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-200" style={{ transform: form.is_required ? "translateX(20px)" : "none" }} />
+              <div className={`w-11 h-6 rounded-full transition-colors duration-200 shadow-inner ${form.is_required ? "bg-yellow-400 dark:bg-yellow-500" : "bg-gray-300 dark:bg-gray-600"}`} />
+              <div
+                className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-200"
+                style={{ transform: form.is_required ? "translateX(20px)" : "none" }}
+              />
             </div>
             <div>
-              <p className="text-sm font-semibold text-yellow-900 group-hover:text-yellow-700 transition-colors">Required field</p>
-              <p className="text-xs text-yellow-600">Must have a value when email is sent</p>
+              <p className="text-sm font-semibold text-yellow-900 dark:text-yellow-200 group-hover:text-yellow-700 dark:group-hover:text-yellow-300 transition-colors">
+                Required field
+              </p>
+              <p className="text-xs text-yellow-600 dark:text-yellow-400">Must be filled when email is sent</p>
             </div>
           </label>
 
           {/* Actions */}
           <div className="flex gap-3 pt-1">
-            <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border-2 text-sm font-semibold hover:bg-yellow-50 cursor-pointer transition-all" style={{ borderColor: "#FDE047", color: "#92400E" }}>Cancel</button>
-            <button onClick={handleAdd} className="flex-1 py-2.5 rounded-xl text-sm font-bold hover:shadow-lg hover:scale-[1.02] active:scale-100 cursor-pointer transition-all" style={{ background: "linear-gradient(135deg,#EAB308,#CA8A04)", color: "#fff" }}>Add Variable</button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-2 rounded-lg border border-yellow-300 dark:border-yellow-700 text-sm font-semibold text-yellow-900 dark:text-yellow-200 hover:bg-yellow-100 dark:hover:bg-yellow-900 cursor-pointer transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              className="flex-1 py-2 rounded-lg text-sm font-bold text-white bg-gradient-to-r from-yellow-400 to-yellow-500 dark:from-yellow-500 dark:to-yellow-600 hover:shadow-md hover:scale-[1.02] active:scale-100 cursor-pointer transition-all"
+            >
+              {isEdit ? "Save Changes" : "Add Variable"}
+            </button>
           </div>
         </div>
       </div>
@@ -164,64 +285,114 @@ const CustomVariableModal = ({
   );
 };
 
-// ─── Variable Chip ────────────────────────────────────────────────────────────
-const VarChip = ({ variable, onClick }: { variable: Variable; onClick: () => void }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    title={variable.description}
-    className="group flex flex-col items-start gap-0.5 px-3 py-2 rounded-xl border text-left transition-all duration-150 hover:shadow-md hover:scale-[1.04] active:scale-100 cursor-pointer"
-    style={{ background: variable.isCustom ? "#FEFCE8" : "#F5F3FF", borderColor: variable.isCustom ? "#FDE047" : "#DDD6FE" }}
+// ─── Delete Confirm Modal ─────────────────────────────────────────────────────
+const DeleteConfirmModal = ({
+  variable,
+  onClose,
+  onConfirm,
+}: {
+  variable: Variable;
+  onClose: () => void;
+  onConfirm: () => void;
+}) => (
+  <div
+    className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm"
+    onClick={(ev) => { if (ev.target === ev.currentTarget) onClose(); }}
   >
-    <span className="text-xs font-semibold leading-tight" style={{ color: variable.isCustom ? "#92400E" : "#5B21B6" }}>
-      {variable.label}
-      {variable.is_required && <span className="ml-1 text-red-400 font-bold">*</span>}
-    </span>
-    <span className="font-mono text-[10px] leading-tight opacity-60 group-hover:opacity-90 transition-opacity" style={{ color: variable.isCustom ? "#B45309" : "#7C3AED" }}>
-      {`{{${variable.key}}}`}
-    </span>
-  </button>
+    <div className="w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden bg-white dark:bg-gray-900 border border-red-200 dark:border-red-800">
+      <div className="px-6 py-4 bg-gradient-to-r from-red-500 to-red-600 dark:from-red-700 dark:to-red-800">
+        <p className="font-bold text-white text-base">Delete Variable</p>
+        <p className="text-red-100 text-xs mt-0.5">This action cannot be undone</p>
+      </div>
+      <div className="px-6 py-5 flex flex-col gap-5">
+        <p className="text-sm text-gray-700 dark:text-gray-300">
+          Are you sure you want to delete{" "}
+          <code className="font-mono bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-1.5 py-0.5 rounded text-gray-900 dark:text-gray-200 font-semibold">
+            {`{{${variable.key}}}`}
+          </code>
+          ? Any uses in the email body will become unresolved.
+        </p>
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-all"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={() => { onConfirm(); onClose(); }}
+            className="flex-1 py-2 rounded-lg bg-red-500 hover:bg-red-600 dark:bg-red-700 dark:hover:bg-red-600 text-white text-sm font-bold cursor-pointer transition-all"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 );
 
-// ─── Tag Input ────────────────────────────────────────────────────────────────
-const TagInput = ({ tags, onChange }: { tags: string[]; onChange: (tags: string[]) => void }) => {
-  const [input, setInput] = useState("");
-  const add = (v: string) => { const t = v.trim().replace(/,/g, ""); if (t && !tags.includes(t)) onChange([...tags, t]); setInput(""); };
-  const remove = (t: string) => onChange(tags.filter((x) => x !== t));
-  const kd = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" || e.key === ",") { e.preventDefault(); add(input); }
-    if (e.key === "Backspace" && !input && tags.length) remove(tags[tags.length - 1]);
-  };
-  return (
-    <div
-      className="flex flex-wrap gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white min-h-[44px] cursor-text focus-within:ring-2 focus-within:ring-violet-400 focus-within:border-violet-400 transition-all duration-150 shadow-sm hover:border-slate-300 dark:bg-gray-800 dark:border-gray-600"
-      onClick={() => document.getElementById("tag-field")?.focus()}
+// ─── Variable Chip ────────────────────────────────────────────────────────────
+const VarChip = ({
+  variable,
+  onInsert,
+  onEdit,
+  onDelete,
+}: {
+  variable: Variable;
+  onInsert: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
+}) => (
+  <div
+    className={`group inline-flex items-center rounded-full border text-xs font-medium transition-all duration-150 overflow-hidden
+      ${variable.isCustom
+        ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-200 dark:border-yellow-800"
+        : "bg-violet-50 dark:bg-violet-900/30 border-violet-200 dark:border-violet-700"
+      }`}
+  >
+    {/* Insert trigger */}
+    <button
+      type="button"
+      onClick={onInsert}
+      title={variable.description || `Insert {{${variable.key}}}`}
+      className="flex flex-col items-start gap-0 pl-3 pr-2 py-1.5 cursor-pointer hover:opacity-75 transition-opacity"
     >
-      {tags.map((t) => (
-        <span key={t} className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-xs font-semibold" style={{ background: "#EDE9FE", color: "#5B21B6" }}>
-          {t}
-          <button type="button" onClick={(e) => { e.stopPropagation(); remove(t); }} className="text-violet-400 hover:text-violet-700 cursor-pointer transition-colors leading-none">×</button>
-        </span>
-      ))}
-      <input
-        id="tag-field"
-        type="text"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={kd}
-        onBlur={() => { if (input) add(input); }}
-        placeholder={tags.length === 0 ? "Type a tag and press Enter or , to add…" : "Add more…"}
-        className="flex-1 min-w-[160px] bg-transparent text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none py-0.5"
-      />
-    </div>
-  );
-};
+      <span className={`font-semibold leading-tight ${variable.isCustom ? "text-yellow-800 dark:text-yellow-300" : "text-violet-800 dark:text-violet-300"}`}>
+        {variable.label}
+        {variable.is_required && <span className="ml-1 text-red-400 font-bold">*</span>}
+      </span>
+      <span className={`font-mono text-[10px] opacity-60 ${variable.isCustom ? "text-yellow-700 dark:text-yellow-400" : "text-violet-600 dark:text-violet-400"}`}>
+        {`{{${variable.key}}}`}
+      </span>
+    </button>
 
-const SectionDivider = ({ label }: { label: string }) => (
-  <div className="flex items-center gap-3 py-1">
-    <div className="flex-1 h-px bg-slate-100 dark:bg-gray-700" />
-    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300 dark:text-slate-600">{label}</span>
-    <div className="flex-1 h-px bg-slate-100 dark:bg-gray-700" />
+    {/* Edit / Delete actions — only for custom vars, appear on hover */}
+    {variable.isCustom && onEdit && onDelete && (
+      <div className="flex items-center gap-0.5 pr-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+        <button
+          type="button"
+          onClick={onEdit}
+          title="Edit variable"
+          className="w-5 h-5 flex items-center justify-center rounded text-yellow-600 dark:text-yellow-400 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition-colors cursor-pointer"
+        >
+          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H9v-2a2 2 0 01.586-1.414z" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          onClick={onDelete}
+          title="Delete variable"
+          className="w-5 h-5 flex items-center justify-center rounded text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 hover:text-red-600 transition-colors cursor-pointer"
+        >
+          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
+      </div>
+    )}
   </div>
 );
 
@@ -229,51 +400,60 @@ const SectionDivider = ({ label }: { label: string }) => (
 // MAIN PAGE
 // ═══════════════════════════════════════════════════════════════════════════════
 const Page = (): JSX.Element => {
+  const router = useRouter();
+
   const [isLoading,    setIsLoading]    = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [showModal,    setShowModal]    = useState(false);
   const [err,          setErr]          = useState<string[] | string | null>(null);
   const [success,      setSuccess]      = useState(false);
-  const [customVars,   setCustomVars]   = useState<Variable[]>([]);
 
-  // ── Ref to the rich editor — used for insertAtCursor & setContent ──────────
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingVar,      setEditingVar]      = useState<Variable | null>(null);
+  const [deletingVar,     setDeletingVar]     = useState<Variable | null>(null);
+  const [customVars,      setCustomVars]      = useState<Variable[]>([]);
+
   const editorRef = useRef<RichTextEditorHandle>(null);
 
   const [form, setForm] = useState({
-    name: "",
-    subject: "",
-    tags: [] as string[],
+    name:     "",
+    subject:  "",
+    tags:     [] as string[],
     category: "" as TemplateCategory | "",
-    privacy: "PUBLIC",
+    privacy:  "PUBLIC",
     aiPrompt: "",
-    body: "",
+    body:     "",
   });
 
   const allVariables = [...DEFAULT_VARIABLES, ...customVars];
 
-  // Insert {{key}} at wherever the cursor currently is in the editor
   const insertVariable = useCallback((key: string) => {
     editorRef.current?.insertAtCursor(`{{${key}}}`);
   }, []);
 
+  // ── Custom var CRUD ──────────────────────────────────────────────────────
+  const handleAddVar    = (v: Variable) => setCustomVars((p) => [...p, v]);
+  const handleEditVar   = (v: Variable) => setCustomVars((p) => p.map((x) => (x.key === v.key ? v : x)));
+  const handleDeleteVar = (key: string) => setCustomVars((p) => p.filter((x) => x.key !== key));
+
+  // ── AI Generate ──────────────────────────────────────────────────────────
   const generateWithAI = async () => {
     if (!form.aiPrompt) return;
     setIsGenerating(true);
     setTimeout(() => {
       const html = [
-        `<p>Hello <strong>{{customer_name}}</strong>,</p>`,
-        `<p>Thank you for reaching out to <strong>{{company}}</strong>.</p>`,
+        `<p>Hello <strong>Name</strong>,</p>`,
+        `<p>Thank you for reaching out to <strong>Company</strong>.</p>`,
         `<p>${form.aiPrompt}</p>`,
-        `<p>If you have any questions, contact us at <a href="mailto:{{email}}">{{email}}</a> or call <strong>{{phone}}</strong>.</p>`,
+        `<p>If you have any questions, contact us at <a href="mailto:{{email}}">email</a> or call <strong>phone</strong>.</p>`,
         `<p>Best Regards,<br>{{name}}<br><em>{{designation}}</em></p>`,
       ].join("");
-      // Use setContent to replace editor body
       editorRef.current?.setContent(html);
       setForm((p) => ({ ...p, body: html }));
       setIsGenerating(false);
     }, 1200);
   };
 
+  // ── Clear ────────────────────────────────────────────────────────────────
   const handleClear = () => {
     setForm({ name: "", subject: "", tags: [], category: "", privacy: "PUBLIC", aiPrompt: "", body: "" });
     editorRef.current?.setContent("");
@@ -282,6 +462,7 @@ const Page = (): JSX.Element => {
     setSuccess(false);
   };
 
+  // ── Submit ───────────────────────────────────────────────────────────────
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErr(null);
@@ -296,13 +477,13 @@ const Page = (): JSX.Element => {
         tags:      form.tags,
         category:  form.category,
         privacy:   form.privacy || "PRIVATE",
-        variables:  allVariables,
+        variables: allVariables,
       };
       await MailService.createTemplate(payload);
       setSuccess(true);
       handleClear();
       toast.success("Template created successfully");
-      window.location.href = "/emailManagement/templates";
+      router.push("/emailManagement/templates");
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Failed to create template");
       setErr(error?.response?.data?.message || "Failed to create template");
@@ -313,222 +494,283 @@ const Page = (): JSX.Element => {
 
   return (
     <>
-      {showModal && (
+      {/* ── Modals ──────────────────────────────────────────────────── */}
+      {showCreateModal && (
         <CustomVariableModal
-          onClose={() => setShowModal(false)}
-          onAdd={(v) => setCustomVars((p) => [...p, v])}
+          onClose={() => setShowCreateModal(false)}
+          onSave={handleAddVar}
+        />
+      )}
+      {editingVar && (
+        <CustomVariableModal
+          isEdit
+          initial={editingVar}
+          onClose={() => setEditingVar(null)}
+          onSave={handleEditVar}
+        />
+      )}
+      {deletingVar && (
+        <DeleteConfirmModal
+          variable={deletingVar}
+          onClose={() => setDeletingVar(null)}
+          onConfirm={() => handleDeleteVar(deletingVar.key)}
         />
       )}
 
-      <div className="ml-72 mt-14 p-8 min-h-screen" style={{ background: "#F8F7FF" }}>
+      {/* ── Page ────────────────────────────────────────────────────── */}
+      <div className="ml-72 mt-14 p-6">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
 
-        {/* ── Page Header ─────────────────────────────────────────── */}
-        <div className="mb-7 flex items-start justify-between">
-          <div>
-            <h1 className="text-[22px] font-extrabold text-slate-900 dark:text-white tracking-tight">
-              Create Email Template
-            </h1>
-            <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
-              Build reusable, dynamic email templates with variable placeholders
-            </p>
+          {/* ── Card Header ─────────────────────────────────────────── */}
+          <div className="bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-700 dark:to-indigo-700 px-8 py-5">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-lg shadow-inner">
+                ✉️
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white tracking-tight">
+                  Create Email Template
+                </h2>
+                <p className="text-xs text-violet-200 mt-0.5">
+                  Build reusable, dynamic email templates with variable placeholders
+                </p>
+              </div>
+            </div>
           </div>
-          <span className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold mt-1" style={{ background: "#EDE9FE", color: "#6D28D9" }}>
-            <span className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" /> Unsaved Draft
-          </span>
-        </div>
 
-        {/* ── Card ────────────────────────────────────────────────── */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden">
-          <div className="h-[3px] w-full" style={{ background: "linear-gradient(90deg,#7C3AED 0%,#A78BFA 50%,#7C3AED 100%)" }} />
+          {/* ── Form Body ───────────────────────────────────────────── */}
+          <div className="p-8">
+            <form
+              onSubmit={handleSubmit}
+              className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5"
+            >
 
-          <form onSubmit={handleSubmit} className="p-7 flex flex-col gap-5">
+              {/* ── BASIC INFORMATION ──────────────────────────────── */}
+              <SectionHeading title="Basic Information" icon="📋" />
 
-            {/* Template Name */}
-            <div className="flex flex-col gap-1.5">
-              <label className={labelBase}>Template Name <span className="text-red-400 normal-case tracking-normal font-bold">*</span></label>
-              <input type="text" required placeholder="e.g. Welcome Onboarding Email" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={fieldBase} />
-            </div>
-
-            {/* Subject */}
-            <div className="flex flex-col gap-1.5">
-              <label className={labelBase}>Subject <span className="text-red-400 normal-case tracking-normal font-bold">*</span></label>
-              <input type="text" required placeholder="e.g. Welcome to {{company}}, {{customer_name}}!" value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} className={fieldBase} />
-            </div>
-
-            {/* Tags */}
-            <div className="flex flex-col gap-1.5">
-              <label className={labelBase}>Tags</label>
-              <TagInput tags={form.tags} onChange={(tags) => setForm({ ...form, tags })} />
-              <p className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1.5 mt-0.5">
-                Press
-                <kbd className="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-gray-700 text-slate-500 text-[10px] font-mono border border-slate-200 dark:border-gray-600">Enter</kbd>
-                or
-                <kbd className="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-gray-700 text-slate-500 text-[10px] font-mono border border-slate-200 dark:border-gray-600">,</kbd>
-                to add a tag
-              </p>
-            </div>
-
-            {/* Category + Privacy */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div className="flex flex-col gap-1.5">
-                <label className={labelBase}>Category</label>
-                <div className="relative">
-                  <select
-                    value={form.category}
-                    onChange={(e) => setForm({ ...form, category: e.target.value as TemplateCategory })}
-                    className={`${fieldBase} appearance-none pr-9 cursor-pointer`}
-                  >
-                    <option value="">Select a category…</option>
-                    {Object.values(TemplateCategory).map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase().replace(/_/g, " ")}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
-                  </div>
-                </div>
+                <FieldLabel required>Template Name</FieldLabel>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Welcome Onboarding Email"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  className={inputClass(!!err)}
+                />
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className={labelBase}>Privacy</label>
-                <div className="relative">
-                  <select
-                    value={form.privacy}
-                    onChange={(e) => setForm({ ...form, privacy: e.target.value })}
-                    className={`${fieldBase} appearance-none pr-9 cursor-pointer`}
-                  >
-                    <option value="PUBLIC">🌐  Public</option>
-                    <option value="PRIVATE">🔒  Private</option>
-                  </select>
-                  <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
-                  </div>
-                </div>
+                <FieldLabel required>Subject</FieldLabel>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Welcome to {{company}}, {{customer_name}}!"
+                  value={form.subject}
+                  onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                  className={inputClass(!!err)}
+                />
               </div>
-            </div>
 
-            <SectionDivider label="AI Generation" />
-
-            {/* AI Prompt */}
-            <div className="flex flex-col gap-2">
-              <label className={labelBase}>AI Prompt</label>
-              <textarea
-                rows={3}
-                placeholder="Describe the email you'd like to generate…"
-                value={form.aiPrompt}
-                onChange={(e) => setForm({ ...form, aiPrompt: e.target.value })}
-                className={`${fieldBase} resize-none`}
-              />
-              <button
-                type="button"
-                onClick={generateWithAI}
-                disabled={isGenerating || !form.aiPrompt}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-fit transition-all duration-150 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-md hover:scale-[1.03] active:scale-100"
-                style={{ background: "linear-gradient(135deg,#7C3AED,#6D28D9)", color: "#fff" }}
-              >
-                {isGenerating
-                  ? (<><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Generating…</>)
-                  : <>🤖 Generate With AI</>
-                }
-              </button>
-            </div>
-
-            <SectionDivider label="Template Body" />
-
-            {/* Variable Panel */}
-            <div className="rounded-2xl border overflow-hidden" style={{ borderColor: "#DDD6FE", background: "linear-gradient(135deg,#FAF5FF 0%,#F5F3FF 100%)" }}>
-              <div className="flex items-center justify-between px-4 py-3 border-b border-violet-100 dark:border-violet-900/30">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm flex-shrink-0" style={{ background: "#EDE9FE", color: "#7C3AED" }}>⚡</div>
-                  <div>
-                    <p className="text-sm font-bold text-violet-900">Available Variables</p>
-                    <p className="text-[11px] text-violet-500 mt-0.5">Click any chip to insert at your cursor position in the editor</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowModal(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border-2 transition-all duration-150 hover:shadow-md hover:scale-[1.04] active:scale-100 cursor-pointer"
-                  style={{ borderColor: "#EAB308", background: "#FEFCE8", color: "#92400E" }}
+              <div className="flex flex-col gap-1.5">
+                <FieldLabel>Category</FieldLabel>
+                <select
+                  value={form.category}
+                  onChange={(e) => setForm({ ...form, category: e.target.value as TemplateCategory })}
+                  className={selectClass(!!err)}
                 >
-                  <span>✦</span> Create Custom
-                </button>
+                  <option value="">Select a category…</option>
+                  {Object.values(TemplateCategory).map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase().replace(/_/g, " ")}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <div className="px-4 py-3 flex flex-wrap gap-2">
-                {allVariables.map((v) => (
-                  <VarChip key={v.key} variable={v} onClick={() => insertVariable(v.key)} />
-                ))}
+
+              <div className="flex flex-col gap-1.5">
+                <FieldLabel>Privacy</FieldLabel>
+                <select
+                  value={form.privacy}
+                  onChange={(e) => setForm({ ...form, privacy: e.target.value })}
+                  className={selectClass(!!err)}
+                >
+                  <option value="PUBLIC">🌐  Public</option>
+                  <option value="PRIVATE">🔒  Private</option>
+                </select>
               </div>
-              {customVars.length > 0 && (
-                <div className="px-4 pb-3">
-                  <p className="text-xs font-medium px-3 py-2 rounded-xl border" style={{ background: "#FEFCE8", borderColor: "#FDE047", color: "#92400E" }}>
-                    ✦ <strong>{customVars.length}</strong> custom variable{customVars.length > 1 ? "s" : ""} will be attached to this template
-                  </p>
+
+              <div className="col-span-1 md:col-span-2 flex flex-col gap-1.5">
+                <FieldLabel>Tags</FieldLabel>
+                <TagInput tags={form.tags} onChange={(tags) => setForm({ ...form, tags })} />
+                <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1.5 mt-0.5">
+                  Press
+                  <kbd className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-mono border border-gray-200 dark:border-gray-700">Enter</kbd>
+                  or
+                  <kbd className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-mono border border-gray-200 dark:border-gray-700">,</kbd>
+                  to add a tag
+                </p>
+              </div>
+
+              {/* ── AI GENERATION ──────────────────────────────────── */}
+              <SectionHeading title="AI Generation" icon="🤖" />
+
+              <div className="col-span-1 md:col-span-2 flex flex-col gap-2">
+                <FieldLabel>AI Prompt</FieldLabel>
+                <textarea
+                  rows={3}
+                  // placeholder="Describe the email you'd like to generate…"
+                  placeholder={"Ai template genration functionality is coming soon..."}
+                  disabled
+                  onChange={(e) => setForm({ ...form, aiPrompt: e.target.value })}
+                  className={textareaClass()}
+                />
+                <div>
+                  <button
+                    type="button"
+                    onClick={generateWithAI}
+                    // disabled={isGenerating || !form.aiPrompt}
+                    disabled={true}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-500 dark:to-indigo-500 hover:shadow-md hover:scale-[1.02] active:scale-100 transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Generating…
+                      </>
+                    ) : (
+                      <>🤖 Generate With AI</>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* ── TEMPLATE BODY ──────────────────────────────────── */}
+              <SectionHeading title="Template Body" icon="✍️" />
+
+              {/* Variable Panel */}
+              <div className="col-span-1 md:col-span-2 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+
+                {/* Panel header */}
+                <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center text-sm text-violet-600 dark:text-violet-400 flex-shrink-0">
+                      ⚡
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-gray-900 dark:text-white">Available Variables</p>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                        Click to insert at cursor · Hover custom vars for edit / delete
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateModal(true)}
+                    className="text-xs font-semibold text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/40 px-3 py-1.5 rounded-full border border-yellow-200 dark:border-yellow-800 transition-all"
+                  >
+                    + Create Custom
+                  </button>
+                </div>
+
+                {/* Chips area */}
+                <div className="px-4 py-3 flex flex-wrap gap-2 bg-white dark:bg-gray-900/50">
+                  {allVariables.length === 0 && (
+                    <p className="text-xs text-gray-400 dark:text-gray-500 italic">
+                      No variables yet. Create a custom one to get started.
+                    </p>
+                  )}
+                  {allVariables.map((v) => (
+                    <VarChip
+                      key={v.key}
+                      variable={v}
+                      onInsert={() => insertVariable(v.key)}
+                      onEdit={v.isCustom ? () => setEditingVar(v) : undefined}
+                      onDelete={v.isCustom ? () => setDeletingVar(v) : undefined}
+                    />
+                  ))}
+                </div>
+
+                {/* Footer count */}
+                {customVars.length > 0 && (
+                  <div className="px-4 py-2.5 bg-yellow-50 dark:bg-yellow-950 border-t border-yellow-100 dark:border-yellow-900">
+                    <p className="text-xs font-medium text-yellow-800 dark:text-yellow-300">
+                      ✦ <strong>{customVars.length}</strong> custom variable{customVars.length > 1 ? "s" : ""} will be attached to this template
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Rich Text Editor */}
+              <div className="col-span-1 md:col-span-2 flex flex-col gap-1.5">
+                <FieldLabel required>Email Body</FieldLabel>
+                <RichTextEditor
+                  ref={editorRef}
+                  value={form.body}
+                  onChange={(html) => setForm((p) => ({ ...p, body: html }))}
+                  placeholder="Write your email body here. Click a variable chip above to insert it at cursor…"
+                  hasError={!!err}
+                  minHeight={300}
+                />
+              </div>
+
+              {/* ── ERROR ───────────────────────────────────────────── */}
+              {err && (
+                <div className="col-span-1 md:col-span-2">
+                  <div className="rounded-xl border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-600 dark:text-red-400 flex items-start gap-2">
+                    <span className="mt-0.5 flex-shrink-0">⚠️</span>
+                    <div>
+                      {Array.isArray(err) ? (
+                        <ul className="list-disc pl-4 space-y-0.5">
+                          {err.map((e, i) => <li key={i}>{e}</li>)}
+                        </ul>
+                      ) : err}
+                    </div>
+                  </div>
                 </div>
               )}
-            </div>
 
-            {/* ── Rich Editor ──────────────────────────────────────────
-                Drop-in: just pass ref + value + onChange.
-                The editor exposes insertAtCursor / setContent / getHTML via ref.
-            ─────────────────────────────────────────────────────────── */}
-            <div className="flex flex-col gap-1.5">
-              <label className={labelBase}>
-                Email Body <span className="text-red-400 normal-case tracking-normal font-bold">*</span>
-              </label>
-              <RichTextEditor
-                ref={editorRef}
-                value={form.body}
-                onChange={(html) => setForm((p) => ({ ...p, body: html }))}
-                placeholder="Write your email body here. Click a variable chip above to insert it at the cursor…"
-                hasError={!!err}
-                minHeight={300}
-              />
-            </div>
+              {/* ── SUCCESS ─────────────────────────────────────────── */}
+              {success && (
+                <div className="col-span-1 md:col-span-2">
+                  <div className="rounded-xl border border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/20 px-4 py-3 text-sm text-green-700 dark:text-green-400 font-semibold flex items-center gap-2">
+                    <span>✅</span> Template created successfully!
+                  </div>
+                </div>
+              )}
 
-            {/* Error */}
-            {err && (
-              <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800 px-4 py-3 text-sm text-red-600 dark:text-red-400">
-                <span className="mt-0.5 flex-shrink-0">⚠️</span>
-                {Array.isArray(err)
-                  ? <ul className="list-disc pl-2 space-y-0.5">{err.map((e, i) => <li key={i}>{e}</li>)}</ul>
-                  : err
-                }
+              {/* ── FOOTER ──────────────────────────────────────────── */}
+              <div className="col-span-1 md:col-span-2 flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800 mt-2">
+                <p className="text-xs text-gray-400 dark:text-gray-500">
+                  Fields marked <span className="text-violet-500 font-bold">*</span> are required
+                </p>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleClear}
+                    className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-800 dark:hover:text-gray-200 transition-all duration-150 cursor-pointer"
+                  >
+                    Clear Form
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="inline-flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-500 dark:to-indigo-500 hover:shadow-md hover:scale-[1.02] active:scale-100 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
+                  >
+                    {isLoading ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Saving…
+                      </>
+                    ) : (
+                      <>💾 Create Template</>
+                    )}
+                  </button>
+                </div>
               </div>
-            )}
 
-            {/* Success */}
-            {success && (
-              <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-800 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-400 font-semibold">
-                <span>✅</span> Template created successfully!
-              </div>
-            )}
-
-            {/* Actions */}
-            <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-gray-700">
-              <button
-                type="button"
-                onClick={handleClear}
-                className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-gray-600 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-gray-700 hover:text-slate-700 hover:border-slate-300 transition-all duration-150 cursor-pointer"
-              >
-                Clear Form
-              </button>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="flex items-center gap-2.5 px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:scale-[1.03] active:scale-100"
-                style={{ background: "linear-gradient(135deg,#7C3AED,#6D28D9)" }}
-              >
-                {isLoading
-                  ? (<><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Saving…</>)
-                  : <> Create Template</>
-                }
-              </button>
-            </div>
-
-          </form>
+            </form>
+          </div>
         </div>
       </div>
     </>
