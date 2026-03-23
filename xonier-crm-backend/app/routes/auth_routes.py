@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Response, Request
 
 
 from app.middlewares.auth_middleware import AuthMiddleware
-from app.schemas.user_schema import UserLoginSchema, VerifyLoginOtpSchema, RegisterUserSchema, ResendOTPSchema, UpdateUserSchema, ResetPasswordSchema, UpdateUserStatusSchema, ResetPasswordByAdminSchema, AssignPhoneNumberSchema
+from app.schemas.user_schema import UserLoginSchema, VerifyLoginOtpSchema, RegisterUserSchema, ResendOTPSchema, UpdateUserSchema, ResetPasswordSchema, UpdateUserStatusSchema, ResetPasswordByAdminSchema, AssignPhoneNumberSchema, BulkPermanentDeleteSchema
 from app.controllers.auth_controller import AuthController
 from app.core.dependencies import Dependencies
 from beanie import PydanticObjectId
@@ -27,6 +27,11 @@ async def getAllForFrontend(request: Request):
 @router.get("/frontend", status_code=200)
 async def get_all_for_frontend(request: Request, response):
     return await auth_controller.get_all_for_frontend(request, response) 
+
+
+@router.get("/all-deleted", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["user:read"]))])
+async def get_all_deleted_users(request: Request):
+    return await auth_controller.get_all_deleted_users(request=request)
 
 @router.get("/user/{id}", status_code=200, dependencies=[Depends(dependencies.authorized)])
 async def get_user_by_id(id: PydanticObjectId, request: Request):
@@ -86,4 +91,13 @@ async def reset_password(request: Request, data: ResetPasswordSchema):
 @router.patch("/reset-user-password/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["user:update"]))])
 async def reset_user_password(request:Request, id:str, payload: ResetPasswordByAdminSchema):
     return await auth_controller.reset_user_password(request, id, payload.model_dump())
+
+
+@router.delete("/permanent-delete/{userId}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["user:delete"]))])
+async def permanent_delete_user(request: Request, userId: str):
+    return await auth_controller.permanent_delete(request=request, userId=userId)
+
+@router.delete("/bulk-permanent-delete", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["user:delete"]))])
+async def bulk_permanent_delete_users(request: Request, payload: BulkPermanentDeleteSchema):
+    return await auth_controller.bulk_permanent_delete(request=request, payload=payload.model_dump(mode="json"))
 

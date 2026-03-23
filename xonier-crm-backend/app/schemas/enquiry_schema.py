@@ -24,7 +24,7 @@ from app.db.models.user_model import UserModel
 import re
 from app.utils.custom_exception import AppException
 from app.core.constants import ZIPCODE_PATTERNS
-from app.utils.custom_exception import AppException
+
 
 
 PhoneNumber = Annotated[
@@ -250,7 +250,7 @@ class UpdateEnquirySchema(BaseModel):
         return values
 
 
-class BulkAssign(BaseModel):
+class BulkAssignSchema(BaseModel):
     enquiryIds: List[str]
     assignedTo: str
 
@@ -264,3 +264,5 @@ class BulkAssign(BaseModel):
             raise AppException(422, "enquiry ids field must be required")
 
         return value
+
+

@@ -160,9 +160,7 @@ class ProspectsService:
             raise AppException(status_code=500, message=f"internal server error {e}")
         
 
-        
-
-        
+          
 
     
     async def bulk_assign(self, user: Dict[str, Any], payload: Dict[str, Any]):

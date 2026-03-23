@@ -13,6 +13,11 @@ from app.utils.validate_admin import validate_admin
 from app.utils.get_team_members import GetTeamMembers
 from datetime import datetime, timezone
 from app.core.crypto import Encryption
+from app.db.models.enquiry_management_model import EnquiryModel
+from app.repositories.activity_repository import ActivityRepository
+from app.repositories.user_repository import UserRepository
+from app.core.enums import ACTIVITY_ACTION, ACTIVITY_ENTITY_TYPE
+from app.utils.activity_payload import activity_payload
 
 
 class EnquiryService:
@@ -21,6 +26,8 @@ class EnquiryService:
         self.client = Client
         self.getTeamMembers = GetTeamMembers()
         self.crypto = Encryption()
+        self.activityRepo = ActivityRepository()
+        self.userRepo = UserRepository()
 
     async def create(self, createdBy: PydanticObjectId, payload: Dict[str, Any]):
         session = await self.client.start_session()
@@ -321,31 +328,40 @@ class EnquiryService:
         filters: Dict[str, Any] = {},
     ):
         try:
+            user_object_id = ObjectId(user["_id"])
+            user_string_id = PydanticObjectId(user["_id"])
 
-            query = {}
-
-            query.update({"createdBy.$id": PydanticObjectId(user["_id"])})
+            query = {
+                "$and": [
+                    {
+                        "$or": [
+                            {"createdBy.$id": user_object_id},
+                            {"assignTo.$id": user_string_id},
+                        ]
+                    }
+                ]
+            }
 
             if "enquiry_id" in filters:
-                query.update({"enquiry_id": filters["enquiry_id"]})
+                query["$and"].append({"enquiry_id": filters["enquiry_id"]})
 
             if "fullName" in filters:
-                query.update({"fullName": filters["fullName"]})
+                query["$and"].append({"fullName": {"$regex": filters["fullName"], "$options": "i"}})
 
             if "email" in filters:
-                query.update({"email": filters["email"]})
+                query["$and"].append({"email": filters["email"]})
 
             if "phone" in filters:
-                query.update({"phone": filters["phone"]})
+                query["$and"].append({"phone": filters["phone"]})
 
             if "companyName" in filters:
-                query.update({"companyName": filters["companyName"]})
+                query["$and"].append({"companyName": {"$regex": filters["companyName"], "$options": "i"}})
 
             if "projectType" in filters:
-                query.update({"projectType": filters["projectType"]})
+                query["$and"].append({"projectType": filters["projectType"]})
 
             if "priority" in filters:
-                query.update({"priority": filters["priority"]})
+                query["$and"].append({"priority": filters["priority"]})
 
             result = await self.repo.get_all(
                 page, limit, query, ["assignTo", "createdBy"], sort=["-createdAt"]
@@ -360,7 +376,100 @@ class EnquiryService:
             raise
 
         except Exception as e:
-            raise AppException(status_code=500, message="internal server error")
+            raise AppException(status_code=500, message=f"internal server error: {e}")
+    
+    async def bulk_assign(self, payload: Dict[str, Any], user: Dict[str, Any]):
+        async with await self.client.start_session() as session:
+            async with session.start_transaction():
+                try:
+                    enquiry_ids = payload.get("enquiryIds", [])
+                    assigned_to = payload.get("assignedTo")
+
+                    if not enquiry_ids:
+                        raise AppException(400, "Enquiry ids are required")
+
+                    if not assigned_to:
+                        raise AppException(400, "assignedTo is required")
+
+                    if not ObjectId.is_valid(assigned_to):
+                        raise AppException(400, "Invalid assignedTo user ObjectId")
+
+                    for eid in enquiry_ids:
+                        if not ObjectId.is_valid(eid):
+                            raise AppException(400, f"Invalid enquiry ObjectId: {eid}")
+
+                    assign_user = await self.userRepo.find_by_id(PydanticObjectId(assigned_to))
+
+                    if not assign_user:
+                        raise AppException(404, "User not found for assignedTo id")
+
+                    enquiry_object_ids = [PydanticObjectId(eid) for eid in enquiry_ids]
+
+                    enquiries = await self.repo.find_many(
+                        filters={"_id": {"$in": enquiry_object_ids}}
+                    )
+
+                    if not enquiries:
+                        raise AppException(404, "No enquiries found for the provided ids")
+
+                    if len(enquiries) != len(enquiry_ids):
+                        found_ids = {str(e.id) for e in enquiries}
+                        missing = [eid for eid in enquiry_ids if eid not in found_ids]
+                        raise AppException(404, f"Enquiries not found for ids: {', '.join(missing)}")
+
+                    assign_dbref = DBRef(collection="users", id=str(assigned_to))
+
+                    update_payload = {
+                        "assignTo": assign_dbref,
+                        "assignBy": DBRef(collection="users", id=str(user["_id"])),
+                        "assignedAt": datetime.now(timezone.utc),
+                        "updatedBy": PydanticObjectId(user["_id"]),
+                    }
+
+                    updated = await self.repo.bulk_update(
+                        filters={"_id": {"$in": enquiry_object_ids}},
+                        data=update_payload,
+                        session=session
+                    )
+
+                    if not updated:
+                        raise AppException(400, "Bulk assign failed")
+
+                    activities = [
+                        activity_payload(
+                            userId=PydanticObjectId(user["_id"]),
+                            entityType=ACTIVITY_ENTITY_TYPE.ENQUIRY.value,
+                            entityId=PydanticObjectId(enquiry.id),
+                            action=ACTIVITY_ACTION.UPDATED,
+                            title="bulk assign enquiry",
+                            metadata={
+                                "enquiryId": enquiry.enquiry_id,
+                                "enquiryName": enquiry.fullName,
+                                "assignedTo": str(assigned_to),
+                                "assignedBy": str(user["_id"]),
+                            }
+                        )
+                        for enquiry in enquiries
+                    ]
+
+                    is_activity = await self.activityRepo.bulk_create(data=activities, session=session)
+
+                    if not is_activity:
+                        raise AppException(400, "Activity log failed")
+
+                    return {
+                        "totalRequested": len(enquiry_ids),
+                        "assignedCount": len(enquiries),
+                        "assignedTo": str(assigned_to),
+                        "assignedBy": str(user["_id"]),
+                    }
+
+                except AppException:
+                    raise
+
+                except Exception as e:
+                    raise AppException(status_code=500, message=f"internal server error: {e}")
+
 
     async def update(
     self, updatedBy: PydanticObjectId, id: PydanticObjectId, payload: Dict[str, Any]

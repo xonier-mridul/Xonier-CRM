@@ -424,7 +424,7 @@ PERMISSIONS = [
         "description": "permission for delete telephone number"
     }, 
     {
-         "code": "emailTemplate:create",
+        "code": "emailTemplate:create",
         "module": "emailTemplate",
         "action": "create",
         "title": "create emailTemplate",

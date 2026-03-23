@@ -565,6 +565,7 @@ class NOTES_ENTITIES(str, Enum):
 
 
 class ACTIVITY_ENTITY_TYPE(str, Enum):
+    ENQUIRY = "enquiry"
     LEAD = "lead"
     DEAL = "deal"
     QUOTATION = "quotation"

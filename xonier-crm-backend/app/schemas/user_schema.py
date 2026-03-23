@@ -235,4 +235,13 @@ class AssignPhoneNumberSchema(BaseModel):
 
         return values
 
+class BulkPermanentDeleteSchema(BaseModel):
+    userIds: List[str]
+
+    @field_validator("userIds")
+    @classmethod
+    def validate_user_ids(cls, v):
+        if not v:
+            raise ValueError("userIds cannot be empty")
+        return v
     

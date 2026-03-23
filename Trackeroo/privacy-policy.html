@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+
+<head>
+    <meta charset="utf-8">
+    <title>Privacy Policy - Trackeroo</title>
+    <meta name="author" content="#">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="app/css/app.css">
+    <link rel="stylesheet" href="app/css/jquery.fancybox.min.css">
+    <link rel="stylesheet" href="app/css/textanimation.css">
+    <link rel="shortcut icon" href="assets/images/favico.png">
+    <link rel="apple-touch-icon-precomposed" href="assets/images/favico.png">
+    <style>
+        
+        .privacy-hero {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            padding: 80px 0 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .privacy-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(var(--main-color-rgb, 30, 144, 255), 0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .privacy-hero::after {
+            content: '';
+            position: absolute;
+            bottom: -20%;
+            left: -5%;
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(var(--main-color-rgb, 30, 144, 255), 0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .privacy-section {
+            padding: 80px 0 100px;
+            background: #fff;
+        }
+
+        .privacy-sidebar {
+            position: sticky;
+            top: 90px;
+        }
+
+        .privacy-nav {
+            background: #f8f9ff;
+            border-radius: 16px;
+            padding: 28px 24px;
+            border: 1px solid #e8ecf8;
+        }
+
+        .privacy-nav h5 {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #e0e5f2;
+        }
+
+        .privacy-nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .privacy-nav ul li {
+            margin-bottom: 4px;
+        }
+
+        .privacy-nav ul li a {
+            display: block;
+            padding: 9px 14px;
+            font-size: 14px;
+            color: #555;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+        }
+
+        .privacy-nav ul li a:hover,
+        .privacy-nav ul li a.active {
+            background: #fff;
+            color: var(--main-color, #1e90ff);
+            border-left-color: var(--main-color, #1e90ff);
+            padding-left: 18px;
+            box-shadow: 0 2px 12px rgba(30, 144, 255, 0.1);
+        }
+
+        .privacy-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(30, 144, 255, 0.1);
+            border: 1px solid rgba(30, 144, 255, 0.25);
+            color: var(--main-color, #1e90ff);
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .privacy-badge svg {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+        }
+
+        .privacy-content h1 {
+            font-size: 42px;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1.2;
+            margin-bottom: 16px;
+        }
+
+        .privacy-content .subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.65);
+            max-width: 520px;
+            line-height: 1.7;
+        }
+
+        .privacy-meta {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-top: 28px;
+            flex-wrap: wrap;
+        }
+
+        .privacy-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .privacy-meta-item svg {
+            width: 15px;
+            height: 15px;
+            opacity: 0.7;
+        }
+
+        .privacy-meta-item span {
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+        }
+
+        /* Content blocks */
+        .privacy-block {
+            margin-bottom: 52px;
+            scroll-margin-top: 100px;
+        }
+
+        .privacy-block:last-child {
+            margin-bottom: 0;
+        }
+
+        .privacy-block .block-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: var(--main-color, #1e90ff);
+            color: #fff;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 14px;
+            flex-shrink: 0;
+        }
+
+        .privacy-block h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .privacy-block p {
+            font-size: 15px;
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 14px;
+        }
+
+        .privacy-block p:last-child {
+            margin-bottom: 0;
+        }
+
+        .privacy-block ul {
+            padding-left: 0;
+            list-style: none;
+            margin-bottom: 14px;
+        }
+
+        .privacy-block ul li {
+            position: relative;
+            padding: 8px 0 8px 24px;
+            font-size: 15px;
+            color: #555;
+            line-height: 1.7;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .privacy-block ul li:last-child {
+            border-bottom: none;
+        }
+
+        .privacy-block ul li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--main-color, #1e90ff);
+            flex-shrink: 0;
+        }
+
+        .privacy-block ul li strong {
+            color: #1a1a2e;
+            font-weight: 600;
+        }
+
+        .privacy-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #e0e5f2 30%, #e0e5f2 70%, transparent);
+            margin: 52px 0;
+        }
+
+        /* Highlight box */
+        .highlight-box {
+            background: linear-gradient(135deg, #f0f6ff, #e8f0fe);
+            border: 1px solid #d0e2ff;
+            border-radius: 14px;
+            padding: 24px 28px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .highlight-box::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--main-color, #1e90ff);
+            border-radius: 4px 0 0 4px;
+        }
+
+        .highlight-box p {
+            margin: 0;
+            color: #2d4a8a;
+            font-size: 14.5px;
+        }
+
+        .highlight-box strong {
+            color: #1a2f6e;
+        }
+
+        /* Warning box */
+        .warning-box {
+            background: linear-gradient(135deg, #fff8e6, #fef3d0);
+            border: 1px solid #f5d87a;
+            border-radius: 14px;
+            padding: 24px 28px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .warning-box::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #f0a500;
+            border-radius: 4px 0 0 4px;
+        }
+
+        .warning-box p {
+            margin: 0;
+            color: #7a5a00;
+            font-size: 14.5px;
+        }
+
+        /* Contact card */
+        .contact-privacy-card {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 20px;
+            padding: 40px;
+            color: #fff;
+            text-align: center;
+            margin-top: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .contact-privacy-card::before {
+            content: '';
+            position: absolute;
+            top: -60px;
+            right: -60px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(30, 144, 255, 0.2) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .contact-privacy-card h3 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .contact-privacy-card p {
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 15px;
+            margin-bottom: 24px;
+            line-height: 1.7;
+        }
+
+        .contact-privacy-card a.btn-contact-privacy {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--main-color, #1e90ff);
+            color: #fff;
+            padding: 13px 28px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 15px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .contact-privacy-card a.btn-contact-privacy:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(30, 144, 255, 0.4);
+        }
+
+        /* Last updated chip */
+        .last-updated-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.7);
+            padding: 5px 14px;
+            border-radius: 50px;
+            font-size: 12.5px;
+            font-weight: 500;
+            margin-bottom: 24px;
+        }
+
+        /* TOC progress indicator */
+        .toc-progress {
+            height: 3px;
+            background: #e8ecf8;
+            border-radius: 4px;
+            margin-bottom: 18px;
+            overflow: hidden;
+        }
+
+        .toc-progress-bar {
+            height: 100%;
+            background: var(--main-color, #1e90ff);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.2s ease;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .privacy-content h1 {
+                font-size: 28px;
+            }
+
+            .privacy-sidebar {
+                position: static;
+                margin-bottom: 40px;
+            }
+
+            .privacy-block h2 {
+                font-size: 19px;
+            }
+        }
+    </style>
+</head>
+
+<body class="body header-fixed counter-scroll">
+    <div class="preload preload-container">
+        <svg class="pl" width="240" height="240" viewBox="0 0 240 240">
+            <circle class="pl__ring pl__ring--a" cx="120" cy="120" r="105" fill="none" stroke="#000" stroke-width="20"
+                stroke-dasharray="0 660" stroke-dashoffset="-330" stroke-linecap="round"></circle>
+            <circle class="pl__ring pl__ring--b" cx="120" cy="120" r="35" fill="none" stroke="#000" stroke-width="20"
+                stroke-dasharray="0 220" stroke-dashoffset="-110" stroke-linecap="round"></circle>
+            <circle class="pl__ring pl__ring--c" cx="85" cy="120" r="70" fill="none" stroke="#000" stroke-width="20"
+                stroke-dasharray="0 440" stroke-linecap="round"></circle>
+            <circle class="pl__ring pl__ring--d" cx="155" cy="120" r="70" fill="none" stroke="#000" stroke-width="20"
+                stroke-dasharray="0 440" stroke-linecap="round"></circle>
+        </svg>
+    </div>
+
+    <div id="wrapper">
+        <div id="pagee" class="clearfix">
+
+            <!-- Main Header -->
+            <header class="main-header header-style3 flex">
+                <div id="header">
+                    <div class="tf-container">
+                        <div class="header-top">
+                            <div class="header-top-wrap flex-two">
+                                <div class="header-top-right">
+                                    <ul class="flex-three">
+                                        <li class="flex-three">
+                                            <i class="icon-Group-32"></i>
+                                            <span>Call Us: +91-8700914459</span>
+                                        </li>
+                                        <li class="flex-three">
+                                            <i class="icon-mail"></i>
+                                            <span>Mail Us: hello@hrjee.com</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="header-top-left flex-two">
+                                    <div class="follow-social flex-two">
+                                        <ul class="flex-two">
+                                            <li><a href="#"><i class="icon-icon"></i></a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="header-lower">
+                            <div class="tf-container full">
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div class="inner-container flex justify-space align-center">
+                                            <div class="logo-box">
+                                                <div class="logo">
+                                                    <a href="index.html">
+                                                        <img loading="lazy" src="assets/images/logo.png" alt="Logo">
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <div class="nav-outer flex align-center">
+                                                <nav class="main-menu show navbar-expand-md">
+                                                    <div class="navbar-collapse collapse clearfix" id="navbarSupportedContent">
+                                                        <ul class="navigation clearfix">
+                                                            <li><a href="about.html">About Us</a></li>
+                                                            <li><a href="features.html">Product Feature</a></li>
+                                                            <li class="dropdown2">
+                                                                <a href="#">Industries</a>
+                                                                <ul>
+                                                                    <li><a href="construction-industry.html">Construction</a></li>
+                                                                    <li><a href="manufacturing-industry.html">Manufacturing</a></li>
+                                                                    <li><a href="healthcare-industry.html">Healthcare</a></li>
+                                                                    <li><a href="education-industry.html">Education</a></li>
+                                                                    <li><a href="retail-chains.html">Retail Chains</a></li>
+                                                                    <li><a href="security-agencies.html">Security Agencies</a></li>
+                                                                    <li><a href="hospitality-industry.html">Hospitality</a></li>
+                                                                    <li><a href="transportation-logistics.html">Transportation and Logistics</a></li>
+                                                                    <li><a href="manpower-staffing.html">Manpower & Staffing</a></li>
+                                                                    <li><a href="sports-fitness.html">Sports & Fitness</a></li>
+                                                                </ul>
+                                                                <div class="dropdown2-btn"></div>
+                                                            </li>
+                                                            <li><a href="blog.html">User Cases</a></li>
+                                                            <li><a href="pricing.html">Pricing</a></li>
+                                                            <li><a href="contact.html">Contact Us</a></li>
+                                                        </ul>
+                                                    </div>
+                                                </nav>
+                                            </div>
+                                            <div class="header-account flex align-center">
+                                                <div class="address-wrap-right flex-three">
+                                                    <div class="content">
+                                                        <a href="demo.html" class="tf-btn btn-dark gap-8 rounded-16" style="--tecko-button-width: 241.859px;">
+                                                            <span class="text-body-2 fw-6">Request a Demo</span>
+                                                            <i class="icon-arrow-right"></i>
+                                                            <span class="bg-effect" style="top: 38.5px; left: -1.13281px;"></span>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mobile-nav-toggler mobile-button">
+                                                <i class="icon-bar"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="close-btn"><span class="icon flaticon-cancel-1"></span></div>
+                <div class="mobile-menu">
+                    <div class="menu-backdrop"></div>
+                    <nav class="menu-box">
+                        <div class="nav-logo"><a href="index.html">
+                            <img loading="lazy" src="assets/images/logo2.png" alt=""></a></div>
+                        <div class="bottom-canvas">
+                            <div class="menu-outer"></div>
+                        </div>
+                    </nav>
+                </div>
+            </header>
+            <!-- End Main Header -->
+
+            <main id="main">
+
+                <!-- Breadcrumb -->
+                <section class="breadcumb-section">
+                    <div class="tf-container">
+                        <div class="row">
+                            <div class="col-lg-12 center z-index1">
+                                <h1 class="title">Privacy Policy</h1>
+                                <ul class="breadcumb-list flex-five">
+                                    <li><a href="index.html">Home</a></li>
+                                    <li><span>Privacy Policy</span></li>
+                                </ul>
+                                <img class="bcrumb-ab" src="assets/images/page/mask-bcrumb.png" alt="">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Privacy Hero Banner -->
+                <section class="privacy-hero">
+                    <div class="tf-container">
+                        <div class="row align-items-center">
+                            <div class="col-lg-8">
+                                <div class="privacy-content">
+                                    <div class="last-updated-chip">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <polyline points="12 6 12 12 16 14"></polyline>
+                                        </svg>
+                                        Last Updated: January 1, 2025
+                                    </div>
+                                    <div class="privacy-badge">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                        </svg>
+                                        Your Privacy Matters
+                                    </div>
+                                    <h1>We Take Your Privacy <br>Seriously</h1>
+                                    <p class="subtitle">This Privacy Policy explains how Trackeroo collects, uses, and protects your personal information when you use our live location tracking services.</p>
+                                    <div class="privacy-meta">
+                                        <div class="privacy-meta-item">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                                <polyline points="14 2 14 8 20 8"></polyline>
+                                            </svg>
+                                            <span>10 Sections</span>
+                                        </div>
+                                        <div class="privacy-meta-item">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <polyline points="12 6 12 12 16 14"></polyline>
+                                            </svg>
+                                            <span>~5 min read</span>
+                                        </div>
+                                        <div class="privacy-meta-item">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                                <circle cx="12" cy="10" r="3"></circle>
+                                            </svg>
+                                            <span>Applicable: India & Worldwide</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 d-none d-lg-flex justify-content-end">
+                                <svg width="220" height="220" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg" opacity="0.18">
+                                    <circle cx="110" cy="110" r="100" stroke="white" stroke-width="1.5" stroke-dasharray="8 6"/>
+                                    <circle cx="110" cy="110" r="70" stroke="white" stroke-width="1.5" stroke-dasharray="5 5"/>
+                                    <circle cx="110" cy="110" r="40" stroke="white" stroke-width="1.5"/>
+                                    <path d="M110 40 C110 40 140 70 140 110 C140 150 110 180 110 180 C110 180 80 150 80 110 C80 70 110 40 110 40Z" stroke="white" stroke-width="1.5" fill="none"/>
+                                    <path d="M40 110 L180 110" stroke="white" stroke-width="1.5"/>
+                                    <circle cx="110" cy="110" r="8" fill="white" opacity="0.6"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Privacy Content -->
+                <section class="privacy-section">
+                    <div class="tf-container">
+                        <div class="row">
+
+                            <!-- Sidebar TOC -->
+                            <div class="col-lg-3 col-md-4 d-none d-md-block">
+                                <div class="privacy-sidebar">
+                                    <div class="privacy-nav">
+                                        <h5>Table of Contents</h5>
+                                        <div class="toc-progress">
+                                            <div class="toc-progress-bar" id="tocProgress"></div>
+                                        </div>
+                                        <ul id="tocList">
+                                            <li><a href="#information-we-collect" class="toc-link active">1. Information We Collect</a></li>
+                                            <li><a href="#how-we-use" class="toc-link">2. How We Use Your Information</a></li>
+                                            <li><a href="#location-data" class="toc-link">3. Location Data</a></li>
+                                            <li><a href="#data-sharing" class="toc-link">4. Data Sharing</a></li>
+                                            <li><a href="#data-security" class="toc-link">5. Data Security</a></li>
+                                            <li><a href="#data-retention" class="toc-link">6. Data Retention</a></li>
+                                            <li><a href="#your-rights" class="toc-link">7. Your Rights</a></li>
+                                            <li><a href="#cookies" class="toc-link">8. Cookies</a></li>
+                                            <li><a href="#children" class="toc-link">9. Children's Privacy</a></li>
+                                            <li><a href="#changes" class="toc-link">10. Policy Changes</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Main Content -->
+                            <div class="col-lg-9 col-md-8">
+
+                                <div class="highlight-box mb-4">
+                                    <p>
+                                        <strong>Welcome to Trackeroo.</strong> By using our app and services, you agree to the collection and use of information in accordance with this policy. If you do not agree, please discontinue use of the Trackeroo platform.
+                                    </p>
+                                </div>
+
+                                <!-- Section 1 -->
+                                <div class="privacy-block" id="information-we-collect">
+                                    <h2>
+                                        <span class="block-number">1</span>
+                                        Information We Collect
+                                    </h2>
+                                    <p>We collect various types of information to provide and improve our services. The information we gather depends on how you interact with Trackeroo.</p>
+                                    <ul>
+                                        <li><strong>Account Information:</strong> Name, email address, phone number, and password when you register an account.</li>
+                                        <li><strong>Location Data:</strong> Real-time and historical GPS coordinates when the app is active and location permissions are granted.</li>
+                                        <li><strong>Device Information:</strong> Device type, operating system, unique device identifiers, and mobile network information.</li>
+                                        <li><strong>Usage Data:</strong> Information about how you use the app, including feature interactions, session duration, and crash reports.</li>
+                                        <li><strong>Communications:</strong> Messages, feedback, or support requests you send us.</li>
+                                        <li><strong>Payment Information:</strong> Billing details processed securely through our third-party payment partners (we do not store card details).</li>
+                                    </ul>
+                                </div>
+
+                                <div class="privacy-divider"></div>
+
+                                <!-- Section 2 -->
+                                <div class="privacy-block" id="how-we-use">
+                                    <h2>
+                                        <span class="block-number">2</span>
+                                        How We Use Your Information
+                                    </h2>
+                                    <p>Trackeroo uses the information we collect for the following purposes:</p>
+                                    <ul>
+                                        <li><strong>Service Delivery:</strong> To provide real-time and historical location tracking features.</li>
+                                        <li><strong>Account Management:</strong> To create and manage your account, authenticate logins, and handle subscriptions.</li>
+                                        <li><strong>Communication:</strong> To send you service updates, alerts, and support responses.</li>
+                                        <li><strong>Improvement:</strong> To analyze usage patterns and improve app performance, reliability, and features.</li>
+                                        <li><strong>Safety & Compliance:</strong> To detect fraud, enforce our terms, and comply with applicable laws.</li>
+                                        <li><strong>Marketing:</strong> With your consent, to send promotional materials about new features or offers.</li>
+                                    </ul>
+                                    <div class="highlight-box">
+                                        <p><strong>We do not sell your personal data</strong> to third parties for their own marketing purposes.</p>
+                                    </div>
+                                </div>
+
+                                <div class="privacy-divider"></div>
+
+                                <!-- Section 3 -->
+                                <div class="privacy-block" id="location-data">
+                                    <h2>
+                                        <span class="block-number">3</span>
+                                        Location Data
+                                    </h2>
+                                    <p>Location data is the core of Trackeroo's functionality. We treat it with the highest level of sensitivity and care.</p>
+                                    <ul>
+                                        <li><strong>Foreground Tracking:</strong> Location is collected when the app is open and active on your device.</li>
+                                        <li><strong>Background Tracking:</strong> With your explicit permission, location may be collected when the app runs in the background to enable continuous tracking features.</li>
+                                        <li><strong>Shared Access:</strong> Location data is only shared with users you explicitly authorize (e.g., family members, teammates, or colleagues).</li>
+                                        <li><strong>Precision:</strong> We collect GPS coordinates to the precision required by your selected tracking mode.</li>
+                                    </ul>
+                                    <div class="warning-box">
+                                        <p>
+                                            <strong>Important:</strong> You can revoke location permissions at any time from your device settings. Disabling location access will limit core Trackeroo functionality.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="privacy-divider"></div>
+
+                                <!-- Section 4 -->
+                                <div class="privacy-block" id="data-sharing">
+                                    <h2>
+                                        <span class="block-number">4</span>
+                                        Data Sharing &amp; Disclosure
+                                    </h2>
+                                    <p>We do not sell, trade, or rent your personal data. We may share information only in the following circumstances:</p>
+                                    <ul>
+                                        <li><strong>With Your Consent:</strong> When you explicitly authorize sharing with other Trackeroo users or third-party integrations.</li>
+                                        <li><strong>Service Providers:</strong> Trusted vendors who help us operate our platform (cloud hosting, analytics, payment processing) under strict confidentiality agreements.</li>
+                                        <li><strong>Legal Requirements:</strong> If required by law, court order, or governmental authority.</li>
+                                        <li><strong>Business Transfers:</strong> In the event of a merger, acquisition, or asset sale, your data may be transferred with prior notice.</li>
+                                        <li><strong>Safety Purposes:</strong> To protect the safety, rights, or property of Trackeroo, our users, or the public.</li>
+                                    </ul>
+                                </div>
+
+                                <div class="privacy-divider"></div>
+
+                                <!-- Section 5 -->
+                                <div class="privacy-block" id="data-security">
+                                    <h2>
+                                        <span class="block-number">5</span>
+                                        Data Security
+                                    </h2>
+                                    <p>We implement industry-standard security measures to protect your information from unauthorized access, alteration, disclosure, or destruction.</p>
+                                    <ul>
+                                        <li><strong>Encryption:</strong> All data transmitted between your device and our servers is encrypted using TLS/SSL protocols.</li>
+                                        <li><strong>Secure Storage:</strong> Data at rest is stored in encrypted databases with strict access controls.</li>
+                                        <li><strong>Authentication:</strong> Multi-factor authentication and secure token-based sessions protect your account.</li>
+                                        <li><strong>Regular Audits:</strong> We conduct periodic security assessments and vulnerability testing.</li>
+                                        <li><strong>Incident Response:</strong> In the event of a data breach, we will notify affected users within 72 hours as required by applicable law.</li>
+                                    </ul>
+                                    <div class="highlight-box">
+                                        <p>While we strive to protect your data, no method of transmission over the internet is 100% secure. We encourage you to use strong, unique passwords for your Trackeroo account.</p>
+                                    </div>
+                                </div>
+
+                                <div class="privacy-divider"></div>
+
+                                <!-- Section 6 -->
+                                <div class="privacy-block" id="data-retention">
+                                    <h2>
+                                        <span class="block-number">6</span>
+                                        Data Retention
+                                    </h2>
+                                    <p>We retain your personal data only for as long as necessary to provide our services and fulfill the purposes outlined in this policy.</p>
+                                    <ul>
+                                        <li><strong>Active Accounts:</strong> Data is retained for the duration of your active subscription or account.</li>
+                                        <li><strong>Location History:</strong> Historical location data is retained for up to 90 days by default, depending on your subscription plan.</li>
+                                        <li><strong>After Deletion:</strong> Upon account deletion, personal data is purged within 30 days, except where retention is required by law.</li>
+                                        <li><strong>Backup Retention:</strong> Anonymized or aggregated data may be retained for analytical purposes with no identifiable information.</li>
+                                    </ul>
+                                </div>
+
+                                <div class="privacy-divider"></div>
+
+                                <!-- Section 7 -->
+                                <div class="privacy-block" id="your-rights">
+                                    <h2>
+                                        <span class="block-number">7</span>
+                                        Your Rights
+                                    </h2>
+                                    <p>Depending on your location, you may have certain rights regarding your personal data. Trackeroo respects and supports these rights:</p>
+                                    <ul>
+                                        <li><strong>Access:</strong> Request a copy of the personal data we hold about you.</li>
+                                        <li><strong>Correction:</strong> Request correction of inaccurate or incomplete data.</li>
+                                        <li><strong>Deletion:</strong> Request deletion of your personal data ("right to be forgotten").</li>
+                                        <li><strong>Portability:</strong> Request your data in a machine-readable format for transfer to another service.</li>
+                                        <li><strong>Restriction:</strong> Request that we limit processing of your data in certain circumstances.</li>
+                                        <li><strong>Objection:</strong> Object to processing based on legitimate interests or for direct marketing.</li>
+                                        <li><strong>Withdraw Consent:</strong> Withdraw consent at any time where processing is based on consent.</li>
+                                    </ul>
+                                    <p>To exercise any of these rights, contact us at <strong>info@trackeroo.com</strong>. We will respond within 30 days.</p>
+                                </div>
+
+                                <div class="privacy-divider"></div>
+
+                                <!-- Section 8 -->
+                                <div class="privacy-block" id="cookies">
+                                    <h2>
+                                        <span class="block-number">8</span>
+                                        Cookies &amp; Tracking Technologies
+                                    </h2>
+                                    <p>Trackeroo's web platform uses cookies and similar tracking technologies to enhance your experience.</p>
+                                    <ul>
+                                        <li><strong>Essential Cookies:</strong> Required for the platform to function correctly (authentication, session management).</li>
+                                        <li><strong>Analytics Cookies:</strong> Help us understand how users interact with our website to improve performance.</li>
+                                        <li><strong>Preference Cookies:</strong> Remember your settings and preferences for a personalized experience.</li>
+                                        <li><strong>Marketing Cookies:</strong> Used with your consent to deliver relevant advertisements.</li>
+                                    </ul>
+                                    <p>You can manage cookie preferences through your browser settings. Disabling certain cookies may affect platform functionality.</p>
+                                </div>
+
+                                <div class="privacy-divider"></div>
+
+                                <!-- Section 9 -->
+                                <div class="privacy-block" id="children">
+                                    <h2>
+                                        <span class="block-number">9</span>
+                                        Children's Privacy
+                                    </h2>
+                                    <p>Trackeroo is not directed at children under the age of 13. We do not knowingly collect personal information from children under 13.</p>
+                                    <div class="warning-box">
+                                        <p>
+                                            <strong>Parental Notice:</strong> If you are a parent using Trackeroo to track your minor child's location, you are responsible for managing their data in compliance with applicable laws. If you believe a child under 13 has provided us with personal data without parental consent, please contact us immediately at <strong>info@trackeroo.com</strong>.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="privacy-divider"></div>
+
+                                <!-- Section 10 -->
+                                <div class="privacy-block" id="changes">
+                                    <h2>
+                                        <span class="block-number">10</span>
+                                        Changes to This Policy
+                                    </h2>
+                                    <p>We may update this Privacy Policy from time to time to reflect changes in our practices, technology, legal requirements, or other factors.</p>
+                                    <ul>
+                                        <li><strong>Notification:</strong> We will notify you of significant changes via email or a prominent notice within the app.</li>
+                                        <li><strong>Effective Date:</strong> Changes take effect on the date indicated at the top of the updated policy.</li>
+                                        <li><strong>Continued Use:</strong> Continued use of Trackeroo after changes are posted constitutes your acceptance of the updated policy.</li>
+                                        <li><strong>Archive:</strong> Previous versions of this policy are available upon request.</li>
+                                    </ul>
+                                    <p>We encourage you to review this page periodically to stay informed about how we protect your information.</p>
+                                </div>
+
+                                <!-- Contact Card -->
+                                <div class="contact-privacy-card">
+                                    <h3>Have Privacy Questions?</h3>
+                                    <p>If you have any questions, concerns, or requests regarding this Privacy Policy or your personal data, our privacy team is here to help.</p>
+                                    <div class="d-flex flex-wrap gap-3 justify-content-center">
+                                        <a href="contact.html" class="btn-contact-privacy">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                                <polyline points="22,6 12,13 2,6"></polyline>
+                                            </svg>
+                                            Contact Our Privacy Team
+                                        </a>
+                                        <a href="mailto:info@trackeroo.com" class="btn-contact-privacy" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"></path>
+                                                <polyline points="22,6 12,13 2,6"></polyline>
+                                            </svg>
+                                            info@trackeroo.com
+                                        </a>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- CTA Section -->
+                <section class="mb--93">
+                    <div class="tf-container">
+                        <div class="callt-to-action flex-two">
+                            <div class="callt-to-action-content flex-three">
+                                <div class="image">
+                                    <img src="assets/images/page/ready.png" alt="Image">
+                                </div>
+                                <div class="content">
+                                    <h2 class="title-call">Start Tracking Smarter Today</h2>
+                                    <p class="des text-white">Use Trackeroo and experience powerful live location tracking like never before.</p>
+                                </div>
+                            </div>
+                            <img src="assets/images/page/vector4.png" alt="" class="shape-ab">
+                            <div class="callt-to-action-button">
+                                <a href="demo.html" class="get-call">Request a Demo</a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+
+            <!-- Footer -->
+            <footer class="footer footer-style1">
+                <div class="tf-container">
+                    <div class="footer-main">
+                        <div class="footer-logo">
+                            <div class="logo-footer">
+                                <img loading="lazy" src="assets/images/logo2.png" alt="">
+                            </div>
+                            <p class="des-footer">Trackeroo - Real-Time Location Tracking, Made Easy
+                                <ul class="footer-info">
+                                    <li class="flex-three">
+                                        <i class="icon-noun-mail-5780740-1"></i>
+                                        <p>info@trackeroo.com</p>
+                                    </li>
+                                    <li class="flex-three">
+                                        <i class="icon-Group-9"></i>
+                                        <p>+91-8700914459</p>
+                                    </li>
+                                    <li class="flex-three">
+                                        <i class="icon-Layer-19"></i>
+                                        <p>H-161, Office No: 202, Second Floor, H Block, Sector 63, Noida</p>
+                                    </li>
+                                </ul>
+                        </div>
+                        <div class="footer-service">
+                            <h5 class="title">Services Req</h5>
+                            <ul class="footer-menu">
+                                <li><a href="about.html">About Us</a></li>
+                                <li><a href="features.html">Product Features</a></li>
+                                <li><a href="industries.html">Industries</a></li>
+                                <li><a href="blog.html">User Cases</a></li>
+                                <li><a href="pricing.html">Pricing</a></li>
+                                <li><a href="contact.html">Contact</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-gallery">
+                            <h5 class="title">Gallery</h5>
+                            <div class="gallery-img">
+                                <a href="assets/images/gallery/gl1.jpg" data-fancybox="gallery">
+                                    <img loading="lazy" src="assets/images/blog/bl-h4-1.jpg" alt="image gallery">
+                                </a>
+                                <a href="assets/images/gallery/gl2.jpg" data-fancybox="gallery">
+                                    <img loading="lazy" src="assets/images/blog/bl-h4-2.avif" alt="image gallery">
+                                </a>
+                                <a href="assets/images/gallery/gl3.jpg" data-fancybox="gallery">
+                                    <img loading="lazy" src="assets/images/location-tracking.jpg" alt="image gallery">
+                                </a>
+                                <a href="assets/images/gallery/gl4.jpg" data-fancybox="gallery">
+                                    <img loading="lazy" src="assets/images/blog/bl-h6.jpg" alt="image gallery">
+                                </a>
+                                <a href="assets/images/gallery/gl5.jpg" data-fancybox="gallery">
+                                    <img loading="lazy" src="assets/images/blog/bl-h5.webp" alt="image gallery">
+                                </a>
+                                <a href="assets/images/gallery/gl6.jpg" data-fancybox="gallery">
+                                    <img loading="lazy" src="assets/images/blog/bl-h4.jpg" alt="image gallery">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="footer-newsletter">
+                            <h5 class="title">Newsletter</h5>
+                            <form action="#" id="footer-form">
+                                <div class="input-wrap flex-three">
+                                    <input type="email" placeholder="Enter Email Address">
+                                    <button type="submit"><i class="icon-paper-plane"></i></button>
+                                </div>
+                                <div class="check-form flex-three">
+                                    <i class="icon-Vector-121"></i>
+                                    <p>I agree to all your terms and policies</p>
+                                </div>
+                            </form>
+                            <ul class="social-ft flex-three">
+                                <li><a href="#"><i class="icon-icon-2" title="Facebook"></i></a></li>
+                                <li><a href="#"><i class="icon-x" title="X"></i></a></li>
+                                <li><a href="#"><i class="icon-8" title="Instagram"></i></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="row footer-bottom">
+                        <div class="col-md-6">
+                            <p class="copy-right">Copyright © 2025 by <a href="#" class="text-main">Trackeroo.</a> All Rights Reserved</p>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <a href="privacy.html" class="text-main" style="font-size:13px; margin-right: 16px;">Privacy Policy</a>
+                            <a href="terms.html" class="text-main" style="font-size:13px;">Terms of Service</a>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+
+        </div>
+    </div>
+
+    <a id="scroll-top" class="button-go"></a>
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasRightLabel">Offcanvas right</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">...</div>
+    </div>
+
+    <!-- Javascript -->
+    <script src="app/js/jquery.min.js"></script>
+    <script src="app/js/jquery.nice-select.min.js"></script>
+    <script src="app/js/bootstrap.min.js"></script>
+    <script src="app/js/jquery.magnific-popup.min.js"></script>
+    <script src="app/js/swiper-bundle.min.js"></script>
+    <script src="app/js/swiper.js"></script>
+    <script src="app/js/plugin.js"></script>
+    <script src="app/js/jquery.fancybox.js"></script>
+    <script src="app/js/countto.js"></script>
+    <script src="app/js/price-ranger.js"></script>
+    <script src="app/js/textanimation.js"></script>
+    <script src="app/js/shortcodes.js"></script>
+    <script src="app/js/main.js"></script>
+
+    <script>
+        // TOC active state on scroll + progress bar
+        (function () {
+            var sections = document.querySelectorAll('.privacy-block[id]');
+            var tocLinks = document.querySelectorAll('.toc-link');
+            var progressBar = document.getElementById('tocProgress');
+
+            function onScroll() {
+                var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                var docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                var progress = (scrollTop / docHeight) * 100;
+                if (progressBar) progressBar.style.width = Math.min(progress, 100) + '%';
+
+                var current = '';
+                sections.forEach(function (section) {
+                    var sectionTop = section.offsetTop - 120;
+                    if (scrollTop >= sectionTop) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                tocLinks.forEach(function (link) {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + current) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+
+            window.addEventListener('scroll', onScroll, { passive: true });
+
+            // Smooth scroll for TOC links
+            tocLinks.forEach(function (link) {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    var target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        window.scrollTo({ top: target.offsetTop - 100, behavior: 'smooth' });
+                    }
+                });
+            });
+        })();
+    </script>
+
+</body>
+</html>

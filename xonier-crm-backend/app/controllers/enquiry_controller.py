@@ -83,6 +83,21 @@ class EnquiryController:
         except AppException as e:
             raise e
         
+
+    async def bulk_assign(self, request: Request, payload:Dict[str, Any]):
+        try:
+
+            user = request.state.user
+
+            result = await self.service.bulk_assign(payload=payload, user=user)
+
+            return successResponse(201, "Bulk assigned successfully", result)
+
+
+
+        except AppException as e:
+            raise e
+        
     
     async def update(self, request: Request, id: str, payload: Dict[str, Any]):
         try:

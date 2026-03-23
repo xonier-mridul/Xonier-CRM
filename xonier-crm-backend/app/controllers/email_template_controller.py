@@ -60,7 +60,7 @@ class EmailTemplateController:
             result = await self.service.update(id=id, payload=payload, user=user)
             return successResponse(
                 status_code=200,
-                data=result,
+                # data=result,
                 message="Email template updated successfully"
             )
         except AppException:

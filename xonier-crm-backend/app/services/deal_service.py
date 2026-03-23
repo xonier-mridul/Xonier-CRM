@@ -100,46 +100,43 @@ class DealService:
         try:
             page = filters.get("page") or 1
             limit = filters.get("limit") or 10
-            
-           
+ 
             is_admin = False
-            
-
+ 
             for item in user["userRole"]:
                 if item["code"] == SUPER_ADMIN_CODE:
                     is_admin = True
                     break
-
+ 
             query = {"status": DEAL_STATUS.ACTIVE.value}
-
+ 
             if not is_admin:
-                
                 members = await self.getTeamMem.get_team_members(user["_id"])
-                
+ 
                 if members:
                     query.update({"createdBy.$id": {"$in": members}})
-
+ 
                 if not members:
                     query.update({"createdBy.$id": PydanticObjectId(user["_id"])})
-
+ 
             if "dealId" in filters:
-                query.update({"deal_id": {"$regex":filters["dealId"], "$options": "i"}})
-
+                query.update({"deal_id": {"$regex": filters["dealId"], "$options": "i"}})
+ 
             if "name" in filters:
                 query.update({"dealName": {"$regex": filters["name"], "$options": "i"}})
-
+ 
             if "pipeline" in filters:
                 query.update({"dealPipeline": filters["pipeline"]})
-
+ 
             if "stage" in filters:
                 query.update({"dealStage": filters["stage"]})
-
+ 
             if is_admin:
                 if "userid" in filters:
                     if not ObjectId.is_valid(filters["userid"]):
                         raise AppException(400, "Invalid userId")
                     query.update({"createdBy.$id": PydanticObjectId(filters["userid"])})
-
+ 
             if "fromDate" in filters or "toDate" in filters:
                 date_filter = {}
                 if "fromDate" in filters:
@@ -149,7 +146,7 @@ class DealService:
                         date_filter["$gte"] = from_dt
                     except (ValueError, TypeError):
                         raise AppException(400, "Invalid fromDate format. Use ISO format: YYYY-MM-DD")
-
+ 
                 if "toDate" in filters:
                     try:
                         to_dt = datetime.fromisoformat(str(filters["toDate"]))
@@ -157,51 +154,30 @@ class DealService:
                         date_filter["$lte"] = to_dt
                     except (ValueError, TypeError):
                         raise AppException(400, "Invalid toDate format. Use ISO format: YYYY-MM-DD")
-
+ 
                 if date_filter:
                     query.update({"createdAt": date_filter})
-
-            cache_query = {
-                k: (
-                    str(v)
-                    if isinstance(v, PydanticObjectId)
-                    else (
-                        [
-                            str(item) if isinstance(item, PydanticObjectId) else item
-                            for item in v
-                        ]
-                        if isinstance(v, list)
-                        else (
-                            {
-                                nk: (
-                                    [
-                                        str(i) if isinstance(i, PydanticObjectId) else i
-                                        for i in nv
-                                    ]
-                                    if isinstance(nv, list)
-                                    else (
-                                        str(nv)
-                                        if isinstance(nv, PydanticObjectId)
-                                        else nv
-                                    )
-                                )
-                                for nk, nv in v.items()
-                            }
-                            if isinstance(v, dict)
-                            else v
-                        )
-                    )
-                )
-                for k, v in query.items()
-            }
-            
-            cache_key =  cache_key_generator_with_id(prefix=DEAL_CACHE_NAMESPACE, filters=cache_query, page=int(page), limit=int(limit), userId=user["_id"])
-
-            cache = await  FastAPICache.get_backend().get(cache_key)
-             
+ 
+            def serialize_for_cache(v):
+                if isinstance(v, PydanticObjectId):
+                    return str(v)
+                elif isinstance(v, datetime):
+                    return v.isoformat()
+                elif isinstance(v, list):
+                    return [serialize_for_cache(i) for i in v]
+                elif isinstance(v, dict):
+                    return {nk: serialize_for_cache(nv) for nk, nv in v.items()}
+                return v
+ 
+            cache_query = {k: serialize_for_cache(v) for k, v in query.items()}
+ 
+            cache_key = cache_key_generator_with_id(prefix=DEAL_CACHE_NAMESPACE, filters=cache_query, page=int(page), limit=int(limit), userId=user["_id"])
+ 
+            cache = await FastAPICache.get_backend().get(cache_key)
+ 
             if cache:
                 return json.loads(cache)
-
+ 
             result = await self.repo.get_all(
                 page=int(page),
                 limit=int(limit),
@@ -209,11 +185,10 @@ class DealService:
                 populate=["createdBy", "lead_id", "updatedBy"],
                 sort=["-createdAt"]
             )
-
+ 
             if not result:
                 raise AppException(404, "Deal data not found")
-            
-
+ 
             result = jsonable_encoder(
                 result,
                 exclude={
@@ -221,18 +196,18 @@ class DealService:
                     "updatedBy": {"password"},
                 },
             )
-  
+ 
             await FastAPICache.get_backend().set(key=cache_key, value=json.dumps(result), expire=300)
-
+ 
             return result
-
+ 
         except AppException as e:
-            raise
-
+            raise e
+ 
         except Exception as e:
             print("error: ", e)
-            raise AppException(500, "Internal server error")
-        
+            raise AppException(500, f"Internal server error: {e}")
+ 
 
     async def get_by_id(self, dealId: str, user:Dict[str, Any]):
         try:

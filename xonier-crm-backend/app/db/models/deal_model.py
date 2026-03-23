@@ -94,3 +94,20 @@ class DealModel(Document):
         if v and create_date and v < create_date:
             raise ValueError("Close date cannot be before create date")
         return v
+    
+
+    @field_validator("dealName", mode="before")
+    @classmethod
+    def validate_deal_name(cls, value):
+        if not isinstance(value, str):
+            raise ValueError("Deal name must be a string")
+
+        value = value.strip()
+
+        if not value:
+            raise ValueError("Deal name cannot be empty")
+
+        if len(value) < 4:
+            raise ValueError("Deal name must be at least 4 characters long")
+
+        return value

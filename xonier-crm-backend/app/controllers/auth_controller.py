@@ -9,6 +9,7 @@ from app.core.config import get_setting
 from app.core.constants import JWT_OPTIONS
 from app.schemas.user_schema import RegisterUserSchema, UpdateUserSchema, ResetPasswordSchema
 from beanie import PydanticObjectId
+from bson import ObjectId
 
 
 class AuthController:
@@ -122,6 +123,32 @@ class AuthController:
 
         except AppException as e:
             raise e
+        
+
+    async def get_all_deleted_users(self, request: Request):
+        try:
+            filters = dict(request.query_params)
+            user = request.state.user
+ 
+            page = int(filters.pop("page", 1))
+            limit = int(filters.pop("limit", 10))
+ 
+            result = await self.service.get_all_deleted_users(
+                page=page,
+                limit=limit,
+                user=user,
+                filters=filters
+            )
+ 
+            return successResponse(200, "Deleted users fetched successfully", result)
+ 
+        except AppException as e:
+            raise e
+ 
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+        
+
         
     async def get_user_by_id(self, request:Request, id: PydanticObjectId ):
         try:
@@ -263,6 +290,47 @@ class AuthController:
         except AppException as e:
             print("errr: ", e)
             raise e
+        
+
+    
+    async def permanent_delete(self, request: Request, userId: str):
+        try:
+            user = request.state.user
+ 
+            if not ObjectId.is_valid(userId):
+                raise AppException(400, "Invalid user ObjectId")
+ 
+            await self.service.permanent_delete(
+                userId=PydanticObjectId(userId),
+                user=user
+            )
+ 
+            return successResponse(200, "User permanently deleted successfully", None)
+ 
+        except AppException as e:
+            raise e
+ 
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+        
+
+
+    async def bulk_permanent_delete(self, request: Request, payload: Dict[str, Any]):
+        try:
+            user = request.state.user
+ 
+            result = await self.service.bulk_permanent_delete(
+                payload=payload,
+                user=user
+            )
+ 
+            return successResponse(200, result["message"], result)
+ 
+        except AppException as e:
+            raise e
+ 
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
         
         
     
