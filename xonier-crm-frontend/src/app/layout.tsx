@@ -1,23 +1,25 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { DM_Sans } from "next/font/google";
 import "./globals.css";
-import Providers from "../components/providers/theme/Providers";
-import {DM_Sans} from "next/font/google"
-import { Suspense } from "react";
+import { Suspense, ReactNode } from "react";
 
+import Providers from "../components/providers/theme/Providers";
 import ReduxProvider from "../store/providers";
-import "react-toastify/dist/ReactToastify.css"
 import ToastProvider from "../components/providers/TostProvider";
-import CheckAuth from "../components/common/CheckAuth";
-import 'react-loading-skeleton/dist/skeleton.css'
 import ScrollToTop from "../components/common/ScrollToTop";
 
+// ✅ Route-based loader
+import { LoaderProvider } from "../context/LoaderContext";
+import GlobalLoader from "../components/loader/GlobalLoader";
+import RouteLoader from "../components/loader/RouteLoader";
 
+import "react-toastify/dist/ReactToastify.css";
+import "react-loading-skeleton/dist/skeleton.css";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"], 
-  variable: "--font-dm-sans",    
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-dm-sans",
   display: "swap",
 });
 
@@ -27,26 +29,36 @@ export const metadata: Metadata = {
     "Trackeroo is a modern CRM platform to manage leads, deals, quotations, invoices, and customer relationships with powerful analytics and team collaboration.",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+type RootLayoutProps = {
+  children: ReactNode;
+};
+
+export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
       <body
-        className={`${dmSans.variable}  antialiased bg-stone-100 dark:bg-gray-800 min-h-screen `}
+        className={`${dmSans.variable} antialiased bg-stone-100 dark:bg-gray-800 min-h-screen`}
       >
-
         <Providers>
           <ReduxProvider>
-            <Suspense fallback={null}>
-            <ScrollToTop/>
-            </Suspense>
-            <ToastProvider/>
-         {children}
-        </ReduxProvider>
-        
+            <LoaderProvider>
+              {/* 🔥 Route change loader */}
+              <RouteLoader />
+
+              {/* Global loader UI */}
+              <GlobalLoader />
+
+              {/* Other global components */}
+              <Suspense fallback={null}>
+                <ScrollToTop />
+              </Suspense>
+
+              <ToastProvider />
+
+              {/* App content */}
+              {children}
+            </LoaderProvider>
+          </ReduxProvider>
         </Providers>
       </body>
     </html>

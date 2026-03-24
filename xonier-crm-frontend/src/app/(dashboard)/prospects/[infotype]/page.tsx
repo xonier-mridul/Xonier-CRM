@@ -87,20 +87,6 @@ const BulkCallModal = ({
     setPhase("idle");
   };
 
-  const StatusPill = ({ status }: { status: CallStatus }) => {
-    const map: Record<CallStatus, { bg: string; dot: string; label: string }> = {
-      completed:   { bg: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",  dot: "bg-green-500",               label: "Completed"   },
-      in_progress: { bg: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",      dot: "bg-blue-500 animate-pulse",   label: "In Progress" },
-      failed:      { bg: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",          dot: "bg-red-500",                  label: "Failed"      },
-      queued:      { bg: "bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400",     dot: "bg-slate-400",                label: "Queued"      },
-    };
-    const { bg, dot, label } = map[status];
-    return (
-      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold ${bg}`}>
-        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dot}`} /> {label}
-      </span>
-    );
-  };
 
   return (
     <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
@@ -129,9 +115,9 @@ const BulkCallModal = ({
         {/* Stats */}
         <div className="flex items-center gap-4 px-5 py-3 border-b border-slate-100 dark:border-gray-700 shrink-0 flex-wrap">
           {([
-            { label: "Queued",      count: Object.values(statuses).filter(s => s === "queued").length,      color: "text-slate-500 dark:text-slate-400", dot: "bg-slate-300 dark:bg-slate-600" },
-            { label: "In Progress", count: Object.values(statuses).filter(s => s === "in_progress").length, color: "text-blue-500",  dot: "bg-blue-500 animate-pulse" },
-            { label: "Completed",   count: completedCount, color: "text-green-600", dot: "bg-green-500" },
+            { label: "Queued", count: Object.values(statuses).filter(s => s === "queued").length, color: "text-slate-500 dark:text-slate-400", dot: "bg-slate-300 dark:bg-slate-600" },
+            { label: "In Progress", count: Object.values(statuses).filter(s => s === "in_progress").length, color: "text-blue-500", dot: "bg-blue-500 animate-pulse" },
+            { label: "Completed", count: completedCount, color: "text-green-600", dot: "bg-green-500" },
             ...(failedCount > 0 ? [{ label: "Failed", count: failedCount, color: "text-red-500", dot: "bg-red-500" }] : []),
           ] as { label: string; count: number; color: string; dot: string }[]).map(({ label, count, color, dot }) => (
             <div key={label} className={`flex items-center gap-1.5 text-xs ${color}`}>
@@ -155,7 +141,7 @@ const BulkCallModal = ({
                   <p className={`text-sm font-semibold capitalize truncate ${isActive ? "text-blue-700 dark:text-blue-300" : status === "completed" ? "text-green-700 dark:text-green-300" : "text-slate-700 dark:text-slate-200"}`}>{lead.fullName}</p>
                   <p className="text-xs font-mono text-slate-400 dark:text-slate-500 truncate">{lead.phone}</p>
                 </div>
-                <StatusPill status={status} />
+                <StatusBadge status={status} />
                 {isActive && (
                   <div className="flex items-center gap-0.5 shrink-0">
                     {[0, 1, 2].map((i) => (
@@ -381,9 +367,13 @@ const LeadContent = (): JSX.Element => {
     setActiveColumns((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const getValue = (obj: any, path: string) =>
-    path.split(".").reduce((acc, part) => acc?.[part], obj);
-
+  const getValue = (obj: any, path: string) => {
+    if (path === "createdBy") {
+      return (obj?.firstName + " " + obj?.lastName?? "").trim();
+    }
+    else
+      return path.split(".").reduce((acc, part) => acc?.[part], obj);
+  }
   const clearAssignSelection = () => { setSelectedLeadIds(new Set()); setSelectedUserId(""); };
 
   const getAssignableUsers = async () => {
@@ -441,7 +431,7 @@ const LeadContent = (): JSX.Element => {
     const isCommChecked = commSelectedIds.has(item.id);
     return (
       <span className="flex items-center gap-1.5 p-2">
-       {(hasPermission(PERMISSIONS.callProspects) || hasPermission(PERMISSIONS.smsProspects)||hasPermission(PERMISSIONS.emailProspects)) && <label className="relative inline-flex items-center cursor-pointer mr-1" title="Select for bulk communication">
+        {(hasPermission(PERMISSIONS.callProspects) || hasPermission(PERMISSIONS.smsProspects) || hasPermission(PERMISSIONS.emailProspects)) && <label className="relative inline-flex items-center cursor-pointer mr-1" title="Select for bulk communication">
           <input type="checkbox" className="sr-only" checked={isCommChecked} onChange={() => toggleCommSelect(item.id)} />
           <div className={`w-4 h-4 rounded-sm border-2 flex items-center justify-center transition-all duration-150 ${isCommChecked ? "bg-slate-600 border-slate-600" : "bg-white dark:bg-gray-700 border-slate-300 dark:border-slate-500 hover:border-slate-500"}`}>
             {isCommChecked && <FaCheck className="text-white text-[8px]" />}
@@ -628,7 +618,7 @@ const LeadContent = (): JSX.Element => {
                     )}
                     {visibleCols.map((col) => (
                       <th key={col.key} className={`p-4 uppercase text-xs text-slate-500 dark:text-slate-100 whitespace-nowrap ${col.key === "actions" ? "text-center" : "text-start"}`}>
-                        {(hasPermission(PERMISSIONS.callProspects) || hasPermission(PERMISSIONS.smsProspects)||hasPermission(PERMISSIONS.emailProspects)) && col.key === "actions" ? (
+                        {(hasPermission(PERMISSIONS.callProspects) || hasPermission(PERMISSIONS.smsProspects) || hasPermission(PERMISSIONS.emailProspects)) && col.key === "actions" ? (
                           <div className="flex items-center gap-4 px-2">
                             <label className="relative inline-flex items-center cursor-pointer" title="Select all for communication">
                               <input ref={commSelectAllRef} type="checkbox" className="sr-only" checked={isAllCommSelected} onChange={handleSelectAllComm} />
@@ -689,7 +679,14 @@ const LeadContent = (): JSX.Element => {
                               else if (key === "phone") content = <SensitiveField value={value} link={`tel:${value}`} maskedValue={maskPhone(value)} fontSize="sm" />;
                               else if (key === "actions") content = <RowActions item={item} />;
                               else if (key === "createdAt") content = <CreatedAt timestamp={value} />;
+                              else if (key === "createdBy") content = <span className="capitalize text-sm whitespace-nowrap">{item.createdBy?.firstName + " " + item.createdBy?.lastName}</span>;
                               else if (key === "dataTag") content = <TagBadge tag={item.dataTag || "N/A"} />;
+                              else if (key === "source") content = (
+                                <span className={`bg-yellow-100 text-yellow-800 px-2.5 py-1 rounded-full text-xs font-medium`}
+                                >
+                                  {item.source||"N/A"}
+                                </span>
+                              )
                               else content = <span className="capitalize text-sm whitespace-nowrap">{value ?? "-"}</span>;
                               return <td key={key} className="p-4 text-nowrap">{content}</td>;
                             })}

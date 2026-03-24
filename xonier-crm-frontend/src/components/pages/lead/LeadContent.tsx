@@ -567,7 +567,7 @@ const LeadContent = (): JSX.Element => {
           <td className="p-4"><StatusBadge status={item.status} /></td>
           <td className="p-4"><TagBadge tag={item.dataTag || "N/A"} /></td>
           <td className="p-4"><CreatedAt timestamp={item.createdAt} /></td>
-          <td className="p-4">{item.createdBy?.firstName}</td>
+          <td className="p-4">{item.createdBy?.firstName + " " + item.createdBy?.lastName}</td>
           {( hasPermission(PERMISSIONS.updateLead)) ? 
           <StatusDropdown
             currentStatus={item.connectStatus as LeadEngagementStatus}
@@ -651,7 +651,7 @@ const LeadContent = (): JSX.Element => {
          
           <td className="p-4"><TagBadge tag={item.dataTag || "N/A"} /></td>
           <td className="p-4"><CreatedAt timestamp={item.createdAt} /></td>
-          <td className="p-4">{item.createdBy?.firstName}</td>
+          <td className="p-4">{item.createdBy?.firstName + " " + item.createdBy?.lastName}</td>
             {( hasPermission(PERMISSIONS.updateLead)) ? 
             <td>
             <StatusDropdown
@@ -868,7 +868,7 @@ const LeadContent = (): JSX.Element => {
 
           {currentTab !== TAB.ASSIGNED ? (
             <div className="overflow-x-scroll">
-              <table className="w-full rounded-xl ">
+              <table className="w-full rounded-xl overflow-hidden">
                 <thead>
                   <tr className="w-full border-b-2 border-zinc-200 dark:border-zinc-600 bg-blue-50 dark:bg-gray-800">
                     {hasPermission(PERMISSIONS.assignLead) && currentTab === TAB.ALL && (

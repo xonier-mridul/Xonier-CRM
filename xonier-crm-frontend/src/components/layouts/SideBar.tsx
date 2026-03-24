@@ -71,6 +71,9 @@ const SideBar = () => {
     if (pathname.startsWith("/roles")) {
       setOpenMenu("team");
     }
+    if (pathname.startsWith("/deleteduser")) {
+      setOpenMenu("team");
+    }
 
     if (pathname.startsWith("/enquiry")) {
       setOpenMenu("sales")
@@ -113,7 +116,7 @@ const SideBar = () => {
       case "team":
         return pathname.startsWith("/teams") ||
           pathname.startsWith("/users") ||
-          pathname.startsWith("/roles");
+          pathname.startsWith("/roles")|| pathname.startsWith("/deleteduser");
       case "sales":
         return pathname.startsWith("/enquiry") ||
           pathname.startsWith("/leads") ||
@@ -325,6 +328,19 @@ const SideBar = () => {
                         Users
                       </Link>
                     </li>}
+                    {
+                      hasPermission(PERMISSIONS.deletedUserView) && <li>
+                        <Link
+                          href="/deleteduser"
+                          className={`${isActive("/deleteduser")
+                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                            : "border-l-2 border-transparent"
+                            } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                        >
+                          Deleted Users
+                          </Link>
+                      </li>
+                    }
                   </motion.ul>
                 )}
               </AnimatePresence>

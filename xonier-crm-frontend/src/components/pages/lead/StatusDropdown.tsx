@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { FaChevronDown } from "react-icons/fa";
+import { createPortal } from "react-dom";
 import { LeadEngagementStatus } from "@/src/types/leads/leads.types";
 
 const AVAILABLE_STATUSES: LeadEngagementStatus[] = [
@@ -39,11 +40,11 @@ export const STATUS_CONFIG: Record<
 };
 
 type Props = {
-  currentStatus: LeadEngagementStatus; 
+  currentStatus: LeadEngagementStatus;
   Id: string;
   onStatusUpdate: (
     id: string,
-    newStatus: LeadEngagementStatus 
+    newStatus: LeadEngagementStatus
   ) => Promise<void>;
 };
 
@@ -54,14 +55,21 @@ export default function StatusDropdown({
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
+  const [openUpward, setOpenUpward] = useState(false);
 
-  // Close dropdown on outside click
+  const buttonRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+
       if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
+        buttonRef.current &&
+        !buttonRef.current.contains(target) &&
+        menuRef.current &&
+        !menuRef.current.contains(target)
       ) {
         setIsOpen(false);
       }
@@ -75,6 +83,27 @@ export default function StatusDropdown({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
+
+  // ✅ toggle with auto direction
+  const handleToggle = () => {
+    if (!isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const dropdownHeight = 300; // approx height
+      const spaceBelow = window.innerHeight - rect.bottom;
+
+      const shouldOpenUp = spaceBelow < dropdownHeight;
+      setOpenUpward(shouldOpenUp);
+
+      setPosition({
+        top: shouldOpenUp
+          ? rect.top - 10 // above button
+          : rect.bottom + 10, // below button
+        left: rect.left + rect.width / 2,
+      });
+    }
+
+    setIsOpen((prev) => !prev);
+  };
 
   const handleStatusChange = async (
     newStatus: LeadEngagementStatus
@@ -97,48 +126,75 @@ export default function StatusDropdown({
   };
 
   return (
-    <div className="relative inline-block" ref={dropdownRef}>
-      {/* Button */}
-      <button
-        onClick={() => setIsOpen((prev) => !prev)}
-        disabled={isUpdating}
-        className={`${
-          STATUS_CONFIG[currentStatus].color
-        } text-white px-4 py-1.5 text-sm rounded-md flex items-center gap-2 justify-between min-w-[140px]`}
-      >
-        <span>{STATUS_CONFIG[currentStatus].label}</span>
+    <>
+      {/* 🔹 Button */}
+      <div className="inline-block" ref={buttonRef}>
+        <button
+          onClick={handleToggle}
+          disabled={isUpdating}
+          className={`${
+            STATUS_CONFIG[currentStatus].color
+          } text-white px-4 py-1.5 text-sm rounded-md flex items-center gap-2 justify-between min-w-[140px]`}
+        >
+          <span>{STATUS_CONFIG[currentStatus].label}</span>
 
-        {isUpdating ? (
-          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-        ) : (
-          <FaChevronDown
-            className={`text-xs transition-transform ${
-              isOpen ? "rotate-180" : ""
-            }`}
-          />
-        )}
-      </button>
+          {isUpdating ? (
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <FaChevronDown
+              className={`text-xs transition-transform ${
+                isOpen ? "rotate-180" : ""
+              }`}
+            />
+          )}
+        </button>
+      </div>
 
-      {/* Dropdown (VERTICAL FIX ✅) */}
-      {isOpen && (
-        <div className="absolute left-0 mt-1 w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 flex flex-col">
-          {AVAILABLE_STATUSES.map((status) => (
-            <button
-              key={status}
-              onClick={() => handleStatusChange(status)}
-              disabled={status === currentStatus}
-              className={`w-full text-left px-4 py-2 text-sm capitalize transition
-                ${
-                  status === currentStatus
-                    ? "bg-gray-200 dark:bg-gray-600 cursor-not-allowed"
-                    : "hover:bg-gray-100 dark:hover:bg-gray-700"
-                }`}
+      {/* 🔹 Floating Dropdown */}
+      {isOpen &&
+        createPortal(
+          <div
+            className="fixed z-[9999]"
+            style={{
+              top: position.top,
+              left: position.left,
+              transform: openUpward
+                ? "translate(-50%, -100%)"
+                : "translateX(-50%)",
+            }}
+          >
+            <div
+              ref={menuRef}
+              onMouseDown={(e) => e.stopPropagation()}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 w-[220px] p-4 flex flex-col gap-3 animate-[fadeIn_0.2s_ease]"
             >
-              {STATUS_CONFIG[status].label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+              {AVAILABLE_STATUSES.map((status) => (
+                <button
+                  key={status}
+                  onClick={() => handleStatusChange(status)}
+                  disabled={status === currentStatus}
+                  className={`flex items-center gap-3 px-2 py-2 rounded-lg transition
+                    ${
+                      status === currentStatus
+                        ? "opacity-50 cursor-not-allowed"
+                        : "hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }`}
+                >
+                  <span
+                    className={`h-3 w-3 rounded-full ${
+                      STATUS_CONFIG[status].color
+                    }`}
+                  />
+
+                  <span className="text-sm text-gray-800 dark:text-white">
+                    {STATUS_CONFIG[status].label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>,
+          document.body
+        )}
+    </>
   );
 }
