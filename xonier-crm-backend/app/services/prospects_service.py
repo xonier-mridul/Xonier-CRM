@@ -37,10 +37,12 @@ class ProspectsService:
             limit = filters.get("limit") or 10
 
             query = {"isActive": True, "deletedAt": None}
-
+            print("one")
             if not is_admin:
                 members = await self.getTeamMembers.get_team_members(user["_id"])
                 user_object_id = PydanticObjectId(user["_id"])
+
+                
                 
                 if members:
                     query.update({

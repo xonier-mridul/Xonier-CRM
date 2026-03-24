@@ -13,7 +13,6 @@ class GetTeamMembers():
     
         user_obj_id = PydanticObjectId(userId)
         
-
         teams = await self.repo.find(
             {"manager.$id": {"$in": [user_obj_id]}}, 
             populate=["members"]
