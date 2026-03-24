@@ -7,6 +7,7 @@ import { FaRegEye } from "react-icons/fa";
 import { MdFilterAlt, MdFilterAltOff } from "react-icons/md";
 import { Message } from "@/src/types/communication/message.types";
 import MessageService from "@/src/services/communication/message.servicie";
+import CreatedAt from "@/src/components/common/CreatedAt";
 
 type StatusType = Message["status"] | "";
 
@@ -294,7 +295,9 @@ export default function Page() {
                         : <span className="text-gray-400">—</span>}
                     </td>
                     <td className="p-4 whitespace-nowrap">{log.sent_by ? `${log.sent_by.firstName ?? ''} ${log.sent_by.lastName ?? ''}`.trim()  || "-" : "-"}</td>
-                    <td className="p-4 whitespace-nowrap">{log.sent_at || "-"}</td>
+                    <td className="p-4 whitespace-nowrap">
+                      <CreatedAt timestamp={log.createdAt} time={true} />
+                    </td>
                     <td className="p-4 whitespace-nowrap">
                       <a href={`/message/${log.id}`} className="h-9 w-9 flex items-center justify-center rounded-md bg-green-100 hover:bg-green-200 text-green-600">
                         <FaRegEye className="text-xl" />
