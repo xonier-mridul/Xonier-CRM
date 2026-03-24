@@ -22,56 +22,157 @@ class SMSService:
             phone_num = user["assignedPhoneNumber"].get("phoneNumber")
             if not phone_num:
                 raise AppException(400, "User not have assigned valid phone number")
-            
         else:
             raise AppException(400, "User not have assigned phone number")
 
-        
         user_id = user["_id"]
 
-        history = SMSHistory(
+        try:
+            send = await self.sms_manager.send_sms(
+                send_to=payload["sendTo"],
+                from_to=phone_num,
+                message=payload["message"]
+            )
+
+            if not send:
+                raise AppException(400, "SMS send failed")
+
+            history = SMSHistory(
                 sent_to_number=payload["sendTo"],
                 sent_by=user_id,
                 sent_from_number=phone_num,
                 message=payload["message"],
                 sent_at=datetime.now(timezone.utc),
+                provider_message_sid=send["sid"],
+                status=send["status"],
+                cost=send["price"],
             )
 
-        await history.insert()
-
-        try:
-
-
-            send = await self.sms_manager.send_sms(send_to=payload["sendTo"], from_to=phone_num, message=payload["message"])
-
-            if not send:
-                raise AppException(400, "SMS send failed")
-
-            
-            
-            history.provider_message_sid = send["sid"]
-            history.status = send["status"]
-            history.cost = send["price"]
-
-            await history.save()
+            await history.insert()
 
             return {"sid": send["sid"], "history_id": str(history.id)}
-            
 
-        
         except AppException as e:
-            history.status = MESSAGE_STATUS.FAILED
-            history.error_code = str(e.code)
-            history.error_message = e.msg
-            history.failed_at = datetime.now(timezone.utc)
-            history.updatedAt = datetime.now(timezone.utc)
-            await history.save()
+            history = SMSHistory(
+                sent_to_number=payload["sendTo"],
+                sent_by=user_id,
+                sent_from_number=phone_num,
+                message=payload["message"],
+                sent_at=datetime.now(timezone.utc),
+                status=MESSAGE_STATUS.FAILED,
+                error_code=str(e.code),
+                error_message=e.msg,
+                failed_at=datetime.now(timezone.utc),
+            )
+            await history.insert()
             raise e
-        
+
         except Exception as e:
-             raise AppException(500, f"Internal server error: {e}")
+            history = SMSHistory(
+                sent_to_number=payload["sendTo"],
+                sent_by=user_id,
+                sent_from_number=phone_num,
+                message=payload["message"],
+                sent_at=datetime.now(timezone.utc),
+                status=MESSAGE_STATUS.FAILED,
+                error_message=str(e),
+                failed_at=datetime.now(timezone.utc),
+            )
+            await history.insert()
+            raise AppException(500, f"Internal server error: {e}")
 
-
+    async def bulk_send_sms(self, payload: Dict[str, Any], user: Dict[str, Any]):
+        if user["assignedPhoneNumber"]:
+            phone_num = user["assignedPhoneNumber"].get("phoneNumber")
+            if not phone_num:
+                raise AppException(400, "User not have assigned valid phone number")
+        else:
+            raise AppException(400, "User not have assigned phone number")
+ 
+        send_to_list = payload.get("sendTo", [])
+        message = payload.get("message")
+        user_id = user["_id"]
+ 
+        if not send_to_list:
+            raise AppException(400, "sendTo list is empty")
+ 
+        sent = []
+        failed = []
+ 
+        for number in send_to_list:
+            try:
+                send = await self.sms_manager.send_sms(
+                    send_to=number,
+                    from_to=phone_num,
+                    message=message
+                )
+ 
+                if not send:
+                    raise Exception("SMS provider returned no response")
+ 
+                history = SMSHistory(
+                    sent_to_number=number,
+                    sent_by=user_id,
+                    sent_from_number=phone_num,
+                    message=message,
+                    sent_at=datetime.now(timezone.utc),
+                    provider_message_sid=send["sid"],
+                    status=send["status"],
+                    cost=send["price"],
+                )
+                await history.insert()
+ 
+                sent.append({
+                    "number": number,
+                    "sid": send["sid"],
+                    "history_id": str(history.id),
+                })
+ 
+            except AppException as e:
+                history = SMSHistory(
+                    sent_to_number=number,
+                    sent_by=user_id,
+                    sent_from_number=phone_num,
+                    message=message,
+                    sent_at=datetime.now(timezone.utc),
+                    status=MESSAGE_STATUS.FAILED,
+                    error_code=str(e.code),
+                    error_message=e.msg,
+                    failed_at=datetime.now(timezone.utc),
+                )
+                await history.insert()
+ 
+                failed.append({
+                    "number": number,
+                    "reason": e.msg,
+                })
+ 
+            except Exception as e:
+                history = SMSHistory(
+                    sent_to_number=number,
+                    sent_by=user_id,
+                    sent_from_number=phone_num,
+                    message=message,
+                    sent_at=datetime.now(timezone.utc),
+                    status=MESSAGE_STATUS.FAILED,
+                    error_message=str(e),
+                    failed_at=datetime.now(timezone.utc),
+                )
+                await history.insert()
+ 
+                failed.append({
+                    "number": number,
+                    "reason": str(e),
+                })
+ 
+        return {
+            "totalRequested": len(send_to_list),
+            "sentCount": len(sent),
+            "failedCount": len(failed),
+            "sent": sent,
+            "failed": failed,
+        }
+ 
 
     async def get_all_sms_history(self, filters: Dict[str, Any], user: Dict[str, Any]):
         try:

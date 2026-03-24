@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Request
 from app.core.dependencies import Dependencies
-from app.schemas.communication.sms_schema import SEND_SMS_SCHEMA
+from app.schemas.communication.sms_schema import SEND_SMS_SCHEMA, SEND_BULK_SMS_SCHEMA
 from app.controllers.communication.sms_controller import SMSController
 
 
@@ -14,6 +14,11 @@ controller = SMSController()
 @router.post('/send', status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["sms:send"]))])
 async def send_sms(request: Request, payload: SEND_SMS_SCHEMA ):
     return await controller.send_sms(request=request, payload=payload.model_dump(mode="json"))
+
+
+@router.post('/bulk-send', status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["sms:send"]))])
+async def bulk_send_sms(request: Request, payload: SEND_BULK_SMS_SCHEMA):
+    return await controller.bulk_send_sms(request=request, payload=payload.model_dump(mode="json"))
 
 
 @router.get('/history', status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["sms:read"]))])
