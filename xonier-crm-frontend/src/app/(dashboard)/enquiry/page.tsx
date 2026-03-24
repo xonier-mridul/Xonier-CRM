@@ -49,7 +49,7 @@ const page = (): JSX.Element => {
   const getEnquiryData = async () => {
     setIsLoading(true);
     try {
-      if (auth.isAdmin) {
+     
         const result = await EnquiryService.getAll({
           page: currentPage,
           limit: pageLimit,
@@ -64,16 +64,7 @@ const page = (): JSX.Element => {
           setPageLimit(data.limit);
           setTotalPages(data.totalPages);
         }
-      } else {
-        const result = await EnquiryService.getAllByCreator(currentPage, pageLimit);
-        if (result.status === 200) {
-          let data = result.data.data;
-          setEnquiryData(data.data);
-          setCurrentPage(data.page);
-          setPageLimit(data.limit);
-          setTotalPages(data.totalPages);
-        }
-      }
+      
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) {
@@ -261,7 +252,7 @@ const page = (): JSX.Element => {
                       </td>
                       <td className="p-4"> <StatusBadge status={item.status} /></td>
                       <td className="p-4"><CreatedAt timestamp={item.createdAt} /></td>
-                      <td className="p-4">{item.createdBy?.firstName}</td>
+                      <td className="p-4">{item.createdBy?.firstName} {item.createdBy?.lastName ?? ""}</td>
                       <td>
                         <div className="flex items-center gap-2">
                           {hasPermission(PERMISSIONS.readEnquiry) ? <Link

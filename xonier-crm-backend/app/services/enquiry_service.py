@@ -226,8 +226,17 @@ class EnquiryService:
             if not is_admin:
                 members = await self.getTeamMembers.get_team_members(user["_id"])
 
+                user_object_id = PydanticObjectId(user["_id"])
+                
                 if members:
-                    query.update({"$or":[{"createdBy.$id": {"$in": members}}, {"assignTo.$id": {"$in": members}}]})
+                    query.update({
+                        "$or": [
+                            {"createdBy.$id": {"$in": members}},
+                            {"createdBy.$id": user_object_id},
+                            {"assignTo.$id": {"$in": members}},
+                            {"assignTo.$id": user_object_id},
+                        ]
+                    })
                     
 
                 else:

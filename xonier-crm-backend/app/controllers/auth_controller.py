@@ -332,6 +332,46 @@ class AuthController:
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
         
+
+    async def restore_user(self, request: Request, userId: str):
+        try:
+            user = request.state.user
+ 
+            if not ObjectId.is_valid(userId):
+                raise AppException(400, "Invalid user ObjectId")
+ 
+            result = await self.service.restore_user(
+                userId=PydanticObjectId(userId),
+                user=user
+            )
+ 
+            return successResponse(200, "User restored successfully", result)
+ 
+        except AppException as e:
+            raise e
+ 
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+ 
+ 
+    async def bulk_restore_users(self, request: Request, payload: Dict[str, Any]):
+        try:
+            user = request.state.user
+ 
+            result = await self.service.bulk_restore_users(
+                payload=payload,
+                user=user
+            )
+ 
+            return successResponse(200, result["message"], result)
+ 
+        except AppException as e:
+            raise e
+ 
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+ 
+        
         
     
 

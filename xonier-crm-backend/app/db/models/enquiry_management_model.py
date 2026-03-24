@@ -92,12 +92,10 @@ class EnquiryModel(Document):
     technologies: Optional[List[str]] = []
     keywords: Optional[List[str]] = []
 
-    priority: PRIORITY
-
-    projectType: str
+    projectType: Optional[str] = None
     status: SALES_STATUS = SALES_STATUS.NEW
     isActive: bool = True
-    priority: PRIORITY
+    priority: PRIORITY = PRIORITY.MEDIUM.value
     source: str
     message: Optional[str] = None
     assignTo: Optional[Link[UserModel]] = None

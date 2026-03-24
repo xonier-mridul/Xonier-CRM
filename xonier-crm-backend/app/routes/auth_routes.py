@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Response, Request
 
 
 from app.middlewares.auth_middleware import AuthMiddleware
-from app.schemas.user_schema import UserLoginSchema, VerifyLoginOtpSchema, RegisterUserSchema, ResendOTPSchema, UpdateUserSchema, ResetPasswordSchema, UpdateUserStatusSchema, ResetPasswordByAdminSchema, AssignPhoneNumberSchema, BulkPermanentDeleteSchema
+from app.schemas.user_schema import UserLoginSchema, VerifyLoginOtpSchema, RegisterUserSchema, ResendOTPSchema, UpdateUserSchema, ResetPasswordSchema, UpdateUserStatusSchema, ResetPasswordByAdminSchema, AssignPhoneNumberSchema, BulkPermanentDeleteSchema, BulkRestoreUsersSchema
 from app.controllers.auth_controller import AuthController
 from app.core.dependencies import Dependencies
 from beanie import PydanticObjectId
@@ -100,4 +100,14 @@ async def permanent_delete_user(request: Request, userId: str):
 @router.delete("/bulk-permanent-delete", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["user:delete"]))])
 async def bulk_permanent_delete_users(request: Request, payload: BulkPermanentDeleteSchema):
     return await auth_controller.bulk_permanent_delete(request=request, payload=payload.model_dump(mode="json"))
+
+
+@router.patch("/restore/{userId}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["user:update"]))])
+async def restore_user(request: Request, userId: str):
+    return await auth_controller.restore_user(request=request, userId=userId)
+ 
+ 
+@router.patch("/bulk-restore", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["user:update"]))])
+async def bulk_restore_users(request: Request, payload: BulkRestoreUsersSchema):
+    return await auth_controller.bulk_restore_users(request=request, payload=payload.model_dump(mode="json"))
 

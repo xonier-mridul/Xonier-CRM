@@ -40,10 +40,19 @@ class ProspectsService:
 
             if not is_admin:
                 members = await self.getTeamMembers.get_team_members(user["_id"])
+                user_object_id = PydanticObjectId(user["_id"])
+                
                 if members:
-                    query.update({"createdBy.$id": {"$in": members}})
+                    query.update({
+                        "$or": [
+                            {"createdBy.$id": {"$in": members}},
+                            {"createdBy.$id": user_object_id},
+                            {"assignTo.$id": {"$in": members}},
+                            {"assignTo.$id": user_object_id},
+                        ]
+                    })
                 else:
-                    query.update({"createdBy.$id": PydanticObjectId(user["_id"])})
+                    query.update({"$or": [{"createdBy.$id": PydanticObjectId(user["_id"])}, {"assignTo.$id": PydanticObjectId(user["_id"])}]})
 
             if "info" in filters:
                 query.update({"infoType": filters["info"]})

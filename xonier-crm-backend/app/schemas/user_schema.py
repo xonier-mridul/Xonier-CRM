@@ -245,3 +245,14 @@ class BulkPermanentDeleteSchema(BaseModel):
             raise ValueError("userIds cannot be empty")
         return v
     
+
+class BulkRestoreUsersSchema(BaseModel):
+    userIds: List[str]
+ 
+    @field_validator("userIds")
+    @classmethod
+    def validate_user_ids(cls, v: List[str]) -> List[str]:
+        if not v:
+            raise ValueError("userIds cannot be empty")
+        return v
+ 
