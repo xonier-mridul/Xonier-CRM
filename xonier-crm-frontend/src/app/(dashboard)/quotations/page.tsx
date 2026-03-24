@@ -462,7 +462,7 @@ const page = (): JSX.Element => {
                             {date}
                           </span>
                         </td>
-                        <td className="p-4">{item.createdBy?.firstName}</td>
+                        <td className="p-4">{item.createdBy?.firstName + " " + item.createdBy?.lastName}</td>
                         <td>
                           <div className="flex items-center gap-2">
                             {hasPermission(PERMISSIONS.readQuote) ? (

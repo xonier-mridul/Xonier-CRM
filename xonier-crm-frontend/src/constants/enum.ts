@@ -116,6 +116,7 @@ export enum PERMISSIONS {
   readUser = "user:read",
   updateUser = "user:update",
   deleteUser = "user:delete",
+  deletedUserView = "user:deleted",
   createRole = "role:create",
   readRole = "role:read",
   updateRole = "role:update",

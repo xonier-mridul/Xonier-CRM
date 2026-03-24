@@ -381,9 +381,13 @@ const LeadContent = (): JSX.Element => {
     setActiveColumns((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const getValue = (obj: any, path: string) =>
-    path.split(".").reduce((acc, part) => acc?.[part], obj);
-
+  const getValue = (obj: any, path: string) =>{
+    if(path === "createdBy"){
+      return (obj?.firstName+" "+obj?.lastName)
+    }
+    else
+    return path.split(".").reduce((acc, part) => acc?.[part], obj);
+}
   const clearAssignSelection = () => { setSelectedLeadIds(new Set()); setSelectedUserId(""); };
 
   const getAssignableUsers = async () => {
@@ -689,6 +693,7 @@ const LeadContent = (): JSX.Element => {
                               else if (key === "phone") content = <SensitiveField value={value} link={`tel:${value}`} maskedValue={maskPhone(value)} fontSize="sm" />;
                               else if (key === "actions") content = <RowActions item={item} />;
                               else if (key === "createdAt") content = <CreatedAt timestamp={value} />;
+                              else if (key === "createdBy") content = <span className="capitalize text-sm whitespace-nowrap">{item.createdBy?.firstName+" "+item.createdBy?.lastName}</span>;
                               else if (key === "dataTag") content = <TagBadge tag={item.dataTag || "N/A"} />;
                               else content = <span className="capitalize text-sm whitespace-nowrap">{value ?? "-"}</span>;
                               return <td key={key} className="p-4 text-nowrap">{content}</td>;

@@ -257,6 +257,7 @@ const DealContent = (): JSX.Element => {
             <li><TabsButton btnTxt="Won Deals" dataLen={wonDealData.length} no={2} currentVal={currentTab} onClickEvent={()=>handleTabs(2)}/></li>
             <li><TabsButton btnTxt="Lost Deals" dataLen={lostDealData.length} no={3} currentVal={currentTab} onClickEvent={()=>handleTabs(3)}/></li>
           </ul>
+          <div className="w-full rounded-xl overflow-x-scroll text-nowrap">
           {(currentTab === 1) &&<> <table className="w-full rounded-xl overflow-hidden">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
@@ -277,6 +278,9 @@ const DealContent = (): JSX.Element => {
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
                   created date
+                </th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                  created by
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
                   Actions
@@ -328,6 +332,7 @@ const DealContent = (): JSX.Element => {
                         </span>
                       </td>
                       <td className="p-4"> <span className="px-3 py-1.5 rounded-md bg-blue-100 text-xs text-blue-600 font-medium">{date}</span></td>
+                      <td className="p-4">{item.createdBy?.firstName + " " + item.createdBy?.lastName}</td>
                       <td>
                         <div className="flex items-center gap-2">
                           {hasPermission(PERMISSIONS.readDeal) ? (
@@ -418,6 +423,9 @@ const DealContent = (): JSX.Element => {
                   <td className="p-4">
                     <Skeleton width={110} height={30} borderRadius={14} />
                   </td>
+                  <td className="p-4"><Skeleton width={110} height={30} borderRadius={14} />
+                    <Skeleton width={110} height={30} borderRadius={14} />
+                  </td>
                   <td className="p-4">
                     <div className="flex items-center gap-2">
                       <Skeleton width={32} height={32} borderRadius={10} />
@@ -453,6 +461,9 @@ const DealContent = (): JSX.Element => {
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
                   created date
+                </th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                  created by
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
                   Actions
@@ -508,6 +519,7 @@ const DealContent = (): JSX.Element => {
                         </span>
                       </td>
                       <td className="p-4"> <span className="px-4 py-1.5 rounded-md bg-blue-200 text-sm text-blue-600 font-medium">{date}</span></td>
+                      <td className="p-4">{item.createdBy?.firstName + " " + item.createdBy?.lastName}</td>
                       <td>
                         <div className="flex items-center gap-2">
                           {hasPermission(PERMISSIONS.readLead) ? (
@@ -578,6 +590,9 @@ const DealContent = (): JSX.Element => {
                   <td className="p-4">
                     <Skeleton width={110} height={30} borderRadius={14} />
                   </td>
+                  <td className="p-4"><Skeleton width={110} height={30} borderRadius={14} />
+                    <Skeleton width={110} height={30} borderRadius={14} />
+                  </td>
                   <td className="p-4">
                     <div className="flex items-center gap-2">
                       <Skeleton width={32} height={32} borderRadius={10} />
@@ -613,6 +628,9 @@ const DealContent = (): JSX.Element => {
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
                   created date
+                </th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                  created by
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
                   Actions
@@ -668,6 +686,7 @@ const DealContent = (): JSX.Element => {
                         </span>
                       </td>
                       <td className="p-4"> <span className="px-4 py-1.5 rounded-md bg-blue-200 text-sm text-blue-600 font-medium">{date}</span></td>
+                      <td className="p-4">{item.createdBy?.firstName + " " + item.createdBy?.lastName}</td>
                       <td>
                         <div className="flex items-center gap-2">
                           {hasPermission(PERMISSIONS.readLead) ? (
@@ -738,6 +757,9 @@ const DealContent = (): JSX.Element => {
                   <td className="p-4">
                     <Skeleton width={110} height={30} borderRadius={14} />
                   </td>
+                  <td className="p-4"><Skeleton width={110} height={30} borderRadius={14} />
+                    <Skeleton width={110} height={30} borderRadius={14} />
+                  </td>
                   <td className="p-4">
                     <div className="flex items-center gap-2">
                       <Skeleton width={32} height={32} borderRadius={10} />
@@ -751,6 +773,8 @@ const DealContent = (): JSX.Element => {
               )}
             </tbody>
           </table> <Pagination currentPage={lostCurrentPage} totalPages={totalLostPages} onPageChange={((page)=>setLostCurrentPage(page))} className="w-full"/></>}
+
+          </div>
         </div>
     </div>
   );
