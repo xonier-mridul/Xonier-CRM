@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { MdMessage } from "react-icons/md";
 import { IoClose } from "react-icons/io5";
-import { Prospect } from "@/src/types/prospect/prospect.type";
+import { Prospect } from "@/src/types/prospect/prospect.type"
 import { toast } from "react-toastify";
-import RichEditor from "@/src/components/pages/prospect/RichEditor";
-import MailService from "@/src/services/communication/mail.service";
 import prospectService from "@/src/services/prospect.service";
 
 const BulkSmsModal = ({
@@ -25,9 +23,8 @@ const BulkSmsModal = ({
     }
     setIsSending(true);
     try {
-      await Promise.all(
-        leads.map((lead) => prospectService.sendMessage(lead.phone, messageText))
-      );
+      const sendTo : string[] = leads.map((lead) => lead.phone);
+      await prospectService.bulkSms(sendTo, messageText);
       setSent(true);
       toast.success(`SMS sent to ${leads.length} lead${leads.length > 1 ? "s" : ""}`);
       setTimeout(onClose, 1500);

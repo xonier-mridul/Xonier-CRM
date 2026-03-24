@@ -36,6 +36,7 @@ const prospectService = {
   getAllActiveWithoutPagination: () => api.get("/auth/active/all-without-pagination"),
   assignBulkLead: (userId: string, leadsId: Array<string>) => api.post("/prospect/bulk-assign", { assignedTo: userId, enquiryIds: leadsId }),
   sendMessage: (phone: string, message: string) => api.post("/communication/sms/send", { sendTo:phone, message }),
+  bulkSms: (sendTo: Array<string>, message: string) => api.post("/communication/sms/bulk-send", { sendTo, message }),
 };
 
 
