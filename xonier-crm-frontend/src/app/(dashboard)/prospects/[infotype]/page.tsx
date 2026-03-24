@@ -369,7 +369,7 @@ const LeadContent = (): JSX.Element => {
 
   const getValue = (obj: any, path: string) => {
     if (path === "createdBy") {
-      return (obj?.firstName + " " + obj?.lastName?? "").trim();
+      return (obj?.firstName + " " + obj?.lastName).trim();
     }
     else
       return path.split(".").reduce((acc, part) => acc?.[part], obj);

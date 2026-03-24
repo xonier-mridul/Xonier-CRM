@@ -187,4 +187,4 @@ class TeamService:
             raise
 
         except Exception as e:
-                    raise AppException(status_code=500, message="internal server error")
+                    raise AppException(status_code=500, message=f"internal server error: {e}")
