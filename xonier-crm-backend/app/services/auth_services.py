@@ -63,7 +63,6 @@ class AuthServices:
                raise AppException(404, "Users not found")
            
            
-           
            parsed_users = jsonable_encoder(users["data"], exclude={"password", "refreshToken"})
            for item in parsed_users:
                item["email"] = encryptor.decrypt_data(item["email"])
@@ -146,13 +145,21 @@ class AuthServices:
                 raise AppException(403, "Unauthorized, only admin can access deleted users")
  
             query = {"status": USER_STATUS.DELETED.value}
+
+            if "search" in filters and filters["search"].strip():
+                search_regex = {"$regex": filters["search"].strip(), "$options": "i"}
+
+                query.update({"$or": [
+                    {"firstName": search_regex},
+                    {"lastName": search_regex},
+                    {"company": search_regex}
+                ] })
  
-            if "name" in filters:
-                query["firstName"] = {"$regex": filters["name"], "$options": "i"}
+            
  
             if "email" in filters:
                 hashed_email = hash_value(filters["email"].lower())
-                query["hashedEmail"] = hashed_email
+                query["hashedEmail"] = {"$regex":hashed_email, "$options": "i"}
  
             if "fromDate" in filters or "toDate" in filters:
                 date_filter = {}
@@ -1073,7 +1080,6 @@ class AuthServices:
         except Exception as e:
             
             raise AppException(status_code=500, message="internal server error")
-
 
 
     async def restore_user(self, userId: PydanticObjectId, user: Dict[str, Any]):

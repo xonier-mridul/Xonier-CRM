@@ -52,7 +52,8 @@ class ProspectsService:
                         ]
                     })
                 else:
-                    query.update({"$or": [{"createdBy.$id": PydanticObjectId(user["_id"])}, {"assignTo.$id": PydanticObjectId(user["_id"])}]})
+                    query.update({"$or": [ {"createdBy.$id": user_object_id},
+                                {"assignTo.$id": user_object_id}]})
 
             if "info" in filters:
                 query.update({"infoType": filters["info"]})
@@ -109,7 +110,7 @@ class ProspectsService:
 
                 if date_filter:
                     query.update({"createdAt": date_filter})
-
+            
             result = await self.repo.get_all(
                 page=int(page),
                 limit=int(limit),
@@ -304,6 +305,135 @@ class ProspectsService:
 
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+        
+
+    async def get_all_assigned(self, filters: Dict[str, Any], user: Dict[str, Any], page: int = 1, limit: int = 10):
+        try:
+            is_admin = validate_admin(user["userRole"])
+ 
+            query = {
+                "isActive": True,
+                "deletedAt": None,
+                "assignTo": {"$exists": True, "$ne": None},
+            }
+ 
+            if not is_admin:
+                members = await self.getTeamMembers.get_team_members(user["_id"])
+                user_object_id = PydanticObjectId(user["_id"])
+                user_string_id = str(user["_id"])
+ 
+                if members:
+                    query.update({
+                        "$or": [
+                            {"createdBy.$id": {"$in": members}},
+                            {"createdBy.$id": user_object_id},
+                            {"assignTo.$id": {"$in": members}},
+                            {"assignTo.$id": user_string_id},
+                        ]
+                    })
+                else:
+                    query.update({
+                        "$or": [
+                            {"createdBy.$id": user_object_id},
+                            {"assignTo.$id": user_string_id},
+                        ]
+                    })
+            
+            if "search" in filters and filters["search"].strip():
+                regex_search = {"$regex": filters["search"], "$options": "i"}
+
+                query.update({"$or": [
+                    {"infoType": regex_search},
+                    {"enquiry_id": regex_search},
+                    {"fullName": regex_search},
+                    {"location.country": regex_search},
+                    {"location.city": regex_search},
+                    {"location.state": regex_search},
+                    {"location.zipcode": regex_search},
+                    {"companyName": regex_search},
+                    {"projectType": regex_search},
+                    {"status": regex_search}
+                ]})
+
+ 
+            if "assignedTo" in filters:
+                if not ObjectId.is_valid(filters["assignedTo"]):
+                    raise AppException(400, "Invalid assignedTo user ID")
+                query.update({"assignTo.$id": str(filters["assignedTo"])})
+ 
+            if "assignedBy" in filters:
+                if not ObjectId.is_valid(filters["assignedBy"]):
+                    raise AppException(400, "Invalid assignedBy user ID")
+                query.update({"assignBy.$id": str(filters["assignedBy"])})
+ 
+ 
+            if "projectType" in filters:
+                query.update({"projectType": filters["projectType"]})
+ 
+            if "priority" in filters:
+                query.update({"priority": filters["priority"]})
+ 
+            if "fromDate" in filters or "toDate" in filters:
+                date_filter = {}
+                if "fromDate" in filters:
+                    try:
+                        from_dt = datetime.fromisoformat(str(filters["fromDate"]))
+                        from_dt = from_dt.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
+                        date_filter["$gte"] = from_dt
+                    except (ValueError, TypeError):
+                        raise AppException(400, "Invalid fromDate format. Use ISO format: YYYY-MM-DD")
+ 
+                if "toDate" in filters:
+                    try:
+                        to_dt = datetime.fromisoformat(str(filters["toDate"]))
+                        to_dt = to_dt.replace(hour=23, minute=59, second=59, microsecond=999999, tzinfo=timezone.utc)
+                        date_filter["$lte"] = to_dt
+                    except (ValueError, TypeError):
+                        raise AppException(400, "Invalid toDate format. Use ISO format: YYYY-MM-DD")
+ 
+                if date_filter:
+                    query.update({"createdAt": date_filter})
+ 
+            if "assignedFrom" in filters or "assignedTo_date" in filters:
+                assigned_date_filter = {}
+                if "assignedFrom" in filters:
+                    try:
+                        from_dt = datetime.fromisoformat(str(filters["assignedFrom"]))
+                        from_dt = from_dt.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
+                        assigned_date_filter["$gte"] = from_dt
+                    except (ValueError, TypeError):
+                        raise AppException(400, "Invalid assignedFrom format. Use ISO format: YYYY-MM-DD")
+ 
+                if "assignedTo_date" in filters:
+                    try:
+                        to_dt = datetime.fromisoformat(str(filters["assignedTo_date"]))
+                        to_dt = to_dt.replace(hour=23, minute=59, second=59, microsecond=999999, tzinfo=timezone.utc)
+                        assigned_date_filter["$lte"] = to_dt
+                    except (ValueError, TypeError):
+                        raise AppException(400, "Invalid assignedTo_date format. Use ISO format: YYYY-MM-DD")
+ 
+                if assigned_date_filter:
+                    query.update({"assignedAt": assigned_date_filter})
+ 
+            result = await self.repo.get_all(
+                page=int(page),
+                limit=int(limit),
+                filters=query,
+                populate=["assignTo", "assignBy", "createdBy"],
+                sort=["-assignedAt"]
+            )
+ 
+            if not result:
+                raise AppException(404, "No assigned enquiries found")
+ 
+            return jsonable_encoder(result)
+ 
+        except AppException as e:
+            raise e
+ 
+        except Exception as e:
+            raise AppException(status_code=500, message=f"internal server error: {e}")
+ 
         
 
     async def bulk_reassign(self, user: Dict[str, Any], payload: Dict[str, Any]):

@@ -24,6 +24,31 @@ class ProspectsController:
         except AppException as e:
             raise e
         
+
+    async def get_all_assigned(self, request: Request):
+        try:
+            filters = dict(request.query_params)
+            user = request.state.user
+ 
+            page = int(filters.pop("page", 1))
+            limit = int(filters.pop("limit", 10))
+ 
+            result = await self.service.get_all_assigned(
+                filters=filters,
+                user=user,
+                page=page,
+                limit=limit
+            )
+ 
+            return successResponse(200, "Assigned enquiries fetched successfully", result)
+ 
+        except AppException as e:
+            raise e
+ 
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+ 
+        
     
     async def get_by_id(self,id: str, request: Request):
         try:

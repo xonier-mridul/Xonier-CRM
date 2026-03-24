@@ -16,6 +16,11 @@ async def get_all_active(request: Request):
     return await controller.get_all_active(request)
 
 
+@router.get("/assigned", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["prospect:read"]))])
+async def get_all_assigned(request: Request):
+    return await controller.get_all_assigned(request=request)
+
+
 @router.get("/get-by-id/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["prospect:read"]))])
 async def get_by_id(id: str, request: Request):
     return await controller.get_by_id(id, request)
