@@ -309,10 +309,10 @@ const DeletedUsersPage = (): JSX.Element => {
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="ml-72 mt-16 p-6 min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
+    <div className="ml-72 mt-16 p-6 min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 rounded-2xl">
 
       {/* ── Page header ── */}
-      <div className="mb-6">
+      <div className="mb-6 bg-rose-50 dark:bg-rose-900/20 rounded-xl border border-rose-200 dark:border-rose-800 p-6">
         <div className="flex items-center gap-2 mb-1">
           <MdOutlineDeleteForever className="w-5 h-5 text-rose-500" />
           <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
