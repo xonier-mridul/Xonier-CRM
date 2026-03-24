@@ -123,8 +123,8 @@ class EnquiryRegisterSchema(BaseModel):
     industry: List[str]
     technologies: Optional[List[str]] = []
     keywords: Optional[List[str]] = []
-    projectType: str
-    priority: PRIORITY
+    projectType: Optional[str] = None
+    priority: PRIORITY = PRIORITY.MEDIUM.value
     source: str
     extra_fields: Optional[List[ExtraFieldSchema]] = Field(default=[])
     assignTo: Optional[str] = None

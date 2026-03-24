@@ -1075,3 +1075,162 @@ class AuthServices:
             raise AppException(status_code=500, message="internal server error")
 
 
+
+    async def restore_user(self, userId: PydanticObjectId, user: Dict[str, Any]):
+        session = await self.client.start_session()
+        try:
+            session.start_transaction()
+ 
+            is_admin = validate_admin(user["userRole"])
+ 
+            if not is_admin:
+                raise AppException(403, "Unauthorized, only admin can restore users")
+ 
+            target_user = await self.repo.find_by_id(userId, ["userRole"], session=session)
+ 
+            if not target_user:
+                raise AppException(404, "User not found")
+ 
+            if target_user.status != USER_STATUS.DELETED.value:
+                raise AppException(400, "User is not deleted, only deleted users can be restored")
+ 
+            updated = await self.repo.update(
+                userId,
+                {
+                    "status": USER_STATUS.ACTIVE,
+                    "deletedBy": None,
+                    "deletedAt": None,
+                    "updatedBy": DBRef(collection="users", id=user["_id"]),
+                    "updatedAt": datetime.now(timezone.utc),
+                },
+                session=session
+            )
+ 
+            if not updated:
+                raise AppException(400, "User restore failed")
+ 
+            await session.commit_transaction()
+ 
+            result = target_user.model_dump(mode="json")
+            result.pop("password", None)
+            result.pop("refreshToken", None)
+            result.pop("hashedEmail", None)
+            result.pop("hashedPhone", None)
+ 
+            result["email"] = encryptor.decrypt_data(target_user.email)
+            if target_user.phone:
+                result["phone"] = encryptor.decrypt_data(target_user.phone)
+ 
+            return result
+ 
+        except AppException:
+            await session.abort_transaction()
+            raise
+ 
+        except Exception as e:
+            await session.abort_transaction()
+            raise AppException(status_code=500, message=f"internal server error: {e}")
+ 
+        finally:
+            await session.end_session()
+ 
+ 
+    async def bulk_restore_users(self, payload: Dict[str, Any], user: Dict[str, Any]):
+        session = await self.client.start_session()
+        try:
+            session.start_transaction()
+ 
+            is_admin = validate_admin(user["userRole"])
+ 
+            if not is_admin:
+                raise AppException(403, "Unauthorized, only admin can restore users")
+ 
+            user_ids = payload.get("userIds", [])
+ 
+            if not user_ids:
+                raise AppException(400, "userIds are required")
+ 
+            for uid in user_ids:
+                if not ObjectId.is_valid(uid):
+                    raise AppException(400, f"Invalid user ObjectId: {uid}")
+ 
+            user_object_ids = [PydanticObjectId(uid) for uid in user_ids]
+ 
+            users = await self.repo.find_many(
+                filters={"_id": {"$in": user_object_ids}},
+                populate=["userRole"]
+            )
+ 
+            found_ids = {str(u.id) for u in users} if users else set()
+            missing_ids = [uid for uid in user_ids if uid not in found_ids]
+ 
+            failed_users = []
+ 
+            for uid in missing_ids:
+                failed_users.append({
+                    "id": uid,
+                    "reason": "User not found"
+                })
+ 
+            eligible_users = []
+ 
+            for target in (users or []):
+                if target.status != USER_STATUS.DELETED.value:
+                    failed_users.append({
+                        "id": str(target.id),
+                        "reason": f"User is not deleted (current status: {target.status}), only deleted users can be restored"
+                    })
+                    continue
+ 
+                eligible_users.append(target)
+ 
+            restored_count = 0
+ 
+            if eligible_users:
+                eligible_ids = [PydanticObjectId(u.id) for u in eligible_users]
+ 
+                await self.repo.bulk_update(
+                    filters={"_id": {"$in": eligible_ids}},
+                    data={
+                        "status": USER_STATUS.ACTIVE,
+                        "deletedBy": None,
+                        "deletedAt": None,
+                        "updatedBy": DBRef(collection="users", id=user["_id"]),
+                        "updatedAt": datetime.now(timezone.utc),
+                    },
+                    session=session
+                )
+ 
+                restored_count = len(eligible_users)
+ 
+            await session.commit_transaction()
+ 
+            failed = len(failed_users)
+ 
+            if restored_count == 0:
+                message = "No users were restored"
+            elif failed == 0:
+                message = f"All {restored_count} user{'s' if restored_count > 1 else ''} restored successfully"
+            else:
+                message = f"{restored_count} user{'s' if restored_count > 1 else ''} restored, {failed} failed"
+ 
+            return {
+                "message": message,
+                "totalRequested": len(user_ids),
+                "restoredCount": restored_count,
+                "failedCount": failed,
+                "failedUsers": failed_users
+            }
+ 
+        except AppException:
+            await session.abort_transaction()
+            raise
+ 
+        except Exception as e:
+            await session.abort_transaction()
+            raise AppException(status_code=500, message=f"internal server error: {e}")
+ 
+        finally:
+            await session.end_session()
+ 
+
