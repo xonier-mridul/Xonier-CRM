@@ -40,7 +40,7 @@ export const ALL_COL: any = {
         { key: "socialLinks.website", label: "Website", required: false },
         { key: "dataTags", label: "Data Tags", required: false },
         { key: "createdAt", label: "Created At", required: true },
-        { key: "createdBy.firstName", label: "Created By", required: true },
+        { key: "createdBy", label: "Created By", required: true },
 
         { key: "actions", label: "Actions", required: true },
     ],
@@ -56,7 +56,7 @@ export const ALL_COL: any = {
         { key: "status", label: "Status", required: false },
         { key: "dataTags", label: "Data Tags", required: false },
         { key: "createdAt", label: "Created At", required: true },
-        { key: "createdBy.firstName", label: "Created By", required: true },
+        { key: "createdBy", label: "Created By", required: true },
         { key: "actions", label: "Actions", required: true },
     ],
 };
@@ -74,7 +74,7 @@ export const DEF_ACTIVE: DefaultActive = {
         status: true,
         dataTags: false,
         createdAt: true,
-        "createdBy.firstName": true,
+        "createdBy": true,
         actions: true,
     },
     company: {
@@ -117,7 +117,7 @@ export const DEF_ACTIVE: DefaultActive = {
         "dataTags": false,
         deletedAt: false,
         createdAt: true,
-        "createdBy.firstName": true,
+        "createdBy": true,
 
         actions: true
     }
