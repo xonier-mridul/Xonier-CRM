@@ -26,6 +26,30 @@ class SMSController:
             print("error: ", e)
             raise e
         
+    async def bulk_send_sms(self, request: Request, payload: Dict[str, Any]):
+        try:
+            user = request.state.user
+ 
+            result = await self.service.bulk_send_sms(payload=payload, user=user)
+ 
+            sent = result["sentCount"]
+            failed = result["failedCount"]
+ 
+            if sent == 0:
+                message = "No messages were sent"
+            elif failed == 0:
+                message = f"All {sent} message{'s' if sent > 1 else ''} sent successfully"
+            else:
+                message = f"{sent} message{'s' if sent > 1 else ''} sent, {failed} failed"
+ 
+            return successResponse(200, message, result)
+ 
+        except AppException as e:
+            raise e
+ 
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+        
     async def get_all_sms_history(self, request: Request):
         try:
             params = dict(request.query_params)
