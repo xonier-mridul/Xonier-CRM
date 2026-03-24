@@ -9,6 +9,7 @@ from app.utils.slug_generator import generate_slug
 from fastapi.encoders import jsonable_encoder
 from app.db.db import Client
 from app.core.constants import MANGER_CODE
+from bson import DBRef, ObjectId
 
 class TeamService:
     def __init__(self):
@@ -101,54 +102,70 @@ class TeamService:
             raise AppException(status_code=500, message="internal server error")
 
 
-    async def update(self,id:str, payload: Dict[str, Any], updatedBy:PydanticObjectId)->bool:
+    async def update(self, id: str, payload: Dict[str, Any], updatedBy: PydanticObjectId) -> bool:
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
                     is_exist = await self.repo.find_by_id(id=PydanticObjectId(id), session=session)
-
-                    slug = generate_slug(payload["name"])
-
+ 
                     if not is_exist:
                         raise AppException(404, "Team not found")
-                    
+ 
+                    managers = payload.get("manager", [])
+                    members = payload.get("members", [])
+ 
+                    for manager_id in managers:
+                        if not ObjectId.is_valid(manager_id):
+                            raise AppException(400, f"Invalid manager ObjectId: {manager_id}")
+ 
+                    for member_id in members:
+                        if not ObjectId.is_valid(member_id):
+                            raise AppException(400, f"Invalid member ObjectId: {member_id}")
+ 
+                    rr = any(item in members for item in managers)
+ 
+                    if rr:
+                        raise AppException(400, "Manager user also selected in members list, please remove it")
+ 
+                    manager_dbrefs = [
+                        DBRef(collection="users", id=ObjectId(manager_id))
+                        for manager_id in managers
+                    ]
+ 
+                    member_dbrefs = [
+                        DBRef(collection="users", id=ObjectId(member_id))
+                        for member_id in members
+                    ]
+ 
+                    slug = generate_slug(payload["name"])
+ 
                     updated_payload = {
                         **payload,
                         "slug": slug,
-                        "updatedBy": updatedBy
+                        "manager": manager_dbrefs,
+                        "members": member_dbrefs,
+                        "updatedBy": updatedBy,
                     }
-
-                    # is_exist_with_slug = await self.repo.find_by_slug(slug=slug, session=session)
-
-                    # if is_exist_with_slug:
-                    #     raise AppException(status_code=400, message=f"Team already exist with '{payload["name"].capitalize()}' name, please use different name")
-
-
-                    rr = any(item in payload["members"] for item in payload["manager"])
-
-                    if rr:
-                        raise AppException(400, "Manager user also selected in members list, please remove it")
-
-
+ 
                     update = await self.repo.update(id=PydanticObjectId(id), data=updated_payload, session=session)
-
+ 
                     if not update:
                         raise AppException(400, "Team not updated")
-                    
+ 
                     return True
-
-
+ 
                 except AppException:
                     raise
-
+ 
                 except DuplicateKeyError:
                     raise AppException(
-                    status_code=409,
-                    message="Team with this name already exists"
-                )
-
+                        status_code=409,
+                        message="Team with this name already exists"
+                    )
+ 
                 except Exception as e:
-                    raise AppException(status_code=500, message="internal server error")
+                    raise AppException(status_code=500, message=f"internal server error: {e}")
+ 
 
 
     
