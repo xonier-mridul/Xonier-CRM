@@ -599,13 +599,13 @@ const page = (): JSX.Element => {
                           <h4 className="capitalize">{item.title}</h4>
                         </td>
                         <td className="p-4">{item.customerName}</td>
-                        <td className="p-4">
+                        {(hasPermission(PERMISSIONS.updateQuote)) ? <td className="p-4">
                           <StatusDropdown
                             currentStatus={item.quotationStatus}
                             quoteId={item.id}
                             onStatusUpdate={updateQuoteStatus}
                           />
-                        </td>
+                        </td> : <td className="p-4"><StatusBadge status={item.quotationStatus} /></td>}
                         <td className="p-4">
                           <span className="px-4 py-1.5 rounded-md bg-blue-200 text-sm text-blue-600 font-medium">
                             {date}
