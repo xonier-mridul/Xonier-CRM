@@ -49,6 +49,7 @@ async def get_won_lead(request: Request):
 async def get_all(request: Request, id: str):
     return await leadController.get_by_id(request=request, id=id)
 
+
 @router.put("/update/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["lead:update"]))])
 async def update(request: Request, id:str, payload: LeadUpdateSchema ):
     return await leadController.update(request, id, payload.model_dump(exclude_unset=True))

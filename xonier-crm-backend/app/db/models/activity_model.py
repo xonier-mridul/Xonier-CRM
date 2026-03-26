@@ -18,6 +18,10 @@ class ActivityModel(Document):
     action: ACTIVITY_ACTION
     title: str                   
     description: Optional[str] = None
+  
+
+    ipAddress: Optional[str] = None
+    userAgent: Optional[str] = None
 
     metadata: Optional[Dict] = None
 

@@ -31,7 +31,7 @@ class TeamService:
             if "active" in filters:
                 query.update({"isActive": filters["active"]})
 
-            result = await self.repo.get_all(page, limit, query,["members", "category", "createdBy", "manager"])
+            result = await self.repo.get_all(page, limit, query,["members", "category", "createdBy", "manager"], None, ["-createdAt"])
 
             if not result:
                 raise AppException(400, "Failed to fetch teams data")

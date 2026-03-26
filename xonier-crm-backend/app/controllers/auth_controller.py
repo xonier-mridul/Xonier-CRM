@@ -53,11 +53,13 @@ class AuthController:
         except AppException as e:
             raise e
 
-    async def login(self, response: Response, data: Dict[str, Any]):
+    async def login(self, request: Request, data: Dict[str, Any]):
         try:
+           
+           
             result = await self.service.login(data=data)
 
-            user_name= f"{result["firstName"]} {result["lastName"]}"
+            user_name= f"{result.get("firstName")} {result.get("lastName", "")}"
             
             return successResponse(200, f"{user_name} Credential accepted, verification otp send successfully")
 
@@ -68,8 +70,9 @@ class AuthController:
     async def resend_verification_otp(self, data: Dict[str, Any]):
        
         try:
-           result = await self.service.resend_verification_otp(data)
-           return successResponse(200, f"Verification otp send successfully")
+            
+            result = await self.service.resend_verification_otp(data)
+            return successResponse(200, f"Verification otp send successfully")
 
         except AppException as e:
            print("error: ", e)
@@ -78,9 +81,12 @@ class AuthController:
 
         
         
-    async def verify_login_otp(self, response: Response, data: dict[str, Any]):
+    async def verify_login_otp(self, request: Request, response: Response, data: dict[str, Any]):
         try:
-            result = await self.service.verify_login_otp(data=data)
+            ip = request.client.host
+
+            user_agent = request.headers.get("user-agent")
+            result = await self.service.verify_login_otp(data=data, ip=ip, agent=user_agent)
 
             access_token_expiry = int(self.settings.ACCESS_TOKEN_EXPIRY) * 24 * 60 * 60
             refresh_token_expiry = int(self.settings.REFRESH_TOKEN_EXPIRY) * 24 * 60 * 60
@@ -192,8 +198,12 @@ class AuthController:
           
           user = request.state.user
 
+          ip = request.client.host
 
-          result = await self.service.logout(user["_id"])
+          user_agent = request.headers.get("user-agent")
+
+
+          result = await self.service.logout(user["_id"], ip, user_agent)
           
           response.delete_cookie(key="accessToken", **JWT_OPTIONS)
           response.delete_cookie(key="refreshToken", **JWT_OPTIONS)

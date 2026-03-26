@@ -3,10 +3,9 @@ from app.repositories.user_repository import UserRepository
 from app.core.security import hash_value
 from app.db.db import Client
 from typing import Dict, Any, List
-from app.core.enums import USER_ROLES, USER_STATUS
 from app.utils.otp_manager import generate_otp
 from app.utils.email_manager import EmailManager
-from app.core.enums import OTP_TYPE, OTP_EXPIRY, USER_STATUS
+from app.core.enums import OTP_TYPE, OTP_EXPIRY, USER_STATUS, ACTIVITY_ENTITY_TYPE, ACTIVITY_ACTION
 from datetime import datetime, timezone, timedelta
 from app.core.config import get_setting
 from fastapi.encoders import jsonable_encoder
@@ -18,16 +17,19 @@ from app.db.models.user_model import UserModel
 from app.schemas.user_schema import UpdateUserSchema
 from app.core.security import hash_password
 from bson import ObjectId, DBRef
-from app.core.enums import USER_STATUS
+
 from app.core.constants import SUPER_ADMIN_CODE
 from app.repositories.user_role_repository import UserRoleRepository
 from app.utils.cache_key_generator import cache_key_generator_by_id
+from app.repositories.activity_repository import ActivityRepository
 from app.core.constants import GET_ME_NAMESPACE
 from fastapi_cache import FastAPICache
 import json
+from typing import Optional
 
 from app.utils.validate_admin import validate_admin
 from app.utils.get_team_members import GetTeamMembers
+from app.utils.activity_payload import activity_payload
 
 
 class AuthServices:
@@ -39,19 +41,33 @@ class AuthServices:
         self.email_manager = EmailManager()
         self.settings = get_setting()
         self.get_team_members = GetTeamMembers()
+        self.activityRepo = ActivityRepository()
 
     async def getAll(self, page:int=1, limit:int = 10, filters: Dict[str, Any] = {})->List[UserModel]:
         try:
-           query = {}
+           query = {"$or": [
+               {"status": USER_STATUS.ACTIVE},
+               {"status": USER_STATUS.INACTIVE},
+               {"status": USER_STATUS.SUSPENDED},
+           ]}
 
-           if "firstName" in filters:
-               query.update({"firstName": filters["firstName"]})
+           if "search" in filters and filters["search"].strip():
+               regex_data = {"$regex": filters["search"].strip(), "$optional": "i"}
 
-           if "lastName" in filters:
-               query.update({"lastName": filters["lastName"]})
+               query.update({"$or": [
+                   {"firstName": regex_data},
+                   {"lastName": regex_data},
+                   {"company": regex_data}
+               ]})
+               
+
+           
 
            if "status" in filters:
-               query.update({"status": filters["status"]})
+               if filters["status"] != USER_STATUS.DELETED:
+                   query.update({"status": filters["status"]})
+                   
+               
 
            if "company" in filters:
                query.update({"company": filters["company"]})
@@ -332,6 +348,13 @@ class AuthServices:
 
             if not new_user:
                 raise AppException(400, "User not created")
+            
+            activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.USER, entityId=PydanticObjectId(new_user.id), action=ACTIVITY_ACTION.CREATED, title="create user", metadata={"userName": f"{new_user.firstName} {new_user.lastName}", "company":new_user.company})
+
+            is_activity = await self.activityRepo.create(data=activity, session=session)
+
+            if not is_activity:
+                raise AppException(400, "Activity creation failed")
 
             await session.commit_transaction()
 
@@ -420,6 +443,8 @@ class AuthServices:
 
             if not create_otp:
                 raise AppException(400, "OTP not stored in database")
+            
+            
 
             await session.commit_transaction()
 
@@ -494,6 +519,9 @@ class AuthServices:
 
             if not create_otp:
                 raise AppException(400, "OTP not stored in database")
+            
+            
+
 
             await session.commit_transaction()
             return True
@@ -510,7 +538,7 @@ class AuthServices:
         finally:
             await session.end_session()
 
-    async def verify_login_otp(self, data: Dict[str, Any]):
+    async def verify_login_otp(self, data: Dict[str, Any], ip: Optional[str] = None, agent: Optional[str] = None):
         session = await self.client.start_session()
         try:
             session.start_transaction()
@@ -568,7 +596,12 @@ class AuthServices:
 
             usr =  await self.repo.find_by_id_nested(user.id, ["userRole", "userRole.permissions"])
 
-            print("user")
+            activity = activity_payload(userId=PydanticObjectId(user.id), entityType=ACTIVITY_ENTITY_TYPE.AUTH, entityId=PydanticObjectId(user.id), action=ACTIVITY_ACTION.LOGIN, title="Login user", metadata={"userName": f"{user.firstName} {user.lastName}", "company":user.company, "email": user.email}, ipAddress=ip, userAgent=agent)
+
+            is_activity = await self.activityRepo.create(data=activity, session=session)
+
+            if not is_activity:
+                raise AppException(400, "Activity creation failed")
 
             return {
                 "user": jsonable_encoder(usr,exclude={"password", "refreshToken"}),
@@ -665,7 +698,7 @@ class AuthServices:
            
             raise
 
-    async def logout(self, user_id: str):
+    async def logout(self, user_id: str, ip: Optional[str] = None, agent: Optional[str] = None):
         session = await self.client.start_session()
 
         try:
@@ -679,6 +712,13 @@ class AuthServices:
                 {"refreshToken": None, "updatedAt": datetime.now(timezone.utc)},
                 session=session,
             )
+
+            activity = activity_payload(userId=PydanticObjectId(user.id), entityType=ACTIVITY_ENTITY_TYPE.AUTH, entityId=PydanticObjectId(user.id), action=ACTIVITY_ACTION.LOGOUT, title="Logout user", metadata={"userName": f"{user.firstName} {user.lastName}", "company":user.company, "email": user.email}, ipAddress=ip, userAgent=agent)
+
+            is_activity = await self.activityRepo.create(data=activity, session=session)
+
+            if not is_activity:
+                raise AppException(400, "Activity creation failed")
             await session.commit_transaction()
 
             

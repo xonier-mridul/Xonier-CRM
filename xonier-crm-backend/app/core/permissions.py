@@ -514,6 +514,14 @@ PERMISSIONS = [
         "action": "call",
         "title": "call",
        "description": "permission for call"
+    },
+    {
+       "code": "dashboard:read",
+        "module": "dashboard",
+        "action": "read",
+        "title": "read dashboard",
+       "description": "permission for view dashboard" 
     }
+
     
 ]

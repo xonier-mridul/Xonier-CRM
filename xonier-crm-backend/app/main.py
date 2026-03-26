@@ -41,6 +41,7 @@ from app.routes.communication.sms_route import router as sms_route
 from app.routes.communication.sms_webhook_route import router as sms_webhook_route
 from app.routes.email_template_route import router as email_template_route
 from app.routes.communication.email_route import router as email_router
+from app.routes.dashboard_router import router as dashboard_route
 
 settings = get_setting()
 
@@ -125,6 +126,7 @@ app.include_router(sms_route, prefix="/api/communication/sms")
 app.include_router(sms_webhook_route, prefix="/api/webhook/sms")
 app.include_router(email_template_route, prefix="/api/email-template")
 app.include_router(email_router)
+app.include_router(dashboard_route)
 
 
 app.add_exception_handler(HTTPException, http_exception_handler)

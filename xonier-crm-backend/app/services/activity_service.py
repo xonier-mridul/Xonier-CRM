@@ -10,7 +10,18 @@ from app.repositories.deal_repository import DealRepository
 from app.repositories.quotation_repository import QuotationRepository
 from app.repositories.invoice_repository import InvoiceRepository
 from app.core.enums import SALES_STATUS, DEAL_PIPELINE, QuotationStatus
-
+from app.core.crypto import Encryption
+from app.db.db import Client
+from app.utils.activity_payload import activity_payload
+from bson import ObjectId
+from datetime import datetime, timedelta, timezone
+from fastapi_cache import FastAPICache
+from app.core.constants import (
+    SUPER_ADMIN_CODE,
+    LEAD_CACHE_NAMESPACE,
+    USER_LEAD_CACHE_NAMESPACE,
+    
+)
 
 class ActivityService:
     def __init__(self):
@@ -19,6 +30,8 @@ class ActivityService:
         self.dealRepo = DealRepository()
         self.quoteRepo = QuotationRepository()
         self.invoiceRepo = InvoiceRepository()
+        self.crypto = Encryption()
+        self.client = Client
 
     async def get_user_activity(
         self,
@@ -94,8 +107,22 @@ class ActivityService:
 
             total = await self.repo.model.find(query).count()
 
+            activities = [doc.model_dump(mode="json") for doc in activities]
+            
+            for dict in activities:
+                
+                
+                email = dict["metadata"].get("email")
+                phone = dict["metadata"].get("phone")
+               
+                if email and email.startswith("gAAAA"):
+                    dict["metadata"]["email"] =  self.crypto.decrypt_data(dict["metadata"]["email"])
+                if phone and phone.startswith("gAAAA"):
+                    dict["metadata"]["phone"] =  self.crypto.decrypt_data(dict["metadata"]["phone"])
+            
+
             return {
-                "data": [doc.model_dump(mode="json") for doc in activities],
+                "data": activities,
                 "pagination": {
                     "page": page,
                     "limit": limit,
@@ -117,7 +144,6 @@ class ActivityService:
             raise AppException(500, f"Internal server error: {e}")
 
 
-    
     async def get_user_activity_summary(
         self,
         user_id: str,
@@ -281,3 +307,88 @@ class ActivityService:
 
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+        
+
+    async def call_activity(self, payload: Dict[str, Any], ip:str, agent: str, user: Dict[str, Any]):
+        async with await self.client.start_session() as session:
+            async with session.start_transaction():
+                try:
+
+                    payload = activity_payload(userId=user["_id"], entityType=payload["entityType"], action=payload["action"], entityId= payload["entityId"] if payload.get("entityId") else None, title="Made call", description=f"made call to {payload["number"]} by {user["firstName"]} {user["lastName"]} and userId is {user["_id"]}", ipAddress=ip, userAgent=agent, metadata={"number": payload["number"], "call_by": user["_id"]})
+
+
+                    result = await self.repo.create(data=payload, session=session)
+
+                    if not result:
+                        raise AppException(400, "Call activity creation failed")
+                    
+                    return result.model_dump(mode="json")
+
+
+
+                except AppException as e:
+                    raise e
+
+                except Exception as e:
+                    raise AppException(500, f"Internal server error: {e}")
+                
+
+    async def update_call_activity(self, id:str,  payload: Dict[str, Any], user: Dict[str, Any]):
+        async with await self.client.start_session() as session:
+            async with session.start_transaction():
+                try:
+                    if not ObjectId.is_valid(id):
+                        raise AppException(400, "Invalid activity Object Id ")
+                    
+                    call_act = await self.repo.find_by_id(PydanticObjectId(id))
+
+                    if not call_act:
+                        raise AppException(404, "Call activity not found")
+                    
+                    created_at = call_act.createdAt
+
+
+                    if created_at.tzinfo is None:
+                        created_at = created_at.replace(tzinfo=timezone.utc)
+                    
+                    if datetime.now(timezone.utc) > (created_at + timedelta(hours=1)):
+                        raise AppException(400, "The update call activity time goes expire, Operation denied")
+                    
+                    print("ee: ", call_act.entityType)
+
+                    if call_act.entityType == ACTIVITY_ENTITY_TYPE.LEAD:
+                        leadId = PydanticObjectId(call_act.entityId)
+                        
+                        connect_status = payload.get("connectStatus")
+                        print("con: ", connect_status)
+                        if connect_status:
+
+                            update_lead = await self.leadRepo.update(id=leadId, data={"connectStatus": connect_status}, session=session)
+
+                            
+
+                    payload = {
+                        "metadata": {**call_act.metadata, **payload}
+                    }  
+
+                    update = await self.repo.update(id=PydanticObjectId(id), data=payload, session=session)
+
+                    
+
+                    if not update:
+                        raise AppException(400, "Call activity updation failed")
+
+                    await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
+                    await FastAPICache.get_backend().clear(namespace=USER_LEAD_CACHE_NAMESPACE) 
+                    
+                    return True
+
+
+
+                except AppException as e:
+                    raise e
+
+                except Exception as e:
+                    raise AppException(500, f"Internal server error: {e}")
+                
+                        

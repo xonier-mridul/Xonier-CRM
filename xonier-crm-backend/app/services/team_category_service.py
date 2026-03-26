@@ -74,7 +74,7 @@ class TeamCategoryService:
             if "slug" in filters:
                 query.update({"slug": filters["slug"]})
           
-            result = await self.repo.get_all(page, limit, query, ["createdBy"])
+            result = await self.repo.get_all(page, limit, query, ["createdBy"], sort=["-createdAt"])
 
             if not result:
                 raise AppException(404, "Team categories data not found")
@@ -123,7 +123,7 @@ class TeamCategoryService:
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
-                    print("one")
+                    
                     if not ObjectId.is_valid(id):
                         raise AppException(400, "Invalid category id")
 
@@ -132,7 +132,7 @@ class TeamCategoryService:
                     )
                     if not is_exist:
                         raise AppException(404, "Team category not found")
-                    print("tow")
+                    
                     new_name = payload.get("name", "").strip()
                     new_slug = generate_slug(new_name)
 
@@ -157,7 +157,7 @@ class TeamCategoryService:
                     if "description" in payload:
                         update_data["description"] = payload["description"]
 
-                    print("updated data ", update_data)
+                    
 
                     updated = await self.repo.update(
                         id=PydanticObjectId(id),
@@ -168,7 +168,7 @@ class TeamCategoryService:
                     if not updated:
                         raise AppException(400, "Team category update failed")
                     
-                    print("updated: ", updated)
+                    
 
                     return jsonable_encoder(updated)
 

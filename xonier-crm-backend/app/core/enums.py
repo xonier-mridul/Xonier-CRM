@@ -494,6 +494,7 @@ class DEAL_STATUS(str, Enum):
     ACTIVE="active"
     INACTIVE="inactive"
     DELETE="delete"
+    CLOSED = "closed"
 
 
 
@@ -570,6 +571,9 @@ class ACTIVITY_ENTITY_TYPE(str, Enum):
     DEAL = "deal"
     QUOTATION = "quotation"
     INVOICE = "invoice"
+    USER = "user"
+    AUTH = "auth"
+    
     
 
 class ACTIVITY_ACTION(str, Enum):
@@ -583,6 +587,17 @@ class ACTIVITY_ACTION(str, Enum):
     DELETE = "delete"
     ASSIGN = "assign"
     REASSIGN = "reassign"
+    LOGIN = "login"            
+    LOGOUT = "logout"          
+    LOGIN_FAILED = "login_failed"  
+    CALL_MADE = "call_made"
+    CALL_RECEIVED = "call_received"
+
+    EMAIL_SENT = "email_sent"
+    EMAIL_OPENED = "email_opened"
+
+    SMS_SENT = "sms_sent"
+    SMS_DELIVERED = "sms_delivered"
 
 
 class LEAD_SOURCE_TYPE(str, Enum):

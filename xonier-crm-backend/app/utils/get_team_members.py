@@ -34,6 +34,22 @@ class GetTeamMembers():
 
 
         return list(selectedMembers) if selectedMembers else []
+    
+
+    async def validate_manager(self, userId: str)->bool:
+        id = PydanticObjectId(userId)
+
+
+        teams = await self.repo.find(
+            {"manager.$id": {"$in": [id]}}, 
+            populate=["members"]
+        )
+
+
+        if not teams:
+            return False
+        
+        return True
 
 
 
