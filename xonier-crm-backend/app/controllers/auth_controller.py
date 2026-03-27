@@ -380,8 +380,38 @@ class AuthController:
  
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
- 
         
-        
+
+    async def verify_refresh_token(self, request: Request, response: Response, payload: Dict[str, Any]):
+        try:
+            user = request.state.user  
+
+            result = await self.service.verify_refresh_token(
+                payload=payload,
+                user=user
+            )
+
+            access_token_expiry = int(self.settings.ACCESS_TOKEN_EXPIRY) * 24 * 60 * 60
+            refresh_token_expiry = int(self.settings.REFRESH_TOKEN_EXPIRY) * 24 * 60 * 60
+
+            
+            response.set_cookie(key="accessToken", value=result["access_token"], max_age=access_token_expiry, **JWT_OPTIONS)
+            response.set_cookie(key="refreshToken", value=result["refresh_token"], max_age=refresh_token_expiry, **JWT_OPTIONS)
+
+            
+            return successResponse(200, result["message"], {
+                **result["user"],
+                "accessToken": result["access_token"],
+                "refreshToken": result["refresh_token"],
+            })
+
+        except AppException as e:
+            raise e
+
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
     
+            
+            
+        
 
