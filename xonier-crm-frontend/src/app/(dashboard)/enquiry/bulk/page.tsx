@@ -4,6 +4,7 @@ import { HiDownload } from "react-icons/hi";
 import { FaUpload, FaFileCsv, FaTrash } from "react-icons/fa";
 import { UpdateEnquiryPayload } from "@/src/types/enquiry/enquiry.types";
 import axios from "axios";
+import * as XLSX from "xlsx";
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import { toast } from "react-toastify";
 import { EnquiryService } from "@/src/services/enquiry.service";
@@ -11,7 +12,7 @@ import ErrorComponent from "@/src/components/ui/ErrorComponent";
 import { FiUpload } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import { DESIGNATION, NUMBER_OF_EMPLOYEES, PRIORITY, PROJECT_TYPES, SOURCE, INFO_TYPE } from "@/src/constants/enum";
-import DesignationModal from "@/src/components/pages/enquiry/DesignationModal"; // 👈 new import
+import DesignationModal from "@/src/components/pages/enquiry/DesignationModal";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -103,6 +104,32 @@ const normaliseNumberOfEmployees = (
   return match ?? null;
 };
 
+const applyCommonTransforms = (obj: Record<string, unknown>): UpdateEnquiryPayload => {
+  ARRAY_FIELDS.forEach((field) => {
+    if (field in obj) obj[field] = parseCellAsArray(obj[field] as string);
+  });
+
+  obj.designation = normaliseDesignation(obj.designation as string);
+  obj.numberOfEmployees = normaliseNumberOfEmployees(obj.numberOfEmployees as string);
+
+  obj.location = {
+    country: (obj.country as string) || null,
+    state: (obj.state as string) || null,
+    city: (obj.city as string) || null,
+    zipcode: (obj.zipcode as string) || null,
+  };
+  delete obj.country;
+  delete obj.state;
+  delete obj.city;
+  delete obj.zipcode;
+
+  Object.keys(obj).forEach((k) => {
+    if (obj[k] === "" || obj[k] === undefined) obj[k] = null;
+  });
+
+  return obj as unknown as UpdateEnquiryPayload;
+};
+
 const page = (): JSX.Element => {
   const [data, setData] = useState<UpdateEnquiryPayload[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -111,7 +138,7 @@ const page = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [err, setErr] = useState<string[] | string>("");
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
-  const [isDesignationModalOpen, setIsDesignationModalOpen] = useState(false); // 👈 new state
+  const [isDesignationModalOpen, setIsDesignationModalOpen] = useState(false);
 
   const router = useRouter();
 
@@ -202,37 +229,31 @@ const page = (): JSX.Element => {
       const values = line.split(",").map((v) => v.trim());
       const obj: Record<string, unknown> = {};
       headers.forEach((h, i) => { obj[h] = values[i] ?? null; });
-
-      ARRAY_FIELDS.forEach((field) => {
-        if (field in obj) obj[field] = parseCellAsArray(obj[field] as string);
-      });
-
-      obj.designation = normaliseDesignation(obj.designation as string);
-      obj.numberOfEmployees = normaliseNumberOfEmployees(obj.numberOfEmployees as string);
-
-      obj.location = {
-        country: (obj.country as string) || null,
-        state: (obj.state as string) || null,
-        city: (obj.city as string) || null,
-        zipcode: (obj.zipcode as string) || null,
-      };
-      delete obj.country;
-      delete obj.state;
-      delete obj.city;
-      delete obj.zipcode;
-
-      Object.keys(obj).forEach((k) => {
-        if (obj[k] === "" || obj[k] === undefined) obj[k] = null;
-      });
-
-      return obj as unknown as UpdateEnquiryPayload;
+      return applyCommonTransforms(obj);
     });
   };
 
+  const parseXLSX = async (file: File): Promise<UpdateEnquiryPayload[]> => {
+    const buffer = await file.arrayBuffer();
+    const workbook = XLSX.read(buffer, { type: "array" });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows: Record<string, unknown>[] = XLSX.utils.sheet_to_json(sheet, {
+      defval: null,
+      raw: false,
+    });
+    return rows.map((obj) => applyCommonTransforms(obj));
+  };
+
   const handleFile = async (file: File) => {
-    if (!file.name.endsWith(".csv")) return alert("Only CSV files are allowed");
+    const isCSV = file.name.endsWith(".csv");
+    const isXLSX = file.name.endsWith(".xlsx") || file.name.endsWith(".xls");
+
+    if (!isCSV && !isXLSX) {
+      return alert("Only CSV or XLSX files are allowed");
+    }
+
     setSelectedFile(file);
-    const parsed = await parseCSV(file);
+    const parsed = isXLSX ? await parseXLSX(file) : await parseCSV(file);
     setData(parsed);
     setCurrentPage(1);
   };
@@ -301,7 +322,7 @@ const page = (): JSX.Element => {
                 Bulk Enquiries
               </h2>
               <p className="text-xs text-violet-200 mt-0.5">
-                Upload a CSV to create multiple enquiries at once
+                Upload a CSV or XLSX to create multiple enquiries at once
               </p>
             </div>
           </div>
@@ -322,7 +343,6 @@ const page = (): JSX.Element => {
 
           {/* ── Buttons ── */}
           <div className="flex items-center gap-2 ml-6 flex-shrink-0">
-            {/* 👇 Changed: was downloadDesignations(), now opens modal */}
             <button
               onClick={() => setIsDesignationModalOpen(true)}
               className="flex items-center gap-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm border border-gray-200 dark:border-gray-700 whitespace-nowrap"
@@ -364,15 +384,21 @@ const page = (): JSX.Element => {
 
           <div className="text-center">
             <p className="font-semibold text-gray-700 dark:text-gray-200">
-              {isDragging ? "Drop your CSV here" : "Drag & drop your CSV file"}
+              {isDragging ? "Drop your file here" : "Drag & drop your CSV or XLSX file"}
             </p>
             <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
               or click the button below to browse
             </p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+              Supported formats: <span className="font-medium">.csv</span> &nbsp;·&nbsp; <span className="font-medium">.xlsx</span> &nbsp;·&nbsp; <span className="font-medium">.xls</span>
+            </p>
           </div>
 
           <input
-            type="file" accept=".csv" className="hidden" id="csvUpload"
+            type="file"
+            accept=".csv,.xlsx,.xls"
+            className="hidden"
+            id="csvUpload"
             onChange={(e) => e.target.files && handleFile(e.target.files[0])}
           />
 
