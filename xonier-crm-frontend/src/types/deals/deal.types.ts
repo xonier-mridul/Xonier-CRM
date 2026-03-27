@@ -48,7 +48,7 @@ export interface DealPayload {
   lead_id: string;
 
   dealName: string;
-  dealPipeline: DEAL_PIPELINE;
+  dealPipeline?: DEAL_PIPELINE;
   dealStage: DEAL_STAGES;
   dealType: DEAL_TYPE;
 

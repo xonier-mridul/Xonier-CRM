@@ -86,6 +86,52 @@ const topPerformers = [
   { name: "Neha Kapoor", deals: 11, revenue: 104000, avatar: "NK" },
   { name: "Rohan Das", deals: 9, revenue: 87000, avatar: "RD" },
   { name: "Meera Pillai", deals: 8, revenue: 76000, avatar: "MP" },
+  { name: "Karan Singh", deals: 15, revenue: 132000, avatar: "KS" },
+  { name: "Priya Sharma", deals: 10, revenue: 95000, avatar: "PS" },
+  { name: "Amit Gupta", deals: 12, revenue: 110000, avatar: "AG" },
+  { name: "Sneha Iyer", deals: 7, revenue: 72000, avatar: "SI" },
+  { name: "Vikram Patel", deals: 13, revenue: 120000, avatar: "VP" },
+  { name: "Pooja Jain", deals: 6, revenue: 68000, avatar: "PJ" },
+  { name: "Rahul Mehta", deals: 9, revenue: 88000, avatar: "RM" },
+  { name: "Anjali Singh", deals: 8, revenue: 79000, avatar: "AS" },
+  { name: "Deepak Yadav", deals: 11, revenue: 102000, avatar: "DY" },
+  { name: "Kavita Shah", deals: 10, revenue: 97000, avatar: "KS" },
+  { name: "Rakesh Verma", deals: 7, revenue: 71000, avatar: "RV" },
+  { name: "Sunita Patel", deals: 6, revenue: 65000, avatar: "SP" },
+  { name: "Manish Tiwari", deals: 12, revenue: 115000, avatar: "MT" },
+  { name: "Kunal Arora", deals: 13, revenue: 121000, avatar: "KA" },
+  { name: "Divya Nair", deals: 8, revenue: 77000, avatar: "DN" },
+  { name: "Harsh Vardhan", deals: 9, revenue: 86000, avatar: "HV" },
+  { name: "Nikhil Joshi", deals: 11, revenue: 108000, avatar: "NJ" },
+  { name: "Simran Kaur", deals: 10, revenue: 96000, avatar: "SK" },
+  { name: "Yash Malhotra", deals: 14, revenue: 125000, avatar: "YM" },
+  { name: "Ritu Agarwal", deals: 7, revenue: 70000, avatar: "RA" },
+  { name: "Mohit Bansal", deals: 12, revenue: 112000, avatar: "MB" },
+  { name: "Tanya Roy", deals: 8, revenue: 78000, avatar: "TR" },
+  { name: "Aditya Saxena", deals: 9, revenue: 89000, avatar: "AS" },
+  { name: "Shreya Ghosh", deals: 6, revenue: 64000, avatar: "SG" },
+  { name: "Gaurav Khanna", deals: 13, revenue: 119000, avatar: "GK" },
+  { name: "Isha Kapoor", deals: 10, revenue: 99000, avatar: "IK" },
+  { name: "Varun Sharma", deals: 11, revenue: 105000, avatar: "VS" },
+  { name: "Nisha Reddy", deals: 8, revenue: 75000, avatar: "NR" },
+  { name: "Aakash Jain", deals: 9, revenue: 87000, avatar: "AJ" },
+  { name: "Payal Mishra", deals: 7, revenue: 72000, avatar: "PM" },
+  { name: "Rohit Batra", deals: 12, revenue: 113000, avatar: "RB" },
+  { name: "Komal Sinha", deals: 10, revenue: 94000, avatar: "KS" },
+  { name: "Siddharth Rao", deals: 13, revenue: 122000, avatar: "SR" },
+  { name: "Ankit Chauhan", deals: 9, revenue: 88000, avatar: "AC" },
+  { name: "Pallavi Joshi", deals: 8, revenue: 76000, avatar: "PJ" },
+  { name: "Ravi Nair", deals: 11, revenue: 101000, avatar: "RN" },
+  { name: "Neeraj Gupta", deals: 12, revenue: 109000, avatar: "NG" },
+  { name: "Swati Arora", deals: 7, revenue: 70000, avatar: "SA" },
+  { name: "Hemant Singh", deals: 10, revenue: 98000, avatar: "HS" },
+  { name: "Alok Tiwari", deals: 6, revenue: 66000, avatar: "AT" },
+  { name: "Tanvi Mehta", deals: 8, revenue: 77000, avatar: "TM" },
+  { name: "Kritika Jain", deals: 9, revenue: 85000, avatar: "KJ" },
+  { name: "Saurabh Yadav", deals: 11, revenue: 103000, avatar: "SY" },
+  { name: "Rina Das", deals: 7, revenue: 71000, avatar: "RD" },
+  { name: "Dev Sharma", deals: 12, revenue: 114000, avatar: "DS" },
+  { name: "Ayesha Khan", deals: 10, revenue: 97000, avatar: "AK" },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -535,9 +581,9 @@ export default function DashboardPage() {
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Most recent pipeline entries</p>
             </div>
             {(hasPermission(PERMISSIONS.readLead)) && <a href="/leads">
-            <button className="flex items-center gap-1 text-xs font-semibold text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
-              View all <ArrowUpRight className="w-3 h-3" />
-            </button>
+              <button className="flex items-center gap-1 text-xs font-semibold text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
+                View all <ArrowUpRight className="w-3 h-3" />
+              </button>
             </a>}
           </div>
           <table className="w-full">
@@ -754,11 +800,11 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between gap-3 ">
         <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 w-full">
           <div className="flex justify-between items-center">
-          <SectionTitle title="Top Performer" sub="Sales team leaderboard this month" />
-          <MdOutlineLeaderboard className="w-4 h-4 text-indigo-600 dark:text-indigo-400" onClick={() => setLeaderboard(true)} />
+            <SectionTitle title="Top Performer" sub="Sales team leaderboard this month" />
+            <MdOutlineLeaderboard className="w-4 h-4 text-indigo-600 dark:text-indigo-400" onClick={() => setLeaderboard(true)} />
           </div>
           <div className="grid grid-cols-4 gap-4">
-            {topPerformers.map((p, i) => (
+            {topPerformers.slice(0, 4).map((p, i) => (
               <div
                 key={p.name}
                 className="flex flex-col items-center text-center p-4 rounded-xl bg-slate-50 dark:bg-gray-700 hover:bg-indigo-50 dark:hover:bg-gray-600 transition-colors duration-200"
@@ -788,7 +834,85 @@ export default function DashboardPage() {
         </div>
       </div>
       {/* ── Leaderboard Modal ── */}
+      {leaderboard && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
 
+          {/* Modal */}
+          <div className="w-full max-w-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl overflow-hidden">
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+                  Leaderboard
+                </h2>
+                <p className="text-xs text-gray-400 dark:text-gray-500">
+                  Top performers this month
+                </p>
+              </div>
+
+              <button
+                onClick={() => setLeaderboard(false)}
+                className="text-gray-400 hover:text-red-500 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-3 max-h-[400px] overflow-y-auto">
+
+              {topPerformers.map((p, i) => (
+                <div
+                  key={p.name}
+                  className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-indigo-50 dark:hover:bg-gray-700 transition-all"
+                >
+                  {/* Left */}
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-bold text-gray-400 w-6">
+                      #{i + 1}
+                    </span>
+
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-violet-600 flex items-center justify-center text-white text-xs font-bold">
+                      {p.avatar}
+                    </div>
+
+                    <div>
+                      <p className="text-sm font-semibold text-gray-800 dark:text-white">
+                        {p.name}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {p.deals} deals closed
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right */}
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
+                      ${p.revenue.toLocaleString()}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      Revenue
+                    </p>
+                  </div>
+                </div>
+              ))}
+
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800 flex justify-end">
+              <button
+                onClick={() => setLeaderboard(false)}
+                className="px-4 py-2 text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
