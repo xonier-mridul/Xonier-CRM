@@ -1,6 +1,6 @@
 "use client";
 import { MARGIN_TOP, SIDEBAR_WIDTH } from "@/src/constants/constants";
-import React, { JSX, useState, useEffect, FormEvent } from "react";
+import React, { JSX, useState, useEffect, FormEvent ,useRef} from "react";
 import { IoIosSearch } from "react-icons/io";
 import { FiUserPlus } from "react-icons/fi";
 import { usePermissions } from "@/src/hooks/usePermissions";
@@ -42,6 +42,8 @@ const page = (): JSX.Element => {
   const [categoryData, setCategoryData] = useState<TeamCategory[]>([]);
   const [userData, setUserData] = useState<User[]>([]);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const [search, setSearch] = useState<string>("");
 
   const [formData, setFormData] = useState<TeamCreatePayload>({
     name: "",
@@ -60,6 +62,7 @@ const page = (): JSX.Element => {
       const result = await TeamService.getAll({
         page: currentPage,
         limit: pageLimit,
+        search: search
       });
       if (result.status === 200) {
         const data = result.data.data;
@@ -117,7 +120,15 @@ const page = (): JSX.Element => {
       }
     }
   };
-
+  useEffect(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      getTeamData();
+    }, 500);
+    
+  }, [search]);
   useEffect(() => {
     
     getUserData();
@@ -455,7 +466,7 @@ getCategoryData();
               </select>
               <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 gap-1.5 rounded-lg border-[1px] border-slate-900/10 flex items-center">
                 <IoIosSearch className="text-xl" />
-                <input type="text" placeholder="search by name..." />
+                <input type="text" placeholder="search by name..."  onChange={(e)=>{setSearch(e.target.value)}} className="border-none bg-transparent outline-none text-sm font-medium text-slate-900 dark:text-white w-full"/>
               </div>
               {hasPermission(PERMISSIONS.createTeam) ? (
                 <button

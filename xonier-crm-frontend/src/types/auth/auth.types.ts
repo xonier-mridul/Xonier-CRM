@@ -160,7 +160,9 @@ export interface UserTableComponentProps{
     loading: boolean,
     setPageLimit: Dispatch<SetStateAction<number>>,
     totalPage: number,
-    setCurrentPages: Dispatch<SetStateAction<number>>
+    setCurrentPages: Dispatch<SetStateAction<number>>,
+    setSearchFilter: Dispatch<SetStateAction<string>>
+
 }
 
 export interface UserDetailPageProps {

@@ -674,7 +674,7 @@ const LeadContent = (): JSX.Element => {
                               if (key === "status") content = <StatusBadge status={value ?? "-"} />;
                               else if (key === "technologies" && Array.isArray(value)) content = <span className="capitalize text-sm whitespace-nowrap">{value.join(", ")}</span>;
                               else if (key === "projectType") content = <span className="px-2.5 py-1 rounded-full bg-green-100 text-green-600 text-xs font-medium">{value}</span>;
-                              else if (typeof value === "object" && value !== null) content = <span className="capitalize text-sm whitespace-nowrap">{Object.values(value).join(", ")}</span>;
+                              else if (typeof value === "object" && value !== null) content = <span className="capitalize text-sm whitespace-nowrap">{Object.values(value).join(" ").trim() || "-"}</span>;
                               else if (key === "email") content = <SensitiveField value={item.email} link={`mailto:${item.email}`} maskedValue={maskEmail(item.email)} fontSize="sm" />;
                               else if (key === "phone") content = <SensitiveField value={value} link={`tel:${value}`} maskedValue={maskPhone(value)} fontSize="sm" />;
                               else if (key === "actions") content = <RowActions item={item} />;

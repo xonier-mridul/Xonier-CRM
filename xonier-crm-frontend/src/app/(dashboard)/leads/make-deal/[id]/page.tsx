@@ -54,7 +54,7 @@ const page = (): JSX.Element => {
   const [formData, setFormData] = useState<DealPayload>({
     lead_id: "",
     dealName: "",
-    dealPipeline: DEAL_PIPELINE.QUALIFICATION,
+    // dealPipeline: DEAL_PIPELINE.QUALIFICATION,
     dealStage: DEAL_STAGES.QUALIFICATION,
     dealType: DEAL_TYPE.NEW_BUSINESS,
 
@@ -184,7 +184,7 @@ const page = (): JSX.Element => {
         setFormData({
           lead_id: "",
           dealName: "",
-          dealPipeline: DEAL_PIPELINE.QUALIFICATION,
+          // dealPipeline: DEAL_PIPELINE.QUALIFICATION,
           dealStage: DEAL_STAGES.QUALIFICATION,
           dealType: DEAL_TYPE.NEW_BUSINESS,
 
@@ -247,6 +247,9 @@ const page = (): JSX.Element => {
             ? allFormFiled &&
               allFormFiled.length > 0 &&
               allFormFiled.map((item) => {
+                if(item.key === "dealPipeline"){
+                  return null
+                }
                 const checked = selectedFieldsIds.find(
                   (field) => field === item.id,
                 )
@@ -341,6 +344,9 @@ const page = (): JSX.Element => {
             ) : (
               allFormFiled.map((item, i) => {
                 const rawValue = (formData as Record<string, any>)[item.key];
+                if(item.key === "dealPipeline"){
+                  return null
+                }
 
                 const fieldValue =
                   item.type === "date"

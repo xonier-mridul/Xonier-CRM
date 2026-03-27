@@ -1,6 +1,6 @@
 "use client";
 import { SIDEBAR_WIDTH } from "@/src/constants/constants";
-import React, { JSX, useState, useEffect, ChangeEvent, ChangeEventHandler, FormEvent } from "react";
+import React, { JSX, useState, useEffect, ChangeEvent, ChangeEventHandler, FormEvent, useRef } from "react";
 import { IoIosSearch } from "react-icons/io";
 import { FiUserPlus } from "react-icons/fi";
 import axios from "axios";
@@ -41,6 +41,8 @@ const page = (): JSX.Element => {
   const [pageLimit, setPageLimit] = useState<number>(10);
   const [teamCatData, setTeamCateData] = useState<TeamCategory[]>([]);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [search, setSearch] = useState<string>("");
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const [formData, setFormData] = useState<TeamCategoryCreatePayload>({
     name: "",
     description: "",
@@ -61,6 +63,7 @@ const page = (): JSX.Element => {
       const result = await TeamCategoryService.getAll({
         page: currentPage,
         limit: pageLimit,
+        search: search
       });
       if (result.status === 200) {
         const data = result.data.data;
@@ -86,7 +89,15 @@ const page = (): JSX.Element => {
   useEffect(() => {
     getTeamCategoryData();
   }, [currentPage, pageLimit]);
-
+  useEffect(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      getTeamCategoryData();
+    }, 500);
+    
+  }, [search]);
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try {
@@ -349,7 +360,7 @@ const page = (): JSX.Element => {
               </select>
               <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 gap-1.5 rounded-lg border-[1px] border-slate-900/10 flex items-center">
                 <IoIosSearch className="text-xl" />
-                <input type="text" placeholder="search by name..." />
+                <input type="text" placeholder="search by name..."  onChange={(e)=>{setSearch(e.target.value)}} className="border-none bg-transparent outline-none text-sm font-medium text-slate-900 dark:text-white w-full"/>
               </div>
               {hasPermission(PERMISSIONS.createTeamCategory) ? (
                 <button

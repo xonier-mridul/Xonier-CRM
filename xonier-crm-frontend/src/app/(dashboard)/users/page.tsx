@@ -21,6 +21,7 @@ const page = (): JSX.Element => {
   const [pageLimit, setPageLimit] = useState<number>(10);
   const [totalPage, setTotalPage] = useState<number>(1)
   const [isPopupShow, setIsPopupShow] = useState<boolean>(false);
+  const [search, setSearch] = useState<string>("");
   const [formData, setFormData] = useState<RegisterPayload>({
     firstName: "",
     lastName: "",
@@ -138,7 +139,7 @@ const page = (): JSX.Element => {
   useEffect(() => {
     getRoleData();
     user();
-  }, [currentPage, pageLimit]);
+  }, [currentPage, pageLimit, search]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -206,6 +207,7 @@ const page = (): JSX.Element => {
         setPageLimit={setPageLimit}
         totalPage={totalPage}
         setCurrentPages={setCurrentPages}
+        setSearchFilter={setSearch}
       />
     </div>
   );
