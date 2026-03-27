@@ -8,7 +8,7 @@ from app.utils.custom_exception import AppException
 class DealSchema(BaseModel):
     lead_id : str
     dealName : str 
-    dealPipeline: DEAL_PIPELINE
+    # dealPipeline: DEAL_PIPELINE
     dealStage: DEAL_STAGES
     dealOwner: Optional[str]
     dealType: DEAL_TYPE
@@ -55,7 +55,7 @@ class DealSchema(BaseModel):
     
 class DealUpdateSchema(BaseModel):
     dealName : str 
-    dealPipeline: DEAL_PIPELINE
+    # dealPipeline: DEAL_PIPELINE
     dealStage: DEAL_STAGES
     dealOwner: Optional[str]
     dealType: DEAL_TYPE

@@ -14,7 +14,7 @@ from app.utils.enquiry_id_generator import generate_enquiry_id
 from app.core.constants import COMPANY_ADDRESS, COMPANY_LOGO_LINK
 from fastapi.encoders import jsonable_encoder
 from app.core.crypto import Encryption
-from app.core.enums import DEAL_STAGES, QuotationStatus, QuotationEventType, DEAL_STATUS, ACTIVITY_ACTION, ACTIVITY_ENTITY_TYPE
+from app.core.enums import DEAL_STAGES, QuotationStatus, QuotationEventType, DEAL_STATUS, ACTIVITY_ACTION, ACTIVITY_ENTITY_TYPE, DEAL_PIPELINE
 from app.repositories.quotation_history_repository import QuotationHistoryRepository
 from app.repositories.invoice_repository import InvoiceRepository
 from datetime import datetime, timezone
@@ -105,7 +105,7 @@ class QuotationService:
                     if not create:
                         raise AppException(400, "Quotation creation failed")   
 
-                    update_deal  = await self.dealRepo.update(id=PydanticObjectId(payload["deal"]), data={"inQuotation": True, "dealStage": DEAL_STAGES.PROPOSAL}, session=session)
+                    update_deal  = await self.dealRepo.update(id=PydanticObjectId(payload["deal"]), data={"inQuotation": True, "dealStage": DEAL_STAGES.PROPOSAL, "dealPipeline": DEAL_PIPELINE.PROPOSAL}, session=session)
 
                     if not update_deal:
                         raise AppException(400, "Deal field not updated")
@@ -433,11 +433,11 @@ class QuotationService:
                     )
 
                     
-                    print("quote: ", quotation.deal.id)
+                    
                     if quotation.quotationStatus == QuotationStatus.ACCEPTED:
                         invoice_id = generate_enquiry_id("INV")
 
-                        print("qut: ", quotation.model_dump(mode="json"))
+                        
                         
                         invoice_payload = {
                              'invoiceId': invoice_id,
@@ -457,13 +457,13 @@ class QuotationService:
                         await self.invoiceRepo.create(data=invoice_payload, session=session)
                         print("done")
 
-                        update_deal  = await self.dealRepo.update(id=PydanticObjectId(quotation.deal.id), data={"dealStage": DEAL_STAGES.WON.value}, session=session)
+                        update_deal  = await self.dealRepo.update(id=PydanticObjectId(quotation.deal.id), data={"dealStage": DEAL_STAGES.WON.value, "dealPipeline": DEAL_PIPELINE.WON.value}, session=session)
 
                         if not update_deal:
                             raise AppException(400, "Deal field not updated")
                         
                     elif quotation.quotationStatus == QuotationStatus.REJECTED:
-                        update_deal  = await self.dealRepo.update(id=PydanticObjectId(quotation.deal.id), data={"dealStage": DEAL_STAGES.LOST.value}, session=session)
+                        update_deal  = await self.dealRepo.update(id=PydanticObjectId(quotation.deal.id), data={"dealStage": DEAL_STAGES.LOST.value, "dealPipeline": DEAL_PIPELINE.LOST.value}, session=session)
 
                         if not update_deal:
                             raise AppException(400, "Deal field not updated")
@@ -643,7 +643,7 @@ class QuotationService:
                     
                     await self.repo.update(id=PydanticObjectId(quoteId), data={"quotationStatus": QuotationStatus.DELETE, "deletedAt": datetime.now(timezone.utc), "deletedBy": PydanticObjectId(user["_id"])}, session=session)
 
-                    await self.dealRepo.update(id=PydanticObjectId(quotation.deal.id), data={"inQuotation": False, "dealStage": DEAL_STAGES.REQUIREMENT_ANALYSIS.value}, session=session)
+                    await self.dealRepo.update(id=PydanticObjectId(quotation.deal.id), data={"inQuotation": False, "dealStage": DEAL_STAGES.REQUIREMENT_ANALYSIS.value, "dealPipeline": DEAL_PIPELINE.REQUIREMENT_ANALYSIS.value}, session=session)
 
                     await self.historyRepo.create(
                         data={

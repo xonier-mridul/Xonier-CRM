@@ -316,6 +316,7 @@ class DealService:
                     
                     new_payload: Dict[str, Any] = {
                         **payload,
+                        "dealPipeline": payload.get("dealStage"),
                         "updatedBy": user["_id"]
 
                     }
