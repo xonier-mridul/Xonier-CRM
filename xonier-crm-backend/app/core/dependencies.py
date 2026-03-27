@@ -2,7 +2,7 @@ from fastapi import Request, status, Response
 from typing import List
 from app.core.exception_handler import AppException
 from app.repositories.permissions_repository import PermissionRepository
-from app.utils.manage_tokens import verify_access_token
+from app.utils.manage_tokens import verify_access_token, verify_refresh_token
 from app.repositories.user_repository import UserRepository
 from app.core.enums import USER_STATUS
 from beanie import PydanticObjectId
@@ -85,6 +85,24 @@ class Dependencies:
 
         except Exception as e:
             raise e
+        
+    async def validate_refreshToken(self, request: Request):
+        try:
+            auth_header = request.headers.get("Authorization")
+            if auth_header and auth_header.startswith("Bearer "):
+                token = auth_header.split(" ")[1]
+            if not token: 
+                token = request.cookies.get("accessToken")
+
+            if not token:
+               raise AppException(401, "You are logged out, please legged in again")
+            payload = verify_refresh_token(token)
+
+        except AppException as e:
+            raise e
+        
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
         
 
     async def onlyForAdmin(self, request:Request):

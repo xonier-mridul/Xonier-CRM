@@ -18,6 +18,21 @@ def verify_access_token(token: str):
 
     except JWTError:
         return None
+    
+def verify_refresh_token(token: str):
+    try:
+        payload = jwt.decode(
+            token,
+            settings.REFRESH_TOKEN_SECRET,
+            algorithms=[settings.ALGORITHM],
+        )
+        return payload
+
+    except ExpiredSignatureError:
+        return None  
+
+    except JWTError:
+        return None
 
 
 
