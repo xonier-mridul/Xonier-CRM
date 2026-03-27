@@ -12,7 +12,7 @@ class AdminDashboardController:
     async def get_stats(
         self,
         user: Dict[str, Any],
-        filter: Optional[str] = "this_month",
+        filter: str = "this_month",
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
     ):
@@ -21,9 +21,6 @@ class AdminDashboardController:
 
             if not is_admin:
                 raise AppException(403, "Unauthorized, only admin can access this dashboard")
-
-            if filter == "custom" and (not start_date or not end_date):
-                raise AppException(400, "start_date and end_date are required for custom filter")
 
             result = await self.service.get_stats(
                 user=user,

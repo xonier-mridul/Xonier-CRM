@@ -473,6 +473,7 @@ class DEAL_PIPELINE(str, Enum):
    NEGOTIATION = "negotiation"
    WON = "won"
    LOST = "lost"
+   DELETE = "delete"
 
 class DEAL_STAGES(str, Enum):
     QUALIFICATION =  "qualification"

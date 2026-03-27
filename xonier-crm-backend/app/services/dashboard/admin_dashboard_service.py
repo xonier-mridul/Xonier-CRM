@@ -27,7 +27,7 @@ class AdminDashboardService:
 
         if filter == "today":
             start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-            end = now
+            end = now.replace(hour=23, minute=59, second=59, microsecond=999999)
 
         elif filter == "this_week":
             start = (now - timedelta(days=now.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
@@ -42,9 +42,11 @@ class AdminDashboardService:
             end = now
 
         elif filter == "custom":
+            if not start_date or not end_date:
+                raise AppException(400, "start_date and end_date are required for custom filter")
             try:
                 start = datetime.strptime(start_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-                end = datetime.strptime(end_date, "%Y-%m-%d").replace(hour=23, minute=59, second=59, tzinfo=timezone.utc)
+                end = datetime.strptime(end_date, "%Y-%m-%d").replace(hour=23, minute=59, second=59, microsecond=999999, tzinfo=timezone.utc)
             except ValueError:
                 raise AppException(400, "Invalid date format. Use YYYY-MM-DD")
 
@@ -53,6 +55,18 @@ class AdminDashboardService:
             end = now
 
         return start, end
+
+    def _safe_count(self, raw: dict, key: str) -> int:
+        items = raw.get(key)
+        if not items:
+            return 0
+        return items[0].get("count", 0) if items else 0
+
+    def _safe_sum(self, raw: dict, key: str, field: str = "total") -> float:
+        items = raw.get(key)
+        if not items:
+            return 0
+        return items[0].get(field, 0) if items else 0
 
     async def get_stats(
         self,
@@ -85,10 +99,10 @@ class AdminDashboardService:
                 self._enquiry_stats(range_start, range_end),
                 self._monthly_trend(LeadsModel, start_of_year),
                 self._monthly_trend(DealModel, start_of_year),
-                self._lead_source_breakdown(),
-                self._lead_status_breakdown(),
-                self._latest_leads(),
-                self._deal_pipeline_breakdown(),
+                self._lead_source_breakdown(range_start, range_end),
+                self._lead_status_breakdown(range_start, range_end),
+                self._latest_leads(range_start, range_end),
+                self._deal_pipeline_breakdown(range_start, range_end),
             )
 
             return {
@@ -126,7 +140,7 @@ class AdminDashboardService:
                         {"$match": {"status": {"$ne": SALES_STATUS.DELETE.value}}},
                         {"$count": "count"}
                     ],
-                    "thisMonth": [
+                    "inRange": [
                         {
                             "$match": {
                                 "createdAt": {"$gte": range_start, "$lte": range_end},
@@ -170,12 +184,12 @@ class AdminDashboardService:
         raw = result[0] if result else {}
 
         return {
-            "total": raw.get("total", [{}])[0].get("count", 0) if raw.get("total") else 0,
-            "thisMonth": raw.get("thisMonth", [{}])[0].get("count", 0) if raw.get("thisMonth") else 0,
-            "active": raw.get("active", [{}])[0].get("count", 0) if raw.get("active") else 0,
-            "won": raw.get("won", [{}])[0].get("count", 0) if raw.get("won") else 0,
-            "deleted": raw.get("deleted", [{}])[0].get("count", 0) if raw.get("deleted") else 0,
-            "inDeal": raw.get("inDeal", [{}])[0].get("count", 0) if raw.get("inDeal") else 0,
+            "total": self._safe_count(raw, "total"),
+            "inRange": self._safe_count(raw, "inRange"),
+            "active": self._safe_count(raw, "active"),
+            "won": self._safe_count(raw, "won"),
+            "deleted": self._safe_count(raw, "deleted"),
+            "inDeal": self._safe_count(raw, "inDeal"),
         }
 
     async def _deal_stats(self, range_start: datetime, range_end: datetime) -> Dict[str, Any]:
@@ -186,7 +200,7 @@ class AdminDashboardService:
                         {"$match": {"status": {"$ne": DEAL_STATUS.DELETE.value}}},
                         {"$count": "count"}
                     ],
-                    "thisMonth": [
+                    "inRange": [
                         {
                             "$match": {
                                 "createdAt": {"$gte": range_start, "$lte": range_end},
@@ -207,7 +221,7 @@ class AdminDashboardService:
                         {"$match": {"status": DEAL_STATUS.CLOSED.value}},
                         {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
                     ],
-                    "monthlyRevenue": [
+                    "rangeRevenue": [
                         {
                             "$match": {
                                 "status": DEAL_STATUS.CLOSED.value,
@@ -224,12 +238,12 @@ class AdminDashboardService:
         raw = result[0] if result else {}
 
         return {
-            "total": raw.get("total", [{}])[0].get("count", 0) if raw.get("total") else 0,
-            "thisMonth": raw.get("thisMonth", [{}])[0].get("count", 0) if raw.get("thisMonth") else 0,
-            "active": raw.get("active", [{}])[0].get("count", 0) if raw.get("active") else 0,
-            "closed": raw.get("closed", [{}])[0].get("count", 0) if raw.get("closed") else 0,
-            "totalRevenue": raw.get("totalRevenue", [{}])[0].get("total", 0) if raw.get("totalRevenue") else 0,
-            "monthlyRevenue": raw.get("monthlyRevenue", [{}])[0].get("total", 0) if raw.get("monthlyRevenue") else 0,
+            "total": self._safe_count(raw, "total"),
+            "inRange": self._safe_count(raw, "inRange"),
+            "active": self._safe_count(raw, "active"),
+            "closed": self._safe_count(raw, "closed"),
+            "totalRevenue": self._safe_sum(raw, "totalRevenue"),
+            "rangeRevenue": self._safe_sum(raw, "rangeRevenue"),
         }
 
     async def _user_stats(self, range_start: datetime, range_end: datetime) -> Dict[str, Any]:
@@ -240,7 +254,7 @@ class AdminDashboardService:
                         {"$match": {"status": {"$ne": USER_STATUS.DELETED.value}}},
                         {"$count": "count"}
                     ],
-                    "thisMonth": [
+                    "inRange": [
                         {
                             "$match": {
                                 "createdAt": {"$gte": range_start, "$lte": range_end},
@@ -273,12 +287,12 @@ class AdminDashboardService:
         raw = result[0] if result else {}
 
         return {
-            "total": raw.get("total", [{}])[0].get("count", 0) if raw.get("total") else 0,
-            "thisMonth": raw.get("thisMonth", [{}])[0].get("count", 0) if raw.get("thisMonth") else 0,
-            "active": raw.get("active", [{}])[0].get("count", 0) if raw.get("active") else 0,
-            "inactive": raw.get("inactive", [{}])[0].get("count", 0) if raw.get("inactive") else 0,
-            "suspended": raw.get("suspended", [{}])[0].get("count", 0) if raw.get("suspended") else 0,
-            "deleted": raw.get("deleted", [{}])[0].get("count", 0) if raw.get("deleted") else 0,
+            "total": self._safe_count(raw, "total"),
+            "inRange": self._safe_count(raw, "inRange"),
+            "active": self._safe_count(raw, "active"),
+            "inactive": self._safe_count(raw, "inactive"),
+            "suspended": self._safe_count(raw, "suspended"),
+            "deleted": self._safe_count(raw, "deleted"),
         }
 
     async def _enquiry_stats(self, range_start: datetime, range_end: datetime) -> Dict[str, Any]:
@@ -289,7 +303,7 @@ class AdminDashboardService:
                         {"$match": {"deletedAt": None}},
                         {"$count": "count"}
                     ],
-                    "thisMonth": [
+                    "inRange": [
                         {
                             "$match": {
                                 "createdAt": {"$gte": range_start, "$lte": range_end},
@@ -331,11 +345,11 @@ class AdminDashboardService:
         raw = result[0] if result else {}
 
         return {
-            "total": raw.get("total", [{}])[0].get("count", 0) if raw.get("total") else 0,
-            "thisMonth": raw.get("thisMonth", [{}])[0].get("count", 0) if raw.get("thisMonth") else 0,
-            "assigned": raw.get("assigned", [{}])[0].get("count", 0) if raw.get("assigned") else 0,
-            "unassigned": raw.get("unassigned", [{}])[0].get("count", 0) if raw.get("unassigned") else 0,
-            "active": raw.get("active", [{}])[0].get("count", 0) if raw.get("active") else 0,
+            "total": self._safe_count(raw, "total"),
+            "inRange": self._safe_count(raw, "inRange"),
+            "assigned": self._safe_count(raw, "assigned"),
+            "unassigned": self._safe_count(raw, "unassigned"),
+            "active": self._safe_count(raw, "active"),
         }
 
     async def _monthly_trend(self, model, start_of_year: datetime) -> list:
@@ -375,46 +389,67 @@ class AdminDashboardService:
             for item in result
         ]
 
-    async def _lead_source_breakdown(self) -> list:
+    async def _lead_source_breakdown(self, range_start: datetime, range_end: datetime) -> list:
         pipeline = [
-            {"$match": {"status": {"$ne": SALES_STATUS.DELETE.value}}},
+            {
+                "$match": {
+                    "status": {"$ne": SALES_STATUS.DELETE.value},
+                    "createdAt": {"$gte": range_start, "$lte": range_end}
+                }
+            },
             {"$group": {"_id": "$source", "count": {"$sum": 1}}},
             {"$sort": {"count": -1}},
             {"$project": {"_id": 0, "source": "$_id", "count": 1}}
         ]
         return await self._aggregate(LeadsModel, pipeline)
 
-    async def _lead_status_breakdown(self) -> list:
+    async def _lead_status_breakdown(self, range_start: datetime, range_end: datetime) -> list:
         pipeline = [
+            {
+                "$match": {
+                    "createdAt": {"$gte": range_start, "$lte": range_end}
+                }
+            },
             {"$group": {"_id": "$status", "count": {"$sum": 1}}},
             {"$sort": {"count": -1}},
             {"$project": {"_id": 0, "status": "$_id", "count": 1}}
         ]
         return await self._aggregate(LeadsModel, pipeline)
 
-    async def _latest_leads(self) -> list:
+    async def _latest_leads(self, range_start: datetime, range_end: datetime) -> list:
         pipeline = [
-            {"$match": {"status": {"$ne": SALES_STATUS.DELETE.value}}},
+            {
+                "$match": {
+                    "status": {"$ne": SALES_STATUS.DELETE.value},
+                    "createdAt": {"$gte": range_start, "$lte": range_end}
+                }
+            },
             {"$sort": {"createdAt": -1}},
             {"$limit": 5},
             {
                 "$project": {
                     "_id": 0,
                     "lead_id": 1,
-                    "name": 1,
+                    "fullName": 1,
                     "email": 1,
                     "phone": 1,
                     "source": 1,
                     "status": 1,
+                    "priority": 1,
                     "createdAt": 1,
                 }
             }
         ]
         return await self._aggregate(LeadsModel, pipeline)
 
-    async def _deal_pipeline_breakdown(self) -> list:
+    async def _deal_pipeline_breakdown(self, range_start: datetime, range_end: datetime) -> list:
         pipeline = [
-            {"$match": {"status": {"$ne": DEAL_STATUS.DELETE.value}, "deletedAt": None}},
+            {
+                "$match": {
+                    "status": {"$ne": DEAL_STATUS.DELETE.value},
+                    "createdAt": {"$gte": range_start, "$lte": range_end}
+                }
+            },
             {
                 "$group": {
                     "_id": "$dealPipeline",
@@ -435,16 +470,9 @@ class AdminDashboardService:
 
         result = await self._aggregate(DealModel, pipeline)
 
-        pipeline_order = [
-            DEAL_PIPELINE.QUALIFICATION.value,
-            DEAL_PIPELINE.REQUIREMENT_ANALYSIS.value,
-            DEAL_PIPELINE.PROPOSAL.value,
-            DEAL_PIPELINE.NEGOTIATION.value,
-            DEAL_PIPELINE.WON.value,
-            DEAL_PIPELINE.LOST.value,
-        ]
+        pipeline_order = [p.value for p in DEAL_PIPELINE]
 
-        result_map = {item["pipeline"]: item for item in result}
+        result_map = {item["pipeline"]: item for item in result if item.get("pipeline")}
         total_count = sum(item["count"] for item in result)
 
         return [
@@ -453,7 +481,7 @@ class AdminDashboardService:
                 "count": result_map.get(stage, {}).get("count", 0),
                 "totalAmount": result_map.get(stage, {}).get("totalAmount", 0),
                 "percentage": round(
-                    (result_map.get(stage, {}).get("count", 0) / total_count * 100), 2
+                    result_map.get(stage, {}).get("count", 0) / total_count * 100, 2
                 ) if total_count > 0 else 0,
             }
             for stage in pipeline_order
