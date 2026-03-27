@@ -77,7 +77,7 @@ export interface DealUpdatePayload {
 
 
   dealName: string;
-  dealPipeline: DEAL_PIPELINE;
+  dealPipeline?: DEAL_PIPELINE | null;
   dealStage: DEAL_STAGES;
   dealType: DEAL_TYPE;
 

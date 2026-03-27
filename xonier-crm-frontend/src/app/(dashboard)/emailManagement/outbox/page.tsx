@@ -61,7 +61,6 @@ export default function Page() {
       const result = await EmailService.getAll();
       if (result.status === 200) {
         const data = result.data.data?.data;
-        debugger;
         setEmails(data);
       }
     } catch (error) {
