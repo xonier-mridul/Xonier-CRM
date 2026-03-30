@@ -299,7 +299,7 @@ export default function DashboardPage() {
     {
       label: "Total Leads",
       value: fmt(data.leads.total),
-      sub: `${fmt(data.leads.active)} active · ${data.leads.won} won · ${data.leads.deleted} deleted`,
+      sub: `${fmt(data.leads.active)} active · ${data.leads.won} won · ${data.leads.deleted||0} deleted`,
       barPct: Math.min((data.leads.active / Math.max(data.leads.total, 1)) * 100, 100),
       color: "#6366f1",
       icon: <TrendingUp className="w-4 h-4" />,
@@ -317,8 +317,8 @@ export default function DashboardPage() {
     {
       label: "Team Members",
       value: data.users?.total ||0,
-      sub: (data.users)&&(`${data.users?.thisMonth} joined · ${data.users?.inactive} inactive · ${data.users?.deleted} deleted`),
-      barPct: Math.min((data.users?.active / Math.max(data.users?.total, 1)) * 100, 100),
+      sub: (`${data.users?.thisMonth||0} joined · ${data.users?.inactive||0} inactive · ${data.users?.deleted||0} deleted`),
+      barPct: Math.min((data.users?.active || 0 / Math.max(data.users?.total||0, 1)) * 100, 100),
       color: "#22c55e",
       icon: <Users className="w-4 h-4" />,
       iconBg: "bg-green-500",
@@ -326,7 +326,7 @@ export default function DashboardPage() {
     {
       label: "Enquiries",
       value: data.enquiries.total,
-      sub: `${data.enquiries.assigned} assigned · ${data.enquiries.unassigned} unassigned · ${data.enquiries.active} active`,
+      sub: `${data.enquiries.assigned} assigned · ${data.enquiries.unassigned||0} unassigned · ${data.enquiries.active||0} active`,
       barPct: Math.min((data.enquiries.assigned / Math.max(data.enquiries.total, 1)) * 100, 100),
       color: "#f97316",
       icon: <MessageSquare className="w-4 h-4" />,
