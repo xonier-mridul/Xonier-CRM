@@ -83,7 +83,7 @@ const DealViewPage = (): JSX.Element => {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const messages = extractErrorMessages(error);
-        toast.error(`${messages}`);
+        
       } else {
         toast.error("Something went wrong");
       }
