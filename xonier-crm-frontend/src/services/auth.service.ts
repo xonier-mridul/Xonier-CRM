@@ -36,6 +36,8 @@ export const AuthService = {
             userIds:payload.userIds,
         }),
 
+    refreshAccessToken: ()=> api.post("/auth/refresh")
+
 }
 
 

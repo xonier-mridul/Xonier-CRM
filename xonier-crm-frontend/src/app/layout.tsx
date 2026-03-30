@@ -42,13 +42,13 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <Providers>
           <ReduxProvider>
             <LoaderProvider>
-              {/* 🔥 Route change loader */}
+
               <RouteLoader />
 
-              {/* Global loader UI */}
+             
               <GlobalLoader />
 
-              {/* Other global components */}
+             
               <Suspense fallback={null}>
                 <ScrollToTop />
               </Suspense>

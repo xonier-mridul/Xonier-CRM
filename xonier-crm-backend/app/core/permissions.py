@@ -521,7 +521,42 @@ PERMISSIONS = [
         "action": "read",
         "title": "read dashboard",
        "description": "permission for view dashboard" 
-    }
+    },
+    {
+        "code": "task:create",
+        "module": "task",
+        "action": "create",
+        "title": "create task",
+        "description": "permission for create task data",
+    },
+    {
+        "code": "task:read",
+        "module": "task",
+        "action": "read",
+        "title": "read task",
+        "description": "permission for read task data",
+    },
+    {
+        "code": "task:update",
+        "module": "task",
+        "action": "update",
+        "title": "update task",
+        "description": "permission for update task data",
+    },
+    {
+        "code": "task:delete",
+        "module": "task",
+        "action": "delete",
+        "title": "delete task",
+        "description": "permission for delete task data",
+    },
+    {
+        "code": "task:assign",
+        "module": "task",
+        "action": "assign",
+        "title": "assign task",
+        "description": "permission for assign task data",
+    },
 
     
 ]

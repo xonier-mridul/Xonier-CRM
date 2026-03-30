@@ -1,5 +1,6 @@
 from jose import jwt, ExpiredSignatureError, JWTError
 from  app.core.config import get_setting
+from app.utils.custom_exception import AppException
 
 
 settings = get_setting()
@@ -29,10 +30,10 @@ def verify_refresh_token(token: str):
         return payload
 
     except ExpiredSignatureError:
-        return None  
+        return AppException(400, "Invalid jwt signature")
 
     except JWTError:
-        return None
+        return AppException(400, "Invalid refresh token")
 
 
 
