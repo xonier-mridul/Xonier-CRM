@@ -3,47 +3,57 @@ from pydantic import Field, model_validator
 from typing import Optional
 from datetime import datetime, timezone, date, timedelta
 from pymongo import IndexModel
+from typing import List
 
-
-from app.core.enums import QuotationStatus
+from app.core.enums import QuotationStatus, TASK_ACTIVITY_ACTION, TASK_ENTITY_TYPE, TASK_PRIORITY, TASK_STATUS_TYPE, RECURRENCE_TYPE
 from app.db.models.deal_model import DealModel
 from app.core.crypto import Encryption
 from app.core.security import hash_value
 from app.db.models.user_model import UserModel
+from app.db.models.task_category_model import TaskCategoryModel
+from app.db.models.task_status_model import TaskStatusModel
+
 
 
 class TaskModel(Document):
-    task_id: str                          
+    task_id: str                        
     title: str
     description: Optional[str] = None
 
-    # Entity anchor — what this task is about
-    entityType: TASK_ENTITY_TYPE          # lead | deal | enquiry | contact | general
-    entityId: Optional[str] = None        # the actual lead/deal/enquiry ObjectId
-    entityName: Optional[str] = None      # denormalized for display without joins
+    
+    category: Link[TaskCategoryModel]
+    status: Link[TaskStatusModel]
+    priority: TASK_PRIORITY             
 
-    # Assignment
-    assignedTo: Optional[Link[UserModel]] = None
+  
+    entityType: Optional[TASK_ENTITY_TYPE] = None   
+    entityId: Optional[str] = None
+    entityName: Optional[str] = None    
+
+
+    assignedTo: Optional[List[Link[UserModel]]] = Field(default_factory=list)
     assignedBy: Optional[Link[UserModel]] = None
     assignedAt: Optional[datetime] = None
 
-    # Scheduling
+
     dueDate: Optional[datetime] = None
-    reminderAt: Optional[datetime] = None
+    startDate: Optional[datetime] = None
     completedAt: Optional[datetime] = None
+    estimatedHours: Optional[float] = None
+    actualHours: Optional[float] = None
 
-    # Classification
-    priority: TASK_PRIORITY               # low | medium | high | urgent
-    status: TASK_STATUS                   # todo | in_progress | completed | cancelled | overdue
-    category: TASK_CATEGORY               # call | email | meeting | follow_up | demo | proposal | other
 
-    # Recurrence (optional but powerful for follow-ups)
     isRecurring: bool = False
-    recurrenceRule: Optional[str] = None  # daily | weekly | monthly
+    recurrenceType: Optional[RECURRENCE_TYPE] = None  
+    recurrenceEndsAt: Optional[datetime] = None
 
-    # Relations
-    tags: Optional[List[str]] = []
-    attachments: Optional[List[str]] = []  # file URLs
+
+    tags: Optional[List[str]] = Field(default_factory=list)
+    watchers: Optional[List[Link[UserModel]]] = Field(default_factory=list)
+    
+    parentTask: Optional[Link["TaskModel"]] = None   
+
+    order: int = 0                      
 
     createdBy: Link[UserModel]
     updatedBy: Optional[Link[UserModel]] = None
