@@ -1,7 +1,7 @@
 "use client";
 import { SIDEBAR_WIDTH } from "@/src/constants/constants";
 
-import React, { JSX, useState, useEffect , useRef} from "react";
+import React, { JSX, useState, useEffect, useRef } from "react";
 import { FaRegEye } from "react-icons/fa";
 import { FaPlus, FaXmark } from "react-icons/fa6";
 import { IoIosSearch } from "react-icons/io";
@@ -24,7 +24,7 @@ import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 import { handleCopy } from "@/src/app/utils/clipboard.utils";
 import { FaRegPaperPlane } from "react-icons/fa";
 import Pagination from "@/src/components/common/pagination";
-import { useSearchParams } from "next/navigation";  
+import { useSearchParams } from "next/navigation";
 
 const DealContent = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -54,12 +54,12 @@ const DealContent = (): JSX.Element => {
 
   const userid = searchFilters.get("userid")
 
- 
+
 
   const getDealData = async () => {
     setIsLoading(true);
     try {
-      const result = await dealService.getAll(currentPage, pageLimit, {...filters, userid,...dateFilter});
+      const result = await dealService.getAll(currentPage, pageLimit, { ...filters, userid, ...dateFilter });
 
       if (result.status === 200) {
         const data = result.data.data;
@@ -68,14 +68,14 @@ const DealContent = (): JSX.Element => {
         setCurrentPage(Number(data.page));
         setPageLimit(Number(data.limit));
         setTotalPages(Number(data.totalPages))
-        
+
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) {
         const messages = extractErrorMessages(error);
         setErr(messages);
-        
+
       } else {
         setErr(["Something went wrong"]);
       }
@@ -87,23 +87,23 @@ const DealContent = (): JSX.Element => {
   const getWonDealData = async () => {
     setIsLoading(true);
     try {
-      const result = await dealService.getAll(wonCurrentPage, wonPageLimit, {...filters, stage: "won", userid,...dateFilter});
+      const result = await dealService.getAll(wonCurrentPage, wonPageLimit, { ...filters, stage: "won", userid, ...dateFilter });
 
       if (result.status === 200) {
         const data = result.data.data;
         setWonDealData(data.data);
-        
+
         setWonCurrentPage(Number(data.page));
         setWonPageLimit(Number(data.limit));
         setTotalWonPages(Number(data.totalPages))
-        
+
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) {
         const messages = extractErrorMessages(error);
         setErr(messages);
-       
+
       } else {
         setErr(["Something went wrong"]);
       }
@@ -115,16 +115,16 @@ const DealContent = (): JSX.Element => {
   const getLostDealData = async () => {
     setIsLoading(true);
     try {
-      const result = await dealService.getAll(lostCurrentPage, lostPageLimit, {...filters, stage: "lost", userid,...dateFilter});
+      const result = await dealService.getAll(lostCurrentPage, lostPageLimit, { ...filters, stage: "lost", userid, ...dateFilter });
 
       if (result.status === 200) {
         const data = result.data.data;
         setLostDealData(data.data);
-        
+
         setLostCurrentPage(Number(data.page));
         setLostPageLimit(Number(data.limit));
         setTotalLostPages(Number(data.totalPages))
-        
+
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
@@ -143,17 +143,17 @@ const DealContent = (): JSX.Element => {
   useEffect(() => {
     getDealData();
   }, [currentPage, pageLimit]);
- 
 
 
-  const handleTabs =async(no:number):Promise<void>=>{
-     setCurrentTab(no)
-     if(no === 2){
-     await getWonDealData()
-     }
-     if(no===3){
+
+  const handleTabs = async (no: number): Promise<void> => {
+    setCurrentTab(no)
+    if (no === 2) {
+      await getWonDealData()
+    }
+    if (no === 3) {
       await getLostDealData()
-     }
+    }
   }
 
 
@@ -165,35 +165,35 @@ const DealContent = (): JSX.Element => {
     getLostDealData()
   }, [lostCurrentPage, lostPageLimit])
 
-  const handlePageLimit = async(v:number)=>{
-    if(currentTab === 1){
+  const handlePageLimit = async (v: number) => {
+    if (currentTab === 1) {
       setPageLimit(v)
     }
-    else if(currentTab === 2){
+    else if (currentTab === 2) {
       setWonPageLimit(v)
     }
-    else if(currentTab === 3){
+    else if (currentTab === 3) {
       setLostPageLimit(v)
     }
   }
   useEffect(() => {
     setFilters({
-      name:"",
+      name: "",
     });
     setSearchVal("");
   }, [currentTab]);
   useEffect(() => {
     setCurrentPage(1);
-    if(currentTab === 1){
+    if (currentTab === 1) {
       getDealData()
     }
-    else if(currentTab === 2){
+    else if (currentTab === 2) {
       getWonDealData()
     }
-    else if(currentTab === 3){
+    else if (currentTab === 3) {
       getLostDealData()
     }
-  },[filters,dateFilter]);
+  }, [filters, dateFilter]);
 
 
   const handleSearch = (val: string) => {
@@ -205,76 +205,76 @@ const DealContent = (): JSX.Element => {
       setFilters((prev) => ({ ...prev, name: val }));
     }, 300);
   };
-  
+
 
   return (
     <div className={`ml-72 mt-14 p-6`}>
-      
+
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm  p-6 rounded-xl border border-slate-900/10 w-full flex flex-col gap-7 items-center justify-between">
-          <div className="flex w-full items-center gap-12 justify-between">
-            <div className="flex flex-col gap-1.5">
-              <h2 className="text-xl font-bold  dark:text-white text-slate-900 capitalize">
-                All Sales Deals
-              </h2>
-              <p className="text-gray-500 dark:text-gray-400">
-                Create, edit or remove Deals
-              </p>
+        <div className="flex w-full items-center gap-12 justify-between">
+          <div className="flex flex-col gap-1.5">
+            <h2 className="text-xl font-bold  dark:text-white text-slate-900 capitalize">
+              All Sales Deals
+            </h2>
+            <p className="text-gray-500 dark:text-gray-400">
+              Create, edit or remove Deals
+            </p>
+          </div>
+          <div className="flex items-center gap-6">
+            <select
+              name="limit"
+              id="limit"
+              className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10"
+              onChange={(e) => handlePageLimit(Number(e.target.value))}
+            >
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="30">30</option>
+              <option value="40">50</option>
+            </select>
+            <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2">
+              <IoIosSearch className="text-xl" />
+              <input type="text" className="outline-none" placeholder="Search..." value={searchVal} onChange={(e) => handleSearch(e.target.value)} />
             </div>
-            <div className="flex items-center gap-6">
-              <select
-                name="limit"
-                id="limit"
-                className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10"
-                onChange={(e) => handlePageLimit(Number(e.target.value))}
-              >
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="30">30</option>
-                <option value="40">50</option>
-              </select>
-              <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2">
-                <IoIosSearch className="text-xl" />
-                <input type="text" className="outline-none" placeholder="Search..." value={searchVal} onChange={(e)=>handleSearch(e.target.value)} />
-              </div>
-              <div>
-                <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
-              </div>
-              {(hasPermission(PERMISSIONS.readLead)) && (
-                <Link
-                  href={"/leads"}
-                  className="bg-blue-600 hover:bg-blue-700
+            <div>
+              <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
+            </div>
+            {(hasPermission(PERMISSIONS.readLead)) && (
+              <Link
+                href={"/leads"}
+                className="bg-blue-600 hover:bg-blue-700
                                     text-white px-5 py-2 rounded-md
                                     flex items-center gap-2 group"
-                >
-                  <MdOutlineLeaderboard className="group-hover:rotate-90 transition-all duration-300" />{" "}
-                  All Leads
-                </Link>
-              ) }
-            </div>
+              >
+                <MdOutlineLeaderboard className="group-hover:rotate-90 transition-all duration-300" />{" "}
+                All Leads
+              </Link>
+            )}
           </div>
-          <ul className="w-full flex items-center gap-5">
-            <li><TabsButton btnTxt="All Deals" dataLen={dealData.length} no={1} currentVal={currentTab} onClickEvent={()=>setCurrentTab(1)}/></li>
-            <li><TabsButton btnTxt="Won Deals" dataLen={wonDealData.length} no={2} currentVal={currentTab} onClickEvent={()=>handleTabs(2)}/></li>
-            <li><TabsButton btnTxt="Lost Deals" dataLen={lostDealData.length} no={3} currentVal={currentTab} onClickEvent={()=>handleTabs(3)}/></li>
-          </ul>
-          <div className="w-full rounded-xl overflow-x-scroll text-nowrap">
-          {(currentTab === 1) &&<> <table className="w-full rounded-xl overflow-hidden">
+        </div>
+        <ul className="w-full flex items-center gap-5">
+          <li><TabsButton btnTxt="All Deals" dataLen={dealData.length} no={1} currentVal={currentTab} onClickEvent={() => setCurrentTab(1)} /></li>
+          <li><TabsButton btnTxt="Won Deals" dataLen={wonDealData.length} no={2} currentVal={currentTab} onClickEvent={() => handleTabs(2)} /></li>
+          <li><TabsButton btnTxt="Lost Deals" dataLen={lostDealData.length} no={3} currentVal={currentTab} onClickEvent={() => handleTabs(3)} /></li>
+        </ul>
+        <div className="w-full rounded-xl overflow-x-scroll text-nowrap">
+          {(currentTab === 1) && <> <table className="w-full rounded-xl overflow-hidden">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
                 {/* <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
                   deal Id
                 </th> */}
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
-                 deal name
+                  deal name
                 </th>
-               
+
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
                   {" "}
                   Deal stage
                 </th>
 
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
-                 against
+                  against
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
                   created date
@@ -292,17 +292,16 @@ const DealContent = (): JSX.Element => {
                 dealData.map((item, i) => {
                   let rr = i % 2 == 0;
 
-                 
+
                   const date = formatDate(item.createDate)
 
                   return (
                     <tr
                       key={item.deal_id}
-                      className={`${
-                        rr
+                      className={`${rr
                           ? "bg-white dark:bg-transparent"
                           : "bg-blue-100/50 dark:bg-slate-500"
-                      } w-full`}
+                        } w-full`}
                     >
                       {/* <td className="p-4">
                         <Link
@@ -315,17 +314,17 @@ const DealContent = (): JSX.Element => {
                       </td> */}
                       <td className="flex gap-1 flex-col p-4">
                         <h4 className="capitalize text-sm">{item.dealName}</h4>{" "}
-                        
-                      
+
+
                       </td>
-                      
+
                       <td className="p-4 ">
-                        <span className={`${(item.dealStage.trim() === DEAL_STAGES.REQUIREMENT_ANALYSIS) ? "bg-orange-500" : (item.dealStage.trim() === DEAL_STAGES.QUALIFICATION) ? "bg-blue-600" : (item.dealStage.trim() === DEAL_STAGES.PROPOSAL) ? "bg-cyan-500" : (item.dealPipeline.trim() === DEAL_STAGES.NEGOTIATION) ? "bg-teal-600" : (item.dealStage.trim() === DEAL_STAGES.WON) ? "bg-green-500" : (item.dealStage.trim() === DEAL_STAGES.LOST) ? "bg-red-500" : (item.dealStage.trim() === DEAL_STAGES.DELETE) ?  "bg-red-500" : "bg-gray-600"} text-white px-4 py-1.5 text-sm rounded-md capitalize`}>{item.dealStage.trim()}</span>
+                        <span className={`${(item.dealStage.trim() === DEAL_STAGES.REQUIREMENT_ANALYSIS) ? "bg-orange-500" : (item.dealStage.trim() === DEAL_STAGES.QUALIFICATION) ? "bg-blue-600" : (item.dealStage.trim() === DEAL_STAGES.PROPOSAL) ? "bg-cyan-500" : (item.dealPipeline.trim() === DEAL_STAGES.NEGOTIATION) ? "bg-teal-600" : (item.dealStage.trim() === DEAL_STAGES.WON) ? "bg-green-500" : (item.dealStage.trim() === DEAL_STAGES.LOST) ? "bg-red-500" : (item.dealStage.trim() === DEAL_STAGES.DELETE) ? "bg-red-500" : "bg-gray-600"} text-white px-4 py-1.5 text-sm rounded-md capitalize`}>{item.dealStage.trim()}</span>
                       </td>
                       <td className="p-4 ">
                         <span
                           className={`bg-cyan-100 text-cyan-500 px-3 py-1.5 text-xs rounded-sm cursor-copy`}
-                          onClick={()=>handleCopy(item?.lead_id?.lead_id)}
+                          onClick={() => handleCopy(item?.lead_id?.lead_id)}
                         >
                           {" "}
                           {item?.lead_id?.lead_id ?? "N/A"}
@@ -366,7 +365,7 @@ const DealContent = (): JSX.Element => {
                             </span>
                           )}
                           {(hasPermission(PERMISSIONS.createQuote) && (item.status !== DEAL_STATUS.DELETE)) ? (
-                           item.inQuotation ? <span
+                            item.inQuotation ? <span
                               className="h-9 w-9 flex items-center justify-center rounded-md
                bg-orange-500 text-white  cursor-no-drop"
                             >
@@ -385,60 +384,57 @@ const DealContent = (): JSX.Element => {
                               <FaRegPaperPlane className="text-lg" />
                             </span>
                           )}
-                          
-                         
+
+
                         </div>
                       </td>
                     </tr>
                   );
                 })
               ) : <tr><td className="p-4 text-center" colSpan={6}>Data not found</td></tr>) : (
-                Array.from({length: 10}).map((item, i)=>{
+                Array.from({ length: 10 }).map((item, i) => {
                   let rr = i % 2 == 0;
 
-        return (<tr key={i}
-                      className={`${
-                        rr
-                          ? "bg-white dark:bg-transparent"
-                          : "bg-blue-100/50 dark:bg-slate-500"
+                  return (<tr key={i}
+                    className={`${rr
+                        ? "bg-white dark:bg-transparent"
+                        : "bg-blue-100/50 dark:bg-slate-500"
                       } w-full`}>
-                  <td className="text-center p-4">
-                    <Skeleton width={120} height={30} borderRadius={14} />
-                  </td>
-                  <td className="p-4">
-                    <div className="flex flex-col gap-1">
-                      <Skeleton width={110} height={28} borderRadius={12} />
-                      <Skeleton width={140} height={12} borderRadius={10} />
-                    </div>
-                  </td>
-                  {/* <td className="p-4">
+                    <td className="text-center p-4">
+                      <Skeleton height={30} borderRadius={14} />
+                    </td>
+                    <td className="p-4">
+                      <div className="flex flex-col gap-1">
+                        <Skeleton height={28} borderRadius={12} />
+                      </div>
+                    </td>
+                    {/* <td className="p-4">
                     <Skeleton width={110} height={30} borderRadius={14} />
                   </td> */}
-                  <td className="p-4">
-                    <Skeleton width={80} height={30} borderRadius={14} />
-                  </td>
-                  <td className="p-4">
-                    <Skeleton width={120} height={30} borderRadius={14} />
-                  </td>
-                  <td className="p-4">
-                    <Skeleton width={110} height={30} borderRadius={14} />
-                  </td>
-                  <td className="p-4"><Skeleton width={110} height={30} borderRadius={14} />
-                    <Skeleton width={110} height={30} borderRadius={14} />
-                  </td>
-                  <td className="p-4">
+                    <td className="p-4">
+                      <Skeleton height={30} borderRadius={14} />
+                    </td>
+                    <td className="p-4">
+                      <Skeleton height={30} borderRadius={14} />
+                    </td>
+                    <td className="p-4">
+                      <Skeleton height={30} borderRadius={14} />
+                    </td>
+                    <td className="p-4">
+                      <Skeleton height={30} borderRadius={14} />
+                    </td>
+                    {/* <td className="p-4">
                     <div className="flex items-center gap-2">
-                      <Skeleton width={32} height={32} borderRadius={10} />
-                      <Skeleton width={32} height={32} borderRadius={10} />
-                      <Skeleton width={32} height={32} borderRadius={10} />
+                      <Skeleton  height={32} borderRadius={10} />
                     </div>
-                  </td>
-                </tr>)}
-                ) 
-                
+                  </td> */}
+                  </tr>)
+                }
+                )
+
               )}
             </tbody>
-          </table> <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={((page)=>setCurrentPage(page))} className="w-full"/> </>}
+          </table> </>}
           {(currentTab === 2) && <> <table className="w-full rounded-xl overflow-hidden">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
@@ -446,7 +442,7 @@ const DealContent = (): JSX.Element => {
                   deal Id
                 </th> */}
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
-                 deal name
+                  deal name
                 </th>
                 {/* <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
                   Pipeline
@@ -457,7 +453,7 @@ const DealContent = (): JSX.Element => {
                 </th>
 
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
-                 against
+                  against
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
                   created date
@@ -471,7 +467,7 @@ const DealContent = (): JSX.Element => {
               </tr>
             </thead>
             <tbody className="">
-              {!isLoading ?((wonDealData && Array.isArray(wonDealData) && wonDealData.length > 0) ? (
+              {!isLoading ? ((wonDealData && Array.isArray(wonDealData) && wonDealData.length > 0) ? (
                 wonDealData.map((item, i) => {
                   let rr = i % 2 == 0;
 
@@ -483,11 +479,10 @@ const DealContent = (): JSX.Element => {
                   return (
                     <tr
                       key={item.deal_id}
-                      className={`${
-                        rr
+                      className={`${rr
                           ? "bg-white dark:bg-transparent"
                           : "bg-blue-100/50 dark:bg-slate-500"
-                      } w-full`}
+                        } w-full`}
                     >
                       {/* <td className="p-4">
                         <Link
@@ -500,8 +495,8 @@ const DealContent = (): JSX.Element => {
                       </td> */}
                       <td className="flex gap-1 flex-col p-4">
                         <h4 className="capitalize">{item.dealName}</h4>{" "}
-                        
-                      
+
+
                       </td>
                       {/* <td className="p-4">
                         <span className={`${(item.dealPipeline.trim() === DEAL_PIPELINE.REQUIREMENT_ANALYSIS) ? "bg-orange-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.QUALIFICATION) ? "bg-blue-600" : (item.dealPipeline.trim() === DEAL_PIPELINE.PROPOSAL) ? "bg-cyan-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.NEGOTIATION) ? "bg-teal-600" : (item.dealPipeline.trim() === DEAL_PIPELINE.WON) ? "bg-green-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.LOST) ? "bg-red-500" : "bg-gray-600"} text-white px-4 py-1.5 text-sm rounded-md capitalize`}>{item.dealPipeline.trim()}</span>
@@ -512,7 +507,7 @@ const DealContent = (): JSX.Element => {
                       <td className="p-4 ">
                         <span
                           className={`bg-cyan-100 text-cyan-500 px-3 py-1.5 text-xs rounded-sm cursor-copy`}
-                          onClick={()=>handleCopy(item?.lead_id?.lead_id)}
+                          onClick={() => handleCopy(item?.lead_id?.lead_id)}
                         >
                           {" "}
                           {item?.lead_id?.lead_id}
@@ -552,60 +547,59 @@ const DealContent = (): JSX.Element => {
                               <MdOutlineEdit className="text-xl" />
                             </span>
                           )}
-                          
-                         
+
+
                         </div>
                       </td>
                     </tr>
                   );
                 })
-              ): <tr> <td className="p-4 text-center" colSpan={7}>Data not found</td></tr>) : (
-                Array.from({length: 10}).map((item, i)=>{
+              ) : <tr> <td className="p-4 text-center" colSpan={7}>Data not found</td></tr>) : (
+                Array.from({ length: 10 }).map((item, i) => {
                   let rr = i % 2 == 0;
 
-        return (<tr key={i}
-                      className={`${
-                        rr
-                          ? "bg-white dark:bg-transparent"
-                          : "bg-blue-100/50 dark:bg-slate-500"
+                  return (<tr key={i}
+                    className={`${rr
+                        ? "bg-white dark:bg-transparent"
+                        : "bg-blue-100/50 dark:bg-slate-500"
                       } w-full`}>
-                  <td className="text-center p-4">
-                    <Skeleton width={120} height={30} borderRadius={14} />
-                  </td>
-                  <td className="p-4">
-                    <div className="flex flex-col gap-1">
-                      <Skeleton width={110} height={28} borderRadius={12} />
-                      <Skeleton width={140} height={12} borderRadius={10} />
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <Skeleton width={110} height={30} borderRadius={14} />
-                  </td>
-                  {/* <td className="p-4">
+                    <td className="text-center p-4">
+                      <Skeleton height={30} borderRadius={14} />
+                    </td>
+                    <td className="p-4">
+                      <div className="flex flex-col gap-1">
+                        <Skeleton height={28} borderRadius={12} />
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <Skeleton height={30} borderRadius={14} />
+                    </td>
+                    {/* <td className="p-4">
                     <Skeleton width={80} height={30} borderRadius={14} />
                   </td> */}
-                  <td className="p-4">
-                    <Skeleton width={120} height={30} borderRadius={14} />
-                  </td>
-                  <td className="p-4">
-                    <Skeleton width={110} height={30} borderRadius={14} />
-                  </td>
-                  <td className="p-4"><Skeleton width={110} height={30} borderRadius={14} />
-                    <Skeleton width={110} height={30} borderRadius={14} />
-                  </td>
-                  <td className="p-4">
+                    <td className="p-4">
+                      <Skeleton height={30} borderRadius={14} />
+                    </td>
+                    <td className="p-4">
+                      <Skeleton height={30} borderRadius={14} />
+                    </td>
+                    <td className="p-4">
+                      <Skeleton height={30} borderRadius={14} />
+                    </td>
+                    {/* <td className="p-4">
                     <div className="flex items-center gap-2">
                       <Skeleton width={32} height={32} borderRadius={10} />
                       <Skeleton width={32} height={32} borderRadius={10} />
                       <Skeleton width={32} height={32} borderRadius={10} />
                     </div>
-                  </td>
-                </tr>)}
-                ) 
-                
+                  </td> */}
+                  </tr>)
+                }
+                )
+
               )}
             </tbody>
-          </table> <Pagination currentPage={wonCurrentPage} totalPages={totalWonPages} onPageChange={((page)=>setWonCurrentPage(page))} className="w-full"/> </>}
+          </table> </>}
           {(currentTab === 3) && <><table className="w-full rounded-xl overflow-hidden">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
@@ -613,7 +607,7 @@ const DealContent = (): JSX.Element => {
                   deal Id
                 </th> */}
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
-                 deal name
+                  deal name
                 </th>
                 {/* <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
                   Pipeline
@@ -624,7 +618,7 @@ const DealContent = (): JSX.Element => {
                 </th>
 
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
-                 against
+                  against
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
                   created date
@@ -638,7 +632,7 @@ const DealContent = (): JSX.Element => {
               </tr>
             </thead>
             <tbody className="">
-              { !isLoading ? (lostDealData && Array.isArray(lostDealData) && lostDealData.length > 0 ? (
+              {!isLoading ? (lostDealData && Array.isArray(lostDealData) && lostDealData.length > 0 ? (
                 lostDealData.map((item, i) => {
                   let rr = i % 2 == 0;
 
@@ -650,11 +644,10 @@ const DealContent = (): JSX.Element => {
                   return (
                     <tr
                       key={item.deal_id}
-                      className={`${
-                        rr
+                      className={`${rr
                           ? "bg-white dark:bg-transparent"
                           : "bg-blue-100/50 dark:bg-slate-500"
-                      } w-full`}
+                        } w-full`}
                     >
                       {/* <td className="p-4">
                         <Link
@@ -667,8 +660,8 @@ const DealContent = (): JSX.Element => {
                       </td> */}
                       <td className="flex gap-1 flex-col p-4">
                         <h4 className="capitalize">{item.dealName}</h4>{" "}
-                        
-                      
+
+
                       </td>
                       {/* <td className="p-4">
                         <span className={`${(item.dealPipeline.trim() === DEAL_PIPELINE.REQUIREMENT_ANALYSIS) ? "bg-orange-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.QUALIFICATION) ? "bg-blue-600" : (item.dealPipeline.trim() === DEAL_PIPELINE.PROPOSAL) ? "bg-cyan-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.NEGOTIATION) ? "bg-teal-600" : (item.dealPipeline.trim() === DEAL_PIPELINE.WON) ? "bg-green-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.LOST) ? "bg-red-500" : "bg-gray-600"} text-white px-4 py-1.5 text-sm rounded-md capitalize`}>{item.dealPipeline.trim()}</span>
@@ -679,7 +672,7 @@ const DealContent = (): JSX.Element => {
                       <td className="p-4 ">
                         <span
                           className={`bg-cyan-100 text-cyan-500 px-3 py-1.5 text-xs rounded-sm cursor-copy`}
-                          onClick={()=>handleCopy(item?.lead_id?.lead_id)}
+                          onClick={() => handleCopy(item?.lead_id?.lead_id)}
                         >
                           {" "}
                           {item?.lead_id?.lead_id}
@@ -719,63 +712,67 @@ const DealContent = (): JSX.Element => {
                               <MdOutlineEdit className="text-xl" />
                             </span>
                           )}
-                          
-                         
+
+
                         </div>
                       </td>
                     </tr>
                   );
                 })
-              ): <tr> <td className="p-4 text-center" colSpan={7}>Data not found</td></tr>) : (
-                Array.from({length: 10}).map((item, i)=>{
+              ) : <tr> <td className="p-4 text-center" colSpan={7}>Data not found</td></tr>) : (
+                Array.from({ length: 10 }).map((item, i) => {
                   let rr = i % 2 == 0;
 
-        return (<tr key={i}
-                      className={`${
-                        rr
-                          ? "bg-white dark:bg-transparent"
-                          : "bg-blue-100/50 dark:bg-slate-500"
+                  return (<tr key={i}
+                    className={`${rr
+                        ? "bg-white dark:bg-transparent"
+                        : "bg-blue-100/50 dark:bg-slate-500"
                       } w-full`}>
-                  <td className="text-center p-4">
-                    <Skeleton width={120} height={30} borderRadius={14} />
-                  </td>
-                  <td className="p-4">
-                    <div className="flex flex-col gap-1">
-                      <Skeleton width={110} height={28} borderRadius={12} />
-                      <Skeleton width={140} height={12} borderRadius={10} />
-                    </div>
-                  </td>
-                  {/* <td className="p-4">
+                    <td className="text-center p-4">
+                      <Skeleton height={30} borderRadius={14} />
+                    </td>
+                    <td className="p-4">
+                      <div className="flex flex-col gap-1">
+                        <Skeleton height={28} borderRadius={12} />
+                      </div>
+                    </td>
+                    {/* <td className="p-4">
                     <Skeleton width={110} height={30} borderRadius={14} />
                   </td> */}
-                  <td className="p-4">
-                    <Skeleton width={80} height={30} borderRadius={14} />
-                  </td>
-                  <td className="p-4">
-                    <Skeleton width={120} height={30} borderRadius={14} />
-                  </td>
-                  <td className="p-4">
-                    <Skeleton width={110} height={30} borderRadius={14} />
-                  </td>
-                  <td className="p-4"><Skeleton width={110} height={30} borderRadius={14} />
-                    <Skeleton width={110} height={30} borderRadius={14} />
-                  </td>
-                  <td className="p-4">
+                    <td className="p-4">
+                      <Skeleton height={30} borderRadius={14} />
+                    </td>
+                    <td className="p-4">
+                      <Skeleton height={30} borderRadius={14} />
+                    </td>
+                    <td className="p-4">
+                      <Skeleton height={30} borderRadius={14} />
+                    </td>
+                    <td className="p-4">
+                      <Skeleton height={30} borderRadius={14} />
+                    </td>
+                    {/* <td className="p-4">
                     <div className="flex items-center gap-2">
                       <Skeleton width={32} height={32} borderRadius={10} />
                       <Skeleton width={32} height={32} borderRadius={10} />
                       <Skeleton width={32} height={32} borderRadius={10} />
-                    </div>
-                  </td>
-                </tr>)}
-                ) 
-                
+                    </div> */}
+                    {/* </td> */}
+                  </tr>)
+                }
+                )
+
               )}
             </tbody>
-          </table> <Pagination currentPage={lostCurrentPage} totalPages={totalLostPages} onPageChange={((page)=>setLostCurrentPage(page))} className="w-full"/></>}
-
-          </div>
+          </table>
+          </>}
         </div>
+        <div>
+          {(currentTab === 1) && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={((page) => setCurrentPage(page))} className="w-full" />}
+          {(currentTab === 2) && <Pagination currentPage={wonCurrentPage} totalPages={totalWonPages} onPageChange={((page) => setWonCurrentPage(page))} className="w-full" />}
+          {(currentTab === 3) && <Pagination currentPage={lostCurrentPage} totalPages={totalLostPages} onPageChange={((page) => setLostCurrentPage(page))} className="w-full" />}
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 export interface GetDashboardParams {
-    page: number,
-    limit: number,
-    search: string
+  page: number,
+  limit: number,
+  search: string
 }
 // ─── Period ───────────────────────────────────────────────────────────────────
 
@@ -44,6 +44,7 @@ export type LeadSource =
   | string;
 
 export interface LatestLead {
+  id: string;
   lead_id: string;
   email: string;
   phone: string;
