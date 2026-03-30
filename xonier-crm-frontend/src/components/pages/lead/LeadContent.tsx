@@ -6,7 +6,7 @@ import { MdOutlineEdit } from "react-icons/md";
 import { FaRegEye } from "react-icons/fa";
 import { FaPlus, FaXmark, FaCheck } from "react-icons/fa6";
 import { usePermissions } from "@/src/hooks/usePermissions";
-import { LEAD_SOURCE_TYPE, PERMISSIONS, SALES_STATUS, SOURCE, PROJECT_TYPES , STATUS_CONFIG} from "@/src/constants/enum";
+import { LEAD_SOURCE_TYPE, PERMISSIONS, SALES_STATUS, SOURCE, PROJECT_TYPES, STATUS_CONFIG } from "@/src/constants/enum";
 import axios from "axios";
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import { toast } from "react-toastify";
@@ -341,7 +341,7 @@ const LeadContent = (): JSX.Element => {
 
   const updateLeadStatus = async (id: string, newStatus: LeadEngagementStatus): Promise<void> => {
     try {
-      const result = await LeadService.updateEngagementStatus(id, {status:newStatus});
+      const result = await LeadService.updateEngagementStatus(id, { status: newStatus });
 
       if (result.status === 200) {
         toast.success(
@@ -467,7 +467,7 @@ const LeadContent = (): JSX.Element => {
 
 
   const SkeletonRows = ({ cols }: { cols: number }) =>
-    Array.from({ length: 8 }).map((_, i) => (
+    Array.from({ length: 10 }).map((_, i) => (
       <tr key={i} className={i % 2 === 0 ? "bg-white dark:bg-transparent" : "bg-slate-50 dark:bg-slate-500/40"}>
         {Array.from({ length: cols }).map((__, j) => (
           <td key={j} className="p-4"><Skeleton height={28} borderRadius={8} /></td>
@@ -514,9 +514,9 @@ const LeadContent = (): JSX.Element => {
 
   const renderLeadRows = (data: Lead[]) => {
     if (!isLoading && data.length === 0) return (
-      <tr><td className="p-8 text-center text-slate-400 text-sm" colSpan={9}>No leads found</td></tr>
+      <tr><td className="p-8 text-center text-slate-400 text-sm" colSpan={10}>No leads found</td></tr>
     );
-    if (isLoading) return <SkeletonRows cols={hasPermission(PERMISSIONS.assignLead) && currentTab === TAB.ALL ? 9 : 8} />;
+    if (isLoading) return <SkeletonRows cols={hasPermission(PERMISSIONS.assignLead) && currentTab === TAB.ALL ? 11 : 12} />;
 
     return data.map((item, i) => {
       const isChecked = selectedLeadIds.has(item.id);
@@ -568,13 +568,13 @@ const LeadContent = (): JSX.Element => {
           <td className="p-4"><TagBadge tag={item.dataTag || "N/A"} /></td>
           <td className="p-4"><CreatedAt timestamp={item.createdAt} /></td>
           <td className="p-4">{item.createdBy?.firstName + " " + item.createdBy?.lastName}</td>
-          {( hasPermission(PERMISSIONS.updateLead)) ? 
-          <StatusDropdown
-            currentStatus={item.connectStatus as LeadEngagementStatus}
-            Id={item.id}
-            onStatusUpdate={updateLeadStatus}
-          /> :
-          <StatusBadge status={item.connectStatus || "N/A"} />
+          {(hasPermission(PERMISSIONS.updateLead)) ?
+            <StatusDropdown
+              currentStatus={item.connectStatus as LeadEngagementStatus}
+              Id={item.id}
+              onStatusUpdate={updateLeadStatus}
+            /> :
+            <StatusBadge status={item.connectStatus || "N/A"} />
           }
           <td><RowActions item={item} /></td>
         </tr>
@@ -599,7 +599,7 @@ const LeadContent = (): JSX.Element => {
         </td>
       </tr>
     );
-    if (isLoading) return <SkeletonRows cols={8} />;
+    if (isLoading) return <SkeletonRows cols={12} />;
 
     return assignedLeadData.map((item, i) => {
       const isChecked = selectedReassignIds.has(item.id);
@@ -642,32 +642,32 @@ const LeadContent = (): JSX.Element => {
           <td className="p-4">
             <span className="px-2.5 py-1 rounded-full bg-yellow-100 text-yellow-600 text-xs font-medium">{item.source || "N/A"}</span>
           </td>
-         
+
           <td className="p-4"><StatusBadge status={item.status || "N/A"} /></td>
 
 
-          
 
-         
+
+
           <td className="p-4"><TagBadge tag={item.dataTag || "N/A"} /></td>
           <td className="p-4"><CreatedAt timestamp={item.createdAt} /></td>
           <td className="p-4">{item.createdBy?.firstName + " " + item.createdBy?.lastName}</td>
-            {( hasPermission(PERMISSIONS.updateLead)) ? 
+          {(hasPermission(PERMISSIONS.updateLead)) ?
             <td>
-            <StatusDropdown
-              currentStatus={item.connectStatus as LeadEngagementStatus}
-              Id={item.id}
-              onStatusUpdate={updateLeadStatus}
-            />
+              <StatusDropdown
+                currentStatus={item.connectStatus as LeadEngagementStatus}
+                Id={item.id}
+                onStatusUpdate={updateLeadStatus}
+              />
             </td> :
             <td className="p-4"><StatusBadge status={item.connectStatus || "N/A"} /></td>
-            }  
-            <td className="p-4">
+          }
+          <td className="p-4">
             <Link href={`/users/${assignedUserId?.id}`}>
               <AssignedToPill user={assignedUser} />
             </Link>
-          </td> 
-             <td className="p-4">
+          </td>
+          <td className="p-4">
             <div className="flex items-center gap-2">
               {hasPermission(PERMISSIONS.readLead) ? (
                 <Link href={`/leads/view/${item.id}`} className="h-9 w-9 flex items-center justify-center rounded-md bg-green-100/80 dark:bg-green-50 hover:bg-green-200/70 text-green-500 hover:scale-105 transition-transform">
@@ -685,7 +685,7 @@ const LeadContent = (): JSX.Element => {
               )}
             </div>
 
-          </td>      
+          </td>
         </tr>
       );
     });
@@ -967,7 +967,7 @@ const LeadContent = (): JSX.Element => {
                         </label>
                       </th>
                     )}
-                    {[ "Client Info", "Phone", "Project Type", "Source", "Status", "Data Tag", "Created Date", "Created By", "Engagement Status"].map((h) => {
+                    {["Client Info", "Phone", "Project Type", "Source", "Status", "Data Tag", "Created Date", "Created By", "Engagement Status"].map((h) => {
                       const filterConfig = options[h];
                       return (
                         <th

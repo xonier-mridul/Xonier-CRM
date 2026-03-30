@@ -39,6 +39,7 @@ import type {
   LeadStatus,
   DealPipelineStage,
 } from "@/src/types/dashboard/dashboard.types";
+import Link from "next/link";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -604,9 +605,11 @@ export default function DashboardPage() {
                       <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 ${AVATAR_BG[i % AVATAR_BG.length]}`}>
                         {lead.source.charAt(0).toUpperCase()}
                       </div>
+                      <Link href={`/leads/view/${lead.id}`} className="text-xs font-mono text-gray-500 dark:text-gray-400 truncate max-w-[130px]">
                       <span className="text-xs font-mono text-gray-500 dark:text-gray-400 truncate max-w-[130px]">
                         {lead.lead_id}
-                      </span>
+                      </span>                      
+                      </Link>
                     </div>
                   </td>
                   <td className="py-3 pr-4">

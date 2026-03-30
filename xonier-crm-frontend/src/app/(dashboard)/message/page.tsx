@@ -8,6 +8,7 @@ import { MdFilterAlt, MdFilterAltOff } from "react-icons/md";
 import { Message } from "@/src/types/communication/message.types";
 import MessageService from "@/src/services/communication/message.servicie";
 import CreatedAt from "@/src/components/common/CreatedAt";
+import Skeleton from "react-loading-skeleton";
 
 type StatusType = Message["status"] | "";
 
@@ -60,7 +61,7 @@ export default function Page() {
     setIsLoading(true);
 
     try {
-      const res = await MessageService.getAll(1,10,{ search: currentSearch, ...currentFilters });
+      const res = await MessageService.getAll(1, 10, { search: currentSearch, ...currentFilters });
 
       if (requestId !== requestIdRef.current) return; // stale — discard
 
@@ -271,14 +272,34 @@ export default function Page() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td colSpan={9} className="text-center p-8 text-gray-500">
-                    <div className="flex items-center justify-center gap-2">
-                      <FiRefreshCw className="animate-spin text-blue-500" />
-                      <span>Loading messages...</span>
-                    </div>
-                  </td>
-                </tr>
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr>
+                    <td className="p-4">
+                      <Skeleton width={120} height={28} borderRadius={8} />
+                    </td>
+                    <td className="p-4">
+                      <Skeleton width={160} height={28} borderRadius={8} />
+                    </td>
+                    <td className="p-4">
+                      <Skeleton width={80} height={28} borderRadius={8} />
+                    </td>
+                    <td className="p-4">
+                      <Skeleton width={200} height={28} borderRadius={8} />
+                    </td>
+                    <td className="p-4">
+                      <Skeleton width={120} height={28} borderRadius={8} />
+                    </td>
+                    <td className="p-4 ">
+                      <Skeleton width={80} height={28} borderRadius={8} />
+                    </td>
+                    <td className="p-4"><Skeleton width={120} height={28} borderRadius={8} /></td>
+                    <td className="p-4"> <Skeleton width={120} height={28} borderRadius={8} /></td>
+                    <td className="p-4"> <Skeleton width={32} height={28} borderRadius={8} /></td>
+
+
+                  </tr>
+                ))
+
               ) : logs.length > 0 ? (
                 logs.map((log, i) => (
                   <tr key={log.id} className={i % 2 === 0 ? "bg-white dark:bg-transparent" : "bg-blue-100/50 dark:bg-slate-500"}>
@@ -294,7 +315,7 @@ export default function Page() {
                         ? <span className="px-2 py-1 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded font-mono text-xs">{log.conversion_id}</span>
                         : <span className="text-gray-400">—</span>}
                     </td>
-                    <td className="p-4 whitespace-nowrap">{log.sent_by ? `${log.sent_by.firstName ?? ''} ${log.sent_by.lastName ?? ''}`.trim()  || "-" : "-"}</td>
+                    <td className="p-4 whitespace-nowrap">{log.sent_by ? `${log.sent_by.firstName ?? ''} ${log.sent_by.lastName ?? ''}`.trim() || "-" : "-"}</td>
                     <td className="p-4 whitespace-nowrap">
                       <CreatedAt timestamp={log.createdAt} time={true} />
                     </td>
