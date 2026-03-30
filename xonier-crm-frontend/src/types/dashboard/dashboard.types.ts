@@ -45,7 +45,7 @@ export type LeadSource =
   | string;
 
 export interface LatestLead {
-  id: string;
+  _id: string;
   lead_id: string;
   email: string;
   phone: string;
