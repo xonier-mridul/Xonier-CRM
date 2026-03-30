@@ -114,9 +114,8 @@ const Page = (): JSX.Element => {
 
         <Link
           href={canCreate ? "/emailManagement/templates/add" : "#"}
-          className={`bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md flex items-center gap-2 group ${
-            !canCreate && "opacity-50 cursor-not-allowed pointer-events-none"
-          }`}
+          className={`bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md flex items-center gap-2 group ${!canCreate && "opacity-50 cursor-not-allowed pointer-events-none"
+            }`}
         >
           <FaPlus className="group-hover:rotate-90 transition-all duration-300" />
           Create Template
@@ -213,11 +212,10 @@ const Page = (): JSX.Element => {
 
                           <td className="p-4 whitespace-nowrap">
                             <span
-                              className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                                item.status === "draft"
+                              className={`px-3 py-1 text-xs font-semibold rounded-full ${item.status === "draft"
                                   ? "bg-yellow-100 text-yellow-600"
                                   : "bg-green-100 text-green-600"
-                              }`}
+                                }`}
                             >
                               {item.status}
                             </span>
@@ -271,7 +269,7 @@ const Page = (): JSX.Element => {
                                   setSelectedId(item.id);
                                   setShowDeleteModal(true);
                                 }}
-                              className="h-9 w-9 flex items-center justify-center rounded-md bg-red-100 hover:bg-red-200 text-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="h-9 w-9 flex items-center justify-center rounded-md bg-red-100 hover:bg-red-200 text-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 <MdDeleteOutline className="text-xl" />
                               </button>
@@ -290,20 +288,22 @@ const Page = (): JSX.Element => {
                     </tr>
                   )
                 ) : (
-                  <tr>
-                    <td className="p-4"><Skeleton width={120} height={28} /></td>
-                    <td className="p-4"><Skeleton width={160} height={28} /></td>
-                    <td className="p-4"><Skeleton width={80} height={28} /></td>
-                    <td className="p-4"><Skeleton width={200} height={28} /></td>
-                    <td className="p-4"><Skeleton width={120} height={28} /></td>
-                    <td className="p-4">
-                      <div className="flex gap-2">
-                        <Skeleton width={32} height={32} />
-                        <Skeleton width={32} height={32} />
-                        <Skeleton width={32} height={32} />
-                      </div>
-                    </td>
-                  </tr>
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <tr>
+                      <td className="p-4"><Skeleton width={120} height={28} /></td>
+                      <td className="p-4"><Skeleton width={160} height={28} /></td>
+                      <td className="p-4"><Skeleton width={80} height={28} /></td>
+                      <td className="p-4"><Skeleton width={200} height={28} /></td>
+                      <td className="p-4"><Skeleton width={120} height={28} /></td>
+                      <td className="p-4">
+                        <div className="flex gap-2">
+                          <Skeleton width={32} height={32} />
+                          <Skeleton width={32} height={32} />
+                          <Skeleton width={32} height={32} />
+                        </div>
+                      </td>
+                    </tr>
+                  ))
                 )}
 
               </tbody>
