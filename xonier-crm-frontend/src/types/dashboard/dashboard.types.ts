@@ -1,3 +1,4 @@
+import { User } from "@/src/types";
 export interface GetDashboardParams {
   page: number,
   limit: number,
@@ -133,6 +134,7 @@ export interface DashboardData {
   leadStatusBreakdown: LeadStatusBreakdownItem[];
   latestLeads: LatestLead[];
   dealPipelineBreakdown: DealPipelineBreakdownItem[];
+  user?:User;
 }
 
 export interface DashboardApiResponse {
