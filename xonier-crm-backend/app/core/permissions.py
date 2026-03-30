@@ -557,6 +557,34 @@ PERMISSIONS = [
         "title": "assign task",
         "description": "permission for assign task data",
     },
+    {
+        "code": "taskCategory:create",
+        "module": "taskCategory",
+        "action": "create",
+        "title": "create task category",
+        "description": "permission for create task category data",
+    },
+    {
+        "code": "taskCategory:read",
+        "module": "taskCategory",
+        "action": "read",
+        "title": "read task category",
+        "description": "permission for read task category data",
+    },
+    {
+        "code": "taskCategory:update",
+        "module": "taskCategory",
+        "action": "update",
+        "title": "update task category",
+        "description": "permission for update task category data",
+    },
+    {
+        "code": "taskCategory:delete",
+        "module": "taskCategory",
+        "action": "delete",
+        "title": "delete task category",
+        "description": "permission for delete task category data",
+    },
 
     
 ]

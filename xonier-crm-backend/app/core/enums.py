@@ -829,36 +829,44 @@ class CONTACT_STATUS(str, Enum):
     NOT_REACHED = "not_reached"
 
 
-class TASK_STATUS(str, Enum):
-    TODO = "todo"
-    IN_PROGRESS = "in_progress"
-    IN_REVIEW = "in_review"
-    COMPLETED = "completed"
-    CANCELLED = "cancelled"
-    OVERDUE = "overdue"
-
-
 class TASK_PRIORITY(str, Enum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
     URGENT = "urgent"
 
-class TASK_CATEGORY(str, Enum):
-    CALL = "call"
-    EMAIL = "email"
-    MEETING = "meeting"
-    FOLLOW_UP = "follow_up"
-    DEMO = "demo"
-    PROPOSAL = "proposal"
-    OTHER = "other"
+class TASK_STATUS_TYPE(str, Enum):
+    NOT_STARTED = "not_started"    
+    ACTIVE = "active"              # blue — working states
+    COMPLETED = "completed"        # green — done states
+    CANCELLED = "cancelled"        # red — cancelled states
 
 class TASK_ENTITY_TYPE(str, Enum):
     LEAD = "lead"
     DEAL = "deal"
     ENQUIRY = "enquiry"
     CONTACT = "contact"
-    GENERAL = "general" 
+    GENERAL = "general"
 
+class CATEGORY_VISIBILITY(str, Enum):
+    GLOBAL = "global"              # everyone in org
+    TEAM = "team"                  # specific team only
+    PERSONAL = "personal"          # only creator
 
+class RECURRENCE_TYPE(str, Enum):
+    DAILY = "daily"
+    WEEKLY = "weekly"
+    MONTHLY = "monthly"
 
+class TASK_ACTIVITY_ACTION(str, Enum):
+    CREATED = "created"
+    STATUS_CHANGED = "status_changed"
+    ASSIGNED = "assigned"
+    REASSIGNED = "reassigned"
+    PRIORITY_CHANGED = "priority_changed"
+    DUE_DATE_CHANGED = "due_date_changed"
+    COMMENTED = "commented"
+    ATTACHMENT_ADDED = "attachment_added"
+    COMPLETED = "completed"
+    REOPENED = "reopened"
+    DELETED = "deleted"
