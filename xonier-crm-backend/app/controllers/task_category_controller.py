@@ -36,6 +36,7 @@ class TaskCategoryController:
  
     async def get_task_category_by_id(self, request: Request, category_id: str):
         try:
+            print("err")
             user = request.state.user
             result = await self.service.get_task_category_by_id(category_id, user)
             return successResponse(200, "Task category fetched successfully", result)
@@ -48,6 +49,7 @@ class TaskCategoryController:
  
     async def update_task_category(self, request: Request, category_id: str, payload: Dict[str, Any]):
         try:
+
             user = request.state.user
             await self.service.update_task_category(category_id, payload, user)
             return successResponse(200, "Task category updated successfully", None)
