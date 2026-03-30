@@ -9,7 +9,7 @@ class CreateTaskCategorySchema(BaseModel):
     description: Optional[str] = None
     color: Optional[str] = None
     icon: Optional[str] = None
-    isDefault: bool = False
+    
     isActive: bool = True
     visibility: CATEGORY_VISIBILITY = CATEGORY_VISIBILITY.GLOBAL
  

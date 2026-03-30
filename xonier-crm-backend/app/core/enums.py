@@ -837,9 +837,9 @@ class TASK_PRIORITY(str, Enum):
 
 class TASK_STATUS_TYPE(str, Enum):
     NOT_STARTED = "not_started"    
-    ACTIVE = "active"              # blue — working states
-    COMPLETED = "completed"        # green — done states
-    CANCELLED = "cancelled"        # red — cancelled states
+    ACTIVE = "active"             
+    COMPLETED = "completed"       
+    CANCELLED = "cancelled"        
 
 class TASK_ENTITY_TYPE(str, Enum):
     LEAD = "lead"
@@ -849,9 +849,9 @@ class TASK_ENTITY_TYPE(str, Enum):
     GENERAL = "general"
 
 class CATEGORY_VISIBILITY(str, Enum):
-    GLOBAL = "global"              # everyone in org
-    TEAM = "team"                  # specific team only
-    PERSONAL = "personal"          # only creator
+    GLOBAL = "global"             
+    TEAM = "team"                 
+    PERSONAL = "personal"          
 
 class RECURRENCE_TYPE(str, Enum):
     DAILY = "daily"

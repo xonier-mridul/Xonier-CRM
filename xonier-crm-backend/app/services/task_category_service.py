@@ -7,11 +7,16 @@ from beanie import PydanticObjectId
 from fastapi.encoders import jsonable_encoder
 from datetime import datetime, timezone
 from typing import Dict, Any
+from app.repositories.task_status_repository import TaskStatusRepository
+from app.db.models.task_model import TaskModel
+from bson import ObjectId
+ 
  
  
 class TaskCategoryService:
     def __init__(self):
         self.repo = TaskCategoryRepository()
+        self.taskStatusRepo = TaskStatusRepository()
         self.client = Client
  
     async def create_task_category(self, payload: Dict[str, Any], user: Dict[str, Any]):
@@ -33,6 +38,7 @@ class TaskCategoryService:
  
                     new_payload = {
                         **payload,
+                        "isDefault": False,
                         "category_id": category_id,
                         "slug": slug,
                         "createdBy": PydanticObjectId(user["_id"]),
@@ -157,7 +163,7 @@ class TaskCategoryService:
                             raise AppException(409, f"Category with name '{payload['name']}' already exists")
  
                         update_payload["slug"] = new_slug
-                    print("yes")
+                    
                     updated = await self.repo.update(
                         id=PydanticObjectId(category_id),
                         data=update_payload,
@@ -236,17 +242,17 @@ class TaskCategoryService:
  
                     if is_exist.isDefault:
                         raise AppException(400, "Default categories cannot be deleted")
- 
-                    from app.db.models.task_status_model import TaskStatusModel
-                    from app.db.models.task_model import TaskModel
-                    from bson import ObjectId
- 
-                    status_count = await TaskStatusModel.find({
-                        "category.$id": ObjectId(category_id),
+                    
+                    print("error ")
+                    
+                    status_count = await self.taskStatusRepo.find({
+                        "category.$id": PydanticObjectId(category_id),
                         "deletedAt": None
-                    }).count()
+                    })
+
+                   
  
-                    if status_count > 0:
+                    if len(status_count) > 0:
                         raise AppException(
                             400,
                             f"Cannot delete — {status_count} status{'es' if status_count > 1 else ''} are using this category. Delete statuses first."
@@ -277,8 +283,8 @@ class TaskCategoryService:
  
                     return True
  
-                except AppException:
-                    raise
+                except AppException as e:
+                    raise e
  
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")

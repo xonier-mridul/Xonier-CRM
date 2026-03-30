@@ -36,7 +36,7 @@ class TaskCategoryController:
  
     async def get_task_category_by_id(self, request: Request, category_id: str):
         try:
-            print("err")
+            
             user = request.state.user
             result = await self.service.get_task_category_by_id(category_id, user)
             return successResponse(200, "Task category fetched successfully", result)

@@ -25,7 +25,6 @@ async def get_task_category_by_id(request: Request, id: str):
  
 @router.put("/update/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["taskCategory:update"]))])
 async def update_task_category(request: Request, id: str, payload: UpdateTaskCategorySchema):
-    
     return await controller.update_task_category(request, id, payload.model_dump(mode="json", exclude_none=True))
  
  
