@@ -384,11 +384,11 @@ class AuthController:
 
     async def verify_refresh_token(self, request: Request, response: Response, payload: Dict[str, Any]):
         try:
-            user = request.state.user  
+            
 
             result = await self.service.verify_refresh_token(
                 payload=payload,
-                user=user
+               
             )
 
             access_token_expiry = int(self.settings.ACCESS_TOKEN_EXPIRY) * 24 * 60 * 60

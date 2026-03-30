@@ -24,6 +24,7 @@ import { TiGlobeOutline } from "react-icons/ti";
 import { RootState } from "@/src/store";
 import checkRole from "@/src/app/utils/roleCheck.utils";
 import { FiUserCheck } from "react-icons/fi";
+import { GoTasklist } from "react-icons/go";
 
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSIONS } from "@/src/constants/enum";
@@ -254,6 +255,96 @@ const SideBar = () => {
                 <TbNotes className="text-lg" />
                 Notes
               </Link>
+            </li>}
+
+            {(hasPermission(PERMISSIONS.readTask)) && <li>
+              <button
+                onClick={() => toggleMenu("team")}
+                className={`${isMenuActive("team")
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
+                  } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+              >
+                <span className="flex items-center gap-3">
+                  <GoTasklist className="text-lg" />
+                  Task Management
+                </span>
+
+                <IoChevronDown
+                  className={`transition-transform ${openMenu === "team" ? "rotate-180" : ""
+                    }`}
+                />
+              </button>
+
+              <AnimatePresence>
+                {openMenu === "team" && (
+                  <motion.ul
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.25 }}
+                    className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
+                  >
+                    {hasPermission(PERMISSIONS.readRole) && <li>
+                      <Link
+                        href="/roles"
+                        className={`${isActive("/roles")
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
+                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                      >
+                        Roles
+                      </Link>
+                    </li>}
+                    {hasPermission(PERMISSIONS.readTeamCategory) && <li>
+                      <Link
+                        href="/teams/categories"
+                        className={`${isActive("/teams/categories")
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
+                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                      >
+                        Teams Categories
+                      </Link>
+                    </li>}
+                    {hasPermission(PERMISSIONS.readTeam) && <li>
+                      <Link
+                        href="/teams"
+                        className={`${(isActive("/teams") && !isActive("/teams/categories"))
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
+                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                      >
+                        Teams
+                      </Link>
+                    </li>}
+                    {hasPermission(PERMISSIONS.readUser) && <li>
+                      <Link
+                        href="/users"
+                        className={`${isActive("/users")
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
+                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                      >
+                        Users
+                      </Link>
+                    </li>}
+                    {
+                      hasPermission(PERMISSIONS.deletedUserView) && <li>
+                        <Link
+                          href="/deleteduser"
+                          className={`${isActive("/deleteduser")
+                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                            : "border-l-2 border-transparent"
+                            } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                        >
+                          Deleted Users
+                          </Link>
+                      </li>
+                    }
+                  </motion.ul>
+                )}
+              </AnimatePresence>
             </li>}
 
             {(hasPermission(PERMISSIONS.readUser) || hasPermission(PERMISSIONS.readRole) || hasPermission(PERMISSIONS.createTeam)) && <li>

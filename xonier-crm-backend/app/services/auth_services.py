@@ -1279,13 +1279,15 @@ class AuthServices:
         finally:
             await session.end_session()
  
-    async def verify_refresh_token(self, payload: Dict[str, Any], user: Dict[str, Any]):
+    async def verify_refresh_token(self, payload: Dict[str, Any]):
         try:
            
             user_obj = await self.repo.find_by_id(
                 PydanticObjectId(payload["_id"]), 
                 populate=["userRole"]
             )
+
+            print("userobj: ", user_obj)
 
             if not user_obj:
                 raise AppException(404, "User not found")
@@ -1301,8 +1303,11 @@ class AuthServices:
                 raise AppException(401, "Session expired, please login again")
 
             
-            incoming_token = payload.get("raw_token")  
+            incoming_token = payload.get("raw_token")
+            print("row token: ", incoming_token)  
             hashed_incoming = hash_value(incoming_token)
+
+            print("jashed token: ", hashed_incoming)
 
             if hashed_incoming != user_obj.refreshToken:
                 raise AppException(401, "Invalid refresh token, please login again")

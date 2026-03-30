@@ -182,6 +182,11 @@ export enum PERMISSIONS {
   smsReadLog = "sms:read",
   smsViewLog = "sms:viewlog",
   readClient = "client:read",
+  createTask = "task:create",
+  readTask = "task:read",
+  updateTask = "task:update",
+  deleteTask = "task:delete",
+  assignTask = "task:assign"
 
 }
 
