@@ -255,7 +255,7 @@ class TaskCategoryService:
                     if len(status_count) > 0:
                         raise AppException(
                             400,
-                            f"Cannot delete — {status_count} status{'es' if status_count > 1 else ''} are using this category. Delete statuses first."
+                            f"Cannot delete — {status_count} status{'es' if status_count > 1 else ''} are using this category. Delete statuses first"
                         )
  
                     task_count = await TaskModel.find({
