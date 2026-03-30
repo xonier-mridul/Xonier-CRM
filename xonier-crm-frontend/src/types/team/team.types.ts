@@ -32,7 +32,8 @@ export interface TeamCategoryUpdatePayload {
 
 export interface GetTeamCategoryParams {
     page: number,
-    limit: number
+    limit: number,
+    search: string
 }
 
 export interface TeamCategory {

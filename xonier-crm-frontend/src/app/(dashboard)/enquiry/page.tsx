@@ -183,7 +183,7 @@ const page = (): JSX.Element => {
                           flex items-center gap-2  opacity-80 cursor-not-allowed"><FaPlus className=" transition-all duration-300" />Create New Enquiry</span>}
           </div>
         </div>
-        <div className="w-full rounded-xl overflow-hidden">
+        <div className="w-full rounded-xl overflow-x-auto">
           <table className="w-full rounded-xl text-nowrap overflow-x-scroll">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">

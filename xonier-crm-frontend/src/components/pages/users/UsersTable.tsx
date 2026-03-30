@@ -1,6 +1,6 @@
 import { UserTableComponentProps } from "@/src/types";
 
-import React, { JSX } from "react";
+import React, { JSX ,useRef, useState,useEffect} from "react";
 import { IoIosSearch } from "react-icons/io";
 
 import { MdOutlineEdit, MdDeleteOutline } from "react-icons/md";
@@ -37,14 +37,26 @@ const UsersTable = ({
   totalPage,
   err,
   loading,
-  setCurrentPages
+  setCurrentPages,
+  setSearchFilter
 }: UserTableComponentProps): JSX.Element => {
   const { hasPermission } = usePermissions();
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const [search,  setSearch] = useState<string>("");
 
   const handleLimit = (n:string)=>{
     setPageLimit(Number(n))
     setCurrentPages(1)
   }
+  useEffect(() => {
+     if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      setSearchFilter(search);
+    }, 500);
+    
+  }, [search]);
 
   return (
     <>
@@ -213,7 +225,7 @@ const UsersTable = ({
             </select>
             <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2">
               <IoIosSearch className="text-xl" />
-              <input type="text" placeholder="Search by name" />
+              <input type="text" placeholder="Search by name"  onChange={(e)=>{setSearch(e.target.value)}} className="border-none bg-transparent outline-none text-sm font-medium text-slate-900 dark:text-white w-full"/>
             </div>
             <button
               onClick={() => setIsPopupShow(true)}
