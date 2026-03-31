@@ -28,7 +28,7 @@ import { GoTasklist } from "react-icons/go";
 
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSIONS } from "@/src/constants/enum";
-import { FaRegUser } from "react-icons/fa";
+import { FaRegUser ,FaTasks } from "react-icons/fa";
 import { CiMail } from "react-icons/ci";
 import { IoMailOutline } from "react-icons/io5";
 
@@ -103,6 +103,9 @@ const SideBar = () => {
     if (pathname.startsWith("/message") || pathname.startsWith("/telephone")) {
       setOpenMenu("communication")
     }
+    if (pathname.startsWith("/taskManagement")) {
+      setOpenMenu("task")
+    }
   }, [pathname]);
 
   const toggleMenu = (menu: string) => {
@@ -130,6 +133,8 @@ const SideBar = () => {
         return pathname.startsWith("/templates") || pathname.startsWith("/emailManagement") || pathname.startsWith("/outbox");
       case "communication":
         return pathname.startsWith("/message") || pathname.startsWith("/telephone");
+      case "task":
+        return pathname.startsWith("/taskManagement");
       default:
         return false;
     }
@@ -257,7 +262,7 @@ const SideBar = () => {
               </Link>
             </li>}
 
-            {(hasPermission(PERMISSIONS.readTask)) && <li>
+            {/* {(hasPermission(PERMISSIONS.readTask)) && <li>
               <button
                 onClick={() => toggleMenu("team")}
                 className={`${isMenuActive("team")
@@ -345,7 +350,74 @@ const SideBar = () => {
                   </motion.ul>
                 )}
               </AnimatePresence>
-            </li>}
+            </li>} */}
+            {
+              (hasPermission(PERMISSIONS.taskCategoryRead)) && <li>
+                 <button
+                onClick={() => toggleMenu("task")}
+                className={`${isMenuActive("task")
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
+                  } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+              >
+                <span className="flex items-center gap-3">
+                  <GoTasklist  className="text-lg" />
+                  Task Management
+                </span>
+
+                <IoChevronDown
+                  className={`transition-transform ${openMenu === "task" ? "rotate-180" : ""
+                    }`}
+                />
+              </button>
+              <AnimatePresence>
+                {openMenu === "task" && (
+                  <motion.ul
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.25 }}
+                    className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
+                  >
+                    {hasPermission(PERMISSIONS.taskCategoryRead) && <li>
+                      <Link
+                        href="/taskManagement/tasks"
+                        className={`${isActive("/taskManagement/tasks")
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
+                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                      >
+                        Tasks
+                      </Link>
+                    </li>}
+                    
+                    {hasPermission(PERMISSIONS.taskCategoryRead) && <li>
+                      <Link
+                        href="/taskManagement/taskCategory"
+                        className={`${isActive("/taskManagement/taskCategory")
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
+                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                      >
+                        Task Category
+                      </Link>
+                    </li>}
+                    {hasPermission(PERMISSIONS.taskCategoryRead) && <li>
+                      <Link
+                        href="/taskManagement/taskStatus"
+                        className={`${isActive("/taskManagement/taskStatus")
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
+                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                      >
+                        Task Status
+                      </Link>
+                    </li>}
+                  </motion.ul>
+                )}
+              </AnimatePresence>
+              </li>
+            }
 
             {(hasPermission(PERMISSIONS.readUser) || hasPermission(PERMISSIONS.readRole) || hasPermission(PERMISSIONS.createTeam)) && <li>
               <button

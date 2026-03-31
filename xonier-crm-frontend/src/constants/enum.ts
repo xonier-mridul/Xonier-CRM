@@ -1,4 +1,4 @@
-
+import { ColorOption } from "@/src/types/task/status.types";
 
 export enum PROJECT_TYPES {
   // Core Development
@@ -42,7 +42,7 @@ export enum PROJECT_TYPES {
   // Consulting
   IT_CONSULTING = "it_consulting",
   PRODUCT_CONSULTING = "product_consulting",
-  OTHER="other"
+  OTHER = "other"
 }
 
 
@@ -137,10 +137,10 @@ export enum PERMISSIONS {
   readTeam = "team:read",
   updateTeam = "team:update",
   deleteTeam = "team:delete",
-  createTeamCategory= "team_cat:create",
-  readTeamCategory= "team_cat:read",
-  updateTeamCategory="team_cat:update",
-  deleteTeamCategory="team_cat:delete",
+  createTeamCategory = "team_cat:create",
+  readTeamCategory = "team_cat:read",
+  updateTeamCategory = "team_cat:update",
+  deleteTeamCategory = "team_cat:delete",
   createDeal = "deal:create",
   readDeal = "deal:read",
   updateDeal = "deal:update",
@@ -186,7 +186,11 @@ export enum PERMISSIONS {
   readTask = "task:read",
   updateTask = "task:update",
   deleteTask = "task:delete",
-  assignTask = "task:assign"
+  assignTask = "task:assign",
+  taskCategoryCreate = "taskCategory:create",
+  taskCategoryRead = "taskCategory:read",
+  taskCategoryUpdate = "taskCategory:update",
+  taskCategoryDelete = "taskCategory:delete",
 
 }
 
@@ -1006,4 +1010,22 @@ export enum STATUS_CONFIG {
   CONNECTED = "connected",
   NOT_CONNECTED = "not_connected",
   NOT_REACHED = "not_reached",
+}
+
+export const COLOR_OPTIONS: ColorOption[] = [
+  { label: "White", bg: "bg-white", text: "text-black", hex: "#ffffff" },
+  { label: "Slate", bg: "bg-slate-100", text: "text-slate-700", hex: "#64748b" },
+  { label: "Blue", bg: "bg-blue-100", text: "text-blue-700", hex: "#3b82f6" },
+  { label: "Violet", bg: "bg-violet-100", text: "text-violet-700", hex: "#8b5cf6" },
+  { label: "Emerald", bg: "bg-emerald-100", text: "text-emerald-700", hex: "#10b981" },
+  { label: "Amber", bg: "bg-amber-100", text: "text-amber-700", hex: "#f59e0b" },
+  { label: "Rose", bg: "bg-rose-100", text: "text-rose-700", hex: "#f43f5e" },
+  { label: "Cyan", bg: "bg-cyan-100", text: "text-cyan-700", hex: "#06b6d4" },
+  { label: "Orange", bg: "bg-orange-100", text: "text-orange-700", hex: "#f97316" },
+];
+
+export enum TASK_VISIBILITY {
+  GLOBAL = "global",
+  TEAM = "team",
+  PERSONAL = "personal",
 }
