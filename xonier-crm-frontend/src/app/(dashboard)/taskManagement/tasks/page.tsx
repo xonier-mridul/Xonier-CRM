@@ -8,6 +8,7 @@ import { usePermissions } from "@/src/hooks/usePermissions";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import { TaskService } from "@/src/services/tasks.service";
 import { StatusService } from "@/src/services/status.service";
+import { ColorOption } from "@/src/types/task/status.types";
 import {
   TaskItem,
   TaskPermissions,
@@ -15,27 +16,51 @@ import {
   UpdateTaskStatusPayload,
   StatusOption,
 } from "@/src/types/task/task.types";
+import { COLOR_OPTIONS } from "@/src/constants/enum";
+import { get } from "http";
 
 // ── Priority display ──────────────────────────────────────────────────────────
 const PRIORITY_STYLE: Record<TASK_PRIORITY, { cls: string; dot: string; label: string }> = {
-  [TASK_PRIORITY.LOW]:    { cls: "bg-slate-100  text-slate-600  dark:bg-slate-800  dark:text-slate-400",  dot: "bg-slate-400",  label: "Low"    },
-  [TASK_PRIORITY.MEDIUM]: { cls: "bg-amber-50   text-amber-600  dark:bg-amber-900/30 dark:text-amber-400",  dot: "bg-amber-400",  label: "Medium" },
-  [TASK_PRIORITY.HIGH]:   { cls: "bg-orange-50  text-orange-600 dark:bg-orange-900/30 dark:text-orange-400", dot: "bg-orange-500", label: "High"   },
-  [TASK_PRIORITY.URGENT]: { cls: "bg-rose-50    text-rose-600   dark:bg-rose-900/30 dark:text-rose-400",   dot: "bg-rose-500",   label: "Urgent" },
+  [TASK_PRIORITY.LOW]: { cls: "bg-slate-100  text-slate-600  dark:bg-slate-800  dark:text-slate-400", dot: "bg-slate-400", label: "Low" },
+  [TASK_PRIORITY.MEDIUM]: { cls: "bg-amber-50   text-amber-600  dark:bg-amber-900/30 dark:text-amber-400", dot: "bg-amber-400", label: "Medium" },
+  [TASK_PRIORITY.HIGH]: { cls: "bg-orange-50  text-orange-600 dark:bg-orange-900/30 dark:text-orange-400", dot: "bg-orange-500", label: "High" },
+  [TASK_PRIORITY.URGENT]: { cls: "bg-rose-50    text-rose-600   dark:bg-rose-900/30 dark:text-rose-400", dot: "bg-rose-500", label: "Urgent" },
+};
+// ── CategoryBadge ─────────────────────────────────────────────────────────────
+function CategoryBadge({
+    color,
+    icon,
+    name,
+}: {
+    color: ColorOption;
+    icon: string;
+    name: string;
+}) {
+    return (
+        <span
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${color.bg} ${color.text}`}
+        >
+            <span>{icon}</span>
+            {name}
+        </span>
+    );
+}
+const getColorOption = (hex: string | null): ColorOption => {
+    return COLOR_OPTIONS.find(c => c.hex === hex) ?? COLOR_OPTIONS[0];
 };
 
 // ── Inline Status Dropdown ────────────────────────────────────────────────────
 interface StatusDropdownProps {
-  task:          TaskItem;
+  task: TaskItem;
   statusOptions: StatusOption[];
-  onChange:      (taskId: string, payload: UpdateTaskStatusPayload) => Promise<void>;
-  disabled:      boolean;
+  onChange: (taskId: string, payload: UpdateTaskStatusPayload) => Promise<void>;
+  disabled: boolean;
 }
 
 function StatusDropdown({ task, statusOptions, onChange, disabled }: StatusDropdownProps) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-  const ref             = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -61,17 +86,16 @@ function StatusDropdown({ task, statusOptions, onChange, disabled }: StatusDropd
         type="button"
         disabled={disabled || busy}
         onClick={() => !disabled && !busy && setOpen(p => !p)}
-        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all select-none ${
-          disabled || busy ? "opacity-60 cursor-default" : "cursor-pointer hover:shadow-sm hover:scale-105"
-        }`}
+        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all select-none ${disabled || busy ? "opacity-60 cursor-default" : "cursor-pointer hover:shadow-sm hover:scale-105"
+          }`}
         style={{
           backgroundColor: current?.color ? `${current.color}15` : "#f1f5f9",
-          color:           current?.color ?? "#64748b",
-          borderColor:     current?.color ? `${current.color}35` : "#e2e8f0",
+          color: current?.color ?? "#64748b",
+          borderColor: current?.color ? `${current.color}35` : "#e2e8f0",
         }}
       >
         {busy
-          ? <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+          ? <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" /></svg>
           : <span className="text-xs">{current?.icon ?? "📌"}</span>
         }
         <span>{current?.name ?? task.statusName ?? "—"}</span>
@@ -87,9 +111,8 @@ function StatusDropdown({ task, statusOptions, onChange, disabled }: StatusDropd
             <button
               key={s.id} type="button"
               onClick={() => handleSelect(s.id)}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                s.id === task.status ? "bg-gray-50 dark:bg-gray-700" : ""
-              }`}
+              className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 ${s.id === task.status ? "bg-gray-50 dark:bg-gray-700" : ""
+                }`}
             >
               <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
               <span>{s.icon}</span>
@@ -118,25 +141,25 @@ function SkeletonRow({ cols }: { cols: number }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 const TaskListPage = (): JSX.Element => {
-  const router            = useRouter();
+  const router = useRouter();
   const { hasPermission } = usePermissions();
 
-  const [taskData, setTaskData]         = useState<TaskItem[]>([]);
+  const [taskData, setTaskData] = useState<TaskItem[]>([]);
   const [statusOptions, setStatusOptions] = useState<StatusOption[]>([]);
-  const [currentPage, setCurrentPage]   = useState(1);
-  const [pageLimit]                     = useState(10);
-  const [totalCount, setTotalCount]     = useState(0);
-  const [isLoading, setIsLoading]       = useState(false);
-  const [deleting, setDeleting]         = useState(false);
-  const [search, setSearch]             = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageLimit] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterPriority, setFilterPriority] = useState("");
 
-  const canCreate       = hasPermission(TaskPermissions.CREATE_TASK);
-  const canEdit         = hasPermission(TaskPermissions.EDIT_TASK);
-  const canDelete       = hasPermission(TaskPermissions.DELETE_TASK);
+  const canCreate = hasPermission(TaskPermissions.CREATE_TASK);
+  const canEdit = hasPermission(TaskPermissions.EDIT_TASK);
+  const canDelete = hasPermission(TaskPermissions.DELETE_TASK);
   const canChangeStatus = hasPermission(TaskPermissions.UPDATE_TASK_STATUS);
-  const showActions     = canEdit || canDelete;
+  const showActions = canEdit || canDelete;
 
   // ── Fetch tasks ───────────────────────────────────────────────────────────
   const fetchTasks = useCallback(async () => {
@@ -145,13 +168,13 @@ const TaskListPage = (): JSX.Element => {
       const res = await TaskService.getAll({
         currentPage,
         pageLimit,
-        status:   filterStatus   || undefined,
+        status: filterStatus || undefined,
         priority: filterPriority || undefined,
-        search:   search         || undefined,
+        search: search || undefined,
       });
       if (res.status === 200) {
         const d = res.data.data;
-        setTaskData(d.data   ?? []);
+        setTaskData(d.data ?? []);
         setTotalCount(Number(d.total ?? 0));
       }
     } catch (e) {
@@ -194,12 +217,12 @@ const TaskListPage = (): JSX.Element => {
           prev.map(t =>
             t.id === taskId
               ? {
-                  ...t,
-                  status:     payload.status,
-                  statusName: statusOptions.find(s => s.id === payload.status)?.name ?? t.statusName,
-                  statusColor: statusOptions.find(s => s.id === payload.status)?.color ?? t.statusColor,
-                  statusIcon: statusOptions.find(s => s.id === payload.status)?.icon ?? t.statusIcon,
-                }
+                ...t,
+                status: payload.status,
+                statusName: statusOptions.find(s => s.id === payload.status)?.name ?? t.statusName,
+                statusColor: statusOptions.find(s => s.id === payload.status)?.color ?? t.statusColor,
+                statusIcon: statusOptions.find(s => s.id === payload.status)?.icon ?? t.statusIcon,
+              }
               : t
           )
         );
@@ -215,8 +238,8 @@ const TaskListPage = (): JSX.Element => {
     setDeleting(true);
     try {
       const confirmed = await ConfirmPopup({
-        title:  "Delete Task?",
-        text:   "This cannot be undone.",
+        title: "Delete Task?",
+        text: "This cannot be undone.",
         btnTxt: "Yes, Delete",
       });
       if (confirmed) {
@@ -235,9 +258,9 @@ const TaskListPage = (): JSX.Element => {
     }
   };
 
-  const totalPages   = Math.ceil(totalCount / pageLimit);
-  const hasFilters   = !!(search || filterStatus || filterPriority);
-  const colCount     = showActions ? 7 : 6;
+  const totalPages = Math.ceil(totalCount / pageLimit);
+  const hasFilters = !!(search || filterStatus || filterPriority);
+  const colCount = showActions ? 7 : 6;
 
   return (
     <div className="ml-72 mt-14 p-6 min-h-screen border-red-200 rounded-2xl bg-gray-100 dark:bg-gray-900">
@@ -269,10 +292,10 @@ const TaskListPage = (): JSX.Element => {
       {/* Stats Row */}
       <div className="grid grid-cols-4 gap-4 mb-7">
         {[
-          { label: "Total",    value: totalCount,                                                    icon: "📋", bg: "bg-blue-50   border-blue-100"    },
-          { label: "Urgent",   value: taskData.filter(t => t.priority === TASK_PRIORITY.URGENT).length, icon: "🔴", bg: "bg-rose-50   border-rose-100"    },
-          { label: "High",     value: taskData.filter(t => t.priority === TASK_PRIORITY.HIGH).length,   icon: "🟠", bg: "bg-orange-50 border-orange-100"  },
-          { label: "This Page",value: taskData.length,                                               icon: "📄", bg: "bg-emerald-50 border-emerald-100" },
+          { label: "Total", value: totalCount, icon: "📋", bg: "bg-blue-50   border-blue-100" },
+          { label: "Urgent", value: taskData.filter(t => t.priority === TASK_PRIORITY.URGENT).length, icon: "🔴", bg: "bg-rose-50   border-rose-100" },
+          { label: "High", value: taskData.filter(t => t.priority === TASK_PRIORITY.HIGH).length, icon: "🟠", bg: "bg-orange-50 border-orange-100" },
+          { label: "This Page", value: taskData.length, icon: "📄", bg: "bg-emerald-50 border-emerald-100" },
         ].map(s => (
           <div key={s.label} className={`flex items-center gap-3 p-4 rounded-2xl border ${s.bg}`}>
             <span className="text-xl">{s.icon}</span>
@@ -338,12 +361,13 @@ const TaskListPage = (): JSX.Element => {
           <thead>
             <tr className="bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
               {[
-                { label: "#",          cls: "w-12"   },
-                { label: "Title",      cls: ""        },
-                { label: "Status",     cls: "w-36"   },
-                { label: "Priority",   cls: "w-28"   },
-                { label: "Assigned",   cls: "w-28"   },
-                { label: "Due Date",   cls: "w-28"   },
+                { label: "#", cls: "w-12" },
+                { label: "Title", cls: "" },
+                { label: "Category", cls: "w-36" },
+                { label: "Status", cls: "w-36" },
+                { label: "Priority", cls: "w-28" },
+                { label: "Assigned", cls: "w-28" },
+                { label: "Due Date", cls: "w-28" },
                 ...(showActions ? [{ label: "Actions", cls: "w-28 text-right" }] : []),
               ].map(col => (
                 <th
@@ -416,6 +440,14 @@ const TaskListPage = (): JSX.Element => {
                           )}
                         </div>
                       )}
+                    </td>
+                    {/* Category badge */}
+                    <td className="px-5 py-4">
+                      <CategoryBadge
+                        color={getColorOption(task.category.color||null)}
+                        icon={task.category.icon||'❓'}
+                        name={task.category.name}
+                      />
                     </td>
 
                     {/* Status — inline dropdown */}

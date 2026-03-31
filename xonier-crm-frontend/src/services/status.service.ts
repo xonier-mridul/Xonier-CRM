@@ -6,5 +6,7 @@ export const StatusService = {
     getAllWithoutPagination: ()=> api.get("/status/all/active/without-pagination"),
     update: (id: string,payload:StatusPayload)=>api.put(`/task-status/update/${id}`,payload),
     create: (data: StatusPayload)=> api.post("/task-status/create", data),
-    delete: (id: string)=> api.delete(`/task-status/delete/${id}`)
+    delete: (id: string)=> api.delete(`/task-status/delete/${id}`),
+    getById: (id: string)=> api.get(`/task-status/by-category/${id}`)
+
 }

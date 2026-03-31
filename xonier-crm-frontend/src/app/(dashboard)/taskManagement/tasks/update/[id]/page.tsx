@@ -6,6 +6,8 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { TaskService } from "@/src/services/tasks.service";
+import { CategoryService } from "@/src/services/category.service";
+import { StatusService } from "@/src/services/status.service";
 import {
   UpdateTaskPayload,
   TASK_PRIORITY,
@@ -13,14 +15,18 @@ import {
   RECURRENCE_TYPE,
   TaskPermissions,
   TaskItem,
+  CategoryOption,
+  StatusOption,
+  UserOption,
 } from "@/src/types/task/task.types";
+import { CategoryItem } from "@/src/types/task/category.types";
 
 // ── Priority config ───────────────────────────────────────────────────────────
 const PRIORITY_CFG: Record<TASK_PRIORITY, { label: string; bg: string; text: string; border: string; dot: string }> = {
-  [TASK_PRIORITY.LOW]:    { label: "Low",    bg: "bg-slate-50",  text: "text-slate-600",  border: "border-slate-200",  dot: "bg-slate-400"  },
-  [TASK_PRIORITY.MEDIUM]: { label: "Medium", bg: "bg-amber-50",  text: "text-amber-600",  border: "border-amber-200",  dot: "bg-amber-400"  },
-  [TASK_PRIORITY.HIGH]:   { label: "High",   bg: "bg-orange-50", text: "text-orange-600", border: "border-orange-200", dot: "bg-orange-500" },
-  [TASK_PRIORITY.URGENT]: { label: "Urgent", bg: "bg-rose-50",   text: "text-rose-600",   border: "border-rose-200",   dot: "bg-rose-500"   },
+  [TASK_PRIORITY.LOW]: { label: "Low", bg: "bg-slate-50", text: "text-slate-600", border: "border-slate-200", dot: "bg-slate-400" },
+  [TASK_PRIORITY.MEDIUM]: { label: "Medium", bg: "bg-amber-50", text: "text-amber-600", border: "border-amber-200", dot: "bg-amber-400" },
+  [TASK_PRIORITY.HIGH]: { label: "High", bg: "bg-orange-50", text: "text-orange-600", border: "border-orange-200", dot: "bg-orange-500" },
+  [TASK_PRIORITY.URGENT]: { label: "Urgent", bg: "bg-rose-50", text: "text-rose-600", border: "border-rose-200", dot: "bg-rose-500" },
 };
 
 const inputCls =
@@ -34,7 +40,7 @@ function Section({ icon, title, children }: { icon: string; title: string; child
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-50 dark:border-gray-700 flex items-center gap-2">
-        <span>{icon}</span>
+        <span className="text-base">{icon}</span>
         <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-widest">{title}</h3>
       </div>
       <div className="p-6 space-y-5">{children}</div>
@@ -43,9 +49,9 @@ function Section({ icon, title, children }: { icon: string; title: string; child
 }
 
 function Field({ label, required, hint, children }: {
-  label:    string;
+  label: string;
   required?: boolean;
-  hint?:    string;
+  hint?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -70,33 +76,42 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 const UpdateTaskPage = (): JSX.Element => {
-  const router            = useRouter();
-  const params            = useParams();
-  const taskId            = params?.id as string;
+  const router = useRouter();
+  const params = useParams();
+  const taskId = params?.id as string;
   const { hasPermission } = usePermissions();
 
   const [isFetching, setIsFetching] = useState(true);
-  const [isLoading, setIsLoading]   = useState(false);
-  const [err, setErr]               = useState<string | null>(null);
-  const [original, setOriginal]     = useState<TaskItem | null>(null);
-  const [tagInput, setTagInput]     = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [original, setOriginal] = useState<TaskItem | null>(null);
+  const [tagInput, setTagInput] = useState("");
+
+  // ── Lookup state (mirrors CreateTaskPage) ─────────────────────────────────
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [statuses, setStatuses] = useState<StatusOption[]>([]);
+  const [users, setUsers] = useState<UserOption[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<StatusOption[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
+  const [statusSelect, setStatusSelect] = useState("");
 
   const [form, setForm] = useState<UpdateTaskPayload>({
-    title:            "",
-    description:      "",
-    priority:         TASK_PRIORITY.MEDIUM,
-    dueDate:          "",
-    startDate:        "",
-    estimatedHours:   undefined,
-    actualHours:      undefined,
-    isRecurring:      false,
-    recurrenceType:   undefined,
+    title: "",
+    description: "",
+    priority: TASK_PRIORITY.MEDIUM,
+    dueDate: undefined,
+    startDate: "",
+    estimatedHours: undefined,
+    actualHours: undefined,
+    isRecurring: false,
+    recurrenceType: undefined,
     recurrenceEndsAt: "",
-    tags:             [],
-    attachments:      [],
-    entityType:       undefined,
-    entityId:         "",
-    entityName:       "",
+    tags: [],
+    attachments: [],
+    entityType: undefined,
+    entityId: "",
+    entityName: "",
+    assignedTo: [],
   });
 
   const set = <K extends keyof UpdateTaskPayload>(k: K, v: UpdateTaskPayload[K]) =>
@@ -112,22 +127,24 @@ const UpdateTaskPage = (): JSX.Element => {
         if (res.status === 200) {
           const t = res.data.data;
           setOriginal(t);
+          setSelectedCategory(t.category.id ?? undefined);
           setForm({
-            title:            t.title,
-            description:      t.description   ?? "",
-            priority:         t.priority,
-            dueDate:          t.dueDate        ?? "",
-            startDate:        t.startDate      ?? "",
-            estimatedHours:   t.estimatedHours,
-            actualHours:      t.actualHours,
-            isRecurring:      t.isRecurring,
-            recurrenceType:   t.recurrenceType,
-            recurrenceEndsAt: t.recurrenceEndsAt ?? "",
-            tags:             t.tags        ?? [],
-            attachments:      t.attachments ?? [],
-            entityType:       t.entityType,
-            entityId:         t.entityId   ?? "",
-            entityName:       t.entityName ?? "",
+            title: t.title,
+            description: t.description ?? "",
+            priority: t.priority,
+            dueDate: t.dueDate ?? undefined,
+            startDate: t.startDate ?? undefined,
+            estimatedHours: t.estimatedHours,
+            actualHours: t.actualHours,
+            isRecurring: t.isRecurring,
+            recurrenceType: t.recurrenceType,
+            recurrenceEndsAt: t.recurrenceEndsAt ?? undefined,
+            tags: t.tags ?? [],
+            attachments: t.attachments ?? [],
+            entityType: t.entityType,
+            entityId: t.entityId ?? "",
+            entityName: t.entityName ?? "",
+            assignedTo: t.assignedTo?.map((u: { id: string }) => u.id) ?? [],
           });
         }
       } catch (e) {
@@ -140,6 +157,37 @@ const UpdateTaskPage = (): JSX.Element => {
     })();
   }, [taskId]);
 
+  // ── Load categories ───────────────────────────────────────────────────────
+  useEffect(() => {
+    (async () => {
+      try {
+        const catRes = await CategoryService.getAll({ currentPage: 1, pageLimit: 100, search: "" });
+        if (catRes.status === 200) setCategories(catRes.data.data.data ?? []);
+      } catch (e) {
+        process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
+      }
+    })();
+  }, []);
+
+  // ── Load statuses when category changes ───────────────────────────────────
+  useEffect(() => {
+    (async () => {
+      try {
+        if (!selectedCategory) return;
+        const statusRes = await StatusService.getById(selectedCategory);
+        if (statusRes.status === 200) setStatuses(statusRes.data.data ?? []);
+      } catch (e) {
+        process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
+      }
+    })();
+  }, [selectedCategory]);
+
+  // ── Reset status selections on category change ────────────────────────────
+  useEffect(() => {
+    setSelectedStatuses([]);
+    setStatusSelect("");
+  }, [selectedCategory]);
+
   // ── Tag helpers ───────────────────────────────────────────────────────────
   const addTag = () => {
     const t = tagInput.trim();
@@ -147,6 +195,15 @@ const UpdateTaskPage = (): JSX.Element => {
     setTagInput("");
   };
   const removeTag = (t: string) => set("tags", form.tags?.filter(x => x !== t) ?? []);
+
+  // ── Assignee helpers ──────────────────────────────────────────────────────
+  const toggleAssignee = (id: string) =>
+    set(
+      "assignedTo",
+      (form.assignedTo ?? []).includes(id)
+        ? (form.assignedTo ?? []).filter(x => x !== id)
+        : [...(form.assignedTo ?? []), id],
+    );
 
   // ── Submit ────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
@@ -162,7 +219,7 @@ const UpdateTaskPage = (): JSX.Element => {
       const res = await TaskService.update(taskId, form);
       if (res.status === 200) {
         toast.success("Task updated successfully");
-        router.push("/tasks");
+        router.push("/taskManagement/tasks");
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
@@ -184,8 +241,8 @@ const UpdateTaskPage = (): JSX.Element => {
       <div className="ml-72 mt-14 p-6 min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <svg className="animate-spin h-10 w-10 text-blue-500" viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
           </svg>
           <p className="text-sm text-gray-400 dark:text-gray-500 font-medium">Loading task…</p>
         </div>
@@ -194,7 +251,7 @@ const UpdateTaskPage = (): JSX.Element => {
   }
 
   return (
-    <div className="ml-72 mt-14 p-6 min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="ml-72 mt-14 p-6 min-h-screen bg-gray-100 rounded-2xl dark:bg-gray-900">
 
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
@@ -214,12 +271,6 @@ const UpdateTaskPage = (): JSX.Element => {
             </p>
           )}
         </div>
-        <button
-          onClick={() => router.back()}
-          className="px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 transition"
-        >
-          ← Back
-        </button>
       </div>
 
       {/* Error */}
@@ -253,6 +304,22 @@ const UpdateTaskPage = (): JSX.Element => {
                 className={`${inputCls} resize-none`}
               />
             </Field>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Category">
+                <select
+                  value={selectedCategory ?? ""}
+                  onChange={e => {
+                    setSelectedCategory(e.target.value || undefined);
+                  }}
+                  className={selectCls}
+                >
+                  <option value="">Select category…</option>
+                  {categories.map(c => (
+                    <option key={c.id} value={c.id}>{c.icon} &nbsp; {c.name}</option>
+                  ))}
+                </select>
+              </Field>
+            </div>
           </Section>
 
           {/* Scheduling */}
@@ -286,16 +353,14 @@ const UpdateTaskPage = (): JSX.Element => {
 
             {/* Recurring */}
             <div
-              className={`flex items-start gap-3 p-4 rounded-xl border transition-colors cursor-pointer ${
-                form.isRecurring
+              className={`flex items-start gap-3 p-4 rounded-xl border transition-colors cursor-pointer ${form.isRecurring
                   ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700"
                   : "bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-700"
-              }`}
+                }`}
               onClick={() => { set("isRecurring", !form.isRecurring); if (form.isRecurring) set("recurrenceType", undefined); }}
             >
-              <div className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
-                form.isRecurring ? "bg-blue-600 border-blue-600" : "border-gray-300 dark:border-gray-500"
-              }`}>
+              <div className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${form.isRecurring ? "bg-blue-600 border-blue-600" : "border-gray-300 dark:border-gray-500"
+                }`}>
                 {form.isRecurring && <span className="text-white text-xs font-bold">✓</span>}
               </div>
               <div>
@@ -319,7 +384,13 @@ const UpdateTaskPage = (): JSX.Element => {
                   </select>
                 </Field>
                 <Field label="Ends At">
-                  <input type="date" value={form.recurrenceEndsAt ?? ""} onChange={e => set("recurrenceEndsAt", e.target.value)} className={inputCls} />
+                  <input
+                    type="date"
+                    value={form.recurrenceEndsAt ?? ""}
+                    onChange={e => set("recurrenceEndsAt", e.target.value)}
+                    className={inputCls}
+                    disabled={!form.isRecurring}
+                  />
                 </Field>
               </div>
             )}
@@ -369,7 +440,7 @@ const UpdateTaskPage = (): JSX.Element => {
                 {form.tags?.map(tag => (
                   <span key={tag} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-700">
                     #{tag}
-                    <button type="button" onClick={() => removeTag(tag)} className="text-blue-400 hover:text-blue-700 transition leading-none">×</button>
+                    <button type="button" onClick={() => removeTag(tag)} className="text-blue-400 hover:text-blue-700 dark:hover:text-blue-200 transition leading-none">×</button>
                   </span>
                 ))}
               </div>
@@ -384,13 +455,12 @@ const UpdateTaskPage = (): JSX.Element => {
           <Section icon="🎯" title="Priority">
             <div className="grid grid-cols-2 gap-2">
               {Object.values(TASK_PRIORITY).map(p => {
-                const cfg    = PRIORITY_CFG[p];
+                const cfg = PRIORITY_CFG[p];
                 const active = form.priority === p;
                 return (
                   <button key={p} type="button" onClick={() => set("priority", p)}
-                    className={`flex items-center gap-2 px-3 py-3 rounded-xl border-2 text-xs font-bold transition-all ${
-                      active ? `${cfg.bg} ${cfg.text} ${cfg.border} shadow-sm` : "border-gray-100 dark:border-gray-700 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:border-gray-200"
-                    }`}>
+                    className={`flex items-center gap-2 px-3 py-3 rounded-xl border-2 text-xs font-bold transition-all ${active ? `${cfg.bg} ${cfg.text} ${cfg.border} shadow-sm` : "border-gray-100 dark:border-gray-700 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:border-gray-200"
+                      }`}>
                     <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${active ? cfg.dot : "bg-gray-300 dark:bg-gray-600"}`} />
                     {cfg.label}
                   </button>
@@ -399,17 +469,63 @@ const UpdateTaskPage = (): JSX.Element => {
             </div>
           </Section>
 
+          {/* Assign To */}
+          <Section icon="👥" title="Assign To">
+            {users.length === 0 ? (
+              <div className="text-center py-6">
+                <div className="text-3xl mb-2">👤</div>
+                <p className="text-xs text-gray-400 dark:text-gray-500">No users available</p>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                {users.map(u => {
+                  const checked = (form.assignedTo ?? []).includes(u.id);
+                  return (
+                    <label
+                      key={u.id}
+                      className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${checked
+                          ? "border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20"
+                          : "border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+                        }`}
+                    >
+                      <input
+                        type="checkbox" checked={checked}
+                        onChange={() => toggleAssignee(u.id)}
+                        className="w-4 h-4 accent-blue-600 shrink-0"
+                      />
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                        {u.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold text-gray-800 dark:text-white truncate">{u.name}</p>
+                        <p className="text-[10px] text-gray-400 truncate">{u.email}</p>
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+            )}
+            {(form.assignedTo?.length ?? 0) > 0 && (
+              <p className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+                ✓ {form.assignedTo!.length} user{form.assignedTo!.length > 1 ? "s" : ""} selected
+              </p>
+            )}
+          </Section>
+
           {/* Task info (read-only) */}
           {original && (
             <Section icon="ℹ️" title="Task Info">
               <div>
-                <InfoRow label="Category" value={original.categoryName ?? original.category} />
-                <InfoRow label="Status" value={
-                  <span className="inline-flex items-center gap-1">
-                    {original.statusIcon && <span>{original.statusIcon}</span>}
-                    {original.statusName ?? original.status}
-                  </span>
-                } />
+                <InfoRow label="Category" value={original.categoryName ?? original.category?.name} />
+                <InfoRow
+                  label="Status"
+                  value={
+                    <span className="inline-flex items-center gap-1">
+                      {original.statusIcon && <span>{original.statusIcon}</span>}
+                      {original.statusName ?? original.status?.name ?? "-"}
+                    </span>
+                  }
+                />
                 <InfoRow label="Created" value={new Date(original.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })} />
                 <InfoRow label="Updated" value={new Date(original.updatedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })} />
                 {original.assignedTo.length > 0 && (
@@ -431,29 +547,116 @@ const UpdateTaskPage = (): JSX.Element => {
             </Section>
           )}
 
-          {/* Actions */}
-          <div className="space-y-3">
-            {canEdit ? (
-              <button
-                type="button" disabled={isLoading} onClick={handleSubmit}
-                className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.98] transition-all shadow-lg shadow-blue-200 dark:shadow-blue-900/40 disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {isLoading
-                  ? <><svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg> Saving…</>
-                  : "✓ Save Changes"
-                }
-              </button>
-            ) : (
-              <div className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 text-center text-xs text-gray-400 font-medium">
-                No permission to edit tasks
+          {/* Status Order */}
+          <Section icon="🔢" title="Status Order">
+            <Field label="Status">
+              <div className="space-y-2">
+                <select
+                  value={statusSelect}
+                  onChange={e => {
+                    const value = e.target.value;
+                    setStatusSelect(value);
+
+                    const selected = statuses.find(s => s._id === value);
+                    if (!selected) return;
+
+                    if (selectedStatuses.some(s => s._id === selected._id)) {
+                      setStatusSelect("");
+                      return;
+                    }
+
+                    setSelectedStatuses(prev => [...prev, selected]);
+                    setStatusSelect("");
+                  }}
+                  className={inputCls}
+                >
+                  <option value="">Select status...</option>
+                  {statuses.length > 0 ? (
+                    statuses.map(s => (
+                      <option key={s._id} value={s._id}>
+                        {s.icon || "📌"} {s.name}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="" disabled>No status available</option>
+                  )}
+                </select>
+
+                {selectedStatuses.length === 0 && (
+                  <div className="text-xs text-gray-400 dark:text-gray-500 px-2 py-2">
+                    No status selected
+                  </div>
+                )}
+
+                {selectedStatuses.map((s, index) => (
+                  <div
+                    key={s._id}
+                    draggable
+                    onDragStart={e => e.dataTransfer.setData("index", String(index))}
+                    onDragOver={e => e.preventDefault()}
+                    onDrop={e => {
+                      const fromIndex = Number(e.dataTransfer.getData("index"));
+                      const toIndex = index;
+                      const updated = [...selectedStatuses];
+                      const [moved] = updated.splice(fromIndex, 1);
+                      updated.splice(toIndex, 0, moved);
+                      setSelectedStatuses(updated);
+                    }}
+                    className="flex items-center justify-between px-3 py-2 rounded-lg border bg-gray-50 dark:bg-gray-800 cursor-move"
+                  >
+                    <span className="text-sm font-medium flex items-center gap-2">
+                      {s.icon || "📌"} {s.name}
+                    </span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-gray-400">#{index + 1}</span>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedStatuses(prev => prev.filter(item => item._id !== s._id))}
+                        className="text-gray-400 hover:text-red-500 text-sm font-bold transition"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
-            <button type="button" onClick={() => router.back()}
-              className="w-full px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-              Cancel
-            </button>
-          </div>
+            </Field>
+          </Section>
+
         </div>
+      </div>
+
+      {/* ── Bottom Actions (mirrors CreateTaskPage) ───────────────────────────── */}
+      <div className="flex justify-end gap-3 w-full m-4">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="w-[200px] px-5 py-3 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+        >
+          Cancel
+        </button>
+        {canEdit ? (
+          <button
+            type="button" disabled={isLoading} onClick={handleSubmit}
+            className="w-[200px] flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.98] transition-all shadow-lg shadow-blue-200 dark:shadow-blue-900/40 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isLoading ? (
+              <>
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+                Saving…
+              </>
+            ) : (
+              "✓ Save Changes"
+            )}
+          </button>
+        ) : (
+          <div className="w-[200px] px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 text-center text-xs text-gray-400 font-medium">
+            No permission to edit tasks
+          </div>
+        )}
       </div>
     </div>
   );
