@@ -11,7 +11,7 @@ class CreateTaskStatusSchema(BaseModel):
     order: Optional[int] = 0
     type: TASK_STATUS_TYPE = TASK_STATUS_TYPE.NOT_STARTED
     isFinal: bool = False
-    isDefault: bool = False
+    
     isActive: bool = True
  
     @field_validator("name")
@@ -73,5 +73,7 @@ class ReorderTaskStatusSchema(BaseModel):
             if "id" not in item or "order" not in item:
                 raise AppException(422, "Each status must have 'id' and 'order' fields")
         return value
+    
+    
  
  

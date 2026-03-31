@@ -88,7 +88,8 @@ class AuthController:
             user_agent = request.headers.get("user-agent")
             result = await self.service.verify_login_otp(data=data, ip=ip, agent=user_agent)
 
-            access_token_expiry = int(self.settings.ACCESS_TOKEN_EXPIRY) * 24 * 60 * 60
+            # access_token_expiry = int(self.settings.ACCESS_TOKEN_EXPIRY) * 24 * 60 * 60
+            access_token_expiry = int(self.settings.ACCESS_TOKEN_EXPIRY) * 60
             refresh_token_expiry = int(self.settings.REFRESH_TOKEN_EXPIRY) * 24 * 60 * 60
 
             
