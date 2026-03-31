@@ -43,6 +43,7 @@ from app.routes.email_template_route import router as email_template_route
 from app.routes.communication.email_route import router as email_router
 from app.routes.dashboard_router import router as dashboard_route
 from app.routes.task_category_route import router as task_category_route
+from app.routes.task_status_route import router as task_status_route
 
 settings = get_setting()
 
@@ -123,6 +124,7 @@ app.include_router(email_template_route, prefix="/api/email-template")
 app.include_router(email_router)
 app.include_router(dashboard_route)
 app.include_router(task_category_route, prefix="/api/task-category")
+app.include_router(task_status_route, prefix="/api/task-status")
 
 
 app.add_exception_handler(HTTPException, http_exception_handler)

@@ -113,7 +113,13 @@ class TaskStatusService:
                 query["isFinal"] = str(filters["isFinal"]).lower() == "true"
  
             if "search" in filters and filters["search"].strip():
-                query["name"] = {"$regex": filters["search"].strip(), "$options": "i"}
+                regex_data = {"$regex": filters["search"].strip(), "$options": "i"}
+                query.update({"$or": [
+                    {"name": regex_data},
+                    {"slug": regex_data},
+                    {"category.name": regex_data},
+                    {"order": regex_data}
+                ]})
  
             result = await self.repo.get_all(
                 page=page,

@@ -585,6 +585,35 @@ PERMISSIONS = [
         "title": "delete task category",
         "description": "permission for delete task category data",
     },
+    {
+        "code": "taskStatus:create",
+        "module": "taskStatus",
+        "action": "create",
+        "title": "create task status",
+        "description": "permission for create task status data",
+    },
+    {
+        "code": "taskStatus:read",
+        "module": "taskStatus",
+        "action": "read",
+        "title": "read task status",
+        "description": "permission for read task status data",
+    },
+    {
+        "code": "taskStatus:update",
+        "module": "taskStatus",
+        "action": "update",
+        "title": "update task status",
+        "description": "permission for update task status data",
+    },
+    {
+        "code": "taskStatus:delete",
+        "module": "taskStatus",
+        "action": "delete",
+        "title": "delete task status",
+        "description": "permission for delete task status data",
+    },
+    
 
     
 ]
