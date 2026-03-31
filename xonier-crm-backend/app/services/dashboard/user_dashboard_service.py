@@ -17,6 +17,7 @@ from app.db import db as database_module
 import asyncio
 
 
+
 class UserDashboardService:
 
     def __init__(self):
@@ -223,7 +224,7 @@ class UserDashboardService:
 
         result = await self._aggregate(UserModel, pipeline)
 
-        print("res: ", result)
+        
 
         return result[0] if result else None
 

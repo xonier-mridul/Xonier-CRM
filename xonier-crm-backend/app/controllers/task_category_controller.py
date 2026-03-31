@@ -33,6 +33,20 @@ class TaskCategoryController:
  
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+        
+
+    async def get_all_task_categories_without_pagination(self, request: Request):
+        try:
+            user = request.state.user
+            filters = dict(request.query_params)
+            result = await self.service.get_all_task_categories(filters, user)
+            return successResponse(200, "Task categories fetched successfully", result)
+ 
+        except AppException as e:
+            raise e
+ 
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
  
     async def get_task_category_by_id(self, request: Request, category_id: str):
         try:

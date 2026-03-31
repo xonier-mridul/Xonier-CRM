@@ -134,8 +134,6 @@ class NoteService:
                 sort=["-createdAt"]
             )
 
-            print("res: ", result)
-
             if not result:
                 raise AppException(404, "Notes data not found")
             
