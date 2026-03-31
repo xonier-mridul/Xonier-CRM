@@ -78,6 +78,9 @@ const CreateTaskPage = (): JSX.Element => {
     const [users, setUsers] = useState<UserOption[]>([]);
     const [tagInput, setTagInput] = useState("");
     const [err, setErr] = useState<string | null>(null);
+    const [selectedStatuses, setSelectedStatuses] = useState<StatusOption[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState<string>();
+    const [statusSelect, setStatusSelect] = useState("");
 
     const [form, setForm] = useState<CreateTaskPayload>({
         title: "",
@@ -89,15 +92,15 @@ const CreateTaskPage = (): JSX.Element => {
         entityId: "",
         entityName: "",
         assignedTo: [],
-        dueDate: "",
-        startDate: "",
+        dueDate: null,
+        startDate: null,
         estimatedHours: undefined,
         isRecurring: false,
         recurrenceType: undefined,
-        recurrenceEndsAt: "",
+        recurrenceEndsAt: null,
         tags: [],
         attachments: [],
-        parentTask: "",
+        parentTask: null,
         order: 0,
     });
 
@@ -109,17 +112,29 @@ const CreateTaskPage = (): JSX.Element => {
     useEffect(() => {
         (async () => {
             try {
-                const [catRes, statusRes] = await Promise.all([
-                    CategoryService.getAll({ currentPage: 1, pageLimit: 100 }),
-                    StatusService.getAll({ currentPage: 1, pageLimit: 100 }),
-                ]);
+                const catRes = await CategoryService.getAll({ currentPage: 1, pageLimit: 100, search: "" });
+
                 if (catRes.status === 200) setCategories(catRes.data.data.data ?? []);
-                if (statusRes.status === 200) setStatuses(statusRes.data.data.data ?? []);
             } catch (e) {
                 process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
             }
         })();
     }, []);
+    useEffect(() => {
+        (async () => {
+            try {
+                if (!selectedCategory) return;
+                const statusRes = await StatusService.getById(selectedCategory);
+                if (statusRes.status === 200) setStatuses(statusRes.data.data ?? []);
+            } catch (e) {
+                process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
+            }
+        })();
+    }, [selectedCategory]);
+    useEffect(() => {
+        setSelectedStatuses([]);
+        setStatusSelect("");
+    }, [selectedCategory]);
 
     // ── Tag helpers ───────────────────────────────────────────────────────────
     const addTag = () => {
@@ -229,28 +244,20 @@ const CreateTaskPage = (): JSX.Element => {
                             <Field label="Category" required>
                                 <select
                                     value={form.category}
-                                    onChange={e => set("category", e.target.value)}
+                                    onChange={e => {
+                                        set("category", e.target.value)
+                                        setSelectedCategory(e.target.value)
+                                    }}
                                     className={selectCls}
                                 >
                                     <option value="">Select category…</option>
                                     {categories.map(c => (
-                                        <option key={c.id} value={c.id}>{c.name}</option>
+                                        <option key={c.id} value={c.id}>{c.icon} &nbsp; {c.name}</option>
                                     ))}
                                 </select>
                             </Field>
 
-                            <Field label="Status">
-                                <select
-                                    value={form.status ?? ""}
-                                    onChange={e => set("status", e.target.value)}
-                                    className={selectCls}
-                                >
-                                    <option value="">Select status…</option>
-                                    {statuses.map(s => (
-                                        <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
-                                    ))}
-                                </select>
-                            </Field>
+
                         </div>
                     </Section>
 
@@ -310,7 +317,7 @@ const CreateTaskPage = (): JSX.Element => {
                                     </select>
                                 </Field>
                                 <Field label="Ends At">
-                                    <input type="date" value={form.recurrenceEndsAt ?? ""} onChange={e => set("recurrenceEndsAt", e.target.value)} className={inputCls} />
+                                    <input type="date" value={form.recurrenceEndsAt ?? ""} onChange={e => set("recurrenceEndsAt", e.target.value)} className={inputCls} disabled={!form.isRecurring} />
                                 </Field>
                             </div>
                         )}
@@ -440,15 +447,100 @@ const CreateTaskPage = (): JSX.Element => {
                         )}
                     </Section>
                     {/* Order */}
-                    <Section icon="🔢" title="Display Order">
-                        <Field label="Order" hint="Lower number appears first">
-                            <input
-                                type="number" min={0}
-                                value={form.order}
-                                onChange={e => set("order", Number(e.target.value))}
-                                className={inputCls}
-                            />
+                    <Section icon="🔢" title="Status Order">
+
+                        {/* ✅ Status Multi Select + Drag */}
+                        <Field label="Status">
+                            <div className="space-y-2">
+                                <select
+                                    value={statusSelect}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        debugger;
+                                        setStatusSelect(value);
+
+                                        const selected = statuses.find(s => s._id === value);
+                                        if (!selected) return;
+
+                                        // ✅ FIX: prevent duplicate
+                                        if (selectedStatuses.some(s => s._id === selected.id)) {
+                                            setStatusSelect("");
+                                            return;
+                                        }
+
+                                        setSelectedStatuses(prev => [...prev, selected]);
+
+                                        setStatusSelect("");
+                                    }}
+                                    className={inputCls}
+                                >
+                                    <option value="">Select status...</option>
+                                    {(statuses.length > 0) ? (statuses.map(s => (
+                                        <option key={s._id} value={s._id}>
+                                            {s.icon || "📌"} {s.name}
+                                        </option>
+                                    ))) : (
+                                        <option value="">No status available</option>
+                                    )}
+                                </select>
+                                {/* Selected List (Draggable) */}
+
+                                {selectedStatuses.length === 0 && (
+                                    <div className="text-xs text-gray-400 dark:text-gray-500 px-2 py-2">
+                                        No status selected
+                                    </div>
+                                )}
+                                {selectedStatuses.map((s, index) => (
+                                    <div
+                                        key={s.id}
+                                        draggable
+                                        onDragStart={(e) => {
+                                            e.dataTransfer.setData("index", String(index));
+                                        }}
+                                        onDragOver={(e) => e.preventDefault()}
+                                        onDrop={(e) => {
+                                            const fromIndex = Number(e.dataTransfer.getData("index"));
+                                            const toIndex = index;
+
+                                            const updated = [...selectedStatuses];
+                                            const [moved] = updated.splice(fromIndex, 1);
+                                            updated.splice(toIndex, 0, moved);
+
+                                            setSelectedStatuses(updated);
+                                        }}
+                                        className="flex items-center justify-between px-3 py-2 rounded-lg border bg-gray-50 dark:bg-gray-800 cursor-move"
+                                    >
+                                        {/* Left: Status */}
+                                        <span className="text-sm font-medium flex items-center gap-2">
+                                            {s.icon || "📌"} {s.name}
+                                        </span>
+
+                                        {/* Right: Order + Remove */}
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-xs text-gray-400">
+                                                #{index + 1}
+                                            </span>
+
+                                            {/* ❌ Remove button */}
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    setSelectedStatuses(prev =>
+                                                        prev.filter(item => item.id !== s.id)
+                                                    )
+                                                }
+                                                className="text-gray-400 hover:text-red-500 text-sm font-bold transition"
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+
+                            </div>
                         </Field>
+
+
                     </Section>
 
                     {/* Actions */}

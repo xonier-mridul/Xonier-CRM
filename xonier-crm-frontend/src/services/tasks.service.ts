@@ -33,17 +33,17 @@ export const TaskService = {
       ...(category && { category }),
       ...(search   && { search }),
     });
-    return api.get<{ data: PaginatedTaskResponse }>(`/task?${params.toString()}`);
+    return api.get(`/task/all?${params.toString()}`);
   },
 
   getById: (id: string) =>
     api.get<{ data: TaskItem }>(`/task/${id}`),
 
   create: (payload: CreateTaskPayload) =>
-    api.post("/task", payload),
+    api.post("/task/create", payload),
 
   update: (id: string, payload: UpdateTaskPayload) =>
-    api.put(`/task/${id}`, payload),
+    api.put(`/task/update/${id}`, payload),
 
   updateStatus: (id: string, payload: UpdateTaskStatusPayload) =>
     api.patch(`/task/${id}/status`, payload),

@@ -1,19 +1,21 @@
 import { Dispatch, SetStateAction } from "react";
+import { CategoryItem } from "./category.types";
 
 // ── Enums (mirror Python enums) ───────────────────────────────────────────────
 export enum TASK_PRIORITY {
-  LOW    = "LOW",
-  MEDIUM = "MEDIUM",
-  HIGH   = "HIGH",
-  URGENT = "URGENT",
+  LOW    = "low",
+  MEDIUM = "medium",
+  HIGH   = "high",
+  URGENT = "urgent",
 }
 
 export enum TASK_ENTITY_TYPE {
-  PROJECT = "PROJECT",
-  LEAD    = "LEAD",
-  DEAL    = "DEAL",
-  CONTACT = "CONTACT",
-  COMPANY = "COMPANY",
+  PROJECT = "project",
+  LEAD    = "lead",
+  DEAL    = "deal",
+  ENQUIRY = "enquiry",
+  CONTACT = "contact",
+  GENERAL = "general",
 }
 
 export enum RECURRENCE_TYPE {
@@ -44,15 +46,15 @@ export interface CreateTaskPayload {
   entityId?:         string;
   entityName?:       string;
   assignedTo:        string[];
-  dueDate?:          string;
-  startDate?:        string;
+  dueDate?:          string | null;
+  startDate?:        string| null;
   estimatedHours?:   number;
   isRecurring:       boolean;
   recurrenceType?:   RECURRENCE_TYPE;
-  recurrenceEndsAt?: string;
+  recurrenceEndsAt?: string| null;
   tags:              string[];
   attachments:       string[];
-  parentTask?:       string;
+  parentTask?:       string| null;
   order:             number;
 }
 
@@ -72,6 +74,7 @@ export interface UpdateTaskPayload {
   entityType?:       TASK_ENTITY_TYPE;
   entityId?:         string;
   entityName?:       string;
+  assignedTo?:       string[];
 }
 
 export interface UpdateTaskStatusPayload {
@@ -119,6 +122,7 @@ export interface AssignedUser {
 }
 
 export interface StatusOption {
+  _id:    string;
   id:    string;
   name:  string;
   color: string;
@@ -142,7 +146,7 @@ export interface TaskItem {
   id:                string;
   title:             string;
   description:       string | null;
-  category:          string;
+  category:          CategoryItem;
   categoryName?:     string;
   status:            string;
   statusName?:       string;
