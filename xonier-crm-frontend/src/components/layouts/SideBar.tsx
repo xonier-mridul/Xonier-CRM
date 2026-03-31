@@ -103,7 +103,7 @@ const SideBar = () => {
     if (pathname.startsWith("/message") || pathname.startsWith("/telephone")) {
       setOpenMenu("communication")
     }
-    if (pathname.startsWith("/taskManagement")) {
+    if (pathname.startsWith("/task")) {
       setOpenMenu("task")
     }
   }, [pathname]);
@@ -134,7 +134,7 @@ const SideBar = () => {
       case "communication":
         return pathname.startsWith("/message") || pathname.startsWith("/telephone");
       case "task":
-        return pathname.startsWith("/taskManagement");
+        return pathname.startsWith("/task");
       default:
         return false;
     }
@@ -381,8 +381,8 @@ const SideBar = () => {
                   >
                     {hasPermission(PERMISSIONS.taskCategoryRead) && <li>
                       <Link
-                        href="/taskManagement/tasks"
-                        className={`${isActive("/taskManagement/tasks")
+                        href="/task/tasks"
+                        className={`${isActive("/task/tasks")
                           ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
@@ -393,8 +393,8 @@ const SideBar = () => {
                     
                     {hasPermission(PERMISSIONS.taskCategoryRead) && <li>
                       <Link
-                        href="/taskManagement/taskCategory"
-                        className={`${isActive("/taskManagement/taskCategory")
+                        href="/task/category"
+                        className={`${isActive("/task/category")
                           ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
@@ -404,8 +404,8 @@ const SideBar = () => {
                     </li>}
                     {hasPermission(PERMISSIONS.taskCategoryRead) && <li>
                       <Link
-                        href="/taskManagement/taskStatus"
-                        className={`${isActive("/taskManagement/taskStatus")
+                        href="/task/status"
+                        className={`${isActive("/task/status")
                           ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}

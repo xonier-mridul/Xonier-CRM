@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
 import { CategoryItem } from "./category.types";
+import { StatusItem } from "./status.types";
 
 // ── Enums (mirror Python enums) ───────────────────────────────────────────────
 export enum TASK_PRIORITY {
@@ -19,10 +20,10 @@ export enum TASK_ENTITY_TYPE {
 }
 
 export enum RECURRENCE_TYPE {
-  DAILY   = "DAILY",
-  WEEKLY  = "WEEKLY",
-  MONTHLY = "MONTHLY",
-  YEARLY  = "YEARLY",
+  daily   = "daily",
+  weekly  = "weekly",
+  monthly = "monthly",
+  yearly  = "yearly",
 }
 
 export enum TaskPermissions {
@@ -80,6 +81,7 @@ export interface UpdateTaskPayload {
 export interface UpdateTaskStatusPayload {
   status:    string;
   category?: string;
+  order?: number;
 }
 
 export interface UpdateTaskPriorityPayload {
@@ -148,7 +150,7 @@ export interface TaskItem {
   description:       string | null;
   category:          CategoryItem;
   categoryName?:     string;
-  status:            string;
+  status:            StatusItem;
   statusName?:       string;
   statusColor?:      string;
   statusIcon?:       string;
