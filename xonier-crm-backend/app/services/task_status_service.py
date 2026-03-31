@@ -203,7 +203,7 @@ class TaskStatusService:
                         id=PydanticObjectId(status_id),
                         session=session
                     )
- 
+                    print('payload: ', payload)
                     if not is_exist or is_exist.deletedAt is not None:
                         raise AppException(404, "Task status not found")
  
@@ -351,4 +351,90 @@ class TaskStatusService:
  
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
+
+
+
+    async def get_all_deleted_statuses(self, filters: Dict[str, Any], user: Dict[str, Any]):
+        try:
+            page = int(filters.get("page", 1))
+            limit = int(filters.get("limit", 10))
+ 
+            query: Dict[str, Any] = {"deletedAt": {"$ne": None}}
+ 
+            if "category" in filters:
+                if not ObjectId.is_valid(filters["category"]):
+                    raise AppException(400, "Invalid category id")
+                query["category.$id"] = ObjectId(filters["category"])
+ 
+            if "search" in filters and filters["search"].strip():
+                query["name"] = {"$regex": filters["search"].strip(), "$options": "i"}
+ 
+            result = await self.repo.get_all(
+                page=page,
+                limit=limit,
+                filters=query,
+                populate=["category", "createdBy", "updatedBy"],
+                sort=["-deletedAt"]
+            )
+ 
+            if not result:
+                raise AppException(404, "No deleted task statuses found")
+ 
+            return result
+ 
+        except AppException:
+            raise
+ 
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+        
+
+ 
+    async def permanent_delete_task_status(self, status_id: str, user: Dict[str, Any]):
+        async with await self.client.start_session() as session:
+            async with session.start_transaction():
+                try:
+                    if not ObjectId.is_valid(status_id):
+                        raise AppException(400, "Invalid status id")
+ 
+                    is_exist = await self.repo.find_by_id(
+                        id=PydanticObjectId(status_id),
+                        session=session
+                    )
+ 
+                    if not is_exist:
+                        raise AppException(404, "Task status not found")
+ 
+                    if is_exist.deletedAt is None:
+                        raise AppException(400, "Task status is not soft deleted. Please soft delete it first before permanent deletion")
+ 
+                    from app.db.models.task_model import TaskModel
+ 
+                    task_count = await TaskModel.find({
+                        "status.$id": ObjectId(status_id),
+                        "deletedAt": None
+                    }).count()
+ 
+                    if task_count > 0:
+                        raise AppException(
+                            400,
+                            f"Cannot permanently delete — {task_count} active task{'s' if task_count > 1 else ''} still reference this status"
+                        )
+ 
+                    deleted = await self.repo.delete_by_id(
+                        id=PydanticObjectId(status_id),
+                        session=session
+                    )
+ 
+                    if not deleted:
+                        raise AppException(400, "Permanent deletion failed")
+ 
+                    return True
+ 
+                except AppException:
+                    raise
+ 
+                except Exception as e:
+                    raise AppException(500, f"Internal server error: {e}")
+ 
  

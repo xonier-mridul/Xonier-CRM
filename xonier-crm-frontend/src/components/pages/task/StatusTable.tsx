@@ -58,7 +58,7 @@ const StatusTable = ({
 
   return (
     <>
-      {/* Modal */}
+      
       {isPopupShow && (
         <StatusModal
           formData={formData}
@@ -72,7 +72,7 @@ const StatusTable = ({
         />
       )}
 
-      {/* Page Header */}
+      
       <div className="flex items-start justify-between mb-8 dark:text-white">
         <div>
           <div className="flex items-center gap-2 mb-1">

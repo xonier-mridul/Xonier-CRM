@@ -93,5 +93,34 @@ class TaskStatusController:
  
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+        
+
+    async def get_all_deleted_statuses(self, request: Request):
+        try:
+            print("err")
+            user = request.state.user
+            filters = dict(request.query_params)
+            result = await self.service.get_all_deleted_statuses(filters, user)
+            return successResponse(200, "Deleted task statuses fetched successfully", result)
+ 
+        except AppException as e:
+            raise e
+ 
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+ 
+    async def permanent_delete_task_status(self, request: Request, status_id: str):
+        try:
+            user = request.state.user
+            await self.service.permanent_delete_task_status(status_id, user)
+            return successResponse(200, "Task status permanently deleted successfully", None)
+ 
+        except AppException as e:
+            raise e
+ 
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+ 
+ 
  
  

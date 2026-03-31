@@ -41,3 +41,13 @@ async def reorder_task_statuses(request: Request, payload: ReorderTaskStatusSche
 @router.delete("/delete/{status_id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["taskStatus:delete"]))])
 async def delete_task_status(request: Request, status_id: str):
     return await controller.delete_task_status(request, status_id)
+
+
+@router.get("/deleted/all-deleted", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["taskStatus:read"]))])
+async def get_all_deleted_statuses(request: Request):
+    return await controller.get_all_deleted_statuses(request)
+ 
+ 
+@router.delete("/permanent-delete/{status_id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["taskStatus:delete"]))])
+async def permanent_delete_task_status(request: Request, status_id: str):
+    return await controller.permanent_delete_task_status(request, status_id)

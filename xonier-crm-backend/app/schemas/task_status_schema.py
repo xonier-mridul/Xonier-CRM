@@ -47,6 +47,7 @@ class UpdateTaskStatusSchema(BaseModel):
     name: Optional[str] = None
     color: Optional[str] = None
     order: Optional[int] = None
+    category: str
     type: Optional[TASK_STATUS_TYPE] = None
     isFinal: Optional[bool] = None
     isDefault: Optional[bool] = None
