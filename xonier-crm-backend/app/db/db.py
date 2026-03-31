@@ -24,6 +24,10 @@ from app.db.models.communications.sms_hostory import SMSHistory
 from app.db.models.email_template_model import EmailTemplateModel
 
 from app.db.models.communications.email_history_model import EmailHistoryModel
+from app.db.models.task_category_model import TaskCategoryModel
+from app.db.models.task_activity_model import TaskActivityModel
+from app.db.models.task_status_model import TaskStatusModel
+from app.db.models.task_model import TaskModel
 
 
 settings = get_setting()
@@ -42,7 +46,7 @@ async def connect_db():
         
         await init_beanie(
             database=db,
-            document_models=[UserModel, PermissionModel, UserRoleModel, OtpModel, EnquiryModel, TeamModel, TeamCategoryModel, LeadsModel, CustomFieldModel, UserFormModel, DealModel, CalenderEventModel, QuotationModel, QuotationHistoryModel, InvoiceModel, NoteModel, UserCustomFieldModel, ActivityModel, TelephoneNumbersModel, SMSHistory, EmailTemplateModel, EmailHistoryModel]
+            document_models=[UserModel, PermissionModel, UserRoleModel, OtpModel, EnquiryModel, TeamModel, TeamCategoryModel, LeadsModel, CustomFieldModel, UserFormModel, DealModel, CalenderEventModel, QuotationModel, QuotationHistoryModel, InvoiceModel, NoteModel, UserCustomFieldModel, ActivityModel, TelephoneNumbersModel, SMSHistory, EmailTemplateModel, EmailHistoryModel, TaskCategoryModel, TaskActivityModel, TaskStatusModel, TaskModel]
         )
         print("Successfully connected to MongoDB and initialized Beanie")
     except Exception as e:

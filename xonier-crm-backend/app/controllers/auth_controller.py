@@ -88,7 +88,8 @@ class AuthController:
             user_agent = request.headers.get("user-agent")
             result = await self.service.verify_login_otp(data=data, ip=ip, agent=user_agent)
 
-            access_token_expiry = int(self.settings.ACCESS_TOKEN_EXPIRY) * 24 * 60 * 60
+            # access_token_expiry = int(self.settings.ACCESS_TOKEN_EXPIRY) * 24 * 60 * 60
+            access_token_expiry = int(self.settings.ACCESS_TOKEN_EXPIRY) * 60
             refresh_token_expiry = int(self.settings.REFRESH_TOKEN_EXPIRY) * 24 * 60 * 60
 
             
@@ -380,8 +381,38 @@ class AuthController:
  
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
- 
         
-        
+
+    async def verify_refresh_token(self, request: Request, response: Response, payload: Dict[str, Any]):
+        try:
+            
+
+            result = await self.service.verify_refresh_token(
+                payload=payload,
+               
+            )
+
+            access_token_expiry = int(self.settings.ACCESS_TOKEN_EXPIRY) * 24 * 60 * 60
+            refresh_token_expiry = int(self.settings.REFRESH_TOKEN_EXPIRY) * 24 * 60 * 60
+
+            
+            response.set_cookie(key="accessToken", value=result["access_token"], max_age=access_token_expiry, **JWT_OPTIONS)
+            response.set_cookie(key="refreshToken", value=result["refresh_token"], max_age=refresh_token_expiry, **JWT_OPTIONS)
+
+            
+            return successResponse(200, result["message"], {
+                **result["user"],
+                "accessToken": result["access_token"],
+                "refreshToken": result["refresh_token"],
+            })
+
+        except AppException as e:
+            raise e
+
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
     
+            
+            
+        
 

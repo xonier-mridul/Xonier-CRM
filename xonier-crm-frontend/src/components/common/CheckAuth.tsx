@@ -6,6 +6,7 @@ import { AuthService } from "@/src/services/auth.service";
 import { setAuthState, logout, setIsAdmin } from "@/src/store/slices/authSlice";
 import { SUPER_ADMIN_ROLE_CODE } from "@/src/constants/constants";
 import { UserRole } from "@/src/types";
+import { AxiosError } from "axios";
 
 export default function CheckAuth({ children }: { children: React.ReactNode }) {
   const dispatch = useDispatch();
@@ -14,16 +15,31 @@ export default function CheckAuth({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const initAuth = async () => {
       try {
+        console.log("yo");
         const res = await AuthService.me();
-        console.log("✅ me() success:", res.data.data); // ADD THIS
+
         dispatch(setAuthState(res.data.data));
         const userRole: Array<UserRole> = res.data.data.userRole;
         if (userRole.some((i) => i.code === SUPER_ADMIN_ROLE_CODE)) {
           dispatch(setIsAdmin());
         }
-      } catch(error) {
-        console.log("❌ me() failed:", error); // ADD THIS
+      } catch (error) {
+        
+
+        if (error instanceof AxiosError) {
+          if (error.response?.status === 401) {
+            const res = await AuthService.refreshAccessToken();
+            dispatch(setAuthState(res.data.data));
+            const userRole: Array<UserRole> = res.data.data.userRole;
+            if (userRole.some((i) => i.code === SUPER_ADMIN_ROLE_CODE)) {
+              dispatch(setIsAdmin());
+            }
+          }
+        }
+        else{
+
         dispatch(logout());
+        }
       } finally {
         setIsLoading(false);
       }
@@ -32,7 +48,6 @@ export default function CheckAuth({ children }: { children: React.ReactNode }) {
     initAuth();
   }, [dispatch]);
 
-  // ✅ Block render until we know who the user is
   if (isLoading) return null;
 
   return <>{children}</>;

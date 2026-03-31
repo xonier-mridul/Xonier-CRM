@@ -39,6 +39,7 @@ import type {
   LeadStatus,
   DealPipelineStage,
 } from "@/src/types/dashboard/dashboard.types";
+import Link from "next/link";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -236,7 +237,7 @@ export default function DashboardPage() {
 
   const sourceChartData = data
     ? data.leadSourceBreakdown
-      .filter((s) => s.count > 0)
+      ?.filter((s) => s.count > 0)
       .map((s) => ({ name: capitalize(s.source), value: s.count }))
     : [];
 
@@ -298,7 +299,7 @@ export default function DashboardPage() {
     {
       label: "Total Leads",
       value: fmt(data.leads.total),
-      sub: `${fmt(data.leads.active)} active · ${data.leads.won} won · ${data.leads.deleted} deleted`,
+      sub: `${fmt(data.leads.active)} active · ${data.leads.won} won · ${data.leads.deleted||0} deleted`,
       barPct: Math.min((data.leads.active / Math.max(data.leads.total, 1)) * 100, 100),
       color: "#6366f1",
       icon: <TrendingUp className="w-4 h-4" />,
@@ -315,9 +316,9 @@ export default function DashboardPage() {
     },
     {
       label: "Team Members",
-      value: data.users.total,
-      sub: `${data.users.thisMonth} joined · ${data.users.inactive} inactive · ${data.users.deleted} deleted`,
-      barPct: Math.min((data.users.active / Math.max(data.users.total, 1)) * 100, 100),
+      value: data.users?.total ||0,
+      sub: (`${data.users?.thisMonth||0} joined · ${data.users?.inactive||0} inactive · ${data.users?.deleted||0} deleted`),
+      barPct: Math.min((data.users?.active || 0 / Math.max(data.users?.total||0, 1)) * 100, 100),
       color: "#22c55e",
       icon: <Users className="w-4 h-4" />,
       iconBg: "bg-green-500",
@@ -325,7 +326,7 @@ export default function DashboardPage() {
     {
       label: "Enquiries",
       value: data.enquiries.total,
-      sub: `${data.enquiries.assigned} assigned · ${data.enquiries.unassigned} unassigned · ${data.enquiries.active} active`,
+      sub: `${data.enquiries.assigned} assigned · ${data.enquiries.unassigned||0} unassigned · ${data.enquiries.active||0} active`,
       barPct: Math.min((data.enquiries.assigned / Math.max(data.enquiries.total, 1)) * 100, 100),
       color: "#f97316",
       icon: <MessageSquare className="w-4 h-4" />,
@@ -340,7 +341,9 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-            Admin Dashboard
+            {(data.role==="admin") ?
+            "Admin Dashboard" : `Welcome Back, ${data.user?.firstName} ${data.user?.lastName}`
+            }
           </h1>
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 flex items-center gap-2">
             {new Date(data.period.start).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
@@ -479,7 +482,7 @@ export default function DashboardPage() {
         {/* Lead Sources Donut — now also shows raw count */}
         <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
           <SectionTitle title="Lead Sources" sub="Distribution by channel" />
-          {sourceChartData.length > 0 ? (
+          {sourceChartData?.length > 0 ? (
             <>
               <ResponsiveContainer width="100%" height={160}>
                 <PieChart>
@@ -604,9 +607,11 @@ export default function DashboardPage() {
                       <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 ${AVATAR_BG[i % AVATAR_BG.length]}`}>
                         {lead.source.charAt(0).toUpperCase()}
                       </div>
+                      <Link href={`/leads/view/${lead._id}`} className="text-xs font-mono text-gray-500 dark:text-gray-400 truncate max-w-[130px]">
                       <span className="text-xs font-mono text-gray-500 dark:text-gray-400 truncate max-w-[130px]">
                         {lead.lead_id}
-                      </span>
+                      </span>                      
+                      </Link>
                     </div>
                   </td>
                   <td className="py-3 pr-4">
@@ -643,7 +648,7 @@ export default function DashboardPage() {
           },
           {
             label: "Monthly Revenue",
-            value: fmtCurrency(data.deals.monthlyRevenue),
+            value: fmtCurrency(data.deals?.monthlyRevenue||0),
             sub: "Revenue this period",
             color: "#8b5cf6",
             bg: "bg-violet-500",
@@ -696,7 +701,7 @@ export default function DashboardPage() {
             sub="Current distribution across all statuses"
           />
           <div className="flex flex-col gap-3">
-            {data.leadStatusBreakdown.map((item) => {
+            {data.leadStatusBreakdown?.map((item) => {
               const pct = ((item.count / totalLeads) * 100).toFixed(1);
               const color = STATUS_COLORS[item.status] ?? "#6366f1";
               return (
@@ -739,25 +744,25 @@ export default function DashboardPage() {
             {[
               {
                 label: "Leads this month",
-                value: fmt(data.leads.thisMonth),
+                value: fmt(data.leads?.thisMonth||0),
                 color: "bg-indigo-50 dark:bg-indigo-950",
                 text: "text-indigo-600 dark:text-indigo-400",
               },
               {
                 label: "Deals opened",
-                value: data.deals.thisMonth,
+                value: data.deals.thisMonth||0,
                 color: "bg-pink-50 dark:bg-pink-950",
                 text: "text-pink-600 dark:text-pink-400",
               },
               {
                 label: "New users",
-                value: data.users.thisMonth,
+                value: data.users?.thisMonth||0,
                 color: "bg-green-50 dark:bg-green-950",
                 text: "text-green-600 dark:text-green-400",
               },
               {
                 label: "Enquiries received",
-                value: data.enquiries.thisMonth,
+                value: data.enquiries.thisMonth||0,
                 color: "bg-orange-50 dark:bg-orange-950",
                 text: "text-orange-600 dark:text-orange-400",
               },
@@ -770,14 +775,14 @@ export default function DashboardPage() {
               // monthly revenue — previously missing
               {
                 label: "Monthly revenue",
-                value: fmtCurrency(data.deals.monthlyRevenue),
+                value: fmtCurrency(data.deals?.monthlyRevenue||0),
                 color: "bg-emerald-50 dark:bg-emerald-950",
                 text: "text-emerald-600 dark:text-emerald-400",
               },
               // deleted leads — previously missing
               {
                 label: "Deleted leads",
-                value: data.leads.deleted,
+                value: data.leads.deleted||0,
                 color: "bg-slate-100 dark:bg-slate-800",
                 text: "text-slate-500 dark:text-slate-400",
               },

@@ -61,7 +61,7 @@ class Dependencies:
                 token = request.cookies.get("accessToken")
 
            if not token:
-               raise AppException(401, "You are logged out, please legged in again")
+               raise AppException(401, "You are logged out, please logged in again")
            payload = verify_access_token(token)
            
            if not payload:
@@ -86,24 +86,36 @@ class Dependencies:
         except Exception as e:
             raise e
         
+
+
     async def validate_refreshToken(self, request: Request):
         try:
-            auth_header = request.headers.get("Authorization")
-            if auth_header and auth_header.startswith("Bearer "):
-                token = auth_header.split(" ")[1]
-            if not token: 
-                token = request.cookies.get("accessToken")
+            token = None
+
+            token = request.cookies.get("refreshToken")
 
             if not token:
-               raise AppException(401, "You are logged out, please legged in again")
+                try:
+                    body = await request.json()
+                    token = body.get("refreshToken")
+                except:
+                    pass
+
+            if not token:
+                raise AppException(401, "Your session is expired, please login again")
+
             payload = verify_refresh_token(token)
+
+            
+            payload["raw_token"] = token
+
+            return payload
 
         except AppException as e:
             raise e
-        
+
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
-        
 
     async def onlyForAdmin(self, request:Request):
         try:

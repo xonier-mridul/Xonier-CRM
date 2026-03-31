@@ -106,5 +106,12 @@ async def restore_user(request: Request, userId: str):
 async def bulk_restore_users(request: Request, payload: BulkRestoreUsersSchema):
     return await auth_controller.bulk_restore_users(request=request, payload=payload.model_dump(mode="json"))
 
-# @router.post("/refresh", status_code=200)
 
+@router.post("/refresh", status_code=200)
+async def refresh_access_token(
+    request: Request,
+    response: Response,                                  
+    payload=Depends(dependencies.validate_refreshToken)
+):
+    return await auth_controller.verify_refresh_token(request, response, payload)
+   

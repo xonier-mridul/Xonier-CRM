@@ -829,4 +829,44 @@ class CONTACT_STATUS(str, Enum):
     NOT_REACHED = "not_reached"
 
 
+class TASK_PRIORITY(str, Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    URGENT = "urgent"
 
+class TASK_STATUS_TYPE(str, Enum):
+    NOT_STARTED = "not_started"    
+    ACTIVE = "active"             
+    COMPLETED = "completed"       
+    CANCELLED = "cancelled"        
+
+class TASK_ENTITY_TYPE(str, Enum):
+    LEAD = "lead"
+    DEAL = "deal"
+    ENQUIRY = "enquiry"
+    CONTACT = "contact"
+    GENERAL = "general"
+
+class CATEGORY_VISIBILITY(str, Enum):
+    GLOBAL = "global"             
+    TEAM = "team"                 
+    PERSONAL = "personal"          
+
+class RECURRENCE_TYPE(str, Enum):
+    DAILY = "daily"
+    WEEKLY = "weekly"
+    MONTHLY = "monthly"
+
+class TASK_ACTIVITY_ACTION(str, Enum):
+    CREATED = "created"
+    STATUS_CHANGED = "status_changed"
+    ASSIGNED = "assigned"
+    REASSIGNED = "reassigned"
+    PRIORITY_CHANGED = "priority_changed"
+    DUE_DATE_CHANGED = "due_date_changed"
+    COMMENTED = "commented"
+    ATTACHMENT_ADDED = "attachment_added"
+    COMPLETED = "completed"
+    REOPENED = "reopened"
+    DELETED = "deleted"

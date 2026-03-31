@@ -13,7 +13,7 @@ from app.core.crypto import Encryption
 from app.utils.cache_key_generator import cache_key_generator, cache_key_generator_by_id, cache_key_generator_with_id
 from fastapi_cache import FastAPICache
 import json
-from app.core.enums import SALES_STATUS, DEAL_STATUS, DEAL_STAGES, ACTIVITY_ACTION, ACTIVITY_ENTITY_TYPE
+from app.core.enums import SALES_STATUS, DEAL_STATUS, DEAL_STAGES, ACTIVITY_ACTION, ACTIVITY_ENTITY_TYPE, DEAL_PIPELINE
 
 from app.utils.get_team_members import GetTeamMembers
 from app.utils.validate_admin import validate_admin
@@ -53,6 +53,7 @@ class DealService:
                 new_payload = {
                     **payload,
                     "deal_id": deal_id,
+                    "dealPipeline": payload.get("dealStage", DEAL_PIPELINE.QUALIFICATION.value),
                     "createdBy": PydanticObjectId(createdBy),
                 }
 

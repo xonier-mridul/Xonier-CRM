@@ -1279,4 +1279,64 @@ class AuthServices:
         finally:
             await session.end_session()
  
+    async def verify_refresh_token(self, payload: Dict[str, Any]):
+        try:
+           
+            user_obj = await self.repo.find_by_id(
+                PydanticObjectId(payload["_id"]), 
+                populate=["userRole"]
+            )
+
+            print("userobj: ", user_obj)
+
+            if not user_obj:
+                raise AppException(404, "User not found")
+
+            if user_obj.status == USER_STATUS.DELETED.value:
+                raise AppException(400, "Your account has been deleted")
+
+            if user_obj.status == USER_STATUS.SUSPENDED.value:
+                raise AppException(400, "Your account is suspended, please contact the admin")
+
+            
+            if not user_obj.refreshToken:
+                raise AppException(401, "Session expired, please login again")
+
+            
+            incoming_token = payload.get("raw_token")
+            print("row token: ", incoming_token)  
+            hashed_incoming = hash_value(incoming_token)
+
+            print("jashed token: ", hashed_incoming)
+
+            if hashed_incoming != user_obj.refreshToken:
+                raise AppException(401, "Invalid refresh token, please login again")
+
+           
+            access_token = user_obj.generate_access_token()
+            refresh_token = user_obj.generate_refresh_token()
+
+            
+            await user_obj.set({
+                "refreshToken": hash_value(refresh_token),
+                "updatedAt": datetime.now(timezone.utc),
+            })
+
+            usr = await self.repo.find_by_id_nested(user_obj.id, ["userRole", "userRole.permissions"])
+
+            return {
+                "message": "Token refreshed successfully",
+                "user": jsonable_encoder(usr, exclude={"password", "refreshToken"}),
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+            }
+
+        except AppException as e:
+            raise e
+
+        except Exception as e:
+            raise AppException(status_code=500, message=f"Internal server error: {e}")
+
+            
+
 

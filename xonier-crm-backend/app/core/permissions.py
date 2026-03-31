@@ -521,7 +521,99 @@ PERMISSIONS = [
         "action": "read",
         "title": "read dashboard",
        "description": "permission for view dashboard" 
-    }
+    },
+    {
+        "code": "task:create",
+        "module": "task",
+        "action": "create",
+        "title": "create task",
+        "description": "permission for create task data",
+    },
+    {
+        "code": "task:read",
+        "module": "task",
+        "action": "read",
+        "title": "read task",
+        "description": "permission for read task data",
+    },
+    {
+        "code": "task:update",
+        "module": "task",
+        "action": "update",
+        "title": "update task",
+        "description": "permission for update task data",
+    },
+    {
+        "code": "task:delete",
+        "module": "task",
+        "action": "delete",
+        "title": "delete task",
+        "description": "permission for delete task data",
+    },
+    {
+        "code": "task:assign",
+        "module": "task",
+        "action": "assign",
+        "title": "assign task",
+        "description": "permission for assign task data",
+    },
+    {
+        "code": "taskCategory:create",
+        "module": "taskCategory",
+        "action": "create",
+        "title": "create task category",
+        "description": "permission for create task category data",
+    },
+    {
+        "code": "taskCategory:read",
+        "module": "taskCategory",
+        "action": "read",
+        "title": "read task category",
+        "description": "permission for read task category data",
+    },
+    {
+        "code": "taskCategory:update",
+        "module": "taskCategory",
+        "action": "update",
+        "title": "update task category",
+        "description": "permission for update task category data",
+    },
+    {
+        "code": "taskCategory:delete",
+        "module": "taskCategory",
+        "action": "delete",
+        "title": "delete task category",
+        "description": "permission for delete task category data",
+    },
+    {
+        "code": "taskStatus:create",
+        "module": "taskStatus",
+        "action": "create",
+        "title": "create task status",
+        "description": "permission for create task status data",
+    },
+    {
+        "code": "taskStatus:read",
+        "module": "taskStatus",
+        "action": "read",
+        "title": "read task status",
+        "description": "permission for read task status data",
+    },
+    {
+        "code": "taskStatus:update",
+        "module": "taskStatus",
+        "action": "update",
+        "title": "update task status",
+        "description": "permission for update task status data",
+    },
+    {
+        "code": "taskStatus:delete",
+        "module": "taskStatus",
+        "action": "delete",
+        "title": "delete task status",
+        "description": "permission for delete task status data",
+    },
+    
 
     
 ]

@@ -8,6 +8,7 @@ from app.db.models.deal_model import DealModel
 from app.core.enums import SALES_STATUS, DEAL_STATUS, USER_STATUS, DEAL_PIPELINE
 from app.db import db as database_module
 import asyncio
+from fastapi.encoders import jsonable_encoder
 
 
 class AdminDashboardService:
@@ -112,8 +113,8 @@ class AdminDashboardService:
                 "dealPipelineBreakdown": deal_pipeline_breakdown,
             }
 
-        except AppException:
-            raise
+        except AppException as e:
+            raise e
 
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
@@ -399,7 +400,7 @@ class AdminDashboardService:
             {"$limit": 5},
             {
                 "$project": {
-                    "_id": 0,
+                    "_id": {"$toString": "$_id"},
                     "lead_id": 1,
                     "name": 1,
                     "email": 1,
@@ -410,7 +411,10 @@ class AdminDashboardService:
                 }
             }
         ]
-        return await self._aggregate(LeadsModel, pipeline)
+        data = await self._aggregate(LeadsModel, pipeline)
+
+        
+        return  data
 
     async def _deal_pipeline_breakdown(self) -> list:
         pipeline = [
