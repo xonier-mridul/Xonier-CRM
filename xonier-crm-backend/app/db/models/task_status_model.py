@@ -15,6 +15,7 @@ class TaskStatusModel(Document):
     color: str = "#6B7280"
     category: Link[TaskCategoryModel]
     order: int = 0
+    icon: str = ""
     type: TASK_STATUS_TYPE = TASK_STATUS_TYPE.NOT_STARTED
     isFinal: bool = False
     isDefault: bool = False

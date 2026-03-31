@@ -11,6 +11,7 @@ class CreateTaskStatusSchema(BaseModel):
     order: Optional[int] = 0
     type: TASK_STATUS_TYPE = TASK_STATUS_TYPE.NOT_STARTED
     isFinal: bool = False
+    icon: Optional[str] = ""
     
     isActive: bool = True
  
@@ -34,6 +35,12 @@ class CreateTaskStatusSchema(BaseModel):
         if not v or not v.strip():
             raise AppException(422, "category is required")
         return v.strip()
+    @field_validator("icon")
+    @classmethod
+    def validate_icon(cls, v: Optional[str]) -> Optional[str]:
+        if v and not v.strip():
+            raise AppException(422, "icon cannot be empty")
+        return v.strip() if v else v
  
  
 class UpdateTaskStatusSchema(BaseModel):
@@ -44,6 +51,7 @@ class UpdateTaskStatusSchema(BaseModel):
     isFinal: Optional[bool] = None
     isDefault: Optional[bool] = None
     isActive: Optional[bool] = None
+    icon: Optional[str] = None
  
     @field_validator("name")
     @classmethod
@@ -58,7 +66,7 @@ class UpdateTaskStatusSchema(BaseModel):
         if v and not v.startswith("#"):
             raise AppException(422, "color must be a valid hex code e.g. #6B7280")
         return v
- 
+
  
 class ReorderTaskStatusSchema(BaseModel):
     statuses: List[dict]

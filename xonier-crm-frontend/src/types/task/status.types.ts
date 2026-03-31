@@ -1,4 +1,5 @@
 import React, { Dispatch, SetStateAction } from "react";
+import { CategoryItem } from "./category.types";
 // ── Permissions Enum ──────────────────────────────────────────────────────────
 
 export enum StatusPermissions {
@@ -14,6 +15,7 @@ export interface StatusPayload {
   description: string;
   color:       string;
   icon:        string;
+  category: string;
 }
 
 // ── Shape returned by the API ─────────────────────────────────────────────────
@@ -25,6 +27,7 @@ export interface StatusItem {
   icon:        string | null;
   createdAt:   string;
   updatedAt:   string;
+  category: CategoryItem;
 }
 
 // ── Paginated API response wrapper ────────────────────────────────────────────
@@ -52,6 +55,9 @@ export interface StatusTableProps {
   handleDelete:     (id: string) => Promise<void>;
   handleClosePopup: () => void;
   hasPermissions:   (permission: string) => boolean;
+  totalPages: number;
+  handlepagechange: (page: number) => void;
+  handleSearch:     (search: string) => void;
   err:              string | string[] | null;
 }
 

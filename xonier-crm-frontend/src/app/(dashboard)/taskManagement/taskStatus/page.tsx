@@ -1,7 +1,7 @@
 "use client";
 
 import { MARGIN_TOP, SIDEBAR_WIDTH, SUPER_ADMIN_ROLE_CODE } from "@/src/constants/constants";
-import React, { JSX, useState, useEffect } from "react";
+import React, { JSX, useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { usePermissions } from "@/src/hooks/usePermissions";
@@ -22,12 +22,16 @@ const page = (): JSX.Element => {
   const [err, setErr] = useState<string | string[] | null>(null);
   const [statusData, setStatusData] = useState<StatusItem[]>([]);
   const [editTarget, setEditTarget] = useState<StatusItem | null>(null);
+  const [searchVal, setSearchVal] = useState<string>("");
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const [formData, setFormData] = useState<StatusPayload>({
     name: "",
     description: "",
-    color: "",
-    icon: "",
+    color: "#ffffff",
+    icon: "⚡",
+    category: "",
   });
 
   const auth = useSelector((state: RootState) => state.auth);
@@ -41,6 +45,7 @@ const page = (): JSX.Element => {
       const result = await StatusService.getAll({
         currentPage,
         pageLimit,
+        search: searchVal,
       });
 
       if (result.status === 200) {
@@ -60,13 +65,28 @@ const page = (): JSX.Element => {
     }
   };
 
+  const handlepagechange = (page: number): void => {
+    const newPage = currentPage + page;
+    if (newPage < 1 || newPage > totalPages) return;
+    setCurrentPage(newPage);
+  };
+  const handleSearch = (search: string): void => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    debounceRef.current = setTimeout(() => {
+      setSearchVal(search);
+    }, 300);
+  };
+
   // ── Create ────────────────────────────────────────────────────────────────
   const handleSubmit = async (): Promise<void> => {
     setIsLoading(true);
     setErr(null);
     try {
       const result = await StatusService.create(formData);
-      if (result.status === 200) {
+      if (result.status === 201) {
         await getAllStatuses();
         resetForm();
         toast.success("Status created successfully");
@@ -89,12 +109,18 @@ const page = (): JSX.Element => {
   // ── Edit / Update ─────────────────────────────────────────────────────────
   const handleEdit = (status: StatusItem): void => {
     setEditTarget(status);
+
     setFormData({
       name: status.name,
       description: status.description ?? "",
       color: status.color ?? "",
       icon: status.icon ?? "",
+      category:
+        typeof status.category === "object"
+          ? String(status.category?.id)
+          : String(status.category || "")
     });
+
     setIsPopShow(true);
   };
 
@@ -154,7 +180,7 @@ const page = (): JSX.Element => {
 
   // ── Helpers ───────────────────────────────────────────────────────────────
   const resetForm = (): void => {
-    setFormData({ name: "", description: "", color: "", icon: "" });
+    setFormData({ name: "", description: "", color: "#ffffff", icon: " ⚡", category: "" });
     setEditTarget(null);
   };
 
@@ -167,7 +193,7 @@ const page = (): JSX.Element => {
   // ── Effects ───────────────────────────────────────────────────────────────
   useEffect(() => {
     getAllStatuses();
-  }, [currentPage, pageLimit]);
+  }, [currentPage, pageLimit, searchVal]);
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -191,6 +217,10 @@ const page = (): JSX.Element => {
           handleDelete={handleDelete}
           handleClosePopup={handleClosePopup}
           hasPermissions={hasPermission}
+          totalPages={totalPages}
+          handlepagechange={handlepagechange}
+          handleSearch={handleSearch}
+
           err={err}
         />
       </div>

@@ -74,7 +74,7 @@ export interface CategoryTableProps {
 }
 
 export interface getPayLoad {
-  currentPage: number;
-  pageLimit: number;
+  currentPage?: number;
+  pageLimit?: number;
   search?:string;
 }

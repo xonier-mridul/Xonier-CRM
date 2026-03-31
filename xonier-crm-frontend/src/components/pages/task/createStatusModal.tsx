@@ -2,11 +2,14 @@
 import { ModalProps, StatusItem, StatusPayload, ColorOption } from "@/src/types/task/status.types";
 import { COLOR_OPTIONS } from "@/src/constants/enum";
 import { createPortal } from "react-dom";
+import { CategoryService } from "@/src/services/category.service";
+import { useState, useEffect } from "react";
+import { CategoryItem } from "@/src/types/task/category.types";
 function getColorOption(hex: string | null): ColorOption {
     return COLOR_OPTIONS.find(c => c.hex === hex) ?? COLOR_OPTIONS[0];
 }
 const ICON_OPTIONS: string[] = [
-    "⚡", "🔵", "✅", "🔄", "⏸️", "🚀", "🔧", "📌", "🎯", "💡", "🛑", "🕐",
+    "⚡", "🔵", "✅", "🔄", "⏳", "⏸️", "🚀", "🔧", "📌", "🎯", "💡", "🛑", "🕐",
 ];
 export function StatusBadge({ color, icon, name }: { color: ColorOption; icon: string; name: string }) {
     return (
@@ -30,6 +33,18 @@ export function StatusModal({
 
     const selectedColor = getColorOption(formData.color || null);
     const selectedIcon = formData.icon || ICON_OPTIONS[0];
+    const selectedCategory = formData.category || "";
+    const [categorys, setCategorys] = useState<CategoryItem[]>([]);
+
+    const featchCategorys = async () => {
+        const result = await CategoryService.getAll({});
+        if (result.status === 200) {
+            setCategorys(result.data.data?.data);
+        }
+    };
+    useEffect(() => {
+        featchCategorys();
+    }, []);
     if (typeof window === "undefined") return null;
     return createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -111,6 +126,30 @@ export function StatusModal({
                         />
                     </div>
 
+                    {/* Category */}
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                            Category
+                        </label>
+                        <select
+                            value={formData.category || ""}
+                            onChange={e =>
+                                setFormData(prev => ({
+                                    ...prev,
+                                    category: e.target.value
+                                }))
+                            }
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm"
+                        >
+                            <option value="" disabled>— Select category —</option>
+
+                            {categorys.map(c => (
+                                <option key={c.id} value={String(c.id)}>
+                                    {c.icon || "❓"} &nbsp; {c.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                     {/* Icon Picker */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1.5">
@@ -123,8 +162,8 @@ export function StatusModal({
                                     type="button"
                                     onClick={() => setFormData(prev => ({ ...prev, icon: ic }))}
                                     className={`w-9 h-9 rounded-lg text-lg flex items-center justify-center border-2 transition ${selectedIcon === ic
-                                            ? "border-blue-500 bg-blue-50 shadow-sm"
-                                            : "border-gray-200 hover:border-gray-300 bg-white"
+                                        ? "border-blue-500 bg-blue-50 shadow-sm"
+                                        : "border-gray-200 hover:border-gray-300 bg-white"
                                         }`}
                                 >
                                     {ic}
@@ -146,8 +185,8 @@ export function StatusModal({
                                     title={c.label}
                                     onClick={() => setFormData(prev => ({ ...prev, color: c.hex }))}
                                     className={`w-7 h-7 rounded-full border-2 transition-all ${formData.color === c.hex
-                                            ? "border-gray-800 scale-125 shadow-md"
-                                            : "border-transparent hover:scale-110"
+                                        ? "border-gray-800 scale-125 shadow-md"
+                                        : "border-transparent hover:scale-110"
                                         }`}
                                     style={{ backgroundColor: c.hex }}
                                 />

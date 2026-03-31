@@ -379,6 +379,17 @@ const SideBar = () => {
                     transition={{ duration: 0.25 }}
                     className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
                   >
+                    {hasPermission(PERMISSIONS.taskCategoryRead) && <li>
+                      <Link
+                        href="/taskManagement/tasks"
+                        className={`${isActive("/taskManagement/tasks")
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
+                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                      >
+                        Tasks
+                      </Link>
+                    </li>}
                     
                     {hasPermission(PERMISSIONS.taskCategoryRead) && <li>
                       <Link

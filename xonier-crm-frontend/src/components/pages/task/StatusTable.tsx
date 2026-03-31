@@ -39,6 +39,9 @@ const StatusTable = ({
   handleDelete,
   handleClosePopup,
   hasPermissions,
+  totalPages,
+  handlepagechange,
+  handleSearch,
   err,
 }: StatusTableProps) => {
   const [search, setSearch] = React.useState<string>("");
@@ -116,8 +119,7 @@ const StatusTable = ({
         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
         <input
           type="text"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={e => handleSearch(e.target.value)}
           placeholder="Search statuses…"
           className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition bg-white"
         />
@@ -139,7 +141,7 @@ const StatusTable = ({
               </th>
 
               <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Description
+                Category
               </th>
 
               <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -170,7 +172,7 @@ const StatusTable = ({
             ) : (
               filtered.map((s, i) => {
                 const colorOpt = getColorOption(s.color);
-                const icon = s.icon ?? "📌";
+                const icon = s.icon ;
 
                 return (
                   <tr
@@ -185,16 +187,20 @@ const StatusTable = ({
 
                     {/* Badge */}
                     <td className="px-5 py-4">
-                      <StatusBadge color={colorOpt} icon={icon} name={s.name} />
+                      <StatusBadge color={colorOpt} icon={icon|| "⚡"} name={s.name} />
                     </td>
 
                     {/* Description */}
-                    <td className="px-5 py-4 text-gray-500 dark:text-gray-400 text-xs max-w-xs truncate">
+                    {/* <td className="px-5 py-4 text-gray-500 dark:text-gray-400 text-xs max-w-xs truncate">
                       {s.description || (
                         <span className="italic text-gray-300 dark:text-gray-600">
                           No description
                         </span>
                       )}
+                    </td> */}
+                    {/* Category */}
+                    <td className="px-5 py-4">
+                      <StatusBadge color={getColorOption(s.category.color)} icon={s.category.icon || "❓"} name={s.category.name} />
                     </td>
 
                     {/* Color */}
@@ -213,7 +219,7 @@ const StatusTable = ({
                     {/* Actions */}
                     {(canEdit || canDelete) && (
                       <td className="px-5 py-4">
-                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center justify-end gap-2 opacity-100 transition-opacity">
 
                           {canEdit && (
                             <button
@@ -253,19 +259,23 @@ const StatusTable = ({
         {/* Footer */}
         <div className="px-5 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
           <span className="text-xs text-gray-400 dark:text-gray-500">
-            Showing{" "}
-            <span className="font-semibold text-gray-600 dark:text-gray-300">
-              {filtered.length}
-            </span>{" "}
-            of{" "}
-            <span className="font-semibold text-gray-600 dark:text-gray-300">
-              {statusData.length}
-            </span>{" "}
-            statuses
+            Showing page {currentPage} of {totalPages}
           </span>
 
           <span className="text-xs text-gray-400 dark:text-gray-500">
-            Project · Task Statuses
+            <button 
+              className="p-3 font-bold"
+              onClick={()=>handlepagechange(-1)}
+            >
+              &lt;
+            </button>
+            {currentPage}
+            <button 
+              className="p-3 font-bold"
+              onClick={()=>handlepagechange(1)}
+            >
+              &gt;
+            </button>
           </span>
         </div>
       </div>
