@@ -37,6 +37,7 @@ const prospectService = {
   assignBulkLead: (userId: string, leadsId: Array<string>) => api.post("/prospect/bulk-assign", { assignedTo: userId, enquiryIds: leadsId }),
   sendMessage: (phone: string, message: string) => api.post("/communication/sms/send", { sendTo:phone, message }),
   bulkSms: (sendTo: Array<string>, message: string) => api.post("/communication/sms/bulk-send", { sendTo, message }),
+  assignBulkReAssign: (userId: string, enquiry_id: Array<string>) => api.post("/prospect/bulk-reassign", { assignedTo: userId, enquiryIds: enquiry_id }),
 };
 
 

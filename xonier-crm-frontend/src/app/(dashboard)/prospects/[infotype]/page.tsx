@@ -31,6 +31,8 @@ import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 import StatusBadge from "@/src/components/common/Status";
 import CreatedAt from "@/src/components/common/CreatedAt";
 import TagBadge from "@/src/components/common/tagBadge";
+import { MdSwapHoriz } from "react-icons/md"; // For reassign icon
+import ReassignModal from "@/src/components/pages/prospect/ReassignModal";
 
 const PAGE_LIMIT = 10;
 
@@ -220,6 +222,8 @@ const LeadContent = (): JSX.Element => {
   const [showBulkSmsModal, setShowBulkSmsModal] = useState(false);
   const [singleActionLead, setSingleActionLead] = useState<Prospect | null>(null);
   const [singleActionType, setSingleActionType] = useState<"call" | "sms" | "mail" | null>(null);
+  const [showReassignModal, setShowReassignModal] = useState(false);
+  const [singleReassignLead, setSingleReassignLead] = useState<Prospect | null>(null);
 
   // ── Refs ───────────────────────────────────────────────────────────────────
   const isFetchingRef = useRef<boolean>(false);
@@ -431,7 +435,7 @@ const LeadContent = (): JSX.Element => {
     const isCommChecked = commSelectedIds.has(item.id);
     return (
       <span className="flex items-center gap-1.5 p-2">
-        {(hasPermission(PERMISSIONS.callProspects) || hasPermission(PERMISSIONS.smsProspects) || hasPermission(PERMISSIONS.emailProspects)) && <label className="relative inline-flex items-center cursor-pointer mr-1" title="Select for bulk communication">
+        {(hasPermission(PERMISSIONS.callProspects) || hasPermission(PERMISSIONS.smsProspects) || hasPermission(PERMISSIONS.emailProspects) || hasPermission(PERMISSIONS.assignEnquiry)) && <label className="relative inline-flex items-center cursor-pointer mr-1" title="Select for bulk communication">
           <input type="checkbox" className="sr-only" checked={isCommChecked} onChange={() => toggleCommSelect(item.id)} />
           <div className={`w-4 h-4 rounded-sm border-2 flex items-center justify-center transition-all duration-150 ${isCommChecked ? "bg-slate-600 border-slate-600" : "bg-white dark:bg-gray-700 border-slate-300 dark:border-slate-500 hover:border-slate-500"}`}>
             {isCommChecked && <FaCheck className="text-white text-[8px]" />}
@@ -463,6 +467,15 @@ const LeadContent = (): JSX.Element => {
             <MdMailOutline className="text-sm" />
           </button>
         )}
+        {hasPermission(PERMISSIONS.assignEnquiry) && (
+          <button
+            onClick={() => setSingleReassignLead(item)}
+            className="h-8 w-8 flex items-center justify-center rounded-md bg-amber-100 dark:bg-amber-900/30 hover:bg-amber-200 text-amber-600 hover:scale-105 transition-transform"
+            title="Reassign Lead"
+          >
+            <MdSwapHoriz className="text-sm" />
+          </button>
+        )}
       </span>
     );
   };
@@ -473,6 +486,25 @@ const LeadContent = (): JSX.Element => {
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
     </svg>
   );
+
+  const handleReassignLeads = async (userId: string, leadIds: string[]) => {
+    try {
+      const result = await prospectService.assignBulkReAssign(userId, leadIds);
+      if (result.status === 200) {
+        toast.success("Leads reassigned successfully!");
+        setCommSelectedIds(new Set()); // Clear the selection after reassignment
+        await fetchData(1, filtersRef.current, true);
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const m = extractErrorMessages(error);
+        toast.error(`${m}`);
+      } else {
+        toast.error("Failed to reassign leads");
+      }
+    }
+  };
+
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -639,9 +671,9 @@ const LeadContent = (): JSX.Element => {
                   {isLoading ? (
                     Array.from({ length: 5 }).map((_, i) => (
                       <tr key={`skel-${i}`} className={`${i % 2 === 0 ? "bg-white dark:bg-transparent" : "bg-blue-100/50 dark:bg-slate-500"} w-full`}>
-                        {hasPermission(PERMISSIONS.assignEnquiry) && <td className="p-4"><Skeleton width={30} height={24} borderRadius={10} /></td>}
+                        {hasPermission(PERMISSIONS.assignEnquiry) && <td className="p-4"><Skeleton borderRadius={10} /></td>}
                         {Object.entries(activeColumns).map(([key, isActive]) =>
-                          isActive ? <td key={key} className="p-4"><Skeleton width={120} height={24} borderRadius={10} /></td> : null
+                          isActive ? <td key={key} className="p-4"><Skeleton borderRadius={10} /></td> : null
                         )}
                       </tr>
                     ))
@@ -684,7 +716,7 @@ const LeadContent = (): JSX.Element => {
                               else if (key === "source") content = (
                                 <span className={`bg-yellow-100 text-yellow-800 px-2.5 py-1 rounded-full text-xs font-medium`}
                                 >
-                                  {item.source||"N/A"}
+                                  {item.source || "N/A"}
                                 </span>
                               )
                               else content = <span className="capitalize text-sm whitespace-nowrap">{value ?? "-"}</span>;
@@ -699,7 +731,7 @@ const LeadContent = (): JSX.Element => {
                         <tr key={`more-${i}`} className={`${(leadData.length + i) % 2 === 0 ? "bg-white dark:bg-transparent" : "bg-blue-100/50 dark:bg-slate-500"} w-full`}>
                           {hasPermission(PERMISSIONS.assignEnquiry) && <td className="p-4"><Skeleton width={30} height={24} borderRadius={10} /></td>}
                           {Object.entries(activeColumns).map(([key, isActive]) =>
-                            isActive ? <td key={key} className="p-4"><Skeleton width={120} height={24} borderRadius={10} /></td> : null
+                            isActive ? <td key={key} className="p-4"><Skeleton borderRadius={10} /></td> : null
                           )}
                         </tr>
                       ))}
@@ -747,6 +779,23 @@ const LeadContent = (): JSX.Element => {
       {singleActionLead && singleActionType === "call" && <BulkCallModal leads={[singleActionLead]} onClose={() => { setSingleActionLead(null); setSingleActionType(null); }} />}
       {singleActionLead && singleActionType === "sms" && <BulkSmsModal leads={[singleActionLead]} onClose={() => { setSingleActionLead(null); setSingleActionType(null); }} />}
       {singleActionLead && singleActionType === "mail" && <BulkMailModal leads={[singleActionLead]} onClose={() => { setSingleActionLead(null); setSingleActionType(null); }} />}
+      {showReassignModal && commSelectedLeads.length > 0 && (
+        <ReassignModal
+          leads={commSelectedLeads}
+          assignableUsers={assignableUsers}
+          onClose={() => setShowReassignModal(false)}
+          onReassign={handleReassignLeads}
+        />
+      )}
+      {singleReassignLead && (
+        <ReassignModal
+          leads={[singleReassignLead]}
+          assignableUsers={assignableUsers}
+          onClose={() => setSingleReassignLead(null)}
+          onReassign={handleReassignLeads}
+        />
+      )}
+
 
       {/* Floating Communication Navbar */}
       <div className={`fixed bottom-0 left-72 right-0 z-40 transition-all duration-300 ease-in-out ${commSelectedIds.size > 0 ? "translate-y-0 opacity-100 pointer-events-auto" : "translate-y-full opacity-0 pointer-events-none"}`}>
@@ -766,7 +815,7 @@ const LeadContent = (): JSX.Element => {
                 <p className="text-sm font-semibold text-slate-800 dark:text-white leading-tight">
                   {commSelectedIds.size} lead{commSelectedIds.size > 1 ? "s" : ""} selected
                 </p>
-                <p className="text-xs text-slate-400 dark:text-slate-500 leading-tight">Ready to call, SMS, or email</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 leading-tight">Ready to call, SMS, email, or reassign</p>
               </div>
               <div className="hidden sm:flex items-center -space-x-2 ml-1">
                 {commSelectedLeads.slice(0, 5).map((lead, i) => (
@@ -799,6 +848,11 @@ const LeadContent = (): JSX.Element => {
               {hasPermission(PERMISSIONS.emailProspects) && (
                 <button onClick={() => setShowBulkMailModal(true)} className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-600 text-emerald-600 dark:text-emerald-400 hover:text-white border border-emerald-200 dark:border-emerald-700 hover:border-emerald-600 text-sm font-semibold transition-all duration-150 shadow-sm hover:shadow-md">
                   <MdMailOutline className="text-base group-hover:scale-110 transition-transform" /> <span>Mail All</span>
+                </button>
+              )}
+              {hasPermission(PERMISSIONS.assignEnquiry) && (
+                <button onClick={() => setShowReassignModal(true)} className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-600 text-amber-600 dark:text-amber-400 hover:text-white border border-amber-200 dark:border-amber-700 hover:border-amber-600 text-sm font-semibold transition-all duration-150 shadow-sm hover:shadow-md">
+                  <MdSwapHoriz className="text-base group-hover:scale-110 transition-transform" /> <span>Reassign</span>
                 </button>
               )}
             </div>
