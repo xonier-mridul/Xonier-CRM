@@ -46,7 +46,7 @@ export const TaskService = {
     api.put(`/task/update/${id}`, payload),
 
   updateStatus: (id: string, payload: UpdateTaskStatusPayload) =>
-    api.patch(`/task/${id}/status`, payload),
+    api.patch(`/task/status/${id}`, payload),
 
   updatePriority: (id: string, payload: UpdateTaskPriorityPayload) =>
     api.patch(`/task/${id}/priority`, payload),
