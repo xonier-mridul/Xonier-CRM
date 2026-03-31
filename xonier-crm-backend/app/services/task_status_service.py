@@ -125,7 +125,7 @@ class TaskStatusService:
                 page=page,
                 limit=limit,
                 filters=query,
-                populate=["category", "createdBy", "updatedBy"],
+                populate=["category", "createdBy", "updatedBy","icon"],
                 sort=["order"]
             )
  
