@@ -219,7 +219,7 @@ const UpdateTaskPage = (): JSX.Element => {
       const res = await TaskService.update(taskId, form);
       if (res.status === 200) {
         toast.success("Task updated successfully");
-        router.push("/taskManagement/tasks");
+        router.push("/task/tasks");
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
