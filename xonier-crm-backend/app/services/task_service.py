@@ -245,13 +245,37 @@ class TaskService:
  
             now = datetime.now(timezone.utc)
             for task in result.get("data", []):
-                due = task.get("dueDate")
-                completed = task.get("completedAt")
-                if due and not completed:
-                    task["isOverdue"] = datetime.fromisoformat(due.replace("Z", "+00:00")) < now if isinstance(due, str) else due < now
- 
-            return result
- 
+                try:
+                    due = task.get("dueDate")
+                    completed = task.get("completedAt")
+
+                    if due is None:
+                        task["isOverdue"] = False
+                        continue
+
+                    if isinstance(due, str):
+                        due = due.replace("Z", "+00:00")
+                        due_dt = datetime.fromisoformat(due)
+                        if due_dt.tzinfo is None:
+                            due_dt = due_dt.replace(tzinfo=timezone.utc)
+                    elif isinstance(due, datetime):
+                        due_dt = due if due.tzinfo else due.replace(tzinfo=timezone.utc)
+                    else:
+                        task["isOverdue"] = False
+                        continue
+
+                    if completed is not None:
+                        task["isOverdue"] = False
+                        continue
+
+                    task["isOverdue"] = due_dt < now
+
+                except Exception as ex:
+                    print(f"isOverdue error for task {task.get('task_id')}: {ex}")
+                    task["isOverdue"] = False
+                
+                return result
+    
         except AppException:
             raise
         except Exception as e:
@@ -347,7 +371,8 @@ class TaskService:
             encoded = jsonable_encoder(result)
             now = datetime.now(timezone.utc)
             if result.dueDate and not result.completedAt:
-                encoded["isOverdue"] = result.dueDate < now
+                due_dt = result.dueDate if result.dueDate.tzinfo else result.dueDate.replace(tzinfo=timezone.utc)
+                encoded["isOverdue"] = due_dt < now
  
             return encoded
  
