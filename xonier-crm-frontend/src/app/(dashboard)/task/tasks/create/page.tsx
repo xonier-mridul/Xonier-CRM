@@ -142,6 +142,7 @@ const CreateTaskPage = (): JSX.Element => {
   });
 
   const auth = useSelector((state: RootState) => state.auth);
+  const canAssign = hasPermission(PERMISSIONS.assignTask);
 
   const set = <K extends keyof CreateTaskPayload>(
     k: K,
@@ -401,9 +402,6 @@ const CreateTaskPage = (): JSX.Element => {
                 <Field label="Start Date">
                   <input
                     type="date"
-                    value={
-                      form.startDate ? new Date(form.startDate).toLocaleDateString("en-GB") : undefined
-                    }
                     onChange={(e) => set("startDate", new Date(e.target.value))}
                     className={inputCls}
                   />
@@ -411,7 +409,7 @@ const CreateTaskPage = (): JSX.Element => {
                 <Field label="Due Date">
                   <input
                     type="date"
-                    value={form.dueDate ? new Date(form.dueDate).toLocaleDateString("en-GB") : undefined}
+                    
                     onChange={(e) => set("dueDate", new Date(e.target.value))}
                     className={inputCls}
                   />
@@ -491,7 +489,6 @@ const CreateTaskPage = (): JSX.Element => {
                   <Field label="Ends At">
                     <input
                       type="date"
-                      value={form.recurrenceEndsAt ? new Date(form.recurrenceEndsAt).toLocaleDateString("en-GB") : undefined}
                       onChange={(e) =>
                         set("recurrenceEndsAt", new Date (e.target.value))
                       }
@@ -636,7 +633,7 @@ const CreateTaskPage = (): JSX.Element => {
                 />
               </Field>
             </SectionCard> */}
-             <SectionCard icon="👥" title="Assign Users">
+             {(canAssign)&&(<SectionCard icon="👥" title="Assign Users">
               <div className="space-y-3">
                 {/* Assign to me */}
                 <button
@@ -722,7 +719,7 @@ const CreateTaskPage = (): JSX.Element => {
                   })}
                 </div>
               </div>
-            </SectionCard>
+            </SectionCard>)}
           </div>
         </div>
 

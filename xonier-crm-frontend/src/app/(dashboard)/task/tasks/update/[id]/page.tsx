@@ -408,6 +408,7 @@ const UpdateTaskPage = (): JSX.Element => {
   };
 
   const canEdit = hasPermission(PERMISSIONS.updateTask);
+  const canAssign = hasPermission(PERMISSIONS.assignTask);
 
   // ── Loading skeleton ──────────────────────────────────────────────────────
   if (isFetching) {
@@ -788,7 +789,7 @@ const UpdateTaskPage = (): JSX.Element => {
           </Section>
 
           {/* Assign To */}
-          <Section icon="👥" title="Assign To">
+          {(canAssign)&&(<Section icon="👥" title="Assign To">
             {users.length === 0 ? (
               <div className="text-center py-6">
                 <div className="text-3xl mb-2">👤</div>
@@ -902,7 +903,7 @@ const UpdateTaskPage = (): JSX.Element => {
                 {form.assignedTo!.length > 1 ? "s" : ""} selected
               </p>
             )}
-          </Section>
+          </Section>)}
 
           {/* Task info (read-only) */}
           {original && (
@@ -953,6 +954,11 @@ const UpdateTaskPage = (): JSX.Element => {
                     </div>
                   </div>
                 )}
+              </div>
+              <div>
+                <p className="text-xs text-red-900 dark:text-gray-400 float-right rounded-xl bg-red-50 dark:bg-red-900/30 px-2 py-1 text-xs font-bold mb-4">
+                  Created by {original.createdBy?.firstName + " " + original.createdBy?.lastName}
+                </p>
               </div>
             </Section>
           )}
