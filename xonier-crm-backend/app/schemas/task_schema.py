@@ -51,6 +51,7 @@ class UpdateTaskSchema(BaseModel):
     description: Optional[str] = None
     priority: Optional[TASK_PRIORITY] = None
     dueDate: Optional[str] = None
+    assignedTo: Optional[List[str]] = []
     startDate: Optional[str] = None
     estimatedHours: Optional[float] = None
     actualHours: Optional[float] = None

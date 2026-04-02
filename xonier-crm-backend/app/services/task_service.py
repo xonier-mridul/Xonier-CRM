@@ -499,6 +499,8 @@ class TaskService:
                                 update_payload[date_field] = datetime.fromisoformat(payload[date_field])
                             except ValueError:
                                 raise AppException(400, f"Invalid {date_field} format")
+                            
+                    print("payload: ", payload)
  
                     updated = await self.repo.update(id=PydanticObjectId(task_id), data=update_payload, session=session)
                     if not updated:
