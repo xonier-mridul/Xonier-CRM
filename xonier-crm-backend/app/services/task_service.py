@@ -485,6 +485,7 @@ class TaskService:
                         **{k: v for k, v in payload.items() if v is not None},
                         "updatedBy": PydanticObjectId(user["_id"]),
                         "updatedAt": datetime.now(timezone.utc),
+                        "status": DBRef("task_statuses", PydanticObjectId(payload["status"]))
                     }
  
                     activities = []
