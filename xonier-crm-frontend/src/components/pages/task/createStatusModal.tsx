@@ -5,13 +5,14 @@ import { createPortal } from "react-dom";
 import { CategoryService } from "@/src/services/category.service";
 import { useState, useEffect } from "react";
 import { CategoryItem } from "@/src/types/task/category.types";
-function getColorOption(hex: string | null): ColorOption {
+export function getColorOption(hex: string | null): ColorOption {
     return COLOR_OPTIONS.find(c => c.hex === hex) ?? COLOR_OPTIONS[0];
 }
 const ICON_OPTIONS: string[] = [
     "⚡", "🔵", "✅", "🔄", "⏳", "⏸️", "🚀", "🔧", "📌", "🎯", "💡", "🛑", "🕐",
 ];
-export function StatusBadge({ color, icon, name }: { color: ColorOption; icon: string; name: string }) {
+export function StatusBadge({ color, icon, name }: { color: ColorOption; icon?: string; name: string }) {
+    if(!icon) icon = "⚡";
     return (
         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${color.bg} ${color.text}`}>
             <span>{icon}</span>
@@ -111,7 +112,7 @@ export function StatusModal({
                     </div>
 
                     {/* Description */}
-                    <div>
+                    {/* <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                             Description
                         </label>
@@ -124,7 +125,7 @@ export function StatusModal({
                             rows={2}
                             className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition resize-none"
                         />
-                    </div>
+                    </div> */}
 
                     {/* Category */}
                     <div>

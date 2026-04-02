@@ -10,14 +10,14 @@ import { TaskService } from "@/src/services/tasks.service";
 import { StatusService } from "@/src/services/status.service";
 import { ColorOption, StatusItem } from "@/src/types/task/status.types";
 import { MdEdit, MdDelete, MdOutlineEdit } from "react-icons/md";
+import { StatusBadge ,getColorOption} from "@/src/components/pages/task/createStatusModal";
 import {
   TaskItem,
-  TaskPermissions,
   TASK_PRIORITY,
   UpdateTaskStatusPayload,
   StatusOption,
 } from "@/src/types/task/task.types";
-import { COLOR_OPTIONS } from "@/src/constants/enum";
+import { COLOR_OPTIONS, PERMISSIONS } from "@/src/constants/enum";
 import { IoMdEye } from "react-icons/io";
 
 
@@ -41,8 +41,7 @@ function CategoryBadge({ color, icon, name }: { color: ColorOption; icon: string
   );
 }
 
-const getColorOption = (hex: string | null): ColorOption =>
-  COLOR_OPTIONS.find(c => c.hex === hex) ?? COLOR_OPTIONS[0];
+
 
 
 interface StatusDropdownProps {
@@ -507,12 +506,13 @@ const TaskListPage = (): JSX.Element => {
   const [filterStatus, setFilterStatus] = useState("");
   const [filterPriority, setFilterPriority] = useState("");
 
-  const canCreate = hasPermission(TaskPermissions.CREATE_TASK);
-  const canView = hasPermission(TaskPermissions.VIEW_TASK)
-  const canEdit = hasPermission(TaskPermissions.EDIT_TASK);
-  const canDelete = hasPermission(TaskPermissions.DELETE_TASK);
-  const canChangeStatus = hasPermission(TaskPermissions.UPDATE_TASK_STATUS);
+  const canCreate = hasPermission(PERMISSIONS.createTask);
+  const canView = hasPermission(PERMISSIONS.readTask)
+  const canEdit = hasPermission(PERMISSIONS.updateTask);
+  const canDelete = hasPermission(PERMISSIONS.deleteTask);
+  const canChangeStatus = hasPermission(PERMISSIONS.taskStatusUpdate);
   const showActions = canEdit || canDelete;
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   // ── Fetch tasks ───────────────────────────────────────────────────────────
   const fetchTasks = useCallback(async () => {
@@ -526,9 +526,9 @@ const TaskListPage = (): JSX.Element => {
         search: search || undefined,
       });
       if (res.status === 200) {
-        const d = res.data.data;
+        const d = res.data?.data||[];
         setTaskData(d.data ?? []);
-        setTotalCount(Number(d.total ?? 0));
+        setTotalCount(Number(d.totalPages ?? 0));
       }
     } catch (e) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
@@ -613,13 +613,22 @@ const TaskListPage = (): JSX.Element => {
       setDeleting(false);
     }
   };
+  const handleSearch = (val: string) => {
+    
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      setSearch(val);
+    }, 300);
+  };
 
   const totalPages = Math.ceil(totalCount / pageLimit);
   const hasFilters = !!(search || filterStatus || filterPriority);
   const colCount = showActions ? 8 : 7;
 
   return (
-    <div className="ml-72 mt-14 p-6">
+    <div className="ml-72 mt-14">
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full">
 
         {/* Page Header */}
@@ -657,7 +666,7 @@ const TaskListPage = (): JSX.Element => {
             <div key={s.label} className={`flex items-center gap-3 p-4 rounded-2xl border ${s.bg}`}>
               <span className="text-xl">{s.icon}</span>
               <div>
-                <div className="text-xl font-extrabold text-gray-900 dark:text-white">{s.value}</div>
+                <div className="text-xl font-extrabold text-gray-900 dark:text-black">{s.value}</div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">{s.label}</div>
               </div>
             </div>
@@ -670,8 +679,9 @@ const TaskListPage = (): JSX.Element => {
           <div className="relative flex-1 min-w-[200px] max-w-xs">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
             <input
-              type="text" value={search}
-              onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
+              type="text"
+
+              onChange={e => handleSearch(e.target.value)}
               placeholder="Search tasks…"
               className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
             />
@@ -710,8 +720,8 @@ const TaskListPage = (): JSX.Element => {
               <span>✕</span> Clear
             </button>
           )}
-          <div className="w-px h-7 bg-gray-200 dark:bg-gray-600 ml-auto" />
-          <ViewToggle view={viewMode} onChange={v => { setViewMode(v); setCurrentPage(1); }} />
+          {/* <div className="w-px h-7 bg-gray-200 dark:bg-gray-600 ml-auto" />
+          <ViewToggle view={viewMode} onChange={v => { setViewMode(v); setCurrentPage(1); }} /> */}
         </div>
 
         {viewMode === "board" && (
@@ -824,12 +834,13 @@ const TaskListPage = (): JSX.Element => {
 
                           {/* Status — inline dropdown */}
                           <td className="px-5 py-4">
-                            <StatusDropdown
+                            {/* <StatusDropdown
                               task={task}
                               statusOptions={statusOptions}
                               onChange={handleStatusChange}
                               disabled={!canChangeStatus}
-                            />
+                            /> */}
+                            <StatusBadge color={getColorOption(task.status.color)} icon={task.status.icon || "⚡"} name={task.status.name} />
                           </td>
 
                           {/* Priority */}
@@ -846,7 +857,7 @@ const TaskListPage = (): JSX.Element => {
                               <span className="text-xs italic text-gray-300 dark:text-gray-600">Unassigned</span>
                             ) : (
                               <div className="flex -space-x-2">
-                                {task.assignedTo.slice(0, 4).map(u => (
+                                {task.assignedTo.slice(0, 2).map(u => (
                                   <div
                                     key={u.id} title={u.firstName}
                                     className=" rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 border-2 border-white dark:border-gray-800 flex items-center px-2 py-1 capitalize justify-center text-white text-[12px] font-bold shrink-0"
@@ -854,9 +865,9 @@ const TaskListPage = (): JSX.Element => {
                                     {u.firstName} {u?.lastName ?? ""}
                                   </div>
                                 ))}
-                                {task.assignedTo.length > 4 && (
+                                {task.assignedTo.length > 2 && (
                                   <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-white dark:border-gray-800 flex items-center justify-center text-[9px] font-bold text-gray-500 shrink-0">
-                                    +{task.assignedTo.length - 4}
+                                    +{task.assignedTo.length - 2}
                                   </div>
                                 )}
                               </div>
@@ -927,12 +938,12 @@ const TaskListPage = (): JSX.Element => {
            
             <div className="px-5 py-3.5 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
               <span className="text-xs text-gray-400 dark:text-gray-500">
-                Showing{" "}
+                Showing{" page "} 
                 <span className="font-semibold text-gray-600 dark:text-gray-300">
-                  {totalCount === 0 ? 0 : (currentPage - 1) * pageLimit + 1}–{Math.min(currentPage * pageLimit, totalCount)}
+                  {currentPage}
                 </span>{" "}
                 of{" "}
-                <span className="font-semibold text-gray-600 dark:text-gray-300">{totalCount}</span> tasks
+                <span className="font-semibold text-gray-600 dark:text-gray-300">{totalCount}</span> 
               </span>
 
               <div className="flex items-center gap-2">
@@ -945,7 +956,7 @@ const TaskListPage = (): JSX.Element => {
                   ← Prev
                 </button>
                 <span className="text-xs text-gray-500 dark:text-gray-400 font-medium px-1">
-                  {currentPage} / {totalPages || 1}
+                  {currentPage} 
                 </span>
                 <button
                   type="button"

@@ -1,11 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback  } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import axios from "axios";
 import api from "@/src/lib/axios";
 import Link from "next/link";
+import { getColorOption, StatusBadge } from "@/src/components/pages/task/createStatusModal";
+import { PERMISSIONS } from "@/src/constants/enum";
+import { usePermissions } from "@/src/hooks/usePermissions";
 
 type Raw = Record<string, unknown>;
 
@@ -523,6 +526,7 @@ export default function TaskViewPage() {
   const [draggingTask, setDraggingTask] = useState<Task | null>(null);
   const [dragOverColId, setDragOverColId] = useState<string | null>(null);
   const [movingTaskId, setMovingTaskId] = useState<string | null>(null);
+  const { hasPermission } = usePermissions();
 
   const dragRef = useRef<Task | null>(null);
 
@@ -638,7 +642,7 @@ export default function TaskViewPage() {
         targetCol.tasks.length,
       );
       toast.success("Task moved");
-      await loadBoard(focusedTask?.category?.id ?? "");
+      // await loadBoard(focusedTask?.category?.id ?? "");
     } catch (err) {
       console.error("Move error:", err);
       await loadBoard(focusedTask?.category?.id ?? "");
@@ -695,7 +699,7 @@ export default function TaskViewPage() {
 
   return (
     <div className="ml-72 mt-14 p-6 min-h-screen bg-gray-50/40 dark:bg-gray-900/20">
-      <div className="flex items-center gap-2 mb-5">
+      {/* <div className="flex items-center gap-2 mb-5">
         <button
           onClick={() => router.back()}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 shadow-sm transition-all"
@@ -712,7 +716,7 @@ export default function TaskViewPage() {
         </span>
         <span className="text-gray-300 dark:text-gray-600">/</span>
         <span className="text-xs text-indigo-500 font-semibold">Board</span>
-      </div>
+      </div> */}
 
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-5 mb-5">
         <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -753,19 +757,7 @@ export default function TaskViewPage() {
 
             <div className="flex flex-wrap items-center gap-2 mt-3">
               <PriorityBadge priority={focusedTask.priority} />
-
-              <span
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border transition-all"
-                style={{
-                  backgroundColor: `${liveTask?.status?.color ?? "#6366f1"}18`,
-                  color: liveTask?.status?.color ?? "#6366f1",
-                  borderColor: `${liveTask?.status?.color ?? "#6366f1"}30`,
-                }}
-              >
-                {liveTask?.status?.icon && <span>{liveTask.status.icon}</span>}
-                {liveTask?.status?.name ?? focusedTask.status.name}
-              </span>
-
+              <StatusBadge color={getColorOption(focusedTask.status.color) } icon={focusedTask.status.icon} name={focusedTask.status.name} />
               {focusedTask.dueDate && (
                 <span
                   className={`text-xs font-semibold flex items-center gap-1 ${!focusedTask.completedAt && new Date(focusedTask.dueDate) < new Date() ? "text-rose-500" : "text-gray-400 dark:text-gray-500"}`}
