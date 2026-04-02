@@ -188,20 +188,16 @@ class TaskService:
                     raise AppException(400, "Invalid status id")
                 query["status.$id"] = ObjectId(filters["status"])
  
-            if "priority" in filters:
-                query["priority"] = filters["priority"]
+           
  
             if "assignedTo" in filters:
                 if not ObjectId.is_valid(filters["assignedTo"]):
                     raise AppException(400, "Invalid assignedTo user id")
                 query["assignedTo.$id"] = PydanticObjectId(filters["assignedTo"])
  
-            if "entityType" in filters:
-                query["entityType"] = filters["entityType"]
+          
  
-            if "entityId" in filters:
-                query["entityId"] = filters["entityId"]
- 
+            
             if "parentTask" in filters:
                 if filters["parentTask"] == "null":
                     query["parentTask"] = None
@@ -213,10 +209,17 @@ class TaskService:
                 query["completedAt"] = None
  
             if "search" in filters and filters["search"].strip():
-                query["title"] = {"$regex": filters["search"].strip(), "$options": "i"}
+                regex_data = {"$regex": filters["search"].strip(), "$options": "i"}
+                query.update({"$or": [
+                    {"title": regex_data},
+                    {"priority": regex_data},
+                    {"tags": regex_data},
+                    {"entityId": regex_data},
+                    {"entityType": regex_data},
+                    {"status": regex_data}
+                ]})
  
-            if "tags" in filters:
-                query["tags"] = {"$in": filters["tags"].split(",")}
+           
  
             if "fromDate" in filters or "toDate" in filters:
                 date_filter = {}
@@ -231,7 +234,8 @@ class TaskService:
                     except ValueError:
                         raise AppException(400, "Invalid toDate format")
                 query["dueDate"] = date_filter
- 
+            
+            
             result = await self.repo.get_all(
                 page=page,
                 limit=limit,
@@ -242,6 +246,8 @@ class TaskService:
  
             if not result:
                 raise AppException(404, "No tasks found")
+            
+           
  
             now = datetime.now(timezone.utc)
             for task in result.get("data", []):
@@ -273,8 +279,11 @@ class TaskService:
                 except Exception as ex:
                     print(f"isOverdue error for task {task.get('task_id')}: {ex}")
                     task["isOverdue"] = False
+
+
+           
                 
-                return result
+            return result
     
         except AppException:
             raise
@@ -500,8 +509,8 @@ class TaskService:
                             except ValueError:
                                 raise AppException(400, f"Invalid {date_field} format")
                             
+                    print("payload: ", update_payload)
                     
- 
                     updated = await self.repo.update(id=PydanticObjectId(task_id), data=update_payload, session=session)
                     if not updated:
                         raise AppException(400, "Task update failed")
