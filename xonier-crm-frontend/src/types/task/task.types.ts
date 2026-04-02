@@ -2,6 +2,7 @@ import { Dispatch, SetStateAction } from "react";
 import { CategoryItem } from "./category.types";
 import { StatusItem } from "./status.types";
 import { Timestamp } from "next/dist/server/lib/cache-handlers/types";
+import { User } from "../auth/auth.types";
 
 // ── Enums (mirror Python enums) ───────────────────────────────────────────────
 export enum TASK_PRIORITY {
@@ -168,6 +169,7 @@ export interface TaskItem {
   order: number;
   createdAt: string;
   updatedAt: string;
+  createdBy?: User;
 }
 
 export interface PaginatedTaskResponse {

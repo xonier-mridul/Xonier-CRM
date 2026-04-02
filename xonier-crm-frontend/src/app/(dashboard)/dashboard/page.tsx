@@ -30,6 +30,8 @@ import {
   Trash2,
   BarChart2,
   ShieldCheck,
+  ShieldOff,
+  Lock,
 } from "lucide-react";
 
 import { DashboardService } from "@/src/services/dashboard.service";
@@ -40,6 +42,7 @@ import type {
   DealPipelineStage,
 } from "@/src/types/dashboard/dashboard.types";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -57,7 +60,6 @@ const SOURCE_COLORS = [
   "#22c55e", "#06b6d4", "#eab308", "#a855f7",
 ];
 
-// ── "delete" status added to both maps ───────────────────────────────────────
 const STATUS_COLORS: Record<string, string> = {
   new: "#6366f1",
   contacted: "#eab308",
@@ -194,12 +196,102 @@ const SectionTitle = ({ title, sub }: { title: string; sub?: string }) => (
   </div>
 );
 
+// ─── 403 Unauthorized Full-Page View ─────────────────────────────────────────
+
+function UnauthorizedView() {
+  const router = useRouter();
+
+  return (
+    <div className="mt-10 ml-72 min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-6">
+      <div className="">
+        <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full">
+          {/* Card */}
+          <div className="">
+
+            {/* Top accent bar */}
+            {/* <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-pink-500" /> */}
+
+            <div className="p-10 flex flex-col items-center text-center">
+
+              {/* Icon stack */}
+              <div className="relative mb-8">
+                {/* Outer glow ring */}
+                <div className="absolute inset-0 rounded-full bg-red-100 dark:bg-red-900/30 scale-[1.35] blur-xl opacity-60" />
+                {/* Circle */}
+                <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-red-50 to-rose-100 dark:from-red-900/40 dark:to-rose-900/40 border-2 border-red-100 dark:border-red-800 flex items-center justify-center ">
+                  <ShieldOff className="w-10 h-10 text-red-500 dark:text-red-400" strokeWidth={1.5} />
+                </div>
+                {/* Lock badge */}
+                <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 flex items-center justify-center ">
+                  <Lock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                </div>
+              </div>
+
+              {/* Status code */}
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 border border-red-100 dark:border-red-800 mb-4 tracking-widest uppercase">
+                403 · Forbidden
+              </span>
+
+              {/* Heading */}
+              <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-2">
+                Access Denied
+              </h1>
+
+              {/* Description */}
+              <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-sm mb-1">
+                You don't have permission to view the dashboard.
+              </p>
+              <p className="text-sm text-gray-400 dark:text-gray-500 leading-relaxed max-w-sm mb-8">
+                Please contact your administrator to request access, or return to the home page.
+              </p>
+
+              {/* Divider */}
+              <div className="w-full border-t border-gray-100 dark:border-gray-800 mb-8" />
+
+              {/* Info box */}
+              <div className="w-full flex items-start gap-3 px-4 py-3.5 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 text-left mb-8">
+                <AlertCircle className="w-4 h-4 text-amber-500 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+                  Your current role does not include dashboard access. If you believe this is a mistake,
+                  reach out to your admin with your user ID and the page you're trying to access.
+                </p>
+              </div>
+
+              {/* Actions */}
+              {/* <div className="flex items-center gap-3 w-full">
+              <button
+                onClick={() => router.back()}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 transition-colors"
+              >
+                ← Go Back
+              </button>
+              <Link href="/" className="flex-1">
+                <button className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] transition-all shadow-lg shadow-indigo-200 dark:shadow-indigo-900/40">
+                  <Home className="w-4 h-4" />
+                  Home
+                </button>
+              </Link>
+            </div> */}
+            </div>
+          </div>
+          {/* Footer note */}
+          <p className="text-center text-xs text-gray-400 dark:text-gray-600 mt-5">
+            Error code 403 · Unauthorized access attempt has been logged
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // FIX: Track HTTP status code separately so we can render the right error UI
+  const [errorStatus, setErrorStatus] = useState<number | null>(null);
   const [filter, setFilter] = useState<"today" | "this_week" | "this_month" | "this_year">("today");
   const [refreshing, setRefreshing] = useState(false);
   const [trendTab, setTrendTab] = useState<"leads" | "deals">("leads");
@@ -211,11 +303,15 @@ export default function DashboardPage() {
       if (showRefresh) setRefreshing(true);
       else setLoading(true);
       setError(null);
+      setErrorStatus(null);
       const result = await DashboardService.getAll({ page: 1, limit: 1, search: filter });
       if (result.status === 200) setData(result.data.data);
       else throw new Error(result.data.message);
     } catch (err: any) {
-      setError(err?.message ?? "Failed to load dashboard");
+      // FIX: Detect 403 from Axios error response and store the status code
+      const status = err?.response?.status ?? null;
+      setErrorStatus(status);
+      setError(err?.response?.data?.message ?? err?.message ?? "Failed to load dashboard");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -230,7 +326,6 @@ export default function DashboardPage() {
     ? data.monthlyLeadTrend.map((i) => ({ month: `${i.month} ${i.year}`, leads: i.count }))
     : [];
 
-  // monthlyDealTrend — was previously unused
   const dealTrendData = data
     ? data.monthlyDealTrend.map((i) => ({ month: `${i.month} ${i.year}`, deals: i.count }))
     : [];
@@ -243,7 +338,6 @@ export default function DashboardPage() {
 
   const totalLeads = data?.leads.total ?? 1;
 
-  // Sum all pipeline stage amounts
   const pipelineTotalAmount = data
     ? data.dealPipelineBreakdown.reduce((sum, p) => sum + p.totalAmount, 0)
     : 0;
@@ -274,7 +368,12 @@ export default function DashboardPage() {
     );
   }
 
-  // ── Error state ─────────────────────────────────────────────────────────────
+  // ── FIX: 403 → render the dedicated Unauthorized full-page view ─────────────
+  if (errorStatus === 403) {
+    return <UnauthorizedView />;
+  }
+
+  // ── Generic error state ─────────────────────────────────────────────────────
   if (error) {
     return (
       <div className="mt-10 ml-72 flex items-center justify-center h-96">
@@ -294,12 +393,12 @@ export default function DashboardPage() {
 
   if (!data) return null;
 
-  // ── KPI cards — sub text now shows deleted + active enquiries ───────────────
+  // ── KPI cards ───────────────────────────────────────────────────────────────
   const kpiCards = [
     {
       label: "Total Leads",
       value: fmt(data.leads.total),
-      sub: `${fmt(data.leads.active)} active · ${data.leads.won} won · ${data.leads.deleted||0} deleted`,
+      sub: `${fmt(data.leads.active)} active · ${data.leads.won} won · ${data.leads.deleted || 0} deleted`,
       barPct: Math.min((data.leads.active / Math.max(data.leads.total, 1)) * 100, 100),
       color: "#6366f1",
       icon: <TrendingUp className="w-4 h-4" />,
@@ -316,9 +415,9 @@ export default function DashboardPage() {
     },
     {
       label: "Team Members",
-      value: data.users?.total ||0,
-      sub: (`${data.users?.thisMonth||0} joined · ${data.users?.inactive||0} inactive · ${data.users?.deleted||0} deleted`),
-      barPct: Math.min((data.users?.active || 0 / Math.max(data.users?.total||0, 1)) * 100, 100),
+      value: data.users?.total || 0,
+      sub: `${data.users?.thisMonth || 0} joined · ${data.users?.inactive || 0} inactive · ${data.users?.deleted || 0} deleted`,
+      barPct: Math.min((data.users?.active || 0 / Math.max(data.users?.total || 0, 1)) * 100, 100),
       color: "#22c55e",
       icon: <Users className="w-4 h-4" />,
       iconBg: "bg-green-500",
@@ -326,7 +425,7 @@ export default function DashboardPage() {
     {
       label: "Enquiries",
       value: data.enquiries.total,
-      sub: `${data.enquiries.assigned} assigned · ${data.enquiries.unassigned||0} unassigned · ${data.enquiries.active||0} active`,
+      sub: `${data.enquiries.assigned} assigned · ${data.enquiries.unassigned || 0} unassigned · ${data.enquiries.active || 0} active`,
       barPct: Math.min((data.enquiries.assigned / Math.max(data.enquiries.total, 1)) * 100, 100),
       color: "#f97316",
       icon: <MessageSquare className="w-4 h-4" />,
@@ -341,15 +440,14 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-            {(data.role==="admin") ?
-            "Admin Dashboard" : `Welcome Back, ${data.user?.firstName} ${data.user?.lastName}`
-            }
+            {data.role === "admin"
+              ? "Admin Dashboard"
+              : `Welcome Back, ${data.user?.firstName} ${data.user?.lastName}`}
           </h1>
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 flex items-center gap-2">
             {new Date(data.period.start).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
             {" – "}
             {new Date(data.period.end).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-            {/* period.filter from API rendered as badge */}
             <span className="px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-500 dark:text-indigo-400 text-[10px] font-semibold uppercase tracking-wide">
               {data.period.filter.replace(/_/g, " ")}
             </span>
@@ -409,10 +507,8 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* ── Row 2: Trend Chart (leads / deals tab) + Lead Sources ── */}
+      {/* ── Row 2: Trend Chart + Lead Sources ── */}
       <div className="grid grid-cols-3 gap-4">
-
-        {/* Trend — tabbed between leads and deals (monthlyDealTrend now used) */}
         <div className="col-span-2 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
           <div className="flex items-center justify-between mb-5">
             <div>
@@ -444,7 +540,6 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-
           <ResponsiveContainer width="100%" height={210}>
             <AreaChart
               data={trendTab === "leads" ? leadTrendData : dealTrendData}
@@ -462,11 +557,7 @@ export default function DashboardPage() {
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
               <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-              <YAxis
-                tick={{ fontSize: 11, fill: "#94a3b8" }}
-                axisLine={false} tickLine={false} width={48}
-                tickFormatter={fmt}
-              />
+              <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} width={48} tickFormatter={fmt} />
               <Tooltip content={<CustomTooltip />} />
               {trendTab === "leads" ? (
                 <Area type="monotone" dataKey="leads" stroke="#6366f1" strokeWidth={2.5}
@@ -479,32 +570,21 @@ export default function DashboardPage() {
           </ResponsiveContainer>
         </div>
 
-        {/* Lead Sources Donut — now also shows raw count */}
         <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
           <SectionTitle title="Lead Sources" sub="Distribution by channel" />
           {sourceChartData?.length > 0 ? (
             <>
               <ResponsiveContainer width="100%" height={160}>
                 <PieChart>
-                  <Pie
-                    data={sourceChartData}
-                    cx="50%" cy="50%"
-                    innerRadius={45} outerRadius={68}
-                    dataKey="value" strokeWidth={0} paddingAngle={3}
-                  >
+                  <Pie data={sourceChartData} cx="50%" cy="50%" innerRadius={45} outerRadius={68}
+                    dataKey="value" strokeWidth={0} paddingAngle={3}>
                     {sourceChartData.map((_, i) => (
                       <Cell key={i} fill={SOURCE_COLORS[i % SOURCE_COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value) => [
-                      value?.toLocaleString?.() ?? "0",
-                      ""
-                    ]}
-                    contentStyle={{
-                      background: "white", border: "1px solid #f1f5f9",
-                      borderRadius: "12px", fontSize: "12px",
-                    }}
+                    formatter={(value) => [value?.toLocaleString?.() ?? "0", ""]}
+                    contentStyle={{ background: "white", border: "1px solid #f1f5f9", borderRadius: "12px", fontSize: "12px" }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -538,8 +618,6 @@ export default function DashboardPage() {
 
       {/* ── Row 3: Deal Pipeline + Latest Leads ── */}
       <div className="grid grid-cols-12 gap-4">
-
-        {/* Deal Pipeline — pipeline totalAmount badge added */}
         <div className="col-span-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
           <div className="flex items-start justify-between mb-1">
             <div>
@@ -551,7 +629,6 @@ export default function DashboardPage() {
               {fmtCurrency(pipelineTotalAmount)} total
             </span>
           </div>
-
           <ResponsiveContainer width="100%" height={240}>
             <BarChart
               data={data.dealPipelineBreakdown.map((p) => ({
@@ -564,8 +641,7 @@ export default function DashboardPage() {
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
               <XAxis type="number" tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="stage"
-                tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} width={65} />
+              <YAxis type="category" dataKey="stage" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} width={65} />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="count" radius={[0, 6, 6, 0]}>
                 {data.dealPipelineBreakdown.map((p, i) => (
@@ -576,18 +652,19 @@ export default function DashboardPage() {
           </ResponsiveContainer>
         </div>
 
-        {/* Latest Leads — STATUS_BADGE now handles "delete" status */}
         <div className="col-span-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-sm font-semibold text-gray-800 dark:text-white">Latest Leads</h2>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Most recent pipeline entries</p>
             </div>
-            {(hasPermission(PERMISSIONS.readLead)) && <a href="/leads">
-              <button className="flex items-center gap-1 text-xs font-semibold text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
-                View all <ArrowUpRight className="w-3 h-3" />
-              </button>
-            </a>}
+            {hasPermission(PERMISSIONS.readLead) && (
+              <a href="/leads">
+                <button className="flex items-center gap-1 text-xs font-semibold text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
+                  View all <ArrowUpRight className="w-3 h-3" />
+                </button>
+              </a>
+            )}
           </div>
           <table className="w-full">
             <thead>
@@ -608,9 +685,7 @@ export default function DashboardPage() {
                         {lead.source.charAt(0).toUpperCase()}
                       </div>
                       <Link href={`/leads/view/${lead._id}`} className="text-xs font-mono text-gray-500 dark:text-gray-400 truncate max-w-[130px]">
-                      <span className="text-xs font-mono text-gray-500 dark:text-gray-400 truncate max-w-[130px]">
-                        {lead.lead_id}
-                      </span>                      
+                        <span>{lead.lead_id}</span>
                       </Link>
                     </div>
                   </td>
@@ -634,7 +709,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ── Row 4: Revenue Cards (totalRevenue + monthlyRevenue + pipelineValue) ── */}
+      {/* ── Row 4: Revenue Cards ── */}
       <div className="grid grid-cols-3 gap-4">
         {[
           {
@@ -648,7 +723,7 @@ export default function DashboardPage() {
           },
           {
             label: "Monthly Revenue",
-            value: fmtCurrency(data.deals?.monthlyRevenue||0),
+            value: fmtCurrency(data.deals?.monthlyRevenue || 0),
             sub: "Revenue this period",
             color: "#8b5cf6",
             bg: "bg-violet-500",
@@ -682,24 +757,16 @@ export default function DashboardPage() {
             </p>
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">{card.sub}</p>
             <div className="mt-4 h-1 rounded-full bg-gray-100 dark:bg-gray-800">
-              <div
-                className="h-1 rounded-full transition-all duration-700"
-                style={{ width: `${card.barPct}%`, background: card.color }}
-              />
+              <div className="h-1 rounded-full transition-all duration-700" style={{ width: `${card.barPct}%`, background: card.color }} />
             </div>
           </div>
         ))}
       </div>
 
-      {/* ── Row 5: Lead Status Breakdown + Activity Snapshot ── */}
+      {/* ── Row 5: Status Breakdown + Activity Snapshot ── */}
       <div className="grid grid-cols-2 gap-4">
-
-        {/* Status Breakdown — "delete" status fully rendered */}
         <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-          <SectionTitle
-            title="Lead Status Breakdown"
-            sub="Current distribution across all statuses"
-          />
+          <SectionTitle title="Lead Status Breakdown" sub="Current distribution across all statuses" />
           <div className="flex flex-col gap-3">
             {data.leadStatusBreakdown?.map((item) => {
               const pct = ((item.count / totalLeads) * 100).toFixed(1);
@@ -711,9 +778,7 @@ export default function DashboardPage() {
                       <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
                       <span className="text-xs font-medium text-gray-700 dark:text-gray-300 capitalize flex items-center gap-1.5">
                         {item.status}
-                        {item.status === "delete" && (
-                          <Trash2 className="w-3 h-3 text-slate-400" />
-                        )}
+                        {item.status === "delete" && <Trash2 className="w-3 h-3 text-slate-400" />}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -726,10 +791,8 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <div className="h-1.5 rounded-full bg-gray-100 dark:bg-gray-800">
-                    <div
-                      className="h-1.5 rounded-full transition-all duration-700"
-                      style={{ width: `${parseFloat(pct)}%`, backgroundColor: color }}
-                    />
+                    <div className="h-1.5 rounded-full transition-all duration-700"
+                      style={{ width: `${parseFloat(pct)}%`, backgroundColor: color }} />
                   </div>
                 </div>
               );
@@ -737,62 +800,18 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Activity Snapshot — all 8 metrics including previously missing ones */}
         <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
           <SectionTitle title="Activity Snapshot" sub="Key metrics at a glance" />
           <div className="grid grid-cols-2 gap-3">
             {[
-              {
-                label: "Leads this month",
-                value: fmt(data.leads?.thisMonth||0),
-                color: "bg-indigo-50 dark:bg-indigo-950",
-                text: "text-indigo-600 dark:text-indigo-400",
-              },
-              {
-                label: "Deals opened",
-                value: data.deals.thisMonth||0,
-                color: "bg-pink-50 dark:bg-pink-950",
-                text: "text-pink-600 dark:text-pink-400",
-              },
-              {
-                label: "New users",
-                value: data.users?.thisMonth||0,
-                color: "bg-green-50 dark:bg-green-950",
-                text: "text-green-600 dark:text-green-400",
-              },
-              {
-                label: "Enquiries received",
-                value: data.enquiries.thisMonth||0,
-                color: "bg-orange-50 dark:bg-orange-950",
-                text: "text-orange-600 dark:text-orange-400",
-              },
-              {
-                label: "Won leads",
-                value: data.leads.won,
-                color: "bg-cyan-50 dark:bg-cyan-950",
-                text: "text-cyan-600 dark:text-cyan-400",
-              },
-              // monthly revenue — previously missing
-              {
-                label: "Monthly revenue",
-                value: fmtCurrency(data.deals?.monthlyRevenue||0),
-                color: "bg-emerald-50 dark:bg-emerald-950",
-                text: "text-emerald-600 dark:text-emerald-400",
-              },
-              // deleted leads — previously missing
-              {
-                label: "Deleted leads",
-                value: data.leads.deleted||0,
-                color: "bg-slate-100 dark:bg-slate-800",
-                text: "text-slate-500 dark:text-slate-400",
-              },
-              // active enquiries — previously missing
-              {
-                label: "Active enquiries",
-                value: data.enquiries.active,
-                color: "bg-violet-50 dark:bg-violet-950",
-                text: "text-violet-600 dark:text-violet-400",
-              },
+              { label: "Leads this month", value: fmt(data.leads?.thisMonth || 0), color: "bg-indigo-50 dark:bg-indigo-950", text: "text-indigo-600 dark:text-indigo-400" },
+              { label: "Deals opened", value: data.deals.thisMonth || 0, color: "bg-pink-50 dark:bg-pink-950", text: "text-pink-600 dark:text-pink-400" },
+              { label: "New users", value: data.users?.thisMonth || 0, color: "bg-green-50 dark:bg-green-950", text: "text-green-600 dark:text-green-400" },
+              { label: "Enquiries received", value: data.enquiries.thisMonth || 0, color: "bg-orange-50 dark:bg-orange-950", text: "text-orange-600 dark:text-orange-400" },
+              { label: "Won leads", value: data.leads.won, color: "bg-cyan-50 dark:bg-cyan-950", text: "text-cyan-600 dark:text-cyan-400" },
+              { label: "Monthly revenue", value: fmtCurrency(data.deals?.monthlyRevenue || 0), color: "bg-emerald-50 dark:bg-emerald-950", text: "text-emerald-600 dark:text-emerald-400" },
+              { label: "Deleted leads", value: data.leads.deleted || 0, color: "bg-slate-100 dark:bg-slate-800", text: "text-slate-500 dark:text-slate-400" },
+              { label: "Active enquiries", value: data.enquiries.active, color: "bg-violet-50 dark:bg-violet-950", text: "text-violet-600 dark:text-violet-400" },
             ].map((item) => (
               <div key={item.label} className={`${item.color} rounded-xl p-3.5 flex flex-col gap-1`}>
                 <span className={`font-mono text-xl font-bold ${item.text}`}>{item.value}</span>
@@ -802,11 +821,16 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-      <div className="flex items-center justify-between gap-3 ">
+
+      {/* ── Top Performers ── */}
+      <div className="flex items-center justify-between gap-3">
         <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 w-full">
           <div className="flex justify-between items-center">
             <SectionTitle title="Top Performer" sub="Sales team leaderboard this month" />
-            <MdOutlineLeaderboard className="w-4 h-4 text-indigo-600 dark:text-indigo-400" onClick={() => setLeaderboard(true)} />
+            <MdOutlineLeaderboard
+              className="w-4 h-4 text-indigo-600 dark:text-indigo-400 cursor-pointer"
+              onClick={() => setLeaderboard(true)}
+            />
           </div>
           <div className="grid grid-cols-4 gap-4">
             {topPerformers.slice(0, 4).map((p, i) => (
@@ -838,75 +862,43 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
       {/* ── Leaderboard Modal ── */}
       {leaderboard && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-
-          {/* Modal */}
           <div className="w-full max-w-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl overflow-hidden">
-
-            {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
               <div>
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
-                  Leaderboard
-                </h2>
-                <p className="text-xs text-gray-400 dark:text-gray-500">
-                  Top performers this month
-                </p>
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Leaderboard</h2>
+                <p className="text-xs text-gray-400 dark:text-gray-500">Top performers this month</p>
               </div>
-
-              <button
-                onClick={() => setLeaderboard(false)}
-                className="text-gray-400 hover:text-red-500 transition-colors"
-              >
-                ✕
-              </button>
+              <button onClick={() => setLeaderboard(false)} className="text-gray-400 hover:text-red-500 transition-colors">✕</button>
             </div>
-
-            {/* Content */}
             <div className="p-6 space-y-3 max-h-[400px] overflow-y-auto">
-
               {topPerformers.map((p, i) => (
                 <div
                   key={p.name}
                   className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-indigo-50 dark:hover:bg-gray-700 transition-all"
                 >
-                  {/* Left */}
                   <div className="flex items-center gap-3">
-                    <span className="text-sm font-bold text-gray-400 w-6">
-                      #{i + 1}
-                    </span>
-
+                    <span className="text-sm font-bold text-gray-400 w-6">#{i + 1}</span>
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-violet-600 flex items-center justify-center text-white text-xs font-bold">
                       {p.avatar}
                     </div>
-
                     <div>
-                      <p className="text-sm font-semibold text-gray-800 dark:text-white">
-                        {p.name}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        {p.deals} deals closed
-                      </p>
+                      <p className="text-sm font-semibold text-gray-800 dark:text-white">{p.name}</p>
+                      <p className="text-xs text-gray-400">{p.deals} deals closed</p>
                     </div>
                   </div>
-
-                  {/* Right */}
                   <div className="text-right">
                     <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
                       ${p.revenue.toLocaleString()}
                     </p>
-                    <p className="text-xs text-gray-400">
-                      Revenue
-                    </p>
+                    <p className="text-xs text-gray-400">Revenue</p>
                   </div>
                 </div>
               ))}
-
             </div>
-
-            {/* Footer */}
             <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800 flex justify-end">
               <button
                 onClick={() => setLeaderboard(false)}

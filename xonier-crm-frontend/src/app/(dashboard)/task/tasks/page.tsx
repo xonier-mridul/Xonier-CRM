@@ -777,7 +777,7 @@ const TaskListPage = (): JSX.Element => {
                         {canCreate && !hasFilters && (
                           <button
                             type="button"
-                            onClick={() => router.push("/tasks/create")}
+                            onClick={() => router.push("/task/tasks/create")}
                             className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-100 transition"
                           >
                             + Create first task
