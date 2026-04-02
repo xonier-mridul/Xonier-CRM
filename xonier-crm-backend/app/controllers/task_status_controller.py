@@ -20,6 +20,19 @@ class TaskStatusController:
  
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+        
+
+    async def bulk_create_task_statuses(self, request: Request, payload: Dict[str, Any]):
+        try:
+            user = request.state.user
+            result = await self.service.bulk_create_task_statuses(payload, user)
+            return successResponse(201, result["message"], result)
+ 
+        except AppException as e:
+            raise e
+ 
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
  
     async def get_all_task_statuses(self, request: Request):
         try:

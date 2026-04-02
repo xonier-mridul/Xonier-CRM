@@ -83,6 +83,33 @@ class ReorderTaskStatusSchema(BaseModel):
                 raise AppException(422, "Each status must have 'id' and 'order' fields")
         return value
     
+
+class BulkCreateTaskStatusSchema(BaseModel):
+    category: str
+    statuses: List[CreateTaskStatusSchema]
+ 
+    @field_validator("category")
+    @classmethod
+    def validate_category(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise AppException(422, "category is required")
+        return v.strip()
+ 
+    @model_validator(mode="before")
+    @classmethod
+    def validate_statuses(cls, value):
+        statuses = value.get("statuses", [])
+        if not statuses:
+            raise AppException(422, "statuses list is required and cannot be empty")
+        if len(statuses) > 20:
+            raise AppException(422, "Cannot create more than 20 statuses at once")
+        final_count = sum(1 for s in statuses if s.get("isFinal"))
+        if final_count > 1:
+            raise AppException(422, "Only one status can be marked as final")
+        default_count = sum(1 for s in statuses if s.get("isDefault"))
+        if default_count > 1:
+            raise AppException(422, "Only one status can be marked as default")
+        return value
     
  
  

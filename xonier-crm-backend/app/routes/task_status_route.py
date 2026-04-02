@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Request
-from app.schemas.task_status_schema import CreateTaskStatusSchema, UpdateTaskStatusSchema, ReorderTaskStatusSchema
+from app.schemas.task_status_schema import CreateTaskStatusSchema, UpdateTaskStatusSchema, ReorderTaskStatusSchema, BulkCreateTaskStatusSchema
 from app.core.dependencies import Dependencies
 from app.controllers.task_status_controller import TaskStatusController
  
@@ -11,7 +11,11 @@ controller = TaskStatusController()
 @router.post("/create", status_code=201, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["taskStatus:create"]))])
 async def create_task_status(request: Request, payload: CreateTaskStatusSchema):
     return await controller.create_task_status(request, payload.model_dump(mode="json"))
- 
+
+@router.post("/bulk-create", status_code=201, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["taskStatus:create"]))])
+async def bulk_create_task_statuses(request: Request, payload: BulkCreateTaskStatusSchema):
+    return await controller.bulk_create_task_statuses(request, payload.model_dump(mode="json"))
+
  
 @router.get("/all", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["taskStatus:read"]))])
 async def get_all_task_statuses(request: Request):

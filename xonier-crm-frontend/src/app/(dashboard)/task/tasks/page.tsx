@@ -18,11 +18,12 @@ import {
   StatusOption,
 } from "@/src/types/task/task.types";
 import { COLOR_OPTIONS } from "@/src/constants/enum";
+import { IoMdEye } from "react-icons/io";
 
-// ── View type ─────────────────────────────────────────────────────────────────
+
 type ViewMode = "list" | "board";
 
-// ── Priority display ──────────────────────────────────────────────────────────
+
 const PRIORITY_STYLE: Record<TASK_PRIORITY, { cls: string; dot: string; label: string }> = {
   [TASK_PRIORITY.LOW]: { cls: "bg-slate-100  text-slate-600  dark:bg-slate-800  dark:text-slate-400", dot: "bg-slate-400", label: "Low" },
   [TASK_PRIORITY.MEDIUM]: { cls: "bg-amber-50   text-amber-600  dark:bg-amber-900/30 dark:text-amber-400", dot: "bg-amber-400", label: "Medium" },
@@ -30,7 +31,7 @@ const PRIORITY_STYLE: Record<TASK_PRIORITY, { cls: string; dot: string; label: s
   [TASK_PRIORITY.URGENT]: { cls: "bg-rose-50    text-rose-600   dark:bg-rose-900/30 dark:text-rose-400", dot: "bg-rose-500", label: "Urgent" },
 };
 
-// ── CategoryBadge ─────────────────────────────────────────────────────────────
+
 function CategoryBadge({ color, icon, name }: { color: ColorOption; icon: string; name: string }) {
   return (
     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${color.bg} ${color.text}`}>
@@ -43,7 +44,7 @@ function CategoryBadge({ color, icon, name }: { color: ColorOption; icon: string
 const getColorOption = (hex: string | null): ColorOption =>
   COLOR_OPTIONS.find(c => c.hex === hex) ?? COLOR_OPTIONS[0];
 
-// ── Inline Status Dropdown ────────────────────────────────────────────────────
+
 interface StatusDropdownProps {
   task: TaskItem;
   statusOptions: StatusOption[];
@@ -118,7 +119,7 @@ function StatusDropdown({ task, statusOptions, onChange, disabled }: StatusDropd
   );
 }
 
-// ── Skeleton rows ─────────────────────────────────────────────────────────────
+
 function SkeletonRow({ cols }: { cols: number }) {
   return (
     <tr className="animate-pulse border-b border-gray-50 dark:border-gray-700">
@@ -131,7 +132,7 @@ function SkeletonRow({ cols }: { cols: number }) {
   );
 }
 
-// ── View Toggle ───────────────────────────────────────────────────────────────
+
 function ViewToggle({ view, onChange }: { view: ViewMode; onChange: (v: ViewMode) => void }) {
   return (
     <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-700 rounded-xl">
@@ -161,7 +162,7 @@ function ViewToggle({ view, onChange }: { view: ViewMode; onChange: (v: ViewMode
             : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
           }`}
       >
-        {/* Board / columns icon */}
+        
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
           <rect x="1" y="1" width="3.5" height="12" rx="1" fill="currentColor" />
           <rect x="5.25" y="1" width="3.5" height="12" rx="1" fill="currentColor" />
@@ -173,7 +174,7 @@ function ViewToggle({ view, onChange }: { view: ViewMode; onChange: (v: ViewMode
   );
 }
 
-// ── Board Card ────────────────────────────────────────────────────────────────
+
 interface BoardCardProps {
   task: TaskItem;
   canEdit: boolean;
@@ -194,7 +195,7 @@ function BoardCard({ task, canEdit, canDelete, deleting, onEdit, onDelete, onDra
       onDragStart={e => onDragStart(e, task)}
       className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-3.5 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-gray-200 dark:hover:border-gray-600 transition-all group select-none"
     >
-      {/* Top row: priority + actions */}
+      
       <div className="flex items-center justify-between mb-2.5">
         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${pri.cls}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${pri.dot}`} />
@@ -223,12 +224,12 @@ function BoardCard({ task, canEdit, canDelete, deleting, onEdit, onDelete, onDra
         </div>
       </div>
 
-      {/* Title */}
+      
       <p className="text-sm font-semibold text-gray-900 dark:text-white leading-snug mb-2 line-clamp-2">
         {task.title}
       </p>
 
-      {/* Category */}
+      
       {task.category && (
         <div className="mb-2">
           <CategoryBadge
@@ -255,7 +256,7 @@ function BoardCard({ task, canEdit, canDelete, deleting, onEdit, onDelete, onDra
         </div>
       )}
 
-      {/* Footer: assignees + due date */}
+      
       <div className="flex items-center justify-between pt-2.5 border-t border-gray-50 dark:border-gray-700 mt-1">
         {/* Assignees */}
         <div className="flex -space-x-1.5">
@@ -265,10 +266,10 @@ function BoardCard({ task, canEdit, canDelete, deleting, onEdit, onDelete, onDra
             <>
               {task.assignedTo.slice(0, 3).map(u => (
                 <div
-                  key={u.id} title={u.name}
+                  key={u.id} title={u.firstName}
                   className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 border-2 border-white dark:border-gray-800 flex items-center justify-center text-white text-[8px] font-bold shrink-0"
                 >
-                  {u.name.charAt(0).toUpperCase()}
+                  {u.firstName} {u.lastName ?? ""}
                 </div>
               ))}
               {task.assignedTo.length > 3 && (
@@ -507,6 +508,7 @@ const TaskListPage = (): JSX.Element => {
   const [filterPriority, setFilterPriority] = useState("");
 
   const canCreate = hasPermission(TaskPermissions.CREATE_TASK);
+  const canView = hasPermission(TaskPermissions.VIEW_TASK)
   const canEdit = hasPermission(TaskPermissions.EDIT_TASK);
   const canDelete = hasPermission(TaskPermissions.DELETE_TASK);
   const canChangeStatus = hasPermission(TaskPermissions.UPDATE_TASK_STATUS);
@@ -554,12 +556,12 @@ const TaskListPage = (): JSX.Element => {
     return () => clearTimeout(t);
   }, [search]);
 
-  // ── Status change ─────────────────────────────────────────────────────────
+  
   const handleStatusChange = async (
     taskId: string,
     payload: UpdateTaskStatusPayload
   ): Promise<void> => {
-    // Optimistic update for board view
+    
     if (viewMode === "board") {
       const targetStatus = statusOptions.find(s => s.id === payload.status);
       if (targetStatus) {
@@ -582,12 +584,12 @@ const TaskListPage = (): JSX.Element => {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
       if (axios.isAxiosError(e)) {
         toast.error("Failed to update status");
-        fetchTasks(); // revert optimistic update
+        fetchTasks(); 
       }
     }
   };
 
-  // ── Delete ────────────────────────────────────────────────────────────────
+  
   const handleDelete = async (id: string): Promise<void> => {
     setDeleting(true);
     try {
@@ -662,12 +664,9 @@ const TaskListPage = (): JSX.Element => {
           ))}
         </div>
 
-        {/* Filter bar + View Toggle */}
+
         <div className="flex flex-wrap items-center gap-3 mb-5">
-          {/* ── View Toggle (left of filters) ── */}
 
-
-          {/* Search */}
           <div className="relative flex-1 min-w-[200px] max-w-xs">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
             <input
@@ -678,7 +677,7 @@ const TaskListPage = (): JSX.Element => {
             />
           </div>
 
-          {/* Status filter */}
+
           <select
             value={filterStatus}
             onChange={e => { setFilterStatus(e.target.value); setCurrentPage(1); }}
@@ -690,7 +689,7 @@ const TaskListPage = (): JSX.Element => {
             ))}
           </select>
 
-          {/* Priority filter */}
+
           <select
             value={filterPriority}
             onChange={e => { setFilterPriority(e.target.value); setCurrentPage(1); }}
@@ -715,7 +714,6 @@ const TaskListPage = (): JSX.Element => {
           <ViewToggle view={viewMode} onChange={v => { setViewMode(v); setCurrentPage(1); }} />
         </div>
 
-        {/* ── BOARD VIEW ─────────────────────────────────────────────────────── */}
         {viewMode === "board" && (
           <BoardView
             tasks={taskData}
@@ -731,7 +729,6 @@ const TaskListPage = (): JSX.Element => {
           />
         )}
 
-        {/* ── LIST VIEW ──────────────────────────────────────────────────────── */}
         {viewMode === "list" && (
           <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
             <div className="text-nowrap overflow-x-scroll">
@@ -851,10 +848,10 @@ const TaskListPage = (): JSX.Element => {
                               <div className="flex -space-x-2">
                                 {task.assignedTo.slice(0, 4).map(u => (
                                   <div
-                                    key={u.id} title={u.name}
-                                    className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 border-2 border-white dark:border-gray-800 flex items-center justify-center text-white text-[9px] font-bold shrink-0"
+                                    key={u.id} title={u.firstName}
+                                    className=" rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 border-2 border-white dark:border-gray-800 flex items-center px-2 py-1 capitalize justify-center text-white text-[12px] font-bold shrink-0"
                                   >
-                                    {u.name.charAt(0).toUpperCase()}
+                                    {u.firstName} {u?.lastName ?? ""}
                                   </div>
                                 ))}
                                 {task.assignedTo.length > 4 && (
@@ -878,10 +875,21 @@ const TaskListPage = (): JSX.Element => {
                             )}
                           </td>
 
-                          {/* Actions */}
+                         
                           {showActions && (
                             <td className="px-5 py-4">
                               <div className="flex items-center justify-end gap-2 opacity-100 transition-opacity">
+                                {canView && (
+                                  <button
+                                    type="button"
+                                    onClick={() => router.push(`/task/tasks/view/${task.id}`)}
+                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-green-600 bg-green-50 hover:bg-green-100 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:text-green-400 transition cursor-pointer"
+                                  >
+                                    <span className="items-center justify-center  text-green-500 ">
+                                      <IoMdEye className="text-sm" />
+                                    </span>
+                                  </button>
+                                )}
                                 {canEdit && (
                                   <button
                                     type="button"
@@ -916,7 +924,7 @@ const TaskListPage = (): JSX.Element => {
               </table>
             </div>
 
-            {/* Footer / Pagination */}
+           
             <div className="px-5 py-3.5 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
               <span className="text-xs text-gray-400 dark:text-gray-500">
                 Showing{" "}

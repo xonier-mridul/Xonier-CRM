@@ -20,6 +20,10 @@ import {
   UserOption,
 } from "@/src/types/task/task.types";
 import { CategoryItem } from "@/src/types/task/category.types";
+import { User } from "@/src/types";
+import { AuthService } from "@/src/services/auth.service";
+import { RootState } from "@/src/store";
+import { useSelector } from "react-redux";
 
 // ── Priority config ───────────────────────────────────────────────────────────
 const PRIORITY_CFG: Record<TASK_PRIORITY, { label: string; bg: string; text: string; border: string; dot: string }> = {
@@ -46,6 +50,14 @@ function Section({ icon, title, children }: { icon: string; title: string; child
       <div className="p-6 space-y-5">{children}</div>
     </div>
   );
+}
+
+interface AssignedUser {
+  id: string;
+  firstName?: string;
+  lastName?: string;
+  name?: string;
+  email?: string;
 }
 
 function Field({ label, required, hint, children }: {
@@ -86,6 +98,7 @@ const UpdateTaskPage = (): JSX.Element => {
   const [err, setErr] = useState<string | null>(null);
   const [original, setOriginal] = useState<TaskItem | null>(null);
   const [tagInput, setTagInput] = useState("");
+  const [userData, setUserData] = useState<User[]>([]);
 
   // ── Lookup state (mirrors CreateTaskPage) ─────────────────────────────────
   const [categories, setCategories] = useState<CategoryOption[]>([]);
@@ -114,10 +127,12 @@ const UpdateTaskPage = (): JSX.Element => {
     assignedTo: [],
   });
 
+  const auth = useSelector((state: RootState) => state.auth);
+
   const set = <K extends keyof UpdateTaskPayload>(k: K, v: UpdateTaskPayload[K]) =>
     setForm(p => ({ ...p, [k]: v }));
 
-  // ── Load task ─────────────────────────────────────────────────────────────
+  
   useEffect(() => {
     if (!taskId) return;
     (async () => {
@@ -169,7 +184,52 @@ const UpdateTaskPage = (): JSX.Element => {
     })();
   }, []);
 
-  // ── Load statuses when category changes ───────────────────────────────────
+  const getUserName = (u: AssignedUser) => {
+  return (
+    u.name ||
+    [u.firstName, u.lastName].filter(Boolean).join(" ") ||
+    "User"
+  );
+};
+
+  const getUserData = async () => {
+      try {
+        const result = await AuthService.getAllActiveWithoutPagination();
+  
+        if (result.status === 200) {
+          setUserData(result.data.data);
+        }
+      } catch (error) {
+        process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+        if (axios.isAxiosError(error)) {
+          const msg = error.response?.data?.message ?? "Something went wrong";
+          setErr(
+            typeof msg === "string"
+              ? msg
+              : Array.isArray(msg)
+                ? msg[0]
+                : "Something went wrong",
+          );
+          toast.error(typeof msg === "string" ? msg : "Something went wrong");
+        }
+      }
+    };
+  
+    useEffect(() => {
+      getUserData();
+    }, []);
+
+    useEffect(() => {
+  if (!userData.length) return;
+
+  const mapped = userData.map((u) => ({
+    id: u.id, 
+    name: `${u.firstName || ""} ${u.lastName || ""}`.trim(),
+    email: u.email,
+  }));
+
+  setUsers(mapped);
+}, [userData]);
   useEffect(() => {
     (async () => {
       try {
@@ -182,7 +242,7 @@ const UpdateTaskPage = (): JSX.Element => {
     })();
   }, [selectedCategory]);
 
-  // ── Reset status selections on category change ────────────────────────────
+
   useEffect(() => {
     setSelectedStatuses([]);
     setStatusSelect("");
@@ -470,47 +530,124 @@ const UpdateTaskPage = (): JSX.Element => {
           </Section>
 
           {/* Assign To */}
-          <Section icon="👥" title="Assign To">
-            {users.length === 0 ? (
-              <div className="text-center py-6">
-                <div className="text-3xl mb-2">👤</div>
-                <p className="text-xs text-gray-400 dark:text-gray-500">No users available</p>
-              </div>
-            ) : (
-              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                {users.map(u => {
-                  const checked = (form.assignedTo ?? []).includes(u.id);
-                  return (
-                    <label
-                      key={u.id}
-                      className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${checked
-                          ? "border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20"
-                          : "border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
-                        }`}
-                    >
-                      <input
-                        type="checkbox" checked={checked}
-                        onChange={() => toggleAssignee(u.id)}
-                        className="w-4 h-4 accent-blue-600 shrink-0"
-                      />
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
-                        {u.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold text-gray-800 dark:text-white truncate">{u.name}</p>
-                        <p className="text-[10px] text-gray-400 truncate">{u.email}</p>
-                      </div>
-                    </label>
-                  );
-                })}
-              </div>
-            )}
-            {(form.assignedTo?.length ?? 0) > 0 && (
-              <p className="text-xs font-semibold text-blue-600 dark:text-blue-400">
-                ✓ {form.assignedTo!.length} user{form.assignedTo!.length > 1 ? "s" : ""} selected
+
+
+          {/* Assign To */}
+<Section icon="👥" title="Assign To">
+  {users.length === 0 ? (
+    <div className="text-center py-6">
+      <div className="text-3xl mb-2">👤</div>
+      <p className="text-xs text-gray-400 dark:text-gray-500">No users available</p>
+    </div>
+  ) : (
+    <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+
+      {/* 🔥 Assign to Me */}
+      {(() => {
+        const myId = auth.user?._id || auth.user?.id;
+        const isMeAssigned = (form.assignedTo ?? []).includes(myId || "");
+
+        return (
+          <button
+            type="button"
+            onClick={() => {
+              if (!myId) return;
+              toggleAssignee(myId);
+            }}
+            className={`w-full mb-2 px-3 py-2 text-xs font-semibold rounded-lg border transition ${
+              isMeAssigned
+                ? "bg-green-50 text-green-600 border-green-200"
+                : "bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100"
+            }`}
+          >
+            {isMeAssigned ? "✅ Assigned to Me" : "⚡ Assign to Me"}
+          </button>
+        );
+      })()}
+
+      {/* 🔥 User List */}
+      {users.map(u => {
+        const checked = (form.assignedTo ?? []).includes(u.id);
+        const isMe = u.id === (auth.user?._id || auth.user?.id);
+
+        return (
+          <label
+            key={u.id}
+            className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+              isMe
+                ? "border-green-200 bg-green-50 dark:bg-green-900/20"
+                : checked
+                ? "border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20"
+                : "border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={checked}
+              onChange={() => toggleAssignee(u.id)}
+              className="w-4 h-4 accent-blue-600 shrink-0"
+            />
+
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+              {(getUserName(u)[0] || "U").toUpperCase()}
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold text-gray-800 dark:text-white truncate">
+                {getUserName(u)} {isMe && <span className="text-[10px] text-green-500">(You)</span>}
               </p>
-            )}
-          </Section>
+              <p className="text-[10px] text-gray-400 truncate">{u.email}</p>
+            </div>
+          </label>
+        );
+      })}
+    </div>
+  )}
+
+
+  {(form.assignedTo?.length ?? 0) > 0 && (
+    <div className="flex flex-wrap gap-2 pt-3">
+      {form?.assignedTo?.map((id) => {
+        const user = users.find(u => u.id === id);
+        const isMe = id === (auth.user?._id || auth.user?.id);
+
+        return (
+          <div
+            key={id}
+            className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold ${
+              isMe
+                ? "bg-green-100 text-green-700"
+                : "bg-blue-100 text-blue-700"
+            }`}
+          >
+            <span className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center text-[10px] font-bold">
+              {(user?.name?.[0] || "U").toUpperCase()}
+            </span>
+
+            {user?.name || "User"}
+
+            {isMe && <span className="text-[10px]">(You)</span>}
+
+            <button
+              onClick={() => toggleAssignee(id)}
+              className="ml-1 text-gray-400 hover:text-red-500"
+            >
+              ✕
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  )}
+
+  {/* Count (keep your original behavior) */}
+  {(form.assignedTo?.length ?? 0) > 0 && (
+    <p className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+      ✓ {form.assignedTo!.length} user{form.assignedTo!.length > 1 ? "s" : ""} selected
+    </p>
+  )}
+</Section>
+         
 
           {/* Task info (read-only) */}
           {original && (
@@ -534,10 +671,10 @@ const UpdateTaskPage = (): JSX.Element => {
                     <div className="space-y-1.5">
                       {original.assignedTo.map(u => (
                         <div key={u.id} className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white text-[9px] font-bold shrink-0">
-                            {u.name.charAt(0).toUpperCase()}
+                          <div className="px-3 py-1 rounded-full capitalize bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white text-[12px] font-bold shrink-0">
+                            {getUserName(u)}
                           </div>
-                          <span className="text-xs text-gray-700 dark:text-gray-300 font-medium truncate">{u.name}</span>
+                          <span className="text-xs text-gray-700 dark:text-gray-300 font-medium truncate">{getUserName(u)}</span>
                         </div>
                       ))}
                     </div>

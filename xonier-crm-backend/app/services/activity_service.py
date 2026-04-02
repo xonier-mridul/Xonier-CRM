@@ -16,6 +16,8 @@ from app.utils.activity_payload import activity_payload
 from bson import ObjectId
 from datetime import datetime, timedelta, timezone
 from fastapi_cache import FastAPICache
+from app.db import db as database_module
+from app.db.models.activity_model import ActivityModel
 from app.core.constants import (
     SUPER_ADMIN_CODE,
     LEAD_CACHE_NAMESPACE,
@@ -40,31 +42,19 @@ class ActivityService:
         filters: Dict[str, Any]
     ):
         try:
-
             if not PydanticObjectId.is_valid(user_id):
                 raise AppException(400, "Invalid user id")
 
             target_user_id = PydanticObjectId(user_id)
             requester_user_id = PydanticObjectId(current_user["_id"])
 
-
             is_admin = validate_admin(current_user["userRole"])
             if not is_admin and requester_user_id != target_user_id:
-                raise AppException(
-                    403,
-                    "You are not allowed to access another user's activity"
-                )
+                raise AppException(403, "You are not allowed to access another user's activity")
 
-            
-            page = int(filters.get("page", 1))
-            limit = int(filters.get("limit", 20))
-            skip = (page - 1) * limit
-
-           
             query: Dict[str, Any] = {
                 "userId.$id": PydanticObjectId(target_user_id)
             }
-
 
             now = datetime.now(timezone.utc)
             from_date = filters.get("from")
@@ -72,21 +62,16 @@ class ActivityService:
 
             if from_date or to_date:
                 query["createdAt"] = {}
-
                 if from_date:
-                    query["createdAt"]["$gte"] = datetime.fromisoformat(from_date)
-
+                    query["createdAt"]["$gte"] = datetime.fromisoformat(from_date).replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
                 if to_date:
-                    query["createdAt"]["$lte"] = datetime.fromisoformat(to_date)
+                    query["createdAt"]["$lte"] = datetime.fromisoformat(to_date).replace(hour=23, minute=59, second=59, microsecond=999999, tzinfo=timezone.utc)
             else:
-                start_of_month = now.replace(
-                    day=1, hour=0, minute=0, second=0, microsecond=0
-                )
+                start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
                 query["createdAt"] = {
                     "$gte": start_of_month,
-                    "$lte": now
+                    "$lte": now.replace(hour=23, minute=59, second=59, microsecond=999999)
                 }
-
 
             entity_type = filters.get("entityType")
             action = filters.get("action")
@@ -97,40 +82,83 @@ class ActivityService:
             if action:
                 query["action"] = ACTIVITY_ACTION(action)
 
-
             activities = await self.repo.find(
                 filter=query,
-                skip=skip,
-                limit=limit,
                 sort=[("createdAt", -1)]
             )
 
             total = await self.repo.model.find(query).count()
 
             activities = [doc.model_dump(mode="json") for doc in activities]
-            
+
             for dict in activities:
-                
-                
                 email = dict["metadata"].get("email")
                 phone = dict["metadata"].get("phone")
-               
                 if email and email.startswith("gAAAA"):
-                    dict["metadata"]["email"] =  self.crypto.decrypt_data(dict["metadata"]["email"])
+                    dict["metadata"]["email"] = self.crypto.decrypt_data(dict["metadata"]["email"])
                 if phone and phone.startswith("gAAAA"):
-                    dict["metadata"]["phone"] =  self.crypto.decrypt_data(dict["metadata"]["phone"])
-            
+                    dict["metadata"]["phone"] = self.crypto.decrypt_data(dict["metadata"]["phone"])
+
+            graph_filter = filters.get("graphFilter", "monthly")
+
+            if graph_filter == "day":
+                group_id = {
+                    "year": {"$year": "$createdAt"},
+                    "month": {"$month": "$createdAt"},
+                    "day": {"$dayOfMonth": "$createdAt"}
+                }
+            elif graph_filter == "week":
+                group_id = {
+                    "year": {"$year": "$createdAt"},
+                    "week": {"$week": "$createdAt"}
+                }
+            else:
+                group_id = {
+                    "year": {"$year": "$createdAt"},
+                    "month": {"$month": "$createdAt"}
+                }
+
+            graph_date_range = query["createdAt"]
+
+            connection_pipeline = [
+                {
+                    "$match": {
+                        "userId.$id": PydanticObjectId(target_user_id),
+                        "action": ACTIVITY_ACTION("update_lead_connection_status"),
+                        "createdAt": graph_date_range
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": group_id,
+                        "count": {"$sum": "$perform"}
+                    }
+                },
+                {"$sort": {"_id": 1}},
+                {
+                    "$project": {
+                        "_id": 0,
+                        "period": "$_id",
+                        "count": 1
+                    }
+                }
+            ]
+
+            collection = database_module.db[ActivityModel.Settings.name]
+            cursor = collection.aggregate(connection_pipeline)
+            connection_graph = await cursor.to_list(length=None)
 
             return {
                 "data": activities,
-                "pagination": {
-                    "page": page,
-                    "limit": limit,
-                    "total": total
-                },
+                "total": total,
                 "dateRange": {
                     "from": query["createdAt"]["$gte"],
                     "to": query["createdAt"]["$lte"]
+                },
+                "leadConnectionGraph": {
+                    "graphFilter": graph_filter,
+                    "total": sum(item["count"] for item in connection_graph),
+                    "data": connection_graph
                 }
             }
 
@@ -142,7 +170,6 @@ class ActivityService:
 
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
-
 
     async def get_user_activity_summary(
         self,

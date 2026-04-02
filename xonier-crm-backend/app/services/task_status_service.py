@@ -436,5 +436,135 @@ class TaskStatusService:
  
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
+                
+
+
+    async def bulk_create_task_statuses(self, payload: Dict[str, Any], user: Dict[str, Any]):
+        async with await self.client.start_session() as session:
+            async with session.start_transaction():
+                try:
+                    category_id = payload.get("category")
+                    statuses = payload.get("statuses", [])
+ 
+                    if not ObjectId.is_valid(category_id):
+                        raise AppException(400, "Invalid category id")
+ 
+                    category = await self.categoryRepo.find_by_id(
+                        id=PydanticObjectId(category_id),
+                        session=session
+                    )
+ 
+                    if not category or category.deletedAt is not None:
+                        raise AppException(404, "Task category not found")
+ 
+                    if not category.isActive:
+                        raise AppException(400, "Cannot add statuses to an inactive category")
+ 
+                    has_new_final = any(s.get("isFinal") for s in statuses)
+                    has_new_default = any(s.get("isDefault") for s in statuses)
+ 
+                    if has_new_final:
+                        existing_final = await self.repo.find_one({
+                            "category.$id": ObjectId(category_id),
+                            "isFinal": True,
+                            "deletedAt": None
+                        })
+                        if existing_final:
+                            raise AppException(400, f"Category already has a final status: '{existing_final.name}'. Only one final status allowed per category.")
+ 
+                    if has_new_default:
+                        existing_default = await self.repo.find_one({
+                            "category.$id": ObjectId(category_id),
+                            "isDefault": True,
+                            "deletedAt": None
+                        })
+                        if existing_default:
+                            await self.repo.update(
+                                id=PydanticObjectId(existing_default.id),
+                                data={"isDefault": False},
+                                session=session
+                            )
+ 
+                    created = []
+                    failed = []
+ 
+                    for index, status_data in enumerate(statuses):
+                        try:
+                            name = status_data.get("name", "").strip()
+                            slug = generate_slug(name)
+ 
+                            is_exist = await self.repo.find_one({
+                                "slug": slug,
+                                "category.$id": ObjectId(category_id),
+                                "deletedAt": None
+                            })
+ 
+                            if is_exist:
+                                failed.append({
+                                    "index": index,
+                                    "name": name,
+                                    "reason": f"Status '{name}' already exists in this category"
+                                })
+                                continue
+ 
+                            slug_in_batch = [generate_slug(s.get("name", "")) for s in statuses[:index]]
+                            if slug in slug_in_batch:
+                                failed.append({
+                                    "index": index,
+                                    "name": name,
+                                    "reason": f"Duplicate status name '{name}' in the same batch"
+                                })
+                                continue
+ 
+                            status_id = generate_enquiry_id("STS")
+ 
+                            new_payload = {
+                                **status_data,
+                                "status_id": status_id,
+                                "slug": slug,
+                                "category": PydanticObjectId(category_id),
+                                "createdBy": PydanticObjectId(user["_id"]),
+                            }
+ 
+                            result = await self.repo.create(data=new_payload, session=session)
+ 
+                            if result:
+                                created.append(jsonable_encoder(result))
+ 
+                        except AppException as e:
+                            failed.append({
+                                "index": index,
+                                "name": status_data.get("name", ""),
+                                "reason": e.msg
+                            })
+ 
+                    created_count = len(created)
+                    failed_count = len(failed)
+ 
+                    if created_count == 0:
+                        raise AppException(400, f"All statuses failed to create. Reasons: {[f['reason'] for f in failed]}")
+ 
+                    if created_count == 0:
+                        message = "No statuses were created"
+                    elif failed_count == 0:
+                        message = f"All {created_count} status{'es' if created_count > 1 else ''} created successfully"
+                    else:
+                        message = f"{created_count} status{'es' if created_count > 1 else ''} created, {failed_count} failed"
+ 
+                    return {
+                        "message": message,
+                        "totalRequested": len(statuses),
+                        "createdCount": created_count,
+                        "failedCount": failed_count,
+                        "created": created,
+                        "failed": failed,
+                    }
+ 
+                except AppException:
+                    raise
+ 
+                except Exception as e:
+                    raise AppException(500, f"Internal server error: {e}")
+ 
  
  

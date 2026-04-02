@@ -10,23 +10,22 @@ import {
   MoveTaskPayload,
   ReorderTaskPayload,
   AddWatcherPayload,
-  PaginatedTaskResponse,
   TaskItem,
 } from "@/src/types/task/task.types";
 
 interface GetAllParams {
   currentPage: number;
-  pageLimit:   number;
-  status?:     string;
-  priority?:   string;
-  category?:   string;
-  search?:     string;
+  pageLimit: number;
+  status?: string;
+  priority?: string;
+  category?: string;
+  search?: string;
 }
 
 export const TaskService = {
   getAll: ({ currentPage, pageLimit, status, priority, category, search }: GetAllParams) => {
     const params = new URLSearchParams({
-      page:  String(currentPage),
+      page: String(currentPage),
       limit: String(pageLimit),
       ...(status   && { status }),
       ...(priority && { priority }),
@@ -36,39 +35,50 @@ export const TaskService = {
     return api.get(`/task/all?${params.toString()}`);
   },
 
-  getById: (id: string) =>
-    api.get<{ data: TaskItem }>(`/task/${id}`),
+  getById: (id: string) => api.get<{ data: TaskItem }>(`/task/${id}`),
 
-  create: (payload: CreateTaskPayload) =>
-    api.post("/task/create", payload),
+  create: (payload: CreateTaskPayload) => api.post("/task/create", payload),
 
-  update: (id: string, payload: UpdateTaskPayload) =>
-    api.put(`/task/update/${id}`, payload),
+  update: (id: string, payload: UpdateTaskPayload) => api.put(`/task/update/${id}`, payload),
 
-  updateStatus: (id: string, payload: UpdateTaskStatusPayload) =>
-    api.patch(`/task/status/${id}`, payload),
+  updateStatus: (id: string, payload: UpdateTaskStatusPayload) => api.patch(`/task/status/${id}`, payload),
 
-  updatePriority: (id: string, payload: UpdateTaskPriorityPayload) =>
-    api.patch(`/task/${id}/priority`, payload),
+  updatePriority: (id: string, payload: UpdateTaskPriorityPayload) => api.patch(`/task/${id}/priority`, payload),
 
-  assign: (id: string, payload: AssignTaskPayload) =>
-    api.patch(`/task/${id}/assign`, payload),
+  assign: (id: string, payload: AssignTaskPayload) => api.patch(`/task/assign/${id}`, payload),
 
-  move: (id: string, payload: MoveTaskPayload) =>
-    api.patch(`/task/${id}/move`, payload),
+  moveTask: (id: string, payload: MoveTaskPayload & { category?: string }) => api.patch(`/task/move/${id}`, payload),
 
-  reorder: (payload: ReorderTaskPayload) =>
-    api.patch("/task/reorder", payload),
+  reorder: (payload: ReorderTaskPayload) => api.patch("/task/reorder", payload),
 
-  bulkAssign: (payload: BulkAssignTaskPayload) =>
-    api.patch("/task/bulk-assign", payload),
+  bulkAssign: (payload: BulkAssignTaskPayload) => api.post("/task/bulk-assign", payload),
 
-  bulkStatusUpdate: (payload: BulkStatusUpdatePayload) =>
-    api.patch("/task/bulk-status", payload),
+  bulkStatusUpdate: (payload: BulkStatusUpdatePayload) => api.patch("/task/bulk-status", payload),
 
-  addWatcher: (id: string, payload: AddWatcherPayload) =>
-    api.post(`/task/${id}/watcher`, payload),
+  addWatcher: (id: string, payload: AddWatcherPayload) => api.post(`/task/${id}/watcher`, payload),
 
-  delete: (id: string) =>
-    api.delete(`/task/${id}`),
+  removeWatcher: (id: string, watcherId: string) => api.delete(`/task/${id}/watcher/${watcherId}`),
+
+  getActivity: (id: string) => api.get(`/task/${id}/activity`),
+
+  getKanban: (categoryId: string) => api.get(`/task/kanban/${categoryId}`),
+
+  getMyTasks: (params?: { page?: number; limit?: number; status?: string; priority?: string; category?: string }) => {
+    const p = new URLSearchParams({
+      page: String(params?.page ?? 1),
+      limit: String(params?.limit ?? 20),
+      ...(params?.status   && { status: params.status }),
+      ...(params?.priority && { priority: params.priority }),
+      ...(params?.category && { category: params.category }),
+    });
+    return api.get(`/task/my-tasks?${p.toString()}`);
+  },
+
+  getDueToday: () => api.get("/task/due-today"),
+
+  getOverdue: () => api.get("/task/overdue"),
+
+  getByEntity: (entityType: string, entityId: string) => api.get(`/task/by-entity/${entityType}/${entityId}`),
+
+  delete: (id: string) => api.delete(`/task/delete/${id}`),
 };

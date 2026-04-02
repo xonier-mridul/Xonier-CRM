@@ -352,7 +352,7 @@ const SideBar = () => {
               </AnimatePresence>
             </li>} */}
             {
-              (hasPermission(PERMISSIONS.taskCategoryRead)) && <li>
+              ((hasPermission(PERMISSIONS.readTask)) || hasPermission(PERMISSIONS.taskCategoryRead) || hasPermission(PERMISSIONS.taskStatusRead)) && <li>
                  <button
                 onClick={() => toggleMenu("task")}
                 className={`${isMenuActive("task")
@@ -379,7 +379,7 @@ const SideBar = () => {
                     transition={{ duration: 0.25 }}
                     className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
                   >
-                    {hasPermission(PERMISSIONS.taskCategoryRead) && <li>
+                    {hasPermission(PERMISSIONS.readTask) && <li>
                       <Link
                         href="/task/tasks"
                         className={`${isActive("/task/tasks")
@@ -402,7 +402,7 @@ const SideBar = () => {
                         Task Category
                       </Link>
                     </li>}
-                    {hasPermission(PERMISSIONS.taskCategoryRead) && <li>
+                    {hasPermission(PERMISSIONS.taskStatusRead) && <li>
                       <Link
                         href="/task/status"
                         className={`${isActive("/task/status")

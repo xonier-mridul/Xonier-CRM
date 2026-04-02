@@ -593,6 +593,7 @@ class ACTIVITY_ACTION(str, Enum):
     LOGIN_FAILED = "login_failed"  
     CALL_MADE = "call_made"
     CALL_RECEIVED = "call_received"
+    UPDATE_LEAD_CONNECTION_STATUS = "update_lead_connection_status"
 
     EMAIL_SENT = "email_sent"
     EMAIL_OPENED = "email_opened"

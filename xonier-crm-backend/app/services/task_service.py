@@ -14,7 +14,7 @@ from beanie import PydanticObjectId
 from fastapi.encoders import jsonable_encoder
 from datetime import datetime, timezone
 from typing import Dict, Any, List
-from bson import ObjectId
+from bson import ObjectId, DBRef
  
  
 def _activity(task_id, action, performer_id, description, field=None, old_val=None, new_val=None, metadata=None):
@@ -324,7 +324,10 @@ class TaskService:
             now = datetime.now(timezone.utc)
  
             for status in statuses:
-                task_query = {**base_query, "status.$id": ObjectId(str(status.id))}
+                # task_query = {**base_query, "status": PydanticObjectId(status.id)}
+                task_query = {**base_query, "status.$id": PydanticObjectId(str(status.id))}
+
+                
                 tasks = await self.repo.find_many(
                     filters=task_query,
                     populate=["status", "assignedTo", "createdBy"]
@@ -335,8 +338,22 @@ class TaskService:
                 for task in tasks_encoded:
                     due = task.get("dueDate")
                     completed = task.get("completedAt")
+
                     if due and not completed:
-                        task["isOverdue"] = datetime.fromisoformat(due.replace("Z", "+00:00")) < now if isinstance(due, str) else due < now
+                        try:
+                            if isinstance(due, str):
+                                due_dt = datetime.fromisoformat(due.replace("Z", "+00:00"))
+                            else:
+                                due_dt = due
+
+                            
+                            if due_dt.tzinfo is None:
+                                due_dt = due_dt.replace(tzinfo=timezone.utc)
+
+                            task["isOverdue"] = due_dt < now
+
+                        except Exception:
+                            task["isOverdue"] = False
  
                 board.append({
                     "status": jsonable_encoder(status),
@@ -380,6 +397,7 @@ class TaskService:
             raise
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+        
  
     async def get_my_tasks(self, filters: Dict[str, Any], user: Dict[str, Any]):
         try:
@@ -573,9 +591,12 @@ class TaskService:
                     old_status_name = old_status.name if old_status else "Unknown"
  
                     update_data: Dict[str, Any] = {
-                        "status": PydanticObjectId(new_status_id),
+                        "status": DBRef(
+                            collection="task_statuses",
+                            id=ObjectId(new_status_id)  
+                        ),
                         "order": new_order,
-                        "updatedBy": PydanticObjectId(user["_id"]),
+                        "updatedBy": DBRef("users", user["_id"]),
                         "updatedAt": datetime.now(timezone.utc),
                     }
  

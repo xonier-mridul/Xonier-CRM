@@ -191,6 +191,10 @@ export enum PERMISSIONS {
   taskCategoryRead = "taskCategory:read",
   taskCategoryUpdate = "taskCategory:update",
   taskCategoryDelete = "taskCategory:delete",
+  taskStatusCreate = "taskStatus:create",
+  taskStatusRead = "taskStatus:read",
+  taskStatusUpdate = "taskStatus:update",
+  taskStatusDelete = "taskStatus:delete",
 
 }
 

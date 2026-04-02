@@ -4,82 +4,82 @@ import { StatusItem } from "./status.types";
 
 // ── Enums (mirror Python enums) ───────────────────────────────────────────────
 export enum TASK_PRIORITY {
-  LOW    = "low",
+  LOW = "low",
   MEDIUM = "medium",
-  HIGH   = "high",
+  HIGH = "high",
   URGENT = "urgent",
 }
 
 export enum TASK_ENTITY_TYPE {
   PROJECT = "project",
-  LEAD    = "lead",
-  DEAL    = "deal",
+  LEAD = "lead",
+  DEAL = "deal",
   ENQUIRY = "enquiry",
   CONTACT = "contact",
   GENERAL = "general",
 }
 
 export enum RECURRENCE_TYPE {
-  daily   = "daily",
-  weekly  = "weekly",
+  daily = "daily",
+  weekly = "weekly",
   monthly = "monthly",
-  yearly  = "yearly",
+  yearly = "yearly",
 }
 
 export enum TaskPermissions {
-  CREATE_TASK          = "CREATE_TASK",
-  EDIT_TASK            = "EDIT_TASK",
-  DELETE_TASK          = "DELETE_TASK",
-  VIEW_TASK            = "VIEW_TASK",
-  ASSIGN_TASK          = "ASSIGN_TASK",
-  UPDATE_TASK_STATUS   = "UPDATE_TASK_STATUS",
+  CREATE_TASK = "CREATE_TASK",
+  EDIT_TASK = "EDIT_TASK",
+  DELETE_TASK = "DELETE_TASK",
+  VIEW_TASK = "VIEW_TASK",
+  ASSIGN_TASK = "ASSIGN_TASK",
+  UPDATE_TASK_STATUS = "UPDATE_TASK_STATUS",
   UPDATE_TASK_PRIORITY = "UPDATE_TASK_PRIORITY",
 }
 
 // ── API Payloads (mirror Python schemas 1:1) ──────────────────────────────────
 export interface CreateTaskPayload {
-  title:             string;
-  description?:      string;
-  category:          string;
-  status?:           string;
-  priority:          TASK_PRIORITY;
-  entityType?:       TASK_ENTITY_TYPE;
-  entityId?:         string;
-  entityName?:       string;
-  assignedTo:        string[];
-  dueDate?:          string | null;
-  startDate?:        string| null;
-  estimatedHours?:   number;
-  isRecurring:       boolean;
-  recurrenceType?:   RECURRENCE_TYPE;
-  recurrenceEndsAt?: string| null;
-  tags:              string[];
-  attachments:       string[];
-  parentTask?:       string| null;
-  order:             number;
+  title: string;
+  description?: string;
+  category: string;
+  status?: string;
+  priority: TASK_PRIORITY;
+  entityType?: TASK_ENTITY_TYPE;
+  entityId?: string;
+  entityName?: string;
+  assignedTo: string[];
+  dueDate?: string | null;
+  startDate?: string | null;
+  estimatedHours?: number;
+  isRecurring: boolean;
+  recurrenceType?: RECURRENCE_TYPE;
+  recurrenceEndsAt?: string | null;
+  tags: string[];
+  attachments: string[];
+  parentTask?: string | null;
+  order: number;
 }
 
 export interface UpdateTaskPayload {
-  title?:            string;
-  description?:      string;
-  priority?:         TASK_PRIORITY;
-  dueDate?:          string;
-  startDate?:        string;
-  estimatedHours?:   number;
-  actualHours?:      number;
-  isRecurring?:      boolean;
-  recurrenceType?:   RECURRENCE_TYPE;
+  title?: string;
+  description?: string;
+  priority?: TASK_PRIORITY;
+  dueDate?: string;
+  startDate?: string;
+  estimatedHours?: number;
+  actualHours?: number;
+  isRecurring?: boolean;
+  recurrenceType?: RECURRENCE_TYPE;
   recurrenceEndsAt?: string;
-  tags?:             string[];
-  attachments?:      string[];
-  entityType?:       TASK_ENTITY_TYPE;
-  entityId?:         string;
-  entityName?:       string;
-  assignedTo?:       string[];
+  tags?: string[];
+  attachments?: string[];
+  entityType?: TASK_ENTITY_TYPE;
+  entityId?: string;
+  entityName?: string;
+  assignedTo?: string[];
 }
 
 export interface UpdateTaskStatusPayload {
-  status:    string;
+  status: string;
   category?: string;
   order?: number;
 }
@@ -93,18 +93,19 @@ export interface AssignTaskPayload {
 }
 
 export interface BulkAssignTaskPayload {
-  taskIds:    string[];
+  taskIds: string[];
   assignedTo: string[];
 }
 
 export interface BulkStatusUpdatePayload {
   taskIds: string[];
-  status:  string;
+  status: string;
 }
 
 export interface MoveTaskPayload {
   status: string;
   order?: number;
+  category?: string;
 }
 
 export interface ReorderTaskPayload {
@@ -115,68 +116,71 @@ export interface AddWatcherPayload {
   userId: string;
 }
 
-// ── Lookup / response shapes ──────────────────────────────────────────────────
+
 export interface AssignedUser {
-  id:      string;
-  name:    string;
-  email:   string;
+  id: string;
+  firstName: string;
+  lastName?: string;
+  email: string;
   avatar?: string;
 }
 
 export interface StatusOption {
-  _id:    string;
-  id:    string;
-  name:  string;
+  _id: string;
+  id: string;
+  name: string;
   color: string;
-  icon:  string;
+  icon: string;
+  isDefault: boolean
 }
 
 export interface CategoryOption {
-  id:    string;
-  name:  string;
+  id: string;
+  name: string;
   icon?: string;
 }
 
 export interface UserOption {
-  id:      string;
-  name:    string;
-  email:   string;
+  id: string;
+  name: string;
+  email: string;
   avatar?: string;
 }
 
 export interface TaskItem {
-  id:                string;
-  title:             string;
-  description:       string | null;
-  category:          CategoryItem;
-  categoryName?:     string;
-  status:            StatusItem;
-  statusName?:       string;
-  statusColor?:      string;
-  statusIcon?:       string;
-  priority:          TASK_PRIORITY;
-  entityType?:       TASK_ENTITY_TYPE;
-  entityId?:         string;
-  entityName?:       string;
-  assignedTo:        AssignedUser[];
-  dueDate?:          string;
-  startDate?:        string;
-  estimatedHours?:   number;
-  actualHours?:      number;
-  isRecurring:       boolean;
-  recurrenceType?:   RECURRENCE_TYPE;
+  id: string;
+  title: string;
+  description: string | null;
+  category: CategoryItem;
+  categoryName?: string;
+  status: StatusItem;
+  statusName?: string;
+  statusColor?: string;
+  statusIcon?: string;
+  priority: TASK_PRIORITY;
+  entityType?: TASK_ENTITY_TYPE;
+  entityId?: string;
+  entityName?: string;
+  assignedTo: AssignedUser[];
+  dueDate?: string;
+  startDate?: string;
+  completedAt?: string;
+  estimatedHours?: number;
+  actualHours?: number;
+  isRecurring: boolean;
+  recurrenceType?: RECURRENCE_TYPE;
   recurrenceEndsAt?: string;
-  tags:              string[];
-  attachments:       string[];
-  parentTask?:       string;
-  order:             number;
-  createdAt:         string;
-  updatedAt:         string;
+  tags: string[];
+  attachments: string[];
+  parentTask?: string;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface PaginatedTaskResponse {
-  data:  TaskItem[];
-  page:  number | string;
+  data: TaskItem[];
+  page: number | string;
   limit: number | string;
   total: number;
 }
