@@ -11,7 +11,7 @@ import {
 import { COLOR_OPTIONS, TASK_VISIBILITY } from "@/src/constants/enum";
 import CategoryModal from "@/src/components/pages/task/createModal";
 import { FaRegEye } from "react-icons/fa6";
-import { MdDeleteOutline ,MdOutlineEdit} from "react-icons/md";
+import { MdDeleteOutline, MdOutlineEdit } from "react-icons/md";
 
 
 function getColorOption(hex: string | null): ColorOption {
@@ -43,7 +43,7 @@ function CategoryBadge({
 function SkeletonRow() {
     return (
         <tr className="animate-pulse">
-            {[1, 2, 3, 4, 5,6].map((i) => (
+            {[1, 2, 3, 4, 5, 6].map((i) => (
                 <td key={i} className="px-5 py-4">
                     <div className="h-4 bg-gray-100 dark:bg-gray-700 rounded-lg w-3/4" />
                 </td>
@@ -282,8 +282,8 @@ const CategoryTable = ({
                                                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 transition"
                                                         >
                                                             <span className="items-center justify-center rounded-md bg-blue-100/80 text-blue-500 border-blue-100">
-                                                                    <MdOutlineEdit className="text-sm" />
-                                                                    </span>
+                                                                <MdOutlineEdit className="text-sm" />
+                                                            </span>
                                                         </button>
                                                     )}
                                                     {canDelete && (
@@ -309,26 +309,38 @@ const CategoryTable = ({
                 </table>
 
                 {/* Footer */}
-                <div className="px-5 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                    <span className="text-xs text-gray-400 dark:text-gray-500">
-                        Showing page {currentPage} of {totalPages}
-                        
-                    </span>
-                    <span className="text-xs text-gray-400 dark:text-gray-500">
-                        <button className="p-3 font-bold"
-                            onClick={()=>handlepagechange(-1)}
-                        >
-                            &lt;
-                        </button>
-                        {currentPage}
-                        <button 
-                            className="p-3 font-bold"
-                            onClick={()=>handlepagechange(1)}
-                        >
-                            &gt;
-                        </button>
-                    </span>
-                </div>
+                <div className="px-5 py-3.5 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+              <span className="text-xs text-gray-400 dark:text-gray-500">
+                Showing{" page "} 
+                <span className="font-semibold text-gray-600 dark:text-gray-300">
+                  {currentPage}
+                </span>{" "}
+                of{" "}
+                <span className="font-semibold text-gray-600 dark:text-gray-300">{totalPages}</span>
+              </span>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={currentPage <= 1 || isLoading}
+                  onClick={() => handlepagechange(-1)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                >
+                  ← Prev
+                </button>
+                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium px-1">
+                  {currentPage} 
+                </span>
+                <button
+                  type="button"
+                  disabled={currentPage >= totalPages || isLoading}
+                  onClick={() => handlepagechange(1)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                >
+                  Next →
+                </button>
+              </div>
+            </div>
             </div>
         </>
     );

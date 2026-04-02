@@ -1,6 +1,7 @@
 import { Dispatch, SetStateAction } from "react";
 import { CategoryItem } from "./category.types";
 import { StatusItem } from "./status.types";
+import { Timestamp } from "next/dist/server/lib/cache-handlers/types";
 
 // ── Enums (mirror Python enums) ───────────────────────────────────────────────
 export enum TASK_PRIORITY {
@@ -23,17 +24,6 @@ export enum RECURRENCE_TYPE {
   daily = "daily",
   weekly = "weekly",
   monthly = "monthly",
-  yearly = "yearly",
-}
-
-export enum TaskPermissions {
-  CREATE_TASK = "CREATE_TASK",
-  EDIT_TASK = "EDIT_TASK",
-  DELETE_TASK = "DELETE_TASK",
-  VIEW_TASK = "VIEW_TASK",
-  ASSIGN_TASK = "ASSIGN_TASK",
-  UPDATE_TASK_STATUS = "UPDATE_TASK_STATUS",
-  UPDATE_TASK_PRIORITY = "UPDATE_TASK_PRIORITY",
 }
 
 // ── API Payloads (mirror Python schemas 1:1) ──────────────────────────────────
@@ -47,12 +37,12 @@ export interface CreateTaskPayload {
   entityId?: string;
   entityName?: string;
   assignedTo: string[];
-  dueDate?: string | null;
-  startDate?: string | null;
+  dueDate?: Date | Timestamp | null;
+  startDate?: Date | Timestamp | null;
   estimatedHours?: number;
   isRecurring: boolean;
   recurrenceType?: RECURRENCE_TYPE;
-  recurrenceEndsAt?: string | null;
+  recurrenceEndsAt?: Date | Timestamp | null;
   tags: string[];
   attachments: string[];
   parentTask?: string | null;
@@ -60,22 +50,24 @@ export interface CreateTaskPayload {
 }
 
 export interface UpdateTaskPayload {
-  title?: string;
+  title: string;
   description?: string;
   priority?: TASK_PRIORITY;
-  dueDate?: string;
-  startDate?: string;
+  dueDate?: Date | Timestamp | null;
+  startDate?: Date | Timestamp | null;
   estimatedHours?: number;
   actualHours?: number;
   isRecurring?: boolean;
   recurrenceType?: RECURRENCE_TYPE;
-  recurrenceEndsAt?: string;
+  recurrenceEndsAt?: Date | Timestamp | null;
   tags?: string[];
   attachments?: string[];
   entityType?: TASK_ENTITY_TYPE;
   entityId?: string;
   entityName?: string;
   assignedTo?: string[];
+  category: string;
+  status: string;
 }
 
 export interface UpdateTaskStatusPayload {
@@ -162,14 +154,14 @@ export interface TaskItem {
   entityId?: string;
   entityName?: string;
   assignedTo: AssignedUser[];
-  dueDate?: string;
-  startDate?: string;
+  dueDate?: Date | Timestamp | null;
+  startDate?: Date | Timestamp | null;
   completedAt?: string;
   estimatedHours?: number;
   actualHours?: number;
   isRecurring: boolean;
   recurrenceType?: RECURRENCE_TYPE;
-  recurrenceEndsAt?: string;
+  recurrenceEndsAt?: Date | Timestamp | null;
   tags: string[];
   attachments: string[];
   parentTask?: string;

@@ -257,26 +257,37 @@ const StatusTable = ({
         </table>
 
         {/* Footer */}
-        <div className="px-5 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+        <div className="px-5 py-3.5 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
           <span className="text-xs text-gray-400 dark:text-gray-500">
-            Showing page {currentPage} of {totalPages}
+            Showing{" page "}
+            <span className="font-semibold text-gray-600 dark:text-gray-300">
+              {currentPage}
+            </span>{" "}
+            of{" "}
+            <span className="font-semibold text-gray-600 dark:text-gray-300">{totalPages }</span>
           </span>
 
-          <span className="text-xs text-gray-400 dark:text-gray-500">
-            <button 
-              className="p-3 font-bold"
-              onClick={()=>handlepagechange(-1)}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={currentPage <= 1 || isLoading}
+              onClick={() => handlepagechange(-1)}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
             >
-              &lt;
+              ← Prev
             </button>
-            {currentPage}
-            <button 
-              className="p-3 font-bold"
-              onClick={()=>handlepagechange(1)}
+            <span className="text-xs text-gray-500 dark:text-gray-400 font-medium px-1">
+              {currentPage}
+            </span>
+            <button
+              type="button"
+              disabled={currentPage >= totalPages || isLoading}
+              onClick={() => handlepagechange(1)}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
             >
-              &gt;
+              Next →
             </button>
-          </span>
+          </div>
         </div>
       </div>
     </>

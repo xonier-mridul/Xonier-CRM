@@ -14,13 +14,13 @@ import {
   TASK_PRIORITY,
   TASK_ENTITY_TYPE,
   RECURRENCE_TYPE,
-  TaskPermissions,
   CategoryOption,
   StatusOption,
 } from "@/src/types/task/task.types";
 import { User } from "@/src/types";
 import { AuthService } from "@/src/services/auth.service";
 import { RootState } from "@/src/store";
+import { PERMISSIONS } from "@/src/constants/enum";
 
 const PRIORITY_CFG: Record<
   TASK_PRIORITY,
@@ -146,7 +146,9 @@ const CreateTaskPage = (): JSX.Element => {
   const set = <K extends keyof CreateTaskPayload>(
     k: K,
     v: CreateTaskPayload[K],
-  ) => setForm((p) => ({ ...p, [k]: v }));
+  ) => {
+    setForm((p) => ({ ...p, [k]: v }))
+  };
 
   useEffect(() => {
     (async () => {
@@ -299,10 +301,10 @@ const CreateTaskPage = (): JSX.Element => {
     }
   };
 
-  const canCreate = hasPermission(TaskPermissions.CREATE_TASK);
+  const canCreate = hasPermission(PERMISSIONS.createTask);
 
   return (
-    <div className="ml-72 mt-14 p-6 min-h-screen">
+    <div className="ml-72 mt-14 min-h-screen">
       <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full mb-10">
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -318,13 +320,13 @@ const CreateTaskPage = (): JSX.Element => {
               Fill in the details to add a new task
             </p>
           </div>
-          <button
+          {/* <button
             type="button"
             onClick={() => router.back()}
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
           >
             ← Back
-          </button>
+          </button> */}
         </div>
 
         {err && (
@@ -399,16 +401,18 @@ const CreateTaskPage = (): JSX.Element => {
                 <Field label="Start Date">
                   <input
                     type="date"
-                    value={form.startDate ?? ""}
-                    onChange={(e) => set("startDate", e.target.value)}
+                    value={
+                      form.startDate ? new Date(form.startDate).toLocaleDateString("en-GB") : undefined
+                    }
+                    onChange={(e) => set("startDate", new Date(e.target.value))}
                     className={inputCls}
                   />
                 </Field>
                 <Field label="Due Date">
                   <input
                     type="date"
-                    value={form.dueDate ?? ""}
-                    onChange={(e) => set("dueDate", e.target.value)}
+                    value={form.dueDate ? new Date(form.dueDate).toLocaleDateString("en-GB") : undefined}
+                    onChange={(e) => set("dueDate", new Date(e.target.value))}
                     className={inputCls}
                   />
                 </Field>
@@ -487,9 +491,9 @@ const CreateTaskPage = (): JSX.Element => {
                   <Field label="Ends At">
                     <input
                       type="date"
-                      value={form.recurrenceEndsAt ?? ""}
+                      value={form.recurrenceEndsAt ? new Date(form.recurrenceEndsAt).toLocaleDateString("en-GB") : undefined}
                       onChange={(e) =>
-                        set("recurrenceEndsAt", e.target.value || null)
+                        set("recurrenceEndsAt", new Date (e.target.value))
                       }
                       className={inputCls}
                     />
@@ -498,93 +502,7 @@ const CreateTaskPage = (): JSX.Element => {
               )}
             </SectionCard>
 
-            <SectionCard icon="👥" title="Assign Users">
-              <div className="space-y-3">
-                {/* Assign to me */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    const myId = auth.user?._id;
-                    if (!myId) return;
-
-                    if (!form.assignedTo.includes(myId)) {
-                      set("assignedTo", [...form.assignedTo, myId]);
-                    }
-                  }}
-                  className="w-full px-3 py-2 text-sm font-semibold rounded-xl border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-400 transition"
-                >
-                  ⚡ Assign to Me
-                </button>
-
-                {/* Selected Users */}
-                {form.assignedTo.length > 0 && (
-                  
-                  <div className="flex flex-wrap gap-2">
-                    {form.assignedTo.map((userId) => {
-                     
-                      const user = userMap[userId];
-
-                      return (
-                        <span
-                          key={userId}
-                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-600 border border-indigo-200 dark:bg-indigo-900/30 dark:border-indigo-700 dark:text-indigo-300"
-                        >
-                          👤 {user?.firstName || "User"}
-                          <button
-                            type="button"
-                            onClick={() =>
-                              set(
-                                "assignedTo",
-                                form.assignedTo.filter((id) => id !== userId),
-                              )
-                            }
-                            className="text-indigo-400 hover:text-red-500 ml-1"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* User List */}
-                <div className="max-h-40 overflow-y-auto border rounded-xl p-2 space-y-1">
-                  {userData.map((user) => {
-                    const isSelected = form.assignedTo.includes(user.id);
-
-                    return (
-                      <div
-                        key={user.id}
-                        onClick={() => {
-                          if (isSelected) {
-                            set(
-                              "assignedTo",
-                              form.assignedTo.filter((id) => id !== user.id),
-                            );
-                          } else {
-                            set("assignedTo", [...form.assignedTo, user.id]);
-                          }
-                        }}
-                        className={`flex items-center justify-between px-2 py-1.5 rounded-lg cursor-pointer text-sm transition ${
-                          isSelected
-                            ? "bg-blue-50 dark:bg-blue-900/30"
-                            : "hover:bg-gray-50 dark:hover:bg-gray-700"
-                        }`}
-                      >
-                        <span>
-                          {user.firstName} {user.lastName}
-                        </span>
-
-                        {isSelected && (
-                          <span className="text-blue-500 text-xs">✓</span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </SectionCard>
+           
 
             <SectionCard icon="🔗" title="Link to CRM Entity">
               <div className="grid grid-cols-3 gap-4">
@@ -704,7 +622,7 @@ const CreateTaskPage = (): JSX.Element => {
               )}
             </SectionCard>
 
-            <SectionCard icon="🔢" title="Order">
+            {/* <SectionCard icon="🔢" title="Order">
               <Field
                 label="Position"
                 hint="Lower number appears first in the column"
@@ -717,6 +635,93 @@ const CreateTaskPage = (): JSX.Element => {
                   className={inputCls}
                 />
               </Field>
+            </SectionCard> */}
+             <SectionCard icon="👥" title="Assign Users">
+              <div className="space-y-3">
+                {/* Assign to me */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const myId = auth.user?._id;
+                    if (!myId) return;
+
+                    if (!form.assignedTo.includes(myId)) {
+                      set("assignedTo", [...form.assignedTo, myId]);
+                    }
+                  }}
+                  className="w-full px-3 py-2 text-sm font-semibold rounded-xl border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-400 transition"
+                >
+                  ⚡ Assign to Me
+                </button>
+
+                {/* Selected Users */}
+                {form.assignedTo.length > 0 && (
+                  
+                  <div className="flex flex-wrap gap-2">
+                    {form.assignedTo.map((userId) => {
+                     
+                      const user = userMap[userId];
+
+                      return (
+                        <span
+                          key={userId}
+                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-600 border border-indigo-200 dark:bg-indigo-900/30 dark:border-indigo-700 dark:text-indigo-300"
+                        >
+                          👤 {user?.firstName || "User"}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              set(
+                                "assignedTo",
+                                form.assignedTo.filter((id) => id !== userId),
+                              )
+                            }
+                            className="text-indigo-400 hover:text-red-500 ml-1"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* User List */}
+                <div className="max-h-40 overflow-y-auto border rounded-xl p-2 space-y-1">
+                  {userData.map((user) => {
+                    const isSelected = form.assignedTo.includes(user.id);
+
+                    return (
+                      <div
+                        key={user.id}
+                        onClick={() => {
+                          if (isSelected) {
+                            set(
+                              "assignedTo",
+                              form.assignedTo.filter((id) => id !== user.id),
+                            );
+                          } else {
+                            set("assignedTo", [...form.assignedTo, user.id]);
+                          }
+                        }}
+                        className={`flex items-center justify-between px-2 py-1.5 rounded-lg cursor-pointer text-sm transition ${
+                          isSelected
+                            ? "bg-blue-50 dark:bg-blue-900/30"
+                            : "hover:bg-gray-50 dark:hover:bg-gray-700"
+                        }`}
+                      >
+                        <span>
+                          {user.firstName} {user.lastName}
+                        </span>
+
+                        {isSelected && (
+                          <span className="text-blue-500 text-xs">✓</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </SectionCard>
           </div>
         </div>
