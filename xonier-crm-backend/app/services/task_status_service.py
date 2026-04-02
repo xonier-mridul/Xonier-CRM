@@ -8,7 +8,7 @@ from beanie import PydanticObjectId
 from fastapi.encoders import jsonable_encoder
 from datetime import datetime, timezone
 from typing import Dict, Any, List
-from bson import ObjectId
+from bson import ObjectId, DBRef
  
  
 class TaskStatusService:
@@ -213,6 +213,7 @@ class TaskStatusService:
                         **{k: v for k, v in payload.items() if v is not None},
                         "updatedBy": PydanticObjectId(user["_id"]),
                         "updatedAt": datetime.now(timezone.utc),
+                        "category": DBRef("task_categories", PydanticObjectId(payload["category"]))
                     }
  
                     if "name" in payload and payload["name"]:
