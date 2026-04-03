@@ -19,7 +19,7 @@ class LeadBaseSchema(BaseModel):
     phone: Optional[str] = None
 
     priority: Optional[PRIORITY] = PRIORITY.MEDIUM.value
-    source: str 
+    source: Optional[str] = SOURCE.OTHER.value 
     projectType:Optional[str] = None
 
     companyName: Optional[str] = None
@@ -76,7 +76,7 @@ class LeadsCreateSchema(LeadBaseSchema):
     phone: Optional[str] = None
 
     priority: Optional[PRIORITY] = PRIORITY.MEDIUM.value
-    source: str
+    source: Optional[str] = SOURCE.OTHER.value
     projectType:Optional[str] = None
     dataTag: Optional[str] = None
 
@@ -94,15 +94,15 @@ class LeadsCreateSchema(LeadBaseSchema):
     message: Optional[str] = None
     membershipNotes: Optional[str] = None
 
-    @model_validator(mode="before")
-    @classmethod
-    def validate_fields(cls, value):
-        sourcef = value.get("source")
+    # @model_validator(mode="before")
+    # @classmethod
+    # def validate_fields(cls, value):
+    #     sourcef = value.get("source")
 
-        if not sourcef:
-            raise AppException(422, "source field must required")
+    #     if not sourcef:
+    #         raise AppException(422, "source field must required")
         
-        return value
+    #     return value
 
 
 class CreateBulkLeadSchema(BaseModel):

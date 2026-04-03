@@ -23,16 +23,16 @@ PhoneNumber = Annotated[
 class LeadsModel(Document):
     lead_id: str
     fullName: str = Field(..., min_length=1, max_length=49)
-    email: str  
+    email: str
     hashedEmail: str = Indexed()
     phone: Optional[str] = None
     hashedPhone: Optional[str] = None
     
     priority: Optional[PRIORITY] = PRIORITY.MEDIUM.value
-    source: str 
+    source: Optional[str] = SOURCE.OTHER.value 
     projectType: Optional[str] = None
-    createdBy: Link[UserModel]
-    status: SALES_STATUS = SALES_STATUS.NEW
+    createdBy: Link[UserModel] 
+    status: Optional[SALES_STATUS] = SALES_STATUS.NEW.value
     dataTag: Optional[str] = None
 
     companyName: Optional[str] = None

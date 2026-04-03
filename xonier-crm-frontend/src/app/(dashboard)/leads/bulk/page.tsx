@@ -33,6 +33,7 @@ interface ValidationError {
 }
 
 const ITEMS_PER_PAGE = 20;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const BulkLeadUpload = (): JSX.Element => {
   const [userFormData, setUserFormData] = useState<UserForm | null>(null);
@@ -46,12 +47,12 @@ const BulkLeadUpload = (): JSX.Element => {
   const [dataTag, setDataTag] = useState<string>("");
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [fileInputKey, setFileInputKey] = useState<number>(0);
 
   const totalPages = Math.ceil(parsedData.length / ITEMS_PER_PAGE);
   const invalidCount = new Set(validationErrors.map((e) => e.row)).size;
   const router = useRouter();
 
-  /* ─── fetch form fields ─── */
   const getFormFields = async (): Promise<void> => {
     setIsLoading(true);
     try {
@@ -70,7 +71,6 @@ const BulkLeadUpload = (): JSX.Element => {
 
   useEffect(() => { getFormFields(); }, []);
 
-  /* ─── download template ─── */
   const downloadCSVTemplate = () => {
     if (!userFormData?.selectedFormFields) { toast.error("Form fields not loaded"); return; }
     const headers = userFormData.selectedFormFields.map((f) => f.key);
@@ -92,7 +92,6 @@ const BulkLeadUpload = (): JSX.Element => {
     toast.success("Template downloaded");
   };
 
-  /* ─── validation ─── */
   const validateLeadData = (data: ParsedLead[], startIndex = 0): ValidationError[] => {
     const errors: ValidationError[] = [];
     if (!userFormData?.selectedFormFields) return errors;
@@ -100,15 +99,24 @@ const BulkLeadUpload = (): JSX.Element => {
 
     data.forEach((lead, index) => {
       const rowNumber = startIndex + index + 2;
+
+      const emailValue = lead["email"];
+      if (emailValue !== undefined && String(emailValue).trim() !== "") {
+        if (!EMAIL_REGEX.test(String(emailValue).trim()))
+          errors.push({ row: rowNumber, field: "email", message: "Invalid email format" });
+      }
+
       userFormData.selectedFormFields.forEach((field) => {
         const value = lead[field.key];
         const isOptional = optionalFields.has(field.key);
+
         if (field.required && !isOptional && (!value || value === ""))
           errors.push({ row: rowNumber, field: field.key, message: `${field.name} is required` });
+
         if (value && value !== "") {
           switch (field.type) {
             case "email":
-              if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value)))
+              if (field.key !== "email" && !EMAIL_REGEX.test(String(value)))
                 errors.push({ row: rowNumber, field: field.key, message: "Invalid email format" });
               break;
             case "number":
@@ -130,10 +138,10 @@ const BulkLeadUpload = (): JSX.Element => {
         }
       });
     });
+
     return errors;
   };
 
-  /* ─── parse & set ─── */
   const processAndSetData = (data: ParsedLead[], headers: string[]) => {
     setCsvHeaders(headers); setParsedData(data); setCurrentPage(1);
     const errors = validateLeadData(data);
@@ -173,6 +181,7 @@ const BulkLeadUpload = (): JSX.Element => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (f) handleFile(f);
+    e.target.value = "";
   };
 
   const handleDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>) => {
@@ -197,10 +206,10 @@ const BulkLeadUpload = (): JSX.Element => {
     if (f) handleFile(f);
   }, []);
 
-  /* ─── reset / delete helpers ─── */
   const resetUpload = () => {
     setFile(null); setParsedData([]); setValidationErrors([]);
     setCurrentPage(1); setDataTag(""); setCsvHeaders([]);
+    setFileInputKey((k) => k + 1);
   };
 
   const deleteRow = (globalIdx: number) => {
@@ -225,7 +234,6 @@ const BulkLeadUpload = (): JSX.Element => {
 
   const getErrorsForRow = (gi: number) => validationErrors.filter((e) => e.row === gi + 2);
 
-  /* ─── submit ─── */
   const handleBulkUpload = async () => {
     if (!parsedData.length) { toast.error("No data to upload"); return; }
     if (validationErrors.length > 0) { toast.error("Fix validation errors before uploading"); return; }
@@ -291,13 +299,9 @@ const BulkLeadUpload = (): JSX.Element => {
     currentPage * ITEMS_PER_PAGE,
   );
 
-  /* ════════════════════════════════════════════
-     RENDER
-  ════════════════════════════════════════════ */
   return (
     <div className="ml-72 mt-14 p-6 space-y-6">
 
-      {/* ── Header card ── */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
         <div className="bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-700 dark:to-indigo-700 px-8 py-5">
           <div className="flex items-center gap-3">
@@ -333,7 +337,6 @@ const BulkLeadUpload = (): JSX.Element => {
         </div>
       </div>
 
-      {/* ── Drop zone ── */}
       <div
         onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}
@@ -361,6 +364,7 @@ const BulkLeadUpload = (): JSX.Element => {
           </div>
 
           <input
+            key={fileInputKey}
             type="file" accept=".csv,.xlsx,.xls"
             className="hidden" id="leadFileUpload"
             onChange={handleFileChange}
@@ -390,7 +394,6 @@ const BulkLeadUpload = (): JSX.Element => {
         </div>
       </div>
 
-      {/* ── Data Tag ── */}
       {file && (
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 px-6 py-4">
           <div className="flex items-center gap-4">
@@ -426,7 +429,6 @@ const BulkLeadUpload = (): JSX.Element => {
         </div>
       )}
 
-      {/* ── Validation error summary ── */}
       {validationErrors.length > 0 && (
         <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-2xl p-4">
           <div className="flex items-start gap-3">
@@ -453,11 +455,9 @@ const BulkLeadUpload = (): JSX.Element => {
         </div>
       )}
 
-      {/* ── Preview table ── */}
       {parsedData.length > 0 && (
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
 
-          {/* table header bar */}
           <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3 flex-wrap">
               <h3 className="font-semibold text-gray-800 dark:text-gray-100 text-sm">Preview</h3>
@@ -495,7 +495,6 @@ const BulkLeadUpload = (): JSX.Element => {
             )}
           </div>
 
-          {/* scrollable table */}
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 dark:bg-gray-800/60">
@@ -529,20 +528,14 @@ const BulkLeadUpload = (): JSX.Element => {
                           ? "bg-red-50/60 dark:bg-red-900/10 hover:bg-red-50 dark:hover:bg-red-900/20"
                           : "hover:bg-gray-50 dark:hover:bg-gray-800/40"}`}
                     >
-                      {/* left red border stripe for invalid rows */}
-
-
-                      {/* row number + error badge */}
                       <td className="px-4 py-3 relative">
                         <div className="flex items-center gap-1.5">
                           {isInvalid && (
                             <div className="relative group">
-                              {/* badge */}
                               <span className="w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center cursor-help flex-shrink-0">
                                 !
                               </span>
 
-                              {/* tooltip */}
                               <div className="absolute z-50 left-6 top-full mt-2 w-72 
           bg-gray-900 dark:bg-gray-950 text-white text-xs rounded-xl shadow-2xl p-3 
           space-y-1.5 pointer-events-none opacity-0 group-hover:opacity-100 
@@ -571,11 +564,13 @@ const BulkLeadUpload = (): JSX.Element => {
                         </div>
                       </td>
 
-                      {/* data cells */}
                       {csvHeaders.map((header) => {
                         const value = lead[header];
                         const hasErr = fieldHasError(header);
                         const errMsg = rowErrs.find((e) => e.field === header)?.message;
+                        const isEmailField = header === "email";
+                        const emailInvalid = isEmailField && hasErr;
+
                         return (
                           <td
                             key={header}
@@ -586,7 +581,16 @@ const BulkLeadUpload = (): JSX.Element => {
                                 : "text-gray-700 dark:text-gray-200"}`}
                           >
                             {value !== undefined && String(value).trim() !== ""
-                              ? String(value)
+                              ? (
+                                <span className={emailInvalid ? "inline-flex items-center gap-1" : ""}>
+                                  {String(value)}
+                                  {emailInvalid && (
+                                    <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-red-500 text-white text-[8px] font-bold flex-shrink-0" title={errMsg}>
+                                      ✕
+                                    </span>
+                                  )}
+                                </span>
+                              )
                               : hasErr
                                 ? <span className="italic text-red-400 text-xs">missing</span>
                                 : <span className="text-gray-300 dark:text-gray-600">—</span>
@@ -595,7 +599,6 @@ const BulkLeadUpload = (): JSX.Element => {
                         );
                       })}
 
-                      {/* delete button */}
                       <td className="px-4 py-3">
                         <button
                           type="button"
@@ -616,7 +619,6 @@ const BulkLeadUpload = (): JSX.Element => {
             </table>
           </div>
 
-          {/* pagination */}
           <div className="flex justify-between items-center px-6 py-4 border-t border-gray-100 dark:border-gray-800">
             <span className="text-sm text-gray-500 dark:text-gray-400">
               Showing{" "}
@@ -672,7 +674,6 @@ const BulkLeadUpload = (): JSX.Element => {
         </div>
       )}
 
-      {/* ── Submit bar ── */}
       {parsedData.length > 0 && (
         <div className="flex justify-end items-center gap-3">
           {invalidCount > 0 && (
