@@ -34,6 +34,7 @@ interface ValidationError {
 
 const ITEMS_PER_PAGE = 20;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_REGEX = /^\+?[0-9\s\-().]{7,20}$/;
 
 const BulkLeadUpload = (): JSX.Element => {
   const [userFormData, setUserFormData] = useState<UserForm | null>(null);
@@ -94,17 +95,24 @@ const BulkLeadUpload = (): JSX.Element => {
 
   const validateLeadData = (data: ParsedLead[], startIndex = 0): ValidationError[] => {
     const errors: ValidationError[] = [];
-    if (!userFormData?.selectedFormFields) return errors;
     const optionalFields = new Set(["phone", "priority", "projectType", "country"]);
 
     data.forEach((lead, index) => {
       const rowNumber = startIndex + index + 2;
 
-      const emailValue = lead["email"];
-      if (emailValue !== undefined && String(emailValue).trim() !== "") {
-        if (!EMAIL_REGEX.test(String(emailValue).trim()))
+      const emailValue = String(lead["email"] ?? "").trim();
+      if (emailValue !== "") {
+        if (!EMAIL_REGEX.test(emailValue))
           errors.push({ row: rowNumber, field: "email", message: "Invalid email format" });
       }
+
+      const phoneValue = String(lead["phone"] ?? "").trim();
+      if (phoneValue !== "") {
+        if (!PHONE_REGEX.test(phoneValue))
+          errors.push({ row: rowNumber, field: "phone", message: "Phone must contain only numbers (optionally starting with +)" });
+      }
+
+      if (!userFormData?.selectedFormFields) return;
 
       userFormData.selectedFormFields.forEach((field) => {
         const value = lead[field.key];
@@ -116,7 +124,7 @@ const BulkLeadUpload = (): JSX.Element => {
         if (value && value !== "") {
           switch (field.type) {
             case "email":
-              if (field.key !== "email" && !EMAIL_REGEX.test(String(value)))
+              if (field.key !== "email" && !EMAIL_REGEX.test(String(value).trim()))
                 errors.push({ row: rowNumber, field: field.key, message: "Invalid email format" });
               break;
             case "number":
@@ -535,16 +543,13 @@ const BulkLeadUpload = (): JSX.Element => {
                               <span className="w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center cursor-help flex-shrink-0">
                                 !
                               </span>
-
-                              <div className="absolute z-50 left-6 top-full mt-2 w-72 
-          bg-gray-900 dark:bg-gray-950 text-white text-xs rounded-xl shadow-2xl p-3 
-          space-y-1.5 pointer-events-none opacity-0 group-hover:opacity-100 
-          transition-opacity border border-red-800">
-
+                              <div className="absolute z-50 left-6 top-full mt-2 w-72
+                                bg-gray-900 dark:bg-gray-950 text-white text-xs rounded-xl shadow-2xl p-3
+                                space-y-1.5 pointer-events-none opacity-0 group-hover:opacity-100
+                                transition-opacity border border-red-800">
                                 <p className="font-bold text-red-400 mb-1.5">
                                   ⚠ {rowErrs.length} error{rowErrs.length > 1 ? "s" : ""}
                                 </p>
-
                                 {rowErrs.map((e, i) => (
                                   <div key={i} className="flex items-start gap-1.5">
                                     <span className="text-red-400 mt-0.5">•</span>
@@ -557,7 +562,6 @@ const BulkLeadUpload = (): JSX.Element => {
                               </div>
                             </div>
                           )}
-
                           <span className={`text-xs ${isInvalid ? "text-red-400" : "text-gray-400"}`}>
                             {globalIdx + 1}
                           </span>
@@ -568,8 +572,6 @@ const BulkLeadUpload = (): JSX.Element => {
                         const value = lead[header];
                         const hasErr = fieldHasError(header);
                         const errMsg = rowErrs.find((e) => e.field === header)?.message;
-                        const isEmailField = header === "email";
-                        const emailInvalid = isEmailField && hasErr;
 
                         return (
                           <td
@@ -582,9 +584,9 @@ const BulkLeadUpload = (): JSX.Element => {
                           >
                             {value !== undefined && String(value).trim() !== ""
                               ? (
-                                <span className={emailInvalid ? "inline-flex items-center gap-1" : ""}>
+                                <span className={hasErr ? "inline-flex items-center gap-1" : ""}>
                                   {String(value)}
-                                  {emailInvalid && (
+                                  {hasErr && (
                                     <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-red-500 text-white text-[8px] font-bold flex-shrink-0" title={errMsg}>
                                       ✕
                                     </span>
