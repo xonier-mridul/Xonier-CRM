@@ -642,8 +642,11 @@ class LeadService:
             if "status" in filters:
                 query.update({"status": filters["status"]})
 
-            if "connectStatus" in filters:
-                query.update({"connectStatus": filters["connectStatus"]})
+            # if "connectStatus" in filters:
+            #     query.update({"connectStatus": filters["connectStatus"]})
+
+            if "engagementStatus" in filters:
+                query.update({"connectStatus": {"$regex": filters["engagementStatus"], "$options": "i"}})
 
             if "leadid" in filters:
                 query.update({"lead_id": {"$regex": filters["leadid"], "$options": "i"}})
@@ -662,6 +665,20 @@ class LeadService:
 
             if "type" in filters:
                 query.update({"projectType": {"$regex": filters["type"], "$options": "i"}})
+
+            if "search" in filters and filters["search"].strip():
+                regex = {"$regex": filters["search"].strip(), "$options": "i"}
+
+                search_query = {"$or" : [
+                    {"fullName" : regex},
+                    {"source": regex},
+                    {"tag": regex}, 
+                    {"companyName": regex}, 
+                    {"city": regex},
+                    {"type": regex}]}
+
+                query.update(search_query)
+
 
             if "fromDate" in filters or "toDate" in filters:
                 date_filter = {}
