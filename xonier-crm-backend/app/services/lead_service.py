@@ -642,8 +642,8 @@ class LeadService:
             if "status" in filters:
                 query.update({"status": filters["status"]})
 
-            # if "connectStatus" in filters:
-            #     query.update({"connectStatus": filters["connectStatus"]})
+            if "connectStatus" in filters:
+                query.update({"connectStatus": filters["connectStatus"]})
 
             if "engagementStatus" in filters:
                 query.update({"connectStatus": {"$regex": filters["engagementStatus"], "$options": "i"}})
