@@ -101,9 +101,10 @@ const BulkLeadUpload = (): JSX.Element => {
       const rowNumber = startIndex + index + 2;
 
       const emailValue = String(lead["email"] ?? "").trim();
-      if (emailValue !== "") {
-        if (!EMAIL_REGEX.test(emailValue))
-          errors.push({ row: rowNumber, field: "email", message: "Invalid email format" });
+      if (emailValue === "") {
+        errors.push({ row: rowNumber, field: "email", message: "Email is required" });
+      } else if (!EMAIL_REGEX.test(emailValue)) {
+        errors.push({ row: rowNumber, field: "email", message: "Invalid email format" });
       }
 
       const phoneValue = String(lead["phone"] ?? "").trim();
