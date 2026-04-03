@@ -828,6 +828,9 @@ class CONTACT_STATUS(str, Enum):
     INTERESTED= "interested"
     NOT_INTERESTED = "not_interested"
     NOT_REACHED = "not_reached"
+    call_back = "call_back"
+    wrong_number = "wrong_number"
+    meeting_scheduled = "meeting_scheduled"
 
 
 class TASK_PRIORITY(str, Enum):
