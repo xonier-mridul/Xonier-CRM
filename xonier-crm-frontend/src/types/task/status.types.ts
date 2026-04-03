@@ -16,6 +16,7 @@ export interface StatusPayload {
   color:       string;
   icon:        string;
   category: string;
+  isFinal: boolean;
 }
 
 // ── Shape returned by the API ─────────────────────────────────────────────────
@@ -28,6 +29,7 @@ export interface StatusItem {
   createdAt:   string;
   updatedAt:   string;
   category: CategoryItem;
+  isFinal: boolean;
 }
 
 // ── Paginated API response wrapper ────────────────────────────────────────────
@@ -77,6 +79,7 @@ export interface ModalProps {
   handleUpdate:     () => Promise<void>;
   handleClosePopup: () => void;
   err:              string | string[] | null;
+  isFinal:          boolean;
 }
 
 export interface getPayLoad {

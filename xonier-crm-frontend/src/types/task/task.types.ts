@@ -199,7 +199,7 @@ export interface TaskActivity {
 
   metadata?: Record<string, any>;
 
-  performedBy: string; 
+  performedBy: User;
 
   createdAt: string; 
 }

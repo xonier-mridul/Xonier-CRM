@@ -333,6 +333,7 @@ class TaskService:
  
             board = []
             now = datetime.now(timezone.utc)
+            task_activities = []
  
             for status in statuses:
                 
@@ -349,6 +350,13 @@ class TaskService:
                 for task in tasks_encoded:
                     due = task.get("dueDate")
                     completed = task.get("completedAt")
+                    task_id = task.get("_id")
+                    task_activities = await self.activityRepo.find_one(
+                        filter={"task.$id": PydanticObjectId(task_id)},
+                        
+                        populate=["performedBy"],
+                    )
+                    task["activities"] = task_activities
 
                     if due and not completed:
                         try:

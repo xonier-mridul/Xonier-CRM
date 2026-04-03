@@ -9,6 +9,7 @@ import Link from "next/link";
 import { getColorOption, StatusBadge } from "@/src/components/pages/task/createStatusModal";
 import { PERMISSIONS } from "@/src/constants/enum";
 import { usePermissions } from "@/src/hooks/usePermissions";
+import { TaskActivity } from "@/src/types/task/task.types";
 
 type Raw = Record<string, unknown>;
 
@@ -55,6 +56,7 @@ interface Task {
   isOverdue?: boolean;
   createdAt: string;
   createdBy?: Raw;
+  activities: TaskActivity[];
 }
 
 interface KanbanColumn {
@@ -144,6 +146,7 @@ function normalizeTask(raw: Raw, colStatus: TaskStatus): Task {
     isOverdue: (raw.isOverdue ?? false) as boolean,
     createdAt: (raw.createdAt ?? "") as string,
     createdBy: raw.createdBy as Raw | undefined,
+    activities: raw.activities as TaskActivity[],
   };
 }
 
@@ -168,6 +171,7 @@ function normalizeFocusedTask(raw: Raw): Task {
     isOverdue: (raw.isOverdue ?? false) as boolean,
     createdAt: (raw.createdAt ?? "") as string,
     createdBy: raw.createdBy as Raw | undefined,
+    activities: raw.activities as TaskActivity[],
   };
 }
 
@@ -255,12 +259,13 @@ function TaskCard({
   const isOverdue =
     task.isOverdue ||
     (task.dueDate && !task.completedAt && new Date(task.dueDate) < new Date());
-
+  const router = useRouter();
   return (
     <div
       draggable
       onDragStart={(e) => onDragStart(e, task)}
       onDragEnd={onDragEnd}
+      onClick={()=>{router.push(`/task/detail/${task.id}`)}}
       style={{ opacity: isDragging ? 0.35 : 1 }}
       className={[
         "group relative bg-white dark:bg-gray-800 rounded-xl p-3.5 cursor-grab active:cursor-grabbing select-none",
@@ -329,7 +334,7 @@ function TaskCard({
                 
                return (
                 <Avatar link={`/users/${u.id}`} key={u.id} name={`${u?.firstName} ${u?.lastName ?? ""}`} title={`${u?.firstName} ${u?.lastName ?? ""}`} />)
-})}
+              })}
               {task.assignedTo.length > 3 && (
                 <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-white dark:border-gray-800 flex items-center justify-center text-[8px] font-bold text-gray-500">
                   +{task.assignedTo.length - 3}
@@ -367,6 +372,17 @@ function TaskCard({
             </span>
           )}
         </div>
+      </div>
+      <div>
+        {
+          (task?.activities.length > 0) &&
+          // show latest activitie
+          <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
+            <span className="text-gray-400 dark:text-gray-500">
+              {task.activities[0].action.replace(/_/g, " ")}
+            </span>
+          </div>
+        }
       </div>
     </div>
   );
@@ -906,6 +922,13 @@ export default function TaskViewPage() {
             )}
             {displayCategory?.name} — Kanban Board
           </h2>
+          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/50">
+            ★ &nbsp;current task
+          </span>
+
+          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-50 dark:bg-gray-700 text-gray-400 dark:text-gray-500 border border-gray-100 dark:border-gray-600">
+            ↔️ Drag to move
+          </span>
 
           {movingTaskId && (
             <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/50 animate-pulse">
@@ -931,14 +954,6 @@ export default function TaskViewPage() {
               Moving…
             </span>
           )}
-
-          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/50">
-            ★ &nbsp;current task
-          </span>
-
-          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-50 dark:bg-gray-700 text-gray-400 dark:text-gray-500 border border-gray-100 dark:border-gray-600">
-            ↔️ Drag to move
-          </span>
         </div>
 
         <button
