@@ -193,12 +193,12 @@ const page = (): JSX.Element => {
   };
 
 
-  // ── Effects ───────────────────────────────────────────────────────────────
+  
   useEffect(() => {
     getAllStatuses();
   }, [currentPage, pageLimit, searchVal]);
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  
   return (
     <div className="ml-72 mt-14 ">
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full ">

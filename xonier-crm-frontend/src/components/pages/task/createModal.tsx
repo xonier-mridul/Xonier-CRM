@@ -131,6 +131,7 @@ function CategoryModal({
                         <input
                             type="text"
                             value={formData.name}
+                            placeholder="Category Name"
                             onChange={(e) =>
                                 setFormData((prev) => ({ ...prev, name: e.target.value }))
                             }
@@ -149,6 +150,7 @@ function CategoryModal({
                                 setFormData((prev) => ({ ...prev, description: e.target.value }))
                             }
                             rows={2}
+                            placeholder="Description"
                             className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-600 text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-700"
                         />
                     </div>
