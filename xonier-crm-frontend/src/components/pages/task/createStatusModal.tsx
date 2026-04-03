@@ -180,6 +180,23 @@ export function StatusModal({
                             </button>
                         </div>
                     </div>
+
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                            Status Order <span className="text-rose-500">*</span>
+                        </label>
+                        <input
+                            type="number"
+                            value={formData.order}
+                            onChange={e =>
+                                setFormData(prev => ({ ...prev, order: Number(e.target.value) }))
+                            }
+                            onBlur={() => formData.order}
+                            placeholder="eg: 2"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition"
+                        />
+                    </div>
+
                     {/* Icon Picker */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1.5">

@@ -32,6 +32,7 @@ const page = (): JSX.Element => {
     icon: "⚡",
     category: "",
     isFinal: false,
+    order: 0
   });
 
   const auth = useSelector((state: RootState) => state.auth);
@@ -116,6 +117,7 @@ const page = (): JSX.Element => {
       color: status.color ?? "",
       icon: status.icon ?? "",
       isFinal: status.isFinal ?? false,
+      order: status.order ?? 0,
       category:
         typeof status.category === "object"
           ? String(status.category?.id)
@@ -181,7 +183,7 @@ const page = (): JSX.Element => {
 
   // ── Helpers ───────────────────────────────────────────────────────────────
   const resetForm = (): void => {
-    setFormData({ name: "", description: "", color: "#ffffff", icon: " ⚡", category: "" ,isFinal: false});
+    setFormData({ name: "", description: "", color: "#ffffff", icon: " ⚡", category: "" ,isFinal: false, order: 0});
     setEditTarget(null);
   };
 

@@ -42,6 +42,7 @@ class ActivityService:
         filters: Dict[str, Any]
     ):
         try:
+            
             if not PydanticObjectId.is_valid(user_id):
                 raise AppException(400, "Invalid user id")
 
@@ -55,11 +56,11 @@ class ActivityService:
             query: Dict[str, Any] = {
                 "userId.$id": PydanticObjectId(target_user_id)
             }
-
+            
             now = datetime.now(timezone.utc)
             from_date = filters.get("from")
             to_date = filters.get("to")
-
+            
             if from_date or to_date:
                 query["createdAt"] = {}
                 if from_date:
@@ -72,10 +73,10 @@ class ActivityService:
                     "$gte": start_of_month,
                     "$lte": now.replace(hour=23, minute=59, second=59, microsecond=999999)
                 }
-
+            
             entity_type = filters.get("entityType")
             action = filters.get("action")
-
+            
             if entity_type:
                 query["entityType"] = ACTIVITY_ENTITY_TYPE(entity_type)
 
@@ -90,17 +91,18 @@ class ActivityService:
             total = await self.repo.model.find(query).count()
 
             activities = [doc.model_dump(mode="json") for doc in activities]
-
+            
             for dict in activities:
-                email = dict["metadata"].get("email")
-                phone = dict["metadata"].get("phone")
-                if email and email.startswith("gAAAA"):
-                    dict["metadata"]["email"] = self.crypto.decrypt_data(dict["metadata"]["email"])
-                if phone and phone.startswith("gAAAA"):
-                    dict["metadata"]["phone"] = self.crypto.decrypt_data(dict["metadata"]["phone"])
-
+                if dict.get("metadata"):
+                    email = dict["metadata"].get("email")
+                    phone = dict["metadata"].get("phone")
+                    if email and email.startswith("gAAAA"):
+                        dict["metadata"]["email"] = self.crypto.decrypt_data(dict["metadata"]["email"])
+                    if phone and phone.startswith("gAAAA"):
+                        dict["metadata"]["phone"] = self.crypto.decrypt_data(dict["metadata"]["phone"])
+            
             graph_filter = filters.get("graphFilter", "monthly")
-
+            
             if graph_filter == "day":
                 group_id = {
                     "year": {"$year": "$createdAt"},

@@ -169,10 +169,13 @@ class BaseRepository:
         projections: Optional[Dict[str, int]] = None,
         populate: Optional[List[str]] = None,
         session: Optional[AsyncIOMotorClientSession] = None,
+        
     ):
         populate = populate or []
 
         query = self.model.find_one(filter, session=session)
+
+        
 
         if projections:
             query = query.project(projections)
@@ -457,10 +460,14 @@ class BaseRepository:
         filters: Dict[str, Any],
         populate: Optional[List[str]] = None,
         session: Optional[AsyncIOMotorClientSession] = None,
+        sort: Optional[List[str]] = None
     ):
         populate = populate or []
  
         query = self.model.find(filters, session=session)
+
+        if sort:
+          query = query.sort(sort)
  
         docs = await query.to_list()
  

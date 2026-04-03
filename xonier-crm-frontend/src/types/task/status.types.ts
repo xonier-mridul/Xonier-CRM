@@ -31,6 +31,7 @@ export interface StatusItem {
   updatedAt:   string;
   category: CategoryItem;
   isFinal: boolean;
+  order: number
 }
 
 // ── Paginated API response wrapper ────────────────────────────────────────────

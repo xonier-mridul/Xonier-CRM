@@ -143,6 +143,9 @@ const StatusTable = ({
               <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Category
               </th>
+              <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Order
+              </th>
 
               <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Color
@@ -201,6 +204,9 @@ const StatusTable = ({
                     {/* Category */}
                     <td className="px-5 py-4">
                       <StatusBadge color={getColorOption(s.category.color)} icon={s.category.icon || "❓"} name={s.category.name} />
+                    </td>
+                    <td className="px-5 py-4">
+                      {s.order}
                     </td>
 
                     {/* Color */}

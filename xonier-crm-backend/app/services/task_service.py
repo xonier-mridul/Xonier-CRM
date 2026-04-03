@@ -15,6 +15,7 @@ from fastapi.encoders import jsonable_encoder
 from datetime import datetime, timezone
 from typing import Dict, Any, List
 from bson import ObjectId, DBRef
+from app.core.crypto import encryptor
  
  
 def _activity(task_id, action, performer_id, description, field=None, old_val=None, new_val=None, metadata=None):
@@ -39,6 +40,7 @@ class TaskService:
         self.userRepo = UserRepository()
         self.getTeamMembers = GetTeamMembers()
         self.client = Client
+        self.crypto = encryptor
  
     async def _resolve_default_status(self, category_id: str):
         default_status = await self.statusRepo.find_one({
@@ -334,7 +336,7 @@ class TaskService:
             task_activities = []
  
             for status in statuses:
-                # task_query = {**base_query, "status": PydanticObjectId(status.id)}
+                
                 task_query = {**base_query, "status.$id": PydanticObjectId(str(status.id))}
 
                 
@@ -349,12 +351,13 @@ class TaskService:
                     due = task.get("dueDate")
                     completed = task.get("completedAt")
                     task_id = task.get("_id")
-                    task_activities = await self.activityRepo.find_one(
-                        filter={"task.$id": PydanticObjectId(task_id)},
+                    task_activities = await self.activityRepo.find_many(
+                        filters={"task.$id": PydanticObjectId(task_id)},
                         
                         populate=["performedBy"],
+                        sort=["-createdAt"]
                     )
-                    task["activities"] = task_activities
+                    task["activities"] = task_activities[0]
 
                     if due and not completed:
                         try:
@@ -403,6 +406,17 @@ class TaskService:
                 raise AppException(404, "Task not found")
  
             encoded = jsonable_encoder(result)
+            
+            assigned_users = encoded.get("assignedTo", [])
+
+            decoded_users = []
+            
+            for item in assigned_users:
+                item["email"] = self.crypto.decrypt_data(item["email"])
+                decoded_users.append(item)
+
+            encoded["assignedTo"] = decoded_users
+            
             now = datetime.now(timezone.utc)
             if result.dueDate and not result.completedAt:
                 due_dt = result.dueDate if result.dueDate.tzinfo else result.dueDate.replace(tzinfo=timezone.utc)
@@ -491,7 +505,7 @@ class TaskService:
                     
                     assignedTo = [DBRef("users", PydanticObjectId(item)) for item in payload["assignedTo"]]
 
-                    print("update payload: ", assignedTo)
+                    
  
                     update_payload: Dict[str, Any] = {
                         **{k: v for k, v in payload.items() if v is not None},
@@ -523,7 +537,7 @@ class TaskService:
                             except ValueError:
                                 raise AppException(400, f"Invalid {date_field} format")
                             
-                    print("payload: ", update_payload)
+                    
                     
                     updated = await self.repo.update(id=PydanticObjectId(task_id), data=update_payload, session=session)
                     if not updated:
@@ -623,7 +637,9 @@ class TaskService:
                         "order": new_order,
                         "updatedBy": DBRef("users", user["_id"]),
                         "updatedAt": datetime.now(timezone.utc),
+                        "completedAt": None
                     }
+
  
                     if new_status.isFinal:
                         update_data["completedAt"] = datetime.now(timezone.utc)
