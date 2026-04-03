@@ -1042,3 +1042,17 @@ export enum LeadEngagementStatus {
   WRONG_NUMBER = "wrong_number",
   MEETING_SCHEDULED = "meeting_scheduled"
 }
+
+export enum TASK_ACTIVITY_ACTION {
+  CREATED = "created",
+  STATUS_CHANGED = "status_changed",
+  ASSIGNED = "assigned",
+  REASSIGNED = "reassigned",
+  PRIORITY_CHANGED = "priority_changed",
+  DUE_DATE_CHANGED = "due_date_changed",
+  COMMENTED = "commented",
+  ATTACHMENT_ADDED = "attachment_added",
+  COMPLETED = "completed",
+  REOPENED = "reopened",
+  DELETED = "deleted",
+}
