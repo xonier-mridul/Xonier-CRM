@@ -3,14 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import { FaChevronDown } from "react-icons/fa";
 import { createPortal } from "react-dom";
-import { LeadEngagementStatus } from "@/src/types/leads/leads.types";
+import { LeadEngagementStatus } from "@/src/constants/enum"
 
 const AVAILABLE_STATUSES: LeadEngagementStatus[] = [
   LeadEngagementStatus.CONNECTED,
   LeadEngagementStatus.NOT_CONNECTED,
   LeadEngagementStatus.NOT_REACHED,
   LeadEngagementStatus.INTERESTED,
+  LeadEngagementStatus.MEETING_SCHEDULED,
   LeadEngagementStatus.NOT_INTERESTED,
+  LeadEngagementStatus.WRONG_NUMBER,
 ];
 
 export const STATUS_CONFIG: Record<
@@ -36,6 +38,14 @@ export const STATUS_CONFIG: Record<
   [LeadEngagementStatus.NOT_REACHED]: {
     label: "Not Reached",
     color: "bg-gray-500",
+  },
+  [LeadEngagementStatus.WRONG_NUMBER]: {
+    label: "Wrong Number",
+    color: "bg-red-900",
+  },
+  [LeadEngagementStatus.MEETING_SCHEDULED]: {
+    label: "Meeting Scheduled",
+    color: "bg-green-900",
   },
 };
 

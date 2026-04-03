@@ -38,7 +38,7 @@ import DateFilterButton from "@/src/components/common/dateFilter";
 import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 import TagBadge from "@/src/components/common/tagBadge";
 import StatusDropdown from "@/src/components/pages/lead/StatusDropdown";
-import { LeadEngagementStatus } from "@/src/types/leads/leads.types";
+import { LeadEngagementStatus } from "@/src/constants/enum";
 
 const TAB = { ALL: 1, WON: 2, LOST: 3, ASSIGNED: 4 } as const;
 
@@ -103,6 +103,7 @@ const LeadContent = (): JSX.Element => {
     "status": "",
     "source": "",
     "tag": "",
+    "engagementStatus": "",
   });
   const pageLimitMap: Record<number, number> = {
     [TAB.ALL]: pageLimit,
@@ -942,6 +943,25 @@ const LeadContent = (): JSX.Element => {
                                 )
                               )
                             }
+                            {
+                              (h == 'Engagement Status') && (
+                                <>
+                                  <br />
+                                  <select
+                                    value={filters["engagementStatus"]}
+                                    onChange={(e) => setFilters(prev => ({ ...prev, engagementStatus: e.target.value }))}
+                                    className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm"
+                                    > 
+                                    <option value="">All</option>
+                                    {Object.values(LeadEngagementStatus).map(s => (
+                                      <option key={s} value={s}>
+                                        {s.replace(/_/g, " ").charAt(0).toUpperCase() + s.replace(/_/g, " ").slice(1)}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </>
+                              )
+                            }
                           </th>
                         );
                       })}
@@ -1010,6 +1030,25 @@ const LeadContent = (): JSX.Element => {
                                 <input type="text" className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20" placeholder="Search..." onChange={(e) => handleSource(e.target.value)} />
                               </>
                             )
+                          }
+                          {
+                            (h == 'Engagement Status') && (
+                                <>
+                                  <br />
+                                  <select
+                                    value={filters["engagementStatus"]}
+                                    onChange={(e) => setFilters(prev => ({ ...prev, engagementStatus: e.target.value }))}
+                                    className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm"
+                                    > 
+                                    <option value="">All</option>
+                                    {Object.values(LeadEngagementStatus).map(s => (
+                                      <option key={s} value={s}>
+                                        {s.replace(/_/g, " ").charAt(0).toUpperCase() + s.replace(/_/g, " ").slice(1)}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </>
+                              )
                           }
                         </th>
                       );
