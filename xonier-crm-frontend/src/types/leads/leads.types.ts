@@ -1,4 +1,4 @@
-import { COUNTRY_CODE, EMPLOYEE_SENIORITY, INDUSTRIES, LANGUAGE_CODE, LEAD_SOURCE_TYPE, PRIORITY, PROJECT_TYPES, SALES_STATUS, SOURCE } from "@/src/constants/enum";
+import { COUNTRY_CODE, EMPLOYEE_SENIORITY, INDUSTRIES, LANGUAGE_CODE, LEAD_SOURCE_TYPE, PRIORITY, PROJECT_TYPES, SALES_STATUS, SOURCE ,LeadEngagementStatus} from "@/src/constants/enum";
 import { User } from "../auth/auth.types";
 
 export interface Lead {
@@ -84,13 +84,7 @@ export interface BulkReassignLeadSchema{
     userId: string;
     leadsId: Array<string>
 }
-export enum LeadEngagementStatus {
-  INTERESTED = "interested",
-  NOT_INTERESTED = "not_interested",
-  CONNECTED = "connected",
-  NOT_CONNECTED = "not_connected",
-  NOT_REACHED = "not_reached",
-}
+
 
 export interface LeadEngagementStatusPayload {
   status: LeadEngagementStatus

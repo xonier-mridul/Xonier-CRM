@@ -1033,3 +1033,12 @@ export enum TASK_VISIBILITY {
   TEAM = "team",
   PERSONAL = "personal",
 }
+export enum LeadEngagementStatus {
+  INTERESTED = "interested",
+  NOT_INTERESTED = "not_interested",
+  CONNECTED = "connected",
+  NOT_CONNECTED = "not_connected",
+  NOT_REACHED = "not_reached",
+  WRONG_NUMBER = "wrong_number",
+  MEETING_SCHEDULED = "meeting_scheduled"
+}
