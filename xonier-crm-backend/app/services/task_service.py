@@ -637,7 +637,9 @@ class TaskService:
                         "order": new_order,
                         "updatedBy": DBRef("users", user["_id"]),
                         "updatedAt": datetime.now(timezone.utc),
+                        "completedAt": None
                     }
+
  
                     if new_status.isFinal:
                         update_data["completedAt"] = datetime.now(timezone.utc)

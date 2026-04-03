@@ -17,6 +17,7 @@ export interface StatusPayload {
   icon:        string;
   category: string;
   isFinal: boolean;
+  order: number
 }
 
 // ── Shape returned by the API ─────────────────────────────────────────────────
@@ -30,6 +31,7 @@ export interface StatusItem {
   updatedAt:   string;
   category: CategoryItem;
   isFinal: boolean;
+  order: number
 }
 
 // ── Paginated API response wrapper ────────────────────────────────────────────
