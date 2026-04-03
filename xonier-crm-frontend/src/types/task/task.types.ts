@@ -3,8 +3,9 @@ import { CategoryItem } from "./category.types";
 import { StatusItem } from "./status.types";
 import { Timestamp } from "next/dist/server/lib/cache-handlers/types";
 import { User } from "../auth/auth.types";
+import { TASK_ACTIVITY_ACTION } from "@/src/constants/enum";
 
-// ── Enums (mirror Python enums) ───────────────────────────────────────────────
+
 export enum TASK_PRIORITY {
   LOW = "low",
   MEDIUM = "medium",
@@ -27,7 +28,7 @@ export enum RECURRENCE_TYPE {
   monthly = "monthly",
 }
 
-// ── API Payloads (mirror Python schemas 1:1) ──────────────────────────────────
+
 export interface CreateTaskPayload {
   title: string;
   description?: string;
@@ -155,14 +156,14 @@ export interface TaskItem {
   entityId?: string;
   entityName?: string;
   assignedTo: AssignedUser[];
-  dueDate?: Date | Timestamp | null;
-  startDate?: Date | Timestamp | null;
+  dueDate?: string | null;
+  startDate?: string | null;
   completedAt?: string;
   estimatedHours?: number;
   actualHours?: number;
   isRecurring: boolean;
   recurrenceType?: RECURRENCE_TYPE;
-  recurrenceEndsAt?: Date | Timestamp | null;
+  recurrenceEndsAt?: string | null;
   tags: string[];
   attachments: string[];
   parentTask?: string;
@@ -177,4 +178,28 @@ export interface PaginatedTaskResponse {
   page: number | string;
   limit: number | string;
   total: number;
+}
+
+
+
+export interface TaskActivity {
+  id: string;
+
+  task: string; 
+
+  action: TASK_ACTIVITY_ACTION;
+
+  field?: string;
+
+  oldValue?: string;
+
+  newValue?: string;
+
+  description: string;
+
+  metadata?: Record<string, any>;
+
+  performedBy: string; 
+
+  createdAt: string; 
 }

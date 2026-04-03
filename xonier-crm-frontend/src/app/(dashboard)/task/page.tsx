@@ -19,6 +19,7 @@ import {
 } from "@/src/types/task/task.types";
 import { COLOR_OPTIONS, PERMISSIONS } from "@/src/constants/enum";
 import { IoMdEye } from "react-icons/io";
+import { BsTicketDetailed } from "react-icons/bs";
 
 
 type ViewMode = "list" | "board";
@@ -631,7 +632,7 @@ const TaskListPage = (): JSX.Element => {
     <div className="ml-72 mt-14">
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full">
 
-        {/* Page Header */}
+        
         <div className="flex items-start justify-between mb-8">
           <div>
             <div className="flex items-center gap-2.5 mb-1">
@@ -647,7 +648,7 @@ const TaskListPage = (): JSX.Element => {
           {canCreate && (
             <button
               type="button"
-              onClick={() => router.push("/task/tasks/create")}
+              onClick={() => router.push("/task/create")}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-sm font-bold shadow-md shadow-blue-200 dark:shadow-blue-900/40 transition-all"
             >
               <span>＋</span> New Task
@@ -720,8 +721,7 @@ const TaskListPage = (): JSX.Element => {
               <span>✕</span> Clear
             </button>
           )}
-          {/* <div className="w-px h-7 bg-gray-200 dark:bg-gray-600 ml-auto" />
-          <ViewToggle view={viewMode} onChange={v => { setViewMode(v); setCurrentPage(1); }} /> */}
+          
         </div>
 
         {viewMode === "board" && (
@@ -733,7 +733,7 @@ const TaskListPage = (): JSX.Element => {
             canChangeStatus={canChangeStatus}
             deleting={deleting}
             isLoading={isLoading}
-            onEdit={id => router.push(`/task/tasks/update/${id}`)}
+            onEdit={id => router.push(`/task/update/${id}`)}
             onDelete={handleDelete}
             onStatusChange={handleStatusChange}
           />
@@ -777,7 +777,7 @@ const TaskListPage = (): JSX.Element => {
                         {canCreate && !hasFilters && (
                           <button
                             type="button"
-                            onClick={() => router.push("/task/tasks/create")}
+                            onClick={() => router.push("/task/create")}
                             className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-100 transition"
                           >
                             + Create first task
@@ -794,7 +794,7 @@ const TaskListPage = (): JSX.Element => {
                           key={task.id}
                           className="border-b border-gray-50 dark:border-gray-700 hover:bg-gray-50/70 dark:hover:bg-gray-700/40 transition-colors group"
                         >
-                          {/* # */}
+                          
                           <td className="px-5 py-4 text-xs font-mono text-gray-400 dark:text-gray-500">
                             {String((currentPage - 1) * pageLimit + i + 1).padStart(2, "0")}
                           </td>
@@ -893,7 +893,18 @@ const TaskListPage = (): JSX.Element => {
                                 {canView && (
                                   <button
                                     type="button"
-                                    onClick={() => router.push(`/task/tasks/view/${task.id}`)}
+                                    onClick={() => router.push(`/task/detail/${task.id}`)}
+                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-green-600 bg-green-50 hover:bg-green-100 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:text-green-400 transition cursor-pointer"
+                                  >
+                                    <span className="items-center justify-center  text-green-500 ">
+                                      <BsTicketDetailed className="text-sm" />
+                                    </span>
+                                  </button>
+                                )}
+                                {canView && (
+                                  <button
+                                    type="button"
+                                    onClick={() => router.push(`/task/view/${task.id}`)}
                                     className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-green-600 bg-green-50 hover:bg-green-100 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:text-green-400 transition cursor-pointer"
                                   >
                                     <span className="items-center justify-center  text-green-500 ">
@@ -901,10 +912,11 @@ const TaskListPage = (): JSX.Element => {
                                     </span>
                                   </button>
                                 )}
+                               
                                 {canEdit && (
                                   <button
                                     type="button"
-                                    onClick={() => router.push(`/task/tasks/update/${task.id}`)}
+                                    onClick={() => router.push(`/task/update/${task.id}`)}
                                     className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-400 transition"
                                   >
                                     <span className="items-center justify-center rounded-md bg-blue-100/80 text-blue-500 border-blue-100">
