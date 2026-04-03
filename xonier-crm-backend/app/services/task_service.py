@@ -480,12 +480,17 @@ class TaskService:
                     existing = await self.repo.find_by_id(PydanticObjectId(task_id), session=session)
                     if not existing or existing.deletedAt:
                         raise AppException(404, "Task not found")
+                    
+                    assignedTo = [DBRef("users", PydanticObjectId(item)) for item in payload["assignedTo"]]
+
+                    print("update payload: ", assignedTo)
  
                     update_payload: Dict[str, Any] = {
                         **{k: v for k, v in payload.items() if v is not None},
                         "updatedBy": PydanticObjectId(user["_id"]),
                         "updatedAt": datetime.now(timezone.utc),
-                        "status": DBRef("task_statuses", PydanticObjectId(payload["status"]))
+                        "status": DBRef("task_statuses", PydanticObjectId(payload["status"])),
+                        "assignedTo": assignedTo
                     }
  
                     activities = []

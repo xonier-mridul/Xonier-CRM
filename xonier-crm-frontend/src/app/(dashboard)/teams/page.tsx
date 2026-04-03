@@ -110,10 +110,10 @@ const page = (): JSX.Element => {
         setCategoryData(response.data.data);
       }
     } catch (error) {
-      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+      
       if (axios.isAxiosError(error)) {
         const messages = extractErrorMessages(error);
-        setErr(messages);
+        process.env.NEXT_PUBLIC_ENV === "development" && console.error(messages);
         
       } else {
         setErr(["Something went wrong"]);
@@ -291,7 +291,7 @@ getCategoryData();
                     }))
                   }
                   required
-                  className="bg-white dark:bg-gray-600 px-3 py-2 rounded-md border
+                  className="bg-white dark:bg-gray-600 px-3 py-2.5 rounded-md border border-gray-300 dark:border-gray-300/30
                text-sm"
                 >
                   <option value="">Select category</option>
@@ -316,7 +316,7 @@ getCategoryData();
                       e.target.value = "";
                     }
                   }}
-                  className="bg-white dark:bg-gray-600 px-3 py-2 rounded-md border capitalize"
+                  className="bg-white dark:bg-gray-600 px-3 py-2.5 rounded-md border border-gray-300 dark:border-gray-300/30 capitalize"
                 >
                   <option value="">Select user</option>
                   {userData.map((user) => (
@@ -366,7 +366,7 @@ getCategoryData();
                       e.target.value = "";
                     }
                   }}
-                  className="bg-white dark:bg-gray-600 px-3 py-2 rounded-md border capitalize"
+                  className="bg-white dark:bg-gray-600 px-3 py-2.5 rounded-md border capitalize border-gray-300 dark:border-gray-300/30"
                 >
                   <option value="">Select user</option>
                   {userData.map((user) => (
@@ -413,7 +413,7 @@ getCategoryData();
                   value={formData.description}
                   onChange={handleChange}
                   placeholder="Team description..."
-                  className="w-full rounded-md border px-3 py-2 text-sm
+                  className="w-full rounded-md border px-3 py-2.5 border-gray-300 dark:border-gray-300/30 text-sm
                  bg-white dark:bg-gray-600 dark:text-white"
                 />
               </div>
