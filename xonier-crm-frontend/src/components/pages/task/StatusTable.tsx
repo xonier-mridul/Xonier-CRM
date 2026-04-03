@@ -68,6 +68,7 @@ const StatusTable = ({
           handleSubmit={handleSubmit}
           handleUpdate={handleUpdate}
           handleClosePopup={handleClosePopup}
+          isFinal={formData.isFinal}
           err={err}
         />
       )}

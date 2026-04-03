@@ -74,7 +74,7 @@ class TeamCategoryService:
             if "slug" in filters:
                 query.update({"slug": filters["slug"]})
             if "search" in filters and filters["search"].strip():
-                regex_data = {"$regex": filters["search"], "options": "i"}
+                regex_data = {"$regex": filters["search"], "$options": "i"}
 
                 query.update({"$or": [{"name": regex_data}, {"slug": regex_data }]})
           

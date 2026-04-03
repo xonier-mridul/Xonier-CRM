@@ -11,7 +11,10 @@ import {
   ReorderTaskPayload,
   AddWatcherPayload,
   TaskItem,
+  CreateSubTaskPayload,
+  UpdateSubTaskPayload,
 } from "@/src/types/task/task.types";
+import { create } from "domain";
 
 interface GetAllParams {
   currentPage: number;
@@ -81,4 +84,13 @@ export const TaskService = {
   getByEntity: (entityType: string, entityId: string) => api.get(`/task/by-entity/${entityType}/${entityId}`),
 
   delete: (id: string) => api.delete(`/task/delete/${id}`),
+
+  getSubTasks: (id: string) => api.get(`/task/${id}/subtasks`),
+
+  createSubTask: (id: string, payload: CreateSubTaskPayload) => api.post(`/task/${id}/subtask`, payload),
+
+  updateSubTask: (id: string, taskId: string, payload: UpdateSubTaskPayload) => api.put(`/task/${id}/subtask/${taskId}`, payload),
+
+  deleteSubTask: (id: string, taskId: string) => api.delete(`/task/${id}/subtask/${taskId}`),
+
 };
