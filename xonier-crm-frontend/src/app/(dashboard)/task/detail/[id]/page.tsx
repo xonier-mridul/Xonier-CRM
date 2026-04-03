@@ -421,7 +421,7 @@ const page = () => {
                   <div className="flex items-center gap-2">
                     <AvatarCircle
                       name={`${taskData.createdBy.firstName} ${taskData.createdBy.lastName ?? ""}`}
-                      avatar={taskData?.createdBy?.avatar}
+              
                     />
                     <span>{taskData.createdBy.firstName} {taskData.createdBy.lastName}</span>
                   </div>

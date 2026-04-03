@@ -1157,7 +1157,7 @@ class LeadService:
 
                     await lead.save(session=session)
 
-                    activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD.value, entityId=PydanticObjectId(lead.id), action=ACTIVITY_ACTION.UPDATE_LEAD_CONNECTION_STATUS, title="update lead connect status", metadata={"leadId": lead.lead_id, "leadName": lead.fullName, "status": lead.status, "connectStatus": lead.connectStatus})
+                    activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD.value, entityId=PydanticObjectId(lead.id), action=ACTIVITY_ACTION.UPDATE_LEAD_CONNECTION_STATUS, title="update lead connect status", metadata={"leadId": lead.lead_id, "companyName":  lead.companyName or "", "leadName": lead.fullName, "status": lead.status, "connectStatus": lead.connectStatus})
 
                     is_activity = await self.activityRepo.create(data=activity, session=session)
 

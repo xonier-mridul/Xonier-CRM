@@ -15,6 +15,7 @@ from fastapi.encoders import jsonable_encoder
 from datetime import datetime, timezone
 from typing import Dict, Any, List
 from bson import ObjectId, DBRef
+from app.core.crypto import encryptor
  
  
 def _activity(task_id, action, performer_id, description, field=None, old_val=None, new_val=None, metadata=None):
@@ -39,6 +40,7 @@ class TaskService:
         self.userRepo = UserRepository()
         self.getTeamMembers = GetTeamMembers()
         self.client = Client
+        self.crypto = encryptor
  
     async def _resolve_default_status(self, category_id: str):
         default_status = await self.statusRepo.find_one({
@@ -333,7 +335,7 @@ class TaskService:
             now = datetime.now(timezone.utc)
  
             for status in statuses:
-                # task_query = {**base_query, "status": PydanticObjectId(status.id)}
+                
                 task_query = {**base_query, "status.$id": PydanticObjectId(str(status.id))}
 
                 
@@ -395,6 +397,17 @@ class TaskService:
                 raise AppException(404, "Task not found")
  
             encoded = jsonable_encoder(result)
+            
+            assigned_users = encoded.get("assignedTo", [])
+
+            decoded_users = []
+            
+            for item in assigned_users:
+                item["email"] = self.crypto.decrypt_data(item["email"])
+                decoded_users.append(item)
+
+            encoded["assignedTo"] = decoded_users
+            print("two")
             now = datetime.now(timezone.utc)
             if result.dueDate and not result.completedAt:
                 due_dt = result.dueDate if result.dueDate.tzinfo else result.dueDate.replace(tzinfo=timezone.utc)
@@ -515,7 +528,7 @@ class TaskService:
                             except ValueError:
                                 raise AppException(400, f"Invalid {date_field} format")
                             
-                    print("payload: ", update_payload)
+                    
                     
                     updated = await self.repo.update(id=PydanticObjectId(task_id), data=update_payload, session=session)
                     if not updated:
