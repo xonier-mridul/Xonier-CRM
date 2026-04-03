@@ -73,6 +73,10 @@ class TeamCategoryService:
 
             if "slug" in filters:
                 query.update({"slug": filters["slug"]})
+            if "search" in filters and filters["search"].strip():
+                regex_data = {"$regex": filters["search"], "options": "i"}
+
+                query.update({"$or": [{"name": regex_data}, {"slug": regex_data }]})
           
             result = await self.repo.get_all(page, limit, query, ["createdBy"], sort=["-createdAt"])
 
@@ -81,8 +85,8 @@ class TeamCategoryService:
             
             return jsonable_encoder(result)
 
-        except AppException:
-            raise 
+        except AppException as e:
+            raise e
 
         except Exception as e:
             raise AppException(status_code=500, message="internal server error")
