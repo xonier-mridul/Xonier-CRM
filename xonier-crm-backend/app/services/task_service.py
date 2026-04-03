@@ -351,12 +351,13 @@ class TaskService:
                     due = task.get("dueDate")
                     completed = task.get("completedAt")
                     task_id = task.get("_id")
-                    task_activities = await self.activityRepo.find_one(
-                        filter={"task.$id": PydanticObjectId(task_id)},
+                    task_activities = await self.activityRepo.find_many(
+                        filters={"task.$id": PydanticObjectId(task_id)},
                         
                         populate=["performedBy"],
+                        sort=["-createdAt"]
                     )
-                    task["activities"] = task_activities
+                    task["activities"] = task_activities[0]
 
                     if due and not completed:
                         try:
@@ -415,7 +416,7 @@ class TaskService:
                 decoded_users.append(item)
 
             encoded["assignedTo"] = decoded_users
-            print("two")
+            
             now = datetime.now(timezone.utc)
             if result.dueDate and not result.completedAt:
                 due_dt = result.dueDate if result.dueDate.tzinfo else result.dueDate.replace(tzinfo=timezone.utc)
@@ -504,7 +505,7 @@ class TaskService:
                     
                     assignedTo = [DBRef("users", PydanticObjectId(item)) for item in payload["assignedTo"]]
 
-                    print("update payload: ", assignedTo)
+                    
  
                     update_payload: Dict[str, Any] = {
                         **{k: v for k, v in payload.items() if v is not None},
