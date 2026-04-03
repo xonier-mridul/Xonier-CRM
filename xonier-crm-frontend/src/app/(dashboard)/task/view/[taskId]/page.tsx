@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback  } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -10,6 +10,7 @@ import { getColorOption, StatusBadge } from "@/src/components/pages/task/createS
 import { PERMISSIONS } from "@/src/constants/enum";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { TaskActivity } from "@/src/types/task/task.types";
+import {ChevronRight} from "lucide-react";
 
 type Raw = Record<string, unknown>;
 
@@ -56,7 +57,7 @@ interface Task {
   isOverdue?: boolean;
   createdAt: string;
   createdBy?: Raw;
-  activities: TaskActivity[];
+  activities: TaskActivity;
 }
 
 interface KanbanColumn {
@@ -146,7 +147,7 @@ function normalizeTask(raw: Raw, colStatus: TaskStatus): Task {
     isOverdue: (raw.isOverdue ?? false) as boolean,
     createdAt: (raw.createdAt ?? "") as string,
     createdBy: raw.createdBy as Raw | undefined,
-    activities: raw.activities as TaskActivity[],
+    activities: raw.activities as TaskActivity,
   };
 }
 
@@ -171,7 +172,7 @@ function normalizeFocusedTask(raw: Raw): Task {
     isOverdue: (raw.isOverdue ?? false) as boolean,
     createdAt: (raw.createdAt ?? "") as string,
     createdBy: raw.createdBy as Raw | undefined,
-    activities: raw.activities as TaskActivity[],
+    activities: raw.activities as TaskActivity,
   };
 }
 
@@ -201,8 +202,8 @@ const apiMoveTask = (
     order,
   });
 
-function Avatar({link, name, title }: { link:string, name?: string; title?: string }) {
-  const safeName = name || "U"; 
+function Avatar({ link, name, title }: { link: string, name?: string; title?: string }) {
+  const safeName = name || "U";
 
   const colors = [
     "#3b82f6",
@@ -265,7 +266,7 @@ function TaskCard({
       draggable
       onDragStart={(e) => onDragStart(e, task)}
       onDragEnd={onDragEnd}
-      onClick={()=>{router.push(`/task/detail/${task.id}`)}}
+      onClick={() => { router.push(`/task/detail/${task.id}`) }}
       style={{ opacity: isDragging ? 0.35 : 1 }}
       className={[
         "group relative bg-white dark:bg-gray-800 rounded-xl p-3.5 cursor-grab active:cursor-grabbing select-none",
@@ -331,9 +332,9 @@ function TaskCard({
             <>
               {task?.assignedTo?.slice(0, 3).map((u) => {
 
-                
-               return (
-                <Avatar link={`/users/${u.id}`} key={u.id} name={`${u?.firstName} ${u?.lastName ?? ""}`} title={`${u?.firstName} ${u?.lastName ?? ""}`} />)
+
+                return (
+                  <Avatar link={`/users/${u.id}`} key={u.id} name={`${u?.firstName} ${u?.lastName ?? ""}`} title={`${u?.firstName} ${u?.lastName ?? ""}`} />)
               })}
               {task.assignedTo.length > 3 && (
                 <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-white dark:border-gray-800 flex items-center justify-center text-[8px] font-bold text-gray-500">
@@ -374,12 +375,33 @@ function TaskCard({
         </div>
       </div>
       <div>
-        {
-          (task?.activities.length > 0) &&
+        { 
+          (task?.activities) &&
           // show latest activitie
-          <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
-            <span className="text-gray-400 dark:text-gray-500">
-              {task.activities[0].action.replace(/_/g, " ")}
+          <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500 w-full justify-end">
+            <span className="text-gray-400 dark:text-gray-500 px-2 pt-4">
+              {(task.activities.oldValue || task.activities.newValue)? (
+                <div className="mt-2 flex items-center gap-2 flex-wrap">
+                  {task.activities.oldValue && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs font-medium line-through">
+                      {task.activities.oldValue}
+                    </span>
+                  )}
+                  {task.activities.oldValue && task.activities.newValue && (
+                    <ChevronRight size={12} className="text-gray-400 flex-shrink-0" />
+                  )}
+                  {task.activities.newValue && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-xs font-medium">
+                      {task.activities.newValue}
+                    </span>
+                  )}
+                  <span>by {task.activities.performedBy?.firstName}</span>
+                </div>
+              ):(
+                <span>
+                {task.activities.action.replace(/_/g, " ")} by {task.activities.performedBy?.firstName}
+                </span>
+              )}
             </span>
           </div>
         }
@@ -773,7 +795,7 @@ export default function TaskViewPage() {
 
             <div className="flex flex-wrap items-center gap-2 mt-3">
               <PriorityBadge priority={focusedTask.priority} />
-              <StatusBadge color={getColorOption(focusedTask.status.color) } icon={focusedTask.status.icon} name={focusedTask.status.name} />
+              <StatusBadge color={getColorOption(focusedTask.status.color)} icon={focusedTask.status.icon} name={focusedTask.status.name} />
               {focusedTask.dueDate && (
                 <span
                   className={`text-xs font-semibold flex items-center gap-1 ${!focusedTask.completedAt && new Date(focusedTask.dueDate) < new Date() ? "text-rose-500" : "text-gray-400 dark:text-gray-500"}`}
