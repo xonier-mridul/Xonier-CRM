@@ -282,7 +282,7 @@ const CreateTaskPage = (): JSX.Element => {
       const res = await TaskService.create(payload);
       if (res.status === 200 || res.status === 201) {
         toast.success("Task created successfully");
-        router.push("/task/tasks");
+        router.push("/task");
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
