@@ -12,7 +12,7 @@ const ICON_OPTIONS: string[] = [
     "⚡", "🔵", "✅", "🔄", "⏳", "⏸️", "🚀", "🔧", "📌", "🎯", "💡", "🛑", "🕐",
 ];
 export function StatusBadge({ color, icon, name }: { color: ColorOption; icon?: string; name: string }) {
-    if(!icon) icon = "⚡";
+    if (!icon) icon = "⚡";
     return (
         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${color.bg} ${color.text}`}>
             <span>{icon}</span>
@@ -150,6 +150,35 @@ export function StatusModal({
                                 </option>
                             ))}
                         </select>
+                    </div>
+                    {/* Is Final */}
+                    {/* Is Final - Segmented Cards */}
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                            Status Type
+                        </label>
+                        <div className="grid grid-cols-2 gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setFormData(prev => ({ ...prev, isFinal: false }))}
+                                className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border-2 transition-all text-sm font-medium ${!formData.isFinal
+                                    ? "border-blue-500 bg-blue-50 text-blue-700 shadow-sm"
+                                    : "border-gray-100 bg-white text-gray-500 hover:border-gray-200"
+                                    }`}
+                            >
+                                <span className="text-base">🔄</span> Ongoing
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setFormData(prev => ({ ...prev, isFinal: true }))}
+                                className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border-2 transition-all text-sm font-medium ${formData.isFinal
+                                    ? "border-green-500 bg-green-50 text-green-700 shadow-sm"
+                                    : "border-gray-100 bg-white text-gray-500 hover:border-gray-200"
+                                    }`}
+                            >
+                                <span className="text-base">🏁</span> Final
+                            </button>
+                        </div>
                     </div>
                     {/* Icon Picker */}
                     <div>

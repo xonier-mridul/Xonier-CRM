@@ -8,7 +8,6 @@ import { usePermissions } from "@/src/hooks/usePermissions";
 import { useSelector } from "react-redux";
 import { RootState } from "@/src/store";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
-
 import { StatusService } from "@/src/services/status.service";
 import { StatusPayload, StatusItem } from "@/src/types/task/status.types";
 import StatusTable from "@/src/components/pages/task/StatusTable";
@@ -32,6 +31,7 @@ const page = (): JSX.Element => {
     color: "#ffffff",
     icon: "⚡",
     category: "",
+    isFinal: false,
   });
 
   const auth = useSelector((state: RootState) => state.auth);
@@ -115,6 +115,7 @@ const page = (): JSX.Element => {
       description: status.description ?? "",
       color: status.color ?? "",
       icon: status.icon ?? "",
+      isFinal: status.isFinal ?? false,
       category:
         typeof status.category === "object"
           ? String(status.category?.id)
@@ -180,7 +181,7 @@ const page = (): JSX.Element => {
 
   // ── Helpers ───────────────────────────────────────────────────────────────
   const resetForm = (): void => {
-    setFormData({ name: "", description: "", color: "#ffffff", icon: " ⚡", category: "" });
+    setFormData({ name: "", description: "", color: "#ffffff", icon: " ⚡", category: "" ,isFinal: false});
     setEditTarget(null);
   };
 
@@ -199,7 +200,6 @@ const page = (): JSX.Element => {
   return (
     <div className="ml-72 mt-14 ">
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full ">
-
         <StatusTable
           statusData={statusData}
           currentPage={currentPage}
@@ -220,7 +220,6 @@ const page = (): JSX.Element => {
           totalPages={totalPages}
           handlepagechange={handlepagechange}
           handleSearch={handleSearch}
-
           err={err}
         />
       </div>
