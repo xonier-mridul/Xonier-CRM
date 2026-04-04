@@ -203,3 +203,12 @@ export interface TaskActivity {
 
   createdAt: string; 
 }
+
+export interface CreateSubTaskPayload {
+  title: string;
+}
+
+export interface UpdateSubTaskPayload {
+  title?: string;
+  isCompleted?: boolean;
+}
