@@ -59,6 +59,7 @@ import { LuCalendarRange } from "react-icons/lu";
 import PrimaryButton from "../../ui/PrimeryButton";
 import { ACTIVITY_ACTION, ACTIVITY_ENTITY_TYPE } from "@/src/constants/enum";
 import Link from "next/link";
+import ActivityDetailPopup from "./UserActivityPopup";
 
 
 export interface DateRangeFilter {
@@ -89,7 +90,7 @@ export interface ExtendedUserDetailProps {
   onSummaryFilter?: (filter: SummaryFilter) => void;
 }
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+
 const ENTITY_CONFIG: Record<
   string,
   { label: string; color: string; bg: string; icon: JSX.Element }
@@ -344,7 +345,14 @@ const ActivityRow = ({ activity }: { activity: Activity }) => {
     ([k]) => !["leadId", "quoteId"].includes(k),
   );
 
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+
   return (
+    <>
+    <ActivityDetailPopup
+  activity={selectedActivity}
+  onClose={() => setSelectedActivity(null)}
+/>
     <div className="flex gap-4">
       <div className="flex flex-col items-center">
         <div
@@ -353,7 +361,7 @@ const ActivityRow = ({ activity }: { activity: Activity }) => {
         <div className="w-px flex-1 bg-gray-100 dark:bg-gray-700 mt-1" />
       </div>
       <div className="pb-5 flex-1 min-w-0">
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-100 dark:border-gray-700 p-4 hover:shadow-md transition-shadow duration-200">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-100 dark:border-gray-700 p-4 hover:shadow-[0_0_8px_12px_#00000012] transition-shadow duration-200" onClick={() => setSelectedActivity(activity)}>
           <div className="flex items-start justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-2 flex-wrap">
               <span
@@ -399,6 +407,7 @@ const ActivityRow = ({ activity }: { activity: Activity }) => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
@@ -530,7 +539,7 @@ const DateFilterPanel = ({
   );
 };
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+
 const UserDetail = ({
   userData,
   isLoading,
@@ -555,7 +564,7 @@ const UserDetail = ({
   const [showDatePanel, setShowDatePanel] = useState(false);
   const [showSummaryDatePanel, setShowSummaryDatePanel] = useState(false);
 
-  // ── Chart data ─────────────────────────────────────────────────────────
+  
   const { entityPieData, actionBarData, dailyAreaData, entityCounts } =
     useMemo(() => {
       if (!activityData.length)
@@ -608,7 +617,7 @@ const UserDetail = ({
 
   const hasClientFilters = entityFilter !== "all" || actionFilter !== "all";
 
-  // ── Guards ─────────────────────────────────────────────────────────────
+
   if (isLoading) return <ComponentLoader />;
 
   if (!userData)
@@ -1171,7 +1180,7 @@ const UserDetail = ({
                         </ResponsiveContainer>
                       </div>
 
-                      {/* Donut chart */}
+                      
                       <div className="bg-slate-50 dark:bg-gray-700/40 rounded-2xl p-5 border border-slate-100 dark:border-gray-700 flex flex-col">
                         <div className="flex items-center gap-2 mb-4">
                           <div className="w-7 h-7 bg-amber-100 dark:bg-amber-900/40 rounded-lg flex items-center justify-center">
@@ -1203,7 +1212,7 @@ const UserDetail = ({
                             <Tooltip content={<ChartTooltip />} />
                           </PieChart>
                         </ResponsiveContainer>
-                        {/* Legend with counts */}
+                        
                         <div className="mt-3 space-y-1.5">
                           {entityPieData.map((e, i) => (
                             <div
@@ -1332,7 +1341,7 @@ const UserDetail = ({
           </div>
         )}
 
-        {/* ── Summary ────────────────────────────────────────────────── */}
+        
         {activeTab === "summary" && (
           <div className="p-6 space-y-6">
             {summaryLoading ? (
@@ -1349,9 +1358,9 @@ const UserDetail = ({
               </div>
             ) : (
               <>
-                {/* ── Summary filter bar ─────────────────────────────── */}
+                
                 <div className="flex flex-wrap items-center gap-3">
-                  {/* Date range trigger — reuses the same DateFilterPanel */}
+                 
                   <div className="relative">
                     <button
                       onClick={() => setShowSummaryDatePanel((v) => !v)}
@@ -1423,7 +1432,7 @@ const UserDetail = ({
                     )}
                   </div>
 
-                  {/* GroupBy selector */}
+                  
                   <div className="flex items-center gap-1 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-xl p-1">
                     {(["day", "week", "month"] as const).map((g) => (
                       <button

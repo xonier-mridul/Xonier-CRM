@@ -214,9 +214,7 @@ const UpdateTaskPage = (): JSX.Element => {
           const t: TaskItem = res.data.data;
           setOriginal(t);
 
-          // FIX: Populate BOTH `form.category` and the display-only
-          // `selectedCategory` from the fetched task so the category select
-          // renders the correct option and validation can read it from form.
+          
           const categoryId = t.category?.id ?? t.category?.id ?? "";
 
           setForm({
@@ -393,7 +391,7 @@ const UpdateTaskPage = (): JSX.Element => {
       const res = await TaskService.update(taskId, payload);
       if (res.status === 200) {
         toast.success("Task updated successfully");
-        router.push("/task/tasks");
+        router.push("/task");
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);

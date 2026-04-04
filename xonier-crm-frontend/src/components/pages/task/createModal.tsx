@@ -62,7 +62,7 @@ function CategoryModal({
     const selectedColor = getColorOption(formData.color ||COLOR_OPTIONS[0].hex);
     const selectedIcon = formData.icon || ICON_OPTIONS[0];
 
-    // 🔥 lock background scroll
+    
     React.useEffect(() => {
         document.body.style.overflow = "hidden";
         return () => {

@@ -382,7 +382,7 @@ const SideBar = () => {
                     {hasPermission(PERMISSIONS.readTask) && <li>
                       <Link
                         href="/task"
-                        className={`${isActive("/task/tasks")
+                        className={`${isActive("/task")
                           ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}

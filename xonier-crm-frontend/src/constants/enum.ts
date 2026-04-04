@@ -588,6 +588,9 @@ export enum ACTIVITY_ACTION {
   CLOSED_WON = "closed_won",
   CLOSED_LOST = "closed_lost",
   DELETE = "delete",
+  WON="won",
+  LOST="lost",
+  ACCEPTED="accepted"
 }
 
 
