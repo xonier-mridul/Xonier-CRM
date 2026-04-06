@@ -43,6 +43,7 @@ import type {
 } from "@/src/types/dashboard/dashboard.types";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { permission } from "process";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -405,6 +406,8 @@ export default function DashboardPage() {
       color: "#6366f1",
       icon: <TrendingUp className="w-4 h-4" />,
       iconBg: "bg-indigo-500",
+      link: "/leads",
+      permission: hasPermission(PERMISSIONS.readLead)
     },
     {
       label: "Active Deals",
@@ -414,6 +417,8 @@ export default function DashboardPage() {
       color: "#ec4899",
       icon: <Handshake className="w-4 h-4" />,
       iconBg: "bg-pink-500",
+      link: "/deals",
+      permission: hasPermission(PERMISSIONS.readDeal)
     },
     {
       label: "Total Users",
@@ -423,6 +428,9 @@ export default function DashboardPage() {
       color: "#22c55e",
       icon: <Users className="w-4 h-4" />,
       iconBg: "bg-green-500",
+      link: "/users",
+      permission: hasPermission(PERMISSIONS.readUser)
+
     },
     {
       label: "Teams",
@@ -432,6 +440,8 @@ export default function DashboardPage() {
       color: "#22c55e",
       icon: <Users className="w-4 h-4" />,
       iconBg: "bg-green-500",
+      link: "/teams",
+      permission: hasPermission(PERMISSIONS.readTeam)
     },
     {
       label: "Enquiries",
@@ -441,6 +451,8 @@ export default function DashboardPage() {
       color: "#f97316",
       icon: <MessageSquare className="w-4 h-4" />,
       iconBg: "bg-orange-500",
+      link: "/enquiry",
+      permission: hasPermission(PERMISSIONS.readEnquiry)
     },
   ];
 
@@ -497,29 +509,34 @@ export default function DashboardPage() {
             if (card.label === "Total Users" && data.role !== "admin") return false;
             return true;
           }).map((card) => (
-            <div
+            <Link
               key={card.label}
-              className="relative overflow-hidden bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 hover:shadow-md dark:hover:shadow-gray-900 transition-shadow duration-200"
+              href={card.permission ? card.link : "#"}
             >
-              <div className="flex items-start justify-between mb-3">
-                <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-                  {card.label}
+              <div
+                key={card.label}
+                className="relative overflow-hidden bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 hover:shadow-md dark:hover:shadow-gray-900 transition-shadow duration-200"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                    {card.label}
+                  </p>
+                  <span className={`w-8 h-8 rounded-xl flex items-center justify-center text-white flex-shrink-0 ${card.iconBg}`}>
+                    {card.icon}
+                  </span>
+                </div>
+                <p className="font-mono text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-none">
+                  {card.value}
                 </p>
-                <span className={`w-8 h-8 rounded-xl flex items-center justify-center text-white flex-shrink-0 ${card.iconBg}`}>
-                  {card.icon}
-                </span>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5 leading-relaxed">{card.sub}</p>
+                <div className="mt-4 h-1 rounded-full bg-gray-100 dark:bg-gray-800">
+                  <div
+                    className="h-1 rounded-full transition-all duration-700"
+                    style={{ width: `${card.barPct}%`, background: card.color }}
+                  />
+                </div>
               </div>
-              <p className="font-mono text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-none">
-                {card.value}
-              </p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5 leading-relaxed">{card.sub}</p>
-              <div className="mt-4 h-1 rounded-full bg-gray-100 dark:bg-gray-800">
-                <div
-                  className="h-1 rounded-full transition-all duration-700"
-                  style={{ width: `${card.barPct}%`, background: card.color }}
-                />
-              </div>
-            </div>
+            </Link>
           ))}
         </div>
 
@@ -820,19 +837,21 @@ export default function DashboardPage() {
             <SectionTitle title="Activity Snapshot" sub="Key metrics at a glance" />
             <div className="grid grid-cols-2 gap-3">
               {[
-                { label: "Leads this month", value: fmt(data.leads?.thisMonth || 0), color: "bg-indigo-50 dark:bg-indigo-950", text: "text-indigo-600 dark:text-indigo-400" },
-                { label: "Deals opened", value: data.deals.thisMonth || 0, color: "bg-pink-50 dark:bg-pink-950", text: "text-pink-600 dark:text-pink-400" },
-                { label: "New users", value: data.users?.thisMonth || 0, color: "bg-green-50 dark:bg-green-950", text: "text-green-600 dark:text-green-400" },
-                { label: "Enquiries received", value: data.enquiries.thisMonth || 0, color: "bg-orange-50 dark:bg-orange-950", text: "text-orange-600 dark:text-orange-400" },
-                { label: "Won leads", value: data.leads.won, color: "bg-cyan-50 dark:bg-cyan-950", text: "text-cyan-600 dark:text-cyan-400" },
-                { label: "Monthly revenue", value: fmtCurrency(data.deals?.monthlyRevenue || 0), color: "bg-emerald-50 dark:bg-emerald-950", text: "text-emerald-600 dark:text-emerald-400" },
-                { label: "Deleted leads", value: data.leads.deleted || 0, color: "bg-slate-100 dark:bg-slate-800", text: "text-slate-500 dark:text-slate-400" },
-                { label: "Active enquiries", value: data.enquiries.active, color: "bg-violet-50 dark:bg-violet-950", text: "text-violet-600 dark:text-violet-400" },
+                { label: "Leads this month", value: fmt(data.leads?.thisMonth || 0), color: "bg-indigo-50 dark:bg-indigo-950", text: "text-indigo-600 dark:text-indigo-400", link: "/leads", permission: hasPermission(PERMISSIONS.readLead) },
+                { label: "Deals opened", value: data.deals.thisMonth || 0, color: "bg-pink-50 dark:bg-pink-950", text: "text-pink-600 dark:text-pink-400", link: "/deals", permission: hasPermission(PERMISSIONS.readDeal) },
+                { label: "New users", value: data.users?.thisMonth || 0, color: "bg-green-50 dark:bg-green-950", text: "text-green-600 dark:text-green-400", link: "/users", permission: hasPermission(PERMISSIONS.readUser) },
+                { label: "Enquiries received", value: data.enquiries.thisMonth || 0, color: "bg-orange-50 dark:bg-orange-950", text: "text-orange-600 dark:text-orange-400", link: "/enquiry", permission: hasPermission(PERMISSIONS.readEnquiry) },
+                { label: "Won leads", value: data.leads.won, color: "bg-cyan-50 dark:bg-cyan-950", text: "text-cyan-600 dark:text-cyan-400", link: "/leads#won", permission: hasPermission(PERMISSIONS.readLead) },
+                { label: "Monthly revenue", value: fmtCurrency(data.deals?.monthlyRevenue || 0), color: "bg-emerald-50 dark:bg-emerald-950", text: "text-emerald-600 dark:text-emerald-400", link: "/deals", permission: hasPermission(PERMISSIONS.readDeal) },
+                { label: "Deleted leads", value: data.leads.deleted || 0, color: "bg-slate-100 dark:bg-slate-800", text: "text-slate-500 dark:text-slate-400", link: "/leads#deleted", permission: hasPermission(PERMISSIONS.readLead) },
+                { label: "Active enquiries", value: data.enquiries.active, color: "bg-violet-50 dark:bg-violet-950", text: "text-violet-600 dark:text-violet-400", link: "/enquiry", permission: hasPermission(PERMISSIONS.readEnquiry) },
               ].map((item) => (
-                <div key={item.label} className={`${item.color} rounded-xl p-3.5 flex flex-col gap-1`}>
-                  <span className={`font-mono text-xl font-bold ${item.text}`}>{item.value}</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">{item.label}</span>
-                </div>
+                <Link key={item.label} href={item.permission?(item.link):"#"}>
+                  <div key={item.label} className={`${item.color} rounded-xl p-3.5 flex flex-col gap-1 hover:shadow-md dark:hover:shadow-gray-900 transition-shadow duration-200`}>
+                    <span className={`font-mono text-xl font-bold ${item.text}`}>{item.value}</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{item.label}</span>
+                  </div>
+                </Link>
               ))}
             </div>
           </div>
@@ -880,6 +899,7 @@ export default function DashboardPage() {
         </div>
 
         {/* ── Leaderboard Modal ── */}
+      </div>
         {leaderboard && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
             <div className="w-full max-w-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl overflow-hidden">
@@ -926,7 +946,6 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 }
