@@ -511,7 +511,7 @@ class ManagerDashboardService:
                 }
             },
             
-            {"$project": {"_id": 0, "password": 0, "refreshToken": 0, "createdBy": 0, "userRole": 0, "hashedPhone": 0, "hashedEmail": 0}},
+            {"$project": {"_id": 0, "password": 0, "refreshToken": 0, "createdBy": 0, "userRole": 0, "hashedPhone": 0, "hashedEmail": 0, "updatedBy": 0}},
         ]
 
         

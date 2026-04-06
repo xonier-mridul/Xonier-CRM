@@ -134,7 +134,13 @@ export interface DashboardData {
   leadStatusBreakdown: LeadStatusBreakdownItem[];
   latestLeads: LatestLead[];
   dealPipelineBreakdown: DealPipelineBreakdownItem[];
-  user?:User;
+  user?: User;
+  teams?: {
+    totalTeams: number,
+    activeTeams: number,
+    totalMembers: number,
+    deletedTeams: number
+  };
 }
 
 export interface DashboardApiResponse {

@@ -7,6 +7,7 @@ import { FaXmark, FaCheck } from "react-icons/fa6";
 import { MdOutlinePersonAdd } from "react-icons/md";
 import { Prospect } from "@/src/types/prospect/prospect.type";
 import { User } from "@/src/types/auth/auth.types";
+import UserSelect from "@/src/components/common/userselect";
 
 interface ReassignModalProps {
   leads: Prospect[];
@@ -90,21 +91,12 @@ const ReassignModal = ({
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
               Select New User <span className="text-red-500">*</span>
             </label>
-            <select
-              value={selectedUserId}
-              onChange={(e) => setSelectedUserId(e.target.value)}
-              className="w-full bg-amber-50 dark:bg-gray-700 text-slate-800 dark:text-white px-4 py-3 rounded-lg border-2 border-amber-200 dark:border-amber-700 focus:border-amber-400 dark:focus:border-amber-500 outline-none text-sm cursor-pointer shadow-sm transition-colors"
-            >
-              <option value="" disabled>
-                — Select user to reassign —
-              </option>
-              {assignableUsers.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.firstName} {u.lastName ?? ""}
-                  {u.userRole[0]?.name ? ` · ${u.userRole[0].name}` : ""}
-                </option>
-              ))}
-            </select>
+            <UserSelect
+              users={assignableUsers}
+              selectedUserId={selectedUserId}
+              setSelectedUserId={setSelectedUserId}
+              placeholder="Search & select user..."
+            />
           </div>
 
           {/* Selected Leads List */}

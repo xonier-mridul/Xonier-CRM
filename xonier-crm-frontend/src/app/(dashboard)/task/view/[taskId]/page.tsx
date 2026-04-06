@@ -10,7 +10,9 @@ import { getColorOption, StatusBadge } from "@/src/components/pages/task/createS
 import { PERMISSIONS } from "@/src/constants/enum";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { TaskActivity } from "@/src/types/task/task.types";
-import {ChevronRight} from "lucide-react";
+import { ChevronRight } from "lucide-react";
+import { TASK_ACTIVITY_ACTION } from "@/src/constants/enum";
+import { useSelector } from "react-redux";
 
 type Raw = Record<string, unknown>;
 
@@ -250,12 +252,14 @@ function TaskCard({
   isHighlighted,
   onDragStart,
   onDragEnd,
+  canStatusChange,
 }: {
   task: Task;
   isDragging: boolean;
   isHighlighted: boolean;
   onDragStart: (e: React.DragEvent, task: Task) => void;
   onDragEnd: (e: React.DragEvent) => void;
+  canStatusChange: boolean;
 }) {
   const isOverdue =
     task.isOverdue ||
@@ -263,15 +267,21 @@ function TaskCard({
   const router = useRouter();
   return (
     <div
-      draggable
-      onDragStart={(e) => onDragStart(e, task)}
+      draggable={canStatusChange}
+      onDragStart={(e) => {
+        if (!canStatusChange) return;
+          onDragStart(e, task)
+        }
+      }
       onDragEnd={onDragEnd}
       onClick={() => { router.push(`/task/detail/${task.id}`) }}
       style={{ opacity: isDragging ? 0.35 : 1 }}
       className={[
-        "group relative bg-white dark:bg-gray-800 rounded-xl p-3.5 cursor-grab active:cursor-grabbing select-none",
+        "group relative bg-white dark:bg-gray-800 rounded-xl p-3.5 select-none",
         "transition-all duration-150",
-        "hover:shadow-md hover:-translate-y-0.5",
+        canStatusChange
+          ? "cursor-grab active:cursor-grabbing hover:shadow-md hover:-translate-y-0.5"
+          : "cursor-not-allowed opacity-60",
         isHighlighted
           ? "border-2 border-indigo-400 dark:border-indigo-500 shadow-md shadow-indigo-100 dark:shadow-indigo-900/30 ring-1 ring-indigo-200 dark:ring-indigo-700"
           : "border border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600",
@@ -375,12 +385,12 @@ function TaskCard({
         </div>
       </div>
       <div>
-        { 
+        {
           (task?.activities) &&
           // show latest activitie
           <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500 w-full justify-end">
             <span className="text-gray-400 dark:text-gray-500 px-2 pt-4">
-              {(task.activities.oldValue || task.activities.newValue)? (
+              {(task.activities.oldValue || task.activities.newValue) ? (
                 <div className="mt-2 flex items-center gap-2 flex-wrap">
                   {task.activities.oldValue && (
                     <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs font-medium line-through">
@@ -397,9 +407,9 @@ function TaskCard({
                   )}
                   <span>by {task.activities.performedBy?.firstName}</span>
                 </div>
-              ):(
+              ) : (
                 <span>
-                {task.activities.action.replace(/_/g, " ")} by {task.activities.performedBy?.firstName}
+                  {task.activities.action.replace(/_/g, " ")} by {task.activities.performedBy?.firstName}
                 </span>
               )}
             </span>
@@ -420,6 +430,7 @@ function KanbanColumn({
   onDragOver,
   onDrop,
   onDragLeave,
+  canStatusChange,
 }: {
   column: KanbanColumn;
   focusedTaskId: string;
@@ -430,6 +441,7 @@ function KanbanColumn({
   onDragOver: (e: React.DragEvent, statusId: string) => void;
   onDrop: (e: React.DragEvent, statusId: string) => void;
   onDragLeave: (e: React.DragEvent) => void;
+  canStatusChange: boolean;
 }) {
   const { status, tasks } = column;
   const isOver = dragOverColId === status.id;
@@ -502,6 +514,7 @@ function KanbanColumn({
                 isHighlighted={task.id === focusedTaskId}
                 onDragStart={onDragStart}
                 onDragEnd={onDragEnd}
+                canStatusChange={canStatusChange}
               />
             ))}
             {isOver &&
@@ -560,13 +573,16 @@ export default function TaskViewPage() {
   const [columns, setColumns] = useState<KanbanColumn[]>([]);
   const [boardCategory, setBoardCategory] = useState<TaskCategory | null>(null);
   const [loadingTask, setLoadingTask] = useState(true);
-  const [loadingBoard, setLoadingBoard] = useState(false);
+  const [loadingBoard, setLoadingBoard] = useState(true);
+  const [bgloader, setBgloader] = useState(false);
   const [draggingTask, setDraggingTask] = useState<Task | null>(null);
   const [dragOverColId, setDragOverColId] = useState<string | null>(null);
   const [movingTaskId, setMovingTaskId] = useState<string | null>(null);
   const { hasPermission } = usePermissions();
-
+  const canStatusChange = hasPermission(PERMISSIONS.taskStatusChange);
   const dragRef = useRef<Task | null>(null);
+  const debouncingRef = useRef<NodeJS.Timeout | null>(null);
+  const user = useSelector((state: any) => state.auth.user);
 
   useEffect(() => {
     if (!taskId) return;
@@ -584,20 +600,41 @@ export default function TaskViewPage() {
       .finally(() => setLoadingTask(false));
   }, [taskId]);
 
-  const loadBoard = useCallback(async (categoryId: string) => {
+  const loadBoard = useCallback(async (categoryId: string, force = false) => {
     if (!categoryId) return;
-    setLoadingBoard(true);
+
     try {
-      const res = await apiFetchKanban(categoryId);
-      const raw: Raw = res.data?.data ?? res.data;
-      const board = normalizeBoard(raw);
-      setBoardCategory(board.category);
-      setColumns(board.columns);
+      if (force) {
+        if (debouncingRef.current) clearTimeout(debouncingRef.current);
+        debouncingRef.current = setTimeout(async () => {
+          setBgloader(true);
+          const res = await apiFetchKanban(categoryId);
+          const raw: Raw = res.data?.data ?? res.data;
+          const board = normalizeBoard(raw);
+          setBoardCategory(board.category);
+          setColumns(board.columns);
+          setBgloader(false);
+        }, 30000);
+      }
+      else{
+          if(debouncingRef.current){
+            clearTimeout(debouncingRef.current);
+            debouncingRef.current = null;
+          }
+          setBgloader(true);
+          const res = await apiFetchKanban(categoryId);
+          const raw: Raw = res.data?.data ?? res.data;
+          const board = normalizeBoard(raw);
+          setBoardCategory(board.category);
+          setColumns(board.columns);
+      }
+
     } catch (err) {
       console.error("Board fetch error:", err);
       toast.error("Failed to load board");
     } finally {
       setLoadingBoard(false);
+      setBgloader(false);
     }
   }, []);
 
@@ -620,6 +657,7 @@ export default function TaskViewPage() {
   };
 
   const handleDragOver = (e: React.DragEvent, statusId: string) => {
+    if (!hasPermission(PERMISSIONS.taskStatusChange)) return;
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
     setDragOverColId(statusId);
@@ -633,6 +671,10 @@ export default function TaskViewPage() {
 
   const handleDrop = async (e: React.DragEvent, targetStatusId: string) => {
     e.preventDefault();
+    if (!hasPermission(PERMISSIONS.taskStatusChange)) {
+      toast.error("You don't have permission to move tasks");
+      return;
+    }
     setDragOverColId(null);
     const task = dragRef.current;
     dragRef.current = null;
@@ -673,17 +715,40 @@ export default function TaskViewPage() {
     setMovingTaskId(task.id);
     try {
       const categoryId = focusedTask?.category?.id ?? task.category?.id ?? "";
+
       await apiMoveTask(
         task.id,
         targetStatusId,
         categoryId,
         targetCol.tasks.length,
       );
+      setColumns((prev) =>
+        prev.map((col) => ({
+          ...col,
+          tasks: col.tasks.map((t) => {
+            if (t.id !== task.id) return t;
+
+            return {
+              ...t,
+              activities: {
+                ...t.activities,
+                oldValue: task.activities.newValue,
+                newValue: targetCol.status.name,
+                action: TASK_ACTIVITY_ACTION.STATUS_CHANGED,
+                performedBy: user,
+              },
+            };
+          }),
+        }))
+      );
       toast.success("Task moved");
-      // await loadBoard(focusedTask?.category?.id ?? "");
+      loadBoard(focusedTask?.category?.id ?? "", true);
     } catch (err) {
       console.error("Move error:", err);
+
+      // ❗ optional: rollback UI if API fails
       await loadBoard(focusedTask?.category?.id ?? "");
+
       if (axios.isAxiosError(err))
         toast.error(err.response?.data?.message ?? "Failed to move task");
     } finally {
@@ -985,7 +1050,7 @@ export default function TaskViewPage() {
           disabled={loadingBoard}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 shadow-sm transition-all disabled:opacity-50"
         >
-          {loadingBoard ? (
+          {bgloader ? (
             <svg
               className="w-3 h-3 animate-spin"
               viewBox="0 0 24 24"
@@ -1038,6 +1103,7 @@ export default function TaskViewPage() {
               onDragOver={handleDragOver}
               onDrop={handleDrop}
               onDragLeave={handleDragLeave}
+              canStatusChange={canStatusChange}
             />
           ))}
         </div>

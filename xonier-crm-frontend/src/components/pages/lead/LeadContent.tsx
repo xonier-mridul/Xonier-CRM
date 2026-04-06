@@ -39,6 +39,7 @@ import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 import TagBadge from "@/src/components/common/tagBadge";
 import StatusDropdown from "@/src/components/pages/lead/StatusDropdown";
 import { LeadEngagementStatus } from "@/src/constants/enum";
+import UserSelect from "@/src/components/common/userselect";
 
 const TAB = { ALL: 1, WON: 2, LOST: 3, ASSIGNED: 4 } as const;
 
@@ -321,6 +322,23 @@ const LeadContent = (): JSX.Element => {
     } finally { setIsReassigning(false); }
   };
 
+  const handleRevokeLeads = async (): Promise<void> => {
+    if (selectedReassignIds.size === 0) { toast.warning("Please select a lead to reassign"); return; }
+    try {
+      const confirm = await ConfirmPopup({ text: `Are you want to revoke ${selectedReassignIds.size} leads`, title: "Are you sure", btnTxt: "Yes, revoke" });
+      if (confirm) {
+        const result = await LeadService.revokeLeads(Array.from(selectedReassignIds));
+        if (result.status === 200) {
+          toast.success(`${selectedReassignIds.size} leads revoked successfully`);
+          await getAssignedLeadData();
+        }
+      }
+    } catch (error) {
+      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+      if (axios.isAxiosError(error)) { const m = extractErrorMessages(error); setErr(m); toast.error(`${m}`); }
+      else setErr(["Something went wrong"]);
+    } finally { setIsReassigning(false); }
+  };
 
   const handleDelete = async (id: ParamValue, name: string): Promise<void> => {
     try {
@@ -800,18 +818,11 @@ const LeadContent = (): JSX.Element => {
               <div className="flex items-center gap-3">
                 <div className="flex flex-col gap-0.5">
                   {!selectedUserId && <span className="text-blue-200 text-[11px] ml-1">← Select a user first</span>}
-                  <select
-                    value={selectedUserId}
-                    onChange={(e) => setSelectedUserId(e.target.value)}
-                    className="bg-white dark:bg-gray-800 text-slate-800 dark:text-white px-4 py-2 rounded-lg border-0 outline-none text-sm min-w-52 cursor-pointer shadow-sm"
-                  >
-                    <option value="" disabled>— Select user to assign —</option>
-                    {nonAdminUsers.map((u) => (
-                      <option key={u.id} value={u.id}>
-                        {u.firstName} {u.lastName ?? ""}{u.userRole[0]?.name ? ` · ${u.userRole[0].name}` : ""}
-                      </option>
-                    ))}
-                  </select>
+                  <UserSelect
+                    users={nonAdminUsers}
+                    selectedUserId={selectedUserId}
+                    setSelectedUserId={setSelectedUserId}
+                  />
                 </div>
                 <button
                   onClick={handleAssignLeads}
@@ -842,18 +853,11 @@ const LeadContent = (): JSX.Element => {
               <div className="flex items-center gap-3">
                 <div className="flex flex-col gap-0.5">
                   {!selectedReassignUserId && <span className="text-amber-100 text-[11px] ml-1">← Pick the new assignee</span>}
-                  <select
-                    value={selectedReassignUserId}
-                    onChange={(e) => setSelectedReassignUserId(e.target.value)}
-                    className="bg-white dark:bg-gray-800 text-slate-800 dark:text-white px-4 py-2 rounded-lg border-0 outline-none text-sm min-w-52 cursor-pointer shadow-sm"
-                  >
-                    <option value="" disabled>— Select new assignee —</option>
-                    {nonAdminUsers.map((u) => (
-                      <option key={u.id} value={u.id} className="capitalize">
-                        {u.firstName} {u.lastName ?? ""}{u.userRole[0]?.name ? ` · ${u.userRole[0].name}` : ""}
-                      </option>
-                    ))}
-                  </select>
+                  <UserSelect
+                    users={nonAdminUsers}
+                    selectedUserId={selectedReassignUserId}
+                    setSelectedUserId={setSelectedReassignUserId}
+                  />
                 </div>
                 <button
                   onClick={handleReassignLeads}
@@ -861,6 +865,13 @@ const LeadContent = (): JSX.Element => {
                   className="bg-white text-amber-600 hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed px-5 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all shadow-sm"
                 >
                   {isReassigning ? <><Spinner color="text-amber-500" /> Reassigning...</> : <><TbArrowsExchange className="text-lg" /> Reassign Leads</>}
+                </button>
+                <button
+                  onClick={handleRevokeLeads}
+                  disabled={!hasPermission("deal:reassign")}
+                  className="bg-white text-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed px-5 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all shadow-sm"
+                >
+                  Revoke
                 </button>
               </div>
             </div>
@@ -951,7 +962,7 @@ const LeadContent = (): JSX.Element => {
                                     value={filters["engagementStatus"]}
                                     onChange={(e) => setFilters(prev => ({ ...prev, engagementStatus: e.target.value }))}
                                     className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm"
-                                    > 
+                                  >
                                     <option value="">All</option>
                                     {Object.values(LeadEngagementStatus).map(s => (
                                       <option key={s} value={s}>
@@ -1032,23 +1043,33 @@ const LeadContent = (): JSX.Element => {
                             )
                           }
                           {
-                            (h == 'Engagement Status') && (
+                            (h == 'Data Tag') && (
+                              (
                                 <>
                                   <br />
-                                  <select
-                                    value={filters["engagementStatus"]}
-                                    onChange={(e) => setFilters(prev => ({ ...prev, engagementStatus: e.target.value }))}
-                                    className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm"
-                                    > 
-                                    <option value="">All</option>
-                                    {Object.values(LeadEngagementStatus).map(s => (
-                                      <option key={s} value={s}>
-                                        {s.replace(/_/g, " ").charAt(0).toUpperCase() + s.replace(/_/g, " ").slice(1)}
-                                      </option>
-                                    ))}
-                                  </select>
+                                  <input type="text" className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20" placeholder="Search..." onChange={(e) => handleDataTag(e.target.value)} />
                                 </>
                               )
+                            )
+                          }
+                          {
+                            (h == 'Engagement Status') && (
+                              <>
+                                <br />
+                                <select
+                                  value={filters["engagementStatus"]}
+                                  onChange={(e) => setFilters(prev => ({ ...prev, engagementStatus: e.target.value }))}
+                                  className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm"
+                                >
+                                  <option value="">All</option>
+                                  {Object.values(LeadEngagementStatus).map(s => (
+                                    <option key={s} value={s}>
+                                      {s.replace(/_/g, " ").charAt(0).toUpperCase() + s.replace(/_/g, " ").slice(1)}
+                                    </option>
+                                  ))}
+                                </select>
+                              </>
+                            )
                           }
                         </th>
                       );
