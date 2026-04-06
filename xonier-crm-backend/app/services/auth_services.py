@@ -126,7 +126,7 @@ class AuthServices:
                 raise AppException(409, "You are not authorized to get this data")
 
 
-            result = await self.repo.get_all(page=page, limit=limit ,filters=query, sort=["-createdAt"] )
+            result = await self.repo.get_all(page=int(page), limit=int(limit) ,filters=query, sort=["-createdAt"] )
 
             if not result:
                 raise AppException(404, "Users not found")
