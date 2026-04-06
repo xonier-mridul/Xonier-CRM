@@ -436,7 +436,7 @@ class LeadService:
                 try:
                     validate_admin(user["userRole"])
 
-                    lead_ids_str = payload.get("leadsId", [])
+                    lead_ids_str = payload.get("leadsIds", [])
 
                     if not lead_ids_str:
                         raise AppException(400, "leadsId cannot be empty")

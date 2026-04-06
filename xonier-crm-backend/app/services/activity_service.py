@@ -24,6 +24,7 @@ from app.core.constants import (
     USER_LEAD_CACHE_NAMESPACE,
     
 )
+from app.utils.get_team_members import GetTeamMembers
 
 class ActivityService:
     def __init__(self):
@@ -34,6 +35,7 @@ class ActivityService:
         self.invoiceRepo = InvoiceRepository()
         self.crypto = Encryption()
         self.client = Client
+        self.verifyManager = GetTeamMembers()
 
     async def get_user_activity(
         self,
@@ -50,8 +52,21 @@ class ActivityService:
             requester_user_id = PydanticObjectId(current_user["_id"])
 
             is_admin = validate_admin(current_user["userRole"])
-            
-            if not is_admin and requester_user_id != target_user_id:
+
+            is_manager = False
+
+            if not is_admin:
+                members = await self.verifyManager.get_team_members(userId=current_user["_id"])
+                print("members: ", members)
+                print("user: ", user_id)
+
+                if ObjectId(user_id) in members:
+                    is_manager = True
+
+
+
+
+            if not is_admin and not is_manager and requester_user_id != target_user_id:
                 raise AppException(403, "You are not allowed to access another user's activity")
 
             query: Dict[str, Any] = {
