@@ -24,9 +24,13 @@ async def getAll(request: Request, response: Response):
 async def getAllForFrontend(request: Request):
     return await auth_controller.get_all_active_without_pagination(request)
     
-@router.get("/frontend", status_code=200)
+@router.get("/frontend", status_code=200, dependencies=[Depends(dependencies.authorized)])
 async def get_all_for_frontend(request: Request, response):
     return await auth_controller.get_all_for_frontend(request, response) 
+
+@router.get("/by-team", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["user:read"]))])
+async def get_user_by_teams(request: Request):
+    return await auth_controller.get_user_by_teams(request)
 
 
 @router.get("/all-deleted", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["user:read"]))])

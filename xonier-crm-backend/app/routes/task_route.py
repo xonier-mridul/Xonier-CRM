@@ -62,7 +62,7 @@ async def update_task(request: Request, task_id: str, payload: UpdateTaskSchema)
     return await controller.update_task(request, task_id, payload.model_dump(mode="json", exclude_none=True))
  
  
-@router.patch("/status/{task_id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["task:update"]))])
+@router.patch("/status/{task_id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["task:statusChange"]))])
 async def update_task_status(request: Request, task_id: str, payload: UpdateTaskStatusSchema):
     return await controller.update_task_status(request, task_id, payload.model_dump(mode="json"))
  

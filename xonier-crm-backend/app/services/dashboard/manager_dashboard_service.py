@@ -249,7 +249,7 @@ class ManagerDashboardService:
 
         teams_encoded = jsonable_encoder(teams)
 
-        print("teams: ", teams_encoded)
+        
 
         total_members = set()
         active_teams = 0
@@ -260,8 +260,6 @@ class ManagerDashboardService:
             for member in team.get("members", []):
                 total_members.add(member["id"])
 
-        print("res1: ", total_members)
-        print("res2: ", active_teams)
 
         return {
             "totalTeams": team_count,
