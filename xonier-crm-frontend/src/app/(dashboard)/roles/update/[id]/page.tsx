@@ -3,22 +3,23 @@
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import FormButton from "@/src/components/ui/FormButton";
 import Input from "@/src/components/ui/Input";
-import { SIDEBAR_WIDTH } from "@/src/constants/constants";
 import { RoleService } from "@/src/services/role.service";
 import { PermissionsService } from "@/src/services/permission.service";
 import { UserRolePayload, Permissions } from "@/src/types/roles/roles.types";
 import axios from "axios";
 import { ParamValue } from "next/dist/server/request/params";
 import { useParams, useRouter } from "next/navigation";
-import React, { JSX, useEffect, useState, FormEvent } from "react";
+import React, { JSX, useEffect, useState, FormEvent, useMemo } from "react";
 import { toast } from "react-toastify";
 import Skeleton from "react-loading-skeleton";
-import { FaXmark } from "react-icons/fa6";
+import { FaXmark, FaShieldHalved, FaFloppyDisk } from "react-icons/fa6";
+import { HiOutlineSearch } from "react-icons/hi";
 
 const UpdateRolePage = (): JSX.Element => {
   const [err, setErr] = useState<string | string[]>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   const [permissionData, setPermissionData] = useState<Permissions[]>([]);
 
@@ -30,6 +31,23 @@ const UpdateRolePage = (): JSX.Element => {
   const { id } = useParams();
   const router = useRouter();
 
+  /* ------------------ Grouped + filtered permissions ------------------ */
+  const groupedPermissions = useMemo(() => {
+    const filtered = permissionData.filter(
+      (p) =>
+        p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.module?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.action?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    return filtered.reduce<Record<string, Permissions[]>>((acc, perm) => {
+      const module = perm.module ?? "General";
+      if (!acc[module]) acc[module] = [];
+      acc[module].push(perm);
+      return acc;
+    }, {});
+  }, [permissionData, searchTerm]);
+
   /* ------------------ Fetch permissions ------------------ */
   const getAllPermissions = async () => {
     try {
@@ -38,7 +56,6 @@ const UpdateRolePage = (): JSX.Element => {
         setPermissionData(result.data.data);
       }
     } catch (error) {
-      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) {
         const messages = extractErrorMessages(error);
         setErr(messages);
@@ -55,12 +72,11 @@ const UpdateRolePage = (): JSX.Element => {
         setFormData({
           name: data.name ?? "",
           permissions: data.permissions.map((p: any) =>
-    typeof p === "string" ? p : p.id || p._id
-  ),
+            typeof p === "string" ? p : p.id || p._id
+          ),
         });
       }
     } catch (error) {
-      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) {
         const messages = extractErrorMessages(error);
         setErr(messages);
@@ -88,10 +104,8 @@ const UpdateRolePage = (): JSX.Element => {
       const result = await RoleService.update(id, formData);
       if (result.status === 200) {
         toast.success("Role updated successfully");
-        // setTimeout(() => router.push("/roles"), 2000);
       }
     } catch (error) {
-      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) {
         const messages = extractErrorMessages(error);
         setErr(messages);
@@ -104,151 +118,240 @@ const UpdateRolePage = (): JSX.Element => {
     }
   };
 
-
-  const addPermission = (id: string) => {
+  const addPermission = (permId: string) => {
     setFormData((prev) => ({
       ...prev,
-      permissions: [...prev.permissions, id],
+      permissions: [...prev.permissions, permId],
     }));
   };
 
-  const removePermission = (id: string) => {
+  const removePermission = (permId: string) => {
     setFormData((prev) => ({
       ...prev,
-      permissions: prev.permissions.filter((p) => p !== id),
+      permissions: prev.permissions.filter((p) => p !== permId),
     }));
   };
 
-const isSelected = (id: string) => {
-  return formData.permissions.includes(id.toString());
-};
+  const isSelected = (permId: string) =>
+    formData.permissions.includes(permId.toString());
+
   return (
-    <div className={`ml-72 mt-14 p-6`}>
-      <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm flex flex-col gap-5 p-6 rounded-xl border border-slate-900/10 w-full">
-        <h2 className="text-xl font-bold dark:text-white">Update Role</h2>
+    <div className="ml-72 mt-14">
+      <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full">
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6">
-          {/* Role Name */}
-          {loading ? (
-            <div className="flex flex-col gap-1 animate-pulse">
-              <Skeleton height={14} width={100} />
-              <Skeleton height={36} borderRadius={12} />
-            </div>
-          ) : (
-            <Input
-              label="Role Name"
-              placeholder="Enter role name"
-              required
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-            />
-          )}
+      <form onSubmit={handleSubmit}>
+        <div className=" flex flex-col">
 
-          {/* Selected Permissions */}
-          {formData.permissions.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <span className="text-sm text-gray-500">
-                Selected permissions ({formData.permissions.length})
-              </span>
-
-              <div className="flex flex-wrap gap-2">
-                {formData.permissions.map((id) => {
-                  const perm = permissionData.find((p) => p.id === id);
-                  if (!perm) return null;
-
-                  return (
-                    <span
-                      key={id}
-                      className="bg-blue-100 dark:bg-blue-900/40
-                        text-blue-700 dark:text-blue-300
-                        px-3 py-1 rounded-full text-sm
-                        flex items-center gap-2 capitalize"
-                    >
-                      {perm.title}
-                      <button
-                        type="button"
-                        onClick={() => removePermission(id)}
-                        className="hover:text-red-500"
-                      >
-                        <FaXmark />
-                      </button>
-                    </span>
-                  );
-                })}
+          {/* ── Header ── */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                <FaShieldHalved className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                  Update Role
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Modify role name and permissions
+                </p>
               </div>
             </div>
-          )}
-
-
-          <div className="flex flex-col gap-2">
-            <span className="text-sm text-gray-500">Available permissions</span>
-
-            {isLoading ? <div><Skeleton className="animate-pulse" height={80} width={1140} /></div> :<div className="max-h-64 overflow-y-auto border rounded-md p-2">
-              {permissionData.map((permission) => {
-                const selected = isSelected(permission.id);
-
-                return (
-                  <button
-                    key={permission.id}
-                    type="button"
-                    disabled={selected}
-                    onClick={() => addPermission(permission.id)}
-                    className={`
-                      w-full text-left px-3 py-2 rounded-md mb-1 transition
-                      ${
-                        selected
-                          ? "bg-blue-200 dark:bg-blue-900/50 cursor-not-allowed"
-                          : "hover:bg-blue-100 dark:hover:bg-gray-600"
-                      }
-                    `}
-                  >
-                    <div className="font-medium capitalize flex justify-between">
-                      {permission.title}
-                      {selected && (
-                        <span className="text-xs text-blue-700 dark:text-blue-300">
-                          selected
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {permission.module} · {permission.action}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>}
           </div>
 
-          {/* Error */}
-          {err && (
-            <div className="rounded-md border border-red-500/40 bg-red-50 dark:bg-red-900/20 px-4 py-2 text-sm text-red-600 dark:text-red-400">
-              {Array.isArray(err) ? (
-                <ul className="list-disc pl-4">
-                  {err.map((e, idx) => (
-                    <li key={idx}>{e}</li>
-                  ))}
-                </ul>
+          {/* ── Body ── */}
+          <div className="flex-1 p-6 space-y-5">
+
+            {/* Role Name */}
+            {loading ? (
+              <div className="flex flex-col gap-1 animate-pulse">
+                <Skeleton height={14} width={100} />
+                <Skeleton height={36} borderRadius={12} />
+              </div>
+            ) : (
+              <Input
+                label="Role name"
+                name="name"
+                placeholder="e.g. Sales Manager, Team Lead, Developer"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, name: e.target.value }))
+                }
+                required
+              />
+            )}
+
+            {/* Selected Permissions */}
+            {formData.permissions.length > 0 && (
+              <div className="bg-indigo-50 dark:bg-indigo-950/20 rounded-xl p-4 border border-indigo-100 dark:border-indigo-900/30">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-400">
+                    Selected Permissions
+                  </span>
+                  <span className="text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/40 px-2 py-0.5 rounded-full">
+                    {formData.permissions.length}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {formData.permissions.map((permId) => {
+                    const perm = permissionData.find((p) => p.id === permId);
+                    if (!perm) return null;
+
+                    return (
+                      <span
+                        key={permId}
+                        className="group bg-white dark:bg-gray-700 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 px-3 py-1.5 rounded-lg text-sm flex items-center gap-2 capitalize hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0" />
+                        {perm.title}
+                        <button
+                          type="button"
+                          onClick={() => removePermission(permId)}
+                          className="ml-1 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                        >
+                          <FaXmark className="w-3 h-3" />
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Permissions Selector */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  Available Permissions
+                </span>
+                <div className="relative">
+                  <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search permissions..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9 pr-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent w-56"
+                  />
+                </div>
+              </div>
+
+              {loading ? (
+                <Skeleton height={320} borderRadius={12} />
               ) : (
-                err
+                <div className="max-h-80 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700/50">
+                  {Object.entries(groupedPermissions).map(([module, perms]) => (
+                    <div
+                      key={module}
+                      className="border-b border-gray-200 dark:border-gray-600 last:border-0"
+                    >
+                      <div className="sticky top-0 bg-gray-100 dark:bg-gray-700 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400 z-10">
+                        {module}
+                      </div>
+                      <div className="p-2">
+                        {perms.map((permission) => {
+                          const selected = isSelected(permission.id);
+                          return (
+                            <button
+                              key={permission.id}
+                              type="button"
+                              disabled={selected}
+                              onClick={() => addPermission(permission.id)}
+                              className={`w-full text-left px-3 py-2.5 rounded-lg mb-1 transition-all ${
+                                selected
+                                  ? "bg-indigo-100 dark:bg-indigo-900/40 cursor-not-allowed"
+                                  : "hover:bg-white dark:hover:bg-gray-600"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <div
+                                    className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0 ${
+                                      selected
+                                        ? "bg-indigo-500 border-indigo-500"
+                                        : "border-gray-300 dark:border-gray-500"
+                                    }`}
+                                  >
+                                    {selected && (
+                                      <svg
+                                        className="w-3 h-3 text-white"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={3}
+                                          d="M5 13l4 4L19 7"
+                                        />
+                                      </svg>
+                                    )}
+                                  </div>
+                                  <div>
+                                    <div className="font-medium text-slate-700 dark:text-slate-200 capitalize text-sm">
+                                      {permission.title}
+                                    </div>
+                                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                                      {permission.action}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+
+                  {Object.keys(groupedPermissions).length === 0 && (
+                    <div className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">
+                      No permissions match your search.
+                    </div>
+                  )}
+                </div>
               )}
             </div>
-          )}
 
-          {/* Submit */}
-          <div className="flex justify-end">
+            {/* Error */}
+            {err && (
+              <div className="rounded-xl border border-red-500/40 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-600 dark:text-red-400">
+                {Array.isArray(err) ? (
+                  <ul className="list-disc pl-4 space-y-1">
+                    {err.map((e, idx) => (
+                      <li key={idx}>{e}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  err
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* ── Footer ── */}
+          <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 rounded-b-2xl">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="px-5 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 text-slate-700 dark:text-slate-200 font-medium transition-colors"
+            >
+              Cancel
+            </button>
             <FormButton
               type="submit"
               isLoading={isLoading}
-              disabled={
-                formData.name === "" || formData.permissions.length === 0
-              }
+              disabled={formData.name === "" || formData.permissions.length === 0}
             >
+              <FaFloppyDisk className="w-4 h-4" />
               Update Role
             </FormButton>
           </div>
-        </form>
+
+        </div>
+      </form>
       </div>
     </div>
   );
