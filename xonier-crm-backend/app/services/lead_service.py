@@ -429,7 +429,121 @@ class LeadService:
                     import traceback
                     traceback.print_exc()
                     raise AppException(status_code=500, message=f"Internal server error: {e}")
-                
+
+    async def bulk_clear_assign(self, payload: Dict[str, Any], user: Dict[str, Any]):
+        async with await self.client.start_session() as session:
+            async with session.start_transaction():
+                try:
+                    validate_admin(user["userRole"])
+
+                    lead_ids_str = payload.get("leadsId", [])
+
+                    if not lead_ids_str:
+                        raise AppException(400, "leadsId cannot be empty")
+
+                    try:
+                        lead_object_ids = [PydanticObjectId(lid) for lid in lead_ids_str]
+                    except Exception:
+                        raise AppException(400, "One or more leadIds are invalid")
+
+                    admin_object_id = PydanticObjectId(user["_id"])
+
+                    collection = LeadsModel.get_pymongo_collection()
+
+                    existing_leads = await collection.find(
+                        {
+                            "_id": {"$in": lead_object_ids},
+                            "deletedAt": None
+                        },
+                        {"_id": 1, "lead_id": 1, "isAssigned": 1, "assignedTo": 1}
+                    ).to_list(length=None)
+
+                    found_ids = {doc["_id"] for doc in existing_leads}
+                    not_found_ids = [
+                        str(lid) for lid in lead_object_ids if lid not in found_ids
+                    ]
+
+                    skipped: List[Dict[str, Any]] = []
+                    valid_lead_ids: List[PydanticObjectId] = []
+
+                    for lead in existing_leads:
+                        lead_str_id = str(lead["_id"])
+                        lead_display_id = lead.get("lead_id", "N/A")
+
+                        is_assigned = lead.get("isAssigned", False)
+                        assigned_to_list = lead.get("assignedTo") or []
+
+                        if not is_assigned or not assigned_to_list:
+                            skipped.append({
+                                "leadId": lead_str_id,
+                                "lead_id": lead_display_id,
+                                "reason": "Lead is not assigned to any user"
+                            })
+                            continue
+
+                        valid_lead_ids.append(lead["_id"])
+
+                    for lid in not_found_ids:
+                        skipped.append({
+                            "leadId": lid,
+                            "lead_id": "N/A",
+                            "reason": "Lead not found or deleted"
+                        })
+
+                    if not valid_lead_ids:
+                        return {
+                            "cleared": 0,
+                            "skipped": len(skipped),
+                            "skippedRecords": skipped
+                        }
+
+                    await collection.update_many(
+                        {"_id": {"$in": valid_lead_ids}},
+                        {
+                            "$set": {
+                                "assignedTo": [],
+                                "assignedBy": None,
+                                "assignedAt": None,
+                                "isAssigned": False,
+                                "updatedAt": datetime.now(timezone.utc)
+                            }
+                        },
+                        session=session
+                    )
+
+                    cleared_count = len(valid_lead_ids)
+
+                    activity = activity_payload(
+                        userId=admin_object_id,
+                        entityType=ACTIVITY_ENTITY_TYPE.LEAD,
+                        action=ACTIVITY_ACTION.UPDATED,
+                        title="bulk clear assign leads",
+                        perform=cleared_count,
+                        metadata={
+                            "clearedLeads": [str(lid) for lid in valid_lead_ids]
+                        }
+                    )
+                    is_activity = await self.activityRepo.create(data=activity, session=session)
+                    if not is_activity:
+                        raise AppException(400, "Activity creation failed")
+
+                    backend = FastAPICache.get_backend()
+                    await backend.clear(namespace=LEAD_CACHE_NAMESPACE)
+                    await backend.clear(namespace=USER_LEAD_CACHE_NAMESPACE)
+
+                    return {
+                        "cleared": cleared_count,
+                        "skipped": len(skipped),
+                        "skippedRecords": skipped
+                    }
+
+                except AppException:
+                    raise
+
+                except Exception as e:
+                    import traceback
+                    traceback.print_exc()
+                    raise AppException(status_code=500, message=f"Internal server error: {e}")           
 
     async def bulk_lead_reassign(self, payload: Dict[str, Any], user: Dict[str, Any]):
         

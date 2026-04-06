@@ -69,7 +69,23 @@ class LeadController:
         except AppException as e:
             raise e
 
+
+    async def bulk_clear_assign(self, request: Request, payload: Dict[str, Any]):
+        try:
+            user = request.state.user
+
+            result = await self.service.bulk_clear_assign(payload=payload, user=user)
+
+            return successResponse(200, "Leads assigned clear successfully", result)
+
+
+        except AppException as e:
+            raise e
         
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+
+         
 
         
     async def get_all(self, request: Request):
@@ -83,6 +99,7 @@ class LeadController:
         except AppException as e:
             print("err: ", e)
             raise e
+        
         
     async def get_all_by_user(self, request: Request):
         try:

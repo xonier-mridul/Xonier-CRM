@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Request
 from app.core.dependencies import Dependencies
-from app.schemas.lead_schema import LeadsCreateSchema, LeadUpdateSchema, LeadBaseSchema, CreateBulkLeadSchema, BulkAssignLeadSchema, LeadStatusUpdateSchema, BulkReassignLeadSchema, BulkDeleteSchema, LeadConnectStatusUpdateSchema
+from app.schemas.lead_schema import LeadsCreateSchema, LeadUpdateSchema, LeadBaseSchema, CreateBulkLeadSchema, BulkAssignLeadSchema, LeadStatusUpdateSchema, BulkReassignLeadSchema, BulkDeleteSchema, LeadConnectStatusUpdateSchema, BulkClearAssignSchema
 from app.controllers.lead_controller import LeadController
 
 router = APIRouter()
@@ -31,6 +31,11 @@ async def bulk_lead_assign(request: Request, payload:BulkAssignLeadSchema):
 )
 async def bulk_reassign_lead(request: Request, payload: BulkReassignLeadSchema):
     return await leadController.bulk_reassign_lead(request, payload)
+
+
+@router.patch("/clear-assign/bulk", status_code=200, dependencies=[Depends(dependencies.authorized),Depends(dependencies.permissions(["lead:assign"]))])
+async def bulk_clear_assign(request: Request, payload: BulkClearAssignSchema):
+    return await leadController.bulk_clear_assign(request=request, payload=payload.model_dump(mode="json"))
 
 
 @router.get("/all", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["lead:read"]))])

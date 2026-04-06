@@ -164,14 +164,12 @@ const UpdateTaskPage = (): JSX.Element => {
   const [tagInput, setTagInput] = useState("");
   const [userData, setUserData] = useState<User[]>([]);
 
-  // ── Lookup state ──────────────────────────────────────────────────────────
+  
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [statuses, setStatuses] = useState<StatusOption[]>([]);
   const [users, setUsers] = useState<UserOption[]>([]);
 
-  // ── Form state ────────────────────────────────────────────────────────────
-  // FIX: Added `category` to the form state. `set()` no longer silently drops
-  // empty strings — each field is updated directly without the "" guard.
+  
   const [form, setForm] = useState<UpdateTaskPayload>({
     title: "",
     description: "",
@@ -195,15 +193,14 @@ const UpdateTaskPage = (): JSX.Element => {
 
   const auth = useSelector((state: RootState) => state.auth);
 
-  // FIX: Removed the `if (v === "") return` guard that was silently dropping
-  // legitimate empty-string updates (clearing fields, resetting selects, etc.)
+  
   const set = <K extends keyof UpdateTaskPayload>(
     k: K,
     v: UpdateTaskPayload[K]
   ) => {
     setForm((p) => ({ ...p, [k]: v }));
 }
-  // ── Fetch task ────────────────────────────────────────────────────────────
+  
   useEffect(() => {
     if (!taskId) return;
     (async () => {
@@ -221,7 +218,7 @@ const UpdateTaskPage = (): JSX.Element => {
             title: t.title ?? "",
             description: t.description ?? "",
             priority: t.priority ?? TASK_PRIORITY.MEDIUM,
-            category: categoryId,          // ← kept in form for submit/validate
+            category: categoryId,          
             dueDate: t.dueDate ? new Date(t.dueDate) : undefined,
             startDate: t.startDate ? new Date(t.startDate) : undefined,
             estimatedHours: t.estimatedHours ?? undefined,
@@ -352,17 +349,13 @@ const UpdateTaskPage = (): JSX.Element => {
     return null;
   };
 
-  // FIX: Show toast immediately on every new error instead of relying on a
-  // separate useEffect that fires after render.
+  
   const showErr = (msg: string) => {
     setErr(msg);
     toast.error(msg);
   };
 
-  // ── Submit ────────────────────────────────────────────────────────────────
-  // FIX: Build the final payload explicitly so every field is always included
-  // (changed or not) and dates are proper Date objects or undefined — never
-  // Invalid Date.
+  
   const handleSubmit = async () => {
     setErr(null);
     const validationError = validate();
@@ -373,7 +366,7 @@ const UpdateTaskPage = (): JSX.Element => {
 
     setIsLoading(true);
     try {
-      // Ensure no stale Invalid Date objects slip through
+      
       const payload: UpdateTaskPayload = {
         ...form,
         title: form.title.trim(),
@@ -535,13 +528,11 @@ const UpdateTaskPage = (): JSX.Element => {
             </div>
           </Section>
 
-          {/* Scheduling */}
+         
           <Section icon="📅" title="Scheduling">
             <div className="grid grid-cols-2 gap-4">
               <Field label="Start Date">
-                {/* FIX: Always pass a string (never undefined) to value so the
-                    input stays a controlled component. Use parseDateInput on
-                    change to avoid storing Invalid Date. */}
+                
                 <input
                   type="date"
                   value={toDateInputValue(form.startDate as Date | string | undefined)}

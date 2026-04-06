@@ -50,6 +50,7 @@ class ActivityService:
             requester_user_id = PydanticObjectId(current_user["_id"])
 
             is_admin = validate_admin(current_user["userRole"])
+            
             if not is_admin and requester_user_id != target_user_id:
                 raise AppException(403, "You are not allowed to access another user's activity")
 
