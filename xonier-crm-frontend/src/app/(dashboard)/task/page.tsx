@@ -512,7 +512,7 @@ const TaskListPage = (): JSX.Element => {
   const canEdit = hasPermission(PERMISSIONS.updateTask);
   const canDelete = hasPermission(PERMISSIONS.deleteTask);
   const canChangeStatus = hasPermission(PERMISSIONS.taskStatusUpdate);
-  const showActions = canEdit || canDelete;
+  const showActions = canEdit || canDelete || canView ;
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   // ── Fetch tasks ───────────────────────────────────────────────────────────
