@@ -105,4 +105,9 @@ async def bulk_update_status(request: Request, payload: BulkStatusUpdateSchema):
 @router.delete("/delete/{task_id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["task:delete"]))])
 async def delete_task(request: Request, task_id: str):
     return await controller.delete_task(request, task_id)
+
+
+@router.get("/all/deleted", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["task:read"]))])
+async def get_all_deleted(request: Request):
+    return await controller.get_all_deleted(request)
  

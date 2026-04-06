@@ -12,8 +12,9 @@ from app.utils.get_team_members import GetTeamMembers
 from app.repositories.team_repository import TeamRepository
 from beanie import PydanticObjectId
 from fastapi.encoders import jsonable_encoder
-from bson import ObjectId
+from bson import ObjectId, DBRef
 import asyncio
+from app.core.crypto import encryptor
 
 
 class ManagerDashboardService:
@@ -21,6 +22,42 @@ class ManagerDashboardService:
     def __init__(self):
         self.getTeamMembers = GetTeamMembers()
         self.teamRepo = TeamRepository()
+        self.crypto = encryptor
+
+
+    def _serialize(self, data: list) -> list:
+        
+        result = []
+        for item in data:
+            serialized = {}
+            for key, value in item.items():
+                if isinstance(value, ObjectId):
+                    serialized[key] = str(value)
+                elif isinstance(value, datetime):
+                    serialized[key] = value.isoformat()
+                elif isinstance(value, list):
+                    serialized[key] = [
+                        (
+                            str(v)
+                            if isinstance(v, ObjectId)
+                            else v.isoformat() if isinstance(v, datetime) else v
+                        )
+                        for v in value
+                    ]
+                elif isinstance(value, dict):
+                    serialized[key] = self._serialize([value])[0]
+                else:
+                    serialized[key] = value
+            result.append(serialized)
+        for item in result:
+            if item.get("email"):
+               item["email"] = self.crypto.decrypt_data(item["email"])
+            
+            if item.get("phone"):
+                item["phone"] = self.crypto.decrypt_data(item["phone"])
+
+        
+        return result
 
     async def _aggregate(self, model, pipeline: list) -> list:
         collection = database_module.db[model.Settings.name]
@@ -125,6 +162,7 @@ class ManagerDashboardService:
                         "generatedAt": now.isoformat(),
                     },
                     "message": "No team members found. Assign members to your team first.",
+                    "user": self._serialize([user_stats])[0] if user_stats else None,
                     "teams": {"total": 0},
                     "leads": {},
                     "deals": {},
@@ -140,7 +178,7 @@ class ManagerDashboardService:
                     "topPerformer": None,
                 }
 
-            (
+            (user_stats,
                 team_stats,
                 lead_stats,
                 deal_stats,
@@ -153,6 +191,7 @@ class ManagerDashboardService:
                 deal_pipeline_breakdown,
                 member_performance,
             ) = await asyncio.gather(
+                self._user_data(ObjectId(user["_id"])),
                 self._team_stats(user["_id"], team_count),
                 self._lead_stats(all_scoped_ids, range_start, range_end),
                 self._deal_stats(all_scoped_ids, range_start, range_end),
@@ -179,6 +218,7 @@ class ManagerDashboardService:
                     "year": now.year,
                     "generatedAt": now.isoformat(),
                 },
+                "user": self._serialize([user_stats])[0] if user_stats else None,
                 "teams": team_stats,
                 "leads": lead_stats,
                 "deals": deal_stats,
@@ -209,6 +249,8 @@ class ManagerDashboardService:
 
         teams_encoded = jsonable_encoder(teams)
 
+        print("teams: ", teams_encoded)
+
         total_members = set()
         active_teams = 0
 
@@ -217,6 +259,9 @@ class ManagerDashboardService:
                 active_teams += 1
             for member in team.get("members", []):
                 total_members.add(member["id"])
+
+        print("res1: ", total_members)
+        print("res2: ", active_teams)
 
         return {
             "totalTeams": team_count,
@@ -454,7 +499,29 @@ class ManagerDashboardService:
             "inRange": self._safe_count(raw, "inRange"),
             "assigned": self._safe_count(raw, "assigned"),
             "unassigned": self._safe_count(raw, "unassigned"),
+
+
         }
+    
+    async def _user_data(self, user_id: ObjectId):
+        
+        pipeline = [
+            {
+                "$match": {
+                    "_id": user_id,
+                    "status": {"$ne": SALES_STATUS.DELETE.value}
+                }
+            },
+            
+            {"$project": {"_id": 0, "password": 0, "refreshToken": 0, "createdBy": 0, "userRole": 0, "hashedPhone": 0, "hashedEmail": 0}},
+        ]
+
+        
+
+        result = await self._aggregate(UserModel, pipeline)
+        
+
+        return result[0] if result else None
 
     async def _monthly_trend(self, model, scoped_ids: list, start_of_year: datetime) -> list:
         pipeline = [

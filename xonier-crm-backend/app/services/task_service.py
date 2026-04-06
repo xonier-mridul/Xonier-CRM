@@ -993,8 +993,136 @@ class TaskService:
             tasks = sorted(tasks, key=lambda x: x.dueDate or datetime.min.replace(tzinfo=timezone.utc))
             return jsonable_encoder(tasks)
  
-        except AppException:
-            raise
+        except AppException as e:
+            raise e
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+        
+
+    async def get_all_deleted(self, user: Dict[str, Any], filters=Dict[str, Any]):
+        try:
+            
+            page = int(filters.get("page", 1))
+            limit = int(filters.get("limit", 10))
+            is_admin = validate_admin(user["userRole"])
+ 
+            query: Dict[str, Any] = {"deletedAt": {"$ne": None, "$exists": True}}
+ 
+            if not is_admin:
+                members = await self.getTeamMembers.get_team_members(user["_id"])
+                user_object_id = PydanticObjectId(user["_id"])
+                query.update(self._build_visibility_query(user, members, user_object_id))
+ 
+            if "category" in filters:
+                if not ObjectId.is_valid(filters["category"]):
+                    raise AppException(400, "Invalid category id")
+                query["category.$id"] = ObjectId(filters["category"])
+ 
+            if "status" in filters:
+                if not ObjectId.is_valid(filters["status"]):
+                    raise AppException(400, "Invalid status id")
+                query["status.$id"] = ObjectId(filters["status"])
+ 
+           
+ 
+            if "assignedTo" in filters:
+                if not ObjectId.is_valid(filters["assignedTo"]):
+                    raise AppException(400, "Invalid assignedTo user id")
+                query["assignedTo.$id"] = PydanticObjectId(filters["assignedTo"])
+ 
+          
+ 
+            
+            if "parentTask" in filters:
+                if filters["parentTask"] == "null":
+                    query["parentTask"] = None
+                elif ObjectId.is_valid(filters["parentTask"]):
+                    query["parentTask.$id"] = ObjectId(filters["parentTask"])
+ 
+            if "isOverdue" in filters and str(filters["isOverdue"]).lower() == "true":
+                query["dueDate"] = {"$lt": datetime.now(timezone.utc)}
+                query["completedAt"] = None
+ 
+            if "search" in filters and filters["search"].strip():
+                regex_data = {"$regex": filters["search"].strip(), "$options": "i"}
+                query.update({"$or": [
+                    {"title": regex_data},
+                    {"priority": regex_data},
+                    {"tags": regex_data},
+                    {"entityId": regex_data},
+                    {"entityType": regex_data},
+                    {"status": regex_data}
+                ]})
+ 
+           
+ 
+            if "fromDate" in filters or "toDate" in filters:
+                date_filter = {}
+                if "fromDate" in filters:
+                    try:
+                        date_filter["$gte"] = datetime.fromisoformat(filters["fromDate"]).replace(hour=0, minute=0, second=0, tzinfo=timezone.utc)
+                    except ValueError:
+                        raise AppException(400, "Invalid fromDate format")
+                if "toDate" in filters:
+                    try:
+                        date_filter["$lte"] = datetime.fromisoformat(filters["toDate"]).replace(hour=23, minute=59, second=59, tzinfo=timezone.utc)
+                    except ValueError:
+                        raise AppException(400, "Invalid toDate format")
+                query["dueDate"] = date_filter
+            
+            
+            result = await self.repo.get_all(
+                page=page,
+                limit=limit,
+                filters=query,
+                populate=["category", "status", "assignedTo", "createdBy", "updatedBy"],
+                sort=["order", "-createdAt"]
+            )
+ 
+            if not result:
+                raise AppException(404, "No tasks found")
+            
+           
+ 
+            now = datetime.now(timezone.utc)
+            for task in result.get("data", []):
+                try:
+                    due = task.get("dueDate")
+                    completed = task.get("completedAt")
+
+                    if due is None:
+                        task["isOverdue"] = False
+                        continue
+
+                    if isinstance(due, str):
+                        due = due.replace("Z", "+00:00")
+                        due_dt = datetime.fromisoformat(due)
+                        if due_dt.tzinfo is None:
+                            due_dt = due_dt.replace(tzinfo=timezone.utc)
+                    elif isinstance(due, datetime):
+                        due_dt = due if due.tzinfo else due.replace(tzinfo=timezone.utc)
+                    else:
+                        task["isOverdue"] = False
+                        continue
+
+                    if completed is not None:
+                        task["isOverdue"] = False
+                        continue
+
+                    task["isOverdue"] = due_dt < now
+
+                except Exception as ex:
+                    print(f"isOverdue error for task {task.get('task_id')}: {ex}")
+                    task["isOverdue"] = False
+
+
+        
+            return result
+
+        except AppException as e:
+            raise e
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+        
+
  

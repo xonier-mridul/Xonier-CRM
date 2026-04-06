@@ -201,4 +201,19 @@ class TaskController:
             raise e
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+        
+
+    async def get_all_deleted(self, request: Request):
+        try:
+            
+            user = request.state.user
+            filters = request.query_params
+            result = await self.service.get_all_deleted(user=user, filters=filters)
+
+            return successResponse(200, "All deleted task get successfully", result)
+
+        except AppException as e:
+            raise e
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
  
