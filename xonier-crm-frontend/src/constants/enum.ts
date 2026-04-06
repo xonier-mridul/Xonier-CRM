@@ -187,6 +187,7 @@ export enum PERMISSIONS {
   updateTask = "task:update",
   deleteTask = "task:delete",
   assignTask = "task:assign",
+  taskStatusChange = "task:statusChange",
   taskCategoryCreate = "taskCategory:create",
   taskCategoryRead = "taskCategory:read",
   taskCategoryUpdate = "taskCategory:update",

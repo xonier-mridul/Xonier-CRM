@@ -558,6 +558,14 @@ PERMISSIONS = [
         "description": "permission for assign task data",
     },
     {
+        "code": "task:statusChange",
+        "module": "task",
+        "action": "Update",
+        "title": "change task status",
+        "description": "permission for change task status data",
+
+    },
+    {
         "code": "taskCategory:create",
         "module": "taskCategory",
         "action": "create",

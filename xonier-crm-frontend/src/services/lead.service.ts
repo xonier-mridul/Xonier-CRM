@@ -47,6 +47,7 @@ const LeadService = {
   updateStatus: (id:string, payload: UpdateLeadStatusPayload) =>api.patch(`/lead/update/${id}/status`, payload),
   delete: (id: string)=> api.delete(`/lead/delete/${id}`),
   updateEngagementStatus: (id: string, payload:LeadEngagementStatusPayload ) =>api.patch(`/lead/update/${id}/connect-status`, payload),
+  revokeLeads: (leadsId: Array<string>) => api.patch("/lead/clear-assign/bulk", {leadsIds: leadsId}),
 };
 
 

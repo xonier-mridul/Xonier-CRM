@@ -33,7 +33,7 @@ import CreatedAt from "@/src/components/common/CreatedAt";
 import TagBadge from "@/src/components/common/tagBadge";
 import { MdSwapHoriz } from "react-icons/md"; // For reassign icon
 import ReassignModal from "@/src/components/pages/prospect/ReassignModal";
-
+import  UserSelect from "@/src/components/common/userselect";
 const PAGE_LIMIT = 10;
 
 type CallStatus = "queued" | "in_progress" | "completed" | "failed";
@@ -605,18 +605,12 @@ const LeadContent = (): JSX.Element => {
               <div className="flex items-center gap-3">
                 <div className="flex flex-col gap-0.5">
                   {!selectedUserId && <span className="text-blue-200 text-[11px] ml-1">← Select a user first</span>}
-                  <select
-                    value={selectedUserId}
-                    onChange={(e) => setSelectedUserId(e.target.value)}
-                    className="bg-white dark:bg-gray-800 text-slate-800 dark:text-white px-4 py-2 rounded-lg border-0 outline-none text-sm min-w-52 cursor-pointer shadow-sm"
-                  >
-                    <option value="" disabled>— Select user to assign —</option>
-                    {assignableUsers.map((u) => (
-                      <option key={u.id} value={u.id}>
-                        {u.firstName} {u.lastName ?? ""}{u.userRole[0]?.name ? ` · ${u.userRole[0].name}` : ""}
-                      </option>
-                    ))}
-                  </select>
+                  <UserSelect
+                    users={assignableUsers}
+                    selectedUserId={selectedUserId}
+                    setSelectedUserId={setSelectedUserId}
+                    placeholder="Search & select user..."
+                    />
                 </div>
                 <button
                   onClick={handleAssignEnquirys}
