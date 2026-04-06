@@ -518,7 +518,7 @@ class TaskService:
                     activities = []
  
                     if "title" in payload and payload["title"] != existing.title:
-                        activities.append(_activity(task_id, TASK_ACTIVITY_ACTION.UPDATED, user["_id"], f"Title changed", "title", existing.title, payload["title"]))
+                        activities.append(_activity(task_id, TASK_ACTIVITY_ACTION.UPDATE, user["_id"], f"Title changed", "title", existing.title, payload["title"]))
  
                     if "priority" in payload and payload["priority"] != existing.priority:
                         activities.append(_activity(task_id, TASK_ACTIVITY_ACTION.PRIORITY_CHANGED, user["_id"], f"Priority changed from {existing.priority} to {payload['priority']}", "priority", existing.priority, payload["priority"]))

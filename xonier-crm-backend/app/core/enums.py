@@ -874,3 +874,4 @@ class TASK_ACTIVITY_ACTION(str, Enum):
     COMPLETED = "completed"
     REOPENED = "reopened"
     DELETED = "deleted"
+    UPDATE = "update"

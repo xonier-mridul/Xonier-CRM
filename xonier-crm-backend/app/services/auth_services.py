@@ -133,7 +133,7 @@ class AuthServices:
             
             result = jsonable_encoder(result["data"])
 
-            print("res: ", result)
+            
 
             for item in result:
                 if item and item.get("email"):

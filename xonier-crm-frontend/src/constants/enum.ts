@@ -1059,4 +1059,5 @@ export enum TASK_ACTIVITY_ACTION {
   COMPLETED = "completed",
   REOPENED = "reopened",
   DELETED = "deleted",
+  UPDATED = "update"
 }
