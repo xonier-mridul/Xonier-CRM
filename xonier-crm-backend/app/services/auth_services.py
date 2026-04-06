@@ -42,6 +42,7 @@ class AuthServices:
         self.settings = get_setting()
         self.get_team_members = GetTeamMembers()
         self.activityRepo = ActivityRepository()
+        self.crypto = encryptor
 
     async def getAll(self, page:int=1, limit:int = 10, filters: Dict[str, Any] = {})->List[UserModel]:
         try:
@@ -94,7 +95,61 @@ class AuthServices:
         except Exception as e:
             raise AppException(status_code=500, message="internal server error")
 
-    
+    async def get_user_by_team(self, filters: Dict[str, Any], user: Dict[str, Any]):
+        try:
+            page = filters.get("page") or 1
+            limit = filters.get("limit") or 10
+
+            is_admin = validate_admin(user["userRole"])
+            is_manager = False
+
+            query = {}
+
+            if not is_admin:
+                members = await self.get_team_members.get_team_members(user["_id"])
+
+                obj_members = [PydanticObjectId(item) for item in members]
+
+                if members:
+                    query.update({"id": {"$in": obj_members}})
+                    is_manager = True
+
+                else:
+                    query.update({"id": PydanticObjectId(user["_id"])})
+
+            if "search" in filters and filters["search"].strip():
+                regex_data = {"$regex": filters["search"].strip(), "$options": "i" }
+
+                query.update({"$or": [{"firstName": regex_data}, {"lastName": regex_data}]})
+
+            if not is_admin and not is_manager and query == {}:
+                raise AppException(409, "You are not authorized to get this data")
+
+
+            result = await self.repo.get_all(page=page, limit=limit ,filters=query, sort=["-createdAt"] )
+
+            if not result:
+                raise AppException(404, "Users not found")
+            
+            result = jsonable_encoder(result["data"])
+
+            print("res: ", result)
+
+            for item in result:
+                if item and item.get("email"):
+                    item["email"] = self.crypto.decrypt_data(item["email"])
+
+            return result
+
+
+        except Exception as e:
+            raise
+
+        except Exception as e:
+            raise AppException(status_code=500, message="internal server error")
+        
+
+
     async def get_all_for_frontend(self, page:int=1, limit:int = 10, filters: Dict[str, Any] = {})->List[UserModel]:
         try:
            query = {}

@@ -131,6 +131,19 @@ class AuthController:
         except AppException as e:
             raise e
         
+    async def get_user_by_teams(self, request: Request):
+        try:
+           filters = request.query_params
+           user = request.state.user
+           
+           result = await self.service.get_user_by_team(filters=filters, user=user)
+
+           return successResponse(200, "All team users fetched successfully", result)
+
+        except AppException as e:
+            raise e
+
+        
 
     async def get_all_deleted_users(self, request: Request):
         try:
