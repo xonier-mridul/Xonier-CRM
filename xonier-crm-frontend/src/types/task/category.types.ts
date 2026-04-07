@@ -1,11 +1,4 @@
 import { User } from "@/src/types";
-// ── Permissions Enum ──────────────────────────────────────────────────────────
-export enum CategoryPermissions {
-  CREATE_CATEGORY = "CREATE_CATEGORY",
-  EDIT_CATEGORY   = "EDIT_CATEGORY",
-  DELETE_CATEGORY = "DELETE_CATEGORY",
-  VIEW_CATEGORY   = "VIEW_CATEGORY",
-}
 
 // ── API payload sent on create / update ──────────────────────────────────────
 export interface CategoryPayload {

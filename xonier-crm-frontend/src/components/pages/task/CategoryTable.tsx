@@ -4,11 +4,10 @@ import React, { Dispatch, SetStateAction } from "react";
 import {
     CategoryItem,
     CategoryPayload,
-    CategoryPermissions,
     CategoryTableProps,
     ColorOption,
 } from "@/src/types/task/category.types";
-import { COLOR_OPTIONS, TASK_VISIBILITY } from "@/src/constants/enum";
+import { COLOR_OPTIONS, PERMISSIONS, TASK_VISIBILITY } from "@/src/constants/enum";
 import CategoryModal from "@/src/components/pages/task/createModal";
 import { FaRegEye } from "react-icons/fa6";
 import { MdDeleteOutline, MdOutlineEdit } from "react-icons/md";
@@ -83,9 +82,9 @@ const CategoryTable = ({
             (c.description ?? "").toLowerCase().includes(search.toLowerCase())
     );
 
-    const canCreate = hasPermissions(CategoryPermissions.CREATE_CATEGORY);
-    const canEdit = hasPermissions(CategoryPermissions.EDIT_CATEGORY);
-    const canDelete = hasPermissions(CategoryPermissions.DELETE_CATEGORY);
+    const canCreate = hasPermissions(PERMISSIONS.createTeamCategory);
+    const canEdit = hasPermissions(PERMISSIONS.updateTeamCategory);
+    const canDelete = hasPermissions(PERMISSIONS.deleteTeamCategory);
 
     return (
         <>
