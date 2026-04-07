@@ -82,9 +82,9 @@ const CategoryTable = ({
             (c.description ?? "").toLowerCase().includes(search.toLowerCase())
     );
 
-    const canCreate = hasPermissions(PERMISSIONS.createTeamCategory);
-    const canEdit = hasPermissions(PERMISSIONS.updateTeamCategory);
-    const canDelete = hasPermissions(PERMISSIONS.deleteTeamCategory);
+    const canCreate = hasPermissions(PERMISSIONS.taskCategoryCreate);
+    const canEdit = hasPermissions(PERMISSIONS.taskCategoryUpdate);
+    const canDelete = hasPermissions(PERMISSIONS.taskCategoryDelete);
 
     return (
         <>

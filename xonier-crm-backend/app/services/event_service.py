@@ -2,7 +2,7 @@ from typing import Dict, Any
 from app.utils.custom_exception import AppException
 from app.repositories.event_repository import EventRepository
 from fastapi.encoders import jsonable_encoder
-from bson import ObjectId, List
+from bson import ObjectId
 from app.utils.validate_admin import validate_admin
 from datetime import datetime, timezone
 
