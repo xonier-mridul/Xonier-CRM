@@ -5,7 +5,6 @@ import { createPortal } from "react-dom";
 import {
     CategoryItem,
     CategoryPayload,
-    CategoryPermissions,
     CategoryTableProps,
     ColorOption,
 } from "@/src/types/task/category.types";
