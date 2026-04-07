@@ -550,12 +550,9 @@ getCategoryData();
                               </Link>
                             ))}</td>
                         <td className="p-4">
-                          <Link
-                            href={`/teams/categories/${item.id}`}
-                            className="cursor-pointer hover:text-blue-500 capitalize"
-                          >
+                          <div className="flex gap-2 flex-wrap">
                             {item.name}
-                          </Link>
+                          </div>
                         </td>
                         <td className="first-letter:uppercase p-4">
                           <div className="flex gap-2 flex-wrap">

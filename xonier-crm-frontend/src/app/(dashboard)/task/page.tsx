@@ -10,7 +10,7 @@ import { TaskService } from "@/src/services/tasks.service";
 import { StatusService } from "@/src/services/status.service";
 import { ColorOption, StatusItem } from "@/src/types/task/status.types";
 import { MdEdit, MdDelete, MdOutlineEdit } from "react-icons/md";
-import { StatusBadge ,getColorOption} from "@/src/components/pages/task/createStatusModal";
+import { StatusBadge, getColorOption } from "@/src/components/pages/task/createStatusModal";
 import {
   TaskItem,
   TASK_PRIORITY,
@@ -20,6 +20,8 @@ import {
 import { COLOR_OPTIONS, PERMISSIONS } from "@/src/constants/enum";
 import { IoMdEye } from "react-icons/io";
 import { BsTicketDetailed } from "react-icons/bs";
+import { CategoryItem } from "@/src/types/task/category.types";
+import { CategoryService } from "@/src/services/category.service";
 
 
 type ViewMode = "list" | "board";
@@ -141,8 +143,8 @@ function ViewToggle({ view, onChange }: { view: ViewMode; onChange: (v: ViewMode
         onClick={() => onChange("list")}
         title="List View"
         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${view === "list"
-            ? "bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm"
-            : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+          ? "bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm"
+          : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
           }`}
       >
         {/* List icon */}
@@ -158,11 +160,11 @@ function ViewToggle({ view, onChange }: { view: ViewMode; onChange: (v: ViewMode
         onClick={() => onChange("board")}
         title="Board View"
         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${view === "board"
-            ? "bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm"
-            : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+          ? "bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm"
+          : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
           }`}
       >
-        
+
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
           <rect x="1" y="1" width="3.5" height="12" rx="1" fill="currentColor" />
           <rect x="5.25" y="1" width="3.5" height="12" rx="1" fill="currentColor" />
@@ -195,7 +197,7 @@ function BoardCard({ task, canEdit, canDelete, deleting, onEdit, onDelete, onDra
       onDragStart={e => onDragStart(e, task)}
       className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-3.5 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-gray-200 dark:hover:border-gray-600 transition-all group select-none"
     >
-      
+
       <div className="flex items-center justify-between mb-2.5">
         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${pri.cls}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${pri.dot}`} />
@@ -224,12 +226,12 @@ function BoardCard({ task, canEdit, canDelete, deleting, onEdit, onDelete, onDra
         </div>
       </div>
 
-      
+
       <p className="text-sm font-semibold text-gray-900 dark:text-white leading-snug mb-2 line-clamp-2">
         {task.title}
       </p>
 
-      
+
       {task.category && (
         <div className="mb-2">
           <CategoryBadge
@@ -256,7 +258,7 @@ function BoardCard({ task, canEdit, canDelete, deleting, onEdit, onDelete, onDra
         </div>
       )}
 
-      
+
       <div className="flex items-center justify-between pt-2.5 border-t border-gray-50 dark:border-gray-700 mt-1">
         {/* Assignees */}
         <div className="flex -space-x-1.5">
@@ -264,15 +266,15 @@ function BoardCard({ task, canEdit, canDelete, deleting, onEdit, onDelete, onDra
             <span className="text-[10px] italic text-gray-300 dark:text-gray-600">Unassigned</span>
           ) : (
             <>
-              {task.assignedTo.slice(0, 3).map(u => (
+              {task.assignedTo.slice(0, 2).map(u => (
                 <div
                   key={u.id} title={u.firstName}
-                  className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 border-2 border-white dark:border-gray-800 flex items-center justify-center text-white text-[8px] font-bold shrink-0"
+                  className=" h-6 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 border-2 border-white dark:border-gray-800 flex items-center justify-center text-white text-[8px] font-bold shrink-0"
                 >
                   {u.firstName} {u.lastName ?? ""}
                 </div>
               ))}
-              {task.assignedTo.length > 3 && (
+              {task.assignedTo.length > 2 && (
                 <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-white dark:border-gray-800 flex items-center justify-center text-[8px] font-bold text-gray-500 shrink-0">
                   +{task.assignedTo.length - 3}
                 </div>
@@ -289,6 +291,317 @@ function BoardCard({ task, canEdit, canDelete, deleting, onEdit, onDelete, onDra
           </span>
         )}
       </div>
+    </div>
+  );
+}
+
+
+// categories board 
+// ── Types needed ──────────────────────────────────────────────────────────────
+// Add to your existing types if not already there:
+// StatusOption should have: id, name, color, icon, category: { id: string }
+
+// ── Multi-Category Board View ─────────────────────────────────────────────────
+
+interface CategoryBoardProps {
+  categoryId: string;
+  categoryName: string;
+  categoryColor: string;
+  categoryIcon: string;
+  tasks: TaskItem[];
+  statuses: StatusOption[];
+  canEdit: boolean;
+  canDelete: boolean;
+  canChangeStatus: boolean;
+  deleting: boolean;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+  onStatusChange: (taskId: string, payload: UpdateTaskStatusPayload) => Promise<void>;
+}
+
+function CategoryBoard({
+  categoryId, categoryName, categoryColor, categoryIcon,
+  tasks, statuses, canEdit, canDelete, canChangeStatus,
+  deleting, onEdit, onDelete, onStatusChange,
+}: CategoryBoardProps) {
+  const [dragOverStatusId, setDragOverStatusId] = useState<string | null>(null);
+  const dragTaskRef = useRef<TaskItem | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, task: TaskItem) => {
+    dragTaskRef.current = task;
+    e.dataTransfer.effectAllowed = "move";
+    const el = e.currentTarget as HTMLElement;
+    setTimeout(() => { el.style.opacity = "0.5"; }, 0);
+    e.currentTarget.addEventListener("dragend", () => { el.style.opacity = "1"; }, { once: true });
+  };
+
+  const handleDragOver = (e: React.DragEvent, statusId: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverStatusId(statusId);
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetStatusId: string) => {
+    e.preventDefault();
+    setDragOverStatusId(null);
+    const task = dragTaskRef.current;
+    dragTaskRef.current = null;
+    if (!task) return;
+    if (task.status.id === targetStatusId) return;
+    if (!canChangeStatus) {
+      toast.error("No permission to change status");
+      return;
+    }
+    await onStatusChange(task.id, { status: targetStatusId, category: categoryId });
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setDragOverStatusId(null);
+    }
+  };
+
+  const totalTasks = tasks.length;
+  const colorOpt = getColorOption(categoryColor);
+
+  const handleAutoScroll = (e: React.DragEvent) => {
+  const container = e.currentTarget.querySelector(
+    ".scroll-container"
+  ) as HTMLDivElement;
+
+  if (!container) return;
+
+  const rect = container.getBoundingClientRect();
+  const offset = 60;
+  const speed = 12;
+
+  if (e.clientY < rect.top + offset) {
+    container.scrollTop -= speed;
+  } else if (e.clientY > rect.bottom - offset) {
+    container.scrollTop += speed;
+  }
+};
+  return (
+    <div className="mb-8">
+      {/* Category Header */}
+      <div className="flex items-center gap-3 mb-4 pb-3 border-b-2" style={{ borderColor: categoryColor + "40" }}>
+        <span
+          className="w-9 h-9 rounded-xl flex items-center justify-center text-lg shadow-sm"
+          style={{ backgroundColor: categoryColor + "20", border: `1.5px solid ${categoryColor}40` }}
+        >
+          {categoryIcon}
+        </span>
+        <div className="flex items-center gap-3 flex-1">
+          <h2 className="text-base font-extrabold text-gray-800 dark:text-white tracking-tight">
+            {categoryName}
+          </h2>
+          <span
+            className="text-xs font-bold px-2.5 py-0.5 rounded-full"
+            style={{ backgroundColor: categoryColor + "18", color: categoryColor }}
+          >
+            {totalTasks} task{totalTasks !== 1 ? "s" : ""}
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {statuses.map(s => (
+            <span
+              key={s.id}
+              className="text-[10px] font-semibold px-2 py-0.5 rounded-full border"
+              style={{
+                backgroundColor: s.color + "15",
+                color: s.color,
+                borderColor: s.color + "30",
+              }}
+            >
+              {s.icon} {tasks.filter(t => t.status.id === s.id).length}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Kanban Columns */}
+      <div
+        className="flex gap-4 overflow-x-auto pb-3"
+        onDragLeave={handleDragLeave}
+      >
+        {statuses.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center py-12 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 text-gray-400">
+            <span className="text-3xl mb-2">🗂️</span>
+            <p className="text-sm font-semibold">No statuses for this category</p>
+          </div>
+        ) : (
+          statuses.map(status => {
+            const columnTasks = tasks.filter(t => t.status.id === status.id);
+            const isDragOver = dragOverStatusId === status.id;
+            return (
+              <div
+                key={status.id}
+                className={`flex flex-col rounded-2xl border-2 transition-all min-w-[260px] max-w-[300px] flex-shrink-0 ${isDragOver
+                  ? "border-blue-400 bg-blue-50/60 dark:bg-blue-900/20 shadow-lg"
+                  : "border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50"
+                  }`}
+                onDragOver={(e) => {
+                  handleDragOver(e, status.id);
+                  handleAutoScroll(e);
+                }}
+                onDrop={e => handleDrop(e, status.id)}
+              >
+                {/* Column Header */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full ring-2 ring-white dark:ring-gray-800 shrink-0"
+                      style={{ backgroundColor: status.color ?? "#94a3b8" }}
+                    />
+                    <span className="text-xs font-bold text-gray-800 dark:text-white">
+                      {status.icon && <span className="mr-1">{status.icon}</span>}
+                      {status.name}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 bg-white dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-full px-2 py-0.5 min-w-[22px] text-center">
+                    {columnTasks.length}
+                  </span>
+                </div>
+
+                {/* Cards */}
+                <div 
+                  className={`flex-1 p-2.5 space-y-2 overflow-y-auto min-h-[100px] transition-colors ${isDragOver ? "bg-blue-50/40 dark:bg-blue-900/10" : ""
+                    }`}>
+                  {columnTasks.length === 0 ? (
+                    <div className={`flex flex-col items-center justify-center py-8 rounded-xl border-2 border-dashed transition-colors ${isDragOver
+                      ? "border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20"
+                      : "border-gray-200 dark:border-gray-600"
+                      }`}>
+                      <span className="text-xl mb-1 opacity-40">📋</span>
+                      <p className="text-[10px] text-gray-400 font-medium">
+                        {isDragOver ? "Drop here" : "No tasks"}
+                      </p>
+                    </div>
+                  ) : (
+                    columnTasks.map(task => (
+                      <BoardCard
+                        key={task.id}
+                        task={task}
+                        canEdit={canEdit}
+                        canDelete={canDelete}
+                        deleting={deleting}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                        onDragStart={handleDragStart}
+                      />
+                    ))
+                  )}
+                  {columnTasks.length > 0 && isDragOver && (
+                    <div className="flex items-center justify-center py-3 rounded-xl border-2 border-dashed border-blue-300 dark:border-blue-600 bg-blue-50/60 dark:bg-blue-900/20">
+                      <p className="text-xs text-blue-500 font-semibold">Drop here</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Replace the old BoardView with this ──────────────────────────────────────
+interface BoardViewProps {
+  tasks: TaskItem[];
+  statusOptions: StatusOption[];
+  canEdit: boolean;
+  canDelete: boolean;
+  canChangeStatus: boolean;
+  deleting: boolean;
+  isLoading: boolean;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+  onStatusChange: (taskId: string, payload: UpdateTaskStatusPayload) => Promise<void>;
+}
+
+function BoardView({
+  tasks, statusOptions, canEdit, canDelete, canChangeStatus,
+  deleting, isLoading, onEdit, onDelete, onStatusChange,
+}: BoardViewProps) {
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        {Array.from({ length: 1 }).map((_, gi) => (
+          <div key={gi} className="animate-pulse">
+            <div className="h-6 w-40 bg-gray-200 dark:bg-gray-700 rounded-lg mb-4" />
+            <div className="flex gap-4">
+              {Array.from({ length: 3 }).map((_, ci) => (
+                <div key={ci} className="min-w-[260px] bg-gray-50 dark:bg-gray-800/50 rounded-2xl border-2 border-gray-100 dark:border-gray-700 p-3 space-y-3">
+                  <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded" />
+                  {Array.from({ length: 2 }).map((_, ti) => (
+                    <div key={ti} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-3 space-y-2">
+                      <div className="h-3 w-12 bg-gray-100 dark:bg-gray-700 rounded" />
+                      <div className="h-4 w-full bg-gray-100 dark:bg-gray-700 rounded" />
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // Derive unique categories from tasks
+  const categoriesMap = new Map<string, { id: string; name: string; color: string; icon: string }>();
+  tasks.forEach(task => {
+    if (task.category && !categoriesMap.has(task.category.id)) {
+      categoriesMap.set(task.category.id, {
+        id: task.category.id,
+        name: task.category.name,
+        color: task.category.color ?? "#6366f1",
+        icon: task.category.icon ?? "📁",
+      });
+    }
+  });
+  const categories = Array.from(categoriesMap.values());
+
+  if (categories.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+        <span className="text-5xl mb-3">📭</span>
+        <p className="text-sm font-semibold">No tasks to display</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      {categories.map(cat => {
+        // Only statuses that belong to this category
+        const catStatuses = statusOptions.filter(
+          s => s.category?.id === cat.id || (s as any).category === cat.id
+        );
+        // Tasks in this category
+        const catTasks = tasks.filter(t => t.category?.id === cat.id);
+
+        return (
+          <CategoryBoard
+            key={cat.id}
+            categoryId={cat.id}
+            categoryName={cat.name}
+            categoryColor={cat.color}
+            categoryIcon={cat.icon}
+            tasks={catTasks}
+            statuses={catStatuses}
+            canEdit={canEdit}
+            canDelete={canDelete}
+            canChangeStatus={canChangeStatus}
+            deleting={deleting}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onStatusChange={onStatusChange}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -316,8 +629,8 @@ function BoardColumn({
   return (
     <div
       className={`flex flex-col rounded-2xl border-2 transition-all min-w-[280px] max-w-[320px] flex-1 ${isDragOver
-          ? "border-blue-400 bg-blue-50/60 dark:bg-blue-900/20 shadow-lg shadow-blue-100 dark:shadow-blue-900/20"
-          : "border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50"
+        ? "border-blue-400 bg-blue-50/60 dark:bg-blue-900/20 shadow-lg shadow-blue-100 dark:shadow-blue-900/20"
+        : "border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50"
         }`}
       onDragOver={onDragOver}
       onDrop={e => onDrop(e, status.id)}
@@ -344,8 +657,8 @@ function BoardColumn({
         }`}>
         {tasks.length === 0 ? (
           <div className={`flex flex-col items-center justify-center py-8 rounded-xl border-2 border-dashed transition-colors ${isDragOver
-              ? "border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20"
-              : "border-gray-200 dark:border-gray-600"
+            ? "border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20"
+            : "border-gray-200 dark:border-gray-600"
             }`}>
             <span className="text-2xl mb-1 opacity-40">📋</span>
             <p className="text-xs text-gray-400 dark:text-gray-500 font-medium">
@@ -392,103 +705,103 @@ interface BoardViewProps {
   onStatusChange: (taskId: string, payload: UpdateTaskStatusPayload) => Promise<void>;
 }
 
-function BoardView({
-  tasks, statusOptions, canEdit, canDelete, canChangeStatus,
-  deleting, isLoading, onEdit, onDelete, onStatusChange,
-}: BoardViewProps) {
-  const [dragOverStatusId, setDragOverStatusId] = useState<string | null>(null);
-  const dragTaskRef = useRef<TaskItem | null>(null);
+// function BoardView({
+//   tasks, statusOptions, canEdit, canDelete, canChangeStatus,
+//   deleting, isLoading, onEdit, onDelete, onStatusChange,
+// }: BoardViewProps) {
+//   const [dragOverStatusId, setDragOverStatusId] = useState<string | null>(null);
+//   const dragTaskRef = useRef<TaskItem | null>(null);
 
-  const handleDragStart = (e: React.DragEvent, task: TaskItem) => {
-    dragTaskRef.current = task;
-    e.dataTransfer.effectAllowed = "move";
-    // ghost image styling via opacity
-    const el = e.currentTarget as HTMLElement;
-    setTimeout(() => { el.style.opacity = "0.5"; }, 0);
-    e.currentTarget.addEventListener("dragend", () => { el.style.opacity = "1"; }, { once: true });
-  };
+//   const handleDragStart = (e: React.DragEvent, task: TaskItem) => {
+//     dragTaskRef.current = task;
+//     e.dataTransfer.effectAllowed = "move";
+//     // ghost image styling via opacity
+//     const el = e.currentTarget as HTMLElement;
+//     setTimeout(() => { el.style.opacity = "0.5"; }, 0);
+//     e.currentTarget.addEventListener("dragend", () => { el.style.opacity = "1"; }, { once: true });
+//   };
 
-  const handleDragOver = (e: React.DragEvent, statusId: string) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    setDragOverStatusId(statusId);
-  };
+//   const handleDragOver = (e: React.DragEvent, statusId: string) => {
+//     e.preventDefault();
+//     e.dataTransfer.dropEffect = "move";
+//     setDragOverStatusId(statusId);
+//   };
 
-  const handleDrop = async (e: React.DragEvent, targetStatusId: string) => {
-    e.preventDefault();
-    setDragOverStatusId(null);
-    const task = dragTaskRef.current;
-    dragTaskRef.current = null;
-    if (!task) return;
-    if (task.status.id === targetStatusId) return;
-    if (!canChangeStatus) {
-      toast.error("No permission to change status");
-      return;
-    }
-    await onStatusChange(task.id, { status: targetStatusId ,category:task.category.id });
-  };
+//   const handleDrop = async (e: React.DragEvent, targetStatusId: string) => {
+//     e.preventDefault();
+//     setDragOverStatusId(null);
+//     const task = dragTaskRef.current;
+//     dragTaskRef.current = null;
+//     if (!task) return;
+//     if (task.status.id === targetStatusId) return;
+//     if (!canChangeStatus) {
+//       toast.error("No permission to change status");
+//       return;
+//     }
+//     await onStatusChange(task.id, { status: targetStatusId ,category:task.category.id });
+//   };
 
-  const handleDragLeave = (e: React.DragEvent) => {
-    // only clear if truly leaving the column (not entering a child)
-    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-      setDragOverStatusId(null);
-    }
-  };
+//   const handleDragLeave = (e: React.DragEvent) => {
+//     // only clear if truly leaving the column (not entering a child)
+//     if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+//       setDragOverStatusId(null);
+//     }
+//   };
 
-  if (isLoading) {
-    return (
-      <div className="flex gap-4  pb-4 flex-wrap">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="min-w-[280px] max-w-[320px] flex-1 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border-2 border-gray-100 dark:border-gray-700 p-3 space-y-3 animate-pulse">
-            <div className="h-5 w-24 bg-gray-200 dark:bg-gray-700 rounded-lg" />
-            {Array.from({ length: 3 }).map((_, j) => (
-              <div key={j} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-3.5 space-y-2.5">
-                <div className="h-3 w-16 bg-gray-100 dark:bg-gray-700 rounded" />
-                <div className="h-4 w-full bg-gray-100 dark:bg-gray-700 rounded" />
-                <div className="h-4 w-3/4 bg-gray-100 dark:bg-gray-700 rounded" />
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-    );
-  }
+//   if (isLoading) {
+//     return (
+//       <div className="flex gap-4  pb-4 flex-wrap">
+//         {Array.from({ length: 4 }).map((_, i) => (
+//           <div key={i} className="min-w-[280px] max-w-[320px] flex-1 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border-2 border-gray-100 dark:border-gray-700 p-3 space-y-3 animate-pulse">
+//             <div className="h-5 w-24 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+//             {Array.from({ length: 3 }).map((_, j) => (
+//               <div key={j} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-3.5 space-y-2.5">
+//                 <div className="h-3 w-16 bg-gray-100 dark:bg-gray-700 rounded" />
+//                 <div className="h-4 w-full bg-gray-100 dark:bg-gray-700 rounded" />
+//                 <div className="h-4 w-3/4 bg-gray-100 dark:bg-gray-700 rounded" />
+//               </div>
+//             ))}
+//           </div>
+//         ))}
+//       </div>
+//     );
+//   }
 
-  return (
-    <div
-      className="flex gap-4  pb-4 flex-wrap"
-      onDragLeave={handleDragLeave}
-    >
-      {statusOptions.map(status => {
-        const columnTasks = tasks.filter(t => t.status.id === status.id);
-        return (
-          <BoardColumn
-            key={status.id}
-            status={status}
-            tasks={columnTasks}
-            canEdit={canEdit}
-            canDelete={canDelete}
-            canChangeStatus={canChangeStatus}
-            deleting={deleting}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            onDragStart={handleDragStart}
-            onDragOver={e => handleDragOver(e, status.id)}
-            onDrop={handleDrop}
-            isDragOver={dragOverStatusId === status.id}
-          />
-        );
-      })}
+//   return (
+//     <div
+//       className="flex gap-4  pb-4 flex-wrap"
+//       onDragLeave={handleDragLeave}
+//     >
+//       {statusOptions.map(status => {
+//         const columnTasks = tasks.filter(t => t.status.id === status.id);
+//         return (
+//           <BoardColumn
+//             key={status.id}
+//             status={status}
+//             tasks={columnTasks}
+//             canEdit={canEdit}
+//             canDelete={canDelete}
+//             canChangeStatus={canChangeStatus}
+//             deleting={deleting}
+//             onEdit={onEdit}
+//             onDelete={onDelete}
+//             onDragStart={handleDragStart}
+//             onDragOver={e => handleDragOver(e, status.id)}
+//             onDrop={handleDrop}
+//             isDragOver={dragOverStatusId === status.id}
+//           />
+//         );
+//       })}
 
-      {statusOptions.length === 0 && (
-        <div className="flex-1 flex flex-col items-center justify-center py-20 text-gray-400">
-          <span className="text-5xl mb-3">📭</span>
-          <p className="text-sm font-semibold">No statuses configured</p>
-        </div>
-      )}
-    </div>
-  );
-}
+//       {statusOptions.length === 0 && (
+//         <div className="flex-1 flex flex-col items-center justify-center py-20 text-gray-400">
+//           <span className="text-5xl mb-3">📭</span>
+//           <p className="text-sm font-semibold">No statuses configured</p>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 const TaskListPage = (): JSX.Element => {
@@ -505,6 +818,8 @@ const TaskListPage = (): JSX.Element => {
   const [deleting, setDeleting] = useState(false);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  const [filtrCategory, setFiltrCategory] = useState("");
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [filterPriority, setFilterPriority] = useState("");
 
   const canCreate = hasPermission(PERMISSIONS.createTask);
@@ -512,7 +827,7 @@ const TaskListPage = (): JSX.Element => {
   const canEdit = hasPermission(PERMISSIONS.updateTask);
   const canDelete = hasPermission(PERMISSIONS.deleteTask);
   const canChangeStatus = hasPermission(PERMISSIONS.taskStatusUpdate);
-  const showActions = canEdit || canDelete || canView ;
+  const showActions = canEdit || canDelete || canView;
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   // ── Fetch tasks ───────────────────────────────────────────────────────────
@@ -524,10 +839,11 @@ const TaskListPage = (): JSX.Element => {
         pageLimit: viewMode === "board" ? 500 : pageLimit, // fetch all for board
         status: filterStatus || undefined,
         priority: filterPriority || undefined,
+        category: filtrCategory || undefined,
         search: search || undefined,
       });
       if (res.status === 200) {
-        const d = res.data?.data||[];
+        const d = res.data?.data || [];
         setTaskData(d.data ?? []);
         setTotalCount(Number(d.totalPages ?? 0));
       }
@@ -537,7 +853,7 @@ const TaskListPage = (): JSX.Element => {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, pageLimit, filterStatus, filterPriority, search, viewMode]);
+  }, [currentPage, pageLimit, filterStatus, filterPriority, search, viewMode, filtrCategory]);
 
   const fetchStatuses = async () => {
     try {
@@ -547,8 +863,16 @@ const TaskListPage = (): JSX.Element => {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
     }
   };
+  const fetchCategories = async () => {
+    try {
+      const res = await CategoryService.getAll({ currentPage: 1, pageLimit: 100, search: "" });
+      if (res.status === 200) setCategories(res.data.data.data ?? []);
+    } catch (e) {
+      process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
+    }
+  };
 
-  useEffect(() => { fetchStatuses(); }, []);
+  useEffect(() => { fetchStatuses(); fetchCategories(); }, []);
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
   // Debounce search
@@ -557,12 +881,12 @@ const TaskListPage = (): JSX.Element => {
     return () => clearTimeout(t);
   }, [search]);
 
-  
+
   const handleStatusChange = async (
     taskId: string,
     payload: UpdateTaskStatusPayload
   ): Promise<void> => {
-    
+
     if (viewMode === "board") {
       const targetStatus = statusOptions.find(s => s.id === payload.status);
       if (targetStatus) {
@@ -579,18 +903,18 @@ const TaskListPage = (): JSX.Element => {
       const res = await TaskService.updateStatus(taskId, payload);
       if (res.status === 200) {
         toast.success("Status updated");
-         fetchTasks();
+        fetchTasks();
       }
     } catch (e) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
       if (axios.isAxiosError(e)) {
         toast.error("Failed to update status");
-        fetchTasks(); 
+        fetchTasks();
       }
     }
   };
 
-  
+
   const handleDelete = async (id: string): Promise<void> => {
     setDeleting(true);
     try {
@@ -615,7 +939,7 @@ const TaskListPage = (): JSX.Element => {
     }
   };
   const handleSearch = (val: string) => {
-    
+
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
@@ -632,7 +956,7 @@ const TaskListPage = (): JSX.Element => {
     <div className="ml-72 mt-14">
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full">
 
-        
+
         <div className="flex items-start justify-between mb-8">
           <div>
             <div className="flex items-center gap-2.5 mb-1">
@@ -711,17 +1035,39 @@ const TaskListPage = (): JSX.Element => {
               <option key={p} value={p}>{p.charAt(0) + p.slice(1).toLowerCase()}</option>
             ))}
           </select>
+          <select
+            value={filtrCategory}
+            onChange={e => {
+              setFiltrCategory(e.target.value);
+              setCurrentPage(1);
+              if (e.target.value === "") setViewMode("list" as ViewMode);
+            }}
+            className="px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
+          >
+            <option value="">All Categories</option>
+            {categories.map(p => (
+              <option key={p.id} value={p.id}>{p.name.charAt(0) + p.name.slice(1).toLowerCase()}</option>
+            ))}
+          </select>
+
 
           {hasFilters && (
             <button
-            type="button"
-            onClick={() => { setSearch(""); setFilterStatus(""); setFilterPriority(""); setCurrentPage(1); }}
-            className="px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-1.5"
+              type="button"
+              onClick={() => { setSearch(""); setFilterStatus(""); setFilterPriority(""); setCurrentPage(1); }}
+              className="px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-1.5"
             >
               <span>✕</span> Clear
             </button>
           )}
-          
+
+          {
+            (filtrCategory ) && (<>
+              <div className="w-px h-7 bg-gray-200 dark:bg-gray-600 ml-auto" />
+              <ViewToggle view={viewMode} onChange={v => { setViewMode(v); setCurrentPage(1); }} />
+            </>
+            )
+          }
         </div>
 
         {viewMode === "board" && (
@@ -752,6 +1098,7 @@ const TaskListPage = (): JSX.Element => {
                       { label: "Status", cls: "w-36" },
                       { label: "Priority", cls: "w-28" },
                       { label: "Assigned", cls: "w-28" },
+                      { label: "Created By", cls: "w-28" },
                       { label: "Due Date", cls: "w-28" },
                       ...(showActions ? [{ label: "Actions", cls: "w-28 text-right" }] : []),
                     ].map(col => (
@@ -794,7 +1141,7 @@ const TaskListPage = (): JSX.Element => {
                           key={task.id}
                           className="border-b border-gray-50 dark:border-gray-700 hover:bg-gray-50/70 dark:hover:bg-gray-700/40 transition-colors group"
                         >
-                          
+
                           <td className="px-5 py-4 text-xs font-mono text-gray-400 dark:text-gray-500">
                             {String((currentPage - 1) * pageLimit + i + 1).padStart(2, "0")}
                           </td>
@@ -860,7 +1207,7 @@ const TaskListPage = (): JSX.Element => {
                                 {task.assignedTo.slice(0, 2).map(u => (
                                   <div
                                     key={u.id} title={u.firstName}
-                                    className=" rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 border-2 border-white dark:border-gray-800 flex items-center px-2 py-1 capitalize justify-center text-white text-[12px] font-bold shrink-0"
+                                    className="ps-1 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 border-2 border-white dark:border-gray-800 flex items-center px-2 py-1 capitalize justify-center text-white text-[12px] font-bold shrink-0"
                                   >
                                     {u.firstName} {u?.lastName ?? ""}
                                   </div>
@@ -872,6 +1219,19 @@ const TaskListPage = (): JSX.Element => {
                                 )}
                               </div>
                             )}
+                          </td>
+                          {/* Created By */}
+                          <td className="px-5 py-4">
+                            <div className="flex items-center gap-2">
+                              <div>
+                                <p className="text-xs font-semibold text-gray-800 dark:text-white truncate">
+                                  {task.createdBy?.firstName} {task.createdBy?.lastName}
+                                </p>
+                                {/* <p className="text-[11px] text-gray-400 truncate">
+                                  {task.createdBy?.email}
+                                </p> */}
+                              </div>
+                            </div>
                           </td>
 
                           {/* Due Date */}
@@ -886,7 +1246,7 @@ const TaskListPage = (): JSX.Element => {
                             )}
                           </td>
 
-                         
+
                           {showActions && (
                             <td className="px-5 py-4">
                               <div className="flex items-center justify-end gap-2 opacity-100 transition-opacity">
@@ -912,7 +1272,7 @@ const TaskListPage = (): JSX.Element => {
                                     </span>
                                   </button>
                                 )}
-                               
+
                                 {canEdit && (
                                   <button
                                     type="button"
@@ -947,15 +1307,15 @@ const TaskListPage = (): JSX.Element => {
               </table>
             </div>
 
-           
+
             <div className="px-5 py-3.5 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
               <span className="text-xs text-gray-400 dark:text-gray-500">
-                Showing{" page "} 
+                Showing{" page "}
                 <span className="font-semibold text-gray-600 dark:text-gray-300">
                   {currentPage}
                 </span>{" "}
                 of{" "}
-                <span className="font-semibold text-gray-600 dark:text-gray-300">{totalCount}</span> 
+                <span className="font-semibold text-gray-600 dark:text-gray-300">{totalCount}</span>
               </span>
 
               <div className="flex items-center gap-2">
@@ -968,7 +1328,7 @@ const TaskListPage = (): JSX.Element => {
                   ← Prev
                 </button>
                 <span className="text-xs text-gray-500 dark:text-gray-400 font-medium px-1">
-                  {currentPage} 
+                  {currentPage}
                 </span>
                 <button
                   type="button"
