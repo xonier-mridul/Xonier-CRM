@@ -102,6 +102,7 @@ const ACTION_CONFIG: Record<TASK_ACTIVITY_ACTION, { icon: React.ReactNode; color
   [TASK_ACTIVITY_ACTION.COMPLETED]: { icon: <CheckCircle2 size={12} />, color: "text-emerald-600 dark:text-emerald-400", dot: "bg-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
   [TASK_ACTIVITY_ACTION.REOPENED]: { icon: <RotateCcw size={12} />, color: "text-amber-600 dark:text-amber-400", dot: "bg-amber-500", bg: "bg-amber-50 dark:bg-amber-900/20" },
   [TASK_ACTIVITY_ACTION.DELETED]: { icon: <Trash2 size={12} />, color: "text-red-600 dark:text-red-400", dot: "bg-red-500", bg: "bg-red-50 dark:bg-red-900/20" },
+  [TASK_ACTIVITY_ACTION.UPDATED]: { icon: <Pencil size={12} />, color: "text-blue-600 dark:text-blue-400", dot: "bg-blue-500", bg: "bg-blue-50 dark:bg-blue-900/20" },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

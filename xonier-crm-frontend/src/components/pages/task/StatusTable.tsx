@@ -2,7 +2,7 @@
 
 import React, { Dispatch, SetStateAction } from "react";
 import { StatusItem, StatusPayload, StatusPermissions, StatusTableProps, ColorOption } from "@/src/types/task/status.types";
-import { COLOR_OPTIONS } from "@/src/constants/enum";
+import { COLOR_OPTIONS, PERMISSIONS } from "@/src/constants/enum";
 import { StatusModal, StatusBadge } from "@/src/components/pages/task/createStatusModal";
 import { MdDeleteOutline, MdOutlineEdit } from "react-icons/md";
 function getColorOption(hex: string | null): ColorOption {
@@ -52,9 +52,9 @@ const StatusTable = ({
       (s.description ?? "").toLowerCase().includes(search.toLowerCase())
   );
 
-  const canCreate = hasPermissions(StatusPermissions.CREATE_STATUS);
-  const canEdit = hasPermissions(StatusPermissions.EDIT_STATUS);
-  const canDelete = hasPermissions(StatusPermissions.DELETE_STATUS);
+  const canCreate = hasPermissions(PERMISSIONS.taskStatusCreate);
+  const canEdit = hasPermissions(PERMISSIONS.taskStatusUpdate);
+  const canDelete = hasPermissions(PERMISSIONS.taskStatusDelete);
 
   return (
     <>
