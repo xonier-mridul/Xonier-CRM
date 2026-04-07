@@ -1,6 +1,6 @@
 import { UserTableComponentProps } from "@/src/types";
 
-import React, { JSX ,useRef, useState,useEffect} from "react";
+import React, { JSX, useRef, useState, useEffect } from "react";
 import { IoIosSearch } from "react-icons/io";
 
 import { MdOutlineEdit, MdDeleteOutline } from "react-icons/md";
@@ -18,6 +18,8 @@ import { PERMISSIONS } from "@/src/constants/enum";
 import FormButton from "../../ui/FormButton";
 import Skeleton from "react-loading-skeleton";
 import Pagination from "../../common/pagination";
+import { countryCodes } from "@/src/constants/countryCodes";
+import { countryCode } from "@/src/types";
 
 const UsersTable = ({
   currentPage,
@@ -35,28 +37,37 @@ const UsersTable = ({
   handleSubmit,
   setPageLimit,
   totalPage,
+  setFormData,
   err,
   loading,
   setCurrentPages,
   setSearchFilter
 }: UserTableComponentProps): JSX.Element => {
+  const [selectedcountryCode, setCountryCode] = useState("+91");
   const { hasPermission } = usePermissions();
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
-  const [search,  setSearch] = useState<string>("");
+  const [search, setSearch] = useState<string>("");
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
 
-  const handleLimit = (n:string)=>{
+  const handleLimit = (n: string) => {
     setPageLimit(Number(n))
     setCurrentPages(1)
   }
   useEffect(() => {
-     if (debounceRef.current) {
+    if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
     debounceRef.current = setTimeout(() => {
       setSearchFilter(search);
     }, 500);
-    
+
   }, [search]);
+useEffect(() => {
+  setFormData((p) => ({
+    ...p,
+    phone: `${selectedcountryCode}${phoneNumber}`,
+  }));
+}, [selectedcountryCode, phoneNumber]);
 
   return (
     <>
@@ -98,30 +109,6 @@ const UsersTable = ({
                 value={formData.email}
                 onChange={handleChange}
               />
-              <Input
-                label="phone"
-                type="text"
-                name="phone"
-                placeholder="Phone Number"
-                value={formData.phone}
-                onChange={handleChange}
-              />
-              <Input
-                label="password"
-                type="password"
-                name="password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleChange}
-              />
-              <Input
-                label="confirm password"
-                type="password"
-                name="confirmPassword"
-                placeholder="Confirm Password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-              />
               <div className="flex flex-col gap-1 w-full">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
                   User Role
@@ -140,35 +127,82 @@ const UsersTable = ({
                     </option>
                   ))}
                 </select>
-                 {formData.userRole.length > 0 && (
-                <div className="col-span-1 flex flex-wrap gap-2 mt-2">
-                  {formData.userRole.map((roleId) => {
-                    const role = roleData.find((r) => r.id === roleId);
-                    if (!role) return null;
+                {formData.userRole.length > 0 && (
+                  <div className="col-span-1 flex flex-wrap gap-2 mt-2">
+                    {formData.userRole.map((roleId) => {
+                      const role = roleData.find((r) => r.id === roleId);
+                      if (!role) return null;
 
-                    
 
-                    return (
-                      <span
-                        key={roleId}
-                        className="flex items-center gap-2 px-3 py-1
+
+                      return (
+                        <span
+                          key={roleId}
+                          className="flex items-center gap-2 px-3 py-1
             bg-blue-100 text-blue-700 rounded-full text-sm"
-                      >
-                        {role.name}
-
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveRole(roleId)}
-                          className="hover:text-red-500 transition"
                         >
-                          <FaXmark size={12} />
-                        </button>
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
+                          {role.name}
+
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveRole(roleId)}
+                            className="hover:text-red-500 transition"
+                          >
+                            <FaXmark size={12} />
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
+              <div className="col-span-2 flex flex-col gap-1">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                  Phone
+                </label>
+
+                <div className="flex gap-2">
+                  {/* Country Code */}
+                  <select
+                    value={selectedcountryCode}
+                    onChange={(e) => setCountryCode(e.target.value)}
+                    className="px-3 py-2 text-xs rounded-lg border border-gray-300 dark:border-gray-300/30 bg-white dark:bg-gray-800 text-black dark:text-white"
+                  >
+                    {countryCodes.map((c: countryCode) => (
+                      <option key={c.code} value={c.code}>
+                        {c.label} ({c.code})
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Phone Input */}
+                  <input
+                    type="text"
+                    name="phone"
+                    placeholder="Phone Number"
+                    value={ `${phoneNumber}` }
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-300/30 bg-white dark:bg-gray-800 text-black dark:text-white outline-none"
+                  />
+                </div>
+              </div>
+              <Input
+                label="password"
+                type="password"
+                name="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+              />
+              <Input
+                label="confirm password"
+                type="password"
+                name="confirmPassword"
+                placeholder="Confirm Password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+              />
+              
 
               <Input
                 label="company"
@@ -181,15 +215,15 @@ const UsersTable = ({
               {err && <div className="flex justify-end col-span-2"><p className="text-red-500">{err}</p></div>}
 
               <FormButton
-                
+
                 isLoading={loading}
                 disabled={
-                  
+
                   formData.firstName === "" ||
                   formData.lastName === "" ||
                   formData.email === "" ||
                   formData.phone === "" ||
-                  formData.password === "" || formData.userRole.length <=0
+                  formData.password === "" || formData.userRole.length <= 0
                 }
                 className="col-span-2"
               >
@@ -216,7 +250,7 @@ const UsersTable = ({
               name="limit"
               id="limit"
               className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10"
-              onChange={(e)=>handleLimit(e.target.value)}
+              onChange={(e) => handleLimit(e.target.value)}
             >
               <option value="10">10</option>
               <option value="20">20</option>
@@ -225,7 +259,7 @@ const UsersTable = ({
             </select>
             <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2">
               <IoIosSearch className="text-xl" />
-              <input type="text" placeholder="Search by name"  onChange={(e)=>{setSearch(e.target.value)}} className="border-none bg-transparent outline-none text-sm font-medium text-slate-900 dark:text-white w-full"/>
+              <input type="text" placeholder="Search by name" onChange={(e) => { setSearch(e.target.value) }} className="border-none bg-transparent outline-none text-sm font-medium text-slate-900 dark:text-white w-full" />
             </div>
             <button
               onClick={() => setIsPopupShow(true)}
@@ -282,22 +316,21 @@ const UsersTable = ({
                   );
                   let lastLoginDate = item?.lastLogin
                     ? new Date(item?.lastLogin).toLocaleDateString("en-IN", {
-                        timeZone: "Asia/Kolkata",
-                        year: "numeric",
-                        month: "short",
-                        day: "2-digit",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: true,
-                      })
+                      timeZone: "Asia/Kolkata",
+                      year: "numeric",
+                      month: "short",
+                      day: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
+                    })
                     : "Not found";
                   return (
                     <tr
-                      className={`${
-                        rr
+                      className={`${rr
                           ? "bg-white dark:bg-transparent"
                           : "bg-blue-100/50 dark:bg-slate-500"
-                      } w-full`}
+                        } w-full`}
                     >
                       <td className="p-4">{index + 1}</td>
                       <td>
@@ -316,17 +349,16 @@ const UsersTable = ({
                       <td>{date}</td>
                       <td>
                         <span
-                          className={`${
-                            item.status === USER_STATUS.ACTIVE
+                          className={`${item.status === USER_STATUS.ACTIVE
                               ? "bg-green-100  text-green-500"
                               : item.status === USER_STATUS.INACTIVE
-                              ? "bg-yellow-100 text-yellow-500"
-                              : item.status === USER_STATUS.DELETED
-                              ? "bg-red-100 text-red-500"
-                              : item.status === USER_STATUS.SUSPENDED
-                              ? "bg-orange-100 text-orange-500"
-                              : "bg-gray-100 text-gray-500"
-                          }  rounded-full text-sm font-medium py-1 px-3 flex items-center gap-1 w-fit  capitalize`}
+                                ? "bg-yellow-100 text-yellow-500"
+                                : item.status === USER_STATUS.DELETED
+                                  ? "bg-red-100 text-red-500"
+                                  : item.status === USER_STATUS.SUSPENDED
+                                    ? "bg-orange-100 text-orange-500"
+                                    : "bg-gray-100 text-gray-500"
+                            }  rounded-full text-sm font-medium py-1 px-3 flex items-center gap-1 w-fit  capitalize`}
                         >
                           {" "}
                           <GoDotFill /> {item.status}
@@ -384,40 +416,40 @@ const UsersTable = ({
                 </tr>
               )
             ) : (
-               Array.from({length: 10}).map((_)=>(
-                 <tr className=" text-center animate-pulse">
-                <td className="p-4" >
-                  <Skeleton width={30} height={30} borderRadius={12}/>
-                </td>
-                <td className="p-4" >
-                  <Skeleton width={140} height={30} borderRadius={12}/>
-                </td>
-                <td className="p-4" >
-                  <Skeleton width={130} height={30} borderRadius={12}/>
-                </td>
-                <td className="p-4" >
-                  <Skeleton width={120} height={30} borderRadius={12}/>
-                </td>
-                <td className="p-4" >
-                  <Skeleton width={100} height={30} borderRadius={999}/>
-                </td>
-                <td className="p-4" >
-                  <Skeleton width={140} height={30} borderRadius={12}/>
-                </td>
-                <td className="p-4" >
-                  <div className="flex items-center gap-2">
-                    <Skeleton width={35} height={35} borderRadius={12}/>
-                    <Skeleton width={35} height={35} borderRadius={12}/>
-                    <Skeleton width={35} height={35} borderRadius={12}/>
-                  </div>
-                </td>
+              Array.from({ length: 10 }).map((_) => (
+                <tr className=" text-center animate-pulse">
+                  <td className="p-4" >
+                    <Skeleton width={30} height={30} borderRadius={12} />
+                  </td>
+                  <td className="p-4" >
+                    <Skeleton width={140} height={30} borderRadius={12} />
+                  </td>
+                  <td className="p-4" >
+                    <Skeleton width={130} height={30} borderRadius={12} />
+                  </td>
+                  <td className="p-4" >
+                    <Skeleton width={120} height={30} borderRadius={12} />
+                  </td>
+                  <td className="p-4" >
+                    <Skeleton width={100} height={30} borderRadius={999} />
+                  </td>
+                  <td className="p-4" >
+                    <Skeleton width={140} height={30} borderRadius={12} />
+                  </td>
+                  <td className="p-4" >
+                    <div className="flex items-center gap-2">
+                      <Skeleton width={35} height={35} borderRadius={12} />
+                      <Skeleton width={35} height={35} borderRadius={12} />
+                      <Skeleton width={35} height={35} borderRadius={12} />
+                    </div>
+                  </td>
 
-              </tr>
-              )) 
+                </tr>
+              ))
             )}
           </tbody>
         </table>
-        <Pagination currentPage={currentPage} totalPages={totalPage} onPageChange={(page) => setCurrentPages(page)}/>
+        <Pagination currentPage={currentPage} totalPages={totalPage} onPageChange={(page) => setCurrentPages(page)} />
       </div>
     </>
   );

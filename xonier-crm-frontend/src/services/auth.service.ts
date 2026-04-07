@@ -8,7 +8,18 @@ import { ParamValue } from "next/dist/server/request/params";
 
 export const AuthService = {
 
-    getAll: (data: GetAllUsers) => api.get(`/auth/all?page=${data.page}&limit=${data.limit}&${data.firstName && `firstName=${data.firstName}`}&${data.lastName && `lastName=${data.lastName}`}`),
+getAll: (data: GetAllUsers) => {
+  const params = new URLSearchParams();
+
+  params.append("page", String(data.page));
+  params.append("limit", String(data.limit));
+
+  if (data.firstName) params.append("firstName", data.firstName);
+  if (data.lastName) params.append("lastName", data.lastName);
+  if (data.search) params.append("search", data.search);
+
+  return api.get(`/auth/all?${params.toString()}`);
+},
     getAllActiveWithoutPagination: () => api.get("/auth/active/all-without-pagination"),
     create: (payload: RegisterPayload) => api.post("/auth/register", payload),
     login: (data: { email: string, password: string }) => api.post("/auth/login", data),

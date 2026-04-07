@@ -74,7 +74,7 @@ class AuthServices:
                query.update({"company": filters["company"]})
 
 
-           i
+           
             
 
            users = await self.repo.get_all(page, limit, query, populate=["userRole", "createdBy"], sort=["-createdAt"])

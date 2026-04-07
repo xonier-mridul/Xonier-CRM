@@ -1098,6 +1098,7 @@ const TaskListPage = (): JSX.Element => {
                       { label: "Status", cls: "w-36" },
                       { label: "Priority", cls: "w-28" },
                       { label: "Assigned", cls: "w-28" },
+                      { label: "Created By", cls: "w-28" },
                       { label: "Due Date", cls: "w-28" },
                       ...(showActions ? [{ label: "Actions", cls: "w-28 text-right" }] : []),
                     ].map(col => (
@@ -1218,6 +1219,19 @@ const TaskListPage = (): JSX.Element => {
                                 )}
                               </div>
                             )}
+                          </td>
+                          {/* Created By */}
+                          <td className="px-5 py-4">
+                            <div className="flex items-center gap-2">
+                              <div>
+                                <p className="text-xs font-semibold text-gray-800 dark:text-white truncate">
+                                  {task.createdBy?.firstName} {task.createdBy?.lastName}
+                                </p>
+                                {/* <p className="text-[11px] text-gray-400 truncate">
+                                  {task.createdBy?.email}
+                                </p> */}
+                              </div>
+                            </div>
                           </td>
 
                           {/* Due Date */}
