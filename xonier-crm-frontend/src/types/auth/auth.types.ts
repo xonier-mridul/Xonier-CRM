@@ -42,6 +42,7 @@ export interface GetAllUsers {
   limit: number;
   firstName?: string;
   lastName?: string;
+  search?: string;
 }
 
 export interface RegisterPayload {
@@ -162,7 +163,8 @@ export interface UserTableComponentProps {
   setPageLimit: Dispatch<SetStateAction<number>>,
   totalPage: number,
   setCurrentPages: Dispatch<SetStateAction<number>>,
-  setSearchFilter: Dispatch<SetStateAction<string>>
+  setSearchFilter: Dispatch<SetStateAction<string>>,
+  setFormData: Dispatch<SetStateAction<RegisterPayload>>
 
 }
 
@@ -214,3 +216,8 @@ export interface UserSelectProps {
   setSelectedUserId: (id: string) => void;
   placeholder ?: string;
 };
+
+export interface countryCode {
+  code: string;
+  label: string;
+}
