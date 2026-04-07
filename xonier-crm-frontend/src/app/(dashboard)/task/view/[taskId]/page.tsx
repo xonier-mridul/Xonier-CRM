@@ -741,12 +741,12 @@ export default function TaskViewPage() {
           }),
         }))
       );
-      toast.success("Task moved");
+      // toast.success("Task moved");
       loadBoard(focusedTask?.category?.id ?? "", true);
     } catch (err) {
       console.error("Move error:", err);
 
-      // ❗ optional: rollback UI if API fails
+      
       await loadBoard(focusedTask?.category?.id ?? "");
 
       if (axios.isAxiosError(err))

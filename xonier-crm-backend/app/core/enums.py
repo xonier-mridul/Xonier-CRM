@@ -875,3 +875,8 @@ class TASK_ACTIVITY_ACTION(str, Enum):
     REOPENED = "reopened"
     DELETED = "deleted"
     UPDATE = "update"
+
+
+class LEAD_REQUEST_STATUS(str, Enum):
+    PENDING = "pending"
+    
