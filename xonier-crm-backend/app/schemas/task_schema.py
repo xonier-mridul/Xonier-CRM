@@ -105,6 +105,7 @@ class UpdateTaskSchema(BaseModel):
     entityType: Optional[TASK_ENTITY_TYPE] = None
     entityId: Optional[str] = None
     entityName: Optional[str] = None
+    order: Optional[int] = 0
 
     @field_validator("title")
     @classmethod

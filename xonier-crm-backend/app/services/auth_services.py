@@ -53,7 +53,7 @@ class AuthServices:
            ]}
 
            if "search" in filters and filters["search"].strip():
-               regex_data = {"$regex": filters["search"].strip(), "$optional": "i"}
+               regex_data = {"$regex": filters["search"].strip(), "$options": "i"}
 
                query.update({"$or": [
                    {"firstName": regex_data},
@@ -72,6 +72,9 @@ class AuthServices:
 
            if "company" in filters:
                query.update({"company": filters["company"]})
+
+
+           i
             
 
            users = await self.repo.get_all(page, limit, query, populate=["userRole", "createdBy"], sort=["-createdAt"])
@@ -1359,10 +1362,10 @@ class AuthServices:
 
             
             incoming_token = payload.get("raw_token")
-            print("row token: ", incoming_token)  
+            
             hashed_incoming = hash_value(incoming_token)
 
-            print("jashed token: ", hashed_incoming)
+            
 
             if hashed_incoming != user_obj.refreshToken:
                 raise AppException(401, "Invalid refresh token, please login again")
@@ -1391,6 +1394,10 @@ class AuthServices:
 
         except Exception as e:
             raise AppException(status_code=500, message=f"Internal server error: {e}")
+        
+
+
+  
 
             
 

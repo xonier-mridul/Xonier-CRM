@@ -621,7 +621,7 @@ PERMISSIONS = [
         "title": "delete task status",
         "description": "permission for delete task status data",
     },
-    
+
 
     
 ]

@@ -1486,9 +1486,72 @@ class LeadService:
                         "failedLeads": failed_leads
                     }
  
-                except AppException:
-                    raise
+                except AppException as e:
+                    raise e
  
                 except Exception as e:
                     raise AppException(status_code=500, message=f"Internal server error: {e}")
  
+
+    async def get_all_deleted_leads(self, filters: Dict[str, Any], user: Dict[str, Any]):
+        try:
+            page = filters.get("page") or 1
+            limit = filters.get("limit") or 10
+            skip = (page - 1) * limit
+
+            query = {"deletedAt": {"$ne": None, "$exists": True}}
+
+            is_admin = validate_admin(user["userRole"])
+
+            if not is_admin:
+                members = await self.getTeamMem.get_team_members(userId=user["_id"])
+                obj_members = [PydanticObjectId(item) for item in members]
+
+                if obj_members:
+                    query.update({
+                        "$or": [
+                            {"createdBy.$id": {"$in": obj_members}},
+                            {"assignedTo.$id": {"$in": obj_members}}
+                        ]
+                    })
+
+            collection = LeadsModel.get_pymongo_collection()
+
+            total = await collection.count_documents(query)
+
+            cursor = collection.find(query).sort("deletedAt", -1).skip(skip).limit(limit)
+            leads = await cursor.to_list(length=limit)
+
+            for lead in leads:
+                lead["_id"] = str(lead["_id"])
+                if lead.get("createdBy"):
+                    lead["createdBy"] = str(lead["createdBy"].id) if hasattr(lead["createdBy"], "id") else str(lead["createdBy"])
+                if lead.get("deletedBy"):
+                    lead["deletedBy"] = str(lead["deletedBy"].id) if hasattr(lead["deletedBy"], "id") else str(lead["deletedBy"])
+                if lead.get("assignedBy"):
+                    lead["assignedBy"] = str(lead["assignedBy"].id) if hasattr(lead["assignedBy"], "id") else str(lead["assignedBy"])
+                if lead.get("assignedTo"):
+                    lead["assignedTo"] = [
+                        str(ref.id) if hasattr(ref, "id") else str(ref)
+                        for ref in lead["assignedTo"]
+                    ]
+
+            total_pages = (total + limit - 1) // limit
+
+            return {
+                "data": leads,
+                "pagination": {
+                    "page": page,
+                    "limit": limit,
+                    "total": total,
+                    "totalPages": total_pages,
+                    "hasNextPage": page < total_pages,
+                    "hasPrevPage": page > 1
+                }
+            }
+
+        except AppException as e:
+            raise e
+
+        except Exception as e:
+            raise AppException(status_code=500, message=f"Internal server error: {e}")

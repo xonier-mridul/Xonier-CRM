@@ -2,7 +2,7 @@ from typing import Dict, Any
 from app.utils.custom_exception import AppException
 from app.repositories.event_repository import EventRepository
 from fastapi.encoders import jsonable_encoder
-from bson import ObjectId
+from bson import ObjectId, List
 from app.utils.validate_admin import validate_admin
 from datetime import datetime, timezone
 
@@ -35,6 +35,9 @@ class EventService:
 
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+        
+
+    # async def bulk_create(self, payload: List[])
         
     
     async def get_all(self):

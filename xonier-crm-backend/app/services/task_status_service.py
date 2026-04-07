@@ -192,45 +192,127 @@ class TaskStatusService:
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
  
+    # async def update_task_status(self, status_id: str, payload: Dict[str, Any], user: Dict[str, Any]):
+    #     async with await self.client.start_session() as session:
+    #         async with session.start_transaction():
+    #             try:
+    #                 if not ObjectId.is_valid(status_id):
+    #                     raise AppException(400, "Invalid status id")
+ 
+    #                 is_exist = await self.repo.find_by_id(
+    #                     id=PydanticObjectId(status_id),
+    #                     session=session
+    #                 )
+    #                 print('payload: ', payload)
+    #                 if not is_exist or is_exist.deletedAt is not None:
+    #                     raise AppException(404, "Task status not found")
+ 
+    #                 category_id = str(is_exist.category.ref.id)
+ 
+    #                 update_payload: Dict[str, Any] = {
+    #                     **{k: v for k, v in payload.items() if v is not None},
+    #                     "updatedBy": PydanticObjectId(user["_id"]),
+    #                     "updatedAt": datetime.now(timezone.utc),
+    #                     "category": DBRef("task_categories", PydanticObjectId(payload["category"]))
+    #                 }
+ 
+    #                 if "name" in payload and payload["name"]:
+    #                     new_slug = generate_slug(payload["name"])
+ 
+    #                     slug_conflict = await self.repo.find_one({
+    #                         "slug": new_slug,
+    #                         "category.$id": ObjectId(category_id),
+    #                         "deletedAt": None,
+    #                         "_id": {"$ne": PydanticObjectId(status_id)}
+    #                     })
+ 
+    #                     if slug_conflict:
+    #                         raise AppException(409, f"Status '{payload['name']}' already exists in this category")
+ 
+    #                     update_payload["slug"] = new_slug
+ 
+    #                 if payload.get("isDefault") is True:
+    #                     existing_default = await self.repo.find_one({
+    #                         "category.$id": ObjectId(category_id),
+    #                         "isDefault": True,
+    #                         "deletedAt": None,
+    #                         "_id": {"$ne": PydanticObjectId(status_id)}
+    #                     })
+ 
+    #                     if existing_default:
+    #                         await self.repo.update(
+    #                             id=PydanticObjectId(existing_default.id),
+    #                             data={"isDefault": False},
+    #                             session=session
+    #                         )
+ 
+    #                 if payload.get("isFinal") is True:
+    #                     existing_final = await self.repo.find_one({
+    #                         "category.$id": ObjectId(category_id),
+    #                         "isFinal": True,
+    #                         "deletedAt": None,
+    #                         "_id": {"$ne": PydanticObjectId(status_id)}
+    #                     })
+ 
+    #                     if existing_final:
+    #                         raise AppException(400, f"Category already has a final status: '{existing_final.name}'")
+ 
+    #                 updated = await self.repo.update(
+    #                     id=PydanticObjectId(status_id),
+    #                     data=update_payload,
+    #                     session=session
+    #                 )
+ 
+    #                 if not updated:
+    #                     raise AppException(400, "Task status update failed")
+ 
+    #                 return True
+ 
+    #             except AppException:
+    #                 raise
+ 
+    #             except Exception as e:
+    #                 raise AppException(500, f"Internal server error: {e}")
+
     async def update_task_status(self, status_id: str, payload: Dict[str, Any], user: Dict[str, Any]):
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
                     if not ObjectId.is_valid(status_id):
                         raise AppException(400, "Invalid status id")
- 
+
                     is_exist = await self.repo.find_by_id(
                         id=PydanticObjectId(status_id),
                         session=session
                     )
-                    print('payload: ', payload)
+
                     if not is_exist or is_exist.deletedAt is not None:
                         raise AppException(404, "Task status not found")
- 
+
                     category_id = str(is_exist.category.ref.id)
- 
+
                     update_payload: Dict[str, Any] = {
                         **{k: v for k, v in payload.items() if v is not None},
                         "updatedBy": PydanticObjectId(user["_id"]),
                         "updatedAt": datetime.now(timezone.utc),
                         "category": DBRef("task_categories", PydanticObjectId(payload["category"]))
                     }
- 
+
                     if "name" in payload and payload["name"]:
                         new_slug = generate_slug(payload["name"])
- 
+
                         slug_conflict = await self.repo.find_one({
                             "slug": new_slug,
                             "category.$id": ObjectId(category_id),
                             "deletedAt": None,
                             "_id": {"$ne": PydanticObjectId(status_id)}
                         })
- 
+
                         if slug_conflict:
                             raise AppException(409, f"Status '{payload['name']}' already exists in this category")
- 
+
                         update_payload["slug"] = new_slug
- 
+
                     if payload.get("isDefault") is True:
                         existing_default = await self.repo.find_one({
                             "category.$id": ObjectId(category_id),
@@ -238,14 +320,14 @@ class TaskStatusService:
                             "deletedAt": None,
                             "_id": {"$ne": PydanticObjectId(status_id)}
                         })
- 
+
                         if existing_default:
                             await self.repo.update(
                                 id=PydanticObjectId(existing_default.id),
                                 data={"isDefault": False},
                                 session=session
                             )
- 
+
                     if payload.get("isFinal") is True:
                         existing_final = await self.repo.find_one({
                             "category.$id": ObjectId(category_id),
@@ -253,24 +335,61 @@ class TaskStatusService:
                             "deletedAt": None,
                             "_id": {"$ne": PydanticObjectId(status_id)}
                         })
- 
+
                         if existing_final:
                             raise AppException(400, f"Category already has a final status: '{existing_final.name}'")
- 
+
+                    
+                    if "order" in payload and payload["order"] is not None:
+                        new_order = int(payload["order"])
+                        old_order = is_exist.order
+
+                        if new_order != old_order:
+                            from app.db.models.task_status_model import TaskStatusModel
+                            collection = TaskStatusModel.get_pymongo_collection()
+
+                            base_filter = {
+                                "_id": {"$ne": PydanticObjectId(status_id)},
+                                "category.$id": ObjectId(category_id),
+                                "deletedAt": None,
+                            }
+
+                            if new_order < old_order:
+                                await collection.update_many(
+                                    {
+                                        **base_filter,
+                                        "order": {"$gte": new_order, "$lt": old_order}
+                                    },
+                                    {"$inc": {"order": 1}},
+                                    session=session
+                                )
+                            else:
+                                await collection.update_many(
+                                    {
+                                        **base_filter,
+                                        "order": {"$gt": old_order, "$lte": new_order}
+                                    },
+                                    {"$inc": {"order": -1}},
+                                    session=session
+                                )
+
+                            update_payload["order"] = new_order
+                    
+
                     updated = await self.repo.update(
                         id=PydanticObjectId(status_id),
                         data=update_payload,
                         session=session
                     )
- 
+
                     if not updated:
                         raise AppException(400, "Task status update failed")
- 
+
                     return True
- 
+
                 except AppException:
                     raise
- 
+
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
  
