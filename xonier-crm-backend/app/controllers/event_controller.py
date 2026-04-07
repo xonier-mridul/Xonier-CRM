@@ -23,6 +23,29 @@ class EventController:
             raise e
         
 
+    async def bulkCreate(self, request: Request, payload: Dict[str, Any]):
+        try:
+            user = request.state.user
+
+            result = await self.service.bulk_create(
+                payload=payload,
+                user=user
+            )
+
+            return successResponse(
+                status_code=201,
+                message="Bulk events created successfully",
+                data=result
+            )
+
+        except AppException as e:
+            raise e
+
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+
+        
+
     async def get_all(self, request: Request):
         try:
             user = request.state.user

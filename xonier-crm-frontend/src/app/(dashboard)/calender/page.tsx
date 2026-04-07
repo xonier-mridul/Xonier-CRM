@@ -5,17 +5,15 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { SIDEBAR_WIDTH } from "@/src/constants/constants";
 import CreateEventModal from "@/src/components/pages/calender/CreateEventPopup";
+import BulkCreateEventModal from "@/src/components/pages/calender/Bulkcreateeventpopup";
 import { CalendarEvent } from "@/src/types/calenders/calender.types";
 import axios from "axios";
 import { EventInput } from "@fullcalendar/core";
 import { toast } from "react-toastify";
-
 import extractErrorMessages from "../../utils/error.utils";
 import { EventService } from "@/src/services/event.service";
 import ViewEventPopup from "@/src/components/pages/calender/ViewEventPopup";
-import { ParamValue } from "next/dist/server/request/params";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSIONS } from "@/src/constants/enum";
@@ -23,6 +21,7 @@ import UpdateEventModal from "@/src/components/pages/calender/UpdateEventPopup";
 
 const Page = (): JSX.Element => {
   const [openModal, setOpenModal] = useState(false);
+  const [openBulkModal, setOpenBulkModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [err, setErr] = useState<string | string[]>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -33,6 +32,8 @@ const Page = (): JSX.Element => {
   const [openUpdateModal, setOpenUpdateModal] = useState(false);
 
   const { hasPermission } = usePermissions();
+  const lastClickRef = useRef<number | null>(null);
+  const clickCountRef = useRef<number>(0);
 
   const openCreateEventModal = (dateStr: string) => {
     setSelectedDate(dateStr);
@@ -43,7 +44,6 @@ const Page = (): JSX.Element => {
     setIsLoading(true);
     try {
       const result = await EventService.getAll();
-
       if (result.status === 200) {
         const mapped = mapToCalendarEvents(result.data.data);
         setEventData(mapped);
@@ -84,7 +84,6 @@ const Page = (): JSX.Element => {
       allDay: info.event.allDay,
       extendedProps: info.event.extendedProps,
     });
-
     setOpenViewModal(true);
   };
 
@@ -92,11 +91,10 @@ const Page = (): JSX.Element => {
     console.log("Submit to API:", data);
   };
 
-  const lastClickRef = useRef<number | null>(null);
+
 
   function toDateTimeLocal(date: Date) {
     const pad = (n: number) => n.toString().padStart(2, "0");
-
     return (
       date.getFullYear() +
       "-" +
@@ -111,23 +109,33 @@ const Page = (): JSX.Element => {
   }
 
   const handleDateClick = (info: any) => {
-    const now = Date.now();
+  const now = Date.now();
 
-    if (lastClickRef.current && now - lastClickRef.current < 300) {
-      if (!hasPermission(PERMISSIONS.createEvent)) {
-        toast.info("You not have permission to create event");
-        return;
-      }
-      const formatted = toDateTimeLocal(info.date);
-      openCreateEventModal(formatted);
+  if (lastClickRef.current && now - lastClickRef.current < 300) {
+    if (!hasPermission(PERMISSIONS.createEvent)) {
+      toast.info("You do not have permission to create event");
+      return;
     }
 
-    lastClickRef.current = now;
-  };
+    const formatted = toDateTimeLocal(info.date);
 
-  useEffect(() => {
-    getAllEvent();
-  }, []);
+    
+    if (clickCountRef.current === 2) {
+      clickCountRef.current = 0;
+      setOpenBulkModal(true);
+      return;
+    }
+
+    
+    clickCountRef.current += 1;
+    setOpenBulkModal(true);
+    return;
+  }
+
+  
+  clickCountRef.current = 0;
+  lastClickRef.current = now;
+};
 
   const handleDelete = async (id: string, title: string) => {
     setLoading(true);
@@ -136,7 +144,6 @@ const Page = (): JSX.Element => {
         toast.info(`Event id not found`);
         return;
       }
-
       const isConfirm = await ConfirmPopup({
         title: "Are you sure",
         text: `Are you want to delete ${title} event!`,
@@ -177,16 +184,30 @@ const Page = (): JSX.Element => {
     getAllEvent();
   };
 
+  const handleBulkCreateClick = () => {
+    if (!hasPermission(PERMISSIONS.createEvent)) {
+      toast.info("You do not have permission to create events");
+      return;
+    }
+    setOpenBulkModal(true);
+  };
+
   return (
     <>
       <CreateEventModal
-        open={openModal}
-        defaultStart={selectedDate}
-        onClose={() => setOpenModal(false)}
-        onSubmit={handleCreateEvent}
+  open={openModal}
+  defaultStart={selectedDate}
+  onClose={() => setOpenModal(false)}
+  onSubmit={handleCreateEvent}
+  getAllEvent={getAllEvent}
+/>
+
+      <BulkCreateEventModal
+        open={openBulkModal}
+        onClose={() => setOpenBulkModal(false)}
         getAllEvent={getAllEvent}
       />
-      
+
       <UpdateEventModal
         open={openUpdateModal}
         event={selectedEvent}
@@ -195,13 +216,36 @@ const Page = (): JSX.Element => {
       />
 
       <div className="mt-14 ml-72 p-6 transition-all">
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
-            Calendar
-          </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Manage meetings, events and schedules
-          </p>
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
+              Calendar
+            </h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Manage meetings, events and schedules
+            </p>
+          </div>
+
+          <button
+            onClick={handleBulkCreateClick}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Bulk Create Events
+          </button>
         </div>
 
         <ViewEventPopup

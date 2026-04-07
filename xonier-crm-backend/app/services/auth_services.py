@@ -62,20 +62,15 @@ class AuthServices:
                ]})
                
 
-           
 
            if "status" in filters:
                if filters["status"] != USER_STATUS.DELETED:
                    query.update({"status": filters["status"]})
                    
                
-
            if "company" in filters:
                query.update({"company": filters["company"]})
 
-
-           i
-            
 
            users = await self.repo.get_all(page, limit, query, populate=["userRole", "createdBy"], sort=["-createdAt"])
 

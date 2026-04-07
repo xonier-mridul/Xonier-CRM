@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Request
 from app.core.dependencies import Dependencies
-from app.schemas.calender_schema import CreateCalendarEventSchema
+from app.schemas.calender_schema import CreateCalendarEventSchema, CreateBulkCalenderEvent
 from app.controllers.event_controller import EventController
 
 
@@ -9,9 +9,14 @@ dependencies = Dependencies()
 controller = EventController()
 
 
-@router.post("/create", status_code=200, dependencies=[Depends(dependencies.authorized),Depends(dependencies.permissions(["event:create"]))])
+@router.post("/create", status_code=201, dependencies=[Depends(dependencies.authorized),Depends(dependencies.permissions(["event:create"]))])
 async def create(request:Request, payload: CreateCalendarEventSchema):
     return await controller.create(request, payload.model_dump())
+
+
+@router.post("/bulk-create", status_code=201, dependencies=[Depends(dependencies.authorized),Depends(dependencies.permissions(["event:create"]))])
+async def bulkCreate(request: Request, payload: CreateBulkCalenderEvent):
+    return await controller.bulkCreate(request, payload.model_dump(mode="json"))
 
 
 @router.get("/all", status_code=200, dependencies=[Depends(dependencies.authorized),Depends(dependencies.permissions(["event:read"]))])
