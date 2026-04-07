@@ -30,11 +30,15 @@ const UserRolesTable = ({
   const [viewRoleModal, setViewRoleModal] = React.useState<UserRole | null>(null);
 
   const addPermission = (permissionId: string) => {
-    if (formData.permissions.includes(permissionId)) return;
-    setFormData((prev) => ({
-      ...prev,
-      permissions: [...prev.permissions, permissionId],
-    }));
+    if (formData.permissions.includes(permissionId)) {
+      removePermission(permissionId);
+    }
+    else {
+      setFormData((prev) => ({
+        ...prev,
+        permissions: [...prev.permissions, permissionId],
+      }));
+    }
   };
 
   const removePermission = (permissionId: string) => {
@@ -275,7 +279,14 @@ const UserRolesTable = ({
                       Selected Permissions
                     </span>
                     <span className="text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/40 px-2 py-0.5 rounded-full">
-                      {formData.permissions.length}
+                      <button
+                        onClick={() => setFormData((prev) => ({ ...prev, permissions: [] }))}
+                        className="ml-1 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                        >
+                          Remove All  
+                      &nbsp;
+                        {formData.permissions.length}
+                      </button>
                     </span>
                   </div>
 
@@ -335,12 +346,10 @@ const UserRolesTable = ({
                             <button
                               key={permission.id}
                               type="button"
-                              disabled={selected}
+                              
                               onClick={() => addPermission(permission.id)}
                               className={`w-full text-left px-3 py-2.5 rounded-lg mb-1 transition-all ${
-                                selected
-                                  ? "bg-indigo-100 dark:bg-indigo-900/40 cursor-not-allowed"
-                                  : "hover:bg-white dark:hover:bg-gray-600"
+                                 "hover:bg-white dark:hover:bg-gray-600"
                               }`}
                             >
                               <div className="flex items-center justify-between">
