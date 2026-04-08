@@ -23,6 +23,7 @@ const page = (): JSX.Element => {
   const [editTarget, setEditTarget] = useState<StatusItem | null>(null);
   const [searchVal, setSearchVal] = useState<string>("");
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [category, setCategory] = useState<string>("");
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const [formData, setFormData] = useState<StatusPayload>({
@@ -47,6 +48,7 @@ const page = (): JSX.Element => {
         currentPage,
         pageLimit,
         search: searchVal,
+        category
       });
 
       if (result.status === 200) {
@@ -191,12 +193,15 @@ const page = (): JSX.Element => {
     setIsPopShow(false);
     resetForm();
   };
+  const handleCategory = (category: string): void => {
+    setCategory(category);
+  };
 
 
   
   useEffect(() => {
     getAllStatuses();
-  }, [currentPage, pageLimit, searchVal]);
+  }, [currentPage, pageLimit, searchVal,category]);
 
   
   return (
@@ -222,6 +227,7 @@ const page = (): JSX.Element => {
           totalPages={totalPages}
           handlepagechange={handlepagechange}
           handleSearch={handleSearch}
+          handleCategory={handleCategory}
           err={err}
         />
       </div>

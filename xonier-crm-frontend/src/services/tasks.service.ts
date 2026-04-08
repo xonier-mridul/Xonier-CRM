@@ -23,10 +23,11 @@ interface GetAllParams {
   priority?: string;
   category?: string;
   search?: string;
+  user?: string;
 }
 
 export const TaskService = {
-  getAll: ({ currentPage, pageLimit, status, priority, category, search }: GetAllParams) => {
+  getAll: ({ currentPage, pageLimit, status, priority, category, search ,user }: GetAllParams) => {
     const params = new URLSearchParams({
       page: String(currentPage),
       limit: String(pageLimit),
@@ -34,6 +35,7 @@ export const TaskService = {
       ...(priority && { priority }),
       ...(category && { category }),
       ...(search   && { search }),
+      ...(user     && { user }),
     });
     return api.get(`/task/all?${params.toString()}`);
   },
