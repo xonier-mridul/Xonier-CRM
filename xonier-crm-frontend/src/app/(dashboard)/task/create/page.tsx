@@ -1,6 +1,6 @@
 "use client";
 
-import React, { JSX, useState, useEffect } from "react";
+import React, { JSX, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -21,6 +21,7 @@ import { User } from "@/src/types";
 import { AuthService } from "@/src/services/auth.service";
 import { RootState } from "@/src/store";
 import { PERMISSIONS } from "@/src/constants/enum";
+import { span } from "framer-motion/client";
 
 const PRIORITY_CFG: Record<
   TASK_PRIORITY,
@@ -118,6 +119,8 @@ const CreateTaskPage = (): JSX.Element => {
   const [statuses, setStatuses] = useState<StatusOption[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [err, setErr] = useState<string | null>(null);
+  const [searchUser, setSearchUser] = useState<string>("");
+  const debounce = useRef<NodeJS.Timeout | null>(null);
 
   const [form, setForm] = useState<CreateTaskPayload>({
     title: "",
@@ -165,11 +168,18 @@ const CreateTaskPage = (): JSX.Element => {
       }
     })();
   }, []);
+useEffect(() => {
+  if (debounce.current) {
+    clearTimeout(debounce.current);
+  }
+  debounce.current = setTimeout(() => {
+    getUserData();
+  }, 300);
+}, [searchUser]);
 
   const getUserData = async () => {
     try {
-      const result = await AuthService.getAllActiveWithoutPagination();
-
+      const result = await AuthService.getAllTeamUsers(searchUser);
       if (result.status === 200) {
         setUserData(result.data.data);
       }
@@ -230,6 +240,10 @@ const CreateTaskPage = (): JSX.Element => {
       setErr("Category is required");
       return false;
     }
+    if (form.assignedTo.length === 0) {
+      setErr("Assignee is required");
+      return false;
+    }
     if (form.isRecurring && !form.recurrenceType) {
       setErr("Recurrence type is required when task is recurring");
       return false;
@@ -245,23 +259,23 @@ const CreateTaskPage = (): JSX.Element => {
     return true;
   };
 
-   const userMap = React.useMemo(() => {
-                        const map: Record<
-                          string,
-                          { firstName: string; lastName?: string }
-                        > = {};
+  const userMap = React.useMemo(() => {
+    const map: Record<
+      string,
+      { firstName: string; lastName?: string }
+    > = {};
 
-                        userData.forEach((u) => {
-                          if (u.id) {
-                            map[u.id] = {
-                              firstName: u.firstName,
-                              lastName: u.lastName,
-                            };
-                          }
-                        });
+    userData.forEach((u) => {
+      if (u.id) {
+        map[u.id] = {
+          firstName: u.firstName,
+          lastName: u.lastName,
+        };
+      }
+    });
 
-                        return map;
-                      }, [userData]);
+    return map;
+  }, [userData]);
 
   const handleSubmit = async () => {
     setErr(null);
@@ -330,11 +344,7 @@ const CreateTaskPage = (): JSX.Element => {
           </button> */}
         </div>
 
-        {err && (
-          <div className="mb-6 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800/50 text-sm text-rose-600 dark:text-rose-400 font-medium">
-            <span>⚠️</span> {err}
-          </div>
-        )}
+
 
         <div className="grid grid-cols-3 gap-6 items-start">
           <div className="col-span-2 space-y-5">
@@ -409,7 +419,7 @@ const CreateTaskPage = (): JSX.Element => {
                 <Field label="Due Date">
                   <input
                     type="date"
-                    
+
                     onChange={(e) => set("dueDate", new Date(e.target.value))}
                     className={inputCls}
                   />
@@ -490,7 +500,7 @@ const CreateTaskPage = (): JSX.Element => {
                     <input
                       type="date"
                       onChange={(e) =>
-                        set("recurrenceEndsAt", new Date (e.target.value))
+                        set("recurrenceEndsAt", new Date(e.target.value))
                       }
                       className={inputCls}
                     />
@@ -499,7 +509,7 @@ const CreateTaskPage = (): JSX.Element => {
               )}
             </SectionCard>
 
-           
+
 
             <SectionCard icon="🔗" title="Link to CRM Entity">
               <div className="grid grid-cols-3 gap-4">
@@ -633,7 +643,7 @@ const CreateTaskPage = (): JSX.Element => {
                 />
               </Field>
             </SectionCard> */}
-             {(canAssign)&&(<SectionCard icon="👥" title="Assign Users">
+            {<SectionCard icon="👥" title="Assign Users">
               <div className="space-y-3">
                 {/* Assign to me */}
                 <button
@@ -653,10 +663,10 @@ const CreateTaskPage = (): JSX.Element => {
 
                 {/* Selected Users */}
                 {form.assignedTo.length > 0 && (
-                  
+
                   <div className="flex flex-wrap gap-2">
                     {form.assignedTo.map((userId) => {
-                     
+
                       const user = userMap[userId];
 
                       return (
@@ -664,7 +674,7 @@ const CreateTaskPage = (): JSX.Element => {
                           key={userId}
                           className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-600 border border-indigo-200 dark:bg-indigo-900/30 dark:border-indigo-700 dark:text-indigo-300"
                         >
-                          👤 {user?.firstName || "User"}
+                          👤 {(userId == auth.user?._id) ? <span > You</span> : user?.firstName || "User"}
                           <button
                             type="button"
                             onClick={() =>
@@ -684,45 +694,60 @@ const CreateTaskPage = (): JSX.Element => {
                 )}
 
                 {/* User List */}
-                <div className="max-h-40 overflow-y-auto border rounded-xl p-2 space-y-1">
-                  {userData.map((user) => {
-                    const isSelected = form.assignedTo.includes(user.id);
+                {(canAssign) && (
+                  <>
+                    <input type="text" onChange={(e) => { setSearchUser(e.target.value) }} placeholder="Search users…" className="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition bg-white" />
+                    <div className="max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-xl p-2 space-y-1">
+                      {userData.map((user) => {
+                        const isSelected = form.assignedTo.includes(user.id);
 
-                    return (
-                      <div
-                        key={user.id}
-                        onClick={() => {
-                          if (isSelected) {
-                            set(
-                              "assignedTo",
-                              form.assignedTo.filter((id) => id !== user.id),
-                            );
-                          } else {
-                            set("assignedTo", [...form.assignedTo, user.id]);
-                          }
-                        }}
-                        className={`flex items-center justify-between px-2 py-1.5 rounded-lg cursor-pointer text-sm transition ${
-                          isSelected
-                            ? "bg-blue-50 dark:bg-blue-900/30"
-                            : "hover:bg-gray-50 dark:hover:bg-gray-700"
-                        }`}
-                      >
-                        <span>
-                          {user.firstName} {user.lastName}
-                        </span>
+                        return (
+                          <div
+                            key={user.id}
+                            onClick={() => {
+                              if (isSelected) {
+                                set(
+                                  "assignedTo",
+                                  form.assignedTo.filter((id) => id !== user.id),
+                                );
+                              } else {
+                                set("assignedTo", [...form.assignedTo, user.id]);
+                              }
+                            }}
+                            className={`flex items-center justify-between px-2 py-1.5 rounded-lg cursor-pointer text-sm transition ${isSelected
+                              ? "bg-blue-50 dark:bg-blue-900/30"
+                              : "hover:bg-gray-50 dark:hover:bg-gray-700"
+                              }`}
+                          >
+                            <span>
+                              {user.firstName} {user.lastName}
+                            </span>
 
-                        {isSelected && (
-                          <span className="text-blue-500 text-xs">✓</span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                            {isSelected && (
+                              <span className="text-blue-500 text-xs">✓</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                      {(userData.length === 0) && (
+                        <div className="flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                          No users found
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
-            </SectionCard>)}
+            </SectionCard>}
           </div>
         </div>
-
+        <div className="mt-2">
+          {err && (
+            <div className="mb-6 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800/50 text-sm text-rose-600 dark:text-rose-400 font-medium">
+              <span>⚠️</span> {err}
+            </div>
+          )}
+        </div>
         <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
           <button
             type="button"

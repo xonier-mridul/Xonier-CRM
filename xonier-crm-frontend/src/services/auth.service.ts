@@ -21,6 +21,7 @@ getAll: (data: GetAllUsers) => {
   return api.get(`/auth/all?${params.toString()}`);
 },
     getAllActiveWithoutPagination: () => api.get("/auth/active/all-without-pagination"),
+    getAllTeamUsers: (search?: string) => api.get(`/auth/by-team?${search ? `search=${search}` : ""}`),
     create: (payload: RegisterPayload) => api.post("/auth/register", payload),
     login: (data: { email: string, password: string }) => api.post("/auth/login", data),
     logout: () => api.post("/auth/logout", {}),
