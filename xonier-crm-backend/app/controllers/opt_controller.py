@@ -12,10 +12,10 @@ class OPTController:
     async def get_all_otp(self, request: Request):
         try:
             user = request.state.user
-            
-            result = await self.service.get_all_otp(user)
+            filters = request.query_params
+            result = await self.service.get_all_otp(user, filters)
 
-            return successResponse(200, "All otps fetched successfully")
+            return successResponse(200, "All otps fetched successfully", result)
 
 
         except AppException as e:
