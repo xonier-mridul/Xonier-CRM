@@ -118,6 +118,7 @@ const CreateTaskPage = (): JSX.Element => {
   const [statuses, setStatuses] = useState<StatusOption[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [err, setErr] = useState<string | null>(null);
+  const [searchUser, setSearchUser] = useState<string>("");
 
   const [form, setForm] = useState<CreateTaskPayload>({
     title: "",
@@ -684,49 +685,54 @@ const CreateTaskPage = (): JSX.Element => {
                 )}
 
                 {/* User List */}
-                {(canAssign) && (<div className="max-h-40 overflow-y-auto border rounded-xl p-2 space-y-1">
-                  {userData.map((user) => {
-                    const isSelected = form.assignedTo.includes(user.id);
+                {(canAssign) && (
+                  <>
+                    <input type="text" onChange={(e) => { setSearchUser(e.target.value) }} placeholder="Search users…" className="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition bg-white" />
+                    <div className="max-h-40 overflow-y-auto border rounded-xl p-2 space-y-1">
+                      {userData.map((user) => {
+                        const isSelected = form.assignedTo.includes(user.id);
 
-                    return (
-                      <div
-                        key={user.id}
-                        onClick={() => {
-                          if (isSelected) {
-                            set(
-                              "assignedTo",
-                              form.assignedTo.filter((id) => id !== user.id),
-                            );
-                          } else {
-                            set("assignedTo", [...form.assignedTo, user.id]);
-                          }
-                        }}
-                        className={`flex items-center justify-between px-2 py-1.5 rounded-lg cursor-pointer text-sm transition ${isSelected
-                            ? "bg-blue-50 dark:bg-blue-900/30"
-                            : "hover:bg-gray-50 dark:hover:bg-gray-700"
-                          }`}
-                      >
-                        <span>
-                          {user.firstName} {user.lastName}
-                        </span>
+                        return (
+                          <div
+                            key={user.id}
+                            onClick={() => {
+                              if (isSelected) {
+                                set(
+                                  "assignedTo",
+                                  form.assignedTo.filter((id) => id !== user.id),
+                                );
+                              } else {
+                                set("assignedTo", [...form.assignedTo, user.id]);
+                              }
+                            }}
+                            className={`flex items-center justify-between px-2 py-1.5 rounded-lg cursor-pointer text-sm transition ${isSelected
+                              ? "bg-blue-50 dark:bg-blue-900/30"
+                              : "hover:bg-gray-50 dark:hover:bg-gray-700"
+                              }`}
+                          >
+                            <span>
+                              {user.firstName} {user.lastName}
+                            </span>
 
-                        {isSelected && (
-                          <span className="text-blue-500 text-xs">✓</span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>)}
+                            {isSelected && (
+                              <span className="text-blue-500 text-xs">✓</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
               </div>
             </SectionCard>}
           </div>
         </div>
         <div className="mt-2">
-            {err && (
-              <div className="mb-6 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800/50 text-sm text-rose-600 dark:text-rose-400 font-medium">
-                <span>⚠️</span> {err}
-              </div>
-            )}
+          {err && (
+            <div className="mb-6 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800/50 text-sm text-rose-600 dark:text-rose-400 font-medium">
+              <span>⚠️</span> {err}
+            </div>
+          )}
         </div>
         <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
           <button
