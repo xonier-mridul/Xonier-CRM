@@ -26,6 +26,7 @@ import checkRole from "@/src/app/utils/roleCheck.utils";
 import { FiUserCheck } from "react-icons/fi";
 import { GoTasklist } from "react-icons/go";
 import { IoKeyOutline } from "react-icons/io5";
+import { MdOutlineLeaderboard } from "react-icons/md";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSIONS } from "@/src/constants/enum";
 import { FaRegUser ,FaTasks } from "react-icons/fa";
@@ -184,6 +185,20 @@ const SideBar = () => {
                 Dashboard
               </Link>
             </li>
+            {hasPermission(PERMISSIONS.readSalesDashbord) && (
+              <li>
+                <Link
+                  href="/sales-dashboard"
+                  className={`${isActive("/sales-dashboard")
+                    ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                    : "border-l-2 border-transparent"
+                    } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+                >
+                  <MdOutlineLeaderboard className="text-lg" />
+                  Sales Dashboard
+                </Link>
+              </li>
+            )}
             {hasPermission(PERMISSIONS.readEvent) && <li>
               <Link
                 href="/calender"
