@@ -59,6 +59,11 @@ const Page = (): JSX.Element => {
     }
   };
 
+  useEffect(() => {
+    getAllEvent()
+  }, [])
+  
+
   const mapToCalendarEvents = (events: CalendarEvent[]): EventInput[] => {
     return events.map((event) => ({
       id: event.id,
@@ -110,31 +115,31 @@ const Page = (): JSX.Element => {
 
   const handleDateClick = (info: any) => {
   const now = Date.now();
+  const timeSinceLast = lastClickRef.current ? now - lastClickRef.current : Infinity;
 
-  if (lastClickRef.current && now - lastClickRef.current < 300) {
-    if (!hasPermission(PERMISSIONS.createEvent)) {
-      toast.info("You do not have permission to create event");
-      return;
-    }
-
-    const formatted = toDateTimeLocal(info.date);
-
-    
-    if (clickCountRef.current === 2) {
-      clickCountRef.current = 0;
-      setOpenBulkModal(true);
-      return;
-    }
-
-    
+  if (timeSinceLast < 300) {
     clickCountRef.current += 1;
-    setOpenBulkModal(true);
+  } else {
+    clickCountRef.current = 1;
+  }
+
+  lastClickRef.current = now;
+
+  if (!hasPermission(PERMISSIONS.createEvent)) {
+    toast.info("You do not have permission to create event");
     return;
   }
 
-  
-  clickCountRef.current = 0;
-  lastClickRef.current = now;
+  const formatted = toDateTimeLocal(info.date);
+
+  if (clickCountRef.current === 2) {
+    
+    setOpenBulkModal(true);
+  } else if (clickCountRef.current >= 3) {
+   
+    clickCountRef.current = 0;
+    
+  }
 };
 
   const handleDelete = async (id: string, title: string) => {
