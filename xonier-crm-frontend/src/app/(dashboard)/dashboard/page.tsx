@@ -712,7 +712,7 @@ export default function TaskDashboardPage() {
                                 <span className={`w-8 h-8 rounded-xl flex items-center justify-center text-white flex-shrink-0 ${card.iconBg}`}>{card.icon}</span>
                             </div>
                             <p className="font-mono text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-none">
-                                <Odometer value={(card.value.replace(/[^0-9.]/g, ""))} />
+                                <Odometer value={(card.value.replace(/[^0-9.]/g, ""))} />{(card.label == "Completion rate")&& "%"}
                             </p>
                             <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5 leading-relaxed">{card.sub}</p>
                             <div className="mt-4 h-1 rounded-full bg-gray-100 dark:bg-gray-800">
