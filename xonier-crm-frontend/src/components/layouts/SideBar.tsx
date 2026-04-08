@@ -106,6 +106,12 @@ const SideBar = () => {
     if (pathname.startsWith("/task")) {
       setOpenMenu("task")
     }
+    if (pathname.startsWith("/category")) {
+      setOpenMenu("task")
+    }
+    if (pathname.startsWith("/status")) {
+      setOpenMenu("task")
+    }
   }, [pathname]);
 
   const toggleMenu = (menu: string) => {
@@ -134,7 +140,7 @@ const SideBar = () => {
       case "communication":
         return pathname.startsWith("/message") || pathname.startsWith("/telephone");
       case "task":
-        return pathname.startsWith("/task");
+        return pathname.startsWith("/task")|| pathname.startsWith("/category") || pathname.startsWith("/status");
       default:
         return false;
     }
@@ -407,8 +413,8 @@ const SideBar = () => {
                     
                     {hasPermission(PERMISSIONS.taskCategoryRead) && <li>
                       <Link
-                        href="/task/category"
-                        className={`${isActive("/task/category")
+                        href="/category"
+                        className={`${isActive("/category")
                           ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
@@ -418,8 +424,8 @@ const SideBar = () => {
                     </li>}
                     {hasPermission(PERMISSIONS.taskStatusRead) && <li>
                       <Link
-                        href="/task/status"
-                        className={`${isActive("/task/status")
+                        href="/status"
+                        className={`${isActive("/status")
                           ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}

@@ -216,4 +216,28 @@ class TaskController:
             raise e
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+        
+    async def get_user_task_stats(
+        self,
+        request: Request,
+        user_id: str,
+        filters: Dict[str, Any]
+    ):
+        try:
+            user = request.state.user
+            result = await self.service.get_user_task_stats(
+                user_id=user_id,
+                filters=filters,
+                user=user
+            )
+            return successResponse(
+                status_code=200,
+                message="User task stats fetched successfully",
+                data=result
+            )
  
+        except AppException as e:
+            raise e
+ 
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")

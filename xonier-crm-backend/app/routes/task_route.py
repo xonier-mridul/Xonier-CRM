@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Query
 from app.schemas.task_schema import (
     CreateTaskSchema, UpdateTaskSchema, UpdateTaskStatusSchema,
     UpdateTaskPrioritySchema, AssignTaskSchema, ReorderTaskSchema,
@@ -6,6 +6,7 @@ from app.schemas.task_schema import (
 )
 from app.core.dependencies import Dependencies
 from app.controllers.task_controller import TaskController
+from typing import Optional
  
 router = APIRouter()
 dependencies = Dependencies()
@@ -111,3 +112,25 @@ async def delete_task(request: Request, task_id: str):
 async def get_all_deleted(request: Request):
     return await controller.get_all_deleted(request)
  
+
+@router.get("/stats/user/{user_id}")
+async def get_user_task_stats(
+    request: Request,
+    user_id: str,
+    fromDate: Optional[str] = Query(None),
+    toDate: Optional[str] = Query(None),
+    category: Optional[str] = Query(None),
+    priority: Optional[str] = Query(None),
+    entityType: Optional[str] = Query(None),
+):
+    return await controller.get_user_task_stats(
+        request=request,
+        user_id=user_id,
+        filters={
+            "fromDate": fromDate,
+            "toDate": toDate,
+            "category": category,
+            "priority": priority,
+            "entityType": entityType,
+        }
+    )

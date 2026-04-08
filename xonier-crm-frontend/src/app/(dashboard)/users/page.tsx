@@ -38,7 +38,8 @@ const page = (): JSX.Element => {
     try {
       let result = await AuthService.getAll({
         page: currentPage,
-        limit: pageLimit,
+        limit: pageLimit||10,
+        search: search||"",
       });
       if (result.status === 200) {
         const resultData = result.data.data;
@@ -208,6 +209,7 @@ const page = (): JSX.Element => {
         totalPage={totalPage}
         setCurrentPages={setCurrentPages}
         setSearchFilter={setSearch}
+        setFormData={setFormData}
       />
     </div>
   );

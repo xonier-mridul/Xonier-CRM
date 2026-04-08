@@ -62,20 +62,15 @@ class AuthServices:
                ]})
                
 
-           
 
            if "status" in filters:
                if filters["status"] != USER_STATUS.DELETED:
                    query.update({"status": filters["status"]})
                    
                
-
            if "company" in filters:
                query.update({"company": filters["company"]})
 
-
-           i
-            
 
            users = await self.repo.get_all(page, limit, query, populate=["userRole", "createdBy"], sort=["-createdAt"])
 
@@ -113,12 +108,14 @@ class AuthServices:
 
                 obj_members = [PydanticObjectId(item) for item in members]
 
+                print("mem: ", obj_members)
+
                 if members:
-                    query.update({"id": {"$in": obj_members}})
+                    query.update({"_id": {"$in": obj_members}})
                     is_manager = True
 
                 else:
-                    query.update({"id": PydanticObjectId(user["_id"])})
+                    query.update({"_id": PydanticObjectId(user["_id"])})
 
             if "search" in filters and filters["search"].strip():
                 regex_data = {"$regex": filters["search"].strip(), "$options": "i" }
@@ -127,12 +124,15 @@ class AuthServices:
 
             if not is_admin and not is_manager and query == {}:
                 raise AppException(409, "You are not authorized to get this data")
-
+            
+            print("11: ", query)
 
             result = await self.repo.get_all(page=int(page), limit=int(limit) ,filters=query, sort=["-createdAt"] )
 
             if not result:
                 raise AppException(404, "Users not found")
+            
+            print("res: ", result)
             
             result = jsonable_encoder(result["data"])
 
@@ -146,7 +146,7 @@ class AuthServices:
 
 
         except Exception as e:
-            raise
+            raise e
 
         except Exception as e:
             raise AppException(status_code=500, message="internal server error")
@@ -285,10 +285,7 @@ class AuthServices:
  
         except Exception as e:
             raise AppException(status_code=500, message=f"internal server error: {e}")
- 
-
         
-
 
     async def get_user_by_id(self,id: PydanticObjectId, user: Dict[str, Any]):
         try:
@@ -334,7 +331,7 @@ class AuthServices:
 
     async def get_user_profile(self, user: Dict[str, Any]):
         try:
-          print("yes")
+          
           is_admin = validate_admin(user["userRole"])
           is_manager = False
           is_creator = False
@@ -423,7 +420,7 @@ class AuthServices:
             raise
 
         except Exception as e:
-            print("errr: ", e)
+            
             await session.abort_transaction()
             raise AppException(status_code=500, message="internal server error")
         
@@ -443,6 +440,7 @@ class AuthServices:
             session.start_transaction()
            
             hashed_mail = hash_value(data["email"])
+            encrypt_email = self.crypto.encrypt_data(data["email"])
            
             isUserExist = await self.repo.find_user_by_hashMail(
                 hashMail=hashed_mail, projections=None, session=session
@@ -476,14 +474,18 @@ class AuthServices:
 
             otp = generate_otp(6)
 
+            print("otp: ", otp)
+
             hashed_otp = hash_value(str(otp))
+            encrypt_opt = self.crypto.encrypt_data(str(otp))
 
-            # send_email = await self.email_manager.send_otp_email(
-            #     to=data["email"], otp=otp, type=OTP_TYPE.LOGIN.value
-            # )
 
-            # if not send_email:
-            #     raise AppException(400, "Email send Failed")
+            send_email = await self.email_manager.send_otp_email(
+                to=data["email"], otp=otp, type=OTP_TYPE.LOGIN.value
+            )
+
+            if not send_email:
+                raise AppException(400, "Email send Failed")
 
             expire_time = datetime.now(timezone.utc) + timedelta(
                 minutes=float(OTP_EXPIRY.TEN_MINUTS.value)
@@ -491,8 +493,10 @@ class AuthServices:
 
             create_otp = await self.otp_repo.create(
                 {
+                    "encrypt_mail": encrypt_email,
                     "email": hashed_mail,
                     "otp": hashed_otp,
+                    "encrypt_opt": encrypt_opt,
                     "otp_type": OTP_TYPE.LOGIN,
                     "expires_at": expire_time,
                 },

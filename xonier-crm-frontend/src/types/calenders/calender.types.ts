@@ -36,3 +36,7 @@ export interface CalendarEventPayload {
 
   priority: "low" | "medium" | "high";
 }
+
+export interface BulkCalenderEventPayload {
+  events: Array<CalendarEventPayload>
+}

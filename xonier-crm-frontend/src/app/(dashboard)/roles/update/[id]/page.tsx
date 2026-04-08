@@ -119,10 +119,15 @@ const UpdateRolePage = (): JSX.Element => {
   };
 
   const addPermission = (permId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      permissions: [...prev.permissions, permId],
-    }));
+    if(isSelected(permId)){
+      removePermission(permId);
+    }
+    else{
+      setFormData((prev) => ({
+        ...prev,
+        permissions: [...prev.permissions, permId],
+      }));
+    }
   };
 
   const removePermission = (permId: string) => {
@@ -189,8 +194,15 @@ const UpdateRolePage = (): JSX.Element => {
                     Selected Permissions
                   </span>
                   <span className="text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/40 px-2 py-0.5 rounded-full">
-                    {formData.permissions.length}
-                  </span>
+                      <button
+                        onClick={() => setFormData((prev) => ({ ...prev, permissions: [] }))}
+                        className="ml-1 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                        >
+                          Remove All  
+                      &nbsp;
+                        {formData.permissions.length}
+                      </button>
+                    </span>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
@@ -232,6 +244,11 @@ const UpdateRolePage = (): JSX.Element => {
                     placeholder="Search permissions..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                        }
+                      }}
                     className="pl-9 pr-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent w-56"
                   />
                 </div>
@@ -256,12 +273,8 @@ const UpdateRolePage = (): JSX.Element => {
                             <button
                               key={permission.id}
                               type="button"
-                              disabled={selected}
-                              onClick={() => addPermission(permission.id)}
-                              className={`w-full text-left px-3 py-2.5 rounded-lg mb-1 transition-all ${
-                                selected
-                                  ? "bg-indigo-100 dark:bg-indigo-900/40 cursor-not-allowed"
-                                  : "hover:bg-white dark:hover:bg-gray-600"
+                              onClick={(e) => addPermission(permission.id)}
+                              className={`w-full text-left px-3 py-2.5 rounded-lg mb-1 transition-all ${"hover:bg-white dark:hover:bg-gray-600"
                               }`}
                             >
                               <div className="flex items-center justify-between">

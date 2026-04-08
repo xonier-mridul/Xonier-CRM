@@ -574,6 +574,7 @@ class ACTIVITY_ENTITY_TYPE(str, Enum):
     INVOICE = "invoice"
     USER = "user"
     AUTH = "auth"
+    EVENT= "event"
     
     
 

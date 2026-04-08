@@ -201,6 +201,19 @@ const UpdateTaskPage = (): JSX.Element => {
   ) => {
     setForm((p) => ({ ...p, [k]: v }));
   }
+  const fetchUsers = async () => {
+    try {
+      const result = await AuthService.getAllTeamUsers(userSearch);
+      if (result.status === 200) setUserData(result.data.data);
+    } catch (error) {
+      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+      if (axios.isAxiosError(error)) {
+        const msg =
+          error.response?.data?.message ?? "Something went wrong";
+        toast.error(typeof msg === "string" ? msg : "Something went wrong");
+      }
+    }
+  };
 
   useEffect(() => {
     if (!taskId) return;
@@ -263,6 +276,10 @@ const UpdateTaskPage = (): JSX.Element => {
     })();
   }, []);
 
+  useEffect(() => {
+    fetchUsers();
+  }, [userSearch]);
+
   // ── Load statuses whenever selected category changes ──────────────────────
   // FIX: Watch `form.category` (single source of truth) instead of a separate
   // `selectedCategory` variable that could drift out of sync.
@@ -289,19 +306,7 @@ const UpdateTaskPage = (): JSX.Element => {
     "User";
 
   useEffect(() => {
-    (async () => {
-      try {
-        const result = await AuthService.getAllActiveWithoutPagination();
-        if (result.status === 200) setUserData(result.data.data);
-      } catch (error) {
-        process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
-        if (axios.isAxiosError(error)) {
-          const msg =
-            error.response?.data?.message ?? "Something went wrong";
-          toast.error(typeof msg === "string" ? msg : "Something went wrong");
-        }
-      }
-    })();
+    fetchUsers();
   }, []);
 
   useEffect(() => {
@@ -338,7 +343,9 @@ const UpdateTaskPage = (): JSX.Element => {
   // All errors are returned as strings so the caller can toast them directly.
   const validate = (): string | null => {
     if (!form.title.trim()) return "Title is required";
-    if (!form.category) return "Category is required";
+    if (!form.category.trim()) return "Category is required";
+    if (!form.status.trim()) return "Status is required";
+    if ((!form.assignedTo) || form.assignedTo.length === 0) return "Assignee is required";
     if (form.isRecurring && !form.recurrenceType)
       return "Recurrence type is required when task is recurring";
     if (
@@ -500,23 +507,26 @@ const UpdateTaskPage = (): JSX.Element => {
               </Field>
 
               <div className="grid grid-cols-2 gap-4">
-                {/* <Field label="Category" required>
-                <select
-                  value={form.category ?? ""}
-                  onChange={(e) => set("category", e.target.value || "")}
-                  className={selectCls}
-                >
-                  <option value="">Select category…</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.icon} &nbsp; {c.name}
-                    </option>
-                  ))}
-                </select>
-              </Field> */}
+                <Field label="Category" required>
+                  <select
+                    value={form.category ?? ""}
+                    onChange={(e) => {
+                      set("category", e.target.value || "")
+                      set("status", "")
+                    }}
+                    className={selectCls}
+                  >
+                    <option value="" >Select category…</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.icon} &nbsp; {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
                 <Field
                   label="Current Status"
-                  hint={!form.status ? "Select a category first" : undefined}
+                  hint={!form.category ? "Select a category first" : undefined}
                 >
                   <select
                     value={form.status ?? ""}
@@ -524,7 +534,7 @@ const UpdateTaskPage = (): JSX.Element => {
                     disabled={!form.category || statuses.length === 0}
                     className={`${selectCls} disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
-                    <option value="" disabled> Select status… </option>
+                    <option value="" selected> Select status… </option>
                     {statuses.map((s) => (
                       <option key={s.id || s.id} value={s.id || s._id}>
                         {s.icon} {s.name}
@@ -781,7 +791,7 @@ const UpdateTaskPage = (): JSX.Element => {
             </Section>
 
             {/* Assign To */}
-            {(canAssign) && (<Section icon="👥" title="Assign To">
+            {(<Section icon="👥" title="Assign To">
               {users.length === 0 ? (
                 <div className="text-center py-6">
                   <div className="text-3xl mb-2">👤</div>
@@ -811,57 +821,60 @@ const UpdateTaskPage = (): JSX.Element => {
                       </button>
                     );
                   })()}
-                  <div className="mb-2">
-                    <input
-                      type="text"
-                      placeholder="Search users..."
-                      value={userSearch}
-                      onChange={(e) => setUserSearch(e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-lg border bg-white dark:bg-gray-800 text-gray-800 dark:text-white outline-none"
-                    />
-                  </div>
-                  {/* User list */}
-                  <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                    {filteredUsers.map((u) => {
-                      const checked = (form.assignedTo ?? []).includes(u.id);
-                      const isMe =
-                        u.id === (auth.user?._id || auth.user?.id);
-                      return (
-                        <label
-                          key={u.id}
-                          className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${isMe
-                            ? "border-green-200 bg-green-50 dark:bg-green-900/20"
-                            : checked
-                              ? "border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20"
-                              : "border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
-                            }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            onChange={() => toggleAssignee(u.id)}
-                            className="w-4 h-4 accent-blue-600 shrink-0"
-                          />
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
-                            {(getUserName(u)[0] || "U").toUpperCase()}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs font-semibold text-gray-800 dark:text-white truncate">
-                              {getUserName(u)}{" "}
-                              {isMe && (
-                                <span className="text-[10px] text-green-500">
-                                  (You)
-                                </span>
-                              )}
-                            </p>
-                            <p className="text-[10px] text-gray-400 truncate">
-                              {u.email}
-                            </p>
-                          </div>
-                        </label>
-                      );
-                    })}
-                  </div>
+                  {(canAssign) && (
+                    <>
+                      <div className="mb-2">
+                        <input
+                          type="text"
+                          placeholder="Search users..."
+                          value={userSearch}
+                          onChange={(e) => setUserSearch(e.target.value)}
+                          className="w-full px-3 py-2 text-xs rounded-lg border bg-white dark:bg-gray-800 text-gray-800 dark:text-white outline-none"
+                        />
+                      </div>
+                      <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                        {userData.map((u) => {
+                          const checked = (form.assignedTo ?? []).includes(u.id);
+                          const isMe =
+                            u.id === (auth.user?._id || auth.user?.id);
+                          return (
+                            <label
+                              key={u.id}
+                              className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${isMe
+                                ? "border-green-200 bg-green-50 dark:bg-green-900/20"
+                                : checked
+                                  ? "border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20"
+                                  : "border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={() => toggleAssignee(u.id)}
+                                className="w-4 h-4 accent-blue-600 shrink-0"
+                              />
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                                {(getUserName(u)[0] || "U").toUpperCase()}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs font-semibold text-gray-800 dark:text-white truncate">
+                                  {getUserName(u)}{" "}
+                                  {isMe && (
+                                    <span className="text-[10px] text-green-500">
+                                      (You)
+                                    </span>
+                                  )}
+                                </p>
+                                <p className="text-[10px] text-gray-400 truncate">
+                                  {u.email}
+                                </p>
+                              </div>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
