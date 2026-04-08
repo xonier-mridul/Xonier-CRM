@@ -25,7 +25,7 @@ import { RootState } from "@/src/store";
 import checkRole from "@/src/app/utils/roleCheck.utils";
 import { FiUserCheck } from "react-icons/fi";
 import { GoTasklist } from "react-icons/go";
-
+import { IoKeyOutline } from "react-icons/io5";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSIONS } from "@/src/constants/enum";
 import { FaRegUser ,FaTasks } from "react-icons/fa";
@@ -726,6 +726,24 @@ const SideBar = () => {
                 )}
               </AnimatePresence>
             </li>}
+            {
+              hasPermission(PERMISSIONS.readOTP) && <li>
+                
+                <Link
+                  href="/otp"
+                  className={`${isActive("/otp")
+                    ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                    : "border-l-2 border-transparent"
+                    } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                >
+                  <span className="flex items-center gap-3">
+
+                  <IoKeyOutline className="text-lg" />
+                  OTP
+                  </span>
+                </Link>
+              </li>
+            }
           </ul>
         </div>
 
