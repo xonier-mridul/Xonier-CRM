@@ -22,6 +22,9 @@ import { IoMdEye } from "react-icons/io";
 import { BsTicketDetailed } from "react-icons/bs";
 import { CategoryItem } from "@/src/types/task/category.types";
 import { CategoryService } from "@/src/services/category.service";
+import UserSelect from "@/src/components/common/userselect";
+import { AuthService } from "@/src/services/auth.service";
+import { User } from "@/src/types";
 
 
 type ViewMode = "list" | "board";
@@ -821,6 +824,8 @@ const TaskListPage = (): JSX.Element => {
   const [filtrCategory, setFiltrCategory] = useState("");
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [filterPriority, setFilterPriority] = useState("");
+  const [filterAssigned, setFilterAssigned] = useState("");
+  const [users, setUsers] = useState<User[]>([]);
 
   const canCreate = hasPermission(PERMISSIONS.createTask);
   const canView = hasPermission(PERMISSIONS.readTask)
@@ -841,6 +846,7 @@ const TaskListPage = (): JSX.Element => {
         priority: filterPriority || undefined,
         category: filtrCategory || undefined,
         search: search || undefined,
+        user: filterAssigned || undefined,
       });
       if (res.status === 200) {
         const d = res.data?.data || [];
@@ -853,7 +859,7 @@ const TaskListPage = (): JSX.Element => {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, pageLimit, filterStatus, filterPriority, search, viewMode, filtrCategory]);
+  }, [currentPage, pageLimit, filterStatus, filterPriority, search, viewMode, filtrCategory ,filterAssigned]);
 
   const fetchStatuses = async () => {
     try {
@@ -871,8 +877,16 @@ const TaskListPage = (): JSX.Element => {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
     }
   };
+  const fetchUsers = async () => {
+    try {
+      const res = await AuthService.getAllTeamUsers();
+      if (res.status === 200) setUsers(res.data.data);
+    } catch (e) {
+      process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
+    }
+  };
 
-  useEffect(() => { fetchStatuses(); fetchCategories(); }, []);
+  useEffect(() => { fetchStatuses(); fetchCategories(); fetchUsers(); }, []);
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
   // Debounce search
@@ -949,7 +963,7 @@ const TaskListPage = (): JSX.Element => {
   };
 
   const totalPages = Math.ceil(totalCount / pageLimit);
-  const hasFilters = !!(search || filterStatus || filterPriority);
+  const hasFilters = !!(search || filterStatus || filterPriority || filterAssigned || filtrCategory);
   const colCount = showActions ? 8 : 7;
 
   return (
@@ -999,16 +1013,16 @@ const TaskListPage = (): JSX.Element => {
         </div>
 
 
-        <div className="flex flex-wrap items-center gap-3 mb-5">
+        <div className="flex flex-wrap items-center gap-1 mb-5">
 
-          <div className="relative flex-1 min-w-[200px] max-w-xs">
+          <div className="relative  min-w-[100px] max-w-xs">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
             <input
               type="text"
 
               onChange={e => handleSearch(e.target.value)}
               placeholder="Search tasks…"
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
+              className="pl-9 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
             />
           </div>
 
@@ -1049,12 +1063,18 @@ const TaskListPage = (): JSX.Element => {
               <option key={p.id} value={p.id}>{p.name.charAt(0) + p.name.slice(1).toLowerCase()}</option>
             ))}
           </select>
-
+            <UserSelect
+              users={users}
+              selectedUserId={filterAssigned}
+              setSelectedUserId={setFilterAssigned}
+              placeholder="Search assignee ..."
+              cls="py-2.5 px-1 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition bg-white"
+            />
 
           {hasFilters && (
             <button
               type="button"
-              onClick={() => { setSearch(""); setFilterStatus(""); setFilterPriority(""); setCurrentPage(1); }}
+              onClick={() => { setSearch(""); setFilterStatus(""); setFilterPriority(""); setCurrentPage(1); setFilterAssigned(""); setFiltrCategory(""); }}
               className="px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-1.5"
             >
               <span>✕</span> Clear

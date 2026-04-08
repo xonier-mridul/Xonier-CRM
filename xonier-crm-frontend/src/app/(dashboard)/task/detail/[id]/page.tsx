@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { TaskService } from "@/src/services/tasks.service";
 import ComingSoonOverlay from "@/src/components/ui/ComingSoonOverlay";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import {
   Calendar,
   Clock,
@@ -112,16 +113,28 @@ const formatDate = (date: string | Date | null | undefined): string => {
   return new Date(date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 };
 
-const formatDateTime = (date: string | Date | null | undefined): string => {
+const formatDateTime = (
+  date: string | null | undefined
+): string => {
   if (!date) return "—";
-  return new Date(date).toLocaleString("en-IN", {
-    day: "2-digit", month: "short", year: "numeric",
-    hour: "2-digit", minute: "2-digit", hour12: true,
+
+  const parsedDate = new Date(
+    date.replace(" ", "T").replace(/(\.\d{3})\d+/, "$1") + "Z"
+  );
+
+  return parsedDate.toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
   });
 };
 
 const formatRelativeTime = (date: string): string => {
-  const diff = Date.now() - new Date(date).getTime();
+  const diff = Date.now() - new Date(date.replace(" ", "T") + "Z").getTime();
   const mins = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
@@ -350,6 +363,7 @@ const ActivityLog = ({ activities, loading }: { activities: TaskActivity[]; load
                       <span className="text-[10px] text-gray-400 dark:text-gray-500 capitalize font-medium">{activity.action.replace(/_/g, " ")}</span>
                       <span className="text-[10px] text-gray-300 dark:text-gray-600">·</span>
                       <span className="text-[10px] text-gray-400 dark:text-gray-500">{formatDateTime(activity.createdAt)}</span>
+                      <span className="text-[10px] text-gray-400 dark:text-gray-500 "> by {activity.performedBy.firstName} {activity.performedBy.lastName}</span>
                     </div>
                   </div>
                 </div>
@@ -865,6 +879,11 @@ const page = () => {
                 {taskData.assignedTo && taskData.assignedTo.length > 0 ? (
                   <div className="space-y-2">
                     {taskData.assignedTo.map((user) => (
+                      <Link
+                        key={user.id}
+                        href={`/users/${user.id}`}
+                        className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
+                        >
                       <div key={user.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group">
                         <AvatarCircle name={`${user.firstName} ${user.lastName ?? ""}`} avatar={user.avatar} size="md" />
                         <div className="min-w-0 flex-1">
@@ -872,6 +891,7 @@ const page = () => {
                           <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{user.email}</p>
                         </div>
                       </div>
+                      </Link>
                     ))}
                   </div>
                 ) : (

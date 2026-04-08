@@ -215,6 +215,7 @@ export interface UserSelectProps {
   selectedUserId: string;
   setSelectedUserId: (id: string) => void;
   placeholder ?: string;
+  cls?: string;
 };
 
 export interface countryCode {

@@ -62,6 +62,7 @@ export interface StatusTableProps {
   totalPages: number;
   handlepagechange: (page: number) => void;
   handleSearch:     (search: string) => void;
+  handleCategory :  (category: string) => void;
   err:              string | string[] | null;
 }
 
@@ -88,4 +89,5 @@ export interface getPayLoad {
   currentPage: number;
   pageLimit: number;
   search?:string;
+  category?:string;
 }
