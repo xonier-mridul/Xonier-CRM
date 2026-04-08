@@ -90,6 +90,8 @@ class CreateTaskSchema(BaseModel):
 class UpdateTaskSchema(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
+    category: str
+    status: Optional[str] = None
     priority: Optional[TASK_PRIORITY] = None
     status: Optional[str] = None
     dueDate: Optional[str] = None
