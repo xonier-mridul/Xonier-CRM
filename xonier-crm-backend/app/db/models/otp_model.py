@@ -9,8 +9,10 @@ from app.core.enums import OTP_EXPIRY
 
 
 class OtpModel(Document):
+    encrypt_mail:str = Field(...)
     email: str = Field(...)
     otp: str = Field(...)
+    encrypt_opt:str = Field(...)
     otp_type: OTP_TYPE = Field(...)
     is_used: bool = False
     expires_at: Annotated[datetime, Indexed(expireAfterSeconds=0)] = Field(

@@ -287,10 +287,6 @@ class AuthServices:
             raise AppException(status_code=500, message=f"internal server error: {e}")
         
 
-
- 
-
-
     async def get_user_by_id(self,id: PydanticObjectId, user: Dict[str, Any]):
         try:
           
@@ -444,6 +440,7 @@ class AuthServices:
             session.start_transaction()
            
             hashed_mail = hash_value(data["email"])
+            encrypt_email = self.crypto.encrypt_data(data["email"])
            
             isUserExist = await self.repo.find_user_by_hashMail(
                 hashMail=hashed_mail, projections=None, session=session
@@ -480,6 +477,8 @@ class AuthServices:
             print("otp: ", otp)
 
             hashed_otp = hash_value(str(otp))
+            encrypt_opt = self.crypto.encrypt_data(str(otp))
+
 
             send_email = await self.email_manager.send_otp_email(
                 to=data["email"], otp=otp, type=OTP_TYPE.LOGIN.value
@@ -494,8 +493,10 @@ class AuthServices:
 
             create_otp = await self.otp_repo.create(
                 {
+                    "encrypt_mail": encrypt_email,
                     "email": hashed_mail,
                     "otp": hashed_otp,
+                    "encrypt_opt": encrypt_opt,
                     "otp_type": OTP_TYPE.LOGIN,
                     "expires_at": expire_time,
                 },

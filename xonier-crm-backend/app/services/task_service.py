@@ -533,6 +533,7 @@ class TaskService:
                         "updatedBy": PydanticObjectId(user["_id"]),
                         "updatedAt": datetime.now(timezone.utc),
                         "status": DBRef("task_statuses", PydanticObjectId(payload["status"])),
+                        "category": DBRef("task_categories", PydanticObjectId(payload["category"])),
                         "assignedTo": assignedTo
                     }
  
