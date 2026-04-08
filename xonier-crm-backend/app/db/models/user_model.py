@@ -17,7 +17,7 @@ from jose import jwt
 EnvSettings = get_setting()
 
 class UserModel(Document):
-    firstName: str = Field(..., min_length=4, max_length=49)
+    firstName: str = Field(..., min_length=3, max_length=49)
     lastName: Optional[str] = Field(None, max_length=49)
     email: str = Field(...)
     hashedEmail: str = Indexed(unique=True)
@@ -142,8 +142,6 @@ class UserModel(Document):
         }
 
         return jwt.encode(payload, EnvSettings.REFRESH_TOKEN_SECRET, algorithm="HS256")
-    
-
     
 
 

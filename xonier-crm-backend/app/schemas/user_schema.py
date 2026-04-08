@@ -23,8 +23,8 @@ class RegisterUserSchema(BaseModel):
     @field_validator("firstName", "lastName")
     @classmethod
     def name_min_length(cls, v: str):
-        if len(v.strip()) < 4:
-            raise ValueError("First name and last name must be at least 4 characters long")
+        if len(v.strip()) < 3:
+            raise ValueError("First name and last name must be at least 3 characters long")
         return v
     
     @field_validator("phone")

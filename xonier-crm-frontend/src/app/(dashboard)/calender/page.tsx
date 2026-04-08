@@ -136,7 +136,7 @@ const Page = (): JSX.Element => {
     
     setOpenBulkModal(true);
   } else if (clickCountRef.current >= 3) {
-   
+    
     clickCountRef.current = 0;
     
   }

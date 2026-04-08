@@ -319,6 +319,8 @@ class TaskService:
                 "deletedAt": None,
                 "category.$id": ObjectId(category_id),
             }
+
+            members= []
  
             if not is_admin:
                 members = await self.getTeamMembers.get_team_members(user["_id"])
@@ -327,6 +329,23 @@ class TaskService:
  
             if "assignedTo" in filters and ObjectId.is_valid(filters["assignedTo"]):
                 base_query["assignedTo.$id"] = PydanticObjectId(filters["assignedTo"])
+
+            if "users" in filters and ObjectId.is_valid(filters["users"]):
+                if not is_admin:
+                    if (ObjectId(filters["users"]) in members) or (str(filters["users"]).strip() == str(user["_id"]).strip()):
+                        base_query.update({"$or": [
+                            {"assignedTo.$id": PydanticObjectId(filters["users"])},
+                            {"createdBy.$id": PydanticObjectId(filters["users"])}
+                        ]})
+                
+                base_query.update({"$or": [
+                            {"assignedTo.$id": PydanticObjectId(filters["users"])},
+                            {"createdBy.$id": PydanticObjectId(filters["users"])}
+                        ]})
+
+
+                     
+
  
             if "priority" in filters:
                 base_query["priority"] = filters["priority"]
