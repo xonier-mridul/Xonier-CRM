@@ -338,7 +338,8 @@ const UpdateTaskPage = (): JSX.Element => {
   // All errors are returned as strings so the caller can toast them directly.
   const validate = (): string | null => {
     if (!form.title.trim()) return "Title is required";
-    if (!form.category) return "Category is required";
+    if (!form.category.trim()) return "Category is required";
+    if (!form.status.trim()) return "Status is required";
     if (form.isRecurring && !form.recurrenceType)
       return "Recurrence type is required when task is recurring";
     if (
@@ -500,23 +501,26 @@ const UpdateTaskPage = (): JSX.Element => {
               </Field>
 
               <div className="grid grid-cols-2 gap-4">
-                {/* <Field label="Category" required>
+                <Field label="Category" required>
                 <select
                   value={form.category ?? ""}
-                  onChange={(e) => set("category", e.target.value || "")}
+                  onChange={(e) => {
+                    set("category", e.target.value || "")
+                    set("status","")
+                  }}
                   className={selectCls}
                 >
-                  <option value="">Select category…</option>
+                  <option value="" >Select category…</option>
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.icon} &nbsp; {c.name}
                     </option>
                   ))}
                 </select>
-              </Field> */}
+              </Field>
                 <Field
                   label="Current Status"
-                  hint={!form.status ? "Select a category first" : undefined}
+                  hint={!form.category ? "Select a category first" : undefined}
                 >
                   <select
                     value={form.status ?? ""}
@@ -524,7 +528,7 @@ const UpdateTaskPage = (): JSX.Element => {
                     disabled={!form.category || statuses.length === 0}
                     className={`${selectCls} disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
-                    <option value="" disabled> Select status… </option>
+                    <option value="" selected> Select status… </option>
                     {statuses.map((s) => (
                       <option key={s.id || s.id} value={s.id || s._id}>
                         {s.icon} {s.name}
