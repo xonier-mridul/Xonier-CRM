@@ -46,6 +46,7 @@ import {
   Timer,
   Star,
 } from "lucide-react";
+import { MdOutlineEdit } from "react-icons/md";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -675,7 +676,8 @@ const page = () => {
 
           <div className="relative p-6">
             {/* Breadcrumb-style context tags */}
-            <div className="flex items-center gap-2 mb-3 flex-wrap">
+            <div className="flex items-center gap-2 mb-3 flex-wrap w-full">
+              <div className="flex items-center justify-between gap-3 w-full">
               {taskData.category && (
                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700">
                   <Layers size={11} />
@@ -688,6 +690,8 @@ const page = () => {
                   {taskData.entityType} · {taskData.entityName}
                 </span>
               )}
+               {/* <Link href={`/task/update/${taskData.id}`} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-center flex items-center gap-2"><MdOutlineEdit /> Edit Task</Link> */}
+            </div>
             </div>
 
             <div className="flex items-start justify-between gap-6">
@@ -776,12 +780,13 @@ const page = () => {
                     </div>
                   </div>
                 )}
+               
               </div>
             </div>
           </div>
         </div>
 
-        {/* ── Quick stats row ── */}
+        
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <StatCard
             label="Estimated"

@@ -36,7 +36,7 @@ class CreateBulkCalenderEvent(BaseModel):
     @model_validator(mode="before")
    
     def validate_bulk_event(self):
-        print("se: ", self)
+        
         if not self["events"] or self["events"] == []:
             raise AppException(422, "Events field not be empty")
         

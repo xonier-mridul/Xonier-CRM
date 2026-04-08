@@ -383,6 +383,7 @@ function TaskCard({
             </span>
           )}
         </div>
+        
       </div>
       <div>
         {
@@ -416,6 +417,7 @@ function TaskCard({
           </div>
         }
       </div>
+      
     </div>
   );
 }
@@ -529,6 +531,7 @@ function KanbanColumn({
           </>
         )}
       </div>
+
     </div>
   );
 }
@@ -999,6 +1002,7 @@ export default function TaskViewPage() {
             </div>
           ))}
         </div>
+
       </div>
 
       <div className="flex items-center justify-between mb-4">

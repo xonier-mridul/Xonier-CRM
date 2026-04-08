@@ -132,12 +132,10 @@ class AuthServices:
             if not result:
                 raise AppException(404, "Users not found")
             
-            print("res: ", result)
             
             result = jsonable_encoder(result["data"])
 
             
-
             for item in result:
                 if item and item.get("email"):
                     item["email"] = self.crypto.decrypt_data(item["email"])
