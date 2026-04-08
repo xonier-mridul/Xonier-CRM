@@ -621,6 +621,14 @@ PERMISSIONS = [
         "title": "delete task status",
         "description": "permission for delete task status data",
     },
+    {
+        "code": "otp:read",
+        "module": "otp",
+        "action": "read",
+        "title": "read otp",
+        "description": "permission for read otp",
+
+    }
 
 
     

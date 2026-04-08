@@ -108,12 +108,14 @@ class AuthServices:
 
                 obj_members = [PydanticObjectId(item) for item in members]
 
+                print("mem: ", obj_members)
+
                 if members:
-                    query.update({"id": {"$in": obj_members}})
+                    query.update({"_id": {"$in": obj_members}})
                     is_manager = True
 
                 else:
-                    query.update({"id": PydanticObjectId(user["_id"])})
+                    query.update({"_id": PydanticObjectId(user["_id"])})
 
             if "search" in filters and filters["search"].strip():
                 regex_data = {"$regex": filters["search"].strip(), "$options": "i" }
@@ -122,12 +124,15 @@ class AuthServices:
 
             if not is_admin and not is_manager and query == {}:
                 raise AppException(409, "You are not authorized to get this data")
-
+            
+            print("11: ", query)
 
             result = await self.repo.get_all(page=int(page), limit=int(limit) ,filters=query, sort=["-createdAt"] )
 
             if not result:
                 raise AppException(404, "Users not found")
+            
+            print("res: ", result)
             
             result = jsonable_encoder(result["data"])
 
@@ -141,7 +146,7 @@ class AuthServices:
 
 
         except Exception as e:
-            raise
+            raise e
 
         except Exception as e:
             raise AppException(status_code=500, message="internal server error")
@@ -280,9 +285,10 @@ class AuthServices:
  
         except Exception as e:
             raise AppException(status_code=500, message=f"internal server error: {e}")
- 
-
         
+
+
+ 
 
 
     async def get_user_by_id(self,id: PydanticObjectId, user: Dict[str, Any]):
@@ -329,7 +335,7 @@ class AuthServices:
 
     async def get_user_profile(self, user: Dict[str, Any]):
         try:
-          print("yes")
+          
           is_admin = validate_admin(user["userRole"])
           is_manager = False
           is_creator = False
@@ -418,7 +424,7 @@ class AuthServices:
             raise
 
         except Exception as e:
-            print("errr: ", e)
+            
             await session.abort_transaction()
             raise AppException(status_code=500, message="internal server error")
         
@@ -470,6 +476,8 @@ class AuthServices:
                 raise AppException(400, "Password is not valid, please try again")
 
             otp = generate_otp(6)
+
+            print("otp: ", otp)
 
             hashed_otp = hash_value(str(otp))
 
