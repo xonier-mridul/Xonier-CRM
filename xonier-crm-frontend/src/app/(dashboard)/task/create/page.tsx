@@ -1,6 +1,6 @@
 "use client";
 
-import React, { JSX, useState, useEffect } from "react";
+import React, { JSX, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -21,6 +21,7 @@ import { User } from "@/src/types";
 import { AuthService } from "@/src/services/auth.service";
 import { RootState } from "@/src/store";
 import { PERMISSIONS } from "@/src/constants/enum";
+import { span } from "framer-motion/client";
 
 const PRIORITY_CFG: Record<
   TASK_PRIORITY,
@@ -119,6 +120,7 @@ const CreateTaskPage = (): JSX.Element => {
   const [tagInput, setTagInput] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [searchUser, setSearchUser] = useState<string>("");
+  const debounce = useRef<NodeJS.Timeout | null>(null);
 
   const [form, setForm] = useState<CreateTaskPayload>({
     title: "",
@@ -166,11 +168,18 @@ const CreateTaskPage = (): JSX.Element => {
       }
     })();
   }, []);
+useEffect(() => {
+  if (debounce.current) {
+    clearTimeout(debounce.current);
+  }
+  debounce.current = setTimeout(() => {
+    getUserData();
+  }, 300);
+}, [searchUser]);
 
   const getUserData = async () => {
     try {
-      const result = await AuthService.getAllActiveWithoutPagination();
-
+      const result = await AuthService.getAllTeamUsers(searchUser);
       if (result.status === 200) {
         setUserData(result.data.data);
       }
@@ -665,7 +674,7 @@ const CreateTaskPage = (): JSX.Element => {
                           key={userId}
                           className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-600 border border-indigo-200 dark:bg-indigo-900/30 dark:border-indigo-700 dark:text-indigo-300"
                         >
-                          👤 {user?.firstName || "User"}
+                          👤 {(userId == auth.user?._id) ? <span > You</span> : user?.firstName || "User"}
                           <button
                             type="button"
                             onClick={() =>
@@ -688,7 +697,7 @@ const CreateTaskPage = (): JSX.Element => {
                 {(canAssign) && (
                   <>
                     <input type="text" onChange={(e) => { setSearchUser(e.target.value) }} placeholder="Search users…" className="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition bg-white" />
-                    <div className="max-h-40 overflow-y-auto border rounded-xl p-2 space-y-1">
+                    <div className="max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-xl p-2 space-y-1">
                       {userData.map((user) => {
                         const isSelected = form.assignedTo.includes(user.id);
 
@@ -720,6 +729,11 @@ const CreateTaskPage = (): JSX.Element => {
                           </div>
                         );
                       })}
+                      {(userData.length === 0) && (
+                        <div className="flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                          No users found
+                        </div>
+                      )}
                     </div>
                   </>
                 )}
