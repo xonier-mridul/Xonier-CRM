@@ -1,10 +1,12 @@
 "use client";
 
-import React, { Dispatch, SetStateAction } from "react";
+import React, { Dispatch, SetStateAction, useEffect } from "react";
 import { StatusItem, StatusPayload, StatusPermissions, StatusTableProps, ColorOption } from "@/src/types/task/status.types";
 import { COLOR_OPTIONS, PERMISSIONS } from "@/src/constants/enum";
 import { StatusModal, StatusBadge } from "@/src/components/pages/task/createStatusModal";
 import { MdDeleteOutline, MdOutlineEdit } from "react-icons/md";
+import { CategoryItem } from "@/src/types/task/category.types";
+import { CategoryService } from "@/src/services/category.service";
 function getColorOption(hex: string | null): ColorOption {
   return COLOR_OPTIONS.find(c => c.hex === hex) ?? COLOR_OPTIONS[0];
 }
@@ -42,9 +44,12 @@ const StatusTable = ({
   totalPages,
   handlepagechange,
   handleSearch,
+  handleCategory,
   err,
 }: StatusTableProps) => {
   const [search, setSearch] = React.useState<string>("");
+  const [category, setCategory] = React.useState<string>("");
+  const [categories, setCategories] = React.useState<CategoryItem[]>([]);
 
   const filtered = statusData.filter(
     s =>
@@ -55,10 +60,21 @@ const StatusTable = ({
   const canCreate = hasPermissions(PERMISSIONS.taskStatusCreate);
   const canEdit = hasPermissions(PERMISSIONS.taskStatusUpdate);
   const canDelete = hasPermissions(PERMISSIONS.taskStatusDelete);
+  const fetchCategories = async () => {
+    try {
+      const res = await CategoryService.getAll({ currentPage: 1, pageLimit: 100, search: "" });
+      if (res.status === 200) setCategories(res.data.data.data ?? []);
+    } catch (e) {
+      process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
+    }
+  };
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   return (
     <>
-      
+
       {isPopupShow && (
         <StatusModal
           formData={formData}
@@ -73,7 +89,7 @@ const StatusTable = ({
         />
       )}
 
-      
+
       <div className="flex items-start justify-between mb-8 dark:text-white">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -116,7 +132,7 @@ const StatusTable = ({
       </div>
 
       {/* Search */}
-      <div className="relative mb-5 max-w-sm ml-auto">
+      <div className="relative flex mb-5 max-w-sm ml-auto gap-3">
         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
         <input
           type="text"
@@ -124,6 +140,17 @@ const StatusTable = ({
           placeholder="Search statuses…"
           className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition bg-white"
         />
+        <select
+          onChange={(e) => { handleCategory(e.target.value); }}
+          className="px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
+        >
+          <option value="">All Categories</option>
+          {categories.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.icon} {c.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Table */}
@@ -176,7 +203,7 @@ const StatusTable = ({
             ) : (
               filtered.map((s, i) => {
                 const colorOpt = getColorOption(s.color);
-                const icon = s.icon ;
+                const icon = s.icon;
 
                 return (
                   <tr
@@ -191,7 +218,7 @@ const StatusTable = ({
 
                     {/* Badge */}
                     <td className="px-5 py-4">
-                      <StatusBadge color={colorOpt} icon={icon|| "⚡"} name={s.name} />
+                      <StatusBadge color={colorOpt} icon={icon || "⚡"} name={s.name} />
                     </td>
 
                     {/* Description */}
@@ -271,7 +298,7 @@ const StatusTable = ({
               {currentPage}
             </span>{" "}
             of{" "}
-            <span className="font-semibold text-gray-600 dark:text-gray-300">{totalPages }</span>
+            <span className="font-semibold text-gray-600 dark:text-gray-300">{totalPages}</span>
           </span>
 
           <div className="flex items-center gap-2">

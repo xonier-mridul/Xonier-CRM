@@ -8,6 +8,7 @@ const UserSelect: React.FC<UserSelectProps> = ({
   selectedUserId,
   setSelectedUserId,
   placeholder = "Search & select user...",
+  cls = "w-full bg-white dark:bg-gray-800 text-slate-800 dark:text-white px-3 py-1.5 rounded-lg border outline-none text-xs shadow-sm",
 }) => {
   const [search, setSearch] = useState<string>("");
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -56,7 +57,8 @@ const UserSelect: React.FC<UserSelectProps> = ({
           setIsOpen(true);
         }}
         onFocus={() => setIsOpen(true)}
-        className="w-full bg-white dark:bg-gray-800 text-slate-800 dark:text-white px-3 py-1.5 rounded-lg border outline-none text-xs shadow-sm"
+        
+        className= {cls}
       />
 
       {/* Dropdown */}
