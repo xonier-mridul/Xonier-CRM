@@ -15,6 +15,7 @@ import { TASK_ACTIVITY_ACTION } from "@/src/constants/enum";
 import { useSelector } from "react-redux";
 import UserSelect from "@/src/components/common/userselect";
 import { FaXmark } from "react-icons/fa6";
+import MarkFinalModal from "@/src/components/pages/task/Marrkfinalmodal";
 
 type Raw = Record<string, unknown>;
 
@@ -194,8 +195,8 @@ function normalizeBoard(raw: Raw): KanbanBoard {
 
 
 
-const apiFetchTask = (id: string,curUserIds:string) => api.get(`/task/${id}?userid=${curUserIds}`);
-const apiFetchKanban = (catId: string ,curUserIds:string) => api.get(`/task/kanban/${catId}?users=${curUserIds}`);
+const apiFetchTask = (id: string, curUserIds: string) => api.get(`/task/${id}?userid=${curUserIds}`);
+const apiFetchKanban = (catId: string, curUserIds: string) => api.get(`/task/kanban/${catId}?users=${curUserIds}`);
 const apiMoveTask = (
   id: string,
   statusId: string,
@@ -274,8 +275,8 @@ function TaskCard({
       draggable={canStatusChange}
       onDragStart={(e) => {
         if (!canStatusChange) return;
-          onDragStart(e, task)
-        }
+        onDragStart(e, task)
+      }
       }
       onDragEnd={onDragEnd}
       onClick={() => { router.push(`/task/detail/${task.id}`) }}
@@ -421,7 +422,7 @@ function TaskCard({
           </div>
         }
       </div>
-      
+
     </div>
   );
 }
@@ -592,12 +593,18 @@ export default function TaskViewPage() {
   const user = useSelector((state: any) => state.auth.user);
   const queryParam = useSearchParams()
   const curUserId = queryParam.get("userid")
-  const [selectedUser , setselectedUser] = useState<string>(curUserId as string)
+  const [selectedUser, setselectedUser] = useState<string>(curUserId as string)
+  const canMarkFinal = hasPermission(PERMISSIONS.markFinal);
+
+  const [pendingDrop, setPendingDrop] = useState<{
+    task: Task;
+    targetStatus: TaskStatus;
+  } | null>(null);
 
   useEffect(() => {
     if (!taskId) return;
     setLoadingTask(true);
-    apiFetchTask(taskId, selectedUser||"")
+    apiFetchTask(taskId, selectedUser || "")
       .then((res) => {
         const raw: Raw = res.data?.data ?? res.data;
         setFocusedTask(normalizeFocusedTask(raw));
@@ -609,9 +616,9 @@ export default function TaskViewPage() {
       })
       .finally(() => setLoadingTask(false));
   }, [taskId]);
-  useEffect(()=>{
-      loadBoard(focusedTask?.category?.id ?? "");
-  },[selectedUser]);
+  useEffect(() => {
+    loadBoard(focusedTask?.category?.id ?? "");
+  }, [selectedUser]);
 
   const loadBoard = useCallback(async (categoryId: string, force = false) => {
     if (!categoryId) return;
@@ -621,7 +628,7 @@ export default function TaskViewPage() {
         if (debouncingRef.current) clearTimeout(debouncingRef.current);
         debouncingRef.current = setTimeout(async () => {
           setBgloader(true);
-          const res = await apiFetchKanban(categoryId ,selectedUser||"" );
+          const res = await apiFetchKanban(categoryId, selectedUser || "");
           const raw: Raw = res.data?.data ?? res.data;
           const board = normalizeBoard(raw);
           setBoardCategory(board.category);
@@ -629,18 +636,18 @@ export default function TaskViewPage() {
           setBgloader(false);
         }, 30000);
       }
-      else{
-          if(debouncingRef.current){
-            clearTimeout(debouncingRef.current);
-            debouncingRef.current = null;
-          }
-          setBgloader(true);
-          console.log(selectedUser)
-          const res = await apiFetchKanban(categoryId,selectedUser || "");
-          const raw: Raw = res.data?.data ?? res.data;
-          const board = normalizeBoard(raw);
-          setBoardCategory(board.category);
-          setColumns(board.columns);
+      else {
+        if (debouncingRef.current) {
+          clearTimeout(debouncingRef.current);
+          debouncingRef.current = null;
+        }
+        setBgloader(true);
+        console.log(selectedUser)
+        const res = await apiFetchKanban(categoryId, selectedUser || "");
+        const raw: Raw = res.data?.data ?? res.data;
+        const board = normalizeBoard(raw);
+        setBoardCategory(board.category);
+        setColumns(board.columns);
       }
 
     } catch (err) {
@@ -685,11 +692,14 @@ export default function TaskViewPage() {
 
   const handleDrop = async (e: React.DragEvent, targetStatusId: string) => {
     e.preventDefault();
+
     if (!hasPermission(PERMISSIONS.taskStatusChange)) {
       toast.error("You don't have permission to move tasks");
       return;
     }
+
     setDragOverColId(null);
+
     const task = dragRef.current;
     dragRef.current = null;
     setDraggingTask(null);
@@ -699,6 +709,22 @@ export default function TaskViewPage() {
     const targetCol = columns.find((c) => c.status.id === targetStatusId);
     if (!targetCol) return;
 
+    // 🔥 FINAL STATUS CHECK
+    if (targetCol.status.isFinal) {
+      if (!canMarkFinal) {
+        toast.error("You don't have permission to mark final");
+        return;
+      }
+
+      setPendingDrop({
+        task,
+        targetStatus: targetCol.status,
+      });
+
+      return;
+    }
+
+    // 🔽 EXISTING LOGIC (unchanged)
     setColumns((prev) =>
       prev.map((col) => {
         if (col.status.id === task.status.id) {
@@ -736,38 +762,30 @@ export default function TaskViewPage() {
         categoryId,
         targetCol.tasks.length,
       );
-      setColumns((prev) =>
-        prev.map((col) => ({
-          ...col,
-          tasks: col.tasks.map((t) => {
-            if (t.id !== task.id) return t;
 
-            return {
-              ...t,
-              activities: {
-                ...t.activities,
-                oldValue: task.activities.newValue,
-                newValue: targetCol.status.name,
-                action: TASK_ACTIVITY_ACTION.STATUS_CHANGED,
-                performedBy: user,
-              },
-            };
-          }),
-        }))
-      );
-      // toast.success("Task moved");
       loadBoard(focusedTask?.category?.id ?? "", true);
     } catch (err) {
-      console.error("Move error:", err);
-
-      
       await loadBoard(focusedTask?.category?.id ?? "");
-
-      if (axios.isAxiosError(err))
-        toast.error(err.response?.data?.message ?? "Failed to move task");
+      toast.error("Failed to move task");
     } finally {
       setMovingTaskId(null);
     }
+  };
+  const handleFinalCancel = () => {
+    setPendingDrop(null);
+  };
+  const handleFinalConfirm = async (payload: any) => {
+    if (!pendingDrop) return;
+
+    const { task, targetStatus } = pendingDrop;
+
+    setPendingDrop(null);
+
+    const categoryId = focusedTask?.category?.id ?? task.category?.id ?? "";
+
+    await apiMoveTask(task.id, targetStatus.id, categoryId, 0);
+
+    loadBoard(categoryId, false);
   };
 
   const allTasks = columns.flatMap((c) => c.tasks);
@@ -1058,63 +1076,63 @@ export default function TaskViewPage() {
           )}
         </div>
 
-          <div 
+        <div
           className="flex gap-2">
-            <p className="text-sm my-auto text-gray-500">
+          <p className="text-sm my-auto text-gray-500">
 
             Search By User :
-            </p>
-            <UserSelect
-              mode="single"
-              value= {selectedUser}
-              onChange={setselectedUser}
-              placeholder="select user..."
-            />
-            {
-              selectedUser!=="" && (
-                <div 
-                onClick={()=>{setselectedUser("")}} 
+          </p>
+          <UserSelect
+            mode="single"
+            value={selectedUser}
+            onChange={setselectedUser}
+            placeholder="select user..."
+          />
+          {
+            selectedUser !== "" && (
+              <div
+                onClick={() => { setselectedUser("") }}
                 className="my-auto  text-[14px] w-6 h-6 flex items-center justify-center rounded-xl bg-red-100 p-1 text-red-500 hover:rotate-90 transition-all cursor-pointer"
-                >
-                  <FaXmark />
-                </div>
-              )
-            }
-         
-        <button
-          onClick={() =>
-            focusedTask.category?.id && loadBoard(focusedTask.category.id)
+              >
+                <FaXmark />
+              </div>
+            )
           }
-          disabled={loadingBoard}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 shadow-sm transition-all disabled:opacity-50"
-        >
-          {bgloader ? (
-            <svg
-              className="w-3 h-3 animate-spin"
-              viewBox="0 0 24 24"
-              fill="none"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8v8H4z"
-              />
-            </svg>
-          ) : (
-            <span>↻</span>
-          )}
-          Refresh
-        </button>
+
+          <button
+            onClick={() =>
+              focusedTask.category?.id && loadBoard(focusedTask.category.id)
+            }
+            disabled={loadingBoard}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 shadow-sm transition-all disabled:opacity-50"
+          >
+            {bgloader ? (
+              <svg
+                className="w-3 h-3 animate-spin"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8H4z"
+                />
+              </svg>
+            ) : (
+              <span>↻</span>
+            )}
+            Refresh
+          </button>
+        </div>
       </div>
-       </div>
 
       {loadingBoard ? (
         <BoardSkeleton />
@@ -1146,6 +1164,15 @@ export default function TaskViewPage() {
             />
           ))}
         </div>
+      )}
+      {pendingDrop && (
+        <MarkFinalModal
+          taskTitle={pendingDrop.task.title}
+          statusName={pendingDrop.targetStatus.name}
+          statusColor={pendingDrop.targetStatus.color ?? "#22c55e"}
+          onConfirm={handleFinalConfirm}
+          onCancel={handleFinalCancel}
+        />
       )}
     </div>
   );
