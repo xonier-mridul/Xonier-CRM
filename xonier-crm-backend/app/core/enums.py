@@ -876,6 +876,8 @@ class TASK_ACTIVITY_ACTION(str, Enum):
     REOPENED = "reopened"
     DELETED = "deleted"
     UPDATE = "update"
+    REMARK_CREATED="remark_created"
+    REMARK_ACKNOWLEDGED = "remark_acknowledged"
 
 
 class LEAD_REQUEST_STATUS(str, Enum):

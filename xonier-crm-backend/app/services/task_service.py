@@ -18,6 +18,8 @@ from bson import ObjectId, DBRef
 from app.core.crypto import encryptor
 from app.db.models.task_model import TaskModel
 from datetime import datetime, timezone, timedelta
+from app.repositories.task_remark_repository import TaskRemarkRepository
+from app.core.dependencies import Dependencies
 import asyncio
 
  
@@ -45,6 +47,8 @@ class TaskService:
         self.getTeamMembers = GetTeamMembers()
         self.client = Client
         self.crypto = encryptor
+        self.remarkRepo = TaskRemarkRepository()
+        self.dependencies = Dependencies()
  
     async def _resolve_default_status(self, category_id: str):
         default_status = await self.statusRepo.find_one({
@@ -171,6 +175,145 @@ class TaskService:
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
  
+    async def create_remark(self,taskId:str, payload: Dict[str, Any], user:Dict[str, Any]):
+        async with await self.client.start_session() as session:
+            async with session.start_transaction():
+                try:
+                    if not ObjectId.is_valid(taskId):
+                        raise AppException(400, "Invalid task object id")
+                    
+                    task_data = await self.repo.find_by_id(id=PydanticObjectId(taskId), populate=["assignedTo"])
+                    
+                    if not task_data:
+                        raise AppException(404, "Task not found regarding taskId")
+                    
+                    if task_data.deletedAt:
+                        raise AppException(400, "Sorry the task is deleted, you not make remark on it")
+                    
+                    is_admin = validate_admin(user["userRole"])
+                    is_manager = False
+                    is_creator = False
+
+                    task_data = jsonable_encoder(task_data)
+                    if not is_admin:
+                        members = await self.getTeamMembers.get_team_members(user["_id"])
+                        
+                        
+                        
+                        if members:
+                            
+                            obj_members = [PydanticObjectId(item) for item in members]
+                            
+                            set1 = set(PydanticObjectId(item["id"]) for item in task_data["assignedTo"])
+                            set2 = set(obj_members)
+                            
+                            common = set1 & set2
+                            
+                            if common:
+                                is_manager = True
+
+                        else:
+                            if ObjectId(user["_id"]) in (PydanticObjectId(item["id"]) for item in task_data["assignedTo"]):
+                                is_creator = True
+
+                    
+                    if not is_admin and not is_manager and not is_creator:
+                        raise AppException(400, "You are invalid user to create")
+                    
+                    new_payload = {
+                        **payload,
+                        "task": taskId,
+                        "createdBy": user["_id"],
+                        
+                    }
+
+                    
+
+                    result = await self.remarkRepo.create(data=new_payload)
+
+                    if not result:
+                        raise AppException(400, "Remark not created")
+                    
+                    activity = _activity(
+                                task_id=str(taskId),
+                                action=TASK_ACTIVITY_ACTION.REMARK_CREATED,
+                                performer_id=user["_id"],
+                                description=f"Remark created and description is {result.content}",
+                                metadata={"taskId": taskId, "remark content": result.content, "mention": result.mentions if result.mentions else []}
+                            )
+                    result = await self.activityRepo.create(data=activity, session=session)
+
+                    
+                    
+                    return result.model_dump(mode="json")
+
+
+                except AppException:
+                    raise
+                except Exception as e:
+                    raise AppException(500, f"Internal server error: {e}")
+    
+    async def get_remarks(self,taskId: str, filters: Dict[str, Any], user: Dict[str, Any]):
+        try:
+            
+            if not ObjectId.is_valid(taskId):
+                raise AppException(400, "Invalid task id")
+            
+            query = {}
+            
+            result = await self.repo.find_by_id(PydanticObjectId(taskId),["assignedTo"])
+
+            if not result:
+                raise AppException(400, "Task not found")
+            
+            encoded_result = result.model_dump(mode="json")
+            
+
+            is_admin = validate_admin(user["userRole"])
+            is_manager = False
+            is_creator = False
+            
+
+            if not is_admin:
+                members = await self.getTeamMembers.get_team_members(user["_id"])
+                
+
+                if members:
+                    set1 = set(PydanticObjectId(item) for item in members)
+                    set2 = set(PydanticObjectId(item["id"]) for item in encoded_result["assignedTo"])
+                    
+
+                    common = set1 & set2
+
+                    if common:
+                        is_manager = True
+
+                else:
+                    if PydanticObjectId(user["_id"]) in [PydanticObjectId(item["id"]) for item in encoded_result["assignedTo"]]:
+                        is_creator = True
+
+            
+            if not is_admin and not is_manager and not is_creator:
+                raise AppException(400, "You are invalid user to create")
+
+
+            result = await self.remarkRepo.get_by_taskId(taskId=taskId, populate=["mentions", "createdBy", "acknowledgedBy"])
+
+            if not result:
+                raise AppException(404, f"Remarks not fount against {encoded_result["title"]} task")
+            
+            return jsonable_encoder(result)
+                         
+
+            
+
+        except AppException as e:
+            raise e
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+
+        
+    
     async def get_all_tasks(self, filters: Dict[str, Any], user: Dict[str, Any]):
         try:
             page = int(filters.get("page", 1))
@@ -594,6 +737,87 @@ class TaskService:
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
  
+
+    async def update_remarks_acknowledge(self, remarkId: str, payload: Dict[str, Any], user: Dict[str, Any]):
+        async with await self.client.start_session() as session:
+            async with session.start_transaction():
+                try:
+                    if not ObjectId.is_valid(remarkId):
+                        raise AppException(400, "Invalid remark id")
+
+                    remark = await self.remarkRepo.find_by_id(PydanticObjectId(remarkId), session=session)
+                    if not remark or remark.deletedAt:
+                        raise AppException(404, "Remark not found")
+
+                    if remark.acknowledge:
+                        raise AppException(400, "Remark is already acknowledged and cannot be reversed")
+
+                    task_id = str(remark.task.ref.id)
+                    task = await self.repo.find_by_id(PydanticObjectId(task_id), session=session)
+                    if not task or task.deletedAt:
+                        raise AppException(404, "Task not found")
+
+                    is_admin = validate_admin(user["userRole"])
+                    user_oid = PydanticObjectId(user["_id"])
+
+                    if not is_admin:
+                        task_assigned_oids = []
+                        for ref in (task.assignedTo or []):
+                            try:
+                                task_assigned_oids.append(PydanticObjectId(str(ref.ref.id)))
+                            except Exception:
+                                try:
+                                    task_assigned_oids.append(PydanticObjectId(str(ref.id)))
+                                except Exception:
+                                    continue
+
+                        is_own_task = user_oid in task_assigned_oids
+
+                        members = await self.getTeamMembers.get_team_members(user["_id"])
+                        members_oids = [PydanticObjectId(str(m)) for m in members]
+
+                        is_team_task = any(uid in members_oids for uid in task_assigned_oids)
+
+                        if not is_own_task and not is_team_task:
+                            raise AppException(403, "You do not have permission to acknowledge this remark")
+
+                    update_payload = {
+                        "acknowledge": True,
+                        "acknowledgedBy": DBRef("users", ObjectId(str(user_oid))),
+                        "updatedAt": datetime.now(timezone.utc)
+                    }
+
+                    updated = await self.remarkRepo.update(
+                        id=PydanticObjectId(remarkId),
+                        data=update_payload,
+                        session=session
+                    )
+
+                    if not updated:
+                        raise AppException(400, "Remark acknowledgement failed")
+
+                    activity = _activity(
+                        task_id=task_id,
+                        action=TASK_ACTIVITY_ACTION.REMARK_ACKNOWLEDGED,
+                        performer_id=user["_id"],
+                        description=f"Remark acknowledged by {user.get('fullName', user['_id'])}",
+                        metadata={
+                            "taskId": task_id,
+                            "remarkId": remarkId,
+                            "acknowledgedBy": str(user["_id"])
+                        }
+                    )
+                    await self.activityRepo.create(data=activity, session=session)
+
+                    return True
+
+                except AppException:
+                    raise
+                except Exception as e:
+                    raise AppException(500, f"Internal server error: {e}")
+        
+
+    
     async def update_task_status(self, task_id: str, payload: Dict[str, Any], user: Dict[str, Any]):
         async with await self.client.start_session() as session:
             async with session.start_transaction():
@@ -653,45 +877,66 @@ class TaskService:
                 try:
                     if not ObjectId.is_valid(task_id):
                         raise AppException(400, "Invalid task id")
- 
+
                     new_status_id = payload.get("status")
                     new_order = payload.get("order", 0)
- 
+
                     if not ObjectId.is_valid(new_status_id):
                         raise AppException(400, "Invalid status id")
- 
+
                     existing = await self.repo.find_by_id(PydanticObjectId(task_id), session=session)
                     if not existing or existing.deletedAt:
                         raise AppException(404, "Task not found")
- 
+
+                    is_admin = validate_admin(user["userRole"])
+                    user_oid = PydanticObjectId(user["_id"])
+
+                    if not is_admin:
+                        members = await self.getTeamMembers.get_team_members(user["_id"])
+                        members_oids = [PydanticObjectId(str(m)) for m in members]
+
+                        task_assigned_oids = []
+                        for ref in (existing.assignedTo or []):
+                            try:
+                                task_assigned_oids.append(PydanticObjectId(str(ref.ref.id)))
+                            except Exception:
+                                try:
+                                    task_assigned_oids.append(PydanticObjectId(str(ref.id)))
+                                except Exception:
+                                    continue
+
+                        is_own_task = user_oid in task_assigned_oids
+                        is_team_task = any(uid in members_oids for uid in task_assigned_oids)
+
+                        if not is_own_task and not is_team_task:
+                            raise AppException(403, "You do not have permission to move this task")
+
                     category_id = str(existing.category.ref.id)
                     new_status = await self._validate_status_belongs_to_category(new_status_id, category_id)
- 
+
                     old_status = await self.statusRepo.find_by_id(PydanticObjectId(str(existing.status.ref.id)))
                     old_status_name = old_status.name if old_status else "Unknown"
- 
+
                     update_data: Dict[str, Any] = {
-                        "status": DBRef(
-                            collection="task_statuses",
-                            id=ObjectId(new_status_id)  
-                        ),
+                        "status": DBRef(collection="task_statuses", id=ObjectId(new_status_id)),
                         "order": new_order,
-                        "updatedBy": DBRef("users", user["_id"]),
+                        "updatedBy": DBRef("users", ObjectId(str(user_oid))),
                         "updatedAt": datetime.now(timezone.utc),
                         "completedAt": None
                     }
 
- 
                     if new_status.isFinal:
+                        # if not self.dependencies.permissions(["task:markStatusComplete"]):
+                        #     raise AppException(403, "You not have permission for mark task to done")
                         update_data["completedAt"] = datetime.now(timezone.utc)
                         update_data["isOverdue"] = False
- 
+
+                        
                     updated = await self.repo.update(id=PydanticObjectId(task_id), data=update_data, session=session)
                     if not updated:
                         raise AppException(400, "Task move failed")
- 
-                    status_changed = new_status_id != str(existing.status.ref.id)
-                    if status_changed:
+
+                    if new_status_id != str(existing.status.ref.id):
                         activity = _activity(
                             task_id=task_id,
                             action=TASK_ACTIVITY_ACTION.STATUS_CHANGED,
@@ -702,14 +947,15 @@ class TaskService:
                             new_val=new_status.name,
                         )
                         await self.activityRepo.create(data=activity, session=session)
- 
+
                     return True
- 
+
                 except AppException:
                     raise
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
- 
+                
+
     async def reorder_tasks(self, payload: Dict[str, Any], user: Dict[str, Any]):
         async with await self.client.start_session() as session:
             async with session.start_transaction():
