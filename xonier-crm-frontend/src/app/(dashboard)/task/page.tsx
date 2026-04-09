@@ -25,6 +25,7 @@ import { CategoryService } from "@/src/services/category.service";
 import UserSelect from "@/src/components/common/userselect";
 import { AuthService } from "@/src/services/auth.service";
 import { User } from "@/src/types";
+import { useSearchParams } from "next/navigation";
 
 
 type ViewMode = "list" | "board";
@@ -62,6 +63,7 @@ function StatusDropdown({ task, statusOptions, onChange, disabled }: StatusDropd
   const [busy, setBusy] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
+  const param = useSearchParams();
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
@@ -193,11 +195,12 @@ interface BoardCardProps {
 function BoardCard({ task, canEdit, canDelete, deleting, onEdit, onDelete, onDragStart }: BoardCardProps) {
   const pri = PRIORITY_STYLE[task.priority];
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
-
+  const router = useRouter();
   return (
     <div
       draggable
       onDragStart={e => onDragStart(e, task)}
+      onClick={() => { router.push(`/task/detail/${task.id}`) }}
       className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-3.5 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-gray-200 dark:hover:border-gray-600 transition-all group select-none"
     >
 
@@ -272,9 +275,10 @@ function BoardCard({ task, canEdit, canDelete, deleting, onEdit, onDelete, onDra
               {task.assignedTo.slice(0, 2).map(u => (
                 <div
                   key={u.id} title={u.firstName}
-                  className=" h-6 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 border-2 border-white dark:border-gray-800 flex items-center justify-center text-white text-[8px] font-bold shrink-0"
+                  className="px-2 h-6 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 border-2 border-white dark:border-gray-800 flex items-center justify-center text-white text-[8px] font-bold shrink-0"
                 >
-                  {u.firstName} {u.lastName ?? ""}
+                  {u.firstName} 
+                  {/* {u.lastName ?? ""} */}
                 </div>
               ))}
               {task.assignedTo.length > 2 && (
@@ -521,17 +525,18 @@ interface BoardViewProps {
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onStatusChange: (taskId: string, payload: UpdateTaskStatusPayload) => Promise<void>;
+  skeletonlength: number
 }
 
 function BoardView({
   tasks, statusOptions, canEdit, canDelete, canChangeStatus,
-  deleting, isLoading, onEdit, onDelete, onStatusChange,
+  deleting, isLoading, onEdit, onDelete, onStatusChange,skeletonlength
 }: BoardViewProps) {
 
   if (isLoading) {
     return (
       <div className="space-y-8">
-        {Array.from({ length: 1 }).map((_, gi) => (
+        {Array.from({ length: skeletonlength }).map((_, gi) => (
           <div key={gi} className="animate-pulse">
             <div className="h-6 w-40 bg-gray-200 dark:bg-gray-700 rounded-lg mb-4" />
             <div className="flex gap-4">
@@ -811,7 +816,7 @@ const TaskListPage = (): JSX.Element => {
   const router = useRouter();
   const { hasPermission } = usePermissions();
 
-  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [viewMode, setViewMode] = useState<ViewMode>("board");
   const [taskData, setTaskData] = useState<TaskItem[]>([]);
   const [statusOptions, setStatusOptions] = useState<StatusOption[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -879,13 +884,15 @@ const TaskListPage = (): JSX.Element => {
   };
   const fetchUsers = async () => {
     try {
-      const res = await AuthService.getAllTeamUsers();
+      const res = await AuthService.getAllTeamUsers({search:"",page:1});
       if (res.status === 200) setUsers(res.data.data);
     } catch (e) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
     }
   };
-
+  useEffect(()=>{
+    setCurrentPage(1);
+  },[filterAssigned])
   useEffect(() => { fetchStatuses(); fetchCategories(); fetchUsers(); }, []);
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
@@ -959,6 +966,7 @@ const TaskListPage = (): JSX.Element => {
     }
     debounceRef.current = setTimeout(() => {
       setSearch(val);
+      setCurrentPage(1);
     }, 300);
   };
 
@@ -1022,7 +1030,7 @@ const TaskListPage = (): JSX.Element => {
 
               onChange={e => handleSearch(e.target.value)}
               placeholder="Search tasks…"
-              className="pl-9 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
+              className="pl-8 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
             />
           </div>
 
@@ -1063,26 +1071,33 @@ const TaskListPage = (): JSX.Element => {
               <option key={p.id} value={p.id}>{p.name.charAt(0) + p.name.slice(1).toLowerCase()}</option>
             ))}
           </select>
-            <UserSelect
-              users={users}
+            {/* <UserSelect
+              mode="single"
               selectedUserId={filterAssigned}
               setSelectedUserId={setFilterAssigned}
               placeholder="Search assignee ..."
               cls="py-2.5 px-1 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition bg-white"
+            /> */}
+            <UserSelect
+              mode="single"
+              value={filterAssigned}
+              onChange={setFilterAssigned}
+              placeholder="Search assignee ..."
+              cls="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition bg-white"
             />
 
           {hasFilters && (
             <button
               type="button"
               onClick={() => { setSearch(""); setFilterStatus(""); setFilterPriority(""); setCurrentPage(1); setFilterAssigned(""); setFiltrCategory(""); }}
-              className="px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-1.5"
+              className="px-1 py-1.5 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-1.5"
             >
-              <span>✕</span> Clear
+              <span>✕</span>Clear
             </button>
           )}
 
           {
-            (filtrCategory ) && (<>
+            (true ) && (<>
               <div className="w-px h-7 bg-gray-200 dark:bg-gray-600 ml-auto" />
               <ViewToggle view={viewMode} onChange={v => { setViewMode(v); setCurrentPage(1); }} />
             </>
@@ -1102,6 +1117,7 @@ const TaskListPage = (): JSX.Element => {
             onEdit={id => router.push(`/task/update/${id}`)}
             onDelete={handleDelete}
             onStatusChange={handleStatusChange}
+            skeletonlength = {categories.length}
           />
         )}
 
@@ -1284,7 +1300,7 @@ const TaskListPage = (): JSX.Element => {
                                 {canView && (
                                   <button
                                     type="button"
-                                    onClick={() => router.push(`/task/view/${task.id}`)}
+                                    onClick={() => router.push(`/task/view/${task.id}?userid=${task.assignedTo[0]?.id} `)}
                                     className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-green-600 bg-green-50 hover:bg-green-100 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:text-green-400 transition cursor-pointer"
                                   >
                                     <span className="items-center justify-center  text-green-500 ">
@@ -1352,7 +1368,7 @@ const TaskListPage = (): JSX.Element => {
                 </span>
                 <button
                   type="button"
-                  disabled={currentPage >= totalPages || isLoading}
+                  disabled={currentPage >= totalCount || isLoading}
                   onClick={() => setCurrentPage(p => p + 1)}
                   className="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
                 >

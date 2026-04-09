@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import axios from "axios";
 import api from "@/src/lib/axios";
@@ -13,6 +13,8 @@ import { TaskActivity } from "@/src/types/task/task.types";
 import { ChevronRight } from "lucide-react";
 import { TASK_ACTIVITY_ACTION } from "@/src/constants/enum";
 import { useSelector } from "react-redux";
+import UserSelect from "@/src/components/common/userselect";
+import { FaXmark } from "react-icons/fa6";
 
 type Raw = Record<string, unknown>;
 
@@ -190,8 +192,10 @@ function normalizeBoard(raw: Raw): KanbanBoard {
   return { category, columns, totalStatuses: columns.length };
 }
 
-const apiFetchTask = (id: string) => api.get(`/task/${id}`);
-const apiFetchKanban = (catId: string) => api.get(`/task/kanban/${catId}`);
+
+
+const apiFetchTask = (id: string,curUserIds:string) => api.get(`/task/${id}?userid=${curUserIds}`);
+const apiFetchKanban = (catId: string ,curUserIds:string) => api.get(`/task/kanban/${catId}?users=${curUserIds}`);
 const apiMoveTask = (
   id: string,
   statusId: string,
@@ -586,11 +590,14 @@ export default function TaskViewPage() {
   const dragRef = useRef<Task | null>(null);
   const debouncingRef = useRef<NodeJS.Timeout | null>(null);
   const user = useSelector((state: any) => state.auth.user);
+  const queryParam = useSearchParams()
+  const curUserId = queryParam.get("userid")
+  const [selectedUser , setselectedUser] = useState<string>(curUserId as string)
 
   useEffect(() => {
     if (!taskId) return;
     setLoadingTask(true);
-    apiFetchTask(taskId)
+    apiFetchTask(taskId, selectedUser||"")
       .then((res) => {
         const raw: Raw = res.data?.data ?? res.data;
         setFocusedTask(normalizeFocusedTask(raw));
@@ -602,6 +609,9 @@ export default function TaskViewPage() {
       })
       .finally(() => setLoadingTask(false));
   }, [taskId]);
+  useEffect(()=>{
+      loadBoard(focusedTask?.category?.id ?? "");
+  },[selectedUser]);
 
   const loadBoard = useCallback(async (categoryId: string, force = false) => {
     if (!categoryId) return;
@@ -611,7 +621,7 @@ export default function TaskViewPage() {
         if (debouncingRef.current) clearTimeout(debouncingRef.current);
         debouncingRef.current = setTimeout(async () => {
           setBgloader(true);
-          const res = await apiFetchKanban(categoryId);
+          const res = await apiFetchKanban(categoryId ,selectedUser||"" );
           const raw: Raw = res.data?.data ?? res.data;
           const board = normalizeBoard(raw);
           setBoardCategory(board.category);
@@ -625,7 +635,8 @@ export default function TaskViewPage() {
             debouncingRef.current = null;
           }
           setBgloader(true);
-          const res = await apiFetchKanban(categoryId);
+          console.log(selectedUser)
+          const res = await apiFetchKanban(categoryId,selectedUser || "");
           const raw: Raw = res.data?.data ?? res.data;
           const board = normalizeBoard(raw);
           setBoardCategory(board.category);
@@ -639,7 +650,7 @@ export default function TaskViewPage() {
       setLoadingBoard(false);
       setBgloader(false);
     }
-  }, []);
+  }, [selectedUser]);
 
   useEffect(() => {
     const catId = focusedTask?.category?.id;
@@ -1047,6 +1058,29 @@ export default function TaskViewPage() {
           )}
         </div>
 
+          <div 
+          className="flex gap-2">
+            <p className="text-sm my-auto text-gray-500">
+
+            Search By User :
+            </p>
+            <UserSelect
+              mode="single"
+              value= {selectedUser}
+              onChange={setselectedUser}
+              placeholder="select user..."
+            />
+            {
+              selectedUser!=="" && (
+                <div 
+                onClick={()=>{setselectedUser("")}} 
+                className="my-auto  text-[14px] w-6 h-6 flex items-center justify-center rounded-xl bg-red-100 p-1 text-red-500 hover:rotate-90 transition-all cursor-pointer"
+                >
+                  <FaXmark />
+                </div>
+              )
+            }
+         
         <button
           onClick={() =>
             focusedTask.category?.id && loadBoard(focusedTask.category.id)
@@ -1080,6 +1114,7 @@ export default function TaskViewPage() {
           Refresh
         </button>
       </div>
+       </div>
 
       {loadingBoard ? (
         <BoardSkeleton />
