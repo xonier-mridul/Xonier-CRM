@@ -926,8 +926,7 @@ class TaskService:
                     }
 
                     if new_status.isFinal:
-                        # if not self.dependencies.permissions(["task:markStatusComplete"]):
-                        #     raise AppException(403, "You not have permission for mark task to done")
+                        
                         update_data["completedAt"] = datetime.now(timezone.utc)
                         update_data["isOverdue"] = False
 
