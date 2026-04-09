@@ -566,6 +566,15 @@ PERMISSIONS = [
 
     },
     {
+        "code": "task:markStatusComplete",
+        "module": "task",
+        "action": "Update",
+        "title": "Mark status complete",
+        "description": "permission for mark status to complete",
+
+    },
+    
+    {
         "code": "taskCategory:create",
         "module": "taskCategory",
         "action": "create",
@@ -627,9 +636,34 @@ PERMISSIONS = [
         "action": "read",
         "title": "read otp",
         "description": "permission for read otp",
+    },
+    {
+        "code": "remark:read",
+        "module": "remark",
+        "action": "read",
+        "title": "read remark",
+        "description": "permission for read remark",
+    },
+    {
+        "code": "remark:create",
+        "module": "remark",
+        "action": "create",
+        "title": "create remark",
+        "description": "permission for create remark",
+    },
+    {
+        "code": "remark:update",
+        "module": "remark",
+        "action": "update",
+        "title": "update remark",
+        "description": "permission for update remark",
+    },
+    {
+        "code": "remark:delete",
+        "module": "remark",
+        "action": "delete",
+        "title": "delete remark",
+        "description": "permission for delete remark",
+    },
 
-    }
-
-
-    
 ]

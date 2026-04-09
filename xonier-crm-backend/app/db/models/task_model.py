@@ -2,12 +2,14 @@
 from beanie import Document, Link, Indexed, before_event
 from beanie.odm.actions import Save, Replace
 from pydantic import Field
-from typing import Optional, List
+from typing import Optional, List, Literal
 from datetime import datetime, timezone
 from app.db.models.user_model import UserModel
 from app.db.models.task_category_model import TaskCategoryModel
 from app.db.models.task_status_model import TaskStatusModel
 from app.core.enums import TASK_PRIORITY, TASK_ENTITY_TYPE, RECURRENCE_TYPE
+
+
  
  
 class TaskModel(Document):
@@ -44,6 +46,8 @@ class TaskModel(Document):
     parentTask: Optional[Link["TaskModel"]] = None
     order: int = 0
     isOverdue: bool = False
+    rating: Optional[Literal[0, 1, 2, 3, 4 , 5, None]] = None
+    actual_hours: Optional[float] = None
  
     createdBy: Link[UserModel]
     updatedBy: Optional[Link[UserModel]] = None

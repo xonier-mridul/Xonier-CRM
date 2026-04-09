@@ -18,6 +18,34 @@ class TaskController:
             raise e
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+        
+
+    async def create_remark(self,taskId:str, request: Request, payload: Dict[str, Any]):
+        try:
+            user = request.state.user
+            result = await self.service.create_remark(taskId, payload, user)
+            return successResponse(201, "Task remark created successfully", result)
+        except AppException as e:
+            raise e
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+        
+
+    async def get_remarks(self, taskId: str, request:Request):
+        try:
+            user = request.state.user
+            filters = dict(request.query_params)
+
+            result = await self.service.get_remarks(taskId=taskId, filters=filters, user=user)
+
+            return successResponse(200, "Remarks fetched successfully", result)
+        
+        except AppException as e:
+            raise e
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+        
+        
  
     async def get_all_tasks(self, request: Request):
         try:
@@ -81,6 +109,21 @@ class TaskController:
             raise e
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+        
+
+    async def update_remarks_acknowledge(self, request: Request, remarkId: str, payload:Dict[str, Any]):
+        try:
+            user = request.state.user
+            await self.service.update_remarks_acknowledge(remarkId, payload, user)
+
+            return successResponse(200, f"Remark status updated")
+
+
+        except AppException as e:
+            raise e
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+        
  
     async def update_task_status(self, request: Request, task_id: str, payload: Dict[str, Any]):
         try:

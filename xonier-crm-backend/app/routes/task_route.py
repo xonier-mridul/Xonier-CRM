@@ -4,6 +4,7 @@ from app.schemas.task_schema import (
     UpdateTaskPrioritySchema, AssignTaskSchema, ReorderTaskSchema,
     MoveTaskSchema, BulkAssignTaskSchema, BulkStatusUpdateSchema, AddWatcherSchema
 )
+from app.schemas.task_remark_schema import CreateTaskRemarkSchema, UpdateAcknowledgeRemark
 from app.core.dependencies import Dependencies
 from app.controllers.task_controller import TaskController
 from typing import Optional
@@ -16,6 +17,16 @@ controller = TaskController()
 @router.post("/create", status_code=201, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["task:create"]))])
 async def create_task(request: Request, payload: CreateTaskSchema):
     return await controller.create_task(request, payload.model_dump(mode="json"))
+
+
+@router.post("/{taskId}/remark", status_code=201, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["remark:create"]))])
+async def create_remark(taskId: str, request: Request, payload: CreateTaskRemarkSchema):
+    return await controller.create_remark(taskId, request, payload.model_dump(mode="json"))
+
+
+@router.get("/{taskId}/remarks", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["remark:read"]))])
+async def get_remarks(taskId: str, request:Request):
+    return await controller.get_remarks(taskId, request)
  
  
 @router.get("/all", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["task:read"]))])
@@ -62,7 +73,12 @@ async def get_task_activity(request: Request, task_id: str):
 async def update_task(request: Request, task_id: str, payload: UpdateTaskSchema):
     return await controller.update_task(request, task_id, payload.model_dump(mode="json", exclude_none=True))
  
- 
+
+@router.patch("/{remarkId}/remarks/acknowledge", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["remark:read"]))])
+async def update_remarks_acknowledge(remarkId: str, request:Request, payload:UpdateAcknowledgeRemark):
+    return await controller.update_remarks_acknowledge(request,remarkId, payload.model_dump(mode="json", exclude_unset=True))
+
+
 @router.patch("/status/{task_id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["task:statusChange"]))])
 async def update_task_status(request: Request, task_id: str, payload: UpdateTaskStatusSchema):
     return await controller.update_task_status(request, task_id, payload.model_dump(mode="json"))
@@ -71,7 +87,9 @@ async def update_task_status(request: Request, task_id: str, payload: UpdateTask
 @router.patch("/move/{task_id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["task:update"]))])
 async def move_task(request: Request, task_id: str, payload: MoveTaskSchema):
     return await controller.move_task(request, task_id, payload.model_dump(mode="json"))
- 
+
+
+
  
 @router.patch("/reorder", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["task:update"]))])
 async def reorder_tasks(request: Request, payload: ReorderTaskSchema):
@@ -134,3 +152,4 @@ async def get_user_task_stats(
             "entityType": entityType,
         }
     )
+
