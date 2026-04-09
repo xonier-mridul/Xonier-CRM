@@ -1,6 +1,6 @@
 "use client";
 
-import React, { JSX, useState, useEffect, useRef } from "react";
+import React, { JSX, useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -21,7 +21,7 @@ import { User } from "@/src/types";
 import { AuthService } from "@/src/services/auth.service";
 import { RootState } from "@/src/store";
 import { PERMISSIONS } from "@/src/constants/enum";
-import { span } from "framer-motion/client";
+import UserSelect from "@/src/components/common/userselect";
 
 const PRIORITY_CFG: Record<
   TASK_PRIORITY,
@@ -56,6 +56,8 @@ const PRIORITY_CFG: Record<
     dot: "bg-rose-500",
   },
 };
+
+const PAGE_SIZE =5; // must match your API's default limit
 
 const inputCls =
   "w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition";
@@ -120,7 +122,15 @@ const CreateTaskPage = (): JSX.Element => {
   const [tagInput, setTagInput] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [searchUser, setSearchUser] = useState<string>("");
-  const debounce = useRef<NodeJS.Timeout | null>(null);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [hasMoreUsers, setHasMoreUsers] = useState(true);
+
+  // ── Use refs so that getUserData always reads the latest values ──────────────
+  const pageRef = useRef<number>(1);
+  const loadingRef = useRef<boolean>(false);
+  const hasMoreRef = useRef<boolean>(true);
+  const searchRef = useRef<string>("");
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   const [form, setForm] = useState<CreateTaskPayload>({
     title: "",
@@ -150,10 +160,9 @@ const CreateTaskPage = (): JSX.Element => {
   const set = <K extends keyof CreateTaskPayload>(
     k: K,
     v: CreateTaskPayload[K],
-  ) => {
-    setForm((p) => ({ ...p, [k]: v }))
-  };
+  ) => setForm((p) => ({ ...p, [k]: v }));
 
+  // ── Categories ───────────────────────────────────────────────────────────────
   useEffect(() => {
     (async () => {
       try {
@@ -168,41 +177,8 @@ const CreateTaskPage = (): JSX.Element => {
       }
     })();
   }, []);
-useEffect(() => {
-  if (debounce.current) {
-    clearTimeout(debounce.current);
-  }
-  debounce.current = setTimeout(() => {
-    getUserData();
-  }, 300);
-}, [searchUser]);
 
-  const getUserData = async () => {
-    try {
-      const result = await AuthService.getAllTeamUsers(searchUser);
-      if (result.status === 200) {
-        setUserData(result.data.data);
-      }
-    } catch (error) {
-      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
-      if (axios.isAxiosError(error)) {
-        const msg = error.response?.data?.message ?? "Something went wrong";
-        setErr(
-          typeof msg === "string"
-            ? msg
-            : Array.isArray(msg)
-              ? msg[0]
-              : "Something went wrong",
-        );
-        toast.error(typeof msg === "string" ? msg : "Something went wrong");
-      }
-    }
-  };
-
-  useEffect(() => {
-    getUserData();
-  }, []);
-
+  // ── Status by category ───────────────────────────────────────────────────────
   useEffect(() => {
     if (!form.category) {
       setStatuses([]);
@@ -216,8 +192,7 @@ useEffect(() => {
           const data = statusRes.data.data ?? [];
           setStatuses(data);
           const defaultStatus = data.find((s: StatusOption) => s.isDefault);
-          if (defaultStatus)
-            set("status", defaultStatus._id || defaultStatus.id);
+          if (defaultStatus) set("status", defaultStatus._id || defaultStatus.id);
         }
       } catch (e) {
         process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
@@ -225,58 +200,114 @@ useEffect(() => {
     })();
   }, [form.category]);
 
+  // ── Core user fetch — reads from refs, never goes stale ──────────────────────
+  const getUserData = useCallback(async () => {
+    // Guard: skip if already loading or no more pages
+    if (loadingRef.current || !hasMoreRef.current) return;
+
+    loadingRef.current = true;
+    setLoadingUsers(true);
+
+    try {
+      const result = await AuthService.getAllTeamUsers({
+        search: searchRef.current,
+        page: pageRef.current,
+      });
+
+      if (result.status === 200) {
+        const newUsers: User[] = result.data.data ?? [];
+
+        // Append or replace depending on whether this is the first page
+        setUserData((prev) =>
+          pageRef.current === 1 ? newUsers : [...prev, ...newUsers],
+        );
+
+        // If the API returned fewer items than a full page, we've reached the end
+        if (newUsers.length < PAGE_SIZE) {
+          hasMoreRef.current = false;
+          setHasMoreUsers(false);
+        } else {
+          // Advance the page counter for the next call
+          pageRef.current += 1;
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      loadingRef.current = false;
+      setLoadingUsers(false);
+    }
+  }, []);
+
+  // ── Initial load ─────────────────────────────────────────────────────────────
+  useEffect(() => {
+    getUserData();
+  }, [getUserData]);
+
+  // ── Re-fetch when search changes (debounced) ─────────────────────────────────
+  useEffect(() => {
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+
+    debounceTimer.current = setTimeout(() => {
+      // Reset pagination state before fetching
+      searchRef.current = searchUser;
+      pageRef.current = 1;
+      hasMoreRef.current = true;
+      loadingRef.current = false; // release the guard so the new fetch can proceed
+      setHasMoreUsers(true);
+      setUserData([]);
+      getUserData();
+    }, 300);
+
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, [searchUser, getUserData]);
+
+  // ── Infinite scroll handler ──────────────────────────────────────────────────
+  const handleUserScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    const nearBottom = scrollHeight - scrollTop <= clientHeight + 40;
+
+    if (nearBottom && !loadingRef.current && hasMoreRef.current) {
+      getUserData();
+    }
+  };
+
+  // ── Tags ─────────────────────────────────────────────────────────────────────
   const addTag = () => {
     const t = tagInput.trim().toLowerCase().replace(/\s+/g, "-");
     if (t && !form.tags.includes(t)) set("tags", [...form.tags, t]);
     setTagInput("");
   };
 
+  // ── Validation ───────────────────────────────────────────────────────────────
   const validate = (): boolean => {
-    if (!form.title.trim()) {
-      setErr("Title is required");
-      return false;
-    }
-    if (!form.category) {
-      setErr("Category is required");
-      return false;
-    }
-    if (form.assignedTo.length === 0) {
-      setErr("Assignee is required");
-      return false;
-    }
+    if (!form.title.trim()) { setErr("Title is required"); return false; }
+    if (!form.category) { setErr("Category is required"); return false; }
+    if (form.assignedTo.length === 0) { setErr("Assignee is required"); return false; }
     if (form.isRecurring && !form.recurrenceType) {
-      setErr("Recurrence type is required when task is recurring");
-      return false;
+      setErr("Recurrence type is required when task is recurring"); return false;
     }
     if (
-      form.startDate &&
-      form.dueDate &&
+      form.startDate && form.dueDate &&
       new Date(form.startDate) > new Date(form.dueDate)
     ) {
-      setErr("Start date cannot be after due date");
-      return false;
+      setErr("Start date cannot be after due date"); return false;
     }
     return true;
   };
 
+  // ── User map for display ─────────────────────────────────────────────────────
   const userMap = React.useMemo(() => {
-    const map: Record<
-      string,
-      { firstName: string; lastName?: string }
-    > = {};
-
+    const map: Record<string, { firstName: string; lastName?: string }> = {};
     userData.forEach((u) => {
-      if (u.id) {
-        map[u.id] = {
-          firstName: u.firstName,
-          lastName: u.lastName,
-        };
-      }
+      if (u.id) map[u.id] = { firstName: u.firstName, lastName: u.lastName };
     });
-
     return map;
   }, [userData]);
 
+  // ── Submit ───────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
     setErr(null);
     if (!validate()) return;
@@ -302,13 +333,7 @@ useEffect(() => {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) {
         const msg = error.response?.data?.message ?? "Something went wrong";
-        setErr(
-          typeof msg === "string"
-            ? msg
-            : Array.isArray(msg)
-              ? msg[0]
-              : "Something went wrong",
-        );
+        setErr(typeof msg === "string" ? msg : Array.isArray(msg) ? msg[0] : "Something went wrong");
         toast.error(typeof msg === "string" ? msg : "Something went wrong");
       }
     } finally {
@@ -318,9 +343,12 @@ useEffect(() => {
 
   const canCreate = hasPermission(PERMISSIONS.createTask);
 
+  // ────────────────────────────────────────────────────────────────────────────
   return (
     <div className="ml-72 mt-14 min-h-screen">
       <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full mb-10">
+
+        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <div className="flex items-center gap-3 mb-1">
@@ -335,19 +363,13 @@ useEffect(() => {
               Fill in the details to add a new task
             </p>
           </div>
-          {/* <button
-            type="button"
-            onClick={() => router.back()}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-          >
-            ← Back
-          </button> */}
         </div>
 
-
-
         <div className="grid grid-cols-3 gap-6 items-start">
+
+          {/* ── Left column (2/3) ── */}
           <div className="col-span-2 space-y-5">
+
             <SectionCard icon="📝" title="Basic Information">
               <Field label="Title" required>
                 <input
@@ -386,10 +408,7 @@ useEffect(() => {
                   </select>
                 </Field>
 
-                <Field
-                  label="Status"
-                  hint={!form.category ? "Select a category first" : undefined}
-                >
+                <Field label="Status" hint={!form.category ? "Select a category first" : undefined}>
                   <select
                     value={form.status ?? ""}
                     onChange={(e) => set("status", e.target.value)}
@@ -419,27 +438,20 @@ useEffect(() => {
                 <Field label="Due Date">
                   <input
                     type="date"
-
                     onChange={(e) => set("dueDate", new Date(e.target.value))}
                     className={inputCls}
                   />
                 </Field>
               </div>
 
-              <Field
-                label="Estimated Hours"
-                hint="Decimal values allowed, e.g. 2.5"
-              >
+              <Field label="Estimated Hours" hint="Decimal values allowed, e.g. 2.5">
                 <input
                   type="number"
                   min={0}
                   step={0.5}
                   value={form.estimatedHours ?? ""}
                   onChange={(e) =>
-                    set(
-                      "estimatedHours",
-                      e.target.value ? Number(e.target.value) : undefined,
-                    )
+                    set("estimatedHours", e.target.value ? Number(e.target.value) : undefined)
                   }
                   placeholder="0.0"
                   className={inputCls}
@@ -460,18 +472,12 @@ useEffect(() => {
                   className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${form.isRecurring ? "bg-blue-600 border-blue-600" : "border-gray-300 dark:border-gray-500"}`}
                 >
                   {form.isRecurring && (
-                    <span className="text-white text-xs font-bold leading-none">
-                      ✓
-                    </span>
+                    <span className="text-white text-xs font-bold leading-none">✓</span>
                   )}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-800 dark:text-white">
-                    Recurring Task
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    This task repeats on a schedule
-                  </p>
+                  <p className="text-sm font-semibold text-gray-800 dark:text-white">Recurring Task</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">This task repeats on a schedule</p>
                 </div>
               </div>
 
@@ -481,10 +487,7 @@ useEffect(() => {
                     <select
                       value={form.recurrenceType ?? ""}
                       onChange={(e) =>
-                        set(
-                          "recurrenceType",
-                          (e.target.value as RECURRENCE_TYPE) || undefined,
-                        )
+                        set("recurrenceType", (e.target.value as RECURRENCE_TYPE) || undefined)
                       }
                       className={selectCls}
                     >
@@ -499,9 +502,7 @@ useEffect(() => {
                   <Field label="Ends At">
                     <input
                       type="date"
-                      onChange={(e) =>
-                        set("recurrenceEndsAt", new Date(e.target.value))
-                      }
+                      onChange={(e) => set("recurrenceEndsAt", new Date(e.target.value))}
                       className={inputCls}
                     />
                   </Field>
@@ -509,18 +510,13 @@ useEffect(() => {
               )}
             </SectionCard>
 
-
-
             <SectionCard icon="🔗" title="Link to CRM Entity">
               <div className="grid grid-cols-3 gap-4">
                 <Field label="Entity Type">
                   <select
                     value={form.entityType ?? ""}
                     onChange={(e) =>
-                      set(
-                        "entityType",
-                        (e.target.value as TASK_ENTITY_TYPE) || undefined,
-                      )
+                      set("entityType", (e.target.value as TASK_ENTITY_TYPE) || undefined)
                     }
                     className={selectCls}
                   >
@@ -556,7 +552,9 @@ useEffect(() => {
             </SectionCard>
           </div>
 
+          {/* ── Right column (1/3) ── */}
           <div className="space-y-5">
+
             <SectionCard icon="🎯" title="Priority">
               <div className="grid grid-cols-2 gap-2">
                 {Object.values(TASK_PRIORITY).map((p) => {
@@ -570,9 +568,7 @@ useEffect(() => {
                       className={`flex items-center gap-2 px-3 py-3 rounded-xl border-2 text-xs font-bold transition-all ${active ? `${cfg.bg} ${cfg.border} shadow-sm` : "border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-200 dark:hover:border-gray-600"}`}
                       style={active ? { color: cfg.color } : {}}
                     >
-                      <span
-                        className={`w-2.5 h-2.5 rounded-full shrink-0 ${active ? cfg.dot : "bg-gray-300 dark:bg-gray-600"}`}
-                      />
+                      <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${active ? cfg.dot : "bg-gray-300 dark:bg-gray-600"}`} />
                       {cfg.label}
                     </button>
                   );
@@ -587,10 +583,7 @@ useEffect(() => {
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      addTag();
-                    }
+                    if (e.key === "Enter") { e.preventDefault(); addTag(); }
                   }}
                   placeholder="Add tag and press Enter…"
                   className={`${inputCls} flex-1`}
@@ -613,12 +606,7 @@ useEffect(() => {
                       #{tag}
                       <button
                         type="button"
-                        onClick={() =>
-                          set(
-                            "tags",
-                            form.tags.filter((t) => t !== tag),
-                          )
-                        }
+                        onClick={() => set("tags", form.tags.filter((t) => t !== tag))}
                         className="text-blue-300 hover:text-blue-600 dark:hover:text-blue-200 leading-none transition text-sm"
                       >
                         ×
@@ -629,59 +617,38 @@ useEffect(() => {
               )}
             </SectionCard>
 
-            {/* <SectionCard icon="🔢" title="Order">
-              <Field
-                label="Position"
-                hint="Lower number appears first in the column"
-              >
-                <input
-                  type="number"
-                  min={0}
-                  value={form.order}
-                  onChange={(e) => set("order", Number(e.target.value))}
-                  className={inputCls}
-                />
-              </Field>
-            </SectionCard> */}
-            {<SectionCard icon="👥" title="Assign Users">
+            <SectionCard icon="👥" title="Assign Users">
               <div className="space-y-3">
+
                 {/* Assign to me */}
                 <button
                   type="button"
                   onClick={() => {
                     const myId = auth.user?._id;
                     if (!myId) return;
-
-                    if (!form.assignedTo.includes(myId)) {
+                    if (!form.assignedTo.includes(myId))
                       set("assignedTo", [...form.assignedTo, myId]);
-                    }
                   }}
                   className="w-full px-3 py-2 text-sm font-semibold rounded-xl border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-400 transition"
                 >
                   ⚡ Assign to Me
                 </button>
 
-                {/* Selected Users */}
+                {/* Selected users */}
                 {form.assignedTo.length > 0 && (
-
                   <div className="flex flex-wrap gap-2">
                     {form.assignedTo.map((userId) => {
-
                       const user = userMap[userId];
-
                       return (
                         <span
                           key={userId}
                           className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-600 border border-indigo-200 dark:bg-indigo-900/30 dark:border-indigo-700 dark:text-indigo-300"
                         >
-                          👤 {(userId == auth.user?._id) ? <span > You</span> : user?.firstName || "User"}
+                          👤 {userId === auth.user?._id ? "You" : user?.firstName || "User"}
                           <button
                             type="button"
                             onClick={() =>
-                              set(
-                                "assignedTo",
-                                form.assignedTo.filter((id) => id !== userId),
-                              )
+                              set("assignedTo", form.assignedTo.filter((id) => id !== userId))
                             }
                             className="text-indigo-400 hover:text-red-500 ml-1"
                           >
@@ -693,54 +660,25 @@ useEffect(() => {
                   </div>
                 )}
 
-                {/* User List */}
-                {(canAssign) && (
-                  <>
-                    <input type="text" onChange={(e) => { setSearchUser(e.target.value) }} placeholder="Search users…" className="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition bg-white" />
-                    <div className="max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-xl p-2 space-y-1">
-                      {userData.map((user) => {
-                        const isSelected = form.assignedTo.includes(user.id);
-
-                        return (
-                          <div
-                            key={user.id}
-                            onClick={() => {
-                              if (isSelected) {
-                                set(
-                                  "assignedTo",
-                                  form.assignedTo.filter((id) => id !== user.id),
-                                );
-                              } else {
-                                set("assignedTo", [...form.assignedTo, user.id]);
-                              }
-                            }}
-                            className={`flex items-center justify-between px-2 py-1.5 rounded-lg cursor-pointer text-sm transition ${isSelected
-                              ? "bg-blue-50 dark:bg-blue-900/30"
-                              : "hover:bg-gray-50 dark:hover:bg-gray-700"
-                              }`}
-                          >
-                            <span>
-                              {user.firstName} {user.lastName}
-                            </span>
-
-                            {isSelected && (
-                              <span className="text-blue-500 text-xs">✓</span>
-                            )}
-                          </div>
-                        );
-                      })}
-                      {(userData.length === 0) && (
-                        <div className="flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                          No users found
-                        </div>
-                      )}
-                    </div>
-                  </>
+                {/* Paginated user list — only visible to users with assignTask permission */}
+                {canAssign && (
+                  
+                  <UserSelect
+                    mode="multiple"
+                    value={form.assignedTo}
+                    onChange={(ids) => set("assignedTo", ids)}
+                    showList={true}
+                    currentUserId={auth.user?._id}
+                    placeholder="Search users…"
+                  />
                 )}
               </div>
-            </SectionCard>}
+            </SectionCard>
+
           </div>
         </div>
+
+        {/* Error banner */}
         <div className="mt-2">
           {err && (
             <div className="mb-6 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800/50 text-sm text-rose-600 dark:text-rose-400 font-medium">
@@ -748,6 +686,8 @@ useEffect(() => {
             </div>
           )}
         </div>
+
+        {/* Footer actions */}
         <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
           <button
             type="button"
@@ -765,24 +705,9 @@ useEffect(() => {
             >
               {isLoading ? (
                 <>
-                  <svg
-                    className="animate-spin h-4 w-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v8H4z"
-                    />
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                   </svg>
                   Creating…
                 </>
@@ -796,6 +721,7 @@ useEffect(() => {
             </div>
           )}
         </div>
+
       </div>
     </div>
   );

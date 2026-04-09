@@ -91,10 +91,16 @@ const ReassignModal = ({
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
               Select New User <span className="text-red-500">*</span>
             </label>
-            <UserSelect
+            {/* <UserSelect
               users={assignableUsers}
               selectedUserId={selectedUserId}
               setSelectedUserId={setSelectedUserId}
+              placeholder="Search & select user..."
+            /> */}
+            <UserSelect
+              mode="single"
+              value={selectedUserId}
+              onChange={setSelectedUserId}
               placeholder="Search & select user..."
             />
           </div>
