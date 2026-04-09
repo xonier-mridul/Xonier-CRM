@@ -3,6 +3,7 @@ import { register } from "module";
 import api from "../lib/axios";
 import { VerifyLoginOtpPayload, ResendLoginOtpPayload, GetAllUsers, changePasswordPayload, RegisterPayload, UserUpdatePayload, UserStatusPayload, UserPasswordUpdatedByAdminPayload, AssignedPhoneNumber } from "../types";
 import { ParamValue } from "next/dist/server/request/params";
+import { data } from "framer-motion/client";
 
 
 
@@ -21,7 +22,7 @@ getAll: (data: GetAllUsers) => {
   return api.get(`/auth/all?${params.toString()}`);
 },
     getAllActiveWithoutPagination: () => api.get("/auth/active/all-without-pagination"),
-    getAllTeamUsers: (search?: string) => api.get(`/auth/by-team?${search ? `search=${search}` : ""}`),
+    getAllTeamUsers: (data:{search?: string,page?:number}) => api.get(`/auth/by-team?${data.search ? `search=${data.search}` : ""}${data.page ? `&page=${data.page}` : ""}`),
     create: (payload: RegisterPayload) => api.post("/auth/register", payload),
     login: (data: { email: string, password: string }) => api.post("/auth/login", data),
     logout: () => api.post("/auth/logout", {}),

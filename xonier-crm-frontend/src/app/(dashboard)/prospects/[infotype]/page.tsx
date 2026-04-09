@@ -605,12 +605,19 @@ const LeadContent = (): JSX.Element => {
               <div className="flex items-center gap-3">
                 <div className="flex flex-col gap-0.5">
                   {!selectedUserId && <span className="text-blue-200 text-[11px] ml-1">← Select a user first</span>}
-                  <UserSelect
+                  {/* <UserSelect
                     users={assignableUsers}
                     selectedUserId={selectedUserId}
                     setSelectedUserId={setSelectedUserId}
                     placeholder="Search & select user..."
-                    />
+                    /> */}
+                  <UserSelect
+                    mode="single"
+                    value={selectedUserId}
+                    onChange={setSelectedUserId}
+                    placeholder="Search & select user..."
+                  />
+
                 </div>
                 <button
                   onClick={handleAssignEnquirys}

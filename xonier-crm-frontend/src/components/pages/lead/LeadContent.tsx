@@ -818,11 +818,17 @@ const LeadContent = (): JSX.Element => {
               <div className="flex items-center gap-3">
                 <div className="flex flex-col gap-0.5">
                   {!selectedUserId && <span className="text-blue-200 text-[11px] ml-1">← Select a user first</span>}
-                  <UserSelect
+                  {/* <UserSelect
                     users={nonAdminUsers}
                     selectedUserId={selectedUserId}
                     setSelectedUserId={setSelectedUserId}
-                  />
+                  /> */}
+                  <UserSelect
+                    mode="single"
+                    value={selectedUserId}
+                    onChange={setSelectedUserId}
+                    placeholder="Search & select user..."
+                    />
                 </div>
                 <button
                   onClick={handleAssignLeads}
@@ -853,11 +859,17 @@ const LeadContent = (): JSX.Element => {
               <div className="flex items-center gap-3">
                 <div className="flex flex-col gap-0.5">
                   {!selectedReassignUserId && <span className="text-amber-100 text-[11px] ml-1">← Pick the new assignee</span>}
-                  <UserSelect
+                  {/* <UserSelect
                     users={nonAdminUsers}
                     selectedUserId={selectedReassignUserId}
                     setSelectedUserId={setSelectedReassignUserId}
-                  />
+                  /> */}
+                  <UserSelect
+                    mode="single"
+                    value={selectedReassignUserId}
+                    onChange={setSelectedReassignUserId}
+                    placeholder="Search & select user..."
+                    />
                 </div>
                 <button
                   onClick={handleReassignLeads}

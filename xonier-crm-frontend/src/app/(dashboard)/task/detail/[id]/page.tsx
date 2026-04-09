@@ -252,9 +252,9 @@ const ActivityLog = ({ activities, loading }: { activities: TaskActivity[]; load
 
   const barColor =
     progressPercent === 100 ? "from-emerald-400 to-emerald-500" :
-    progressPercent >= 60 ? "from-violet-500 to-purple-600" :
-    progressPercent >= 30 ? "from-amber-400 to-orange-400" :
-    "from-slate-300 to-slate-400";
+      progressPercent >= 60 ? "from-violet-500 to-purple-600" :
+        progressPercent >= 30 ? "from-amber-400 to-orange-400" :
+          "from-slate-300 to-slate-400";
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none flex flex-col"
@@ -457,15 +457,22 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
 
   const handleAdd = async () => {
     if (!newTitle.trim()) return;
-    try {
-      const res = await TaskService.createSubTask(taskId, { title: newTitle.trim() });
-      if (res.status === 200 || res.status === 201) {
-        setSubtasks((p) => [...p, res.data.data]);
-        toast.success("Sub-task added");
-      }
-    } catch (e) {
-      if (axios.isAxiosError(e)) toast.error(e.response?.data?.message ?? "Failed");
-    } finally { setNewTitle(""); setAdding(false); }
+    const newTask: SubTask = {
+      id: "string",
+      title: newTitle,
+      isCompleted: newTitle.length ==4,
+      createdAt: "klsklz"
+    }
+    setSubtasks((p) => [...p, newTask]);
+    // try {
+    //   const res = await TaskService.createSubTask(taskId, { title: newTitle.trim() });
+    //   if (res.status === 200 || res.status === 201) {
+    //     setSubtasks((p) => [...p, res.data.data]);
+    //     toast.success("Sub-task added");
+    //   }
+    // } catch (e) {
+    //   if (axios.isAxiosError(e)) toast.error(e.response?.data?.message ?? "Failed");
+    // } finally { setNewTitle(""); setAdding(false); }
   };
 
   const handleToggle = async (id: string) => {
@@ -484,7 +491,7 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
 
   const handleEdit = async (id: string, title: string) => {
     setSubtasks((p) => p.map((s) => s.id === id ? { ...s, title } : s));
-    try { await TaskService.updateSubTask(taskId, id, { title : title.trim() }); }
+    try { await TaskService.updateSubTask(taskId, id, { title: title.trim() }); }
     catch { toast.error("Failed"); load(); }
   };
 
@@ -660,401 +667,402 @@ const page = () => {
 
   const taskProgressColor =
     taskProgressPct === 100 ? "from-emerald-400 to-emerald-500" :
-    taskProgressPct >= 60 ? "from-violet-500 to-purple-600" :
-    taskProgressPct >= 30 ? "from-amber-400 to-orange-400" :
-    "from-gray-300 to-gray-400";
+      taskProgressPct >= 60 ? "from-violet-500 to-purple-600" :
+        taskProgressPct >= 30 ? "from-amber-400 to-orange-400" :
+          "from-gray-300 to-gray-400";
 
   return (
-    <div className="ml-72 mt-14 min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors">
-      <div className="p-6 max-w-[1400px] space-y-5">
+    <div className="ml-72 mt-14">
+      <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full mb-10">
+        <div className="p-6 max-w-[1400px] space-y-5">
 
-        {/* ── Hero Banner ── */}
-        <div className="relative overflow-hidden bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
-          {/* Subtle gradient decoration */}
-          <div className="absolute inset-0 bg-gradient-to-br from-violet-50/40 via-transparent to-purple-50/20 dark:from-violet-900/10 dark:via-transparent dark:to-purple-900/5 pointer-events-none" />
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-violet-100/50 to-transparent dark:from-violet-900/20 rounded-full blur-3xl pointer-events-none" />
+          {/* ── Hero Banner ── */}
+          <div className="relative overflow-hidden bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
+            {/* Subtle gradient decoration */}
+            <div className="absolute inset-0 bg-gradient-to-br from-violet-50/40 via-transparent to-purple-50/20 dark:from-violet-900/10 dark:via-transparent dark:to-purple-900/5 pointer-events-none" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-violet-100/50 to-transparent dark:from-violet-900/20 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="relative p-6">
-            {/* Breadcrumb-style context tags */}
-            <div className="flex items-center gap-2 mb-3 flex-wrap w-full">
-              <div className="flex items-center justify-between gap-3 w-full">
-              {taskData.category && (
-                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700">
-                  <Layers size={11} />
-                  {taskData.category?.name ?? taskData.categoryName}
-                </span>
-              )}
-              {taskData.entityType && taskData.entityName && (
-                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 px-3 py-1.5 rounded-full border border-sky-100 dark:border-sky-900/40">
-                  <Link2 size={11} />
-                  {taskData.entityType} · {taskData.entityName}
-                </span>
-              )}
-               {/* <Link href={`/task/update/${taskData.id}`} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-center flex items-center gap-2"><MdOutlineEdit /> Edit Task</Link> */}
-            </div>
-            </div>
-
-            <div className="flex items-start justify-between gap-6">
-              <div className="flex-1 min-w-0">
-                <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-tight mb-3">
-                  {taskData.title}
-                </h1>
-
-                {/* Status + Priority badges */}
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border"
-                    style={{
-                      backgroundColor: taskData.status?.color ? `${taskData.status.color}18` : undefined,
-                      color: taskData.status?.color ?? "",
-                      borderColor: taskData.status?.color ? `${taskData.status.color}30` : undefined,
-                    }}
-                  >
-                    <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: taskData.status?.color ?? "" }} />
-                    {taskData.status?.name ?? taskData.statusName}
-                  </span>
-
-                  <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold ${priority.bgClass} ${priority.colorClass}`}>
-                    {priority.icon}
-                    {priority.label}
-                  </span>
-
-                  {taskData.isRecurring && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40">
-                      <RefreshCw size={11} />
-                      Recurring · {taskData.recurrenceType}
+            <div className="relative p-6">
+              {/* Breadcrumb-style context tags */}
+              <div className="flex items-center gap-2 mb-3 flex-wrap w-full">
+                <div className="flex items-center justify-between gap-3 w-full">
+                  {taskData.category && (
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700">
+                      <Layers size={11} />
+                      {taskData.category?.name ?? taskData.categoryName}
                     </span>
                   )}
-
-                  {taskData.completedAt && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/40">
-                      <CheckCircle2 size={11} />
-                      Completed {formatDate(taskData.completedAt)}
+                  {taskData.entityType && taskData.entityName && (
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 px-3 py-1.5 rounded-full border border-sky-100 dark:border-sky-900/40">
+                      <Link2 size={11} />
+                      {taskData.entityType} · {taskData.entityName}
                     </span>
+                  )}
+                  {/* <Link href={`/task/update/${taskData.id}`} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-center flex items-center gap-2"><MdOutlineEdit /> Edit Task</Link> */}
+                </div>
+              </div>
+
+              <div className="flex items-start justify-between gap-6">
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-tight mb-3">
+                    {taskData.title}
+                  </h1>
+
+                  {/* Status + Priority badges */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border"
+                      style={{
+                        backgroundColor: taskData.status?.color ? `${taskData.status.color}18` : undefined,
+                        color: taskData.status?.color ?? "",
+                        borderColor: taskData.status?.color ? `${taskData.status.color}30` : undefined,
+                      }}
+                    >
+                      <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: taskData.status?.color ?? "" }} />
+                      {taskData.status?.name ?? taskData.statusName}
+                    </span>
+
+                    <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold ${priority.bgClass} ${priority.colorClass}`}>
+                      {priority.icon}
+                      {priority.label}
+                    </span>
+
+                    {taskData.isRecurring && (
+                      <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40">
+                        <RefreshCw size={11} />
+                        Recurring · {taskData.recurrenceType}
+                      </span>
+                    )}
+
+                    {taskData.completedAt && (
+                      <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/40">
+                        <CheckCircle2 size={11} />
+                        Completed {formatDate(taskData.completedAt)}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Task-level progress bar */}
+                  {(taskData.estimatedHours || taskData.completedAt) && (
+                    <div className="mt-4 max-w-md">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider flex items-center gap-1">
+                          <Target size={10} />Task Progress
+                        </span>
+                        <span className={`text-xs font-black ${taskProgressPct === 100 ? "text-emerald-500" : "text-gray-600 dark:text-gray-300"}`}>
+                          {taskProgressPct}%
+                        </span>
+                      </div>
+                      <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full bg-gradient-to-r ${taskProgressColor} rounded-full transition-all duration-700`}
+                          style={{ width: `${taskProgressPct}%` }}
+                        />
+                      </div>
+                    </div>
                   )}
                 </div>
 
-                {/* Task-level progress bar */}
-                {(taskData.estimatedHours || taskData.completedAt) && (
-                  <div className="mt-4 max-w-md">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider flex items-center gap-1">
-                        <Target size={10} />Task Progress
-                      </span>
-                      <span className={`text-xs font-black ${taskProgressPct === 100 ? "text-emerald-500" : "text-gray-600 dark:text-gray-300"}`}>
-                        {taskProgressPct}%
-                      </span>
+                {/* Right quick stats */}
+                <div className="hidden xl:flex flex-col gap-3 shrink-0 min-w-[200px]">
+                  {taskData.dueDate && (
+                    <div className={`px-4 py-3 rounded-xl border text-center ${isOverdue ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/40"
+                      : isDueSoon ? "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-900/40"
+                        : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                      }`}>
+                      <p className={`text-[10px] font-black uppercase tracking-widest mb-0.5 ${isOverdue ? "text-red-400" : isDueSoon ? "text-amber-500" : "text-gray-400"}`}>
+                        {isOverdue ? "⚠ Overdue" : isDueSoon ? "⏰ Due Soon" : "Due Date"}
+                      </p>
+                      <p className={`text-sm font-black ${isOverdue ? "text-red-600 dark:text-red-400" : isDueSoon ? "text-amber-600 dark:text-amber-400" : "text-gray-800 dark:text-gray-100"}`}>
+                        {formatDate(taskData.dueDate as string)}
+                      </p>
                     </div>
-                    <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full bg-gradient-to-r ${taskProgressColor} rounded-full transition-all duration-700`}
-                        style={{ width: `${taskProgressPct}%` }}
-                      />
+                  )}
+                  {taskData.createdBy && (
+                    <div className="flex items-center gap-2.5 px-3 py-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700">
+                      <AvatarCircle name={`${taskData.createdBy.firstName} ${taskData.createdBy.lastName ?? ""}`} size="md" />
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Created by</p>
+                        <p className="text-xs font-semibold text-gray-700 dark:text-gray-200 truncate">{taskData.createdBy.firstName}</p>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
 
-              {/* Right quick stats */}
-              <div className="hidden xl:flex flex-col gap-3 shrink-0 min-w-[200px]">
-                {taskData.dueDate && (
-                  <div className={`px-4 py-3 rounded-xl border text-center ${
-                    isOverdue ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/40"
-                    : isDueSoon ? "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-900/40"
-                    : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
-                  }`}>
-                    <p className={`text-[10px] font-black uppercase tracking-widest mb-0.5 ${isOverdue ? "text-red-400" : isDueSoon ? "text-amber-500" : "text-gray-400"}`}>
-                      {isOverdue ? "⚠ Overdue" : isDueSoon ? "⏰ Due Soon" : "Due Date"}
-                    </p>
-                    <p className={`text-sm font-black ${isOverdue ? "text-red-600 dark:text-red-400" : isDueSoon ? "text-amber-600 dark:text-amber-400" : "text-gray-800 dark:text-gray-100"}`}>
-                      {formatDate(taskData.dueDate as string)}
-                    </p>
-                  </div>
-                )}
-                {taskData.createdBy && (
-                  <div className="flex items-center gap-2.5 px-3 py-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700">
-                    <AvatarCircle name={`${taskData.createdBy.firstName} ${taskData.createdBy.lastName ?? ""}`} size="md" />
-                    <div className="min-w-0">
-                      <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Created by</p>
-                      <p className="text-xs font-semibold text-gray-700 dark:text-gray-200 truncate">{taskData.createdBy.firstName}</p>
-                    </div>
-                  </div>
-                )}
-               
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <StatCard
-            label="Estimated"
-            value={taskData.estimatedHours ? `${taskData.estimatedHours}h` : "—"}
-            sub="planned hours"
-            icon={<Timer size={18} className="text-violet-500" />}
-            accent="bg-violet-500"
-          />
-          <StatCard
-            label="Actual"
-            value={taskData.actualHours ? `${taskData.actualHours}h` : "—"}
-            sub="hours logged"
-            icon={<Clock size={18} className="text-blue-500" />}
-            accent="bg-blue-500"
-          />
-          <StatCard
-            label="Activities"
-            value={taskActivity.length || "0"}
-            sub="events recorded"
-            icon={<Zap size={18} className="text-amber-500" />}
-            accent="bg-amber-500"
-          />
-          <StatCard
-            label="Priority"
-            value={priority.label}
-            sub="task urgency"
-            icon={<Star size={18} className="text-rose-500" />}
-            accent="bg-rose-500"
-          />
-        </div>
 
-        {/* ── Main grid ── */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <StatCard
+              label="Estimated"
+              value={taskData.estimatedHours ? `${taskData.estimatedHours}h` : "—"}
+              sub="planned hours"
+              icon={<Timer size={18} className="text-violet-500" />}
+              accent="bg-violet-500"
+            />
+            <StatCard
+              label="Actual"
+              value={taskData.actualHours ? `${taskData.actualHours}h` : "—"}
+              sub="hours logged"
+              icon={<Clock size={18} className="text-blue-500" />}
+              accent="bg-blue-500"
+            />
+            <StatCard
+              label="Activities"
+              value={taskActivity.length || "0"}
+              sub="events recorded"
+              icon={<Zap size={18} className="text-amber-500" />}
+              accent="bg-amber-500"
+            />
+            <StatCard
+              label="Priority"
+              value={priority.label}
+              sub="task urgency"
+              icon={<Star size={18} className="text-rose-500" />}
+              accent="bg-rose-500"
+            />
+          </div>
 
-          {/* Left column */}
-          <div className="xl:col-span-2 space-y-5">
+          {/* ── Main grid ── */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
 
-            {/* Description */}
-            {taskData.description && (
+            {/* Left column */}
+            <div className="xl:col-span-2 space-y-5">
+
+              {/* Description */}
+              {taskData.description && (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                  <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                      <MessageSquare size={13} className="text-slate-500 dark:text-slate-400" />
+                    </div>
+                    <h3 className="text-sm font-bold text-gray-900 dark:text-white">Description</h3>
+                  </div>
+                  <div className="p-5">
+                    <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{taskData.description}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Sub-tasks */}
+              {/* <ComingSoonOverlay show={true}>
+              </ComingSoonOverlay> */}
+              <SubTaskSection taskId={taskId} />
+
+
+              {/* ── Activity Log (Fixed height + scrollable) ── */}
+              <ActivityLog activities={taskActivity} loading={activityLoading} />
+            </div>
+
+            {/* Right sidebar */}
+            <div className="space-y-5">
+              {/* Tags */}
+              {taskData.tags && taskData.tags.length > 0 && (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                  <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                      <Tag size={13} className="text-gray-500 dark:text-gray-400" />
+                    </div>
+                    <h3 className="text-sm font-bold text-gray-900 dark:text-white">Tags</h3>
+                  </div>
+                  <div className="p-5">
+                    <div className="flex flex-wrap gap-2">
+                      {taskData.tags.map((tag) => (
+                        <span key={tag} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-600 hover:border-violet-200 transition-colors">
+                          <Tag size={10} /> {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Assignees */}
               <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
                 <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                    <MessageSquare size={13} className="text-slate-500 dark:text-slate-400" />
+                  <div className="w-7 h-7 rounded-lg bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center">
+                    <User size={13} className="text-sky-500 dark:text-sky-400" />
                   </div>
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white">Description</h3>
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-white">Assigned To</h3>
                 </div>
-                <div className="p-5">
-                  <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{taskData.description}</p>
+                <div className="p-4">
+                  {taskData.assignedTo && taskData.assignedTo.length > 0 ? (
+                    <div className="space-y-2">
+                      {taskData.assignedTo.map((user) => (
+                        <Link
+                          key={user.id}
+                          href={`/users/${user.id}`}
+                          className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
+                        >
+                          <div key={user.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group">
+                            <AvatarCircle name={`${user.firstName} ${user.lastName ?? ""}`} avatar={user.avatar} size="md" />
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-bold text-gray-800 dark:text-gray-200 truncate">{user.firstName} {user.lastName}</p>
+                              <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{user.email}</p>
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-6">
+                      <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-2">
+                        <User size={18} className="text-gray-300 dark:text-gray-600" />
+                      </div>
+                      <p className="text-sm text-gray-400 dark:text-gray-500 font-medium">No assignees</p>
+                    </div>
+                  )}
                 </div>
               </div>
-            )}
 
-            {/* Sub-tasks */}
-            <ComingSoonOverlay show={true}>
-            <SubTaskSection taskId={taskId} />
-            </ComingSoonOverlay>
+              {/* Time Tracking */}
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center">
+                    <TrendingUp size={13} className="text-violet-500 dark:text-violet-400" />
+                  </div>
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-white">Time Tracking</h3>
+                </div>
+                <div className="p-4 space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/10 rounded-xl p-3 text-center border border-violet-100 dark:border-violet-900/30">
+                      <p className="text-[10px] font-black uppercase tracking-wider text-violet-400 mb-1">Estimated</p>
+                      <p className="text-2xl font-black text-violet-700 dark:text-violet-300">
+                        {taskData.estimatedHours ?? "—"}
+                        {taskData.estimatedHours && <span className="text-xs font-bold opacity-60 ml-0.5">h</span>}
+                      </p>
+                    </div>
+                    <div className="bg-gradient-to-br from-sky-50 to-blue-50 dark:from-sky-900/20 dark:to-blue-900/10 rounded-xl p-3 text-center border border-sky-100 dark:border-sky-900/30">
+                      <p className="text-[10px] font-black uppercase tracking-wider text-sky-400 mb-1">Actual</p>
+                      <p className="text-2xl font-black text-sky-700 dark:text-sky-300">
+                        {taskData.actualHours ?? "—"}
+                        {taskData.actualHours && <span className="text-xs font-bold opacity-60 ml-0.5">h</span>}
+                      </p>
+                    </div>
+                  </div>
+                  {taskData.estimatedHours ? (
+                    <div>
+                      <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1.5">
+                        <span className="font-semibold">Progress</span>
+                        <span className="font-black text-gray-700 dark:text-gray-200">
+                          {Math.min(100, Math.round(((taskData.actualHours ?? 0) / taskData.estimatedHours) * 100))}%
+                        </span>
+                      </div>
+                      <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-violet-400 to-violet-600 rounded-full transition-all"
+                          style={{ width: `${Math.min(100, ((taskData.actualHours ?? 0) / taskData.estimatedHours) * 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-400 dark:text-gray-500 text-center font-medium">No estimate set</p>
+                  )}
+                </div>
+              </div>
 
-            
-            {/* ── Activity Log (Fixed height + scrollable) ── */}
-            <ActivityLog activities={taskActivity} loading={activityLoading} />
-          </div>
-
-          {/* Right sidebar */}
-          <div className="space-y-5">
-            {/* Tags */}
-            {taskData.tags && taskData.tags.length > 0 && (
+              {/* Recurrence */}
+              {taskData.isRecurring && (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                  <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
+                      <RefreshCw size={13} className="text-indigo-500 dark:text-indigo-400" />
+                    </div>
+                    <h3 className="text-sm font-bold text-gray-900 dark:text-white">Recurrence</h3>
+                  </div>
+                  <div className="p-4 space-y-2">
+                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700">
+                      <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold">Frequency</span>
+                      <span className="text-xs font-black capitalize text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2.5 py-1 rounded-lg">{taskData.recurrenceType}</span>
+                    </div>
+                    {taskData.recurrenceEndsAt && (
+                      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700">
+                        <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold">Ends on</span>
+                        <span className="text-xs font-black text-gray-700 dark:text-gray-200">{formatDate(taskData.recurrenceEndsAt)}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              {/* Details */}
               <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
                 <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2.5">
                   <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                    <Tag size={13} className="text-gray-500 dark:text-gray-400" />
+                    <Layers size={13} className="text-gray-500 dark:text-gray-400" />
                   </div>
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white">Tags</h3>
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-white">Details</h3>
                 </div>
                 <div className="p-5">
-                  <div className="flex flex-wrap gap-2">
-                    {taskData.tags.map((tag) => (
-                      <span key={tag} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-600 hover:border-violet-200 transition-colors">
-                        <Tag size={10} /> {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Assignees */}
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-              <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center">
-                  <User size={13} className="text-sky-500 dark:text-sky-400" />
-                </div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white">Assigned To</h3>
-              </div>
-              <div className="p-4">
-                {taskData.assignedTo && taskData.assignedTo.length > 0 ? (
-                  <div className="space-y-2">
-                    {taskData.assignedTo.map((user) => (
-                      <Link
-                        key={user.id}
-                        href={`/users/${user.id}`}
-                        className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
-                        >
-                      <div key={user.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group">
-                        <AvatarCircle name={`${user.firstName} ${user.lastName ?? ""}`} avatar={user.avatar} size="md" />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-bold text-gray-800 dark:text-gray-200 truncate">{user.firstName} {user.lastName}</p>
-                          <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{user.email}</p>
-                        </div>
-                      </div>
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-6">
-                    <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-2">
-                      <User size={18} className="text-gray-300 dark:text-gray-600" />
-                    </div>
-                    <p className="text-sm text-gray-400 dark:text-gray-500 font-medium">No assignees</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Time Tracking */}
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-              <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center">
-                  <TrendingUp size={13} className="text-violet-500 dark:text-violet-400" />
-                </div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white">Time Tracking</h3>
-              </div>
-              <div className="p-4 space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/10 rounded-xl p-3 text-center border border-violet-100 dark:border-violet-900/30">
-                    <p className="text-[10px] font-black uppercase tracking-wider text-violet-400 mb-1">Estimated</p>
-                    <p className="text-2xl font-black text-violet-700 dark:text-violet-300">
-                      {taskData.estimatedHours ?? "—"}
-                      {taskData.estimatedHours && <span className="text-xs font-bold opacity-60 ml-0.5">h</span>}
-                    </p>
-                  </div>
-                  <div className="bg-gradient-to-br from-sky-50 to-blue-50 dark:from-sky-900/20 dark:to-blue-900/10 rounded-xl p-3 text-center border border-sky-100 dark:border-sky-900/30">
-                    <p className="text-[10px] font-black uppercase tracking-wider text-sky-400 mb-1">Actual</p>
-                    <p className="text-2xl font-black text-sky-700 dark:text-sky-300">
-                      {taskData.actualHours ?? "—"}
-                      {taskData.actualHours && <span className="text-xs font-bold opacity-60 ml-0.5">h</span>}
-                    </p>
-                  </div>
-                </div>
-                {taskData.estimatedHours ? (
-                  <div>
-                    <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1.5">
-                      <span className="font-semibold">Progress</span>
-                      <span className="font-black text-gray-700 dark:text-gray-200">
-                        {Math.min(100, Math.round(((taskData.actualHours ?? 0) / taskData.estimatedHours) * 100))}%
-                      </span>
-                    </div>
-                    <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-violet-400 to-violet-600 rounded-full transition-all"
-                        style={{ width: `${Math.min(100, ((taskData.actualHours ?? 0) / taskData.estimatedHours) * 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-xs text-gray-400 dark:text-gray-500 text-center font-medium">No estimate set</p>
-                )}
-              </div>
-            </div>
-
-            {/* Recurrence */}
-            {taskData.isRecurring && (
-              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-                <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
-                    <RefreshCw size={13} className="text-indigo-500 dark:text-indigo-400" />
-                  </div>
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white">Recurrence</h3>
-                </div>
-                <div className="p-4 space-y-2">
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700">
-                    <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold">Frequency</span>
-                    <span className="text-xs font-black capitalize text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2.5 py-1 rounded-lg">{taskData.recurrenceType}</span>
-                  </div>
-                  {taskData.recurrenceEndsAt && (
-                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700">
-                      <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold">Ends on</span>
-                      <span className="text-xs font-black text-gray-700 dark:text-gray-200">{formatDate(taskData.recurrenceEndsAt)}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-            {/* Details */}
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-              <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                  <Layers size={13} className="text-gray-500 dark:text-gray-400" />
-                </div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white">Details</h3>
-              </div>
-              <div className="p-5">
-                <div className="divide-y divide-gray-100 dark:divide-gray-800/60">
-                  <MetaRow icon={<Calendar size={11} />} label="Due Date">
-                    {taskData.dueDate ? (
-                      <span className={`font-semibold ${isOverdue ? "text-red-600 dark:text-red-400" : isDueSoon ? "text-amber-600 dark:text-amber-400" : ""}`}>
-                        {formatDate(taskData.dueDate as string)}
-                        {isOverdue && <span className="ml-2 text-[10px] font-black text-red-500 bg-red-50 dark:bg-red-900/20 px-1.5 py-0.5 rounded-md">OVERDUE</span>}
-                        {!isOverdue && isDueSoon && <span className="ml-2 text-[10px] font-black text-amber-500 bg-amber-50 dark:bg-amber-900/20 px-1.5 py-0.5 rounded-md">SOON</span>}
-                      </span>
-                    ) : <span className="text-gray-400">—</span>}
-                  </MetaRow>
-                  <MetaRow icon={<Calendar size={11} />} label="Start Date">
-                    {taskData.startDate ? <span className="font-semibold">{formatDate(taskData.startDate as string)}</span> : <span className="text-gray-400">—</span>}
-                  </MetaRow>
-                  <MetaRow icon={<Clock size={11} />} label="Hours">
-                    {taskData.estimatedHours
-                      ? <span className="font-semibold">{taskData.estimatedHours}h estimated{taskData.actualHours ? ` · ${taskData.actualHours}h actual` : ""}</span>
-                      : <span className="text-gray-400">—</span>}
-                  </MetaRow>
-                  {taskData.entityType && (
-                    <MetaRow icon={<Building2 size={11} />} label="Linked To">
-                      <span className="capitalize font-semibold">{taskData.entityType}{taskData.entityName ? ` · ${taskData.entityName}` : ""}</span>
+                  <div className="divide-y divide-gray-100 dark:divide-gray-800/60">
+                    <MetaRow icon={<Calendar size={11} />} label="Due Date">
+                      {taskData.dueDate ? (
+                        <span className={`font-semibold ${isOverdue ? "text-red-600 dark:text-red-400" : isDueSoon ? "text-amber-600 dark:text-amber-400" : ""}`}>
+                          {formatDate(taskData.dueDate as string)}
+                          {isOverdue && <span className="ml-2 text-[10px] font-black text-red-500 bg-red-50 dark:bg-red-900/20 px-1.5 py-0.5 rounded-md">OVERDUE</span>}
+                          {!isOverdue && isDueSoon && <span className="ml-2 text-[10px] font-black text-amber-500 bg-amber-50 dark:bg-amber-900/20 px-1.5 py-0.5 rounded-md">SOON</span>}
+                        </span>
+                      ) : <span className="text-gray-400">—</span>}
                     </MetaRow>
-                  )}
-                  <MetaRow icon={<User size={11} />} label="Created By">
-                    {taskData.createdBy ? (
-                      <div className="flex items-center gap-2">
-                        <AvatarCircle name={`${taskData.createdBy.firstName} ${taskData.createdBy.lastName ?? ""}`} />
-                        <span className="font-semibold">{taskData.createdBy.firstName} {taskData.createdBy.lastName}</span>
-                      </div>
-                    ) : <span className="text-gray-400">—</span>}
-                  </MetaRow>
-                  <MetaRow icon={<Clock size={11} />} label="Created">
-                    <span className="font-semibold">{formatDateTime(taskData.createdAt)}</span>
-                  </MetaRow>
-                  <MetaRow icon={<Clock size={11} />} label="Updated">
-                    <span className="font-semibold">{formatDateTime(taskData.updatedAt)}</span>
-                  </MetaRow>
+                    <MetaRow icon={<Calendar size={11} />} label="Start Date">
+                      {taskData.startDate ? <span className="font-semibold">{formatDate(taskData.startDate as string)}</span> : <span className="text-gray-400">—</span>}
+                    </MetaRow>
+                    <MetaRow icon={<Clock size={11} />} label="Hours">
+                      {taskData.estimatedHours
+                        ? <span className="font-semibold">{taskData.estimatedHours}h estimated{taskData.actualHours ? ` · ${taskData.actualHours}h actual` : ""}</span>
+                        : <span className="text-gray-400">—</span>}
+                    </MetaRow>
+                    {taskData.entityType && (
+                      <MetaRow icon={<Building2 size={11} />} label="Linked To">
+                        <span className="capitalize font-semibold">{taskData.entityType}{taskData.entityName ? ` · ${taskData.entityName}` : ""}</span>
+                      </MetaRow>
+                    )}
+                    <MetaRow icon={<User size={11} />} label="Created By">
+                      {taskData.createdBy ? (
+                        <div className="flex items-center gap-2">
+                          <AvatarCircle name={`${taskData.createdBy.firstName} ${taskData.createdBy.lastName ?? ""}`} />
+                          <span className="font-semibold">{taskData.createdBy.firstName} {taskData.createdBy.lastName}</span>
+                        </div>
+                      ) : <span className="text-gray-400">—</span>}
+                    </MetaRow>
+                    <MetaRow icon={<Clock size={11} />} label="Created">
+                      <span className="font-semibold">{formatDateTime(taskData.createdAt)}</span>
+                    </MetaRow>
+                    <MetaRow icon={<Clock size={11} />} label="Updated">
+                      <span className="font-semibold">{formatDateTime(taskData.updatedAt)}</span>
+                    </MetaRow>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Attachments */}
-            {taskData.attachments && taskData.attachments.length > 0 && (
-              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-                <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center">
-                      <Paperclip size={13} className="text-teal-500 dark:text-teal-400" />
-                    </div>
-                    <h3 className="text-sm font-bold text-gray-900 dark:text-white">Attachments</h3>
-                  </div>
-                  <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-500 px-2 py-0.5 rounded-full font-bold">{taskData.attachments.length}</span>
-                </div>
-                <div className="p-4 space-y-2">
-                  {taskData.attachments.map((att, i) => (
-                    <a key={i} href={att} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-teal-50 dark:hover:bg-teal-900/20 border border-gray-100 dark:border-gray-700 hover:border-teal-200 dark:hover:border-teal-800 transition-all group">
-                      <div className="w-8 h-8 rounded-lg bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center shrink-0">
+              {/* Attachments */}
+              {taskData.attachments && taskData.attachments.length > 0 && (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                  <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center">
                         <Paperclip size={13} className="text-teal-500 dark:text-teal-400" />
                       </div>
-                      <span className="text-xs text-gray-600 dark:text-gray-300 truncate flex-1 group-hover:text-teal-600 dark:group-hover:text-teal-400 font-medium">{att.split("/").pop()}</span>
-                    </a>
-                  ))}
+                      <h3 className="text-sm font-bold text-gray-900 dark:text-white">Attachments</h3>
+                    </div>
+                    <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-500 px-2 py-0.5 rounded-full font-bold">{taskData.attachments.length}</span>
+                  </div>
+                  <div className="p-4 space-y-2">
+                    {taskData.attachments.map((att, i) => (
+                      <a key={i} href={att} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-teal-50 dark:hover:bg-teal-900/20 border border-gray-100 dark:border-gray-700 hover:border-teal-200 dark:hover:border-teal-800 transition-all group">
+                        <div className="w-8 h-8 rounded-lg bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center shrink-0">
+                          <Paperclip size={13} className="text-teal-500 dark:text-teal-400" />
+                        </div>
+                        <span className="text-xs text-gray-600 dark:text-gray-300 truncate flex-1 group-hover:text-teal-600 dark:group-hover:text-teal-400 font-medium">{att.split("/").pop()}</span>
+                      </a>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
+            </div>
           </div>
         </div>
       </div>

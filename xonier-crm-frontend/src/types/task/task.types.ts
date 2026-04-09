@@ -127,6 +127,7 @@ export interface StatusOption {
   icon: string;
   isDefault: boolean;
   category: CategoryItem;
+  isFinal?:boolean;
 }
 
 export interface CategoryOption {
