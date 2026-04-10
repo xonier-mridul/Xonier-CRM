@@ -21,6 +21,7 @@ from datetime import datetime, timezone, timedelta
 from app.repositories.task_remark_repository import TaskRemarkRepository
 from app.core.dependencies import Dependencies
 import asyncio
+from app.utils.check_permissions import check_permission
 
  
  
@@ -926,8 +927,13 @@ class TaskService:
                     }
 
                     if new_status.isFinal:
-                        # if not self.dependencies.permissions(["task:markStatusComplete"]):
-                        #     raise AppException(403, "You not have permission for mark task to done")
+                        has_permission = await check_permission(user, ["task:markStatusComplete"])
+
+                        if not has_permission:
+                            raise AppException(403, "You do not have permission to mark this task as complete")
+                        update_data["rating"] = payload.get("rating") or None
+                        update_data["actual_hours"] = payload.get("actual_hours") or None
+                        update_data["actual_days"] = payload.get("actual_days") or None
                         update_data["completedAt"] = datetime.now(timezone.utc)
                         update_data["isOverdue"] = False
 

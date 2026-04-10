@@ -198,7 +198,7 @@ export enum PERMISSIONS {
   taskStatusDelete = "taskStatus:delete",
   readOTP = "readOTP:read",
   readSalesDashbord = "salesDashboard:read",
-  markFinal = "markStatusComplete",
+  markFinal = "task:markStatusComplete",
   readRemark = "remark:read",
   createRemark = "remark:create",
   updateRemark= "remark:update",

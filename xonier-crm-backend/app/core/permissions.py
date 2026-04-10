@@ -665,5 +665,33 @@ PERMISSIONS = [
         "title": "delete remark",
         "description": "permission for delete remark",
     },
+    {
+        "code": "taskReport:create",
+        "module": "taskReport",
+        "action": "create",
+        "title": "create taskReport",
+        "description": "permission for create task report",
+    },
+    {
+        "code": "taskReport:read",
+        "module": "taskReport",
+        "action": "read",
+        "title": "read taskReport",
+        "description": "permission for read task report",
+    },
+    {
+        "code": "taskReport:update",
+        "module": "taskReport",
+        "action": "update",
+        "title": "update taskReport",
+        "description": "permission for update task report",
+    },
+    {
+        "code": "taskReport:delete",
+        "module": "taskReport",
+        "action": "delete",
+        "title": "delete taskReport",
+        "description": "permission for delete task report",
+    },
 
 ]
