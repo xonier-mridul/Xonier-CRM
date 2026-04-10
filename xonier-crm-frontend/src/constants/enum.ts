@@ -198,8 +198,11 @@ export enum PERMISSIONS {
   taskStatusDelete = "taskStatus:delete",
   readOTP = "readOTP:read",
   readSalesDashbord = "salesDashboard:read",
-  markFinal="markFinal:update"
-
+  markFinal = "markStatusComplete",
+  readRemark = "remark:read",
+  createRemark = "remark:create",
+  updateRemark= "remark:update",
+  deleteRemark= "remark:delete",
 }
 
 
@@ -592,9 +595,9 @@ export enum ACTIVITY_ACTION {
   CLOSED_WON = "closed_won",
   CLOSED_LOST = "closed_lost",
   DELETE = "delete",
-  WON="won",
-  LOST="lost",
-  ACCEPTED="accepted"
+  WON = "won",
+  LOST = "lost",
+  ACCEPTED = "accepted"
 }
 
 

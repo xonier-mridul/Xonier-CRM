@@ -46,7 +46,7 @@ import {
   Timer,
   Star,
 } from "lucide-react";
-import { MdOutlineEdit } from "react-icons/md";
+import RemarkModal from "@/src/components/pages/task/RemarkModal";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -460,7 +460,7 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
     const newTask: SubTask = {
       id: "string",
       title: newTitle,
-      isCompleted: newTitle.length ==4,
+      isCompleted: newTitle.length == 4,
       createdAt: "klsklz"
     }
     setSubtasks((p) => [...p, newTask]);
@@ -606,6 +606,7 @@ const page = () => {
   const [taskActivity, setTaskActivity] = useState<TaskActivity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activityLoading, setActivityLoading] = useState(true);
+  const [showRemarkModal, setShowRemarkModal] = useState(false);
   const { id } = useParams();
 
   const getTaskData = async (taskId: string) => {
@@ -1064,6 +1065,19 @@ const page = () => {
 
             </div>
           </div>
+          {/* Remark Chat  */}
+          {/* <button
+            onClick={() => setShowRemarkModal(true)}
+            className="px-3 py-2 bg-blue-500 text-white rounded-lg"
+          >
+            Open Remarks
+          </button> */}
+          {(
+            <RemarkModal
+              taskId={taskId}
+              // onClose={()=>{setShowRemarkModal(false)}}
+            />
+          )}
         </div>
       </div>
     </div>
