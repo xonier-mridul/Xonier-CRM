@@ -15,7 +15,7 @@ import { TASK_ACTIVITY_ACTION } from "@/src/constants/enum";
 import { useSelector } from "react-redux";
 import UserSelect from "@/src/components/common/userselect";
 import { FaXmark } from "react-icons/fa6";
-import MarkFinalModal from "@/src/components/pages/task/Marrkfinalmodal";
+import MarkFinalModal, { MarkFinalPayload } from "@/src/components/pages/task/Marrkfinalmodal";
 
 type Raw = Record<string, unknown>;
 
@@ -202,11 +202,19 @@ const apiMoveTask = (
   statusId: string,
   categoryId: string,
   order: number,
+  rating?: number,
+  actualHours?: number,
+  actualDays?: number,
+  remark?: string
 ) =>
   api.patch(`/task/move/${id}`, {
     status: statusId,
     category: categoryId,
     order,
+    rating,
+    actualHours,
+    actualDays,
+    remark
   });
 
 function Avatar({ link, name, title }: { link: string, name?: string; title?: string }) {
@@ -774,7 +782,7 @@ export default function TaskViewPage() {
   const handleFinalCancel = () => {
     setPendingDrop(null);
   };
-  const handleFinalConfirm = async (payload: any) => {
+  const handleFinalConfirm = async (payload: MarkFinalPayload) => {
     if (!pendingDrop) return;
 
     const { task, targetStatus } = pendingDrop;
@@ -783,7 +791,7 @@ export default function TaskViewPage() {
 
     const categoryId = focusedTask?.category?.id ?? task.category?.id ?? "";
 
-    await apiMoveTask(task.id, targetStatus.id, categoryId, 0);
+    await apiMoveTask(task.id, targetStatus.id, categoryId, 0, payload.feedbackStars, payload.actualHours, payload.actualDays, payload.remark);
 
     loadBoard(categoryId, false);
   };

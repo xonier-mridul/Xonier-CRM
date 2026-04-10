@@ -7,6 +7,7 @@ import { PERMISSIONS } from "@/src/constants/enum";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { useSelector } from "react-redux";
 import { RootState } from "@/src/store";
+import { User } from "@/src/types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -14,7 +15,7 @@ interface Remark {
   _id: string;
   content: string;
   createdAt: string;
-  acknowledgedBy?: string[];   // array of user ids who acknowledged
+  acknowledgedBy?: User;   // array of user ids who acknowledged
   createdBy: {
     id: string;
     firstName: string;
@@ -215,9 +216,9 @@ function RemarkRow({ remark, currentUserId, onAcknowledge, index }: RemarkRowPro
   const [ackLoading, setAckLoading] = useState(false);
   const palette    = getPalette(remark.createdBy.id);
   const isAuthor   = remark.createdBy.id === currentUserId;
-  const acked      = remark.acknowledgedBy ?? [];
-  const hasAcked   = acked.includes(currentUserId);
-  const ackCount   = acked.length;
+  const acked      = remark.acknowledgedBy;
+  const hasAcked   = (acked)?true:false;
+  const ackCount   = (acked)?1:0;
 
   const handleAck = async () => {
     setAckLoading(true);
@@ -269,7 +270,7 @@ function RemarkRow({ remark, currentUserId, onAcknowledge, index }: RemarkRowPro
         </div>
 
         {/* Acknowledged-by avatars */}
-        {ackCount > 0 && (
+        {/* {ackCount > 0 && (
           <div className="flex items-center gap-1.5 mt-2">
             <span className="text-[10px] text-gray-400 dark:text-gray-500">Seen by</span>
             <div className="flex -space-x-1.5">
@@ -286,7 +287,7 @@ function RemarkRow({ remark, currentUserId, onAcknowledge, index }: RemarkRowPro
               )}
             </div>
           </div>
-        )}
+        )} */}
       </div>
 
       {/* Row number */}
@@ -347,9 +348,7 @@ export default function RemarkModal({ taskId, onClose }: Props) {
           r._id === remarkId
             ? {
                 ...r,
-                acknowledgedBy: r.acknowledgedBy?.includes(currentUserId)
-                  ? r.acknowledgedBy.filter((id) => id !== currentUserId)
-                  : [...(r.acknowledgedBy ?? []), currentUserId],
+                acknowledgedBy: r.acknowledgedBy
               }
             : r,
         ),
@@ -362,16 +361,16 @@ export default function RemarkModal({ taskId, onClose }: Props) {
 
   // Filtered remarks
   const filteredRemarks = remarks.filter((r) => {
-    if (filter === "acknowledged") return (r.acknowledgedBy ?? []).includes(currentUserId);
-    if (filter === "pending")      return !(r.acknowledgedBy ?? []).includes(currentUserId) && r.createdBy.id !== currentUserId;
+    if (filter === "acknowledged") return (r.acknowledgedBy?.id);
+    if (filter === "pending")      return !(r.acknowledgedBy?.id) ;
     return true;
   });
 
   const pendingCount = remarks.filter(
-    (r) => !(r.acknowledgedBy ?? []).includes(currentUserId) && r.createdBy.id !== currentUserId,
+    (r) => !(r.acknowledgedBy),
   ).length;
 
-  const ackedCount = remarks.filter((r) => (r.acknowledgedBy ?? []).includes(currentUserId)).length;
+  const ackedCount = remarks.filter((r) => (r.acknowledgedBy)).length;
 
   return (
     <div className="w-full h-full flex flex-col bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
@@ -434,7 +433,7 @@ export default function RemarkModal({ taskId, onClose }: Props) {
         <div className="flex items-center gap-1 px-5 py-2.5 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/40 flex-shrink-0">
           {([
             { key: "all",          label: "All",           count: remarks.length       },
-            { key: "pending",      label: "Needs ack.",    count: pendingCount         },
+            { key: "pending",      label: "Pending",       count: pendingCount         },
             { key: "acknowledged", label: "Acknowledged",  count: ackedCount           },
           ] as const).map((tab) => (
             <button

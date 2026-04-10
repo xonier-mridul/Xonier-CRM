@@ -340,8 +340,9 @@ function CategoryBoard({
       status: targetStatus.id,
       category: categoryId,
       remark: payload.remark,
-      feedbackStars: payload.feedbackStars,
-      actualHours: payload.actualHours,
+      rating: payload.feedbackStars,
+      actual_hours: payload.actualHours,
+      actual_days: payload.actualDays
     });
   };
 
