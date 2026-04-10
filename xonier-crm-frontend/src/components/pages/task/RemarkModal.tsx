@@ -270,24 +270,21 @@ function RemarkRow({ remark, currentUserId, onAcknowledge, index }: RemarkRowPro
         </div>
 
         {/* Acknowledged-by avatars */}
-        {/* {ackCount > 0 && (
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="text-[10px] text-gray-400 dark:text-gray-500">Seen by</span>
+        {ackCount && (
+          <div className="flex items-center gap-1.5 mt-2 ms-auto flot-right justify-end">
+            <span className="text-[10px] text-gray-400 dark:text-gray-500">Acknowledged by</span>
             <div className="flex -space-x-1.5">
-              {acked.slice(0, 5).map((uid) => (
+              {(
                 <div
-                  key={uid}
-                  className={`w-4 h-4 rounded-full border border-white dark:border-gray-900 flex items-center justify-center text-[7px] font-bold text-white ${getPalette(uid).avatar}`}
+                  key={acked?.id}
+                  className={`px-1 h-4 rounded-full border border-white dark:border-gray-900 flex items-center justify-center text-[7px] font-bold text-white ${getPalette(acked?.id || "").avatar}`}
                 >
-                  ✓
+                  {acked?.firstName} {acked?.lastName ? acked.lastName : ""} 
                 </div>
-              ))}
-              {ackCount > 5 && (
-                <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-1">+{ackCount - 5}</span>
               )}
             </div>
           </div>
-        )} */}
+        )}
       </div>
 
       {/* Row number */}
@@ -342,17 +339,7 @@ export default function RemarkModal({ taskId, onClose }: Props) {
   const handleAcknowledge = async (remarkId: string) => {
     try {
       await RemarkService.acknowledge(remarkId);
-      // Optimistic update
-      setRemarks((prev) =>
-        prev.map((r) =>
-          r._id === remarkId
-            ? {
-                ...r,
-                acknowledgedBy: r.acknowledgedBy
-              }
-            : r,
-        ),
-      );
+      loadRemarks();
     } catch {
       toast.error("Failed to acknowledge");
       await loadRemarks(); // re-sync on error
