@@ -434,6 +434,32 @@ const SideBar = () => {
                         Task Status
                       </Link>
                     </li>}
+                    {
+                      hasPermission(PERMISSIONS.taskReportRead) && <li>
+                        <Link
+                          href="/reports"
+                          className={`${isActive("/reports")
+                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                            : "border-l-2 border-transparent"
+                            } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                        >
+                          Task Reports
+                        </Link>
+                      </li>
+                    }
+                    {
+                      hasPermission(PERMISSIONS.addTodayReport) && <li>
+                        <Link
+                          href="/reports/create/new"
+                          className={`${isActive("/reports/create/new")
+                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                            : "border-l-2 border-transparent"
+                            } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                        >
+                          Today Report
+                        </Link>
+                      </li>
+                    }
                   </motion.ul>
                 )}
               </AnimatePresence>
