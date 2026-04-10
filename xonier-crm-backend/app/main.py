@@ -46,6 +46,7 @@ from app.routes.task_category_route import router as task_category_route
 from app.routes.task_status_route import router as task_status_route
 from app.routes.task_route import router as task_route
 from app.routes.otp_route import router as otp_route
+from app.routes.task_report_route import router as task_report_route
 
 settings = get_setting()
 
@@ -127,6 +128,7 @@ app.include_router(task_category_route, prefix="/api/task-category")
 app.include_router(task_status_route, prefix="/api/task-status")
 app.include_router(task_route, prefix="/api/task")
 app.include_router(otp_route, prefix="/api/otp")
+app.include_router(task_report_route, prefix="/api/task-reports")
 
 
 app.add_exception_handler(HTTPException, http_exception_handler)

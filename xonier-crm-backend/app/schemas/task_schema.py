@@ -39,6 +39,7 @@ class CreateTaskSchema(BaseModel):
     tags: Optional[List[str]] = []
     rating: Optional[Literal[0, 1, 2, 3, 4 , 5, None]] = None
     actual_hours: Optional[float] = None
+    actual_days: Optional[int] = None
     attachments: Optional[List[str]] = []
     parentTask: Optional[str] = None
     order: Optional[int] = 0
@@ -62,6 +63,15 @@ class CreateTaskSchema(BaseModel):
         if v < 0 or v > 5:
             raise AppException(422, "Rating must be between 0 and 5")
 
+        return v
+    
+    @field_validator("actual_days")
+    @classmethod
+    def validate_rating(cls, v):
+        if v < 0:
+            raise AppException(422, "actual days field must be equal and grater the 0")
+
+        
         return v
 
     @field_validator("category")
@@ -123,6 +133,7 @@ class UpdateTaskSchema(BaseModel):
     entityType: Optional[TASK_ENTITY_TYPE] = None
     rating: Optional[Literal[0, 1, 2, 3, 4 , 5, None]] = None
     actual_hours: Optional[float] = None
+    actual_days: Optional[int] = None
     entityId: Optional[str] = None
     entityName: Optional[str] = None
     order: Optional[int] = 0
@@ -133,6 +144,15 @@ class UpdateTaskSchema(BaseModel):
         if v is not None and not v.strip():
             raise AppException(422, "title cannot be empty")
         return v.strip() if v else v
+    
+    @field_validator("actual_days")
+    @classmethod
+    def validate_rating(cls, v):
+        if v < 0:
+            raise AppException(422, "actual days field must be equal and grater the 0")
+
+        
+        return v
     
     
     @field_validator("rating")

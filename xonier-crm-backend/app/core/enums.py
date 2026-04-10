@@ -882,4 +882,28 @@ class TASK_ACTIVITY_ACTION(str, Enum):
 
 class LEAD_REQUEST_STATUS(str, Enum):
     PENDING = "pending"
-    
+
+
+class TASK_ITEM_STATUS(str, Enum):
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    BLOCKED = "blocked"
+    CARRIED_FORWARD = "carried_forward"
+
+
+class TASK_REPORT_STATUS(str, Enum):
+    MORNING_PENDING = "morning_pending"
+    EVENING_PENDING = "evening_pending"
+    COMPLETED_PENDING_REVIEW = "completed_pending_review"
+    REVIEWED = "reviewed"
+    MISSED = "missed"
+
+
+class WORK_MOOD(str, Enum):
+    EXCELLENT = "excellent"
+    GOOD = "good"
+    NEUTRAL = "neutral"
+    TIRED = "tired"
+    STRESSED = "stressed"
+
