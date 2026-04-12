@@ -1,4 +1,4 @@
-# schemas/task_report_schema.py
+
 from pydantic import BaseModel, Field, field_validator, model_validator
 from typing import Optional, List
 from datetime import datetime, date
@@ -15,6 +15,7 @@ class TaskReportItemCreateSchema(BaseModel):
     linkedTaskId: Optional[str] = None
     blockerReason: Optional[str] = Field(None, max_length=1000)
     completionPercentage: int = Field(default=0, ge=0, le=100)
+    
 
     @model_validator(mode="after")
     def validate_blocker_reason(self) -> "TaskReportItemCreateSchema":
@@ -182,3 +183,41 @@ class TaskReportResponse(BaseModel):
     updatedAt: datetime
 
     model_config = {"populate_by_name": True}
+
+
+
+class UserTaskReportQuerySchema(BaseModel):
+    userIds: str = Field(..., description="Comma separated user ids: id1,id2,id3")
+    fromDate: Optional[str] = None
+    toDate: Optional[str] = None
+    status: Optional[str] = None
+    page: int = Field(default=1, ge=1)
+    limit: int = Field(default=10, ge=1, le=100)
+
+    @field_validator("userIds")
+    @classmethod
+    def validate_user_ids(cls, v):
+        ids = [uid.strip() for uid in v.split(",") if uid.strip()]
+        if not ids:
+            raise ValueError("At least one user id is required")
+        if len(ids) > 50:
+            raise ValueError("Cannot query more than 50 users at once")
+        if len(set(ids)) != len(ids):
+            raise ValueError("Duplicate user ids are not allowed")
+        return v
+
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, v):
+        if v is None:
+            return v
+        allowed = [
+            "morning_pending",
+            "evening_pending",
+            "completed_pending_review",
+            "reviewed",
+            "missed"
+        ]
+        if v not in allowed:
+            raise ValueError(f"Invalid status. Allowed: {', '.join(allowed)}")
+        return v

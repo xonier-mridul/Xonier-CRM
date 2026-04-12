@@ -1347,7 +1347,7 @@ class AuthServices:
                 populate=["userRole"]
             )
 
-            print("userobj: ", user_obj)
+            
 
             if not user_obj:
                 raise AppException(404, "User not found")

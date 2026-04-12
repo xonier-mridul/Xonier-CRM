@@ -15,7 +15,7 @@ export default function CheckAuth({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        console.log("yo");
+        
         const res = await AuthService.me();
 
         dispatch(setAuthState(res.data.data));
@@ -24,7 +24,6 @@ export default function CheckAuth({ children }: { children: React.ReactNode }) {
           dispatch(setIsAdmin());
         }
       } catch (error) {
-        
 
         if (error instanceof AxiosError) {
           if (error.response?.status === 401) {
