@@ -493,8 +493,8 @@ function KanbanColumn({
           )}
         </div>
         <span
-          className="text-xs font-black rounded-full px-2 py-0.5 min-w-[22px] text-center shrink-0 ml-2"
-          style={{ backgroundColor: `${status.color}20`, color: status.color }}
+          className={`text-xs font-black rounded-full px-2 py-0.5 min-w-[22px] text-center shrink-0 ml-2 ${getColorOption(status.color).text}`}
+          style={{ backgroundColor: `${status.color}20`}}
         >
           {tasks.length}
         </span>

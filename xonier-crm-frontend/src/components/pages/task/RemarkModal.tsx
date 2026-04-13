@@ -270,7 +270,7 @@ function RemarkRow({ remark, currentUserId, onAcknowledge, index }: RemarkRowPro
         </div>
 
         {/* Acknowledged-by avatars */}
-        {ackCount && (
+        {(ackCount !== 0) && (
           <div className="flex items-center gap-1.5 mt-2 ms-auto flot-right justify-end">
             <span className="text-[10px] text-gray-400 dark:text-gray-500">Acknowledged by</span>
             <div className="flex -space-x-1.5">
@@ -316,7 +316,7 @@ export default function RemarkModal({ taskId, onClose }: Props) {
       const res = await RemarkService.getByTask(taskId);
       setRemarks(res.data.data ?? []);
     } catch {
-      toast.error("Failed to load remarks");
+       setRemarks([]);
     } finally {
       setLoading(false);
     }

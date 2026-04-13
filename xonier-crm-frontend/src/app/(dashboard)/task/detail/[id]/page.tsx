@@ -47,6 +47,7 @@ import {
   Star,
 } from "lucide-react";
 import RemarkModal from "@/src/components/pages/task/RemarkModal";
+import { getColorOption } from "@/src/components/pages/task/createStatusModal";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -473,6 +474,7 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
     // } catch (e) {
     //   if (axios.isAxiosError(e)) toast.error(e.response?.data?.message ?? "Failed");
     // } finally { setNewTitle(""); setAdding(false); }
+     setNewTitle(""); setAdding(false);
   };
 
   const handleToggle = async (id: string) => {
@@ -671,7 +673,7 @@ const page = () => {
       taskProgressPct >= 60 ? "from-violet-500 to-purple-600" :
         taskProgressPct >= 30 ? "from-amber-400 to-orange-400" :
           "from-gray-300 to-gray-400";
-
+  const statusColor = getColorOption(taskData.status.color);
   return (
     <div className="ml-72 mt-14">
       <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full mb-10">
@@ -712,14 +714,13 @@ const page = () => {
                   {/* Status + Priority badges */}
                   <div className="flex items-center gap-2 flex-wrap">
                     <span
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border"
-                      style={{
-                        backgroundColor: taskData.status?.color ? `${taskData.status.color}18` : undefined,
-                        color: taskData.status?.color ?? "",
-                        borderColor: taskData.status?.color ? `${taskData.status.color}30` : undefined,
-                      }}
-                    >
-                      <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: taskData.status?.color ?? "" }} />
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border
+                          ${statusColor.bg}
+                          ${statusColor.text}
+                        `}
+                        
+                      >
+                      <span className={`w-2 h-2 rounded-full animate-pulse border ${statusColor.text}`} />
                       {taskData.status?.name ?? taskData.statusName}
                     </span>
 
