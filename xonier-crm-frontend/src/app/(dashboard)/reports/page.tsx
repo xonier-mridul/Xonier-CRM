@@ -3,7 +3,9 @@
 import React, { JSX, useState, useEffect, useCallback, useRef } from "react";
 import { TaskReportService } from "@/src/services/taskReport.service";
 import type { TaskReport, TaskReportStatus } from "@/src/types/task/taskReport";
+import { MdDelete } from "react-icons/md";
 import Link from "next/link";
+import { toast } from "react-toastify";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -88,7 +90,17 @@ function ProgressRing({ pct }: { pct: number }) {
     </svg>
   );
 }
-
+const handleDelete = (id: string) => async () => {
+    if (!confirm("Are you sure you want to delete this report? This action cannot be undone.")) return;
+    try {
+      const res = await TaskReportService.deleteReport(id);
+      if (res.status === 200) {
+        toast.success("Report deleted");
+      }
+    } catch {
+      toast.error("Failed to delete report");
+    }
+  };
 function ExpandableRow({ report }: { report: TaskReport }) {
   const [open, setOpen] = useState(false);
   const morningItems = report.morningAgenda?.items ?? [];
@@ -107,7 +119,7 @@ function ExpandableRow({ report }: { report: TaskReport }) {
       >
         {/* User */}
         <Link
-          href={`/reports/create/${report.id}`}>
+          href={`/report/create/${report.user.id}`}>
         <td className="px-5 py-4">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-xs font-extrabold shrink-0 shadow-sm">
@@ -202,6 +214,13 @@ function ExpandableRow({ report }: { report: TaskReport }) {
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transform: open ? "rotate(180deg)" : "", transition: "transform .2s" }}>
               <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
+          </button>
+        </td>
+        <td className="justify-center px-5 py-4 text-center">
+          <button
+            onClick={handleDelete(report.id)}
+          >
+            <MdDelete className="w-5 h-5 text-red-500 hover:text-red-700 transition-colors" />
           </button>
         </td>
       </tr>
@@ -373,6 +392,7 @@ const TaskReportListPage = (): JSX.Element => {
       setCurrentPage(1);
     }, 500);
   };
+  
 
   // Stats
   const totalReports = reports.length;
@@ -491,7 +511,7 @@ const TaskReportListPage = (): JSX.Element => {
             <table className="w-full text-sm min-w-[900px]">
               <thead>
                 <tr className="bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
-                  {["Employee", "Date", "Status", "Tasks", "Hours", "Mood", "Reviewed", ""].map(col => (
+                  {["Employee", "Date", "Status", "Tasks", "Hours", "Mood", "Reviewed", "" , "Action"].map(col => (
                     <th key={col} className="px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-left">
                       {col}
                     </th>

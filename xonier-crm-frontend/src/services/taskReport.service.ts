@@ -14,7 +14,7 @@ export const TaskReportService = {
     api.get(`/task-reports/my-reports?${params.page ? `page=${params.page}` : ""}${params.limit ? `&limit=${params.limit}` : ""}${params.search ? `&search=${params.search}` : ""}`),
 
   getById: (id: ParamValue) =>
-    api.get(`/task-reports/${id}`),
+    api.get(`/task-reports/by-users/tasks?userIds=${id}`),
 
   createMorningAgenda: (payload: CreateMorningAgendaPayload) =>
     api.post(`/task-reports/morning/submit`, payload),

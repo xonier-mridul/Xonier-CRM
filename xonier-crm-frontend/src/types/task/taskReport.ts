@@ -92,6 +92,7 @@ export interface TaskReport {
   createdAt: string;
   updatedAt: string;
   deletedAt?: string;
+  
 }
 
 // ── Request / Response DTOs ───────────────────────────────────────────────────
