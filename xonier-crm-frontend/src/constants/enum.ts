@@ -203,6 +203,9 @@ export enum PERMISSIONS {
   createRemark = "remark:create",
   updateRemark= "remark:update",
   deleteRemark= "remark:delete",
+  taskReportRead = "taskReport:read",
+  addTodayReport = "taskReport:addToday",
+
 }
 
 
