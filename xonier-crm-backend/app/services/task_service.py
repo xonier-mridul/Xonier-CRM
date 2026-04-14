@@ -369,22 +369,25 @@ class TaskService:
                 ]})
  
            
- 
-            if "fromDate" in filters or "toDate" in filters:
-                date_filter = {}
+            date_filter = {}
+            try:
                 if "fromDate" in filters:
-                    try:
-                        date_filter["$gte"] = datetime.fromisoformat(filters["fromDate"]).replace(hour=0, minute=0, second=0, tzinfo=timezone.utc)
-                    except ValueError:
-                        raise AppException(400, "Invalid fromDate format")
+                    from_date = datetime.fromisoformat(filters["fromDate"])
+                    from_date = from_date.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
+                    date_filter["$gte"] = from_date
+
                 if "toDate" in filters:
-                    try:
-                        date_filter["$lte"] = datetime.fromisoformat(filters["toDate"]).replace(hour=23, minute=59, second=59, tzinfo=timezone.utc)
-                    except ValueError:
-                        raise AppException(400, "Invalid toDate format")
-                query["dueDate"] = date_filter
-            
-            
+                    to_date = datetime.fromisoformat(filters["toDate"])
+                    to_date = to_date.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc) + timedelta(days=1)
+                    date_filter["$lt"] = to_date
+
+            except ValueError:
+                raise AppException(400, "Invalid date format. Use YYYY-MM-DD")
+            if date_filter != {}:
+                query["$or"] = [
+                    {"dueDate": date_filter},
+                    {"createdAt": date_filter},
+                ]
             result = await self.repo.get_all(
                 page=page,
                 limit=limit,

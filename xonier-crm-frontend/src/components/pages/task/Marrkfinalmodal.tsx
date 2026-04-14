@@ -9,6 +9,7 @@ export interface MarkFinalPayload {
   remark: string;
   feedbackStars: number;
   actualHours?: number;
+  actualDays?: number;
 }
 
 interface MarkFinalModalProps {
@@ -73,6 +74,7 @@ export function MarkFinalModal({
   const [remark, setRemark] = useState("");
   const [feedbackStars, setFeedback] = useState(0);
   const [actualHours, setActualHours] = useState<string>("");
+  const [actualDays, setActualDays] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -104,6 +106,7 @@ export function MarkFinalModal({
         remark: remark.trim(),
         feedbackStars,
         actualHours: Number(actualHours),
+        actualDays: Number(actualDays)
       });
     } finally {
       setSubmitting(false);
@@ -161,7 +164,7 @@ export function MarkFinalModal({
           {/* Remark */}
           <div className="space-y-1.5">
             <label className="flex items-center gap-1 text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Completion remark
+              Completion Remark
               <span className="text-rose-500 text-xs">*</span>
             </label>
             <textarea
@@ -202,6 +205,23 @@ export function MarkFinalModal({
               />
               <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-gray-500 font-semibold pointer-events-none">
                 hrs
+              </span>
+            </div>
+             <label className="flex items-center gap-1 text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Actual Days spent
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                min={0}
+                step={0.5}
+                value={actualDays}
+                onChange={(e) => setActualDays(e.target.value)}
+                placeholder="e.g. 0.5"
+                className="w-full pl-3.5 pr-14 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
+              />
+              <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-gray-500 font-semibold pointer-events-none">
+                days
               </span>
             </div>
           </div>

@@ -76,6 +76,9 @@ export interface UpdateTaskStatusPayload {
   status: string;
   category?: string;
   order?: number;
+  actual_hours?: number;
+  actual_days?: number;
+  rating?: number;
 }
 
 export interface UpdateTaskPriorityPayload {
