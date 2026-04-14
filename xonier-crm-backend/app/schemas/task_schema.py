@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, field_validator, model_validator, Field
 from typing import Optional, List, Literal
 from app.core.enums import TASK_PRIORITY, TASK_ENTITY_TYPE, RECURRENCE_TYPE
 from app.utils.custom_exception import AppException
@@ -29,18 +29,18 @@ class CreateTaskSchema(BaseModel):
     entityType: Optional[TASK_ENTITY_TYPE] = None
     entityId: Optional[str] = None
     entityName: Optional[str] = None
-    assignedTo: Optional[List[str]] = []
+    assignedTo: Optional[List[str]] = Field(default_factory=list)
     dueDate: Optional[str] = None
     startDate: Optional[str] = None
     estimatedHours: Optional[float] = None
+    actualHours: Optional[float] = None
     isRecurring: bool = False
     recurrenceType: Optional[RECURRENCE_TYPE] = None
     recurrenceEndsAt: Optional[str] = None
-    tags: Optional[List[str]] = []
-    rating: Optional[Literal[0, 1, 2, 3, 4 , 5, None]] = None
-    actual_hours: Optional[float] = None
-    actual_days: Optional[int] = None
-    attachments: Optional[List[str]] = []
+    tags: Optional[List[str]] = Field(default_factory=list)
+    rating: Optional[Literal[0, 1, 2, 3, 4, 5]] = None
+    actualDays: Optional[int] = None
+    attachments: Optional[List[str]] = Field(default_factory=list)
     parentTask: Optional[str] = None
     order: Optional[int] = 0
 
@@ -50,29 +50,6 @@ class CreateTaskSchema(BaseModel):
         if not v or not v.strip():
             raise AppException(422, "title is required")
         return v.strip()
-    
-    @field_validator("rating")
-    @classmethod
-    def validate_rating(cls, v):
-        if v is None:
-            return v
-
-        if not isinstance(v, int):
-            raise AppException(422, "Rating must be an integer between 0 and 5")
-
-        if v < 0 or v > 5:
-            raise AppException(422, "Rating must be between 0 and 5")
-
-        return v
-    
-    @field_validator("actual_days")
-    @classmethod
-    def validate_rating(cls, v):
-        if v < 0:
-            raise AppException(422, "actual days field must be equal and grater the 0")
-
-        
-        return v
 
     @field_validator("category")
     @classmethod
@@ -80,6 +57,35 @@ class CreateTaskSchema(BaseModel):
         if not v or not v.strip():
             raise AppException(422, "category is required")
         return v.strip()
+
+    @field_validator("rating")
+    @classmethod
+    def validate_rating(cls, v) -> Optional[int]:
+        if v is None:
+            return v
+        if not isinstance(v, int):
+            raise AppException(422, "Rating must be an integer between 0 and 5")
+        if v < 0 or v > 5:
+            raise AppException(422, "Rating must be between 0 and 5")
+        return v
+
+    @field_validator("actualDays")
+    @classmethod
+    def validate_actual_days(cls, v) -> Optional[int]:
+        if v is None:
+            return v
+        if v < 0:
+            raise AppException(422, "actualDays must be equal to or greater than 0")
+        return v
+
+    @field_validator("estimatedHours", "actualHours")
+    @classmethod
+    def validate_hours(cls, v) -> Optional[float]:
+        if v is None:
+            return v
+        if v < 0:
+            raise AppException(422, "Hours must be equal to or greater than 0")
+        return v
 
     @field_validator("dueDate", mode="before")
     @classmethod
@@ -100,6 +106,9 @@ class CreateTaskSchema(BaseModel):
     def validate_recurring(self):
         if self.isRecurring and not self.recurrenceType:
             raise AppException(422, "recurrenceType is required when isRecurring is true")
+        if not self.isRecurring:
+            self.recurrenceType = None
+            self.recurrenceEndsAt = None
         if self.startDate and self.dueDate:
             try:
                 start = datetime.fromisoformat(self.startDate.replace("Z", "+00:00"))
@@ -119,9 +128,8 @@ class UpdateTaskSchema(BaseModel):
     category: str
     status: Optional[str] = None
     priority: Optional[TASK_PRIORITY] = None
-    status: Optional[str] = None
     dueDate: Optional[str] = None
-    assignedTo: Optional[List[str]] = []
+    assignedTo: Optional[List[str]] = Field(default_factory=list)
     startDate: Optional[str] = None
     estimatedHours: Optional[float] = None
     actualHours: Optional[float] = None
@@ -131,9 +139,8 @@ class UpdateTaskSchema(BaseModel):
     tags: Optional[List[str]] = None
     attachments: Optional[List[str]] = None
     entityType: Optional[TASK_ENTITY_TYPE] = None
-    rating: Optional[Literal[0, 1, 2, 3, 4 , 5, None]] = None
-    actual_hours: Optional[float] = None
-    actual_days: Optional[int] = None
+    rating: Optional[Literal[0, 1, 2, 3, 4, 5]] = None
+    actualDays: Optional[int] = None
     entityId: Optional[str] = None
     entityName: Optional[str] = None
     order: Optional[int] = 0
@@ -144,29 +151,34 @@ class UpdateTaskSchema(BaseModel):
         if v is not None and not v.strip():
             raise AppException(422, "title cannot be empty")
         return v.strip() if v else v
-    
-    @field_validator("actual_days")
-    @classmethod
-    def validate_rating(cls, v):
-        if v < 0:
-            raise AppException(422, "actual days field must be equal and grater the 0")
 
-        
-        return v
-    
-    
     @field_validator("rating")
     @classmethod
-    def validate_rating(cls, v):
+    def validate_rating(cls, v) -> Optional[int]:
         if v is None:
             return v
-
         if not isinstance(v, int):
             raise AppException(422, "Rating must be an integer between 0 and 5")
-
         if v < 0 or v > 5:
             raise AppException(422, "Rating must be between 0 and 5")
+        return v
 
+    @field_validator("actualDays")
+    @classmethod
+    def validate_actual_days(cls, v) -> Optional[int]:
+        if v is None:
+            return v
+        if v < 0:
+            raise AppException(422, "actualDays must be equal to or greater than 0")
+        return v
+
+    @field_validator("estimatedHours", "actualHours")
+    @classmethod
+    def validate_hours(cls, v) -> Optional[float]:
+        if v is None:
+            return v
+        if v < 0:
+            raise AppException(422, "Hours must be equal to or greater than 0")
         return v
 
     @field_validator("dueDate", mode="before")
@@ -185,7 +197,12 @@ class UpdateTaskSchema(BaseModel):
         return validate_datetime_field(v, "recurrenceEndsAt")
 
     @model_validator(mode="after")
-    def validate_date_range(self):
+    def validate_recurring(self):
+        if self.isRecurring and not self.recurrenceType:
+            raise AppException(422, "recurrenceType is required when isRecurring is true")
+        if self.isRecurring is False:
+            self.recurrenceType = None
+            self.recurrenceEndsAt = None
         if self.startDate and self.dueDate:
             try:
                 start = datetime.fromisoformat(self.startDate.replace("Z", "+00:00"))
@@ -244,7 +261,7 @@ class ReorderTaskSchema(BaseModel):
 class MoveTaskSchema(BaseModel):
     status: str
     order: Optional[int] = None
-    rating: Optional[Literal[0, 1, 2, 3, 4 , 5, None]] = None
+    rating: Optional[Literal[0, 1, 2, 3, 4, 5]] = None
     actual_hours: Optional[float] = None
     remark_content: Optional[str] = None
 
@@ -254,20 +271,16 @@ class MoveTaskSchema(BaseModel):
         if not v or not v.strip():
             raise AppException(422, "status is required")
         return v.strip()
-    
 
     @field_validator("rating")
     @classmethod
-    def validate_rating(cls, v):
+    def validate_rating(cls, v) -> Optional[int]:
         if v is None:
             return v
-
         if not isinstance(v, int):
             raise AppException(422, "Rating must be an integer between 0 and 5")
-
         if v < 0 or v > 5:
             raise AppException(422, "Rating must be between 0 and 5")
-
         return v
 
 

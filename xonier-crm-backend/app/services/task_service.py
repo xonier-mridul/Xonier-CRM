@@ -22,7 +22,11 @@ from app.repositories.task_remark_repository import TaskRemarkRepository
 from app.core.dependencies import Dependencies
 import asyncio
 from app.utils.check_permissions import check_permission
+from app.core.scheduler.task_scheduler import handle_recurring_on_completion
+import logging
 
+
+logger = logging.getLogger(__name__)
  
  
 def _activity(task_id, action, performer_id, description, field=None, old_val=None, new_val=None, metadata=None):
@@ -875,30 +879,119 @@ class TaskService:
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
  
+    # async def move_task(self, task_id: str, payload: Dict[str, Any], user: Dict[str, Any]):
+    #     async with await self.client.start_session() as session:
+    #         async with session.start_transaction():
+    #             try:
+    #                 if not ObjectId.is_valid(task_id):
+    #                     raise AppException(400, "Invalid task id")
+
+    #                 new_status_id = payload.get("status")
+    #                 new_order = payload.get("order", 0)
+
+    #                 if not ObjectId.is_valid(new_status_id):
+    #                     raise AppException(400, "Invalid status id")
+
+    #                 existing = await self.repo.find_by_id(PydanticObjectId(task_id), session=session)
+    #                 if not existing or existing.deletedAt:
+    #                     raise AppException(404, "Task not found")
+
+    #                 is_admin = validate_admin(user["userRole"])
+    #                 user_oid = PydanticObjectId(user["_id"])
+
+    #                 if not is_admin:
+    #                     members = await self.getTeamMembers.get_team_members(user["_id"])
+    #                     members_oids = [PydanticObjectId(str(m)) for m in members]
+
+    #                     task_assigned_oids = []
+    #                     for ref in (existing.assignedTo or []):
+    #                         try:
+    #                             task_assigned_oids.append(PydanticObjectId(str(ref.ref.id)))
+    #                         except Exception:
+    #                             try:
+    #                                 task_assigned_oids.append(PydanticObjectId(str(ref.id)))
+    #                             except Exception:
+    #                                 continue
+
+    #                     is_own_task = user_oid in task_assigned_oids
+    #                     is_team_task = any(uid in members_oids for uid in task_assigned_oids)
+
+    #                     if not is_own_task and not is_team_task:
+    #                         raise AppException(403, "You do not have permission to move this task")
+
+    #                 category_id = str(existing.category.ref.id)
+    #                 new_status = await self._validate_status_belongs_to_category(new_status_id, category_id)
+
+    #                 old_status = await self.statusRepo.find_by_id(PydanticObjectId(str(existing.status.ref.id)))
+    #                 old_status_name = old_status.name if old_status else "Unknown"
+
+    #                 update_data: Dict[str, Any] = {
+    #                     "status": DBRef(collection="task_statuses", id=ObjectId(new_status_id)),
+    #                     "order": new_order,
+    #                     "updatedBy": DBRef("users", ObjectId(str(user_oid))),
+    #                     "updatedAt": datetime.now(timezone.utc),
+    #                     "completedAt": None
+    #                 }
+
+    #                 if new_status.isFinal:
+    #                     has_permission = await check_permission(user, ["task:markStatusComplete"])
+
+    #                     if not has_permission:
+    #                         raise AppException(403, "You do not have permission to mark this task as complete")
+    #                     update_data["rating"] = payload.get("rating") or None
+    #                     update_data["actual_hours"] = payload.get("actual_hours") or None
+    #                     update_data["actual_days"] = payload.get("actual_days") or None
+    #                     update_data["completedAt"] = datetime.now(timezone.utc)
+    #                     update_data["isOverdue"] = False
+
+                        
+    #                 updated = await self.repo.update(id=PydanticObjectId(task_id), data=update_data, session=session)
+    #                 if not updated:
+    #                     raise AppException(400, "Task move failed")
+
+    #                 if new_status_id != str(existing.status.ref.id):
+    #                     activity = _activity(
+    #                         task_id=task_id,
+    #                         action=TASK_ACTIVITY_ACTION.STATUS_CHANGED,
+    #                         performer_id=user["_id"],
+    #                         description=f"Task moved from '{old_status_name}' to '{new_status.name}'",
+    #                         field="status",
+    #                         old_val=old_status_name,
+    #                         new_val=new_status.name,
+    #                     )
+    #                     await self.activityRepo.create(data=activity, session=session)
+
+    #                 return True
+
+    #             except AppException:
+    #                 raise
+    #             except Exception as e:
+    #                 raise AppException(500, f"Internal server error: {e}")
+                
     async def move_task(self, task_id: str, payload: Dict[str, Any], user: Dict[str, Any]):
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
                     if not ObjectId.is_valid(task_id):
                         raise AppException(400, "Invalid task id")
-
+    
                     new_status_id = payload.get("status")
                     new_order = payload.get("order", 0)
-
+    
                     if not ObjectId.is_valid(new_status_id):
                         raise AppException(400, "Invalid status id")
-
+    
                     existing = await self.repo.find_by_id(PydanticObjectId(task_id), session=session)
                     if not existing or existing.deletedAt:
                         raise AppException(404, "Task not found")
-
+    
                     is_admin = validate_admin(user["userRole"])
                     user_oid = PydanticObjectId(user["_id"])
-
+    
                     if not is_admin:
                         members = await self.getTeamMembers.get_team_members(user["_id"])
                         members_oids = [PydanticObjectId(str(m)) for m in members]
-
+    
                         task_assigned_oids = []
                         for ref in (existing.assignedTo or []):
                             try:
@@ -908,43 +1001,42 @@ class TaskService:
                                     task_assigned_oids.append(PydanticObjectId(str(ref.id)))
                                 except Exception:
                                     continue
-
+    
                         is_own_task = user_oid in task_assigned_oids
                         is_team_task = any(uid in members_oids for uid in task_assigned_oids)
-
+    
                         if not is_own_task and not is_team_task:
                             raise AppException(403, "You do not have permission to move this task")
-
+    
                     category_id = str(existing.category.ref.id)
                     new_status = await self._validate_status_belongs_to_category(new_status_id, category_id)
-
+    
                     old_status = await self.statusRepo.find_by_id(PydanticObjectId(str(existing.status.ref.id)))
                     old_status_name = old_status.name if old_status else "Unknown"
-
+    
+                    now = datetime.now(timezone.utc)
+    
                     update_data: Dict[str, Any] = {
                         "status": DBRef(collection="task_statuses", id=ObjectId(new_status_id)),
                         "order": new_order,
                         "updatedBy": DBRef("users", ObjectId(str(user_oid))),
-                        "updatedAt": datetime.now(timezone.utc),
+                        "updatedAt": now,
                         "completedAt": None
                     }
-
+    
                     if new_status.isFinal:
                         has_permission = await check_permission(user, ["task:markStatusComplete"])
-
                         if not has_permission:
                             raise AppException(403, "You do not have permission to mark this task as complete")
-                        update_data["rating"] = payload.get("rating") or None
-                        update_data["actual_hours"] = payload.get("actual_hours") or None
-                        update_data["actual_days"] = payload.get("actual_days") or None
-                        update_data["completedAt"] = datetime.now(timezone.utc)
+    
+                        update_data["completedAt"] = now
                         update_data["isOverdue"] = False
-
-                        
+                        update_data["recurringProcessed"] = False  # reset so scheduler can re-evaluate
+    
                     updated = await self.repo.update(id=PydanticObjectId(task_id), data=update_data, session=session)
                     if not updated:
                         raise AppException(400, "Task move failed")
-
+    
                     if new_status_id != str(existing.status.ref.id):
                         activity = _activity(
                             task_id=task_id,
@@ -956,14 +1048,25 @@ class TaskService:
                             new_val=new_status.name,
                         )
                         await self.activityRepo.create(data=activity, session=session)
-
+    
+                    
+                    if new_status.isFinal and existing.isRecurring:
+                        try:
+                            collection = TaskModel.get_pymongo_collection()
+                            raw_task = await collection.find_one({"_id": ObjectId(task_id)})
+                            if raw_task:
+                                await handle_recurring_on_completion(raw_task, now)
+                        except Exception as recurring_error:
+                            # Non-fatal — scheduler will catch it at midnight
+                            logger.warning(f"Inline recurring creation failed for {task_id}: {recurring_error}")
+    
                     return True
-
+    
                 except AppException:
                     raise
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
-                
+ 
 
     async def reorder_tasks(self, payload: Dict[str, Any], user: Dict[str, Any]):
         async with await self.client.start_session() as session:
