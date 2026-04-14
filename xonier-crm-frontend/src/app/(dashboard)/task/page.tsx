@@ -24,6 +24,8 @@ import { CategoryItem } from "@/src/types/task/category.types";
 import { CategoryService } from "@/src/services/category.service";
 import UserSelect from "@/src/components/common/userselect";
 import { MarkFinalModal, MarkFinalPayload } from "@/src/components/pages/task/Marrkfinalmodal";
+import DateFilterButton from "@/src/components/common/dateFilter";
+import { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -128,6 +130,7 @@ function BoardCard({
   const pri      = PRIORITY_STYLE[task.priority];
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
   const router   = useRouter();
+  const statusColor = getColorOption(task.status.color) ;
 
   return (
     <div
@@ -172,14 +175,7 @@ function BoardCard({
 
       {/* Static status badge — read-only, no dropdown */}
       <div className="mb-2">
-        <span
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border"
-          style={{
-            backgroundColor: task.status?.color ? `${task.status.color}15` : "#f1f5f9",
-            color: task.status?.color ?? "#64748b",
-            borderColor: task.status?.color ? `${task.status.color}35` : "#e2e8f0",
-          }}
-        >
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold  ${statusColor.bg}  ${statusColor.text}`}>
           <span>{task.status?.icon ?? "📌"}</span>
           {task.status?.name ?? task.statusName ?? "—"}
         </span>
@@ -340,8 +336,9 @@ function CategoryBoard({
       status: targetStatus.id,
       category: categoryId,
       remark: payload.remark,
-      feedbackStars: payload.feedbackStars,
-      actualHours: payload.actualHours,
+      rating: payload.feedbackStars,
+      actual_hours: payload.actualHours,
+      actual_days: payload.actualDays
     });
   };
 
@@ -369,16 +366,23 @@ function CategoryBoard({
           </div>
           {/* Per-status task counts */}
           <div className="flex items-center gap-1.5">
-            {statuses.map((s) => (
-              <span
-                key={s.id}
-                className="text-[10px] font-semibold px-2 py-0.5 rounded-full border"
-                style={{ backgroundColor: s.color + "15", color: s.color, borderColor: s.color + "30" }}
-              >
-                {s.icon} {tasks.filter((t) => t.status.id === s.id).length}
-                {s.isFinal && " ✓"}
-              </span>
-            ))}
+            {statuses.map((s) => {
+  const statusColor = getColorOption(s.color);
+
+  return (
+    <span
+      key={s.id}
+      className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${statusColor.text}`}
+      style={{
+        backgroundColor: s.color ? `${s.color}15` : "#f1f5f9",
+        borderColor: s.color ? `${s.color}30` : "#e2e8f0",
+      }}
+    >
+      {s.icon} {tasks.filter((t) => t.status.id === s.id).length}
+      {s.isFinal && " ✓"}
+    </span>
+  );
+})}
           </div>
         </div>
 
@@ -620,6 +624,12 @@ const TaskListPage = (): JSX.Element => {
 
   const showActions = canEdit || canDelete || canView;
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const today = new Date().toISOString().split("T")[0];
+
+const [dateFilter, setDateFilter] = useState<DateFilter>({
+  fromDate: today,
+  toDate: today,
+});
 
   // ── Fetch ────────────────────────────────────────────────────────────────────
   const fetchTasks = useCallback(async () => {
@@ -633,6 +643,8 @@ const TaskListPage = (): JSX.Element => {
         category: filtrCategory  || undefined,
         search:   search         || undefined,
         user:     filterAssigned || undefined,
+        fromDate: dateFilter.fromDate || undefined,
+        toDate:   dateFilter.toDate   || undefined,
       });
       if (res.status === 200) {
         const d = res.data?.data || [];
@@ -645,7 +657,7 @@ const TaskListPage = (): JSX.Element => {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, pageLimit, filterStatus, filterPriority, search, viewMode, filtrCategory, filterAssigned]);
+  }, [currentPage, pageLimit, filterStatus, filterPriority, search, viewMode, filtrCategory, filterAssigned, dateFilter]);
 
   const fetchStatuses = async () => {
     try {
@@ -779,7 +791,7 @@ const TaskListPage = (): JSX.Element => {
             />
           </div>
 
-          <select
+          {/* <select
             value={filterStatus}
             onChange={(e) => { setFilterStatus(e.target.value); setCurrentPage(1); }}
             className="px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
@@ -788,7 +800,7 @@ const TaskListPage = (): JSX.Element => {
             {statusOptions.map((s) => (
               <option key={s.id} value={s.id}>{s.icon} {s.name}{s.isFinal ? " ✓" : ""}</option>
             ))}
-          </select>
+          </select> */}
 
           <select
             value={filterPriority}
@@ -819,12 +831,12 @@ const TaskListPage = (): JSX.Element => {
             placeholder="Search assignee…"
             cls="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
           />
-
+          <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
           {hasFilters && (
             <button
               type="button"
-              onClick={() => { setSearch(""); setFilterStatus(""); setFilterPriority(""); setCurrentPage(1); setFilterAssigned(""); setFiltrCategory(""); }}
-              className="px-3 py-2 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-1.5"
+              onClick={() => { setSearch(""); setFilterStatus(""); setFilterPriority(""); setCurrentPage(1); setFilterAssigned(""); setFiltrCategory(""); setDateFilter({ fromDate: "", toDate: "" }); }}
+              className="ml-auto px-3 py-2 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-1.5"
             >
               <span>✕</span> Clear
             </button>
@@ -949,6 +961,15 @@ const TaskListPage = (): JSX.Element => {
                           <td className="px-5 py-4">
                             <p className="text-xs font-semibold text-gray-800 dark:text-white truncate">
                               {task.createdBy?.firstName} {task.createdBy?.lastName}
+                            </p>
+                          </td>
+                          <td>
+                            <p>
+                              {task.createdAt && (
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  {new Date(task.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
+                                </span>
+                              )}
                             </p>
                           </td>
                           <td className="px-5 py-4">
