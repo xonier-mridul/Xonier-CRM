@@ -44,7 +44,7 @@ async def update_morning_agenda(request: Request, report_id: str, payload: Updat
     status_code=200,
     dependencies=[
         Depends(dependencies.authorized),
-        Depends(dependencies.permissions(["taskReport:update"]))
+        Depends(dependencies.permissions(["taskReport:create"]))
     ]
 )
 async def submit_evening_report(request: Request, report_id: str, payload: SubmitEveningReportSchema):
