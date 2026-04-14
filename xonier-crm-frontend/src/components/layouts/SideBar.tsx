@@ -45,6 +45,7 @@ const SideBar = () => {
   const auth = useSelector((state: RootState) => state.auth);
 
   const router = useRouter();
+  const USER_ID = auth.user?._id;
 
   const handleLogout = async (): Promise<void> => {
     try {
@@ -448,10 +449,10 @@ const SideBar = () => {
                       </li>
                     }
                     {
-                      hasPermission(PERMISSIONS.addTodayReport) && <li>
+                      hasPermission(PERMISSIONS.addTodayReport)||true && <li>
                         <Link
-                          href="/reports/create/new"
-                          className={`${isActive("/reports/create/new")
+                          href={`/report/create/${USER_ID||"new"}`}
+                          className={`${isActive(`/report/create/${USER_ID||"new"}`)
                             ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
                             : "border-l-2 border-transparent"
                             } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
