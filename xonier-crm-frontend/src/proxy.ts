@@ -5,8 +5,14 @@ export function proxy(request: NextRequest){
     const {pathname} = request.nextUrl
 
     const accessToken = request.cookies.get("accessToken")?.value
+    const refreshToken = request.cookies.get("refreshToken")?.value
+
+    console.log("accessToken: ", accessToken)
+    console.log("refreshToken: ", refreshToken)
 
     if(PROTECTED_ROUTES.some((item)=> pathname.startsWith(item) && !accessToken)){
+
+        
         const loginUrl = new URL("/login", request.url)
 
         return NextResponse.redirect(loginUrl)

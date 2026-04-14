@@ -865,6 +865,7 @@ class RECURRENCE_TYPE(str, Enum):
 
 class TASK_ACTIVITY_ACTION(str, Enum):
     CREATED = "created"
+    CREATE_SUB_TASK = "create_sub_task"
     STATUS_CHANGED = "status_changed"
     ASSIGNED = "assigned"
     REASSIGNED = "reassigned"
@@ -878,6 +879,7 @@ class TASK_ACTIVITY_ACTION(str, Enum):
     UPDATE = "update"
     REMARK_CREATED="remark_created"
     REMARK_ACKNOWLEDGED = "remark_acknowledged"
+    RECURRING_CREATED = "recurring_created"
 
 
 class LEAD_REQUEST_STATUS(str, Enum):

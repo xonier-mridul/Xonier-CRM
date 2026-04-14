@@ -64,22 +64,22 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
   } = props;
 
   // ── Internal state ──────────────────────────────────────────────────────────
-  const [users, setUsers]           = useState<User[]>([]);
-  const [search, setSearch]         = useState("");
-  const [loading, setLoading]       = useState(false);
-  const [hasMore, setHasMore]       = useState(true);
-  const [isOpen, setIsOpen]         = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   // Refs so the fetch function never reads stale state
-  const pageRef     = useRef(1);
-  const loadingRef  = useRef(false);
-  const hasMoreRef  = useRef(true);
-  const searchRef   = useRef("");
-  const debounce    = useRef<NodeJS.Timeout | null>(null);
+  const pageRef = useRef(1);
+  const loadingRef = useRef(false);
+  const hasMoreRef = useRef(true);
+  const searchRef = useRef("");
+  const debounce = useRef<NodeJS.Timeout | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // ── Derived ─────────────────────────────────────────────────────────────────
-  const isSingle   = props.mode === "single";
+  const isSingle = props.mode === "single";
   const isMultiple = props.mode === "multiple";
 
   const selectedIds: string[] = isSingle
@@ -93,41 +93,41 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
 
   // ── Fetch ───────────────────────────────────────────────────────────────────
   const fetchUsers = useCallback(async () => {
-  if (loadingRef.current || !hasMoreRef.current) return;
+    if (loadingRef.current || !hasMoreRef.current) return;
 
-  loadingRef.current = true;
+    loadingRef.current = true;
 
-  const currentPage = pageRef.current; // ✅ FIX: snapshot page
+    const currentPage = pageRef.current; // ✅ FIX: snapshot page
 
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    const result = await AuthService.getAllTeamUsers({
-      search: searchRef.current,
-      page: currentPage,
-    });
+    try {
+      const result = await AuthService.getAllTeamUsers({
+        search: searchRef.current,
+        page: currentPage,
+      });
 
-    if (result.status === 200) {
-      const newUsers: User[] = result.data.data ?? [];
+      if (result.status === 200) {
+        const newUsers: User[] = result.data.data ?? [];
 
-      setUsers((prev) =>
-        currentPage === 1 ? newUsers : [...prev, ...newUsers]
-      );
+        setUsers((prev) =>
+          currentPage === 1 ? newUsers : [...prev, ...newUsers]
+        );
 
-      if (newUsers.length < PAGE_SIZE) {
-        hasMoreRef.current = false;
-        setHasMore(false);
-      } else {
-        pageRef.current = currentPage + 1; // ✅ FIX: update AFTER using snapshot
+        if (newUsers.length < PAGE_SIZE) {
+          hasMoreRef.current = false;
+          setHasMore(false);
+        } else {
+          pageRef.current = currentPage + 1; // ✅ FIX: update AFTER using snapshot
+        }
       }
+    } catch (err) {
+      console.error("[UserSelect] fetchUsers error:", err);
+    } finally {
+      loadingRef.current = false;
+      setLoading(false);
     }
-  } catch (err) {
-    console.error("[UserSelect] fetchUsers error:", err);
-  } finally {
-    loadingRef.current = false;
-    setLoading(false);
-  }
-}, []);
+  }, []);
 
   // ── Initial load ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -139,8 +139,8 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
     if (debounce.current) clearTimeout(debounce.current);
 
     debounce.current = setTimeout(() => {
-      searchRef.current  = search;
-      pageRef.current    = 1;
+      searchRef.current = search;
+      pageRef.current = 1;
       hasMoreRef.current = true;
       loadingRef.current = false;
       setHasMore(true);
@@ -184,6 +184,12 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
         ? selectedIds.filter((id) => id !== userId)
         : [...selectedIds, userId];
       (props as MultiUserSelectProps).onChange(next);
+      setSearch("");
+      searchRef.current = "";
+      pageRef.current = 1;
+      hasMoreRef.current = true;
+      setUsers([]);
+
     }
   };
 
@@ -234,12 +240,11 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
           <div
             key={user.id}
             onClick={() => !disabled && toggle(user.id)}
-            className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg cursor-pointer text-sm transition select-none ${
-              disabled ? "opacity-50 cursor-not-allowed" :
-              selected
-                ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-                : "text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
-            }`}
+            className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg cursor-pointer text-sm transition select-none ${disabled ? "opacity-50 cursor-not-allowed" :
+                selected
+                  ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                  : "text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+              }`}
           >
             <div className="flex items-center gap-2 min-w-0">
               {/* Avatar */}
@@ -376,8 +381,8 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
         disabled={disabled}
         className={
           (cls ??
-          "w-full bg-white dark:bg-gray-800 text-slate-800 dark:text-white px-3 py-1.5 rounded-lg border outline-none text-xs shadow-sm border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
-        )+ " px-3 py-1.5"}
+            "w-full bg-white dark:bg-gray-800 text-slate-800 dark:text-white px-3 py-1.5 rounded-lg border outline-none text-xs shadow-sm border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
+          ) + " px-3 py-1.5"}
       />
 
       {/* Dropdown */}

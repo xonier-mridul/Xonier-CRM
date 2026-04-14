@@ -406,6 +406,7 @@ class AuthController:
             )
 
             access_token_expiry = int(self.settings.ACCESS_TOKEN_EXPIRY) * 24 * 60 * 60
+            # access_token_expiry = int(self.settings.ACCESS_TOKEN_EXPIRY) * 60
             refresh_token_expiry = int(self.settings.REFRESH_TOKEN_EXPIRY) * 24 * 60 * 60
 
             

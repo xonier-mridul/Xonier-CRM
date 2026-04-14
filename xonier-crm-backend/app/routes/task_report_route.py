@@ -39,13 +39,12 @@ async def submit_morning_agenda(request: Request, payload: SubmitMorningAgendaSc
 async def update_morning_agenda(request: Request, report_id: str, payload: UpdateMorningAgendaSchema):
     return await controller.update_morning_agenda(request, report_id, payload.model_dump(mode="json", exclude_none=True))
 
-
 @router.post(
     "/{report_id}/evening/submit",
     status_code=200,
     dependencies=[
         Depends(dependencies.authorized),
-        Depends(dependencies.permissions(["taskReport:update"]))
+        Depends(dependencies.permissions(["taskReport:create"]))
     ]
 )
 async def submit_evening_report(request: Request, report_id: str, payload: SubmitEveningReportSchema):
@@ -140,6 +139,36 @@ async def get_my_reports(
 )
 async def get_report_by_id(request: Request, report_id: str):
     return await controller.get_report_by_id(request, report_id)
+
+
+
+
+@router.get(
+    "/by-users/tasks",
+    status_code=200,
+    dependencies=[
+        Depends(dependencies.authorized),
+        Depends(dependencies.permissions(["taskReport:read"]))
+    ]
+)
+async def get_reports_by_user_ids(
+    request: Request,
+    userIds: str = Query(..., description="Comma separated user ids: id1,id2,id3"),
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100),
+    status: Optional[str] = Query(None),
+    fromDate: Optional[str] = Query(None),
+    toDate: Optional[str] = Query(None),
+):
+    filters = {
+        "userIds": userIds,
+        "page": page,
+        "limit": limit,
+        **({"status": status} if status else {}),
+        **({"fromDate": fromDate} if fromDate else {}),
+        **({"toDate": toDate} if toDate else {}),
+    }
+    return await controller.get_reports_by_user_ids(request, filters)
 
 
 @router.delete(

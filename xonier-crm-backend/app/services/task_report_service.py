@@ -370,6 +370,104 @@ class TaskReportService:
             raise
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+        
+
+
+    async def get_reports_by_user_ids(self, user: Dict[str, Any], filters: Dict[str, Any]):
+        try:
+            page = int(filters.get("page", 1))
+            limit = int(filters.get("limit", 10))
+
+            raw_ids = filters.get("userIds", "")
+            user_ids = [uid.strip() for uid in raw_ids.split(",") if uid.strip()]
+
+            if not user_ids:
+                raise AppException(400, "At least one user id is required")
+
+            if len(user_ids) > 50:
+                raise AppException(400, "Cannot query more than 50 users at once")
+
+            for uid in user_ids:
+               
+                if not ObjectId.is_valid(uid):
+                    raise AppException(400, f"Invalid user id: {uid}")
+
+            access = await self._resolve_access(user)
+
+            if not access["is_admin"]:
+                if access["is_manager"]:
+                    allowed_ids = set(access["member_ids"] + [str(user["_id"])])
+                    unauthorized = [uid for uid in user_ids if uid not in allowed_ids]
+                    if unauthorized:
+                        raise AppException(
+                            403,
+                            f"You are not authorized to view reports for users: {', '.join(unauthorized)}"
+                        )
+                else:
+                    unauthorized = [uid for uid in user_ids if uid != str(user["_id"])]
+                    if unauthorized:
+                        raise AppException(403, "You can only view your own reports")
+
+            query: Dict[str, Any] = {
+                "deletedAt": None,
+                "user.$id": {"$in": [ObjectId(uid) for uid in user_ids]}
+            }
+
+            if "status" in filters and filters["status"]:
+                query["status"] = filters["status"]
+
+            if filters.get("fromDate") or filters.get("toDate"):
+                date_filter = {}
+                if filters.get("fromDate"):
+                    try:
+                        date_filter["$gte"] = date.fromisoformat(filters["fromDate"])
+                    except ValueError:
+                        raise AppException(400, "Invalid fromDate format. Use YYYY-MM-DD")
+                if filters.get("toDate"):
+                    try:
+                        date_filter["$lte"] = date.fromisoformat(filters["toDate"])
+                    except ValueError:
+                        raise AppException(400, "Invalid toDate format. Use YYYY-MM-DD")
+                query["reportDate"] = date_filter
+
+            result = await self.repo.get_all(
+                page=page,
+                limit=limit,
+                filters=query,
+                populate=["user", "createdBy", "updatedBy", "reviewedBy"],
+                sort=["-reportDate"]
+            )
+
+            if not result or not result.get("data"):
+                raise AppException(404, "No reports found for given users")
+
+            grouped: Dict[str, Any] = {}
+            for report in result["data"]:
+                try:
+                    report_uid = str(report["user"]["id"])
+                except (KeyError, TypeError):
+                    report_uid = str(report.get("user", "unknown"))
+
+                if report_uid not in grouped:
+                    grouped[report_uid] = {
+                        "userId": report_uid,
+                        "user": report.get("user"),
+                        "reports": []
+                    }
+                grouped[report_uid]["reports"].append(report)
+
+            return {
+                "data": list(grouped.values()),
+                "page": result["page"],
+                "totalPages": result["totalPages"],
+                "limit": result["limit"],
+            }
+
+        except AppException:
+            raise
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+
 
     async def delete_task_report(self, report_id: str, user: Dict[str, Any]):
         async with await self.client.start_session() as session:

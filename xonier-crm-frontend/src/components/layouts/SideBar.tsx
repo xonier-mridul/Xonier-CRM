@@ -45,6 +45,7 @@ const SideBar = () => {
   const auth = useSelector((state: RootState) => state.auth);
 
   const router = useRouter();
+  const USER_ID = auth.user?._id;
 
   const handleLogout = async (): Promise<void> => {
     try {
@@ -434,6 +435,32 @@ const SideBar = () => {
                         Task Status
                       </Link>
                     </li>}
+                    {
+                      hasPermission(PERMISSIONS.readTaskReport) && <li>
+                        <Link
+                          href="/reports"
+                          className={`${isActive("/reports")
+                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                            : "border-l-2 border-transparent"
+                            } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                        >
+                          Task Reports
+                        </Link>
+                      </li>
+                    }
+                    {
+                      hasPermission(PERMISSIONS.createTaskReport) && <li>
+                        <Link
+                          href={`/report/create/${USER_ID||"new"}`}
+                          className={`${isActive(`/report/create/${USER_ID||"new"}`)
+                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                            : "border-l-2 border-transparent"
+                            } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                        >
+                          Today Report
+                        </Link>
+                      </li>
+                    }
                   </motion.ul>
                 )}
               </AnimatePresence>

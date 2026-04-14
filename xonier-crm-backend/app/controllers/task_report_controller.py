@@ -89,6 +89,18 @@ class TaskReportController:
             raise e
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+        
+    
+
+    async def get_reports_by_user_ids(self, request: Request, filters: Dict[str, Any]):
+        try:
+            user = request.state.user
+            result = await self.service.get_reports_by_user_ids(user, filters)
+            return successResponse(200, "Task reports fetched successfully", result)
+        except AppException as e:
+            raise e
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
 
     async def delete_task_report(self, request: Request, report_id: str):
         try:

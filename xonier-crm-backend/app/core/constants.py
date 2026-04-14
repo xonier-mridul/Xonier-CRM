@@ -90,7 +90,7 @@ ZIPCODE_PATTERNS: dict[str, tuple[str, str]] = {
     "RU": (r"^\d{6}$",                    "RU Postal: 6-digit number"),
     "UA": (r"^\d{5}$",                    "UA Postal: 5-digit number"),
     "KR": (r"^\d{5}$",                    "KR Postal: 5-digit number"),
-    "HK": (r"^.{0,0}$",                  "HK: No postal code system"),  # HK has no postcodes
+    "HK": (r"^.{0,0}$",                  "HK: No postal code system"), 
     "TW": (r"^\d{3,5}$",                 "TW Postal: 3 or 5 digits"),
     "IL": (r"^\d{5,7}$",                 "IL Postal: 5 or 7 digits"),
     "GR": (r"^\d{3}\s?\d{2}$",          "GR TK: 123 45"),

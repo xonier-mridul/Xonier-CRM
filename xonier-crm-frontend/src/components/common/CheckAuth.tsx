@@ -15,7 +15,7 @@ export default function CheckAuth({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        console.log("yo");
+        
         const res = await AuthService.me();
 
         dispatch(setAuthState(res.data.data));
