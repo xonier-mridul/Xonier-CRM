@@ -6,6 +6,8 @@ import type { TaskReport, TaskReportStatus } from "@/src/types/task/taskReport";
 import { MdDelete } from "react-icons/md";
 import Link from "next/link";
 import { toast } from "react-toastify";
+import DateFilterButton from "@/src/components/common/dateFilter";
+import { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -114,7 +116,7 @@ function ExpandableRow({ report }: { report: TaskReport }) {
   return (
     <>
       <tr
-        className="border-b border-gray-50 dark:border-gray-700/60 hover:bg-slate-50/60 dark:hover:bg-gray-700/30 transition-colors cursor-pointer group"
+        className="text-nowrap border-b border-gray-50 dark:border-gray-700/60 hover:bg-slate-50/60 dark:hover:bg-gray-700/30 transition-colors cursor-pointer group"
         onClick={() => setOpen(o => !o)}
       >
         {/* User */}
@@ -361,6 +363,7 @@ const TaskReportListPage = (): JSX.Element => {
   const [filterStatus, setFilterStatus] = useState("");
   const [search, setSearch] = useState("");
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const [dateFilter, setDateFilter] = useState<DateFilter>({ toDate:"2026-04-14", fromDate: "2026-04-14" });
 
   const fetchReports = useCallback(async () => {
     setIsLoading(true);
@@ -370,6 +373,8 @@ const TaskReportListPage = (): JSX.Element => {
         limit: 10,
         search: search || undefined,
         status: filterStatus as TaskReportStatus || undefined,
+        fromDate: dateFilter.fromDate || undefined,
+        toDate: dateFilter.toDate || undefined,
       });
       if (res.status === 200) {
         const d = res.data.data;
@@ -381,7 +386,7 @@ const TaskReportListPage = (): JSX.Element => {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, search, filterStatus]);
+  }, [currentPage, search, filterStatus, dateFilter]);
 
   useEffect(() => { fetchReports(); }, [fetchReports]);
 
@@ -493,11 +498,12 @@ const TaskReportListPage = (): JSX.Element => {
             <option value="evening_submitted">✅ Evening Submitted</option>
             <option value="reviewed">💬 Reviewed</option>
           </select>
+          <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
 
-          {(search || filterStatus) && (
+          {(search || filterStatus || dateFilter) && (
             <button
               type="button"
-              onClick={() => { setSearch(""); setFilterStatus(""); setCurrentPage(1); }}
+              onClick={() => { setSearch(""); setFilterStatus(""); setCurrentPage(1); setDateFilter({ fromDate: "", toDate: "" }); }}
               className="px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-1.5"
             >
               <span>✕</span> Clear
