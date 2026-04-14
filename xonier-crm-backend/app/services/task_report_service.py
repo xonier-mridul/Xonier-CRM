@@ -388,7 +388,7 @@ class TaskReportService:
                 raise AppException(400, "Cannot query more than 50 users at once")
 
             for uid in user_ids:
-                print("uid: ", uid)
+               
                 if not ObjectId.is_valid(uid):
                     raise AppException(400, f"Invalid user id: {uid}")
 

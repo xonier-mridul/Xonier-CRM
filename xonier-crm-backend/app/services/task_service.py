@@ -324,55 +324,55 @@ class TaskService:
             page = int(filters.get("page", 1))
             limit = int(filters.get("limit", 10))
             is_admin = validate_admin(user["userRole"])
- 
+
             query: Dict[str, Any] = {"deletedAt": None}
- 
+
             if not is_admin:
                 members = await self.getTeamMembers.get_team_members(user["_id"])
                 user_object_id = PydanticObjectId(user["_id"])
-                query.update(self._build_visibility_query(user, members, user_object_id))
- 
+                visibility_query = self._build_visibility_query(user, members, user_object_id)
+               
+            else:
+                visibility_query = None
+
             if "category" in filters:
                 if not ObjectId.is_valid(filters["category"]):
                     raise AppException(400, "Invalid category id")
                 query["category.$id"] = ObjectId(filters["category"])
- 
+
             if "status" in filters:
                 if not ObjectId.is_valid(filters["status"]):
                     raise AppException(400, "Invalid status id")
                 query["status.$id"] = ObjectId(filters["status"])
- 
- 
+
             if "user" in filters:
                 if not ObjectId.is_valid(filters["user"]):
                     raise AppException(400, "Invalid user id")
-                query.update({"$or": [{"assignedTo.$id": PydanticObjectId(filters["user"])}, {"createdBy.$id": PydanticObjectId(filters["user"])}]})
-                
+                query["$or"] = [
+                    {"assignedTo.$id": PydanticObjectId(filters["user"])},
+                    {"createdBy.$id": PydanticObjectId(filters["user"])}
+                ]
 
- 
-            
             if "parentTask" in filters:
                 if filters["parentTask"] == "null":
                     query["parentTask"] = None
                 elif ObjectId.is_valid(filters["parentTask"]):
                     query["parentTask.$id"] = ObjectId(filters["parentTask"])
- 
+
             if "isOverdue" in filters and str(filters["isOverdue"]).lower() == "true":
                 query["dueDate"] = {"$lt": datetime.now(timezone.utc)}
                 query["completedAt"] = None
- 
+
             if "search" in filters and filters["search"].strip():
                 regex_data = {"$regex": filters["search"].strip(), "$options": "i"}
-                query.update({"$or": [
+                query["$or"] = [
                     {"title": regex_data},
                     {"priority": regex_data},
                     {"tags": regex_data},
                     {"entityId": regex_data},
                     {"entityType": regex_data},
-                    {"status": regex_data}
-                ]})
- 
-           
+                ]
+
             date_filter = {}
             try:
                 if "fromDate" in filters:
@@ -387,11 +387,48 @@ class TaskService:
 
             except ValueError:
                 raise AppException(400, "Invalid date format. Use YYYY-MM-DD")
-            if date_filter != {}:
-                query["$or"] = [
-                    {"dueDate": date_filter},
-                    {"createdAt": date_filter},
-                ]
+
+            
+            and_conditions = []
+
+            if visibility_query:
+                and_conditions.append(visibility_query)
+
+            if date_filter:
+                and_conditions.append({
+                    "$or": [
+                        {"dueDate": date_filter},
+                        {"createdAt": date_filter},
+                    ]
+                })
+
+            if "search" in filters and filters["search"].strip():
+                regex_data = {"$regex": filters["search"].strip(), "$options": "i"}
+                and_conditions.append({
+                    "$or": [
+                        {"title": regex_data},
+                        {"priority": regex_data},
+                        {"tags": regex_data},
+                        {"entityId": regex_data},
+                        {"entityType": regex_data},
+                    ]
+                })
+
+            if "user" in filters and ObjectId.is_valid(filters["user"]):
+                and_conditions.append({
+                    "$or": [
+                        {"assignedTo.$id": PydanticObjectId(filters["user"])},
+                        {"createdBy.$id": PydanticObjectId(filters["user"])}
+                    ]
+                })
+
+            
+            query.pop("$or", None)
+
+            if and_conditions:
+                query["$and"] = and_conditions
+            
+
             result = await self.repo.get_all(
                 page=page,
                 limit=limit,
@@ -399,12 +436,10 @@ class TaskService:
                 populate=["category", "status", "assignedTo", "createdBy", "updatedBy"],
                 sort=["order", "-createdAt"]
             )
- 
+
             if not result:
                 raise AppException(404, "No tasks found")
-            
-           
- 
+
             now = datetime.now(timezone.utc)
             for task in result.get("data", []):
                 try:
@@ -433,14 +468,10 @@ class TaskService:
                     task["isOverdue"] = due_dt < now
 
                 except Exception as ex:
-                    print(f"isOverdue error for task {task.get('task_id')}: {ex}")
                     task["isOverdue"] = False
 
-
-           
-                
             return result
-    
+
         except AppException:
             raise
         except Exception as e:
