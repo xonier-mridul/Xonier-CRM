@@ -10,7 +10,7 @@ export function proxy(request: NextRequest){
     console.log("accessToken: ", accessToken)
     console.log("refreshToken: ", refreshToken)
 
-    if(PROTECTED_ROUTES.some((item)=> pathname.startsWith(item) && (!accessToken && !refreshToken))){
+    if(PROTECTED_ROUTES.some((item)=> pathname.startsWith(item) && !accessToken)){
 
         
         const loginUrl = new URL("/login", request.url)
