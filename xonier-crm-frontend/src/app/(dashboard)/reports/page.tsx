@@ -433,7 +433,7 @@ const TaskReportListPage = (): JSX.Element => {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <a
+            {/* <a
               href="/reports/create/new"
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold transition-all active:scale-95 shadow-sm"
             >
@@ -441,7 +441,7 @@ const TaskReportListPage = (): JSX.Element => {
                 <path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
               </svg>
               New Report
-            </a>
+            </a> */}
             <button
               type="button"
               onClick={fetchReports}
