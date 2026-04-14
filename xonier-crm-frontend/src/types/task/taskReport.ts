@@ -121,8 +121,8 @@ export interface TaskReportListParams {
   limit?: number;
   search?: string;
   status?: TaskReportStatus;
-  startDate?: string;
-  endDate?: string;
+  toDate?: string;
+  fromDate?: string;
 }
 
 export interface PaginatedTaskReports {
