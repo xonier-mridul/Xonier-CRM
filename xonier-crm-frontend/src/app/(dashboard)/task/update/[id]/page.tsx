@@ -203,7 +203,7 @@ const UpdateTaskPage = (): JSX.Element => {
   }
   const fetchUsers = async () => {
     try {
-      const result = await AuthService.getAllTeamUsers(userSearch);
+      const result = await AuthService.getAllTeamUsers({ search: userSearch });
       if (result.status === 200) setUserData(result.data.data);
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
