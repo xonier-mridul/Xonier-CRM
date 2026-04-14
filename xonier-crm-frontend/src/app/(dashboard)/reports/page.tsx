@@ -3,7 +3,11 @@
 import React, { JSX, useState, useEffect, useCallback, useRef } from "react";
 import { TaskReportService } from "@/src/services/taskReport.service";
 import type { TaskReport, TaskReportStatus } from "@/src/types/task/taskReport";
+import { MdDelete } from "react-icons/md";
 import Link from "next/link";
+import { toast } from "react-toastify";
+import DateFilterButton from "@/src/components/common/dateFilter";
+import { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -88,7 +92,17 @@ function ProgressRing({ pct }: { pct: number }) {
     </svg>
   );
 }
-
+const handleDelete = (id: string) => async () => {
+    if (!confirm("Are you sure you want to delete this report? This action cannot be undone.")) return;
+    try {
+      const res = await TaskReportService.deleteReport(id);
+      if (res.status === 200) {
+        toast.success("Report deleted");
+      }
+    } catch {
+      toast.error("Failed to delete report");
+    }
+  };
 function ExpandableRow({ report }: { report: TaskReport }) {
   const [open, setOpen] = useState(false);
   const morningItems = report.morningAgenda?.items ?? [];
@@ -102,12 +116,12 @@ function ExpandableRow({ report }: { report: TaskReport }) {
   return (
     <>
       <tr
-        className="border-b border-gray-50 dark:border-gray-700/60 hover:bg-slate-50/60 dark:hover:bg-gray-700/30 transition-colors cursor-pointer group"
+        className="text-nowrap border-b border-gray-50 dark:border-gray-700/60 hover:bg-slate-50/60 dark:hover:bg-gray-700/30 transition-colors cursor-pointer group"
         onClick={() => setOpen(o => !o)}
       >
         {/* User */}
         <Link
-          href={`/reports/create/${report.id}`}>
+          href={`/report/create/${report.user.id}`}>
         <td className="px-5 py-4">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-xs font-extrabold shrink-0 shadow-sm">
@@ -202,6 +216,13 @@ function ExpandableRow({ report }: { report: TaskReport }) {
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transform: open ? "rotate(180deg)" : "", transition: "transform .2s" }}>
               <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
+          </button>
+        </td>
+        <td className="justify-center px-5 py-4 text-center">
+          <button
+            onClick={handleDelete(report.id)}
+          >
+            <MdDelete className="w-5 h-5 text-red-500 hover:text-red-700 transition-colors" />
           </button>
         </td>
       </tr>
@@ -342,6 +363,7 @@ const TaskReportListPage = (): JSX.Element => {
   const [filterStatus, setFilterStatus] = useState("");
   const [search, setSearch] = useState("");
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const [dateFilter, setDateFilter] = useState<DateFilter>({ toDate:"2026-04-14", fromDate: "2026-04-14" });
 
   const fetchReports = useCallback(async () => {
     setIsLoading(true);
@@ -351,6 +373,8 @@ const TaskReportListPage = (): JSX.Element => {
         limit: 10,
         search: search || undefined,
         status: filterStatus as TaskReportStatus || undefined,
+        fromDate: dateFilter.fromDate || undefined,
+        toDate: dateFilter.toDate || undefined,
       });
       if (res.status === 200) {
         const d = res.data.data;
@@ -362,7 +386,7 @@ const TaskReportListPage = (): JSX.Element => {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, search, filterStatus]);
+  }, [currentPage, search, filterStatus, dateFilter]);
 
   useEffect(() => { fetchReports(); }, [fetchReports]);
 
@@ -373,6 +397,7 @@ const TaskReportListPage = (): JSX.Element => {
       setCurrentPage(1);
     }, 500);
   };
+  
 
   // Stats
   const totalReports = reports.length;
@@ -473,11 +498,12 @@ const TaskReportListPage = (): JSX.Element => {
             <option value="evening_submitted">✅ Evening Submitted</option>
             <option value="reviewed">💬 Reviewed</option>
           </select>
+          <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
 
-          {(search || filterStatus) && (
+          {(search || filterStatus || dateFilter) && (
             <button
               type="button"
-              onClick={() => { setSearch(""); setFilterStatus(""); setCurrentPage(1); }}
+              onClick={() => { setSearch(""); setFilterStatus(""); setCurrentPage(1); setDateFilter({ fromDate: "", toDate: "" }); }}
               className="px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-1.5"
             >
               <span>✕</span> Clear
@@ -491,7 +517,7 @@ const TaskReportListPage = (): JSX.Element => {
             <table className="w-full text-sm min-w-[900px]">
               <thead>
                 <tr className="bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
-                  {["Employee", "Date", "Status", "Tasks", "Hours", "Mood", "Reviewed", ""].map(col => (
+                  {["Employee", "Date", "Status", "Tasks", "Hours", "Mood", "Reviewed", "" , "Action"].map(col => (
                     <th key={col} className="px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-left">
                       {col}
                     </th>

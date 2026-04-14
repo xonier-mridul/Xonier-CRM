@@ -7,14 +7,14 @@ import {
 import { ParamValue } from "next/dist/server/request/params";
 
 export const TaskReportService = {
-  getAll: (params: TaskReportListParams) =>
-    api.get(`/task-reports/all?${params.page ? `page=${params.page}` : ""}${params.limit ? `&limit=${params.limit}` : ""}${params.search ? `&search=${params.search}` : ""}`),
-
+  getAll: (params: TaskReportListParams) =>{
+    return api.get(`/task-reports/all?${params.page ? `page=${params.page}` : ""}${params.limit ? `&limit=${params.limit}` : ""}${params.search ? `&search=${params.search}` : ""}${params.fromDate ? `&fromDate=${params.fromDate}` : ""}${params.toDate ? `&toDate=${params.toDate}` : ""}`);
+  },
   getMine: (params: TaskReportListParams) =>
     api.get(`/task-reports/my-reports?${params.page ? `page=${params.page}` : ""}${params.limit ? `&limit=${params.limit}` : ""}${params.search ? `&search=${params.search}` : ""}`),
 
   getById: (id: ParamValue) =>
-    api.get(`/task-reports/${id}`),
+    api.get(`/task-reports/by-users/tasks?userIds=${id}`),
 
   createMorningAgenda: (payload: CreateMorningAgendaPayload) =>
     api.post(`/task-reports/morning/submit`, payload),

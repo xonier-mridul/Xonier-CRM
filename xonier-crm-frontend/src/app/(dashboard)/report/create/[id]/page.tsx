@@ -159,7 +159,11 @@ function PriorityBadge({ value }: { value: string }) {
   );
 }
 
-function PrioritySelector({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function PrioritySelector({
+  value, onChange, disabled,
+}: {
+  value: string; onChange: (v: string) => void; disabled?: boolean;
+}) {
   return (
     <div className="flex gap-1.5 flex-wrap">
       {PRIORITIES.map(p => (
@@ -167,7 +171,8 @@ function PrioritySelector({ value, onChange }: { value: string; onChange: (v: st
           key={p}
           type="button"
           onClick={() => onChange(p)}
-          className={`px-3 py-1.5 rounded-lg text-xs font-bold border capitalize transition-all
+          disabled={disabled}
+          className={`px-3 py-1.5 rounded-lg text-xs font-bold border capitalize transition-all disabled:opacity-50 disabled:cursor-not-allowed
             ${value === p
               ? PRIORITY_STYLES[p]
               : "bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
@@ -272,12 +277,13 @@ function MorningEditCard({ item, index, onChange, onRemove }: {
 
 // ── Evening Task Card ─────────────────────────────────────────────────────────
 
-function EveningTaskCard({ item, index, onChange, onRemove, bucket }: {
+function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: {
   item: TaskReportItem;
   index: number;
   onChange: (field: string, value: unknown) => void;
   onRemove: () => void;
   bucket: "completed" | "pending";
+  readOnly?: boolean;
 }) {
   const isCompleted = bucket === "completed";
 
@@ -305,15 +311,18 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket }: {
             {isCompleted ? "✅ Completed" : "⏳ Pending"}
           </span>
         </div>
-        <button
-          type="button"
-          onClick={onRemove}
-          className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
-        >
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-          </svg>
-        </button>
+        {/* Only show remove button if NOT read-only */}
+        {!readOnly && (
+          <button
+            type="button"
+            onClick={onRemove}
+            className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+          </button>
+        )}
       </div>
 
       <div className="space-y-3">
@@ -323,6 +332,7 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket }: {
             value={item.title}
             onChange={v => onChange("title", v)}
             placeholder={isCompleted ? "What did you complete?" : "What is still pending?"}
+            disabled={readOnly}
           />
         </div>
         <div>
@@ -331,46 +341,93 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket }: {
             value={item.description ?? ""}
             onChange={v => onChange("description", v)}
             placeholder="Details about what was done / what's remaining…"
+            disabled={readOnly}
           />
         </div>
 
-        {/* Status selector — drives bucket movement */}
-        <div>
-          <FieldLabel>Status <span className="normal-case text-indigo-500 dark:text-indigo-400 font-semibold text-[10px] ml-1">← changing this moves the task between sections</span></FieldLabel>
-          <div className="flex flex-wrap gap-1.5 mt-1">
-            {STATUS_OPTIONS.map(opt => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => onChange("status", opt.value)}
-                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-all
-                  ${item.status === opt.value
-                    ? COMPLETED_STATUSES.includes(opt.value)
-                      ? "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700"
-                      : "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700"
-                    : "bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-                  }`}
-              >
-                <span>{opt.icon}</span> {opt.label}
-              </button>
-            ))}
+        {/* Status selector — hidden when read-only, show badge instead */}
+        {!readOnly ? (
+          <div>
+            <FieldLabel>
+              Status{" "}
+              <span className="normal-case text-indigo-500 dark:text-indigo-400 font-semibold text-[10px] ml-1">
+                ← changing this moves the task between sections
+              </span>
+            </FieldLabel>
+            <div className="flex flex-wrap gap-1.5 mt-1">
+              {STATUS_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => onChange("status", opt.value)}
+                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-all
+                    ${item.status === opt.value
+                      ? COMPLETED_STATUSES.includes(opt.value)
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700"
+                        : "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700"
+                      : "bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                    }`}
+                >
+                  <span>{opt.icon}</span> {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div>
+            <FieldLabel>Status</FieldLabel>
+            <div className="mt-1">
+              {(() => {
+                const opt = STATUS_OPTIONS.find(o => o.value === item.status);
+                return opt ? (
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border
+                      ${COMPLETED_STATUSES.includes(opt.value)
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700"
+                        : "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700"
+                      }`}
+                  >
+                    <span>{opt.icon}</span> {opt.label}
+                  </span>
+                ) : null;
+              })()}
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-3">
           <div>
             <FieldLabel>Est. Hours</FieldLabel>
-            <NumberInput value={item.estimatedHours} onChange={v => onChange("estimatedHours", v)} placeholder="2" min={0.5} max={24} />
+            <NumberInput
+              value={item.estimatedHours}
+              onChange={v => onChange("estimatedHours", v)}
+              placeholder="2"
+              min={0.5}
+              max={24}
+              disabled={readOnly}
+            />
           </div>
           {isCompleted ? (
             <div>
               <FieldLabel>Actual Hours</FieldLabel>
-              <NumberInput value={item.actualHours} onChange={v => onChange("actualHours", v)} placeholder="2.5" min={0.5} max={24} />
+              <NumberInput
+                value={item.actualHours}
+                onChange={v => onChange("actualHours", v)}
+                placeholder="2.5"
+                min={0.5}
+                max={24}
+                disabled={readOnly}
+              />
             </div>
           ) : (
             <div>
               <FieldLabel>Linked Task ID</FieldLabel>
-              <TextInput value={item.linkedTaskId ?? ""} onChange={v => onChange("linkedTaskId", v)} placeholder="TASK-101" />
+              <TextInput
+                value={item.linkedTaskId ?? ""}
+                onChange={v => onChange("linkedTaskId", v)}
+                placeholder="TASK-101"
+                disabled={readOnly}
+              />
             </div>
           )}
         </div>
@@ -390,7 +447,8 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket }: {
             step={5}
             value={item.completionPercentage}
             onChange={e => onChange("completionPercentage", Number(e.target.value))}
-            className={`w-full cursor-pointer ${isCompleted ? "accent-emerald-500" : "accent-amber-500"}`}
+            disabled={readOnly}
+            className={`w-full ${readOnly ? "opacity-50 cursor-not-allowed" : "cursor-pointer"} ${isCompleted ? "accent-emerald-500" : "accent-amber-500"}`}
           />
           <div className="flex justify-between text-[10px] text-gray-400 -mt-0.5">
             <span>0%</span><span>50%</span><span>100%</span>
@@ -405,13 +463,18 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket }: {
               value={item.blockerReason ?? ""}
               onChange={v => onChange("blockerReason", v)}
               placeholder="What is blocking this task?"
+              disabled={readOnly}
             />
           </div>
         )}
 
         <div>
           <FieldLabel>Priority</FieldLabel>
-          <PrioritySelector value={item.priority ?? "medium"} onChange={v => onChange("priority", v)} />
+          <PrioritySelector
+            value={item.priority ?? "medium"}
+            onChange={v => onChange("priority", v)}
+            disabled={readOnly}
+          />
         </div>
       </div>
     </div>
@@ -441,6 +504,7 @@ const TaskReportCreatePage = (): JSX.Element => {
   const [blockers, setBlockers] = useState("");
   const [tomorrowPlan, setTomorrowPlan] = useState("");
   const [overallMood, setOverallMood] = useState<WorkMood | "">("");
+  const [isFinalSubmitted, setIsFinalSubmitted] = useState(false);
 
   // Derived buckets
   const completedItems = eveningItems.filter(i => COMPLETED_STATUSES.includes(i.status as TaskItemStatus));
@@ -453,34 +517,57 @@ const TaskReportCreatePage = (): JSX.Element => {
       setIsLoading(false);
       return;
     }
+
     setIsLoading(true);
+
     try {
       const res = await TaskReportService.getById(id);
       if (res.status === 200) {
-        // handle both {data: report} and {data: {data: report}}
-        const report: TaskReport = res.data?.data ?? res.data;
+        const reportsData = res.data?.data?.data;
+        const userReports = reportsData[0]?.reports ?? [];
+
+        const report: TaskReport | undefined = userReports.find(
+          (r: TaskReport) => r.reportDate === today
+        );
+
+        if (!report) {
+          return;
+        }
+
         setExistingReport(report);
 
-        // Populate morning
         if (report.morningAgenda?.items?.length) {
           setMorningItems(report.morningAgenda.items.map(i => ({ ...i })));
         }
-        if (report.morningAgenda?.goals) setMorningGoals(report.morningAgenda.goals);
 
-        // Populate evening
-        const existingCompleted: TaskReportItem[] = report.eveningReport?.completedItems ?? [];
-        const existingPending: TaskReportItem[] = report.eveningReport?.pendingItems ?? [];
+        if (report.morningAgenda?.goals) {
+          setMorningGoals(report.morningAgenda.goals);
+        }
+
+        const existingCompleted: TaskReportItem[] =
+          report.eveningReport?.completedItems ?? [];
+
+        const existingPending: TaskReportItem[] =
+          report.eveningReport?.pendingItems ?? [];
+
         const allEvening = [...existingCompleted, ...existingPending];
 
         if (allEvening.length > 0) {
-          // Add any morning tasks missing from evening (by title match)
-          const eveningTitles = new Set(allEvening.map(i => i.title.toLowerCase().trim()));
-          const missingFromMorning = (report.morningAgenda?.items ?? [])
-            .filter(i => !eveningTitles.has(i.title.toLowerCase().trim()))
-            .map(i => toEveningItem(i, { status: "pending" as TaskItemStatus }));
+          // Add missing morning tasks into evening
+          const eveningTitles = new Set(
+            allEvening.map(i => i.title.toLowerCase().trim())
+          );
+
+          const missingFromMorning =
+            (report.morningAgenda?.items ?? [])
+              .filter(i => !eveningTitles.has(i.title.toLowerCase().trim()))
+              .map(i =>
+                toEveningItem(i, { status: "pending" as TaskItemStatus })
+              );
+
           setEveningItems([...allEvening, ...missingFromMorning]);
         } else if (report.morningAgenda?.isSubmitted) {
-          // Pre-fill evening from morning tasks
+          // Pre-fill evening from morning
           setEveningItems(
             (report.morningAgenda.items ?? []).map(i =>
               toEveningItem(i, { status: "pending" as TaskItemStatus })
@@ -488,16 +575,30 @@ const TaskReportCreatePage = (): JSX.Element => {
           );
         }
 
-        if (report.eveningReport?.achievements) setAchievements(report.eveningReport.achievements);
-        if (report.eveningReport?.blockers) setBlockers(report.eveningReport.blockers);
-        if (report.eveningReport?.tomorrowPlan) setTomorrowPlan(report.eveningReport.tomorrowPlan);
-        if (report.eveningReport?.overallMood) setOverallMood(report.eveningReport.overallMood);
+        // Evening meta fields
+        if (report.eveningReport?.achievements) {
+          setAchievements(report.eveningReport.achievements);
+        }
+
+        if (report.eveningReport?.blockers) {
+          setBlockers(report.eveningReport.blockers);
+        }
+
+        if (report.eveningReport?.tomorrowPlan) {
+          setTomorrowPlan(report.eveningReport.tomorrowPlan);
+        }
+
+        if (report.eveningReport?.overallMood) {
+          setOverallMood(report.eveningReport.overallMood);
+        }
 
         // Smart tab switching
-        setActiveTab(report.morningAgenda?.isSubmitted ? "evening" : "morning");
+        setActiveTab(
+          report.morningAgenda?.isSubmitted ? "evening" : "morning"
+        );
       }
-    } catch {
-      toast.error("Failed to load report");
+    } catch (error) {
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -585,10 +686,16 @@ const TaskReportCreatePage = (): JSX.Element => {
           blockers: blockers.trim() || undefined,
           tomorrowPlan: tomorrowPlan.trim() || undefined,
           overallMood: overallMood as WorkMood || undefined,
+          isSubmitted: eveningSubmitted ? eveningSubmitted : isFinalSubmitted,
         },
       };
-      const res = await TaskReportService.submitEveningReport(existingReport.id, payload);
-      if (res.status === 200) {
+      var res = null;
+      if (eveningSubmitted) {
+        res = await TaskReportService.updateEveningReport(existingReport.id, payload);
+      } else {
+        res = await TaskReportService.submitEveningReport(existingReport.id, payload);
+      }
+      if (res?.status === 200) {
         toast.success("Evening report submitted! 🌆");
         await loadReport();
       }
@@ -617,7 +724,7 @@ const TaskReportCreatePage = (): JSX.Element => {
   // ── Page ───────────────────────────────────────────────────────────────────
   return (
     <div className="ml-72 mt-14">
-      <div className="p-6 w-full mb-10 ">
+      <div className="p-6 w-full mb-10">
 
         {/* ── Header ── */}
         <div className="flex items-start justify-between mb-6">
@@ -634,12 +741,6 @@ const TaskReportCreatePage = (): JSX.Element => {
               })}
             </p>
           </div>
-          <a
-            href="/task-reports"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-white text-sm font-bold transition-all"
-          >
-            ← All Reports
-          </a>
         </div>
 
         {/* ── Status Banner ── */}
@@ -833,16 +934,17 @@ const TaskReportCreatePage = (): JSX.Element => {
         {activeTab === "evening" && (
           <div className="bg-white dark:bg-gray-700 rounded-xl border border-slate-900/10 dark:border-gray-600 p-6">
 
+            {/* Final submission locked banner */}
             {eveningSubmitted && (
               <div className="flex items-center gap-3 mb-6 p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-                <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center text-white text-sm shrink-0">✓</div>
+                <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center text-white text-sm shrink-0">🔒</div>
                 <div>
-                  <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">Evening Report Submitted</p>
+                  <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">Evening Report Locked — Final Submission Complete</p>
                   <p className="text-xs text-emerald-600/80 dark:text-emerald-500/80">
                     {existingReport?.eveningReport?.submittedAt
                       ? `Submitted at ${new Date(existingReport.eveningReport.submittedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`
                       : "Already submitted"
-                    } · You can still update this report.
+                    } · This report is read-only and cannot be edited.
                   </p>
                 </div>
               </div>
@@ -853,18 +955,25 @@ const TaskReportCreatePage = (): JSX.Element => {
               <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-lg shadow-md">🌆</div>
               <div>
                 <h2 className="text-lg font-extrabold text-gray-900 dark:text-white">Evening Report</h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400">All morning tasks are pre-loaded. Change each task's status to move it between sections.</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {eveningSubmitted
+                    ? "This report has been finally submitted and is now read-only."
+                    : "All morning tasks are pre-loaded. Change each task's status to move it between sections."
+                  }
+                </p>
               </div>
             </div>
 
-            {/* Hint */}
-            <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 mb-6">
-              <span className="text-base shrink-0 mt-0.5">💡</span>
-              <p className="text-xs text-blue-700 dark:text-blue-400 font-medium leading-relaxed">
-                Changing a task&apos;s <b>Status</b> to <b>Completed</b> automatically moves it to the green section.
-                Setting it to <b>In Progress / Pending / Blocked / Carried Forward</b> moves it to the amber section.
-              </p>
-            </div>
+            {/* Hint — only show when editable */}
+            {!eveningSubmitted && (
+              <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 mb-6">
+                <span className="text-base shrink-0 mt-0.5">💡</span>
+                <p className="text-xs text-blue-700 dark:text-blue-400 font-medium leading-relaxed">
+                  Changing a task&apos;s <b>Status</b> to <b>Completed</b> automatically moves it to the green section.
+                  Setting it to <b>In Progress / Pending / Blocked / Carried Forward</b> moves it to the amber section.
+                </p>
+              </div>
+            )}
 
             {/* ── COMPLETED ── */}
             <div className="mb-8">
@@ -892,19 +1001,23 @@ const TaskReportCreatePage = (): JSX.Element => {
                         bucket="completed"
                         onChange={(f, v) => updateEveningItem(globalIdx, f, v)}
                         onRemove={() => removeEveningItem(globalIdx)}
+                        readOnly={eveningSubmitted}
                       />
                     ) : null
                   )}
                 </div>
               )}
 
-              <button
-                type="button"
-                onClick={() => addEveningItem("completed" as TaskItemStatus)}
-                className="w-full py-3 rounded-2xl border-2 border-dashed border-emerald-200 dark:border-emerald-800/60 text-emerald-500 dark:text-emerald-600 hover:border-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-400 text-sm font-bold transition-all flex items-center justify-center gap-2"
-              >
-                + Add Completed Task
-              </button>
+              {/* Add button — hidden when locked */}
+              {!eveningSubmitted && (
+                <button
+                  type="button"
+                  onClick={() => addEveningItem("completed" as TaskItemStatus)}
+                  className="w-full py-3 rounded-2xl border-2 border-dashed border-emerald-200 dark:border-emerald-800/60 text-emerald-500 dark:text-emerald-600 hover:border-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-400 text-sm font-bold transition-all flex items-center justify-center gap-2"
+                >
+                  + Add Completed Task
+                </button>
+              )}
             </div>
 
             {/* ── PENDING ── */}
@@ -933,34 +1046,56 @@ const TaskReportCreatePage = (): JSX.Element => {
                         bucket="pending"
                         onChange={(f, v) => updateEveningItem(globalIdx, f, v)}
                         onRemove={() => removeEveningItem(globalIdx)}
+                        readOnly={eveningSubmitted}
                       />
                     ) : null
                   )}
                 </div>
               )}
 
-              <button
-                type="button"
-                onClick={() => addEveningItem("carried_forward" as TaskItemStatus)}
-                className="w-full py-3 rounded-2xl border-2 border-dashed border-amber-200 dark:border-amber-800/60 text-amber-500 dark:text-amber-600 hover:border-amber-400 hover:text-amber-600 dark:hover:text-amber-400 text-sm font-bold transition-all flex items-center justify-center gap-2"
-              >
-                + Add Pending Task
-              </button>
+              {/* Add button — hidden when locked */}
+              {!eveningSubmitted && (
+                <button
+                  type="button"
+                  onClick={() => addEveningItem("carried_forward" as TaskItemStatus)}
+                  className="w-full py-3 rounded-2xl border-2 border-dashed border-amber-200 dark:border-amber-800/60 text-amber-500 dark:text-amber-600 hover:border-amber-400 hover:text-amber-600 dark:hover:text-amber-400 text-sm font-bold transition-all flex items-center justify-center gap-2"
+                >
+                  + Add Pending Task
+                </button>
+              )}
             </div>
 
             {/* ── Summary fields ── */}
             <div className="space-y-4 mb-8 pt-6 border-t border-gray-100 dark:border-gray-700">
               <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800">
                 <FieldLabel>🏆 Achievements / Highlights</FieldLabel>
-                <TextArea value={achievements} onChange={setAchievements} placeholder="What are you proud of today? Any wins, improvements, or learnings?" rows={3} />
+                <TextArea
+                  value={achievements}
+                  onChange={setAchievements}
+                  placeholder="What are you proud of today? Any wins, improvements, or learnings?"
+                  rows={3}
+                  disabled={eveningSubmitted}
+                />
               </div>
               <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800">
                 <FieldLabel>🚧 Blockers / Challenges</FieldLabel>
-                <TextArea value={blockers} onChange={setBlockers} placeholder="Any blockers, issues, or challenges faced today?" rows={2} />
+                <TextArea
+                  value={blockers}
+                  onChange={setBlockers}
+                  placeholder="Any blockers, issues, or challenges faced today?"
+                  rows={2}
+                  disabled={eveningSubmitted}
+                />
               </div>
               <div className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
                 <FieldLabel>📅 Tomorrow&apos;s Plan</FieldLabel>
-                <TextArea value={tomorrowPlan} onChange={setTomorrowPlan} placeholder="What do you plan to work on tomorrow?" rows={2} />
+                <TextArea
+                  value={tomorrowPlan}
+                  onChange={setTomorrowPlan}
+                  placeholder="What do you plan to work on tomorrow?"
+                  rows={2}
+                  disabled={eveningSubmitted}
+                />
               </div>
               <div className="p-4 rounded-2xl bg-violet-50 dark:bg-violet-900/20 border border-violet-100 dark:border-violet-800">
                 <FieldLabel>Overall Mood Today</FieldLabel>
@@ -969,8 +1104,9 @@ const TaskReportCreatePage = (): JSX.Element => {
                     <button
                       key={m.value}
                       type="button"
-                      onClick={() => setOverallMood(m.value)}
-                      className={`flex flex-col items-center gap-1.5 px-4 py-3 rounded-xl border-2 transition-all
+                      onClick={() => !eveningSubmitted && setOverallMood(m.value)}
+                      disabled={eveningSubmitted}
+                      className={`flex flex-col items-center gap-1.5 px-4 py-3 rounded-xl border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed
                         ${overallMood === m.value
                           ? `${m.color} scale-105 shadow-sm`
                           : "border-transparent bg-white dark:bg-gray-800 hover:border-gray-200 dark:hover:border-gray-600"
@@ -982,6 +1118,22 @@ const TaskReportCreatePage = (): JSX.Element => {
                   ))}
                 </div>
               </div>
+
+              {/* Final submission checkbox — only visible when NOT yet submitted */}
+              {!eveningSubmitted && (
+                <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-900/20 border border-gray-100 dark:border-gray-700 items-center gap-3">
+                  <FieldLabel>Final Submission</FieldLabel>
+                  <input
+                    type="checkbox"
+                    name="isFinalSubmitted"
+                    checked={isFinalSubmitted}
+                    onChange={(e) => setIsFinalSubmitted(e.target.checked)}
+                  />
+                  <span className="text-sm text-orange-500 ml-2">
+                    Final submission locks this report from further changes — only submitted reports will be considered.
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Submit Bar */}
@@ -1009,17 +1161,27 @@ const TaskReportCreatePage = (): JSX.Element => {
                 )}
               </div>
 
-              <button
-                type="button"
-                onClick={submitEvening}
-                disabled={isSubmitting || eveningItems.filter(i => i.title.trim()).length === 0}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-all active:scale-95 shadow-sm"
-              >
-                {isSubmitting
-                  ? <><div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> Submitting…</>
-                  : <><span>🌆</span> {eveningSubmitted ? "Update Evening Report" : "Submit Evening Report"}</>
-                }
-              </button>
+              {/* Submit button — replaced with locked label after final submission */}
+              {!eveningSubmitted ? (
+                <button
+                  type="button"
+                  onClick={submitEvening}
+                  disabled={isSubmitting || eveningItems.filter(i => i.title.trim()).length === 0}
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-all active:scale-95 shadow-sm"
+                >
+                  {isSubmitting
+                    ? <><div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> Submitting…</>
+                    : <><span>🌆</span> {!isFinalSubmitted ? "Save Evening Report" : "Submit Evening Report"}</>
+                  }
+                </button>
+              ) : (
+                <div className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+                  <span className="text-emerald-600 dark:text-emerald-400 text-lg">🔒</span>
+                  <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
+                    Report locked — final submission complete
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         )}
