@@ -436,7 +436,7 @@ const SideBar = () => {
                       </Link>
                     </li>}
                     {
-                      hasPermission(PERMISSIONS.taskReportRead) && <li>
+                      hasPermission(PERMISSIONS.readTaskReport) && <li>
                         <Link
                           href="/reports"
                           className={`${isActive("/reports")
@@ -449,7 +449,7 @@ const SideBar = () => {
                       </li>
                     }
                     {
-                      hasPermission(PERMISSIONS.addTodayReport)||true && <li>
+                      hasPermission(PERMISSIONS.createTaskReport) && <li>
                         <Link
                           href={`/report/create/${USER_ID||"new"}`}
                           className={`${isActive(`/report/create/${USER_ID||"new"}`)

@@ -1,5 +1,5 @@
  
-from beanie import Document, Link, Indexed, before_event
+from beanie import Document, Link, Indexed, before_event, PydanticObjectId
 from beanie.odm.actions import Save, Replace
 from pydantic import Field
 from typing import Optional, List, Literal
@@ -8,6 +8,7 @@ from app.db.models.user_model import UserModel
 from app.db.models.task_category_model import TaskCategoryModel
 from app.db.models.task_status_model import TaskStatusModel
 from app.core.enums import TASK_PRIORITY, TASK_ENTITY_TYPE, RECURRENCE_TYPE
+
 
 
  
@@ -38,6 +39,8 @@ class TaskModel(Document):
     isRecurring: bool = False
     recurrenceType: Optional[RECURRENCE_TYPE] = None
     recurrenceEndsAt: Optional[datetime] = None
+    parentRecurringId: Optional[PydanticObjectId] = None  
+    recurringProcessed: bool = False    
  
     tags: Optional[List[str]] = Field(default_factory=list)
     watchers: Optional[List[Link[UserModel]]] = Field(default_factory=list)

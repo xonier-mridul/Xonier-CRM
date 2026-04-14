@@ -879,6 +879,7 @@ class TASK_ACTIVITY_ACTION(str, Enum):
     UPDATE = "update"
     REMARK_CREATED="remark_created"
     REMARK_ACKNOWLEDGED = "remark_acknowledged"
+    RECURRING_CREATED = "recurring_created"
 
 
 class LEAD_REQUEST_STATUS(str, Enum):
