@@ -10,6 +10,7 @@ import {
   WorkMood,
   TaskItemStatus,
 } from "@/src/types/task/taskReport";
+import { AxiosError } from "axios";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -653,13 +654,17 @@ const TaskReportCreatePage = (): JSX.Element => {
         ? TaskReportService.updateMorningAgenda(existingReport.id, payload)
         : TaskReportService.createMorningAgenda(payload);
       const res = await fn;
-      if (res.status === 200) {
+      if (res.status === 200 || res.status === 201) {
         toast.success("Morning agenda submitted! ✅");
-        await loadReport();
         setActiveTab("evening");
+        await loadReport();
       }
-    } catch {
-      toast.error("Failed to submit morning agenda");
+    } catch (error) {
+      const err = error as AxiosError<{ message?: string }>;
+
+      toast.error(
+        err.response?.data?.message || "Failed to submit morning agenda"
+      );
     } finally {
       setIsSubmitting(false);
     }
