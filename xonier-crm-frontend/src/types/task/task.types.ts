@@ -216,6 +216,9 @@ export interface TaskActivity {
 
 export interface CreateSubTaskPayload {
   title: string;
+  actualHours?: number;
+  dueDate?: Date | Timestamp | null;
+  order: number;
 }
 
 export interface UpdateSubTaskPayload {

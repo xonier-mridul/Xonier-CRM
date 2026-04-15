@@ -93,7 +93,7 @@ export const TaskService = {
 
   getSubTasks: (id: string) => api.get(`/task/${id}/subtasks`),
 
-  createSubTask: (id: string, payload: CreateSubTaskPayload) => api.post(`/task/${id}/subtask`, payload),
+  createSubTask: (id: string, payload: CreateSubTaskPayload) => api.post(`/sub-task/${id}`, payload),
 
   updateSubTask: (id: string, taskId: string, payload: UpdateSubTaskPayload) => api.put(`/task/${id}/subtask/${taskId}`, payload),
 

@@ -4,7 +4,8 @@ import Swal from "sweetalert2";
  const ConfirmPopup = async ({
   title,
   text,
-  btnTxt
+  btnTxt,
+  cancelTxt,
 }: ConfirmPopupInterface): Promise<boolean> => {
   const result = await Swal.fire({
     title,
@@ -12,6 +13,7 @@ import Swal from "sweetalert2";
     icon: "warning",
     showCancelButton: true,
     confirmButtonColor: "#3085d6",
+    cancelButtonText: cancelTxt ? cancelTxt : "No",
     cancelButtonColor: "#d33",
     confirmButtonText: btnTxt ? btnTxt : "Yes",
   });

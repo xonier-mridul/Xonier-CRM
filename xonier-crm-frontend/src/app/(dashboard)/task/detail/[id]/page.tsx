@@ -58,6 +58,7 @@ interface SubTask {
   createdAt: string;
   assignedTo?: { id: string; firstName: string; lastName?: string; avatar?: string };
   priority?: TASK_PRIORITY;
+  order: number;
 }
 
 // ─── Priority Config ──────────────────────────────────────────────────────────
@@ -442,6 +443,7 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [newTitle, setNewTitle] = useState("");
+  const [actualSubTasksHours, setActualSubTasksHours] = useState<number>(0);
   const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
 
   const load = useCallback(async () => {
@@ -462,19 +464,20 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
       id: "string",
       title: newTitle,
       isCompleted: newTitle.length == 4,
-      createdAt: "klsklz"
+      createdAt: "klsklz",
+      order: subtasks.length,
     }
-    setSubtasks((p) => [...p, newTask]);
-    // try {
-    //   const res = await TaskService.createSubTask(taskId, { title: newTitle.trim() });
-    //   if (res.status === 200 || res.status === 201) {
-    //     setSubtasks((p) => [...p, res.data.data]);
-    //     toast.success("Sub-task added");
-    //   }
-    // } catch (e) {
-    //   if (axios.isAxiosError(e)) toast.error(e.response?.data?.message ?? "Failed");
-    // } finally { setNewTitle(""); setAdding(false); }
-    setNewTitle(""); setAdding(false);
+    try {
+      const res = await TaskService.createSubTask(taskId, { title: newTitle.trim(),order: subtasks.length ,actualHours: actualSubTasksHours });
+      if (res.status === 200 || res.status === 201) {
+        setSubtasks((p) => [...p, res.data.data]);
+        toast.success("Sub-task added");
+      }
+    } catch (e) {
+      if (axios.isAxiosError(e)) toast.error(e.response?.data?.message ?? "Failed");
+    } finally { setNewTitle(""); setAdding(false); }
+    // setSubtasks((p) => [...p, newTask]);
+    // setNewTitle(""); setAdding(false);
   };
 
   const handleToggle = async (id: string) => {
@@ -570,9 +573,17 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
               placeholder="Sub-task title… (Enter to save, Esc to cancel)"
               className="flex-1 text-sm bg-transparent focus:outline-none text-gray-800 dark:text-gray-200 placeholder-gray-400"
             />
+            <div>
+              <input type="number" 
+                onChange={(e) => setActualSubTasksHours(Number(e.target.value))} 
+                onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); if (e.key === "Escape") { setAdding(false); setNewTitle(""); } }}
+                placeholder="Actual hours…" 
+                className="flex-1 text-sm bg-transparent focus:outline-none text-gray-800 dark:text-gray-200 placeholder-gray-400" 
+              />
+            </div>
             <div className="flex items-center gap-1 shrink-0">
               <button onClick={handleAdd} className="p-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white transition-colors"><Plus size={13} /></button>
-              <button onClick={() => { setAdding(false); setNewTitle(""); }} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400"><X size={13} /></button>
+              <button onClick={() => { setAdding(false); setNewTitle(""); setActualSubTasksHours(0); }} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400"><X size={13} /></button>
             </div>
           </div>
         )}

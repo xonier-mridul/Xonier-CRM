@@ -14,6 +14,7 @@ import { toast } from "react-toastify";
 import Skeleton from "react-loading-skeleton";
 import { FaXmark, FaShieldHalved, FaFloppyDisk } from "react-icons/fa6";
 import { HiOutlineSearch } from "react-icons/hi";
+import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 
 const UpdateRolePage = (): JSX.Element => {
   const [err, setErr] = useState<string | string[]>("");
@@ -117,6 +118,21 @@ const UpdateRolePage = (): JSX.Element => {
       setIsLoading(false);
     }
   };
+  const handleRemoveAll = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    const confirm = await ConfirmPopup({
+      title: "Remove all permissions?",
+      text: "Are you sure you want to remove all permissions from this role? This action cannot be reverted.",
+      btnTxt: "Yes, remove all",
+      cancelTxt: "No, keep them",
+    });
+    if(confirm){
+      setFormData((prev) => ({
+        ...prev,
+        permissions: [],
+      }));
+    }
+  }
 
   const addPermission = (permId: string) => {
     if(isSelected(permId)){
@@ -195,7 +211,7 @@ const UpdateRolePage = (): JSX.Element => {
                   </span>
                   <span className="text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/40 px-2 py-0.5 rounded-full">
                       <button
-                        onClick={() => setFormData((prev) => ({ ...prev, permissions: [] }))}
+                        onClick={(e) => handleRemoveAll(e)}
                         className="ml-1 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                         >
                           Remove All  
