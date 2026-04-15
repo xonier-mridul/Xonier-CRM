@@ -93,16 +93,16 @@ function ProgressRing({ pct }: { pct: number }) {
   );
 }
 const handleDelete = (id: string) => async () => {
-    if (!confirm("Are you sure you want to delete this report? This action cannot be undone.")) return;
-    try {
-      const res = await TaskReportService.deleteReport(id);
-      if (res.status === 200) {
-        toast.success("Report deleted");
-      }
-    } catch {
-      toast.error("Failed to delete report");
+  if (!confirm("Are you sure you want to delete this report? This action cannot be undone.")) return;
+  try {
+    const res = await TaskReportService.deleteReport(id);
+    if (res.status === 200) {
+      toast.success("Report deleted");
     }
-  };
+  } catch {
+    toast.error("Failed to delete report");
+  }
+};
 function ExpandableRow({ report }: { report: TaskReport }) {
   const [open, setOpen] = useState(false);
   const morningItems = report.morningAgenda?.items ?? [];
@@ -122,19 +122,19 @@ function ExpandableRow({ report }: { report: TaskReport }) {
         {/* User */}
         <Link
           href={`/report/create/${report.user.id}`}>
-        <td className="px-5 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-xs font-extrabold shrink-0 shadow-sm">
-              {initials}
+          <td className="px-5 py-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-xs font-extrabold shrink-0 shadow-sm">
+                {initials}
+              </div>
+              <div>
+                <p className="text-sm font-bold text-gray-900 dark:text-white leading-tight">
+                  {user?.firstName} {user?.lastName}
+                </p>
+                <p className="text-[11px] text-gray-400 dark:text-gray-500 font-mono">{user?.company ?? "—"}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-bold text-gray-900 dark:text-white leading-tight">
-                {user?.firstName} {user?.lastName}
-              </p>
-              <p className="text-[11px] text-gray-400 dark:text-gray-500 font-mono">{user?.company ?? "—"}</p>
-            </div>
-          </div>
-        </td>
+          </td>
         </Link>
 
         {/* Date */}
@@ -363,8 +363,12 @@ const TaskReportListPage = (): JSX.Element => {
   const [filterStatus, setFilterStatus] = useState("");
   const [search, setSearch] = useState("");
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
-  const [dateFilter, setDateFilter] = useState<DateFilter>({ toDate:"2026-04-14", fromDate: "2026-04-14" });
+  const today = new Date().toISOString().split("T")[0];
 
+  const [dateFilter, setDateFilter] = useState<DateFilter>({
+    fromDate: today,
+    toDate: today,
+  });
   const fetchReports = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -407,12 +411,12 @@ const TaskReportListPage = (): JSX.Element => {
   ).length;
   const avgCompletion = reports.length
     ? Math.round(
-        reports.reduce((sum, r) => {
-          const items = r.morningAgenda?.items ?? [];
-          if (!items.length) return sum;
-          return sum + items.reduce((s, i) => s + i.completionPercentage, 0) / items.length;
-        }, 0) / reports.length
-      )
+      reports.reduce((sum, r) => {
+        const items = r.morningAgenda?.items ?? [];
+        if (!items.length) return sum;
+        return sum + items.reduce((s, i) => s + i.completionPercentage, 0) / items.length;
+      }, 0) / reports.length
+    )
     : 0;
 
   return (
@@ -500,7 +504,7 @@ const TaskReportListPage = (): JSX.Element => {
           </select>
           <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
 
-          {(search || filterStatus || dateFilter) && (
+          {(search || filterStatus || dateFilter.fromDate || dateFilter.toDate) && (
             <button
               type="button"
               onClick={() => { setSearch(""); setFilterStatus(""); setCurrentPage(1); setDateFilter({ fromDate: "", toDate: "" }); }}
@@ -517,7 +521,7 @@ const TaskReportListPage = (): JSX.Element => {
             <table className="w-full text-sm min-w-[900px]">
               <thead>
                 <tr className="bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
-                  {["Employee", "Date", "Status", "Tasks", "Hours", "Mood", "Reviewed", "" , "Action"].map(col => (
+                  {["Employee", "Date", "Status", "Tasks", "Hours", "Mood", "Reviewed", "", "Action"].map(col => (
                     <th key={col} className="px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-left">
                       {col}
                     </th>

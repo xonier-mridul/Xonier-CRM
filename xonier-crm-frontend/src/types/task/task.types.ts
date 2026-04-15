@@ -176,6 +176,11 @@ export interface TaskItem {
   createdAt: string;
   updatedAt: string;
   createdBy?: User;
+  rating?: number;
+  remark?: string;
+  actual_days?: number;
+  actual_hours?: number;
+  ratedBy?: User;
 }
 
 export interface PaginatedTaskResponse {
@@ -211,6 +216,9 @@ export interface TaskActivity {
 
 export interface CreateSubTaskPayload {
   title: string;
+  actualHours?: number;
+  dueDate?: Date | Timestamp | null;
+  order: number;
 }
 
 export interface UpdateSubTaskPayload {

@@ -26,6 +26,7 @@ import UserSelect from "@/src/components/common/userselect";
 import { MarkFinalModal, MarkFinalPayload } from "@/src/components/pages/task/Marrkfinalmodal";
 import DateFilterButton from "@/src/components/common/dateFilter";
 import { DateFilter } from "@/src/types/components/ui/dateFilter.types";
+import { Star } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -239,6 +240,17 @@ function BoardCard({
           </span>
         )}
       </div>
+        <br />
+        {/* rating */}
+        <div className="ml-auto flex items-center gap-1.5 w-full justify-end">
+          {task.rating && (
+            <div className="flex items-center gap-0.5 text-yellow-500 text-xs font-bold">
+              <Star size={12} fill="currentColor" />
+              &nbsp;
+              <span>{task.rating.toFixed(1)}</span>
+            </div>
+          )}
+        </div>
     </div>
   );
 }
@@ -963,7 +975,7 @@ const [dateFilter, setDateFilter] = useState<DateFilter>({
                               {task.createdBy?.firstName} {task.createdBy?.lastName}
                             </p>
                           </td>
-                          <td>
+                          {/* <td>
                             <p>
                               {task.createdAt && (
                                 <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -971,7 +983,7 @@ const [dateFilter, setDateFilter] = useState<DateFilter>({
                                 </span>
                               )}
                             </p>
-                          </td>
+                          </td> */}
                           <td className="px-5 py-4">
                             {task.dueDate ? (
                               <span className={`text-xs font-semibold ${isOverdue ? "text-rose-500" : "text-gray-600 dark:text-gray-300"}`}>

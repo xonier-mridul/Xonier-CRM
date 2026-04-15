@@ -114,6 +114,9 @@ const SideBar = () => {
     if (pathname.startsWith("/status")) {
       setOpenMenu("task")
     }
+    if (pathname.startsWith("/reports") || pathname.startsWith("/report/create")) {
+      setOpenMenu("task")
+    }
   }, [pathname]);
 
   const toggleMenu = (menu: string) => {
@@ -142,7 +145,7 @@ const SideBar = () => {
       case "communication":
         return pathname.startsWith("/message") || pathname.startsWith("/telephone");
       case "task":
-        return pathname.startsWith("/task")|| pathname.startsWith("/category") || pathname.startsWith("/status");
+        return pathname.startsWith("/task")|| pathname.startsWith("/category") || pathname.startsWith("/status")|| pathname.startsWith("/reports") || pathname.startsWith("/report/create");
       default:
         return false;
     }
