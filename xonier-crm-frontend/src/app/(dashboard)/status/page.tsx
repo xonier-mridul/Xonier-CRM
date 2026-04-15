@@ -56,6 +56,7 @@ const page = (): JSX.Element => {
         setStatusData(data.data || []);
         setCurrentPage(Number(data.page || 1));
         setPageLimit(Number(data.limit || 10));
+        setTotalPages(Number(data.totalPages || 1));
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);

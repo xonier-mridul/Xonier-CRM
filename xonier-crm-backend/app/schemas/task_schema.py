@@ -43,6 +43,10 @@ class CreateTaskSchema(BaseModel):
     attachments: Optional[List[str]] = Field(default_factory=list)
     parentTask: Optional[str] = None
     order: Optional[int] = 0
+    rating: Optional[Literal[0, 1, 2, 3, 4, 5]] = None
+    actual_hours: Optional[float] = None
+    actual_days: Optional[int] = None
+    remark: Optional[str] = None
 
     @field_validator("title")
     @classmethod
@@ -219,6 +223,10 @@ class UpdateTaskSchema(BaseModel):
 class UpdateTaskStatusSchema(BaseModel):
     status: str
     category: Optional[str] = None
+    rating: Optional[Literal[0, 1, 2, 3, 4, 5]] = None
+    actual_hours: Optional[float] = None
+    actual_days: Optional[int] = None
+    remark: Optional[str] = None
 
     @field_validator("status")
     @classmethod

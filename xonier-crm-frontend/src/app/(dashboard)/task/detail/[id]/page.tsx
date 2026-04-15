@@ -58,6 +58,7 @@ interface SubTask {
   createdAt: string;
   assignedTo?: { id: string; firstName: string; lastName?: string; avatar?: string };
   priority?: TASK_PRIORITY;
+  order: number;
 }
 
 // ─── Priority Config ──────────────────────────────────────────────────────────
@@ -442,6 +443,7 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [newTitle, setNewTitle] = useState("");
+  const [actualSubTasksHours, setActualSubTasksHours] = useState<number>(0);
   const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
 
   const load = useCallback(async () => {
@@ -462,19 +464,20 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
       id: "string",
       title: newTitle,
       isCompleted: newTitle.length == 4,
-      createdAt: "klsklz"
+      createdAt: "klsklz",
+      order: subtasks.length,
     }
-    setSubtasks((p) => [...p, newTask]);
-    // try {
-    //   const res = await TaskService.createSubTask(taskId, { title: newTitle.trim() });
-    //   if (res.status === 200 || res.status === 201) {
-    //     setSubtasks((p) => [...p, res.data.data]);
-    //     toast.success("Sub-task added");
-    //   }
-    // } catch (e) {
-    //   if (axios.isAxiosError(e)) toast.error(e.response?.data?.message ?? "Failed");
-    // } finally { setNewTitle(""); setAdding(false); }
-     setNewTitle(""); setAdding(false);
+    try {
+      const res = await TaskService.createSubTask(taskId, { title: newTitle.trim(),order: subtasks.length ,actualHours: actualSubTasksHours });
+      if (res.status === 200 || res.status === 201) {
+        setSubtasks((p) => [...p, res.data.data]);
+        toast.success("Sub-task added");
+      }
+    } catch (e) {
+      if (axios.isAxiosError(e)) toast.error(e.response?.data?.message ?? "Failed");
+    } finally { setNewTitle(""); setAdding(false); }
+    // setSubtasks((p) => [...p, newTask]);
+    // setNewTitle(""); setAdding(false);
   };
 
   const handleToggle = async (id: string) => {
@@ -570,9 +573,17 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
               placeholder="Sub-task title… (Enter to save, Esc to cancel)"
               className="flex-1 text-sm bg-transparent focus:outline-none text-gray-800 dark:text-gray-200 placeholder-gray-400"
             />
+            <div>
+              <input type="number" 
+                onChange={(e) => setActualSubTasksHours(Number(e.target.value))} 
+                onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); if (e.key === "Escape") { setAdding(false); setNewTitle(""); } }}
+                placeholder="Actual hours…" 
+                className="flex-1 text-sm bg-transparent focus:outline-none text-gray-800 dark:text-gray-200 placeholder-gray-400" 
+              />
+            </div>
             <div className="flex items-center gap-1 shrink-0">
               <button onClick={handleAdd} className="p-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white transition-colors"><Plus size={13} /></button>
-              <button onClick={() => { setAdding(false); setNewTitle(""); }} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400"><X size={13} /></button>
+              <button onClick={() => { setAdding(false); setNewTitle(""); setActualSubTasksHours(0); }} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400"><X size={13} /></button>
             </div>
           </div>
         )}
@@ -597,6 +608,22 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
           </div>
         )}
       </div>
+    </div>
+  );
+};
+
+// --- rating star component ---
+const RatingStars = ({ rating = 0 }: { rating: number }) => {
+  return (
+    <div className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/40">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <span key={i} className={`text-xs ${i <= rating ? "text-amber-500" : "text-gray-300"}`}>
+          ★
+        </span>
+      ))}
+      {/* <span className="ml-1 text-xs font-bold text-amber-600 dark:text-amber-400">
+        {rating}/5
+      </span> */}
     </div>
   );
 };
@@ -687,7 +714,7 @@ const page = () => {
 
             <div className="relative p-6">
               {/* Breadcrumb-style context tags */}
-              <div className="flex items-center gap-2 mb-3 flex-wrap w-full">
+              <div className="flex items-center gap-2 mb-3  w-full">
                 <div className="flex items-center justify-between gap-3 w-full">
                   {taskData.category && (
                     <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700">
@@ -703,7 +730,9 @@ const page = () => {
                   )}
                   {/* <Link href={`/task/update/${taskData.id}`} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-center flex items-center gap-2"><MdOutlineEdit /> Edit Task</Link> */}
                 </div>
+                <RatingStars rating={taskData.rating || 0} />
               </div>
+
 
               <div className="flex items-start justify-between gap-6">
                 <div className="flex-1 min-w-0">
@@ -714,12 +743,12 @@ const page = () => {
                   {/* Status + Priority badges */}
                   <div className="flex items-center gap-2 flex-wrap">
                     <span
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border
                           ${statusColor.bg}
                           ${statusColor.text}
                         `}
-                        
-                      >
+
+                    >
                       <span className={`w-2 h-2 rounded-full animate-pulse border ${statusColor.text}`} />
                       {taskData.status?.name ?? taskData.statusName}
                     </span>
@@ -1038,6 +1067,70 @@ const page = () => {
                 </div>
               </div>
 
+              {/* {Final Rating detail} */}
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
+                    <Star size={13} className="text-amber-500 dark:text-amber-400" />
+                  </div>
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-white">Final Rating</h3>
+                  <div className="ml-auto flex items-center gap-2">
+                    {/* {actual days and hours} */}
+                    <div className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/40">
+                      <Clock size={10} className="text-blue-500 dark:text-blue-400" />
+                      <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
+                        {taskData.actual_days ? `${taskData.actual_days}d` : "—"}
+                      </span>
+                      <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
+                        {taskData.actual_hours ? `${taskData.actual_hours}h` : "—"}
+                      </span>
+
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4">
+                  {taskData.rating ? (
+                    <RatingStars rating={taskData.rating} />
+                  ) : (
+                    <p className="text-xs text-gray-400 dark:text-gray-500 text-center font-medium">No rating given</p>
+                  )}
+                </div>
+                {/* remark message task.remark */}
+                <div className="px-5 py-3.5 border-t border-gray-100 dark:border-gray-800">
+                  {taskData.remark ? (
+                    <p className="px-3 text-sm text-purple-900 dark:text-white bg-purple-100 dark:bg-purple-800 p-3 rounded-2xl">
+                      {taskData.remark.split("\n").map((line, i) => (
+                        <span key={i} className="flex items-start gap-2 mb-1">
+                          <span className="text-purple-600 dark:text-purple-300 leading-5 mt-[2px]">•</span>
+                          <span className="leading-5">{line}</span>
+                        </span>
+                      ))}
+                    </p>
+                  ) : (
+                    <p className="px-3 text-sm text-purple-900 dark:text-white bg-purple-100 dark:bg-purple-800 p-2 rounded rounded-full text-center">
+                      -- No remarks available --
+                    </p>
+                  )}
+                </div>
+
+                {/* {rate by } */}
+                <div className="px-5 py-3.5 border-t border-gray-100 dark:border-gray-800"    >
+                  {taskData.ratedBy ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <AvatarCircle name={`${taskData.ratedBy.firstName} ${taskData.ratedBy.lastName ?? ""}`} size="sm" />
+                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                        Rated by {taskData.ratedBy.firstName} {taskData.ratedBy.lastName}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-400 dark:text-gray-500 text-center font-medium">
+                      -- No rater information --
+                    </p>
+                  )}
+
+                </div>
+              </div>
+
               {/* Attachments */}
               {taskData.attachments && taskData.attachments.length > 0 && (
                 <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
@@ -1076,7 +1169,7 @@ const page = () => {
           {(
             <RemarkModal
               taskId={taskId}
-              // onClose={()=>{setShowRemarkModal(false)}}
+            // onClose={()=>{setShowRemarkModal(false)}}
             />
           )}
         </div>

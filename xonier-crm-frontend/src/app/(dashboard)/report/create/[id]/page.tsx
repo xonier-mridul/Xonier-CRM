@@ -544,7 +544,6 @@ const TaskReportCreatePage = (): JSX.Element => {
         if (report.morningAgenda?.goals) {
           setMorningGoals(report.morningAgenda.goals);
         }
-
         const existingCompleted: TaskReportItem[] =
           report.eveningReport?.completedItems ?? [];
 
@@ -597,6 +596,7 @@ const TaskReportCreatePage = (): JSX.Element => {
         setActiveTab(
           report.morningAgenda?.isSubmitted ? "evening" : "morning"
         );
+        setIsFinalSubmitted(report.eveningReport?.isSubmitted ?? false);
       }
     } catch (error) {
       console.error(error);
@@ -691,11 +691,11 @@ const TaskReportCreatePage = (): JSX.Element => {
           blockers: blockers.trim() || undefined,
           tomorrowPlan: tomorrowPlan.trim() || undefined,
           overallMood: overallMood as WorkMood || undefined,
-          isSubmitted: eveningSubmitted ? eveningSubmitted : isFinalSubmitted,
+          isSubmitted: isFinalSubmitted,
         },
       };
       var res = null;
-      if (eveningSubmitted) {
+      if (!isFinalSubmitted) {
         res = await TaskReportService.updateEveningReport(existingReport.id, payload);
       } else {
         res = await TaskReportService.submitEveningReport(existingReport.id, payload);
