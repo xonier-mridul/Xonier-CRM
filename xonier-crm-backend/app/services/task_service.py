@@ -1069,7 +1069,7 @@ class TaskService:
     
                         update_data["completedAt"] = now
                         update_data["isOverdue"] = False
-                        update_data["recurringProcessed"] = False  # reset so scheduler can re-evaluate
+                        update_data["recurringProcessed"] = False  
                         update_data["rating"] = payload.get("rating") or None
                         update_data["actual_hours"] = payload.get("actual_hours") or None
                         update_data["actual_days"] = payload.get("actual_days") or None

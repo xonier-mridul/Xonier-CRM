@@ -38,8 +38,7 @@ class CreateTaskSchema(BaseModel):
     recurrenceType: Optional[RECURRENCE_TYPE] = None
     recurrenceEndsAt: Optional[str] = None
     tags: Optional[List[str]] = Field(default_factory=list)
-    rating: Optional[Literal[0, 1, 2, 3, 4, 5]] = None
-    actual_days: Optional[float] = None
+    
     attachments: Optional[List[str]] = Field(default_factory=list)
     parentTask: Optional[str] = None
     order: Optional[int] = 0
