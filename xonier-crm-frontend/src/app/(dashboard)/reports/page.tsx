@@ -230,7 +230,7 @@ function ExpandableRow({ report }: { report: TaskReport }) {
       {/* Expanded details */}
       {open && (
         <tr className="bg-slate-50/80 dark:bg-gray-800/60 border-b border-gray-100 dark:border-gray-700">
-          <td colSpan={8} className="px-6 py-5">
+          <td colSpan={9} className="px-6 py-5">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
               {/* Morning Agenda */}
@@ -292,21 +292,23 @@ function ExpandableRow({ report }: { report: TaskReport }) {
                     {report.eveningReport.achievements && (
                       <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800">
                         <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-1">🏆 Achievements</p>
-                        <p className="text-xs text-gray-700 dark:text-gray-300">{report.eveningReport.achievements}</p>
+                        <p className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-line">
+                          {report.eveningReport.achievements}
+                        </p>
                       </div>
                     )}
                     {/* Blockers */}
                     {report.eveningReport.blockers && (
                       <div className="p-2.5 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800">
                         <p className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wider mb-1">🚧 Blockers</p>
-                        <p className="text-xs text-gray-700 dark:text-gray-300">{report.eveningReport.blockers}</p>
+                        <p className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-line">{report.eveningReport.blockers}</p>
                       </div>
                     )}
                     {/* Tomorrow Plan */}
                     {report.eveningReport.tomorrowPlan && (
                       <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
                         <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1">📅 Tomorrow's Plan</p>
-                        <p className="text-xs text-gray-700 dark:text-gray-300">{report.eveningReport.tomorrowPlan}</p>
+                        <p className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-line">{report.eveningReport.tomorrowPlan}</p>
                       </div>
                     )}
                     {/* Pending items count */}
@@ -401,7 +403,7 @@ const TaskReportListPage = (): JSX.Element => {
       setCurrentPage(1);
     }, 500);
   };
-  
+
 
   // Stats
   const totalReports = reports.length;
