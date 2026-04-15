@@ -206,7 +206,7 @@ const LeadContent = (): JSX.Element => {
 
       const result = await LeadService.getAll(currentAssignedPage, assignedPageLimit, {
         isAssigned: true,
-        assignee: assignFilterValue || undefined,
+        assignee: assignFilter || undefined,
         ...query,
         ...filters,
         ...dateFilter
@@ -237,8 +237,7 @@ const LeadContent = (): JSX.Element => {
   useEffect(() => { getLeadData(); }, [currentPage, pageLimit]);
   useEffect(() => { getWonLeadData(); }, [currentWonPage, wonPageLimit]);
   useEffect(() => { getLostLeadData(); }, [currentLostPage, lostPageLimit]);
-  useEffect(() => { getAssignedLeadData(); }, [currentAssignedPage, assignedPageLimit]);
-  useEffect(() => { getUserData(); }, []);
+  useEffect(() => { getAssignedLeadData(); }, [currentAssignedPage, assignedPageLimit, assignFilter]);
 
 
   const assignableLeads = currentLeadData.filter(
@@ -1099,7 +1098,13 @@ const LeadContent = (): JSX.Element => {
                     <th className="p-4 uppercase text-xs text-start text-amber-600 dark:text-amber-400 font-semibold tracking-wide">
                       <span className="flex items-center gap-1.5"><RiUserSharedLine /> Assigned To</span>
                       <br />
-                      <input type="text" className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm " placeholder="Search assignee..." onChange={(e) => handleAssignSearch(e.target.value)} />
+                      <UserSelect
+                        mode="single"
+                        value={assignFilter}
+                        onChange={setAssignFilter}
+                        placeholder="Search & select user..."
+                      />
+                      {/* <input type="text" className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm " placeholder="Search assignee..." onChange={(e) => handleAssignSearch(e.target.value)} /> */}
                     </th>
                     <th className="p-4 uppercase text-xs text-start text-amber-600 dark:text-amber-400 font-semibold tracking-wide">Actions</th>
                   </tr>
