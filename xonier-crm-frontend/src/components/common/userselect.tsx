@@ -69,6 +69,7 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   // Refs so the fetch function never reads stale state
   const pageRef = useRef(1);
@@ -176,6 +177,8 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
   // ── Toggle selection ────────────────────────────────────────────────────────
   const toggle = (userId: string) => {
     if (isSingle) {
+      const selected = users.find(u => u.id === userId) || null;
+      setSelectedUser(selected);
       (props as SingleUserSelectProps).onChange(userId);
       setIsOpen(false);
       setSearch("");
@@ -218,8 +221,8 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
   const singleDisplayValue = () => {
     if (isOpen) return search;
     if (isSingle && props.value) {
-      const u = userMap[props.value];
-      return u ? userName(u) : props.value;
+      const u = userMap[props.value] || selectedUser;
+      return u ? userName(u) : "";
     }
     return "";
   };
@@ -241,9 +244,9 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
             key={user.id}
             onClick={() => !disabled && toggle(user.id)}
             className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg cursor-pointer text-sm transition select-none ${disabled ? "opacity-50 cursor-not-allowed" :
-                selected
-                  ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-                  : "text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+              selected
+                ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                : "text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
               }`}
           >
             <div className="flex items-center gap-2 min-w-0">

@@ -362,7 +362,7 @@ export default function RemarkModal({ taskId, onClose }: Props) {
   return (
     <div className="w-full h-full flex flex-col bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
       <div
-        className="w-full  flex flex-col bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden"
+        className="w-full  flex flex-col bg-white dark:bg-gray-900 rounded-2xl dark:border-gray-700 overflow-hidden"
         style={{ maxHeight: "85vh" }}
         onClick={(e) => e.stopPropagation()}
       >

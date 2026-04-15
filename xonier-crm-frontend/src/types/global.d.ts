@@ -10,6 +10,7 @@ declare global {
     title: string,
     text: string,
     btnTxt?: string
+    cancelTxt?: string
   }
 
   interface PrimaryButtonProps {

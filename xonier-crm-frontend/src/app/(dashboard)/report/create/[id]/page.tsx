@@ -10,6 +10,7 @@ import {
   WorkMood,
   TaskItemStatus,
 } from "@/src/types/task/taskReport";
+import { AxiosError } from "axios";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -543,7 +544,6 @@ const TaskReportCreatePage = (): JSX.Element => {
         if (report.morningAgenda?.goals) {
           setMorningGoals(report.morningAgenda.goals);
         }
-
         const existingCompleted: TaskReportItem[] =
           report.eveningReport?.completedItems ?? [];
 
@@ -596,6 +596,7 @@ const TaskReportCreatePage = (): JSX.Element => {
         setActiveTab(
           report.morningAgenda?.isSubmitted ? "evening" : "morning"
         );
+        setIsFinalSubmitted(report.eveningReport?.isSubmitted ?? false);
       }
     } catch (error) {
       console.error(error);
@@ -653,13 +654,17 @@ const TaskReportCreatePage = (): JSX.Element => {
         ? TaskReportService.updateMorningAgenda(existingReport.id, payload)
         : TaskReportService.createMorningAgenda(payload);
       const res = await fn;
-      if (res.status === 200) {
+      if (res.status === 200 || res.status === 201) {
         toast.success("Morning agenda submitted! ✅");
-        await loadReport();
         setActiveTab("evening");
+        await loadReport();
       }
-    } catch {
-      toast.error("Failed to submit morning agenda");
+    } catch (error) {
+      const err = error as AxiosError<{ message?: string }>;
+
+      toast.error(
+        err.response?.data?.message || "Failed to submit morning agenda"
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -686,11 +691,11 @@ const TaskReportCreatePage = (): JSX.Element => {
           blockers: blockers.trim() || undefined,
           tomorrowPlan: tomorrowPlan.trim() || undefined,
           overallMood: overallMood as WorkMood || undefined,
-          isSubmitted: eveningSubmitted ? eveningSubmitted : isFinalSubmitted,
+          isSubmitted: isFinalSubmitted,
         },
       };
       var res = null;
-      if (eveningSubmitted) {
+      if (!isFinalSubmitted) {
         res = await TaskReportService.updateEveningReport(existingReport.id, payload);
       } else {
         res = await TaskReportService.submitEveningReport(existingReport.id, payload);

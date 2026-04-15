@@ -887,7 +887,14 @@ class TaskService:
                     if new_status.isFinal:
                         update_data["completedAt"] = datetime.now(timezone.utc)
                         update_data["isOverdue"] = False
- 
+                        if payload.get("rating") is not None:
+                            update_data["rating"] = payload.get("rating")   
+                        if payload.get("actual_hours") is not None:
+                            update_data["actual_hours"] = payload.get("actual_hours")
+                        if payload.get("actual_days") is not None:
+                            update_data["actual_days"] = payload.get("actual_days")
+                        if payload.get("remark") is not None:
+                            update_data["remark"] = payload.get("remark")
                     updated = await self.repo.update(id=PydanticObjectId(task_id), data=update_data, session=session)
                     if not updated:
                         raise AppException(400, "Task status update failed")
@@ -1063,6 +1070,10 @@ class TaskService:
                         update_data["completedAt"] = now
                         update_data["isOverdue"] = False
                         update_data["recurringProcessed"] = False  # reset so scheduler can re-evaluate
+                        update_data["rating"] = payload.get("rating") or None
+                        update_data["actual_hours"] = payload.get("actual_hours") or None
+                        update_data["actual_days"] = payload.get("actual_days") or None
+                        update_data["remark"] = payload.get("remark") or None
     
                     updated = await self.repo.update(id=PydanticObjectId(task_id), data=update_data, session=session)
                     if not updated:

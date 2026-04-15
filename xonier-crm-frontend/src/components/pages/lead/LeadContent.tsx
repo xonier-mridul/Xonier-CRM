@@ -98,6 +98,7 @@ const LeadContent = (): JSX.Element => {
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const [dateFilter, setDateFilter] = useState<DateFilter>({ fromDate: "", toDate: "" });
   const [dataTagVal, setDataTagVal] = useState<string>("");
+  const [assignFilter, setAssignFilter] = useState<string>("");
   const [filters, setFilters] = useState<Record<string, string>>({
     "type": "",
     "search": "",
@@ -199,12 +200,13 @@ const LeadContent = (): JSX.Element => {
     } finally { setIsLoading(false); }
   };
 
-  const getAssignedLeadData = async (): Promise<void> => {
+  const getAssignedLeadData = async (assignFilterValue?: string): Promise<void> => {
     setIsLoading(true);
     try {
 
       const result = await LeadService.getAll(currentAssignedPage, assignedPageLimit, {
         isAssigned: true,
+        assignee: assignFilterValue || undefined,
         ...query,
         ...filters,
         ...dateFilter
@@ -339,7 +341,15 @@ const LeadContent = (): JSX.Element => {
       else setErr(["Something went wrong"]);
     } finally { setIsReassigning(false); }
   };
+  const handleAssignSearch = (val: string): void => {
+  setAssignFilter(val);
 
+  if (debounceRef.current) clearTimeout(debounceRef.current);
+
+  debounceRef.current = setTimeout(() => {
+    getAssignedLeadData(val); // ✅ pass latest value
+  }, 300);
+};
   const handleDelete = async (id: ParamValue, name: string): Promise<void> => {
     try {
       const confirm = await ConfirmPopup({ text: `Are you want to delete ${name} lead`, title: "Are you sure", btnTxt: "Yes, delete" });
@@ -1088,6 +1098,8 @@ const LeadContent = (): JSX.Element => {
                     })}
                     <th className="p-4 uppercase text-xs text-start text-amber-600 dark:text-amber-400 font-semibold tracking-wide">
                       <span className="flex items-center gap-1.5"><RiUserSharedLine /> Assigned To</span>
+                      <br />
+                      <input type="text" className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm " placeholder="Search assignee..." onChange={(e) => handleAssignSearch(e.target.value)} />
                     </th>
                     <th className="p-4 uppercase text-xs text-start text-amber-600 dark:text-amber-400 font-semibold tracking-wide">Actions</th>
                   </tr>
