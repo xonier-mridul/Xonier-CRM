@@ -230,7 +230,7 @@ function ExpandableRow({ report }: { report: TaskReport }) {
       {/* Expanded details */}
       {open && (
         <tr className="bg-slate-50/80 dark:bg-gray-800/60 border-b border-gray-100 dark:border-gray-700">
-          <td colSpan={8} className="px-6 py-5">
+          <td colSpan={9} className="px-6 py-5">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
               {/* Morning Agenda */}
