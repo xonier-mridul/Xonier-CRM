@@ -108,6 +108,9 @@ class TaskStatusService:
  
             if "type" in filters:
                 query["type"] = filters["type"]
+
+            if "category" in filters:
+                query["category.$id"] = PydanticObjectId(filters["category"])
  
             if "isFinal" in filters:
                 query["isFinal"] = str(filters["isFinal"]).lower() == "true"

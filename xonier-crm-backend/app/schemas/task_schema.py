@@ -39,7 +39,7 @@ class CreateTaskSchema(BaseModel):
     recurrenceEndsAt: Optional[str] = None
     tags: Optional[List[str]] = Field(default_factory=list)
     rating: Optional[Literal[0, 1, 2, 3, 4, 5]] = None
-    actualDays: Optional[int] = None
+    actual_days: Optional[float] = None
     attachments: Optional[List[str]] = Field(default_factory=list)
     parentTask: Optional[str] = None
     order: Optional[int] = 0
@@ -69,7 +69,7 @@ class CreateTaskSchema(BaseModel):
             raise AppException(422, "Rating must be between 0 and 5")
         return v
 
-    @field_validator("actualDays")
+    @field_validator("actual_days")
     @classmethod
     def validate_actual_days(cls, v) -> Optional[int]:
         if v is None:
@@ -140,7 +140,7 @@ class UpdateTaskSchema(BaseModel):
     attachments: Optional[List[str]] = None
     entityType: Optional[TASK_ENTITY_TYPE] = None
     rating: Optional[Literal[0, 1, 2, 3, 4, 5]] = None
-    actualDays: Optional[int] = None
+    actual_days: Optional[float] = None
     entityId: Optional[str] = None
     entityName: Optional[str] = None
     order: Optional[int] = 0
@@ -163,7 +163,7 @@ class UpdateTaskSchema(BaseModel):
             raise AppException(422, "Rating must be between 0 and 5")
         return v
 
-    @field_validator("actualDays")
+    @field_validator("actual_days")
     @classmethod
     def validate_actual_days(cls, v) -> Optional[int]:
         if v is None:
@@ -263,6 +263,7 @@ class MoveTaskSchema(BaseModel):
     order: Optional[int] = None
     rating: Optional[Literal[0, 1, 2, 3, 4, 5]] = None
     actual_hours: Optional[float] = None
+    actual_days: Optional[float] = None
     remark_content: Optional[str] = None
 
     @field_validator("status")
@@ -281,6 +282,15 @@ class MoveTaskSchema(BaseModel):
             raise AppException(422, "Rating must be an integer between 0 and 5")
         if v < 0 or v > 5:
             raise AppException(422, "Rating must be between 0 and 5")
+        return v
+    
+    @field_validator("actual_days")
+    @classmethod
+    def validate_actual_days(cls, v) -> Optional[int]:
+        if v is None:
+            return v
+        if v < 0:
+            raise AppException(422, "actualDays must be equal to or greater than 0")
         return v
 
 

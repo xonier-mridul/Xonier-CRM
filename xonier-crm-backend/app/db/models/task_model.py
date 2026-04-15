@@ -51,7 +51,7 @@ class TaskModel(Document):
     isOverdue: bool = False
     rating: Optional[Literal[0, 1, 2, 3, 4 , 5, None]] = None
     actual_hours: Optional[float] = None
-    actual_days: Optional[int] = None
+    actual_days: Optional[float] = None
  
     createdBy: Link[UserModel]
     updatedBy: Optional[Link[UserModel]] = None
