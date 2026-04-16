@@ -5,7 +5,7 @@ import Link from "next/link";
 export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      {/* Top Bar */}
+      
       <header className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2">
           <span className="text-xl font-bold tracking-tight text-violet-600 dark:text-violet-400">
@@ -18,9 +18,9 @@ export default function Home() {
         <ThemeToggle />
       </header>
 
-      {/* Hero Section */}
+      
       <main className="flex flex-col items-center justify-center px-6 py-20 text-center">
-        {/* Badge */}
+       
         <span className="mb-4 inline-flex items-center rounded-full bg-teal-100 dark:bg-teal-900/40 px-4 py-1 text-sm font-medium text-teal-700 dark:text-teal-300">
           🚀 Smart CRM for modern teams
         </span>
@@ -80,7 +80,7 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Footer */}
+     
       <footer className="border-t border-gray-200 dark:border-gray-700 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
         © {new Date().getFullYear()} Trakeroo CRM. Developed by <Link className="text-teal-700 dark:text-teal-200 hover:text-teal-800 dark:hover:text-teal-300" href={"https://xoniertechnologies.com"} target="_blank">Xonier Technologies</Link>
       </footer>

@@ -49,7 +49,7 @@ import {
 import RemarkModal from "@/src/components/pages/task/RemarkModal";
 import { getColorOption } from "@/src/components/pages/task/createStatusModal";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+
 
 interface SubTask {
   id: string;
@@ -61,7 +61,7 @@ interface SubTask {
   order: number;
 }
 
-// ─── Priority Config ──────────────────────────────────────────────────────────
+
 
 const PRIORITY_CONFIG: Record<TASK_PRIORITY, { label: string; colorClass: string; bgClass: string; gradient: string; icon: React.ReactNode }> = {
   [TASK_PRIORITY.LOW]: {
@@ -235,15 +235,14 @@ const ProgressRing = ({ percent, size = 64, stroke = 5 }: { percent: number; siz
   );
 };
 
-// ─── Activity Log (Fixed + Scrollable) ────────────────────────────────────────
 
 const ActivityLog = ({ activities, loading }: { activities: TaskActivity[]; loading: boolean }) => {
   const completed = activities.filter((a) => a.action === TASK_ACTIVITY_ACTION.COMPLETED).length;
   const pct = activities.length === 0 ? 0 : Math.round((completed / activities.length) * 100);
 
-  // Calculate a "progress" based on latest status change if available
+  
   const progressPercent = (() => {
-    // Try to derive from events: weight completed/status events
+    
     const total = activities.length;
     if (total === 0) return 0;
     const positiveEvents = activities.filter(a =>
@@ -262,7 +261,7 @@ const ActivityLog = ({ activities, loading }: { activities: TaskActivity[]; load
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none flex flex-col"
       style={{ height: "600px" }}>
 
-      {/* Fixed Header */}
+      
       <div className="flex-shrink-0 px-5 pt-4 pb-0">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
@@ -281,7 +280,7 @@ const ActivityLog = ({ activities, loading }: { activities: TaskActivity[]; load
           )}
         </div>
 
-        {/* Progress bar section */}
+        
         {activities.length > 0 && (
           <div className="mb-4 p-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700/60">
             <div className="flex items-center justify-between mb-2">
@@ -379,7 +378,7 @@ const ActivityLog = ({ activities, loading }: { activities: TaskActivity[]; load
   );
 };
 
-// ─── SubTask Item ──────────────────────────────────────────────────────────────
+
 
 const SubTaskItem = ({
   subtask, onToggle, onDelete, onEdit,
@@ -773,7 +772,7 @@ const page = () => {
                     )}
                   </div>
 
-                  {/* Task-level progress bar */}
+                  
                   {(taskData.estimatedHours || taskData.completedAt) && (
                     <div className="mt-4 max-w-md">
                       <div className="flex items-center justify-between mb-1.5">
@@ -883,13 +882,13 @@ const page = () => {
               <SubTaskSection taskId={taskId} />
 
 
-              {/* ── Activity Log (Fixed height + scrollable) ── */}
+             
               <ActivityLog activities={taskActivity} loading={activityLoading} />
             </div>
 
-            {/* Right sidebar */}
+           
             <div className="space-y-5">
-              {/* Tags */}
+              
               {taskData.tags && taskData.tags.length > 0 && (
                 <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
                   <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2.5">

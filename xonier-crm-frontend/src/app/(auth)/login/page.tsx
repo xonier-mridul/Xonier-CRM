@@ -115,7 +115,7 @@ const page = () => {
               type="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder=""
+              placeholder="example@gmail.com"
             />
             <Input
               label="Password"
@@ -123,7 +123,7 @@ const page = () => {
               type="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder=""
+              placeholder="*********"
             />
             <div className="flex items-center justify-end">
               <Link href={"/"} className="text-gray-500 font-semibold text-sm">

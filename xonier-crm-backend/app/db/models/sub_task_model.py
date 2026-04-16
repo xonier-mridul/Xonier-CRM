@@ -18,6 +18,7 @@ class SubTaskModel(Document):
     createdBy: Link[UserModel]
     createdAt: datetime = Field(default_factory=lambda: datetime.new(timezone.utc))
     updateAt: Optional[datetime] = None
+    order: Optional[int] = 0
     
     deletedAt: Optional[datetime] = None
 

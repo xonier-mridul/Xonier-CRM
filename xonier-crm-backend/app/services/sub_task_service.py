@@ -34,11 +34,12 @@ class SubTaskService:
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
-                    print("yo yo")
+                    
                     is_exist = await self.repo.find_one(filter={"title": payload["title"], "taskId.$id": PydanticObjectId(taskId), "deletedAt": None})
+                    
                     if is_exist:
                         raise AppException(400, "Please use different title, subtask already exist with this title")
-                    
+                   
                     task_data = await self.taskRepo.find_by_id(PydanticObjectId(taskId), ["assignedBy"])
 
                     if not task_data:
@@ -64,7 +65,7 @@ class SubTaskService:
                         if members:
                             set1 = set(PydanticObjectId(item["id"]) for item in json_task_data["assignedBy"])
                             set2 = set(members)
-
+            
                             common = set1 & set2
 
                             if common or (PydanticObjectId(user["_id"]) in [PydanticObjectId(item["id"]) for item in json_task_data["assignedBy"]]):
@@ -78,20 +79,20 @@ class SubTaskService:
                     
                     if not is_admin and not is_creator and not is_manager:
                         raise AppException(403, f"You are not authorized person for create sub task against")
-                    
+                
                     new_payload = {
                         "taskId": taskId,
                         **payload,
                         "createdBy": user["_id"],
 
                     }
-
+                    
                     result = await self.repo.create(data=new_payload, session=session)
 
                     if not result:
                         raise AppException(400, f"Sub task not created against {json_task_data["title"]}")
                     
-
+                    
                     d_result = result.model_dump(mode="json")
                     
 

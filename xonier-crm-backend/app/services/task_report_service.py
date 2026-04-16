@@ -337,6 +337,7 @@ class TaskReportService:
                 query["$or"] = [
                     {"morningAgenda.goals": {"$regex": filters["search"].strip(), "$options": "i"}},
                     {"eveningReport.achievements": {"$regex": filters["search"].strip(), "$options": "i"}},
+                    
                 ]
 
             result = await self.repo.get_all(

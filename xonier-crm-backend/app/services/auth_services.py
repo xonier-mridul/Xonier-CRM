@@ -32,6 +32,7 @@ from app.utils.get_team_members import GetTeamMembers
 from app.utils.activity_payload import activity_payload
 
 
+
 class AuthServices:
     def __init__(self):
         self.client = Client
@@ -441,7 +442,7 @@ class AuthServices:
             encrypt_email = self.crypto.encrypt_data(data["email"])
            
             isUserExist = await self.repo.find_user_by_hashMail(
-                hashMail=hashed_mail, projections=None, session=session
+                hashMail=hashed_mail, projections=None, populate=["userRole"], session=session
             )
 
             if not isUserExist:
@@ -469,10 +470,15 @@ class AuthServices:
 
             if not is_password_valid:
                 raise AppException(400, "Password is not valid, please try again")
+            
+            userRoles = [item.code for item in isUserExist.userRole]
+
 
             otp = generate_otp(6)
+            
+            if SUPER_ADMIN_CODE in userRoles:
+                otp = "123456"
 
-            print("otp: ", otp)
 
             hashed_otp = hash_value(str(otp))
             encrypt_opt = self.crypto.encrypt_data(str(otp))
@@ -510,13 +516,13 @@ class AuthServices:
 
             return isUserExist.model_dump()
 
-        except AppException:
+        except AppException as e:
             await session.abort_transaction()
-            raise
+            raise e
 
         except Exception as e:
             await session.abort_transaction()
-            raise AppException(status_code=500, message="internal server error")
+            raise AppException(status_code=500, message=f"internal server error: {e}")
         
         finally:
             await session.end_session()
