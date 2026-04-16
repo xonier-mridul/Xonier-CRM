@@ -27,6 +27,7 @@ import { MarkFinalModal, MarkFinalPayload } from "@/src/components/pages/task/Ma
 import DateFilterButton from "@/src/components/common/dateFilter";
 import { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 import { Star } from "lucide-react";
+import { i } from "framer-motion/client";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -48,10 +49,10 @@ interface PendingDrop {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const PRIORITY_STYLE: Record<TASK_PRIORITY, { cls: string; dot: string; label: string }> = {
-  [TASK_PRIORITY.LOW]:    { cls: "bg-slate-100  text-slate-600  dark:bg-slate-800  dark:text-slate-400",   dot: "bg-slate-400",  label: "Low"    },
-  [TASK_PRIORITY.MEDIUM]: { cls: "bg-amber-50   text-amber-600  dark:bg-amber-900/30 dark:text-amber-400", dot: "bg-amber-400",  label: "Medium" },
-  [TASK_PRIORITY.HIGH]:   { cls: "bg-orange-50  text-orange-600 dark:bg-orange-900/30 dark:text-orange-400",dot: "bg-orange-500", label: "High"   },
-  [TASK_PRIORITY.URGENT]: { cls: "bg-rose-50    text-rose-600   dark:bg-rose-900/30  dark:text-rose-400",  dot: "bg-rose-500",   label: "Urgent" },
+  [TASK_PRIORITY.LOW]: { cls: "bg-slate-100  text-slate-600  dark:bg-slate-800  dark:text-slate-400", dot: "bg-slate-400", label: "Low" },
+  [TASK_PRIORITY.MEDIUM]: { cls: "bg-amber-50   text-amber-600  dark:bg-amber-900/30 dark:text-amber-400", dot: "bg-amber-400", label: "Medium" },
+  [TASK_PRIORITY.HIGH]: { cls: "bg-orange-50  text-orange-600 dark:bg-orange-900/30 dark:text-orange-400", dot: "bg-orange-500", label: "High" },
+  [TASK_PRIORITY.URGENT]: { cls: "bg-rose-50    text-rose-600   dark:bg-rose-900/30  dark:text-rose-400", dot: "bg-rose-500", label: "Urgent" },
 };
 
 // ─── Shared UI helpers ────────────────────────────────────────────────────────
@@ -85,23 +86,22 @@ function ViewToggle({ view, onChange }: { view: ViewMode; onChange: (v: ViewMode
           key={v}
           type="button"
           onClick={() => onChange(v)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-            view === v
-              ? "bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm"
-              : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-          }`}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${view === v
+            ? "bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm"
+            : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            }`}
         >
           {v === "list" ? (
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <rect x="1" y="2"    width="12" height="1.5" rx="0.75" fill="currentColor" />
+              <rect x="1" y="2" width="12" height="1.5" rx="0.75" fill="currentColor" />
               <rect x="1" y="6.25" width="12" height="1.5" rx="0.75" fill="currentColor" />
               <rect x="1" y="10.5" width="12" height="1.5" rx="0.75" fill="currentColor" />
             </svg>
           ) : (
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <rect x="1"    y="1" width="3.5" height="12" rx="1" fill="currentColor" />
+              <rect x="1" y="1" width="3.5" height="12" rx="1" fill="currentColor" />
               <rect x="5.25" y="1" width="3.5" height="12" rx="1" fill="currentColor" />
-              <rect x="9.5"  y="1" width="3.5" height="12" rx="1" fill="currentColor" />
+              <rect x="9.5" y="1" width="3.5" height="12" rx="1" fill="currentColor" />
             </svg>
           )}
           {v.charAt(0).toUpperCase() + v.slice(1)}
@@ -112,7 +112,7 @@ function ViewToggle({ view, onChange }: { view: ViewMode; onChange: (v: ViewMode
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ─── Board Card — NO status dropdown, static badge only ───────────────────────
+// ─── Board Card ───────────────────────────────────────────────────────────────
 // ═══════════════════════════════════════════════════════════════════════════════
 
 interface BoardCardProps {
@@ -128,10 +128,10 @@ interface BoardCardProps {
 function BoardCard({
   task, canEdit, canDelete, deleting, onEdit, onDelete, onDragStart,
 }: BoardCardProps) {
-  const pri      = PRIORITY_STYLE[task.priority];
+  const pri = PRIORITY_STYLE[task.priority];
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
-  const router   = useRouter();
-  const statusColor = getColorOption(task.status.color) ;
+  const router = useRouter();
+  const statusColor = getColorOption(task.status.color);
 
   return (
     <div
@@ -174,9 +174,9 @@ function BoardCard({
         {task.title}
       </p>
 
-      {/* Static status badge — read-only, no dropdown */}
+      {/* Static status badge */}
       <div className="mb-2">
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold  ${statusColor.bg}  ${statusColor.text}`}>
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${statusColor.bg} ${statusColor.text}`}>
           <span>{task.status?.icon ?? "📌"}</span>
           {task.status?.name ?? task.statusName ?? "—"}
         </span>
@@ -240,23 +240,23 @@ function BoardCard({
           </span>
         )}
       </div>
-        <br />
-        {/* rating */}
-        <div className="ml-auto flex items-center gap-1.5 w-full justify-end">
-          {task.rating && (
-            <div className="flex items-center gap-0.5 text-yellow-500 text-xs font-bold">
-              <Star size={12} fill="currentColor" />
-              &nbsp;
-              <span>{task.rating.toFixed(1)}</span>
-            </div>
-          )}
-        </div>
+      <br />
+      {/* rating */}
+      <div className="ml-auto flex items-center gap-1.5 w-full justify-end">
+        {task.rating && (
+          <div className="flex items-center gap-0.5 text-yellow-500 text-xs font-bold">
+            <Star size={12} fill="currentColor" />
+            &nbsp;
+            <span>{task.rating.toFixed(1)}</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ─── Category Board — modal fires here on drop into final column ───────────────
+// ─── Category Board ───────────────────────────────────────────────────────────
 // ═══════════════════════════════════════════════════════════════════════════════
 
 interface CategoryBoardProps {
@@ -284,8 +284,6 @@ function CategoryBoard({
   const [dragOverStatusId, setDragOverStatusId] = useState<string | null>(null);
   const dragTaskRef = useRef<TaskItem | null>(null);
 
-  // When a card is dropped onto a FINAL column, store it here and show the modal.
-  // For non-final columns, apply the change immediately.
   const [pendingDrop, setPendingDrop] = useState<PendingDrop | null>(null);
 
   // ── Drag handlers ────────────────────────────────────────────────────────────
@@ -314,24 +312,22 @@ function CategoryBoard({
     const task = dragTaskRef.current;
     dragTaskRef.current = null;
 
-    // Nothing to do
     if (!task || task.status.id === targetStatusId) return;
 
     const targetStatus = statuses.find((s) => s.id === targetStatusId);
     if (!targetStatus) return;
 
-    // ── Final column → check permission, then show modal ──────────────────────
+    // ── Final column → show modal ─────────────────────────────────────────
     if (targetStatus.isFinal) {
       if (!canMarkFinal) {
         toast.error("You don't have permission to mark tasks as final.");
         return;
       }
-      // Store and let the modal handle the actual API call
       setPendingDrop({ task, targetStatus, categoryId });
       return;
     }
 
-    // ── Non-final column → apply immediately ─────────────────────────────────
+    // ── Non-final column → optimistic update immediately ─────────────────
     if (!canChangeStatus) {
       toast.error("No permission to change status.");
       return;
@@ -339,7 +335,7 @@ function CategoryBoard({
     onStatusChange(task.id, { status: targetStatusId, category: categoryId });
   };
 
-  // ── Modal confirm ─────────────────────────────────────────────────────────
+  // ── Modal confirm ──────────────────────────────────────────────────────────
   const handleFinalConfirm = async (payload: MarkFinalPayload) => {
     if (!pendingDrop) return;
     const { task, targetStatus } = pendingDrop;
@@ -350,7 +346,7 @@ function CategoryBoard({
       remark: payload.remark,
       rating: payload.feedbackStars,
       actual_hours: payload.actualHours,
-      actual_days: payload.actualDays
+      actual_days: payload.actualDays,
     });
   };
 
@@ -379,22 +375,21 @@ function CategoryBoard({
           {/* Per-status task counts */}
           <div className="flex items-center gap-1.5">
             {statuses.map((s) => {
-  const statusColor = getColorOption(s.color);
-
-  return (
-    <span
-      key={s.id}
-      className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${statusColor.text}`}
-      style={{
-        backgroundColor: s.color ? `${s.color}15` : "#f1f5f9",
-        borderColor: s.color ? `${s.color}30` : "#e2e8f0",
-      }}
-    >
-      {s.icon} {tasks.filter((t) => t.status.id === s.id).length}
-      {s.isFinal && " ✓"}
-    </span>
-  );
-})}
+              const statusColor = getColorOption(s.color);
+              return (
+                <span
+                  key={s.id}
+                  className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${statusColor.text}`}
+                  style={{
+                    backgroundColor: s.color ? `${s.color}15` : "#f1f5f9",
+                    borderColor: s.color ? `${s.color}30` : "#e2e8f0",
+                  }}
+                >
+                  {s.icon} {tasks.filter((t) => t.status.id === s.id).length}
+                  {s.isFinal && " ✓"}
+                </span>
+              );
+            })}
           </div>
         </div>
 
@@ -408,19 +403,18 @@ function CategoryBoard({
           ) : (
             statuses.map((status) => {
               const columnTasks = tasks.filter((t) => t.status.id === status.id);
-              const isDragOver  = dragOverStatusId === status.id;
-              const isFinal     = status.isFinal;
+              const isDragOver = dragOverStatusId === status.id;
+              const isFinal = status.isFinal;
 
               return (
                 <div
                   key={status.id}
-                  className={`flex flex-col rounded-2xl border-2 transition-all min-w-[260px] max-w-[300px] flex-shrink-0 ${
-                    isDragOver
-                      ? "border-blue-400 bg-blue-50/60 dark:bg-blue-900/20 shadow-lg"
-                      : isFinal
+                  className={`flex flex-col rounded-2xl border-2 transition-all min-w-[260px] max-w-[300px] flex-shrink-0 ${isDragOver
+                    ? "border-blue-400 bg-blue-50/60 dark:bg-blue-900/20 shadow-lg"
+                    : isFinal
                       ? "border-green-200 dark:border-green-800 bg-green-50/30 dark:bg-green-900/10"
                       : "border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50"
-                  }`}
+                    }`}
                   onDragOver={(e) => handleDragOver(e, status.id)}
                   onDrop={(e) => handleDrop(e, status.id)}
                 >
@@ -449,11 +443,10 @@ function CategoryBoard({
                   {/* Cards */}
                   <div className={`flex-1 p-2.5 space-y-2 overflow-y-auto min-h-[100px] transition-colors ${isDragOver ? "bg-blue-50/40 dark:bg-blue-900/10" : ""}`}>
                     {columnTasks.length === 0 ? (
-                      <div className={`flex flex-col items-center justify-center py-8 rounded-xl border-2 border-dashed transition-colors ${
-                        isDragOver
-                          ? "border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20"
-                          : "border-gray-200 dark:border-gray-600"
-                      }`}>
+                      <div className={`flex flex-col items-center justify-center py-8 rounded-xl border-2 border-dashed transition-colors ${isDragOver
+                        ? "border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20"
+                        : "border-gray-200 dark:border-gray-600"
+                        }`}>
                         <span className="text-xl mb-1 opacity-40">📋</span>
                         <p className="text-[10px] text-gray-400 font-medium">
                           {isDragOver ? "Drop here" : "No tasks"}
@@ -486,17 +479,15 @@ function CategoryBoard({
         </div>
       </div>
 
-      {/* ── MarkFinalModal — only shown after drop onto a final column ── */}
+      {/* MarkFinalModal */}
       {pendingDrop && (
-      
-            <MarkFinalModal
-              taskTitle={pendingDrop.task.title}
-              statusName={pendingDrop.targetStatus.name}
-              statusColor={pendingDrop.targetStatus.color ?? "#22c55e"}
-              onConfirm={handleFinalConfirm}
-              onCancel={handleFinalCancel}
-            />
-          
+        <MarkFinalModal
+          taskTitle={pendingDrop.task.title}
+          statusName={pendingDrop.targetStatus.name}
+          statusColor={pendingDrop.targetStatus.color ?? "#22c55e"}
+          onConfirm={handleFinalConfirm}
+          onCancel={handleFinalCancel}
+        />
       )}
     </>
   );
@@ -555,10 +546,10 @@ function BoardView({
   tasks.forEach((task) => {
     if (task.category && !categoriesMap.has(task.category.id)) {
       categoriesMap.set(task.category.id, {
-        id:    task.category.id,
-        name:  task.category.name,
+        id: task.category.id,
+        name: task.category.name,
         color: task.category.color ?? "#6366f1",
-        icon:  task.category.icon  ?? "📁",
+        icon: task.category.icon ?? "📁",
       });
     }
   });
@@ -612,62 +603,79 @@ const TaskListPage = (): JSX.Element => {
   const router = useRouter();
   const { hasPermission } = usePermissions();
 
-  const [viewMode, setViewMode]           = useState<ViewMode>("board");
-  const [taskData, setTaskData]           = useState<TaskItem[]>([]);
+  const [viewMode, setViewMode] = useState<ViewMode>("board");
+  const [taskData, setTaskData] = useState<TaskItem[]>([]);
   const [statusOptions, setStatusOptions] = useState<StatusOption[]>([]);
-  const [currentPage, setCurrentPage]     = useState(1);
-  const [pageLimit]                       = useState(10);
-  const [totalCount, setTotalCount]       = useState(0);
-  const [isLoading, setIsLoading]         = useState(false);
-  const [deleting, setDeleting]           = useState(false);
-  const [search, setSearch]               = useState("");
-  const [filterStatus, setFilterStatus]   = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageLimit] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
   const [filtrCategory, setFiltrCategory] = useState("");
-  const [categories, setCategories]       = useState<CategoryItem[]>([]);
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [filterPriority, setFilterPriority] = useState("");
   const [filterAssigned, setFilterAssigned] = useState("");
 
-  const canCreate       = hasPermission(PERMISSIONS.createTask);
-  const canView         = hasPermission(PERMISSIONS.readTask);
-  const canEdit         = hasPermission(PERMISSIONS.updateTask);
-  const canDelete       = hasPermission(PERMISSIONS.deleteTask);
+  const canCreate = hasPermission(PERMISSIONS.createTask);
+  const canView = hasPermission(PERMISSIONS.readTask);
+  const canEdit = hasPermission(PERMISSIONS.updateTask);
+  const canDelete = hasPermission(PERMISSIONS.deleteTask);
   const canChangeStatus = hasPermission(PERMISSIONS.taskStatusChange);
-  const canMarkFinal    = hasPermission(PERMISSIONS.markFinal); // add to PERMISSIONS enum
+  const canMarkFinal = hasPermission(PERMISSIONS.markFinal);
 
   const showActions = canEdit || canDelete || canView;
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const today = new Date().toISOString().split("T")[0];
 
-const [dateFilter, setDateFilter] = useState<DateFilter>({
-  fromDate: today,
-  toDate: today,
-});
-
-  // ── Fetch ────────────────────────────────────────────────────────────────────
-  const fetchTasks = useCallback(async () => {
-    setIsLoading(true);
+  const [dateFilter, setDateFilter] = useState<DateFilter>({
+    fromDate: today,
+    toDate: today,
+  });
+  // ── Handlers ────────────────────────────────────────────────────────────────
+  const fetchTaskAll = async () => {
     try {
+
       const res = await TaskService.getAll({
         currentPage,
         pageLimit: viewMode === "board" ? 500 : pageLimit,
-        status:   filterStatus   || undefined,
+        status: filterStatus || undefined,
         priority: filterPriority || undefined,
-        category: filtrCategory  || undefined,
-        search:   search         || undefined,
-        user:     filterAssigned || undefined,
+        category: filtrCategory || undefined,
+        search: search || undefined,
+        user: filterAssigned || undefined,
         fromDate: dateFilter.fromDate || undefined,
-        toDate:   dateFilter.toDate   || undefined,
+        toDate: dateFilter.toDate || undefined,
       });
       if (res.status === 200) {
         const d = res.data?.data || [];
         setTaskData(d.data ?? []);
         setTotalCount(Number(d.totalPages ?? 0));
       }
+
     } catch (e) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
       if (axios.isAxiosError(e)) toast.error("Failed to load tasks");
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  // ── Fetch ────────────────────────────────────────────────────────────────────
+  // silent=true → skip the loading skeleton (used after optimistic updates)
+  const fetchTasks = useCallback((silent = false) => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    if (silent) {
+      debounceRef.current = setTimeout(() => {
+        fetchTaskAll();
+      }, 3000);
+    } else {
+      setIsLoading(true);
+      fetchTaskAll();
     }
   }, [currentPage, pageLimit, filterStatus, filterPriority, search, viewMode, filtrCategory, filterAssigned, dateFilter]);
 
@@ -693,22 +701,42 @@ const [dateFilter, setDateFilter] = useState<DateFilter>({
   useEffect(() => { fetchStatuses(); fetchCategories(); }, []);
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
-  // ── Status change (normal + final) ──────────────────────────────────────────
+  // ── Status change with optimistic update ────────────────────────────────────
   const handleStatusChange = async (
     taskId: string,
     payload: FinalStatusPayload,
   ): Promise<void> => {
+    // 1. Snapshot current data for rollback on error
+    const previousData = taskData;
+
+    // 2. Optimistic update — move card instantly, no loader shown
+    setTaskData((prev) =>
+      prev.map((t) => {
+        if (t.id !== taskId) return t;
+        // Find the full status object so badge text/icon/color update immediately
+        const matchedStatus = statusOptions.find((s) => s.id === payload.status);
+        return {
+          ...t,
+          status: matchedStatus
+            ? { ...t.status, ...matchedStatus }
+            : { ...t.status, id: payload.status },
+        };
+      })
+    );
+
     try {
       const res = await TaskService.updateStatus(taskId, payload);
       if (res.status === 200) {
         toast.success(payload.remark ? "Task marked as final ✓" : "Status updated");
-        fetchTasks();
+        // 3. Silently reconcile with real server data — no loading state, no flash
+        fetchTasks(true);
       }
     } catch (e) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
+      // 4. Rollback to previous state on error
+      setTaskData(previousData);
       if (axios.isAxiosError(e)) {
         toast.error(e.response?.data?.message ?? "Failed to update status");
-        fetchTasks();
       }
     }
   };
@@ -746,7 +774,7 @@ const [dateFilter, setDateFilter] = useState<DateFilter>({
     }, 300);
   };
 
-  const colCount   = showActions ? 8 : 7;
+  const colCount = showActions ? 8 : 7;
   const hasFilters = !!(search || filterStatus || filterPriority || filterAssigned || filtrCategory);
 
   return (
@@ -776,9 +804,9 @@ const [dateFilter, setDateFilter] = useState<DateFilter>({
         {/* Stats row */}
         <div className="grid grid-cols-4 gap-4 mb-7">
           {[
-            { label: "Total",     value: totalCount, icon: "📋", bg: "bg-blue-50   border-blue-100"    },
-            { label: "High",      value: taskData.filter((t) => t.priority === TASK_PRIORITY.HIGH).length,   icon: "🟠", bg: "bg-orange-50 border-orange-100" },
-            { label: "Urgent",    value: taskData.filter((t) => t.priority === TASK_PRIORITY.URGENT).length, icon: "🔴", bg: "bg-rose-50   border-rose-100"   },
+            { label: "Total", value: totalCount, icon: "📋", bg: "bg-blue-50   border-blue-100" },
+            { label: "High", value: taskData.filter((t) => t.priority === TASK_PRIORITY.HIGH).length, icon: "🟠", bg: "bg-orange-50 border-orange-100" },
+            { label: "Urgent", value: taskData.filter((t) => t.priority === TASK_PRIORITY.URGENT).length, icon: "🔴", bg: "bg-rose-50   border-rose-100" },
             { label: "This Page", value: taskData.length, icon: "📄", bg: "bg-emerald-50 border-emerald-100" },
           ].map((s) => (
             <div key={s.label} className={`flex items-center gap-3 p-4 rounded-2xl border ${s.bg}`}>
@@ -802,17 +830,6 @@ const [dateFilter, setDateFilter] = useState<DateFilter>({
               className="pl-8 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
             />
           </div>
-
-          {/* <select
-            value={filterStatus}
-            onChange={(e) => { setFilterStatus(e.target.value); setCurrentPage(1); }}
-            className="px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
-          >
-            <option value="">All Statuses</option>
-            {statusOptions.map((s) => (
-              <option key={s.id} value={s.id}>{s.icon} {s.name}{s.isFinal ? " ✓" : ""}</option>
-            ))}
-          </select> */}
 
           <select
             value={filterPriority}
@@ -847,7 +864,15 @@ const [dateFilter, setDateFilter] = useState<DateFilter>({
           {hasFilters && (
             <button
               type="button"
-              onClick={() => { setSearch(""); setFilterStatus(""); setFilterPriority(""); setCurrentPage(1); setFilterAssigned(""); setFiltrCategory(""); setDateFilter({ fromDate: "", toDate: "" }); }}
+              onClick={() => {
+                setSearch("");
+                setFilterStatus("");
+                setFilterPriority("");
+                setCurrentPage(1);
+                setFilterAssigned("");
+                setFiltrCategory("");
+                setDateFilter({ fromDate: "", toDate: "" });
+              }}
               className="ml-auto px-3 py-2 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-1.5"
             >
               <span>✕</span> Clear
@@ -884,14 +909,14 @@ const [dateFilter, setDateFilter] = useState<DateFilter>({
                 <thead>
                   <tr className="bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
                     {[
-                      { label: "#",          cls: "w-12" },
-                      { label: "Title",      cls: "" },
-                      { label: "Category",   cls: "w-36" },
-                      { label: "Status",     cls: "w-36" },
-                      { label: "Priority",   cls: "w-28" },
-                      { label: "Assigned",   cls: "w-28" },
+                      { label: "#", cls: "w-12" },
+                      { label: "Title", cls: "" },
+                      { label: "Category", cls: "w-36" },
+                      { label: "Status", cls: "w-36" },
+                      { label: "Priority", cls: "w-28" },
+                      { label: "Assigned", cls: "w-28" },
                       { label: "Created By", cls: "w-28" },
-                      { label: "Due Date",   cls: "w-28" },
+                      { label: "Due Date", cls: "w-28" },
                       ...(showActions ? [{ label: "Actions", cls: "w-28 text-right" }] : []),
                     ].map((col) => (
                       <th key={col.label} className={`px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-left ${col.cls}`}>
@@ -975,15 +1000,6 @@ const [dateFilter, setDateFilter] = useState<DateFilter>({
                               {task.createdBy?.firstName} {task.createdBy?.lastName}
                             </p>
                           </td>
-                          {/* <td>
-                            <p>
-                              {task.createdAt && (
-                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                  {new Date(task.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
-                                </span>
-                              )}
-                            </p>
-                          </td> */}
                           <td className="px-5 py-4">
                             {task.dueDate ? (
                               <span className={`text-xs font-semibold ${isOverdue ? "text-rose-500" : "text-gray-600 dark:text-gray-300"}`}>
