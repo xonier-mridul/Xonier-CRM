@@ -29,7 +29,6 @@ import { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 import { Star } from "lucide-react";
 import { i } from "framer-motion/client";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 type ViewMode = "list" | "board";
 
@@ -39,14 +38,12 @@ interface FinalStatusPayload extends UpdateTaskStatusPayload {
   actualHours?: number;
 }
 
-// Pending drop — task + target status, waiting for modal confirmation
+
 interface PendingDrop {
   task: TaskItem;
   targetStatus: StatusOption;
   categoryId: string;
 }
-
-// ─── Constants ────────────────────────────────────────────────────────────────
 
 const PRIORITY_STYLE: Record<TASK_PRIORITY, { cls: string; dot: string; label: string }> = {
   [TASK_PRIORITY.LOW]: { cls: "bg-slate-100  text-slate-600  dark:bg-slate-800  dark:text-slate-400", dot: "bg-slate-400", label: "Low" },
@@ -55,7 +52,7 @@ const PRIORITY_STYLE: Record<TASK_PRIORITY, { cls: string; dot: string; label: s
   [TASK_PRIORITY.URGENT]: { cls: "bg-rose-50    text-rose-600   dark:bg-rose-900/30  dark:text-rose-400", dot: "bg-rose-500", label: "Urgent" },
 };
 
-// ─── Shared UI helpers ────────────────────────────────────────────────────────
+
 
 function CategoryBadge({ color, icon, name }: { color: ColorOption; icon: string; name: string }) {
   return (
@@ -111,9 +108,7 @@ function ViewToggle({ view, onChange }: { view: ViewMode; onChange: (v: ViewMode
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ─── Board Card ───────────────────────────────────────────────────────────────
-// ═══════════════════════════════════════════════════════════════════════════════
+
 
 interface BoardCardProps {
   task: TaskItem;
@@ -140,7 +135,7 @@ function BoardCard({
       onClick={() => router.push(`/task/detail/${task.id}`)}
       className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-3.5 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-gray-200 dark:hover:border-gray-600 transition-all group select-none"
     >
-      {/* Top row — priority + action buttons */}
+      
       <div className="flex items-center justify-between mb-2.5">
         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${pri.cls}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${pri.dot}`} />
@@ -169,12 +164,12 @@ function BoardCard({
         </div>
       </div>
 
-      {/* Title */}
+      
       <p className="text-sm font-semibold text-gray-900 dark:text-white leading-snug mb-2.5 line-clamp-2">
         {task.title}
       </p>
 
-      {/* Static status badge */}
+      
       <div className="mb-2">
         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${statusColor.bg} ${statusColor.text}`}>
           <span>{task.status?.icon ?? "📌"}</span>
@@ -182,7 +177,7 @@ function BoardCard({
         </span>
       </div>
 
-      {/* Category */}
+      
       {task.category && (
         <div className="mb-2">
           <CategoryBadge
@@ -241,7 +236,7 @@ function BoardCard({
         )}
       </div>
       <br />
-      {/* rating */}
+     
       <div className="ml-auto flex items-center gap-1.5 w-full justify-end">
         {task.rating && (
           <div className="flex items-center gap-0.5 text-yellow-500 text-xs font-bold">
@@ -255,9 +250,6 @@ function BoardCard({
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ─── Category Board ───────────────────────────────────────────────────────────
-// ═══════════════════════════════════════════════════════════════════════════════
 
 interface CategoryBoardProps {
   categoryId: string;
@@ -286,7 +278,7 @@ function CategoryBoard({
 
   const [pendingDrop, setPendingDrop] = useState<PendingDrop | null>(null);
 
-  // ── Drag handlers ────────────────────────────────────────────────────────────
+  
   const handleDragStart = (e: React.DragEvent, task: TaskItem) => {
     dragTaskRef.current = task;
     e.dataTransfer.effectAllowed = "move";
@@ -317,7 +309,7 @@ function CategoryBoard({
     const targetStatus = statuses.find((s) => s.id === targetStatusId);
     if (!targetStatus) return;
 
-    // ── Final column → show modal ─────────────────────────────────────────
+    
     if (targetStatus.isFinal) {
       if (!canMarkFinal) {
         toast.error("You don't have permission to mark tasks as final.");
@@ -327,7 +319,7 @@ function CategoryBoard({
       return;
     }
 
-    // ── Non-final column → optimistic update immediately ─────────────────
+    
     if (!canChangeStatus) {
       toast.error("No permission to change status.");
       return;
@@ -335,7 +327,7 @@ function CategoryBoard({
     onStatusChange(task.id, { status: targetStatusId, category: categoryId });
   };
 
-  // ── Modal confirm ──────────────────────────────────────────────────────────
+  
   const handleFinalConfirm = async (payload: MarkFinalPayload) => {
     if (!pendingDrop) return;
     const { task, targetStatus } = pendingDrop;
@@ -493,9 +485,7 @@ function CategoryBoard({
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ─── Board View ───────────────────────────────────────────────────────────────
-// ═══════════════════════════════════════════════════════════════════════════════
+
 
 interface BoardViewProps {
   tasks: TaskItem[];
@@ -595,9 +585,7 @@ function BoardView({
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ─── Page ─────────────────────────────────────────────────────────────────────
-// ═══════════════════════════════════════════════════════════════════════════════
+
 
 const TaskListPage = (): JSX.Element => {
   const router = useRouter();
@@ -633,7 +621,7 @@ const TaskListPage = (): JSX.Element => {
     fromDate: today,
     toDate: today,
   });
-  // ── Handlers ────────────────────────────────────────────────────────────────
+
   const fetchTaskAll = async () => {
     try {
 
@@ -662,8 +650,7 @@ const TaskListPage = (): JSX.Element => {
     }
   }
 
-  // ── Fetch ────────────────────────────────────────────────────────────────────
-  // silent=true → skip the loading skeleton (used after optimistic updates)
+  
   const fetchTasks = useCallback((silent = false) => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
@@ -701,19 +688,19 @@ const TaskListPage = (): JSX.Element => {
   useEffect(() => { fetchStatuses(); fetchCategories(); }, []);
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
-  // ── Status change with optimistic update ────────────────────────────────────
+  
   const handleStatusChange = async (
     taskId: string,
     payload: FinalStatusPayload,
   ): Promise<void> => {
-    // 1. Snapshot current data for rollback on error
+    
     const previousData = taskData;
 
-    // 2. Optimistic update — move card instantly, no loader shown
+   
     setTaskData((prev) =>
       prev.map((t) => {
         if (t.id !== taskId) return t;
-        // Find the full status object so badge text/icon/color update immediately
+        
         const matchedStatus = statusOptions.find((s) => s.id === payload.status);
         return {
           ...t,
@@ -727,13 +714,13 @@ const TaskListPage = (): JSX.Element => {
     try {
       const res = await TaskService.updateStatus(taskId, payload);
       if (res.status === 200) {
-        toast.success(payload.remark ? "Task marked as final ✓" : "Status updated");
-        // 3. Silently reconcile with real server data — no loading state, no flash
+        // toast.success(payload.remark ? "Task marked as final ✓" : "Status updated");
+        
         fetchTasks(true);
       }
     } catch (e) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
-      // 4. Rollback to previous state on error
+      
       setTaskData(previousData);
       if (axios.isAxiosError(e)) {
         toast.error(e.response?.data?.message ?? "Failed to update status");
@@ -741,7 +728,7 @@ const TaskListPage = (): JSX.Element => {
     }
   };
 
-  // ── Delete ───────────────────────────────────────────────────────────────────
+  
   const handleDelete = async (id: string): Promise<void> => {
     setDeleting(true);
     try {
@@ -781,7 +768,7 @@ const TaskListPage = (): JSX.Element => {
     <div className="ml-72 mt-14">
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full">
 
-        {/* Header */}
+        
         <div className="flex items-start justify-between mb-8">
           <div>
             <div className="flex items-center gap-2.5 mb-1">
@@ -801,7 +788,7 @@ const TaskListPage = (): JSX.Element => {
           )}
         </div>
 
-        {/* Stats row */}
+        
         <div className="grid grid-cols-4 gap-4 mb-7">
           {[
             { label: "Total", value: totalCount, icon: "📋", bg: "bg-blue-50   border-blue-100" },
@@ -819,7 +806,7 @@ const TaskListPage = (): JSX.Element => {
           ))}
         </div>
 
-        {/* Filters */}
+        
         <div className="flex flex-wrap items-center gap-1 mb-5">
           <div className="relative min-w-[100px] max-w-xs">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
@@ -1048,7 +1035,7 @@ const TaskListPage = (): JSX.Element => {
               </table>
             </div>
 
-            {/* Pagination */}
+            
             <div className="px-5 py-3.5 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
               <span className="text-xs text-gray-400 dark:text-gray-500">
                 Showing page{" "}

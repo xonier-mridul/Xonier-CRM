@@ -153,3 +153,7 @@ async def get_user_task_stats(
         }
     )
 
+@router.delete("/remark/{remarkId}/delete", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["remark:delete"]))])
+async def delete_remark(remarkId: str, request:Request):
+    return await controller.delete_remark(remarkId, request)
+

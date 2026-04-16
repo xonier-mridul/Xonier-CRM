@@ -12,6 +12,7 @@ export const RemarkService = {
     create :(data:RemarkMessagePayload)=>{
        return api.post(`/task/${data.taskId}/remark`,{content:data.content})
     },
-    acknowledge :(id:string) =>  api.patch(`/task/${id}/remarks/acknowledge`,{acknowledge:true})
+    acknowledge :(id:string) =>  api.patch(`/task/${id}/remarks/acknowledge`,{acknowledge:true}),
+    delete: (id: string)=> api.delete(`/task/remark/${id}/delete`)
    
 }

@@ -284,3 +284,18 @@ class TaskController:
  
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+        
+
+    async def delete_remark(self, remarkId: str, request: Request):
+        try:
+            user = request.state.user
+
+            result = await self.service.delete_remark(remarkId=remarkId, user=user)
+
+            return successResponse(200, "Mark deleted successfully")
+
+        except AppException as e:
+            raise e
+        
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")

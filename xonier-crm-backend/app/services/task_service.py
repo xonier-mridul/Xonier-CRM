@@ -317,6 +317,8 @@ class TaskService:
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
 
+    
+
         
     
     async def get_all_tasks(self, filters: Dict[str, Any], user: Dict[str, Any]):
@@ -905,7 +907,7 @@ class TaskService:
                         if payload.get("remark") is not None:
                             update_data["remark"] = payload.get("remark")
 
-                    print("update: ", update_data)
+                    
                     updated = await self.repo.update(id=PydanticObjectId(task_id), data=update_data, session=session)
                     if not updated:
                         raise AppException(400, "Task status update failed")
@@ -1284,6 +1286,7 @@ class TaskService:
                         description=f"Task '{existing.title}' deleted",
                     )
                     await self.activityRepo.create(data=activity, session=session)
+
  
                     return True
  
@@ -1495,6 +1498,55 @@ class TaskService:
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
         
+    async def delete_remark(self, remarkId: str, user: Dict[str, Any]):
+        try:
+            
+            if not ObjectId.is_valid(remarkId):
+                raise AppException(400, "Invalid task object id")
+
+            task = await self.remarkRepo.find_by_id(PydanticObjectId(remarkId), ["createdBy"])
+            
+            if not task:
+                raise AppException(400, "Task remark not found")
+            
+            if task.deletedAt:
+                raise AppException(400, "Task remark is already deleted, action denied")
+           
+            is_admin = validate_admin(user["userRole"])
+            is_manager = False
+            is_creator = False
+
+            if not is_admin:
+                members = await self.getTeamMembers.get_team_members(user["_id"])
+                
+                if members:
+                    mem = [PydanticObjectId(item) for item in members]
+                    
+                    if PydanticObjectId(task.createdBy.id) in mem or (PydanticObjectId(user["_id"]) == PydanticObjectId(task.createdBy.id)):
+                        is_manager = True
+
+
+                else:
+                    if PydanticObjectId(user["_id"]) == PydanticObjectId(task.createdBy.id):
+                        is_creator = True
+
+            if not is_admin and not is_manager and not is_creator:
+                raise AppException(403, "Permission denied, You are not authenticated user")
+            
+            delete = await self.remarkRepo.delete_by_id(PydanticObjectId(remarkId))
+
+            if not delete:
+                raise AppException(400, "Remark deletion failed")
+            
+            
+            return True
+
+
+        except AppException as e:
+            raise e
+        
+        except Exception as e:
+            raise AppException(status_code=500, message=f"Internal server error: {e}")
 
 
 
