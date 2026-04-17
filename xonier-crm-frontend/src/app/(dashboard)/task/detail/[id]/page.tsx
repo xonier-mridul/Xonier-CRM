@@ -48,18 +48,13 @@ import {
 } from "lucide-react";
 import RemarkModal from "@/src/components/pages/task/RemarkModal";
 import { getColorOption } from "@/src/components/pages/task/createStatusModal";
+import { SubTaskModel } from "@/src/types/task/subTask.types";
+import { Check } from "lucide-react";
+import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 
 
 
-interface SubTask {
-  id: string;
-  title: string;
-  isCompleted: boolean;
-  createdAt: string;
-  assignedTo?: { id: string; firstName: string; lastName?: string; avatar?: string };
-  priority?: TASK_PRIORITY;
-  order: number;
-}
+
 
 
 
@@ -148,7 +143,7 @@ const formatRelativeTime = (date: string): string => {
   return formatDate(date);
 };
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+
 
 const AvatarCircle = ({ name, avatar, size = "sm" }: { name: string; avatar?: string; size?: "sm" | "md" | "lg" }) => {
   const sizeClass = size === "lg" ? "w-10 h-10 text-sm" : size === "md" ? "w-8 h-8 text-xs" : "w-6 h-6 text-[10px]";
@@ -164,7 +159,7 @@ const AvatarCircle = ({ name, avatar, size = "sm" }: { name: string; avatar?: st
   if (avatar)
     return <img src={avatar} alt={name} className={`${sizeClass} rounded-full object-cover ring-2 ring-white dark:ring-gray-900`} />;
   return (
-    <div className={`${sizeClass} ${color} rounded-full flex items-center justify-center text-white font-bold ring-2 ring-white dark:ring-gray-900 flex-shrink-0 shadow-sm`}>
+    <div className={`${sizeClass} ${color} rounded-full flex items-center justify-center text-white font-bold ring-2 ring-white dark:ring-gray-900 flex-shrink-0`}>
       {name[0]?.toUpperCase()}
     </div>
   );
@@ -192,7 +187,7 @@ const TaskDetailSkeleton = () => (
 );
 
 const MetaRow = ({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) => (
-  <div className="flex items-start gap-3 py-3.5 border-b border-gray-100 dark:border-gray-800/60 last:border-0">
+  <div className="flex items-start gap-3 py-3.5 border-b border-gray-100 dark:border-gray-700/60 last:border-0">
     <div className="flex items-center gap-1.5 w-32 shrink-0 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-0.5">
       <span className="text-gray-400 dark:text-gray-600">{icon}</span>
       {label}
@@ -206,7 +201,7 @@ const MetaRow = ({ icon, label, children }: { icon: React.ReactNode; label: stri
 const StatCard = ({ label, value, sub, icon, accent }: {
   label: string; value: React.ReactNode; sub?: string; icon: React.ReactNode; accent: string;
 }) => (
-  <div className={`relative overflow-hidden rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-sm`}>
+  <div className={`relative overflow-hidden rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-transparent p-4`}>
     <div className={`absolute top-0 right-0 w-20 h-20 rounded-full opacity-10 blur-2xl ${accent}`} />
     <div className={`inline-flex items-center justify-center w-9 h-9 rounded-xl mb-3 ${accent} bg-opacity-10`}>
       <span className="opacity-80">{icon}</span>
@@ -217,7 +212,7 @@ const StatCard = ({ label, value, sub, icon, accent }: {
   </div>
 );
 
-// ─── Progress Ring ────────────────────────────────────────────────────────────
+
 
 const ProgressRing = ({ percent, size = 64, stroke = 5 }: { percent: number; size?: number; stroke?: number }) => {
   const r = (size - stroke) / 2;
@@ -258,14 +253,14 @@ const ActivityLog = ({ activities, loading }: { activities: TaskActivity[]; load
           "from-slate-300 to-slate-400";
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none flex flex-col"
+    <div className="bg-white dark:bg-transparent rounded-2xl border border-gray-200 dark:border-gray-700 dark:shadow-none flex flex-col"
       style={{ height: "600px" }}>
 
       
       <div className="flex-shrink-0 px-5 pt-4 pb-0">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
               <Activity size={15} className="text-white" />
             </div>
             <div>
@@ -307,11 +302,11 @@ const ActivityLog = ({ activities, loading }: { activities: TaskActivity[]; load
           </div>
         )}
 
-        {/* Divider */}
+        
         <div className="h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent mb-1" />
       </div>
 
-      {/* Scrollable Content */}
+      
       <div className="flex-1 overflow-y-auto px-5 py-3 space-y-1 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
         {loading ? (
           <div className="space-y-4 pt-2">
@@ -340,7 +335,7 @@ const ActivityLog = ({ activities, loading }: { activities: TaskActivity[]; load
               const isLast = index === activities.length - 1;
               return (
                 <div key={activity.id} className="flex gap-3 relative group">
-                  {!isLast && <div className="absolute left-[15px] top-9 bottom-0 w-px bg-gradient-to-b from-gray-200 dark:from-gray-700 to-transparent" />}
+                  {!isLast && <div className="absolute left-3.75 top-9 bottom-0 w-px bg-linear-to-b from-gray-200 dark:from-gray-700 to-transparent" />}
                   <div className={`w-8 h-8 rounded-xl ${cfg.bg} border border-gray-100 dark:border-gray-700 flex items-center justify-center shrink-0 z-10 ${cfg.color} transition-transform group-hover:scale-110`}>
                     {cfg.icon}
                   </div>
@@ -354,7 +349,7 @@ const ActivityLog = ({ activities, loading }: { activities: TaskActivity[]; load
                         {activity.oldValue && (
                           <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 text-[11px] font-semibold line-through">{activity.oldValue}</span>
                         )}
-                        {activity.oldValue && activity.newValue && <ChevronRight size={10} className="text-gray-400 flex-shrink-0" />}
+                        {activity.oldValue && activity.newValue && <ChevronRight size={10} className="text-gray-400 shrink-0" />}
                         {activity.newValue && (
                           <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold">{activity.newValue}</span>
                         )}
@@ -380,215 +375,370 @@ const ActivityLog = ({ activities, loading }: { activities: TaskActivity[]; load
 
 
 
-const SubTaskItem = ({
-  subtask, onToggle, onDelete, onEdit,
-}: {
-  subtask: SubTask;
+interface SubTaskItemProps {
+  subtask: SubTaskModel;
+  isToggling: boolean;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit: (id: string, title: string) => void;
-}) => {
-  const [editing, setEditing] = useState(false);
-  const [editVal, setEditVal] = useState(subtask.title);
+}
 
-  const handleSave = () => {
-    if (editVal.trim() && editVal !== subtask.title) onEdit(subtask.id, editVal.trim());
+const SubTaskItem = ({ subtask, isToggling, onToggle, onDelete, onEdit }: SubTaskItemProps) => {
+  const [editing, setEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(subtask.title);
+
+  const handleEditSubmit = () => {
+    if (editTitle.trim() && editTitle !== subtask.title) {
+      
+      onEdit(subtask.id, editTitle.trim());
+    }
     setEditing(false);
   };
 
   return (
-    <div className={`group flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all duration-150
-      ${subtask.isCompleted
-        ? "bg-emerald-50/60 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30"
-        : "bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-800 hover:border-violet-200 dark:hover:border-violet-800 hover:shadow-sm"
-      }`}>
-      <GripVertical size={13} className="text-gray-300 dark:text-gray-600 shrink-0 cursor-grab opacity-0 group-hover:opacity-100 transition-opacity" />
-      <button onClick={() => onToggle(subtask.id)} className="shrink-0 transition-transform hover:scale-110">
-        {subtask.isCompleted
-          ? <CheckCircle2 size={18} className="text-emerald-500 dark:text-emerald-400" />
-          : <Circle size={18} className="text-gray-300 dark:text-gray-600 hover:text-violet-400 transition-colors" />}
+    <div className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+      subtask.isCompleted
+        ? "bg-gray-50 dark:bg-gray-800/50 border-gray-100 dark:border-gray-700/50"
+        : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+    }`}>
+
+      {/* ── Toggle button ── */}
+      <button
+        onClick={() => onToggle(subtask.id)}
+        disabled={subtask.isCompleted || isToggling}
+        className={`shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+          subtask.isCompleted
+            ? "bg-emerald-500 border-emerald-500 cursor-not-allowed"
+            : isToggling
+            ? "border-violet-300 cursor-wait animate-pulse"
+            : "border-gray-300 dark:border-gray-600 hover:border-violet-500 cursor-pointer"
+        }`}
+      >
+        {subtask.isCompleted && <Check size={11} className="text-white" />}
       </button>
+
+      {/* ── Title ── */}
       {editing ? (
-        <input autoFocus value={editVal} onChange={(e) => setEditVal(e.target.value)}
-          onBlur={handleSave}
-          onKeyDown={(e) => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") setEditing(false); }}
-          className="flex-1 text-sm bg-white dark:bg-gray-900 border border-violet-300 dark:border-violet-700 rounded-lg px-2 py-0.5 focus:outline-none focus:ring-2 focus:ring-violet-400/30"
+        <input
+          autoFocus
+          value={editTitle}
+          onChange={(e) => setEditTitle(e.target.value)}
+          onBlur={handleEditSubmit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleEditSubmit();
+            if (e.key === "Escape") { setEditing(false); setEditTitle(subtask.title); }
+          }}
+          className="flex-1 text-sm bg-transparent border-b border-violet-400 focus:outline-none text-gray-800 dark:text-gray-200"
         />
       ) : (
-        <span className={`flex-1 text-sm font-medium ${subtask.isCompleted ? "line-through text-gray-400 dark:text-gray-500" : "text-gray-700 dark:text-gray-200"}`}>
+        <span
+          onDoubleClick={() => !subtask.isCompleted && setEditing(true)}
+          className={`flex-1 text-sm transition-all ${
+            subtask.isCompleted
+              ? "line-through text-gray-400 dark:text-gray-500"
+              : "text-gray-700 dark:text-gray-200"
+          }`}
+        >
           {subtask.title}
         </span>
       )}
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-        {!editing && (
-          <button onClick={() => { setEditing(true); setEditVal(subtask.title); }}
-            className="p-1 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/30 text-gray-400 hover:text-violet-600 transition-colors">
+
+      {/* ── Actual hours badge ── */}
+      {subtask.actualHours != null && subtask.actualHours > 0 && (
+        <span className="text-[11px] text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full shrink-0">
+          {subtask.actualHours}h
+        </span>
+      )}
+
+      
+      {!subtask.isCompleted && (
+        <div className="flex items-center gap-1 shrink-0">
+          <button
+            onClick={() => setEditing(true)}
+            className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-600 transition-colors"
+          >
             <Pencil size={12} />
           </button>
-        )}
-        <button onClick={() => onDelete(subtask.id)}
-          className="p-1 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-gray-400 hover:text-red-500 transition-colors">
-          <Trash2 size={12} />
-        </button>
-      </div>
+          <button
+            onClick={() => onDelete(subtask.id)}
+            className="p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500 transition-colors"
+          >
+            <Trash2 size={12} />
+          </button>
+        </div>
+      )}
+
+     
+      {subtask.isCompleted && subtask.completedAt && (
+        <div className="flex items-center flex-col gap-1">
+        <span className="text-[10px] text-gray-400 dark:text-gray-500 shrink-0">
+          {new Date(subtask.completedAt).toLocaleDateString()}
+        </span>
+        <span className="text-[10px]  dark:text-gray-500 shrink-0 bg-green-50 text-green-500 px-1.5 py-0.5 rounded-full">
+          {subtask.completedBy?.firstName} {subtask.completedBy?.lastName}
+        </span>
+        </div>
+      )}
     </div>
   );
 };
 
-// ─── SubTask Section ───────────────────────────────────────────────────────────
 
 const SubTaskSection = ({ taskId }: { taskId: string }) => {
-  const [subtasks, setSubtasks] = useState<SubTask[]>([]);
+  const [subtasks, setSubtasks] = useState<SubTaskModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [actualSubTasksHours, setActualSubTasksHours] = useState<number>(0);
   const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
+  const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
 
   const load = useCallback(async () => {
+    setLoading(true);
     try {
       const res = await TaskService.getSubTasks(taskId);
       if (res.status === 200) {
-        const raw = res.data.data;
+        const raw = res.data?.data?.data;
         setSubtasks(Array.isArray(raw) ? raw : raw ? [raw] : []);
       }
-    } catch { } finally { setLoading(false); }
+    } catch {
+      
+    } finally {
+      setLoading(false);
+    }
   }, [taskId]);
 
   useEffect(() => { load(); }, [load]);
 
   const handleAdd = async () => {
     if (!newTitle.trim()) return;
-    const newTask: SubTask = {
-      id: "string",
-      title: newTitle,
-      isCompleted: newTitle.length == 4,
-      createdAt: "klsklz",
-      order: subtasks.length,
-    }
     try {
-      const res = await TaskService.createSubTask(taskId, { title: newTitle.trim(),order: subtasks.length ,actualHours: actualSubTasksHours });
+      const res = await TaskService.createSubTask(taskId, {
+        title: newTitle.trim(),
+        order: subtasks.length,
+        actualHours: actualSubTasksHours || undefined,
+      });
       if (res.status === 200 || res.status === 201) {
-        setSubtasks((p) => [...p, res.data.data]);
+        const created = res.data?.data;
+        if (created) setSubtasks((p) => [...p, created]);
         toast.success("Sub-task added");
       }
     } catch (e) {
-      if (axios.isAxiosError(e)) toast.error(e.response?.data?.message ?? "Failed");
-    } finally { setNewTitle(""); setAdding(false); }
-    // setSubtasks((p) => [...p, newTask]);
-    // setNewTitle(""); setAdding(false);
+      if (axios.isAxiosError(e)) toast.error(e.response?.data?.message ?? "Failed to add sub-task");
+    } finally {
+      setNewTitle("");
+      setActualSubTasksHours(0);
+      setAdding(false);
+    }
   };
 
   const handleToggle = async (id: string) => {
     const st = subtasks.find((s) => s.id === id);
-    if (!st) return;
-    setSubtasks((p) => p.map((s) => s.id === id ? { ...s, isCompleted: !s.isCompleted } : s));
-    try { await TaskService.updateSubTask(taskId, id, { isCompleted: !st.isCompleted }); }
-    catch { setSubtasks((p) => p.map((s) => s.id === id ? { ...s, isCompleted: st.isCompleted } : s)); toast.error("Failed"); }
+    if (!st || st.isCompleted) {
+      toast.error("Sub-task is already completed");
+      return;
+    }
+    
+
+    try {
+      const isConfirmed = await ConfirmPopup({title: "Are you sure", text: "Are you sure to mark this subtask complete, make sure after mark completed you not able to update or reverse it", btnTxt: "Yes, Competed", cancelTxt: "Not Completed"})
+
+      if(isConfirmed){
+      await TaskService.markSubTaskComplete(id);
+      setSubtasks((p) => p.map((s) => s.id === id ? { ...s, isCompleted: true, completedAt: new Date().toISOString() } : s));
+    setTogglingIds((p) => new Set(p).add(id));
+      // toast.success("Sub-task marked as completed");
+      }
+      
+    } catch (e) {
+      
+      setSubtasks((p) => p.map((s) => s.id === id ? { ...s, isCompleted: false, completedAt: null } : s));
+      if (axios.isAxiosError(e)) toast.error(e.response?.data?.message ?? "Failed to complete sub-task");
+    } finally {
+      setTogglingIds((p) => { const next = new Set(p); next.delete(id); return next; });
+    }
   };
 
   const handleDelete = async (id: string) => {
-    setSubtasks((p) => p.filter((s) => s.id !== id));
-    try { await TaskService.deleteSubTask(taskId, id); toast.success("Removed"); }
-    catch { toast.error("Failed"); load(); }
+    
+    try {
+      const confirm = await ConfirmPopup({title: "Are you sure", text: "Are you sure to delete this subtask", btnTxt: "Yes, delete"})
+      if(confirm){
+        await TaskService.deleteSubTask(id);
+        toast.success("Sub-task removed");
+        setSubtasks((p) => p.filter((s) => s.id !== id));
+
+      }
+      
+    } catch {
+      toast.error("Failed to remove sub-task");
+      load();
+    }
   };
 
   const handleEdit = async (id: string, title: string) => {
+    if (!title.trim()) return;
     setSubtasks((p) => p.map((s) => s.id === id ? { ...s, title } : s));
-    try { await TaskService.updateSubTask(taskId, id, { title: title.trim() }); }
-    catch { toast.error("Failed"); load(); }
+    try {
+      await TaskService.updateSubTask(id, { title: title.trim() });
+    } catch {
+      toast.error("Failed to update sub-task");
+      load();
+    }
   };
 
   const completed = subtasks.filter((s) => s.isCompleted).length;
   const total = subtasks.length;
   const pct = total === 0 ? 0 : Math.round((completed / total) * 100);
-  const filtered = subtasks.filter((s) => filter === "all" ? true : filter === "active" ? !s.isCompleted : s.isCompleted);
-  const barColor = pct === 100 ? "from-emerald-400 to-emerald-500" : pct >= 60 ? "from-violet-400 to-violet-600" : pct >= 30 ? "from-amber-400 to-amber-500" : "from-gray-300 to-gray-400";
+
+  const filtered = subtasks.filter((s) =>
+    filter === "all" ? true : filter === "active" ? !s.isCompleted : s.isCompleted
+  );
+
+  const barColor =
+    pct === 100 ? "from-emerald-400 to-emerald-500" :
+    pct >= 60 ? "from-violet-400 to-violet-600" :
+    pct >= 30 ? "from-amber-400 to-amber-500" :
+    "from-gray-300 to-gray-400";
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
-      <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gradient-to-r from-violet-50/50 to-purple-50/30 dark:from-violet-900/10 dark:to-purple-900/5">
+    <div className="bg-white dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+
+     
+      <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-violet-50/50 to-purple-50/30 dark:from-violet-900/10 dark:to-purple-900/5">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
             <ListChecks size={15} className="text-white" />
           </div>
           <div>
             <h3 className="text-sm font-bold text-gray-900 dark:text-white">Sub-tasks</h3>
-            {total > 0 && <p className="text-[11px] text-gray-400 dark:text-gray-500">{completed} of {total} done</p>}
+            {total > 0 && (
+              <p className="text-[11px] text-gray-400 dark:text-gray-500">{completed} of {total} done</p>
+            )}
           </div>
           {total > 0 && (
-            <span className="text-xs bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 px-2 py-0.5 rounded-full font-bold">{total}</span>
+            <span className="text-xs bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 px-2 py-0.5 rounded-full font-bold">
+              {total}
+            </span>
           )}
         </div>
-        <button onClick={() => setAdding(true)}
-          className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white transition-colors shadow-sm">
-          <Plus size={13} />Add sub-task
+        <button
+          onClick={() => setAdding(true)}
+          className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white transition-colors"
+        >
+          <Plus size={13} /> Add sub-task
         </button>
       </div>
 
       <div className="p-5 space-y-4">
+
+        {/* ── Progress ── */}
         {total > 0 && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <ProgressRing percent={pct} size={48} stroke={4} />
                 <div>
-                  <p className={`text-2xl font-black leading-none ${pct === 100 ? "text-emerald-500" : "text-gray-900 dark:text-white"}`}>{pct}%</p>
+                  <p className={`text-2xl font-black leading-none ${pct === 100 ? "text-emerald-500" : "text-gray-900 dark:text-white"}`}>
+                    {pct}%
+                  </p>
                   <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5 font-medium">complete</p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-lg font-black text-gray-900 dark:text-white">{completed}<span className="text-gray-400 font-normal text-sm"> / {total}</span></p>
+                <p className="text-lg font-black text-gray-900 dark:text-white">
+                  {completed}<span className="text-gray-400 font-normal text-sm"> / {total}</span>
+                </p>
                 <p className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">tasks done</p>
               </div>
             </div>
             <div className="relative h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-              <div className={`h-full bg-gradient-to-r ${barColor} rounded-full transition-all duration-700`} style={{ width: `${pct}%` }} />
+              <div
+                className={`h-full bg-gradient-to-r ${barColor} rounded-full transition-all duration-700`}
+                style={{ width: `${pct}%` }}
+              />
             </div>
             {pct === 100 && (
               <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl px-3 py-2 border border-emerald-100 dark:border-emerald-900/40 font-semibold">
-                <CheckCheck size={13} />All sub-tasks completed! 🎉
+                <CheckCheck size={13} /> All sub-tasks completed! 🎉
               </div>
             )}
           </div>
         )}
 
+        {/* ── Filter tabs ── */}
         {total > 0 && (
           <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-fit">
             {(["all", "active", "completed"] as const).map((f) => (
-              <button key={f} onClick={() => setFilter(f)}
-                className={`px-3 py-1 text-xs font-semibold rounded-lg capitalize transition-all ${filter === f ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm" : "text-gray-500 dark:text-gray-400"}`}>
-                {f}{f !== "all" && <span className="ml-1 opacity-60">({f === "active" ? total - completed : completed})</span>}
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-3 py-1 text-xs font-semibold rounded-lg capitalize transition-all ${
+                  filter === f
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    : "text-gray-500 dark:text-gray-400"
+                }`}
+              >
+                {f}
+                {f !== "all" && (
+                  <span className="ml-1 opacity-60">
+                    ({f === "active" ? total - completed : completed})
+                  </span>
+                )}
               </button>
             ))}
           </div>
         )}
 
+        {/* ── Add input ── */}
         {adding && (
           <div className="flex items-center gap-2 p-3.5 bg-violet-50/60 dark:bg-violet-900/10 border border-violet-200 dark:border-violet-800 rounded-xl">
             <Circle size={16} className="text-violet-300 dark:text-violet-600 shrink-0" />
-            <input autoFocus value={newTitle} onChange={(e) => setNewTitle(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); if (e.key === "Escape") { setAdding(false); setNewTitle(""); } }}
+            <input
+              autoFocus
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleAdd();
+                if (e.key === "Escape") { setAdding(false); setNewTitle(""); }
+              }}
               placeholder="Sub-task title… (Enter to save, Esc to cancel)"
               className="flex-1 text-sm bg-transparent focus:outline-none text-gray-800 dark:text-gray-200 placeholder-gray-400"
             />
-            <div>
-              <input type="number" 
-                onChange={(e) => setActualSubTasksHours(Number(e.target.value))} 
-                onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); if (e.key === "Escape") { setAdding(false); setNewTitle(""); } }}
-                placeholder="Actual hours…" 
-                className="flex-1 text-sm bg-transparent focus:outline-none text-gray-800 dark:text-gray-200 placeholder-gray-400" 
-              />
-            </div>
+            <input
+              type="number"
+              min={0}
+              value={actualSubTasksHours || ""}
+              onChange={(e) => setActualSubTasksHours(Number(e.target.value))}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleAdd();
+                if (e.key === "Escape") { setAdding(false); setNewTitle(""); }
+              }}
+              placeholder="Hours…"
+              className="w-20 text-sm bg-transparent focus:outline-none text-gray-800 dark:text-gray-200 placeholder-gray-400 border-l border-violet-200 dark:border-violet-800 pl-2"
+            />
             <div className="flex items-center gap-1 shrink-0">
-              <button onClick={handleAdd} className="p-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white transition-colors"><Plus size={13} /></button>
-              <button onClick={() => { setAdding(false); setNewTitle(""); setActualSubTasksHours(0); }} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400"><X size={13} /></button>
+              <button
+                onClick={handleAdd}
+                className="p-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white transition-colors"
+              >
+                <Plus size={13} />
+              </button>
+              <button
+                onClick={() => { setAdding(false); setNewTitle(""); setActualSubTasksHours(0); }}
+                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400"
+              >
+                <X size={13} />
+              </button>
             </div>
           </div>
         )}
 
+        {/* ── List ── */}
         {loading ? (
-          <div className="space-y-2">{[1, 2, 3].map((i) => <SkeletonBlock key={i} className="h-12" />)}</div>
+          <div className="space-y-2">
+            {[1, 2, 3].map((i) => <SkeletonBlock key={i} className="h-12" />)}
+          </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 gap-3">
             <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
@@ -597,12 +747,23 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
             <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">
               {filter === "all" ? "No sub-tasks yet" : `No ${filter} sub-tasks`}
             </p>
-            {filter === "all" && <button onClick={() => setAdding(true)} className="text-xs text-violet-500 hover:underline font-semibold">Add your first sub-task</button>}
+            {filter === "all" && (
+              <button onClick={() => setAdding(true)} className="text-xs text-violet-500 hover:underline font-semibold">
+                Add your first sub-task
+              </button>
+            )}
           </div>
         ) : (
           <div className="space-y-2">
             {filtered.map((st) => (
-              <SubTaskItem key={st.id} subtask={st} onToggle={handleToggle} onDelete={handleDelete} onEdit={handleEdit} />
+              <SubTaskItem
+                key={st.id}
+                subtask={st}
+                isToggling={togglingIds.has(st.id)}
+                onToggle={handleToggle}
+                onDelete={handleDelete}
+                onEdit={handleEdit}
+              />
             ))}
           </div>
         )}
@@ -611,7 +772,7 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
   );
 };
 
-// --- rating star component ---
+
 const RatingStars = ({ rating = 0 }: { rating: number }) => {
   return (
     <div className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/40">
@@ -627,7 +788,7 @@ const RatingStars = ({ rating = 0 }: { rating: number }) => {
   );
 };
 
-// ─── Main Page ─────────────────────────────────────────────────────────────────
+
 
 const page = () => {
   const [taskData, setTaskData] = useState<TaskItem | null>(null);
@@ -702,17 +863,17 @@ const page = () => {
   const statusColor = getColorOption(taskData.status.color);
   return (
     <div className="ml-72 mt-14">
-      <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full mb-10">
-        <div className="p-6 max-w-[1400px] space-y-5">
+      <div className="bg-white dark:bg-transparent dark:backdrop-blur-sm   w-full mb-10">
+        <div className=" max-w-[1400px] space-y-5">
 
-          {/* ── Hero Banner ── */}
-          <div className="relative overflow-hidden bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
-            {/* Subtle gradient decoration */}
-            <div className="absolute inset-0 bg-gradient-to-br from-violet-50/40 via-transparent to-purple-50/20 dark:from-violet-900/10 dark:via-transparent dark:to-purple-900/5 pointer-events-none" />
+          
+          <div className="relative overflow-hidden rounded-2xl border-gray-200 dark:border-gray-700 ">
+            
+            <div className="absolute inset-0  pointer-events-none" />
             <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-violet-100/50 to-transparent dark:from-violet-900/20 rounded-full blur-3xl pointer-events-none" />
 
             <div className="relative p-6">
-              {/* Breadcrumb-style context tags */}
+              
               <div className="flex items-center gap-2 mb-3  w-full">
                 <div className="flex items-center justify-between gap-3 w-full">
                   {taskData.category && (
@@ -727,7 +888,7 @@ const page = () => {
                       {taskData.entityType} · {taskData.entityName}
                     </span>
                   )}
-                  {/* <Link href={`/task/update/${taskData.id}`} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-center flex items-center gap-2"><MdOutlineEdit /> Edit Task</Link> */}
+                  
                 </div>
                 <RatingStars rating={taskData.rating || 0} />
               </div>
@@ -739,7 +900,7 @@ const page = () => {
                     {taskData.title}
                   </h1>
 
-                  {/* Status + Priority badges */}
+                 
                   <div className="flex items-center gap-2 flex-wrap">
                     <span
                       className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border
@@ -785,7 +946,7 @@ const page = () => {
                       </div>
                       <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                         <div
-                          className={`h-full bg-gradient-to-r ${taskProgressColor} rounded-full transition-all duration-700`}
+                          className={`h-full bg-linear-to-r ${taskProgressColor} rounded-full transition-all duration-700`}
                           style={{ width: `${taskProgressPct}%` }}
                         />
                       </div>
@@ -794,7 +955,7 @@ const page = () => {
                 </div>
 
                 {/* Right quick stats */}
-                <div className="hidden xl:flex flex-col gap-3 shrink-0 min-w-[200px]">
+                <div className="hidden xl:flex flex-col gap-3 shrink-0 min-w-50">
                   {taskData.dueDate && (
                     <div className={`px-4 py-3 rounded-xl border text-center ${isOverdue ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/40"
                       : isDueSoon ? "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-900/40"
@@ -863,8 +1024,8 @@ const page = () => {
 
               {/* Description */}
               {taskData.description && (
-                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-                  <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2.5">
+                <div className="bg-white dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700  overflow-hidden">
+                  <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2.5">
                     <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
                       <MessageSquare size={13} className="text-slate-500 dark:text-slate-400" />
                     </div>
@@ -890,8 +1051,8 @@ const page = () => {
             <div className="space-y-5">
               
               {taskData.tags && taskData.tags.length > 0 && (
-                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-                  <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2.5">
+                <div className="bg-white dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2.5">
                     <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                       <Tag size={13} className="text-gray-500 dark:text-gray-400" />
                     </div>
@@ -910,8 +1071,8 @@ const page = () => {
               )}
 
               {/* Assignees */}
-              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-                <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2.5">
+              <div className="bg-white dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700  overflow-hidden">
+                <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2.5">
                   <div className="w-7 h-7 rounded-lg bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center">
                     <User size={13} className="text-sky-500 dark:text-sky-400" />
                   </div>
@@ -947,9 +1108,9 @@ const page = () => {
                 </div>
               </div>
 
-              {/* Time Tracking */}
-              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-                <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2.5">
+              
+              <div className="bg-white dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2.5">
                   <div className="w-7 h-7 rounded-lg bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center">
                     <TrendingUp size={13} className="text-violet-500 dark:text-violet-400" />
                   </div>
@@ -957,14 +1118,14 @@ const page = () => {
                 </div>
                 <div className="p-4 space-y-4">
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/10 rounded-xl p-3 text-center border border-violet-100 dark:border-violet-900/30">
+                    <div className="bg-linear-to-br from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/10 rounded-xl p-3 text-center border border-violet-100 dark:border-violet-900/30">
                       <p className="text-[10px] font-black uppercase tracking-wider text-violet-400 mb-1">Estimated</p>
                       <p className="text-2xl font-black text-violet-700 dark:text-violet-300">
                         {taskData.estimatedHours ?? "—"}
                         {taskData.estimatedHours && <span className="text-xs font-bold opacity-60 ml-0.5">h</span>}
                       </p>
                     </div>
-                    <div className="bg-gradient-to-br from-sky-50 to-blue-50 dark:from-sky-900/20 dark:to-blue-900/10 rounded-xl p-3 text-center border border-sky-100 dark:border-sky-900/30">
+                    <div className="bg-linear-to-br from-sky-50 to-blue-50 dark:from-sky-900/20 dark:to-blue-900/10 rounded-xl p-3 text-center border border-sky-100 dark:border-sky-900/30">
                       <p className="text-[10px] font-black uppercase tracking-wider text-sky-400 mb-1">Actual</p>
                       <p className="text-2xl font-black text-sky-700 dark:text-sky-300">
                         {taskData.actualHours ?? "—"}
@@ -982,7 +1143,7 @@ const page = () => {
                       </div>
                       <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-violet-400 to-violet-600 rounded-full transition-all"
+                          className="h-full bg-linear-to-br from-violet-400 to-violet-600 rounded-full transition-all"
                           style={{ width: `${Math.min(100, ((taskData.actualHours ?? 0) / taskData.estimatedHours) * 100)}%` }}
                         />
                       </div>
@@ -995,8 +1156,8 @@ const page = () => {
 
               {/* Recurrence */}
               {taskData.isRecurring && (
-                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-                  <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2.5">
+                <div className="bg-white dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700  overflow-hidden">
+                  <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2.5">
                     <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
                       <RefreshCw size={13} className="text-indigo-500 dark:text-indigo-400" />
                     </div>
@@ -1017,8 +1178,8 @@ const page = () => {
                 </div>
               )}
               {/* Details */}
-              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-                <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2.5">
+              <div className="bg-white dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2.5">
                   <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                     <Layers size={13} className="text-gray-500 dark:text-gray-400" />
                   </div>
@@ -1067,8 +1228,8 @@ const page = () => {
               </div>
 
               {/* {Final Rating detail} */}
-              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-                <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2.5">
+              <div className="bg-white dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2.5">
                   <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
                     <Star size={13} className="text-amber-500 dark:text-amber-400" />
                   </div>
@@ -1095,7 +1256,7 @@ const page = () => {
                   )}
                 </div>
                 {/* remark message task.remark */}
-                <div className="px-5 py-3.5 border-t border-gray-100 dark:border-gray-800">
+                <div className="px-5 py-3.5 border-t border-gray-100 dark:border-gray-700">
                   {taskData.remark ? (
                     <p className="px-3 text-sm text-purple-900 dark:text-white bg-purple-100 dark:bg-purple-800 p-3 rounded-2xl">
                       {taskData.remark.split("\n").map((line, i) => (
@@ -1113,7 +1274,7 @@ const page = () => {
                 </div>
 
                 {/* {rate by } */}
-                <div className="px-5 py-3.5 border-t border-gray-100 dark:border-gray-800"    >
+                <div className="px-5 py-3.5 border-t border-gray-100 dark:border-gray-700"    >
                   {taskData.ratedBy ? (
                     <div className="flex items-center justify-center gap-2">
                       <AvatarCircle name={`${taskData.ratedBy.firstName} ${taskData.ratedBy.lastName ?? ""}`} size="sm" />
@@ -1132,8 +1293,8 @@ const page = () => {
 
               {/* Attachments */}
               {taskData.attachments && taskData.attachments.length > 0 && (
-                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-                  <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                <div className="bg-white dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700  overflow-hidden">
+                  <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <div className="w-7 h-7 rounded-lg bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center">
                         <Paperclip size={13} className="text-teal-500 dark:text-teal-400" />

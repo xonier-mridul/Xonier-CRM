@@ -346,9 +346,9 @@ function CategoryBoard({
 
   return (
     <>
-      <div className="mb-8">
-        {/* Category header */}
-        <div className="flex items-center gap-3 mb-4 pb-3 border-b-2" style={{ borderColor: categoryColor + "40" }}>
+      <div className="mb-8 max-h-130 overflow-y-scroll">
+       
+        <div className="flex items-center gap-3 mb-4 pb-3 border-b-2 sticky top-0 bg-white dark:bg-slate-700" style={{ borderColor: categoryColor + "40" }}>
           <span
             className="w-9 h-9 rounded-xl flex items-center justify-center text-lg shadow-sm"
             style={{ backgroundColor: categoryColor + "20", border: `1.5px solid ${categoryColor}40` }}
@@ -364,7 +364,7 @@ function CategoryBoard({
               {tasks.length} task{tasks.length !== 1 ? "s" : ""}
             </span>
           </div>
-          {/* Per-status task counts */}
+          
           <div className="flex items-center gap-1.5">
             {statuses.map((s) => {
               const statusColor = getColorOption(s.color);
@@ -386,7 +386,7 @@ function CategoryBoard({
         </div>
 
         {/* Kanban columns */}
-        <div className="flex gap-4 overflow-x-auto pb-3" onDragLeave={handleDragLeave}>
+        <div className="flex gap-4 overflow-x-auto pb-3 " onDragLeave={handleDragLeave}>
           {statuses.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center py-12 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 text-gray-400">
               <span className="text-3xl mb-2">🗂️</span>
@@ -402,7 +402,7 @@ function CategoryBoard({
                 <div
                   key={status.id}
                   className={`flex flex-col rounded-2xl border-2 transition-all min-w-[260px] max-w-[300px] flex-shrink-0 ${isDragOver
-                    ? "border-blue-400 bg-blue-50/60 dark:bg-blue-900/20 shadow-lg"
+                    ? "border-blue-400 bg-blue-50/60 dark:bg-blue-900/20 "
                     : isFinal
                       ? "border-green-200 dark:border-green-800 bg-green-50/30 dark:bg-green-900/10"
                       : "border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50"
@@ -509,7 +509,7 @@ function BoardView({
 }: BoardViewProps) {
   if (isLoading) {
     return (
-      <div className="space-y-8">
+      <div className="space-y-8 ">
         {Array.from({ length: skeletonlength }).map((_, gi) => (
           <div key={gi} className="animate-pulse">
             <div className="h-6 w-40 bg-gray-200 dark:bg-gray-700 rounded-lg mb-4" />
@@ -555,7 +555,7 @@ function BoardView({
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 ">
       {categories.map((cat) => {
         const catStatuses = statusOptions.filter(
           (s) => s.category?.id === cat.id || (s as any).category === cat.id,
@@ -618,8 +618,8 @@ const TaskListPage = (): JSX.Element => {
   const today = new Date().toISOString().split("T")[0];
 
   const [dateFilter, setDateFilter] = useState<DateFilter>({
-    fromDate: today,
-    toDate: today,
+    fromDate: "",
+    toDate: "",
   });
 
   const fetchTaskAll = async () => {

@@ -880,6 +880,9 @@ class TASK_ACTIVITY_ACTION(str, Enum):
     REMARK_CREATED="remark_created"
     REMARK_ACKNOWLEDGED = "remark_acknowledged"
     RECURRING_CREATED = "recurring_created"
+    COMPLETE_SUB_TASK = "complete_sub_task"
+    UNCOMPLETE_SUB_TASK = "uncomplete_sub_task"
+    DELETE_SUBTASK = "delete_subtask"
 
 
 class LEAD_REQUEST_STATUS(str, Enum):

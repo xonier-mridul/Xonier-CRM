@@ -5,6 +5,7 @@ from app.db.models.task_model import TaskModel
 from app.db.models.user_model import UserModel
 from datetime import datetime, timedelta, timezone
 from app.utils.custom_exception import AppException
+from pymongo import IndexModel
 
 
 class SubTaskModel(Document):
@@ -14,13 +15,21 @@ class SubTaskModel(Document):
     dueDate: Optional[datetime] = None
     startDate: Optional[datetime] = None
     completedAt: Optional[datetime] = None
+    completedBy: Optional[Link[UserModel]] = None
     actualHours: Optional[float] = None
     createdBy: Link[UserModel]
-    createdAt: datetime = Field(default_factory=lambda: datetime.new(timezone.utc))
+    createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updateAt: Optional[datetime] = None
     order: Optional[int] = 0
     
     deletedAt: Optional[datetime] = None
+
+    class Settings:
+        name = "sub_tasks"
+        indexes = [
+            # IndexModel(["taskId",1], name="task_id")
+        ]
+
 
     @model_validator(mode="before")
     @classmethod

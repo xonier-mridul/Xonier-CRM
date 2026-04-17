@@ -91,12 +91,16 @@ export const TaskService = {
 
   delete: (id: string) => api.delete(`/task/delete/${id}`),
 
-  getSubTasks: (id: string) => api.get(`/task/${id}/subtasks`),
+  getSubTasks: (id: string) => api.get(`/sub-task/task/${id}`),
 
   createSubTask: (id: string, payload: CreateSubTaskPayload) => api.post(`/sub-task/${id}`, payload),
 
-  updateSubTask: (id: string, taskId: string, payload: UpdateSubTaskPayload) => api.put(`/task/${id}/subtask/${taskId}`, payload),
+  updateSubTask: (id: string, payload: UpdateSubTaskPayload) => api.put(`/sub-task/${id}/update`, payload),
 
-  deleteSubTask: (id: string, taskId: string) => api.delete(`/task/${id}/subtask/${taskId}`),
+  deleteSubTask: (id: string) => api.delete(`/sub-task/${id}/delete`),
+  markSubTaskComplete: (subtaskId: string) =>
+  api.patch(`/sub-task/${subtaskId}/complete`),
+
+
 
 };
