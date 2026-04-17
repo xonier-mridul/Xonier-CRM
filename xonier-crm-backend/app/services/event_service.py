@@ -173,7 +173,7 @@ class EventService:
             if not event:
                 raise AppException(404, "Event not found against the event object Id")
 
-            if str(event.createdBy.id) == id:
+            if str(event.createdBy.id) == user["_id"]:
                 is_creator = True
 
             if not is_admin and not is_creator:
