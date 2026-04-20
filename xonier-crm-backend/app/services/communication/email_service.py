@@ -52,7 +52,7 @@ class EmailService:
                 payload=payload
             )
 
-            print("two")
+            
             await self._dispatch_email(
                 to=payload["to_emails"],
                 subject=rendered["subject"],

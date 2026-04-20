@@ -92,7 +92,7 @@ class DealService:
                 raise AppException(409, "Lead id already exist")
 
             except Exception as e:
-                print("error: ", e)
+                
                 raise AppException(500, "Internal server error")
             
             
@@ -206,7 +206,7 @@ class DealService:
             raise e
  
         except Exception as e:
-            print("error: ", e)
+            
             raise AppException(500, f"Internal server error: {e}")
  
 
@@ -268,7 +268,7 @@ class DealService:
             raise
 
         except Exception as e:
-            print("error: ", e)
+            
             raise AppException(500, "Internal server error")
         
 
@@ -344,7 +344,7 @@ class DealService:
                 except AppException as e:
                     raise
                 except Exception as e:
-                    print("error: ", e)
+                    
                     raise AppException(500, "Internal server error")
                 
 
@@ -418,7 +418,7 @@ class DealService:
                 except AppException as e:
                     raise
                 except Exception as e:
-                    print("error: ", e)
+                    
                     raise AppException(500, f"Internal server error {e}")
 
 

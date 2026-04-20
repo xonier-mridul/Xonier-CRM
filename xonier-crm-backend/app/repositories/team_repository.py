@@ -15,6 +15,6 @@ class TeamRepository(BaseRepository):
         return result 
     
     async def find_by_category(self, categoryId: PydanticObjectId, populate:Optional[List[str]] = None , session: Optional[AsyncIOMotorClientSession] = None ):
-        print("error one")
+        
         result = await self.find_one({"category.$id": categoryId}, None, populate, session=session)
         return result

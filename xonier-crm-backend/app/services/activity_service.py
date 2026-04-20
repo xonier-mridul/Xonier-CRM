@@ -57,12 +57,9 @@ class ActivityService:
 
             if not is_admin:
                 members = await self.verifyManager.get_team_members(userId=current_user["_id"])
-                print("members: ", members)
-                print("user: ", user_id)
 
                 if ObjectId(user_id) in members:
                     is_manager = True
-
 
 
 
@@ -399,13 +396,12 @@ class ActivityService:
                     if datetime.now(timezone.utc) > (created_at + timedelta(hours=1)):
                         raise AppException(400, "The update call activity time goes expire, Operation denied")
                     
-                    print("ee: ", call_act.entityType)
 
                     if call_act.entityType == ACTIVITY_ENTITY_TYPE.LEAD:
                         leadId = PydanticObjectId(call_act.entityId)
                         
                         connect_status = payload.get("connectStatus")
-                        print("con: ", connect_status)
+
                         if connect_status:
 
                             update_lead = await self.leadRepo.update(id=leadId, data={"connectStatus": connect_status}, session=session)

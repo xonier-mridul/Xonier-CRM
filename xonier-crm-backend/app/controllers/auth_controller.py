@@ -37,7 +37,7 @@ class AuthController:
 
           return successResponse(200, "All active user fetched successfully", result)
         except AppException as e:
-            print("err: ", e)
+
             raise e
              
 
@@ -64,7 +64,7 @@ class AuthController:
             return successResponse(200, f"{user_name} Credential accepted, verification otp send successfully")
 
         except AppException as e:
-           print("error: ", e)
+
            raise e
         
     async def resend_verification_otp(self, data: Dict[str, Any]):
@@ -75,7 +75,7 @@ class AuthController:
             return successResponse(200, f"Verification otp send successfully")
 
         except AppException as e:
-           print("error: ", e)
+           
            raise e
 
 
@@ -102,7 +102,7 @@ class AuthController:
 
 
         except AppException as e:
-           print("error: ", e)
+
            raise e
         
     async def getMe(self, request: Request, response: Response):
@@ -231,7 +231,7 @@ class AuthController:
 
 
         except AppException as e:
-           print("error: ", e)
+           
            raise e
         
     async def soft_delete(self, request: Request, id: PydanticObjectId):
@@ -312,7 +312,7 @@ class AuthController:
             return successResponse(200, f"Password reset successfully")
 
         except AppException as e:
-            print("errr: ", e)
+    
             raise e
         
 

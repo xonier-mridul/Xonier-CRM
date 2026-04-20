@@ -125,7 +125,6 @@ const CreateTaskPage = (): JSX.Element => {
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [hasMoreUsers, setHasMoreUsers] = useState(true);
 
-  // ── Use refs so that getUserData always reads the latest values ──────────────
   const pageRef = useRef<number>(1);
   const loadingRef = useRef<boolean>(false);
   const hasMoreRef = useRef<boolean>(true);
@@ -162,7 +161,7 @@ const CreateTaskPage = (): JSX.Element => {
     v: CreateTaskPayload[K],
   ) => setForm((p) => ({ ...p, [k]: v }));
 
-  // ── Categories ───────────────────────────────────────────────────────────────
+
   useEffect(() => {
     (async () => {
       try {
@@ -178,7 +177,7 @@ const CreateTaskPage = (): JSX.Element => {
     })();
   }, []);
 
-  // ── Status by category ───────────────────────────────────────────────────────
+
   useEffect(() => {
     if (!form.category) {
       setStatuses([]);

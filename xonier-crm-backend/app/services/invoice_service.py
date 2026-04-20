@@ -233,7 +233,7 @@ class InvoiceService:
                             "createdBy.$id": {"$in": allowed_user_ids}
                         })
                     
-                    print("tow")
+                    
                     invoice = await self.repo.find_one(
                         filter=access_query,
                         populate=["createdBy", "updatedBy", "deal", "quotation"],
@@ -244,7 +244,7 @@ class InvoiceService:
                             403,
                             "You are not authorized to access this invoice or it does not exist"
                         )
-                    print("three")
+                    
                     invoice_data = jsonable_encoder(
                         invoice,
                         exclude={

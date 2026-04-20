@@ -97,7 +97,7 @@ class LeadController:
             return successResponse(200, "Leads data fetched successfully", result)
 
         except AppException as e:
-            print("err: ", e)
+            
             raise e
         
         

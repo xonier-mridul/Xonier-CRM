@@ -9,7 +9,7 @@ permission_repo = PermissionRepository()
 
 async def check_permission(user: dict, permissions: List[str]) -> bool:
 
-    print("aajaa: ")
+    
     roles = user.get("userRole", [])
 
     if any(role.get("code") == SUPER_ADMIN_CODE for role in roles):

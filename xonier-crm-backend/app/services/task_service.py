@@ -338,9 +338,12 @@ class TaskService:
                 visibility_query = None
 
             if "category" in filters:
-                if not ObjectId.is_valid(filters["category"]):
-                    raise AppException(400, "Invalid category id")
-                query["category.$id"] = ObjectId(filters["category"])
+                aa =[ObjectId(item) for item in filters["category"].split(",")]
+                for item in aa:
+                    if not ObjectId.is_valid(item):
+                        raise AppException(400, "Invalid given category id")
+                
+                query["category.$id"] = {"$in": aa }
 
             if "status" in filters:
                 if not ObjectId.is_valid(filters["status"]):
@@ -1009,7 +1012,6 @@ class TaskService:
                     if not updated:
                         raise AppException(400, "Task move failed")
 
-                    print("update: ", updated)
     
                     if new_status_id != str(existing.status.ref.id):
                         activity = _activity(

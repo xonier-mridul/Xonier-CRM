@@ -33,6 +33,5 @@ class SMSManager:
             "price": message.price,
         }
         
-        print("message: ", response)
             
         return response

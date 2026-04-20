@@ -23,7 +23,7 @@ import { RiLockPasswordLine } from "react-icons/ri";
 import { TiGlobeOutline } from "react-icons/ti";
 import { RootState } from "@/src/store";
 import checkRole from "@/src/app/utils/roleCheck.utils";
-import { FiUserCheck } from "react-icons/fi";
+import { FiUserCheck, FiUser } from "react-icons/fi";
 import { GoTasklist } from "react-icons/go";
 import { IoKeyOutline } from "react-icons/io5";
 import { MdOutlineLeaderboard } from "react-icons/md";
@@ -32,6 +32,7 @@ import { PERMISSIONS } from "@/src/constants/enum";
 import { FaRegUser ,FaTasks } from "react-icons/fa";
 import { CiMail } from "react-icons/ci";
 import { IoMailOutline } from "react-icons/io5";
+
 
 const SideBar = () => {
   const pathname = usePathname();
@@ -125,7 +126,7 @@ const SideBar = () => {
 
   const isActive = (path: string) => pathname.startsWith(path);
 
-  // Check if any submenu item is active
+  
   const isMenuActive = (menu: string) => {
     switch (menu) {
       case "team":
@@ -470,7 +471,64 @@ const SideBar = () => {
               </li>
             }
 
-            {(hasPermission(PERMISSIONS.readUser) || hasPermission(PERMISSIONS.readRole) || hasPermission(PERMISSIONS.createTeam)) && <li>
+            {(hasPermission(PERMISSIONS.readUser) || hasPermission(PERMISSIONS.deletedUserView)) && <li>
+              <button
+                onClick={() => toggleMenu("user")}
+                className={`${isMenuActive("user")
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
+                  } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+              >
+                <span className="flex items-center gap-3">
+                  <FiUser className="text-lg" />
+                  User Management
+                </span>
+
+                <IoChevronDown
+                  className={`transition-transform ${openMenu === "user" ? "rotate-180" : ""
+                    }`}
+                />
+              </button>
+
+              <AnimatePresence>
+                {openMenu === "user" && (
+                  <motion.ul
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.25 }}
+                    className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
+                  >
+                    
+                    {hasPermission(PERMISSIONS.readUser) && <li>
+                      <Link
+                        href="/users"
+                        className={`${isActive("/users")
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
+                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                      >
+                        Users
+                      </Link>
+                    </li>}
+                    {
+                      hasPermission(PERMISSIONS.deletedUserView) && <li>
+                        <Link
+                          href="/deleteduser"
+                          className={`${isActive("/deleteduser")
+                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                            : "border-l-2 border-transparent"
+                            } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                        >
+                          Deleted Users
+                          </Link>
+                      </li>
+                    }
+                  </motion.ul>
+                )}
+              </AnimatePresence>
+            </li>}
+            {(hasPermission(PERMISSIONS.readRole) || hasPermission(PERMISSIONS.createTeam) || hasPermission(PERMISSIONS.readTeamCategory) || hasPermission(PERMISSIONS.readTeam)) && <li>
               <button
                 onClick={() => toggleMenu("team")}
                 className={`${isMenuActive("team")
@@ -531,30 +589,7 @@ const SideBar = () => {
                         Teams
                       </Link>
                     </li>}
-                    {hasPermission(PERMISSIONS.readUser) && <li>
-                      <Link
-                        href="/users"
-                        className={`${isActive("/users")
-                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
-                          : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
-                      >
-                        Users
-                      </Link>
-                    </li>}
-                    {
-                      hasPermission(PERMISSIONS.deletedUserView) && <li>
-                        <Link
-                          href="/deleteduser"
-                          className={`${isActive("/deleteduser")
-                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
-                            : "border-l-2 border-transparent"
-                            } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
-                        >
-                          Deleted Users
-                          </Link>
-                      </li>
-                    }
+                    
                   </motion.ul>
                 )}
               </AnimatePresence>

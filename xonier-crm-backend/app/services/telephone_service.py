@@ -117,7 +117,7 @@ class TelephoneService:
             if not number:
                 raise AppException(404, "Telephone number not found against id")
             
-            print("number: ", number.status, PHONE_NUMBER_STATUS.DELETED)
+ 
             if number.status == PHONE_NUMBER_STATUS.DELETED.value:
                 raise AppException(400, "Operation denied, Telephone number already deleted")
             

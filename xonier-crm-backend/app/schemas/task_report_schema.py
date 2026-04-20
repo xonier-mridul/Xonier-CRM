@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 from typing import Optional, List
 from datetime import datetime, date
 from app.core.enums import TASK_REPORT_STATUS, TASK_ITEM_STATUS, WORK_MOOD
+from app.utils.custom_exception import AppException
 
 
 class TaskReportItemCreateSchema(BaseModel):
@@ -20,7 +21,7 @@ class TaskReportItemCreateSchema(BaseModel):
     @model_validator(mode="after")
     def validate_blocker_reason(self) -> "TaskReportItemCreateSchema":
         if self.status == TASK_ITEM_STATUS.BLOCKED and not self.blockerReason:
-            raise ValueError("blockerReason is required when status is 'blocked'")
+            raise AppException(422, "blockerReason is required when status is 'blocked'")
         return self
 
     @model_validator(mode="after")
