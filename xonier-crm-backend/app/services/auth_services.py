@@ -109,7 +109,7 @@ class AuthServices:
 
                 obj_members = [PydanticObjectId(item) for item in members]
 
-                print("mem: ", obj_members)
+                
 
                 if members:
                     query.update({"_id": {"$in": obj_members}})
@@ -126,7 +126,7 @@ class AuthServices:
             if not is_admin and not is_manager and query == {}:
                 raise AppException(409, "You are not authorized to get this data")
             
-            print("11: ", query)
+            
 
             result = await self.repo.get_all(page=int(page), limit=int(limit) ,filters=query, sort=["-createdAt"] )
 
@@ -1140,12 +1140,12 @@ class AuthServices:
 
     async def reset_user_password(self, userId: str, payload: Dict[str, Any], updatedBy: Dict[str, Any] )->bool:
         try:
-            print("one", userId)
+            
             is_exist = await self.repo.find_by_id(id=PydanticObjectId(userId))
-            print("isEx", payload)
+            
             if(payload.get("password") != payload.get("confirmPassword")):
                 raise AppException(400, "Password and Confirm Password not matching, please check and try again")
-            print("tow")
+           
             if not is_exist:
                 raise AppException(404, "User not found")
             
@@ -1155,7 +1155,7 @@ class AuthServices:
                 if role.get("code") == "SUPER_ADMIN":
                     is_super_admin = True
                     break
-            print("three")
+            
             if not is_super_admin:
                 raise AppException(403, "Permission denied")
             
@@ -1166,10 +1166,10 @@ class AuthServices:
                 "updatedBy": PydanticObjectId(updatedBy.get("_id")),
                 "updatedAt": datetime.now(timezone.utc)
             }
-            print("four", new_payload)
+            
 
             update = await self.repo.update_with_encryption(PydanticObjectId(userId), new_payload)
-            print("five", update)
+            
             if not update:
                 raise AppException(400, "User update failed")
             

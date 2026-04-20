@@ -10,7 +10,8 @@ import {
   WorkMood,
   TaskItemStatus,
 } from "@/src/types/task/taskReport";
-import { AxiosError } from "axios";
+import axios, { AxiosError } from "axios";
+import extractErrorMessages from "@/src/app/utils/error.utils";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -276,7 +277,6 @@ function MorningEditCard({ item, index, onChange, onRemove }: {
   );
 }
 
-// ── Evening Task Card ─────────────────────────────────────────────────────────
 
 function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: {
   item: TaskReportItem;
@@ -506,6 +506,7 @@ const TaskReportCreatePage = (): JSX.Element => {
   const [tomorrowPlan, setTomorrowPlan] = useState("");
   const [overallMood, setOverallMood] = useState<WorkMood | "">("");
   const [isFinalSubmitted, setIsFinalSubmitted] = useState(false);
+  const [err, setErr] = useState<string | string[]>("")
 
   // Derived buckets
   const completedItems = eveningItems.filter(i => COMPLETED_STATUSES.includes(i.status as TaskItemStatus));
@@ -607,11 +608,32 @@ const TaskReportCreatePage = (): JSX.Element => {
 
   useEffect(() => { loadReport(); }, [loadReport]);
 
-  // ── Evening helpers ────────────────────────────────────────────────────────
+
   const updateEveningItem = (globalIdx: number, field: string, value: unknown) => {
-    setEveningItems(items =>
+    console.log("val: ", value)
+    let isC = value === "completed"
+    let isP = value === "in_progress"
+    let isB = value === "blocked"
+      
+    if (isC){
+      setEveningItems(items =>
+      items.map((item, i) => i === globalIdx ? { ...item, [field]: value, "completionPercentage": 100 } : item)
+    );
+    }else if(isP) {
+      setEveningItems(items =>
+      items.map((item, i) => i === globalIdx ? { ...item, [field]: value, "completionPercentage": 50 } : item)
+    );
+    } else if(isB){
+       setEveningItems(items =>
+      items.map((item, i) => i === globalIdx ? { ...item, [field]: value, "completionPercentage": 0 } : item)
+    );
+    }
+    else{
+setEveningItems(items =>
       items.map((item, i) => i === globalIdx ? { ...item, [field]: value } : item)
     );
+    }
+    
   };
 
   const removeEveningItem = (globalIdx: number) => {
@@ -628,7 +650,7 @@ const TaskReportCreatePage = (): JSX.Element => {
     ]);
   };
 
-  // ── Submit Morning ─────────────────────────────────────────────────────────
+
   const submitMorning = async () => {
     if (morningItems.some(i => !i.title.trim())) {
       toast.error("Please fill in all task titles");
@@ -672,6 +694,7 @@ const TaskReportCreatePage = (): JSX.Element => {
 
   // ── Submit Evening ─────────────────────────────────────────────────────────
   const submitEvening = async () => {
+    setErr("")
     if (!existingReport?.id) {
       toast.error("Please submit your morning agenda first");
       return;
@@ -704,8 +727,15 @@ const TaskReportCreatePage = (): JSX.Element => {
         toast.success("Evening report submitted! 🌆");
         await loadReport();
       }
-    } catch {
-      toast.error("Failed to submit evening report");
+    } catch(error) {
+      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+      if (axios.isAxiosError(error)) {
+        const errM = extractErrorMessages(error);
+        toast.error(errM[0])
+        setErr(errM)
+      } else {
+        toast.error(["Something went wrong"]);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -714,7 +744,7 @@ const TaskReportCreatePage = (): JSX.Element => {
   const morningSubmitted = existingReport?.morningAgenda?.isSubmitted ?? false;
   const eveningSubmitted = existingReport?.eveningReport?.isSubmitted ?? false;
 
-  // ── Loading ────────────────────────────────────────────────────────────────
+  
   if (isLoading) {
     return (
       <div className="ml-72 mt-14 flex items-center justify-center h-80">
@@ -811,9 +841,7 @@ const TaskReportCreatePage = (): JSX.Element => {
           })}
         </div>
 
-        {/* ════════════════════════════════════════════════════
-            MORNING TAB
-        ════════════════════════════════════════════════════ */}
+        
         {activeTab === "morning" && (
           <div className="bg-white dark:bg-gray-700 rounded-xl border border-slate-900/10 dark:border-gray-600 p-6">
 
@@ -1165,7 +1193,8 @@ const TaskReportCreatePage = (): JSX.Element => {
                   </div>
                 )}
               </div>
-
+              <div className="flex flex-col items-end gap-3">
+  {err && <div><p className="text-red-500">{err}</p></div>}
               {/* Submit button — replaced with locked label after final submission */}
               {!eveningSubmitted ? (
                 <button
@@ -1174,6 +1203,7 @@ const TaskReportCreatePage = (): JSX.Element => {
                   disabled={isSubmitting || eveningItems.filter(i => i.title.trim()).length === 0}
                   className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-all active:scale-95 shadow-sm"
                 >
+                 
                   {isSubmitting
                     ? <><div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> Submitting…</>
                     : <><span>🌆</span> {!isFinalSubmitted ? "Save Evening Report" : "Submit Evening Report"}</>
@@ -1188,6 +1218,7 @@ const TaskReportCreatePage = (): JSX.Element => {
                 </div>
               )}
             </div>
+          </div>
           </div>
         )}
 

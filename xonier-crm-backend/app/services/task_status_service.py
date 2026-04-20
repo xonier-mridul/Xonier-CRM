@@ -137,11 +137,12 @@ class TaskStatusService:
  
             return result
  
-        except AppException:
-            raise
+        except AppException as e:
+            raise e
  
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+        
  
     async def get_statuses_by_category(self, category_id: str, user: Dict[str, Any]):
         try:
@@ -195,87 +196,6 @@ class TaskStatusService:
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
  
-    # async def update_task_status(self, status_id: str, payload: Dict[str, Any], user: Dict[str, Any]):
-    #     async with await self.client.start_session() as session:
-    #         async with session.start_transaction():
-    #             try:
-    #                 if not ObjectId.is_valid(status_id):
-    #                     raise AppException(400, "Invalid status id")
- 
-    #                 is_exist = await self.repo.find_by_id(
-    #                     id=PydanticObjectId(status_id),
-    #                     session=session
-    #                 )
-    #                 print('payload: ', payload)
-    #                 if not is_exist or is_exist.deletedAt is not None:
-    #                     raise AppException(404, "Task status not found")
- 
-    #                 category_id = str(is_exist.category.ref.id)
- 
-    #                 update_payload: Dict[str, Any] = {
-    #                     **{k: v for k, v in payload.items() if v is not None},
-    #                     "updatedBy": PydanticObjectId(user["_id"]),
-    #                     "updatedAt": datetime.now(timezone.utc),
-    #                     "category": DBRef("task_categories", PydanticObjectId(payload["category"]))
-    #                 }
- 
-    #                 if "name" in payload and payload["name"]:
-    #                     new_slug = generate_slug(payload["name"])
- 
-    #                     slug_conflict = await self.repo.find_one({
-    #                         "slug": new_slug,
-    #                         "category.$id": ObjectId(category_id),
-    #                         "deletedAt": None,
-    #                         "_id": {"$ne": PydanticObjectId(status_id)}
-    #                     })
- 
-    #                     if slug_conflict:
-    #                         raise AppException(409, f"Status '{payload['name']}' already exists in this category")
- 
-    #                     update_payload["slug"] = new_slug
- 
-    #                 if payload.get("isDefault") is True:
-    #                     existing_default = await self.repo.find_one({
-    #                         "category.$id": ObjectId(category_id),
-    #                         "isDefault": True,
-    #                         "deletedAt": None,
-    #                         "_id": {"$ne": PydanticObjectId(status_id)}
-    #                     })
- 
-    #                     if existing_default:
-    #                         await self.repo.update(
-    #                             id=PydanticObjectId(existing_default.id),
-    #                             data={"isDefault": False},
-    #                             session=session
-    #                         )
- 
-    #                 if payload.get("isFinal") is True:
-    #                     existing_final = await self.repo.find_one({
-    #                         "category.$id": ObjectId(category_id),
-    #                         "isFinal": True,
-    #                         "deletedAt": None,
-    #                         "_id": {"$ne": PydanticObjectId(status_id)}
-    #                     })
- 
-    #                     if existing_final:
-    #                         raise AppException(400, f"Category already has a final status: '{existing_final.name}'")
- 
-    #                 updated = await self.repo.update(
-    #                     id=PydanticObjectId(status_id),
-    #                     data=update_payload,
-    #                     session=session
-    #                 )
- 
-    #                 if not updated:
-    #                     raise AppException(400, "Task status update failed")
- 
-    #                 return True
- 
-    #             except AppException:
-    #                 raise
- 
-    #             except Exception as e:
-    #                 raise AppException(500, f"Internal server error: {e}")
 
     async def update_task_status(self, status_id: str, payload: Dict[str, Any], user: Dict[str, Any]):
         async with await self.client.start_session() as session:

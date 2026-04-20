@@ -120,7 +120,7 @@ class UserRoleService:
                  "code": code
             }
 
-            print("new: ", new_payload, roleId)
+ 
 
             update = await self.repository.update(id=PydanticObjectId(roleId),data=new_payload)
 

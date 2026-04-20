@@ -42,7 +42,7 @@ class UserFormService:
             raise
 
         except Exception as e:
-            print("e: ", e)
+            
             raise AppException(500, f"Internal server error: {e}")
         
 

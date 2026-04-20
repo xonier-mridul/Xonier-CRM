@@ -58,19 +58,19 @@ class NoteService:
 
     async def get_all_active(self, filters: Dict[str, Any], user: Dict[str, Any]):
         try:
-            print("one")
+
             page = int(filters.get("page") or 1)
             limit = int(filters.get("limit") or 10)
 
             is_admin: bool = validate_admin(user["userRole"])
-            print("two")
+
             query = {
                 "status": NOTE_STATUS.ACTIVE.value
             }
 
             visibility_conditions = []
 
-            print("three")
+
 
             if is_admin:
                
@@ -101,7 +101,7 @@ class NoteService:
                     }
                 ]
             
-            print("four")
+
 
             query["$or"] = visibility_conditions
 
@@ -114,18 +114,18 @@ class NoteService:
 
             if "entityId" in filters:
                 query["entityId"] = filters["entityId"]
-            print("five", query)
+
 
             cache_key = cache_key_generator_with_id(prefix=NOTE_CACHE_NAMESPACE, filters=query, page=int(page), limit=int(limit), userId=user["_id"])
 
-            print("six")
+
 
             cache = await FastAPICache.get_backend().get(cache_key)
 
             if cache:
                 return json.loads(cache)
             
-            print("Seven")
+
             result = await self.noteRepo.get_all(
                 page=page,
                 limit=limit,
@@ -158,7 +158,7 @@ class NoteService:
             page = int(filters.get("page") or 1)
             limit = int(filters.get("limit") or 10)
 
-            print("one")
+
             query = {
                 "status": NOTE_STATUS.ACTIVE.value,
                 "visibility": NOTE_VISIBILITY.PRIVATE.value,

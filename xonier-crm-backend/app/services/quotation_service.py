@@ -244,14 +244,9 @@ class QuotationService:
 
             if str(quotation["createdBy"]["id"]) == str(user["_id"]):
                 return quotation
-            
-
-
 
             members = await self.getTeamMem.get_team_members(user["_id"])
 
-            print("members: ", members)
-            print("user: ", quotation["createdBy"]["id"])
 
             if members and ObjectId(quotation["createdBy"]["id"]) in members:
                 return quotation
@@ -455,7 +450,7 @@ class QuotationService:
 
                         }
                         await self.invoiceRepo.create(data=invoice_payload, session=session)
-                        print("done")
+
 
                         update_deal  = await self.dealRepo.update(id=PydanticObjectId(quotation.deal.id), data={"dealStage": DEAL_STAGES.WON.value, "dealPipeline": DEAL_PIPELINE.WON.value}, session=session)
 
@@ -542,7 +537,7 @@ class QuotationService:
                         self.encryption.decrypt_data(quotation.customerPhone)
                         if quotation.customerPhone else None
                     )
-                    print("customer email: ", customer_email)
+
                     is_send = await self.emailManager.send_quotation_email(
                         to=customer_email,
                         quote_id=quotation.quoteId,

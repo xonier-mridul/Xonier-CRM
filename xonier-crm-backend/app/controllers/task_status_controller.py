@@ -110,7 +110,7 @@ class TaskStatusController:
 
     async def get_all_deleted_statuses(self, request: Request):
         try:
-            print("err")
+            
             user = request.state.user
             filters = dict(request.query_params)
             result = await self.service.get_all_deleted_statuses(filters, user)

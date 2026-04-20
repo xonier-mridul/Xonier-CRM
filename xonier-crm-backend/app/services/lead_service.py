@@ -856,12 +856,12 @@ class LeadService:
                 userId=user["_id"],
             )
 
-            # cache = await FastAPICache.get_backend().get(key)
+            cache = await FastAPICache.get_backend().get(key)
 
-            # if cache:
-            #     return json.loads(cache)
+            if cache:
+                return json.loads(cache)
             
-            print("query: ", query)
+            
 
             result = await self.repo.get_all(
                 page=int(page),
@@ -873,8 +873,7 @@ class LeadService:
 
             if not result:
                 raise AppException(404, "Leads data not found")
-            
-            print("ss: ", result)
+
 
             result = jsonable_encoder(result, exclude={"hashedEmail", "hashedPhone"})
 
@@ -883,9 +882,9 @@ class LeadService:
                 if item["phone"]:
                     item["phone"] = encryptor.decrypt_data(item["phone"])
 
-            # await FastAPICache.get_backend().set(
-            #     key=key, value=json.dumps(result), expire=300
-            # )
+            await FastAPICache.get_backend().set(
+                key=key, value=json.dumps(result), expire=300
+            )
 
             return result
 
@@ -996,7 +995,7 @@ class LeadService:
 
             if "type" in filters:
                 query.update({"projectType": filters["type"]})
-            print("params: ", page, limit)
+
             result = await self.repo.get_all(
                 page=int(page),
                 limit=int(limit),

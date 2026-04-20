@@ -75,7 +75,7 @@ class CustomFormFieldService:
             if not ObjectId.is_valid(id):
                 raise AppException(400, "invalid field Object Id")
             
-            print("id: ", id)
+            
             is_admin = validate_admin(user["userRole"])
             is_creator = False
 
@@ -87,7 +87,7 @@ class CustomFormFieldService:
 
 
             field = await self.repo.find_by_id(id=PydanticObjectId(id), populate=["createdBy"])
-            print("feidl data: ", field)
+            
             if str(field.createdBy.id) == str(user["_id"]):
                 is_creator = True
 
@@ -102,13 +102,9 @@ class CustomFormFieldService:
             
             return True
 
-            
-
-
-
 
         except AppException as e:
-            print("err: ", e)
+            
             raise e
         
         except Exception as e:

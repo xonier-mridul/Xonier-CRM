@@ -9,5 +9,5 @@ class DealRepository(BaseRepository):
         super().__init__(DealModel)
 
     async def find_by_lead(self,leadId: PydanticObjectId, populate: Optional[List[str]] = None, session: Optional[AsyncIOMotorClientSession] = None):
-        print("lead id: ", leadId)
+       
         return await self.find_one({"lead_id.$id": leadId})

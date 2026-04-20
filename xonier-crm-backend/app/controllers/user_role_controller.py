@@ -19,7 +19,7 @@ class UserRoleController:
            return successResponse(200, f"{result["name"]} User role created successfully", result)
            
         except AppException as e:
-           print("error: ", e)
+           
            raise e
         
     async def get_all(self, request: Request):

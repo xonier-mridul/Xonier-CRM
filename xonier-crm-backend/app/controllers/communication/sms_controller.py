@@ -23,7 +23,7 @@ class SMSController:
             
 
         except AppException as e:
-            print("error: ", e)
+            
             raise e
         
     async def bulk_send_sms(self, request: Request, payload: Dict[str, Any]):
