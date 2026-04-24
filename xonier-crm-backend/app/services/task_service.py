@@ -428,27 +428,27 @@ class TaskService:
     #             query["$and"] = and_conditions
 
             
-    #         # def serialize_for_cache(v):
-    #         #     if isinstance(v, (PydanticObjectId, ObjectId)):
-    #         #         return str(v)
-    #         #     elif isinstance(v, datetime):
-    #         #         return v.isoformat()
-    #         #     elif isinstance(v, list):
-    #         #         return [serialize_for_cache(i) for i in v]
-    #         #     elif isinstance(v, dict):
-    #         #         return {nk: serialize_for_cache(nv) for nk, nv in v.items()}
-    #         #     return v
+    #         def serialize_for_cache(v):
+    #             if isinstance(v, (PydanticObjectId, ObjectId)):
+    #                 return str(v)
+    #             elif isinstance(v, datetime):
+    #                 return v.isoformat()
+    #             elif isinstance(v, list):
+    #                 return [serialize_for_cache(i) for i in v]
+    #             elif isinstance(v, dict):
+    #                 return {nk: serialize_for_cache(nv) for nk, nv in v.items()}
+    #             return v
 
-    #         # cache_query = {k: serialize_for_cache(v) for k, v in query.items()}
-    #         # cache_key = cache_key_generator(prefix=TASK_CACHE_NAMESPACE, filters=cache_query, page=page, limit=limit)
+    #         cache_query = {k: serialize_for_cache(v) for k, v in query.items()}
+    #         cache_key = cache_key_generator(prefix=TASK_CACHE_NAMESPACE, filters=cache_query, page=page, limit=limit)
 
             
             
-    #         # cache = await FastAPICache.get_backend().get(cache_key)
+    #         cache = await FastAPICache.get_backend().get(cache_key)
  
-    #         # if cache:
+    #         if cache:
                 
-    #         #     return json.loads(cache)
+    #             return json.loads(cache)
             
     #         print("query: ",query)
 
@@ -590,6 +590,28 @@ class TaskService:
             if and_conditions:
                 query["$and"] = and_conditions
 
+            def serialize_for_cache(v):
+                if isinstance(v, (PydanticObjectId, ObjectId)):
+                    return str(v)
+                elif isinstance(v, datetime):
+                    return v.isoformat()
+                elif isinstance(v, list):
+                    return [serialize_for_cache(i) for i in v]
+                elif isinstance(v, dict):
+                    return {nk: serialize_for_cache(nv) for nk, nv in v.items()}
+                return v
+
+            cache_query = {k: serialize_for_cache(v) for k, v in query.items()}
+            cache_key = cache_key_generator(prefix=TASK_CACHE_NAMESPACE, filters=cache_query, page=page, limit=limit)
+
+            
+            
+            cache = await FastAPICache.get_backend().get(cache_key)
+ 
+            if cache:
+                
+                return json.loads(cache)
+
             print("query: ", query)
 
             result = await self.repo.get_all(
@@ -632,6 +654,8 @@ class TaskService:
 
                 except Exception:
                     task["isOverdue"] = False
+
+            await FastAPICache.get_backend().set(key=cache_key, value=json.dumps(result), expire=900)
 
             return result
 
