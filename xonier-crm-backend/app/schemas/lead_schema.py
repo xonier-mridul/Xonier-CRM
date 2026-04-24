@@ -29,7 +29,7 @@ class LeadBaseSchema(BaseModel):
     language: Optional[LANGUAGE_CODE] = None
     dataTag: Optional[str] = None
 
-    industry: Optional[INDUSTRIES] = None
+    industry: Optional[str] = None
     employeeRole: Optional[str] = None
     employeeSeniority: Optional[EMPLOYEE_SENIORITY] = None
     extraFields: Optional[dict[str, str | int | float | bool | None]] = Field(default=None)
@@ -86,7 +86,7 @@ class LeadsCreateSchema(LeadBaseSchema):
     postalCode: Optional[int] = Field(None, ge=1000, le=999999)
     language: Optional[LANGUAGE_CODE] =None
 
-    industry: Optional[INDUSTRIES] = None
+    industry: Optional[str] = None
     employeeRole: Optional[str] = None
     employeeSeniority: Optional[EMPLOYEE_SENIORITY] = None
     extraFields: Optional[dict[str, str | int | float | bool | None]] = Field(default=None)

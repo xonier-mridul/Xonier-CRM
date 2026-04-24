@@ -1,6 +1,6 @@
 "use client";
 
-import React, { JSX, useState, useEffect, useRef, useCallback } from "react";
+import React, { JSX, useState, useEffect, useRef, useCallback, ChangeEvent, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -9,7 +9,10 @@ import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import { TaskService } from "@/src/services/tasks.service";
 import { StatusService } from "@/src/services/status.service";
 import { ColorOption } from "@/src/types/task/status.types";
-import { MdEdit, MdDelete } from "react-icons/md";
+import { MdEdit, MdDelete, MdOutlineMessage } from "react-icons/md";
+
+
+import { ChevronRight } from "lucide-react";
 import {
   StatusBadge,
   getColorOption,
@@ -34,6 +37,9 @@ import DateFilterButton from "@/src/components/common/dateFilter";
 import { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 import { Star } from "lucide-react";
 import { i } from "framer-motion/client";
+import { RemarkMessagePayload, RemarkService } from "@/src/services/remark.service";
+import CreateRemarkPopup from "@/src/components/pages/task/CreateRemarkPopup";
+import BlurryBackground from "@/src/components/common/BlurryBackground";
 
 type ViewMode = "list" | "board";
 
@@ -191,23 +197,28 @@ function ViewToggle({
 }
 
 interface BoardCardProps {
+  onRemark: (task: TaskItem) => void;
   task: TaskItem;
   canEdit: boolean;
+  canRemark: boolean;
   canDelete: boolean;
   deleting: boolean;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onDragStart: (e: React.DragEvent, task: TaskItem) => void;
+  
 }
 
 function BoardCard({
   task,
   canEdit,
+  canRemark,
   canDelete,
   deleting,
   onEdit,
   onDelete,
   onDragStart,
+  onRemark
 }: BoardCardProps) {
   const pri = PRIORITY_STYLE[task.priority];
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
@@ -229,6 +240,19 @@ function BoardCard({
           {pri.label}
         </span>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          {canRemark && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemark(task); 
+               
+              }}
+              className="p-1 rounded-lg text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition"
+            >
+              <MdOutlineMessage className="text-sm" />
+            </button>
+          )}
           {canEdit && (
             <button
               type="button"
@@ -257,11 +281,13 @@ function BoardCard({
         </div>
       </div>
 
-      <p className="text-sm font-semibold text-gray-900 dark:text-white leading-snug mb-2.5 line-clamp-2">
+      <p className="text-sm font-semibold text-gray-900 dark:text-white leading-snug mb-2 line-clamp-3">
         {task.title}
       </p>
 
-      <div className="mb-2">
+      <p className="text-xs text-gray-400 dark:text-gray-500 line-clamp-2 mb-2">{task.description ?? ""}</p>
+      <div className="flex items-center justify-between">
+      <div className="mb-2 flex items-center">
         <span
           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${statusColor.bg} ${statusColor.text}`}
         >
@@ -279,8 +305,8 @@ function BoardCard({
           />
         </div>
       )}
-
-      {/* Tags */}
+      </div>
+     
       {task.tags.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-2.5">
           {task.tags.slice(0, 2).map((tag) => (
@@ -299,7 +325,7 @@ function BoardCard({
         </div>
       )}
 
-      {/* Footer — assignees + due date */}
+      
       <div className="flex items-center justify-between pt-2.5 border-t border-gray-50 dark:border-gray-700 mt-1">
         <div className="flex -space-x-1.5">
           {task.assignedTo.length === 0 ? (
@@ -312,9 +338,9 @@ function BoardCard({
                 <div
                   key={u.id}
                   title={u.firstName}
-                  className="px-2 h-6 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 border-2 border-white dark:border-gray-800 flex items-center justify-center text-white text-[8px] font-bold shrink-0"
+                  className="px-2 h-6 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 border-2 border-white dark:border-gray-800 flex items-center justify-center capitalize text-white text-[8px] font-bold shrink-0"
                 >
-                  {u.firstName}
+                  {u.firstName} {u?.lastName}
                 </div>
               ))}
               {task.assignedTo.length > 2 && (
@@ -337,6 +363,32 @@ function BoardCard({
           </span>
         )}
       </div>
+      {/* <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500 w-full justify-end">
+            <span className="text-gray-400 dark:text-gray-500 px-2 pt-4">
+              {(task.activities.oldValue || task.activities.newValue) ? (
+                <div className="mt-2 flex items-center gap-2 flex-wrap">
+                  {task.activities.oldValue && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs font-medium line-through">
+                      {task.activities.oldValue}
+                    </span>
+                  )}
+                  {task.activities.oldValue && task.activities.newValue && (
+                    <ChevronRight size={12} className="text-gray-400 flex-shrink-0" />
+                  )}
+                  {task.activities.newValue && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-xs font-medium">
+                      {task.activities.newValue}
+                    </span>
+                  )}
+                  <span>by {task.activities.performedBy?.firstName}</span>
+                </div>
+              ) : (
+                <span>
+                  {task.activities.action.replace(/_/g, " ")} by {task.activities.performedBy?.firstName}
+                </span>
+              )}
+            </span>
+          </div> */}
       <br />
 
       <div className="ml-auto flex items-center gap-1.5 w-full justify-end">
@@ -352,7 +404,10 @@ function BoardCard({
   );
 }
 
+
+
 interface CategoryBoardProps {
+  onRemark: (task: TaskItem) => void;
   categoryId: string;
   categoryName: string;
   categoryColor: string;
@@ -360,6 +415,7 @@ interface CategoryBoardProps {
   tasks: TaskItem[];
   statuses: StatusOption[];
   canEdit: boolean;
+  canRemark: boolean;
   canDelete: boolean;
   canChangeStatus: boolean;
   canMarkFinal: boolean;
@@ -374,12 +430,14 @@ interface CategoryBoardProps {
 
 function CategoryBoard({
   categoryId,
+  onRemark,
   categoryName,
   categoryColor,
   categoryIcon,
   tasks,
   statuses,
   canEdit,
+  canRemark,
   canDelete,
   canChangeStatus,
   canMarkFinal,
@@ -595,11 +653,13 @@ function CategoryBoard({
                           key={task.id}
                           task={task}
                           canEdit={canEdit}
+                          canRemark={canRemark}
                           canDelete={canDelete}
                           deleting={deleting}
                           onEdit={onEdit}
                           onDelete={onDelete}
                           onDragStart={handleDragStart}
+                          onRemark={onRemark}
                         />
                       ))
                     )}
@@ -633,9 +693,11 @@ function CategoryBoard({
 }
 
 interface BoardViewProps {
+  onRemark: (task: TaskItem) => void;
   tasks: TaskItem[];
   statusOptions: StatusOption[];
   canEdit: boolean;
+  canRemark: boolean
   canDelete: boolean;
   canChangeStatus: boolean;
   canMarkFinal: boolean;
@@ -651,9 +713,11 @@ interface BoardViewProps {
 }
 
 function BoardView({
+  onRemark,
   tasks,
   statusOptions,
   canEdit,
+  canRemark,
   canDelete,
   canChangeStatus,
   canMarkFinal,
@@ -737,6 +801,7 @@ function BoardView({
             tasks={catTasks}
             statuses={catStatuses}
             canEdit={canEdit}
+            canRemark={canRemark}
             canDelete={canDelete}
             canChangeStatus={canChangeStatus}
             canMarkFinal={canMarkFinal}
@@ -744,6 +809,7 @@ function BoardView({
             onEdit={onEdit}
             onDelete={onDelete}
             onStatusChange={onStatusChange}
+            onRemark={onRemark} 
           />
         );
       })}
@@ -922,6 +988,11 @@ const TaskListPage = (): JSX.Element => {
   const [viewMode, setViewMode] = useState<ViewMode>("board");
   const [taskData, setTaskData] = useState<TaskItem[]>([]);
   const [statusOptions, setStatusOptions] = useState<StatusOption[]>([]);
+
+  const [remarkLoad, setRemarkLoad] = useState<boolean>(false)
+  const [remarkPopup, setRemarkPopup] = useState<boolean>(false);
+const [selectedRemarkTask, setSelectedRemarkTask] = useState<TaskItem | null>(null);
+const [remarkPayload, setRemarkPayload] = useState<RemarkMessagePayload>({ taskId: "", content: "" });
   const [currentPage, setCurrentPage] = useState(1);
   const [pageLimit] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
@@ -934,16 +1005,37 @@ const TaskListPage = (): JSX.Element => {
   const [filterPriority, setFilterPriority] = useState("");
   const [filterAssigned, setFilterAssigned] = useState("");
 
+
   const canCreate = hasPermission(PERMISSIONS.createTask);
   const canView = hasPermission(PERMISSIONS.readTask);
   const canEdit = hasPermission(PERMISSIONS.updateTask);
+  const canRemark = hasPermission(PERMISSIONS.createRemark)
   const canDelete = hasPermission(PERMISSIONS.deleteTask);
   const canChangeStatus = hasPermission(PERMISSIONS.taskStatusChange);
   const canMarkFinal = hasPermission(PERMISSIONS.markFinal);
 
   const showActions = canEdit || canDelete || canView;
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  
   const today = new Date().toISOString().split("T")[0];
+
+
+const handleRemark = (e: ChangeEvent<HTMLTextAreaElement>) => {
+  const { name, value } = e.target;
+  setRemarkPayload(prev => ({ ...prev, [name]: value }));
+};
+
+const handleOpenRemark = (task: TaskItem) => {
+  setSelectedRemarkTask(task);
+  setRemarkPayload({ taskId: task.id, content: "" });
+  setRemarkPopup(true);
+};
+
+const handleCloseRemark = () => {
+  setRemarkPopup(false);
+  setSelectedRemarkTask(null);
+  setRemarkPayload({ taskId: "", content: "" });
+};
 
   const [dateFilter, setDateFilter] = useState<DateFilter>({
     fromDate: "",
@@ -967,7 +1059,8 @@ const TaskListPage = (): JSX.Element => {
       if (res.status === 200) {
         const d = res.data?.data || [];
         setTaskData(d.data ?? []);
-        setTotalCount(Number(d.totalPages ?? 0));
+        // setTotalCount(Number(d.totalPages ?? 0));
+        setTotalCount(Number(d.data.length ?? 0));
       }
     } catch (e) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
@@ -1081,6 +1174,23 @@ const TaskListPage = (): JSX.Element => {
     }
   };
 
+  const handleAddRemark = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
+  e.preventDefault();
+  setRemarkLoad(true);
+  try {
+    const result = await RemarkService.create(remarkPayload);
+    if (result.status === 201) {
+      handleCloseRemark();
+      toast.success("Remark created successfully");
+    }
+  } catch (error) {
+    if (axios.isAxiosError(error))
+      toast.error(error.response?.data?.message ?? "Something went wrong");
+  } finally {
+    setRemarkLoad(false);
+  }
+};
+
   const handleDelete = async (id: string): Promise<void> => {
     setDeleting(true);
     try {
@@ -1123,6 +1233,20 @@ const TaskListPage = (): JSX.Element => {
   );
 
   return (
+    <>
+    {remarkPopup && (
+  <>
+    <BlurryBackground />
+    <CreateRemarkPopup
+      remarkPayload={remarkPayload}
+      task={selectedRemarkTask}
+      onChange={handleRemark}
+      onCancel={handleCloseRemark}
+      handleAddRemark={handleAddRemark}
+      remarkLoad={remarkLoad}
+    />
+  </>
+)}
     <div className="ml-72 mt-14">
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full">
         <div className="flex items-start justify-between mb-8">
@@ -1149,50 +1273,71 @@ const TaskListPage = (): JSX.Element => {
         </div>
 
         <div className="grid grid-cols-4 gap-4 mb-7">
-          {[
-            {
-              label: "Total",
-              value: totalCount,
-              icon: "📋",
-              bg: "bg-blue-50   border-blue-100",
-            },
-            {
-              label: "High",
-              value: taskData.filter((t) => t.priority === TASK_PRIORITY.HIGH)
-                .length,
-              icon: "🟠",
-              bg: "bg-orange-50 border-orange-100",
-            },
-            {
-              label: "Urgent",
-              value: taskData.filter((t) => t.priority === TASK_PRIORITY.URGENT)
-                .length,
-              icon: "🔴",
-              bg: "bg-rose-50   border-rose-100",
-            },
-            {
-              label: "This Page",
-              value: taskData.length,
-              icon: "📄",
-              bg: "bg-emerald-50 border-emerald-100",
-            },
-          ].map((s) => (
-            <div
-              key={s.label}
-              className={`flex items-center gap-3 p-4 rounded-2xl border ${s.bg}`}
-            >
-              <span className="text-xl">{s.icon}</span>
-              <div>
-                <div className="text-xl font-extrabold text-gray-900 dark:text-black">
-                  {s.value}
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                  {s.label}
-                </div>
-              </div>
-            </div>
-          ))}
+  {[
+    {
+      label: "Total Tasks",
+      value: totalCount,
+      icon: "📋",
+      bg: "bg-blue-50 border-blue-100",
+      priority: "",
+    },
+    {
+      label: "High",
+      value: taskData.filter((t) => t.priority === TASK_PRIORITY.HIGH).length,
+      icon: "🟠",
+      bg: "bg-orange-50 border-orange-100",
+      priority: TASK_PRIORITY.HIGH,
+    },
+    {
+      label: "Urgent",
+      value: taskData.filter((t) => t.priority === TASK_PRIORITY.URGENT).length,
+      icon: "🔴",
+      bg: "bg-rose-50 border-rose-100",
+      priority: TASK_PRIORITY.URGENT,
+    },
+    {
+      label: "This Page",
+      value: taskData.length,
+      icon: "📄",
+      bg: "bg-emerald-50 border-emerald-100",
+      priority: "",
+    },
+  ].map((s) => (
+    <div
+      key={s.label}
+      onClick={() => {
+        if (s.priority !== undefined) {
+          setFilterPriority(s.priority === filterPriority ? "" : s.priority);
+          setCurrentPage(1);
+        }
+      }}
+      className={`flex items-center gap-3 p-4 rounded-2xl border transition-all ${s.bg} ${
+        s.priority
+          ? "cursor-pointer hover:shadow-md hover:scale-[1.02] active:scale-[0.98]"
+          : "cursor-default"
+      } ${
+        s.priority && filterPriority === s.priority
+          ? "ring-2 ring-offset-1 ring-blue-400 shadow-md"
+          : ""
+      }`}
+    >
+      <span className="text-xl">{s.icon}</span>
+      <div>
+        <div className="text-xl font-extrabold text-gray-900 dark:text-black">
+          {s.value}
         </div>
+        <div className="text-xs text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1">
+          {s.label}
+          {s.priority && filterPriority === s.priority && (
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400">
+              active
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
 
         <div className="flex flex-wrap items-center gap-1 mb-5">
           <div className="relative min-w-[100px] max-w-xs">
@@ -1267,12 +1412,13 @@ const TaskListPage = (): JSX.Element => {
           />
         </div>
 
-        {/* Board */}
+
         {viewMode === "board" && (
           <BoardView
             tasks={taskData}
             statusOptions={statusOptions}
             canEdit={canEdit}
+            canRemark={canRemark}
             canDelete={canDelete}
             canChangeStatus={canChangeStatus}
             canMarkFinal={canMarkFinal}
@@ -1282,6 +1428,8 @@ const TaskListPage = (): JSX.Element => {
             onEdit={(id) => router.push(`/task/update/${id}`)}
             onDelete={handleDelete}
             onStatusChange={handleStatusChange}
+            onRemark={handleOpenRemark} 
+            
           />
         )}
 
@@ -1555,6 +1703,7 @@ const TaskListPage = (): JSX.Element => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

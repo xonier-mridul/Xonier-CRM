@@ -740,6 +740,7 @@ class LeadService:
                             {"createdBy.$id": {"$in": members}},
                             {"assignedTo.$id": {"$in": members}},
                             {"assignedTo.$id": user_object_id},
+                            {"createdBy.$id": user_object_id}
                         ]
                     })
                 else:

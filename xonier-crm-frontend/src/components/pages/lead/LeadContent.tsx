@@ -556,7 +556,7 @@ const LeadContent = (): JSX.Element => {
 
           {hasPermission(PERMISSIONS.assignLead) && currentTab === TAB.ALL && (
             <td className="p-4 text-center">
-              {item.leadSource === LEAD_SOURCE_TYPE.ADMIN_CREATED && !item.assignedTo?.length ? (
+              { !item.assignedTo?.length ? (
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only" checked={isChecked} onChange={() => handleSelectOne(item.id)} />
                   <div className={`w-4.5 h-4.5 rounded-sm border-2 flex items-center justify-center transition-all duration-150
@@ -672,8 +672,6 @@ const LeadContent = (): JSX.Element => {
           </td>
 
           <td className="p-4"><StatusBadge status={item.status || "N/A"} /></td>
-
-
 
 
 

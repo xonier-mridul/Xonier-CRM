@@ -28,6 +28,7 @@ class EnvSettings(BaseSettings):
     REFRESH_TOKEN_SECRET:str
     REFRESH_TOKEN_EXPIRY:str
     ALGORITHM:str
+    SECRET_KEY:str
 
     #SMTP
     EMAIL_HOST: str

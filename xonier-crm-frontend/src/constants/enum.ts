@@ -476,6 +476,7 @@ export enum DEAL_PIPELINE {
   NEGOTIATION = "negotiation",
   WON = "won",
   LOST = "lost",
+  CLOSED="closed"
 }
 
 
@@ -486,7 +487,8 @@ export enum DEAL_STAGES {
   NEGOTIATION = "negotiation",
   WON = "won",
   LOST = "lost",
-  DELETE = "delete"
+  DELETE = "delete",
+  CLOSED_WON = "closed_won"
 }
 
 
@@ -495,6 +497,25 @@ export enum DEAL_TYPE {
   EXISTING_BUSINESS = "existing_business",
   PARTNERSHIP = "partnership",
   OTHER = "other",
+}
+
+export enum QuotationPaymentStatus {
+  UNPAID = "unpaid",
+  PARTIAL = "partial",
+  PAID = "paid",
+  REFUNDED = "refunded",
+}
+
+export enum QuotationCurrency {
+  USD = "USD",
+  EUR = "EUR",
+  GBP = "GBP",
+  INR = "INR",
+  AED = "AED",
+  SAR = "SAR",
+  PKR = "PKR",
+  CAD = "CAD",
+  AUD = "AUD",
 }
 
 export enum DEAL_STATUS {

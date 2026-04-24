@@ -473,6 +473,7 @@ class DEAL_PIPELINE(str, Enum):
    NEGOTIATION = "negotiation"
    WON = "won"
    LOST = "lost"
+   CLOSED="closed"
    DELETE = "delete"
 
 class DEAL_STAGES(str, Enum):
@@ -481,8 +482,10 @@ class DEAL_STAGES(str, Enum):
     PROPOSAL = "proposal"
     NEGOTIATION = "negotiation"
     WON = "won"
+    CLOSED_WON="closed_won"
     LOST = "lost"
     DELETE = "delete"
+    
 
 
 class DEAL_TYPE(str, Enum):
@@ -525,7 +528,23 @@ class QuotationStatus(str, Enum):
     EXPIRED = "expired"
     DELETE = "delete"
 
-
+class QuotationPaymentStatus(str, Enum):
+    UNPAID = "unpaid"
+    PARTIAL = "partial"
+    PAID = "paid"
+    REFUNDED = "refunded"
+ 
+ 
+class QuotationCurrency(str, Enum):
+    USD = "USD"
+    EUR = "EUR"
+    GBP = "GBP"
+    INR = "INR"
+    AED = "AED"
+    SAR = "SAR"
+    PKR = "PKR"
+    CAD = "CAD"
+    AUD = "AUD"
 
 class QuotationEventType(str, Enum):
     CREATED = "created"

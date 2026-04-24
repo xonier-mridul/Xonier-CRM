@@ -323,7 +323,7 @@ const page = (): JSX.Element => {
 
   return (
     <div className={`ml-72 mt-14 p-6`}>
-      <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border-[1px] border-slate-900/10 w-full flex flex-col gap-7 items-center justify-between">
+      <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full flex flex-col gap-7 items-center justify-between">
         <div className="flex w-full items-center gap-12 justify-between">
           <div className="flex flex-col gap-1.5">
             <h2 className="text-xl font-bold dark:text-white text-slate-900 capitalize">
@@ -337,7 +337,7 @@ const page = (): JSX.Element => {
             <select
               name="limit"
               id="limit"
-              className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10"
+              className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10"
               onChange={(e) => setPageLimit(Number(e.target.value))}
             >
               <option value="10">10</option>
@@ -345,7 +345,7 @@ const page = (): JSX.Element => {
               <option value="30">30</option>
               <option value="40">50</option>
             </select>
-            <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2">
+            <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2">
               <IoIosSearch className="text-xl" />
               <input type="text" className="outline-none bg-transparent" placeholder="Search..." value={searchVal} onChange={(e)=> handleSearch(e.target.value)}/>
             </div>
@@ -392,7 +392,7 @@ const page = (): JSX.Element => {
           </li>
         </ul>
         {currentTab === 1 && (
-          <table className="w-full rounded-xl  ">
+          <table className="w-full rounded-xl overflow-x-scroll">
             <thead>
               <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
                 {/* <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
@@ -445,9 +445,9 @@ const page = (): JSX.Element => {
                           </Link>
                         </td> */}
                         <td className="flex gap-1 flex-col p-4">
-                          <h4 className="capitalize">{item.title}</h4>
+                          <h4 className="capitalize text-sm">{item.title}</h4>
                         </td>
-                        <td className="p-4">{item.customerName}</td>
+                        <td className="p-4"> <span className="text-[12px] px-2 py-1 bg-green-50 text-green-500 rounded-lg">{item.customerName}</span></td>
                         <td className="p-4">
                           {(item.quotationStatus !== QuotationStatus.DELETE && hasPermission(PERMISSIONS.updateQuote)) ? <StatusDropdown
                             currentStatus={item.quotationStatus}
@@ -458,7 +458,7 @@ const page = (): JSX.Element => {
                           }
                         </td>
                         <td className="p-4">
-                          <span className="px-4 py-1.5 rounded-md bg-blue-200 text-sm text-blue-600 font-medium">
+                          <span className="px-4 py-1.5 rounded-md bg-blue-200 text-[12px] text-nowrap text-blue-600 font-medium ">
                             {date}
                           </span>
                         </td>

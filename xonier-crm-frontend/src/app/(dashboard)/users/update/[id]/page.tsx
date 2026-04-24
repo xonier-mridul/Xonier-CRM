@@ -11,6 +11,8 @@ import UserUpdate from "@/src/components/pages/users/UserUpdate";
 import { toast } from "react-toastify";
 import { RoleService } from "@/src/services/role.service";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
+import { useSelector } from "react-redux";
+import { RootState } from "@/src/store";
 
 const page = (): JSX.Element => {
   const [err, setErr] = useState<string[] | string >("");
@@ -40,6 +42,9 @@ const page = (): JSX.Element => {
 
   const params: ParamValue = useParams().id;
   const router = useRouter()
+    const auth = useSelector((state: RootState) => state.auth);
+
+    
 
   const getRoleData = async () => {
     try {
@@ -255,6 +260,7 @@ const result = await AuthService.updateStatus(params, statusData)
         handlePasswordSubmit={handlePasswordSubmit}
         passErr={passErr}
         isPassLoading={isPassLoading}
+        isAdmin = {auth.isAdmin}
       />
     </div>
   );

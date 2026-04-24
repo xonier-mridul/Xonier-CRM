@@ -9,8 +9,8 @@ from app.utils.custom_exception import AppException
 from app.utils.enquiry_id_generator import generate_enquiry_id
 from app.utils.validate_admin import validate_admin
 from app.utils.get_team_members import GetTeamMembers
-from app.core.enums import TASK_ACTIVITY_ACTION
-from beanie import PydanticObjectId
+from app.core.enums import TASK_ACTIVITY_ACTION, TASK_PRIORITY
+from beanie import PydanticObjectId, BeanieObjectId
 from fastapi.encoders import jsonable_encoder
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
@@ -24,7 +24,10 @@ import asyncio
 from app.utils.check_permissions import check_permission
 from app.core.scheduler.task_scheduler import handle_recurring_on_completion
 import logging
-
+from fastapi_cache import FastAPICache
+from app.utils.cache_key_generator import cache_key_generator, cache_key_generator_by_id, cache_key_generator_with_id
+from app.core.constants import TASK_CACHE_NAMESPACE
+import json
 
 logger = logging.getLogger(__name__)
  
@@ -318,9 +321,6 @@ class TaskService:
             raise AppException(500, f"Internal server error: {e}")
 
     
-
-        
-    
     async def get_all_tasks(self, filters: Dict[str, Any], user: Dict[str, Any]):
         try:
             page = int(filters.get("page", 1))
@@ -328,7 +328,7 @@ class TaskService:
             is_admin = validate_admin(user["userRole"])
 
             query: Dict[str, Any] = {"deletedAt": None}
-
+            
             if not is_admin:
                 members = await self.getTeamMembers.get_team_members(user["_id"])
                 user_object_id = PydanticObjectId(user["_id"])
@@ -336,7 +336,7 @@ class TaskService:
                
             else:
                 visibility_query = None
-
+           
             if "category" in filters:
                 aa =[ObjectId(item) for item in filters["category"].split(",")]
                 for item in aa:
@@ -344,7 +344,7 @@ class TaskService:
                         raise AppException(400, "Invalid given category id")
                 
                 query["category.$id"] = {"$in": aa }
-
+            
             if "status" in filters:
                 if not ObjectId.is_valid(filters["status"]):
                     raise AppException(400, "Invalid status id")
@@ -357,7 +357,7 @@ class TaskService:
                     {"assignedTo.$id": PydanticObjectId(filters["user"])},
                     {"createdBy.$id": PydanticObjectId(filters["user"])}
                 ]
-
+            
             if "parentTask" in filters:
                 if filters["parentTask"] == "null":
                     query["parentTask"] = None
@@ -367,16 +367,19 @@ class TaskService:
             if "isOverdue" in filters and str(filters["isOverdue"]).lower() == "true":
                 query["dueDate"] = {"$lt": datetime.now(timezone.utc)}
                 query["completedAt"] = None
+            
+            if "priority" in filters:
+                query.update({"priority": filters["priority"]})
 
-            if "search" in filters and filters["search"].strip():
-                regex_data = {"$regex": filters["search"].strip(), "$options": "i"}
-                query["$or"] = [
-                    {"title": regex_data},
-                    {"priority": regex_data},
-                    {"tags": regex_data},
-                    {"entityId": regex_data},
-                    {"entityType": regex_data},
-                ]
+            # if "search" in filters and filters["search"].strip():
+            #     regex_data = {"$regex": filters["search"].strip(), "$options": "i"}
+            #     query["$or"] = [
+            #         {"title": regex_data},
+            #         {"priority": regex_data},
+            #         {"tags": regex_data},
+            #         {"entityId": regex_data},
+            #         {"entityType": regex_data},
+            #     ]
 
             date_filter = {}
             try:
@@ -418,20 +421,34 @@ class TaskService:
                         {"entityType": regex_data},
                     ]
                 })
-
-            if "user" in filters and ObjectId.is_valid(filters["user"]):
-                and_conditions.append({
-                    "$or": [
-                        {"assignedTo.$id": PydanticObjectId(filters["user"])},
-                        {"createdBy.$id": PydanticObjectId(filters["user"])}
-                    ]
-                })
-
             
             query.pop("$or", None)
 
             if and_conditions:
                 query["$and"] = and_conditions
+
+            
+            def serialize_for_cache(v):
+                if isinstance(v, (PydanticObjectId, ObjectId)):
+                    return str(v)
+                elif isinstance(v, datetime):
+                    return v.isoformat()
+                elif isinstance(v, list):
+                    return [serialize_for_cache(i) for i in v]
+                elif isinstance(v, dict):
+                    return {nk: serialize_for_cache(nv) for nk, nv in v.items()}
+                return v
+
+            cache_query = {k: serialize_for_cache(v) for k, v in query.items()}
+            cache_key = cache_key_generator(prefix=TASK_CACHE_NAMESPACE, filters=cache_query, page=page, limit=limit)
+
+            
+            
+            cache = await FastAPICache.get_backend().get(cache_key)
+ 
+            if cache:
+                
+                return json.loads(cache)
             
 
             result = await self.repo.get_all(
@@ -475,6 +492,8 @@ class TaskService:
                 except Exception as ex:
                     task["isOverdue"] = False
 
+            await FastAPICache.get_backend().set(key=cache_key, value=json.dumps(result), expire=900)
+
             return result
 
         except AppException:
@@ -482,6 +501,7 @@ class TaskService:
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
  
+
     async def get_kanban_board(self, category_id: str, user: Dict[str, Any], filters: Dict[str, Any]):
         try:
             if not ObjectId.is_valid(category_id):
@@ -773,7 +793,8 @@ class TaskService:
  
                     for act in activities:
                         await self.activityRepo.create(data=act, session=session)
- 
+                    
+                    await FastAPICache.get_backend().clear(namespace=TASK_CACHE_NAMESPACE)
                     return True
  
                 except AppException:
@@ -925,6 +946,7 @@ class TaskService:
                         new_val=new_status.name,
                     )
                     await self.activityRepo.create(data=activity, session=session)
+                    await FastAPICache.get_backend().clear(namespace=TASK_CACHE_NAMESPACE)
  
                     return {"completedAt": update_data.get("completedAt")}
  
@@ -1033,8 +1055,11 @@ class TaskService:
                             if raw_task:
                                 await handle_recurring_on_completion(raw_task, now)
                         except Exception as recurring_error:
-                            # Non-fatal — scheduler will catch it at midnight
+                            
                             logger.warning(f"Inline recurring creation failed for {task_id}: {recurring_error}")
+
+
+                    await FastAPICache.get_backend().clear(namespace=TASK_CACHE_NAMESPACE)
     
                     return True
     
@@ -1111,7 +1136,7 @@ class TaskService:
                         metadata={"assignedTo": assigned_to}
                     )
                     await self.activityRepo.create(data=activity, session=session)
- 
+                    await FastAPICache.get_backend().clear(namespace=TASK_CACHE_NAMESPACE)
                     return True
  
                 except AppException:
@@ -1250,7 +1275,7 @@ class TaskService:
                         data=update_data,
                         session=session
                     )
- 
+                    await FastAPICache.get_backend().clear(namespace=TASK_CACHE_NAMESPACE)
                     return {"updatedCount": updated}
  
                 except AppException:
@@ -1289,7 +1314,7 @@ class TaskService:
                     )
                     await self.activityRepo.create(data=activity, session=session)
 
- 
+                    await FastAPICache.get_backend().clear(namespace=TASK_CACHE_NAMESPACE)
                     return True
  
                 except AppException:

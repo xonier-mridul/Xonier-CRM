@@ -64,23 +64,30 @@ class EmailManager:
         company_name: Optional[str],
         issue_date: str,
         valid_until: str,
-
+        link: str,
         sub_total: float,
         total: float,
+        currency_symbol: str = "$",
+        currency_code: str = "USD",
+        tax_amount: float = 0,
+        tax_percent: float = 0,
+        discount_amount: float = 0,
+        discount_percent: float = 0,
+        shipping_amount: float = 0,
+        line_items: Optional[List[Dict]] = None,
         description: Optional[str] = None,
-        tax: float = 0,
-        discount: float = 0,
         company_logo: str = "",
         company_address: str = "",
+        company_website: str = "",
+        payment_terms: str = "",
+        payment_method: str = "",
         terms_conditions: str = "",
         notes: str = "",
+        quote_version: int = 1,
         cc: Optional[List[str]] = None,
-        bcc: Optional[List[str]] = None
+        bcc: Optional[List[str]] = None,
     ):
-        
-        
-        subject = f"Quotation #{quote_id} - {title}"
-        
+        subject = f"Quotation #{quote_id} – {title}"
 
         body = quotation_template(
             quote_id=quote_id,
@@ -90,19 +97,30 @@ class EmailManager:
             customer_email=customer_email,
             customer_phone=customer_phone or "",
             company_name=company_name or "",
-            issue_date=issue_date,
-            valid_until=valid_until,
-      
+            issue_date=str(issue_date),
+            valid_until=str(valid_until),
+            link=link,
             sub_total=sub_total,
-            tax=tax,
-            discount=discount,
             total=total,
+            currency_symbol=currency_symbol,
+            currency_code=currency_code,
+            tax_amount=tax_amount,
+            tax_percent=tax_percent,
+            discount_amount=discount_amount,
+            discount_percent=discount_percent,
+            shipping_amount=shipping_amount,
+            line_items=line_items or [],
             company_logo=company_logo,
             company_address=company_address,
+            company_website=company_website,
+            payment_terms=payment_terms,
+            payment_method=payment_method,
             terms_conditions=terms_conditions,
-            notes=notes
+            notes=notes,
+            quote_version=quote_version,
         )
         
+            
 
         message = EmailMessage()
         message["Subject"] = subject
@@ -130,8 +148,7 @@ class EmailManager:
         Valid Until: {valid_until}
         
         Subtotal: ${sub_total:,.2f}
-        {"Tax: $" + f"{tax:,.2f}" if tax > 0 else ""}
-        {"Discount: -$" + f"{discount:,.2f}" if discount > 0 else ""}
+        
         Total: ${total:,.2f}
         
         For the complete quotation with full details, please view this email in an HTML-compatible email client.

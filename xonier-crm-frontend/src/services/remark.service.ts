@@ -1,6 +1,6 @@
 import api from "../lib/axios"
 
-interface RemarkMessagePayload {
+export interface RemarkMessagePayload {
     taskId:string;
     content: string,
 }

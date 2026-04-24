@@ -39,7 +39,6 @@ class GetTeamMembers():
     async def validate_manager(self, userId: str)->bool:
         id = PydanticObjectId(userId)
 
-
         teams = await self.repo.find(
             {"manager.$id": {"$in": [id]}}, 
             populate=["members"]

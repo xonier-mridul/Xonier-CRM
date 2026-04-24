@@ -28,7 +28,8 @@ const UserUpdate = ({
   handlePassChange,
   handlePasswordSubmit,
   passErr,
-  isPassLoading
+  isPassLoading,
+  isAdmin
 }: UserUpdatePageProps) => {
   return (
     <>
@@ -123,7 +124,7 @@ const UserUpdate = ({
                 </div>
               )}
 
-              {!isLoading ? (
+              {isAdmin && (!isLoading ? (
                 <div className="flex flex-col gap-1 w-full">
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
                     User Role
@@ -184,7 +185,7 @@ const UserUpdate = ({
                   />{" "}
                   <Skeleton height={34} width={500} className="animate-pulse" />
                 </div>
-              )}
+              ))}
               {!isLoading ? (
                 <Input
                   label="company"
@@ -206,7 +207,7 @@ const UserUpdate = ({
                 </div>
               )}
               {err && (
-                <div className="flex items-end">
+                <div className="flex items-end col-span-2">
                   <p className="text-red-500">{err}</p>
                 </div>
               )}
@@ -227,7 +228,7 @@ const UserUpdate = ({
             </form>
           </div>
         </div>
-        <div className="flex flex-col gap-5">
+        {isAdmin && <div className="flex flex-col gap-5">
           <h2 className="text-slate-900 dark:text-white font-medium text-3xl capitalize">
             Update user status
           </h2>
@@ -272,7 +273,7 @@ const UserUpdate = ({
             <FormButton isLoading={statusLoading} disabled={statusData.status === ""}>Update Status</FormButton>
             </form>
           </div>
-        </div>
+        </div>}
         <div className="flex flex-col gap-5">
           <h2 className="text-slate-900 dark:text-white font-medium text-3xl capitalize">
             Update user Password

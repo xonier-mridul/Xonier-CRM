@@ -25,6 +25,7 @@ import { handleCopy } from "@/src/app/utils/clipboard.utils";
 import { FaRegPaperPlane } from "react-icons/fa";
 import Pagination from "@/src/components/common/pagination";
 import { useSearchParams } from "next/navigation";
+import { FaRegUser } from "react-icons/fa";
 
 const DealContent = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -331,7 +332,7 @@ const DealContent = (): JSX.Element => {
                         </span>
                       </td>
                       <td className="p-4"> <span className="px-3 py-1.5 rounded-md bg-blue-100 text-xs text-blue-600 font-medium">{date}</span></td>
-                      <td className="p-4">{item.createdBy?.firstName + " " + item.createdBy?.lastName}</td>
+                      <td className="p-4"><Link href={`/users/${item.createdBy.id}`} className="flex text-[12px] items-center capitalize gap-1.5 bg-green-100/80 text-green-500 px-3.5 py-1 rounded-full w-fit cursor-pointer hover:scale-103 hover:bg-green-500 hover:text-white"> <FaRegUser className="text-[12px]"/> {item.createdBy?.firstName + " " + item.createdBy?.lastName}</Link></td>
                       <td>
                         <div className="flex items-center gap-2">
                           {hasPermission(PERMISSIONS.readDeal) ? (

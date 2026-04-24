@@ -127,14 +127,14 @@ export function MarkFinalModal({
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
           <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
-            style={{ backgroundColor: statusColor }}
+            className="w-9 h-9 rounded-xl flex items-center justify-center  bg-green-500 text-white text-sm font-bold flex-shrink-0"
+            
           >
             ✓
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-gray-900 dark:text-white">
-              Mark as <span style={{ color: statusColor }}>{statusName}</span>
+              Mark as <span>{statusName}</span>
             </p>
             <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
               {taskTitle}
@@ -243,7 +243,7 @@ export function MarkFinalModal({
             type="button"
             onClick={onCancel}
             disabled={submitting}
-            className="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50"
+            className="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50"
           >
             Cancel
           </button>
@@ -251,8 +251,8 @@ export function MarkFinalModal({
             type="button"
             onClick={handleConfirm}
             disabled={submitting}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ backgroundColor: statusColor }}
+            className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 cursor-pointer px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            
           >
             {submitting ? "Saving…" : "✓ Confirm & Mark Final"}
           </button>
