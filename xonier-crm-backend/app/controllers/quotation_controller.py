@@ -34,6 +34,29 @@ class QuotationController:
         except AppException as e:
             raise e
         
+
+    async def get_by_token(self, request: Request, token: str):
+        try:
+
+            result = await self.service.get_by_token(token=token)
+            return successResponse(200, "Enquiry data fetched successfully", result)
+
+
+        except AppException as e:
+            raise e
+        
+
+    async def confirm(self, request: Request, token: str):
+        try:
+
+            result = await self.service.confirm(token=token)
+            return successResponse(200, "Enquiry data fetched successfully", result)
+
+
+        except AppException as e:
+            raise e
+        
+        
     async def get_by_id(self, request: Request, quoteId: str):
         try:
             user = request.state.user

@@ -102,7 +102,7 @@ class AuthServices:
             is_admin = validate_admin(user["userRole"])
             is_manager = False
 
-            query = {}
+            query =  {"status": USER_STATUS.ACTIVE}
 
             if not is_admin:
                 members = await self.get_team_members.get_team_members(user["_id"])
@@ -713,11 +713,37 @@ class AuthServices:
         session = await self.client.start_session()
         try:
             session.start_transaction()
+
+            if not ObjectId.is_valid(userId):
+                raise AppException(400, "Invalid user object id")
+            
+            user_data = await self.repo.find_by_id(id=PydanticObjectId(userId), populate=["userRole"])
+
+            if not user_data:
+                raise AppException(404, "User not found")
+            
+            user_data = user_data.model_dump(mode="json")
+            
+            is_admin = validate_admin(user_data["userRole"])
+            
+            
              
             payload = {
                 **payload, "updatedBy": updatedBy 
             }
 
+            role = payload.get("userRole")
+
+
+            if role:
+                role_data = await self.role_repo.find_by_id(id=PydanticObjectId(role[0]))
+
+                role = role_data.code
+
+            if is_admin and (role != SUPER_ADMIN_CODE):
+                raise AppException(400, "Operation denied, Admin role can't be changed")
+
+            
             updated_user = await self.repo.update_with_encryption(userId, payload, session)
             if not updated_user:
                 raise AppException(400, "User not updated")

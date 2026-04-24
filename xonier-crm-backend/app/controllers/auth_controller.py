@@ -68,7 +68,6 @@ class AuthController:
            raise e
         
     async def resend_verification_otp(self, data: Dict[str, Any]):
-       
         try:
             
             result = await self.service.resend_verification_otp(data)
@@ -79,7 +78,6 @@ class AuthController:
            raise e
 
 
-        
         
     async def verify_login_otp(self, request: Request, response: Response, data: dict[str, Any]):
         try:

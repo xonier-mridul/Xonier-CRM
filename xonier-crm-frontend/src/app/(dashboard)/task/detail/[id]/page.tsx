@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { TaskService } from "@/src/services/tasks.service";
 import ComingSoonOverlay from "@/src/components/ui/ComingSoonOverlay";
 import { useParams } from "next/navigation";
+import { MdContentCopy } from "react-icons/md";
 import Link from "next/link";
 import {
   Calendar,
@@ -51,6 +52,7 @@ import { getColorOption } from "@/src/components/pages/task/createStatusModal";
 import { SubTaskModel } from "@/src/types/task/subTask.types";
 import { Check } from "lucide-react";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
+import { handleCopy } from "@/src/app/utils/clipboard.utils";
 
 
 
@@ -443,7 +445,7 @@ const SubTaskItem = ({ subtask, isToggling, onToggle, onDelete, onEdit }: SubTas
         </span>
       )}
 
-      {/* ── Actual hours badge ── */}
+
       {subtask.actualHours != null && subtask.actualHours > 0 && (
         <span className="text-[11px] text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full shrink-0">
           {subtask.actualHours}h
@@ -888,6 +890,8 @@ const page = () => {
                       {taskData.entityType} · {taskData.entityName}
                     </span>
                   )}
+
+                  
                   
                 </div>
                 <RatingStars rating={taskData.rating || 0} />
@@ -931,6 +935,7 @@ const page = () => {
                         Completed {formatDate(taskData.completedAt)}
                       </span>
                     )}
+                    <div className="text-sm bg-green-50 px-3 py-1 rounded text-green-500 flex items-center gap-1.5"><span className="">{taskData.task_id}</span><span className="cursor-pointer" onClick={()=>handleCopy(taskData.task_id)}><MdContentCopy /></span></div>
                   </div>
 
                   

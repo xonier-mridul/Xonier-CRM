@@ -7,8 +7,8 @@ import { toast } from "react-toastify";
 
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import { QuoteService } from "@/src/services/quote.service";
-import { QuotationStatus } from "@/src/constants/enum";
-import { Quotation, QuotationUpdatePayload } from "@/src/types/quotations/quote.types";
+import { QuotationStatus, QuotationCurrency } from "@/src/constants/enum";
+import { Quotation, QuotationUpdatePayload, QuotationLineItemPayload } from "@/src/types/quotations/quote.types";
 
 import Input from "@/src/components/ui/Input";
 import Select from "@/src/components/ui/Select";
@@ -30,7 +30,70 @@ import {
   IoBusinessOutline,
   IoAlertCircleOutline,
   IoCheckmarkCircle,
+  IoListOutline,
+  IoAddOutline,
+  IoTrashOutline,
+  IoReceiptOutline,
+  IoDocumentTextOutline,
+  IoGlobeOutline,
+  IoChevronDownOutline,
+  IoChevronUpOutline,
 } from "react-icons/io5";
+
+const CURRENCY_SYMBOLS: Record<QuotationCurrency, string> = {
+  [QuotationCurrency.USD]: '$',
+  [QuotationCurrency.EUR]: '€',
+  [QuotationCurrency.GBP]: '£',
+  [QuotationCurrency.INR]: '₹',
+  [QuotationCurrency.AED]: 'د.إ',
+  [QuotationCurrency.SAR]: '﷼',
+  [QuotationCurrency.PKR]: '₨',
+  [QuotationCurrency.CAD]: 'CA$',
+  [QuotationCurrency.AUD]: 'A$',
+}
+
+const EMPTY_LINE_ITEM: QuotationLineItemPayload = {
+  description: '',
+  quantity: 1,
+  unit: '',
+  unitPrice: 0,
+  discount: null,
+  taxRate: null,
+  total: 0,
+}
+
+function Section({
+  title,
+  icon,
+  children,
+  defaultOpen = true,
+}: {
+  title: string
+  icon: React.ReactNode
+  children: React.ReactNode
+  defaultOpen?: boolean
+}) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden mb-5">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
+      >
+        <span className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
+          {icon}
+          {title}
+        </span>
+        {open
+          ? <IoChevronUpOutline className="w-4 h-4 text-gray-400" />
+          : <IoChevronDownOutline className="w-4 h-4 text-gray-400" />
+        }
+      </button>
+      {open && <div className="px-6 pb-6 pt-1">{children}</div>}
+    </div>
+  )
+}
 
 const Page = () => {
   const { id } = useParams();
@@ -41,26 +104,33 @@ const Page = () => {
   const [error, setError] = useState<string[] | string>("");
   const [success, setSuccess] = useState<string>("");
   const [showPreview, setShowPreview] = useState<boolean>(false);
-
   const [original, setOriginal] = useState<Quotation | null>(null);
   const [formData, setFormData] = useState<QuotationUpdatePayload>({});
 
-  /* ---------------- FETCH QUOTATION ---------------- */
   const fetchQuotation = async () => {
     setIsInitialLoading(true);
     try {
       const res = await QuoteService.get_by_id(String(id));
       const data: Quotation = res.data.data;
-
       setOriginal(data);
-
       setFormData({
         title: data.title,
-        description: data.description,
+        description: data.description ?? '',
         issueDate: data.issueDate,
-        valid: data.valid,
+        valid: data.valid ?? '',
         subTotal: data.subTotal,
         total: data.total,
+        discountAmount: data.discountAmount ?? null,
+        discountPercent: data.discountPercent ?? null,
+        taxAmount: data.taxAmount ?? null,
+        taxPercent: data.taxPercent ?? null,
+        shippingAmount: data.shippingAmount ?? null,
+        lineItems: data.lineItems ?? [],
+        paymentTerms: data.paymentTerms ?? '',
+        paymentMethod: data.paymentMethod ?? '',
+        notes: data.notes ?? '',
+        internalNotes: data.internalNotes ?? '',
+        termsAndConditions: data.termsAndConditions ?? '',
         quotationStatus: data.quotationStatus,
       });
     } catch (err) {
@@ -80,58 +150,95 @@ const Page = () => {
   useEffect(() => {
     if (!id) return;
     fetchQuotation();
-    
   }, [id]);
-
 
   const diffPayload = useMemo(() => {
     if (!original) return {};
-
     const payload: QuotationUpdatePayload = {};
-
     Object.entries(formData).forEach(([key, value]) => {
       const originalValue = (original as any)[key];
-      if (value !== originalValue) {
+      if (JSON.stringify(value) !== JSON.stringify(originalValue)) {
         (payload as any)[key] = value;
       }
     });
-
     return payload;
   }, [formData, original]);
 
   const hasChanges = Object.keys(diffPayload).length > 0;
 
+  const symbol = original ? (CURRENCY_SYMBOLS[original.currency] ?? '$') : '$';
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+  const setField = (name: keyof QuotationUpdatePayload, value: any) => {
     setFormData(prev => ({ ...prev, [name]: value }));
     if (error) setError("");
   };
 
-  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: parseFloat(value) || 0 }));
-    if (error) setError("");
+  const handleInput = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setField(e.target.name as keyof QuotationUpdatePayload, e.target.value);
   };
 
-  const handleUpdate = async () => {
-    if (!hasChanges) {
-      toast.info("No changes to update");
-      return;
-    }
+  const handleNullableNumber = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value === '' ? null : parseFloat(e.target.value);
+    setField(e.target.name as keyof QuotationUpdatePayload, val);
+  };
 
+  const computeLineItemTotal = (item: QuotationLineItemPayload): number => {
+    let total = item.quantity * item.unitPrice;
+    if (item.discount) total = total * (1 - item.discount / 100);
+    if (item.taxRate) total = total * (1 + item.taxRate / 100);
+    return Math.round(total * 100) / 100;
+  };
+
+  const updateLineItem = (index: number, field: keyof QuotationLineItemPayload, value: any) => {
+    setFormData(prev => {
+      const items = [...(prev.lineItems ?? [])];
+      const updated = { ...items[index], [field]: value };
+      updated.total = computeLineItemTotal(updated);
+      items[index] = updated;
+      const subTotal = Math.round(items.reduce((s, i) => s + i.total, 0) * 100) / 100;
+      return { ...prev, lineItems: items, subTotal };
+    });
+  };
+
+  const addLineItem = () => {
+    setFormData(prev => ({ ...prev, lineItems: [...(prev.lineItems ?? []), { ...EMPTY_LINE_ITEM }] }));
+  };
+
+  const removeLineItem = (index: number) => {
+    setFormData(prev => {
+      const items = (prev.lineItems ?? []).filter((_, i) => i !== index);
+      const subTotal = Math.round(items.reduce((s, i) => s + i.total, 0) * 100) / 100;
+      return { ...prev, lineItems: items, subTotal };
+    });
+  };
+
+  useEffect(() => {
+    let total = formData.subTotal ?? 0;
+    if (formData.discountAmount) total -= formData.discountAmount;
+    if (formData.discountPercent) total -= (formData.subTotal ?? 0) * formData.discountPercent / 100;
+    if (formData.taxAmount) total += formData.taxAmount;
+    if (formData.taxPercent) total += (formData.subTotal ?? 0) * formData.taxPercent / 100;
+    if (formData.shippingAmount) total += formData.shippingAmount;
+    setFormData(prev => ({ ...prev, total: Math.max(0, Math.round(total * 100) / 100) }));
+  }, [
+    formData.subTotal,
+    formData.discountAmount,
+    formData.discountPercent,
+    formData.taxAmount,
+    formData.taxPercent,
+    formData.shippingAmount,
+  ]);
+
+  const handleUpdate = async () => {
+    if (!hasChanges) { toast.info("No changes to update"); return; }
     setLoading(true);
     setError("");
     setSuccess("");
-
     try {
       await QuoteService.update(String(id), diffPayload);
       setSuccess("Quotation updated successfully!");
       toast.success("Quotation updated successfully");
-      
-      setTimeout(() => {
-        router.push(`/quotations/view/${id}`);
-      }, 1500);
+      setTimeout(() => router.push(`/quotations/view/${id}`), 1500);
     } catch (err) {
       if (axios.isAxiosError(err)) {
         const msg = extractErrorMessages(err);
@@ -146,72 +253,45 @@ const Page = () => {
     }
   };
 
+  const fmt = (n: number) =>
+    `${symbol}${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2
-    }).format(amount);
+  const formatDate = (s: string) =>
+    s ? new Date(s).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—';
+
+  const getStatusColor = (status: QuotationStatus) => {
+    const colors: Record<QuotationStatus, string> = {
+      [QuotationStatus.DRAFT]: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
+      [QuotationStatus.SENT]: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+      [QuotationStatus.UPDATED]: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
+      [QuotationStatus.RESEND]: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400',
+      [QuotationStatus.VIEWED]: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
+      [QuotationStatus.ACCEPTED]: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+      [QuotationStatus.REJECTED]: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+      [QuotationStatus.DELETE]: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+      [QuotationStatus.EXPIRED]: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
+    };
+    return colors[status] || colors[QuotationStatus.DRAFT];
   };
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "Not set";
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
+  const validityDays = formData.issueDate && formData.valid
+    ? Math.ceil((new Date(formData.valid).getTime() - new Date(formData.issueDate).getTime()) / 86400000)
+    : null;
 
-const getStatusColor = (status: QuotationStatus) => {
-  const colors = {
-    [QuotationStatus.DRAFT]:
-      'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
+  const hasLineItems = (formData.lineItems ?? []).length > 0;
 
-    [QuotationStatus.SENT]:
-      'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-
-    [QuotationStatus.UPDATED]:
-      'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
-
-    [QuotationStatus.RESEND]:
-      'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400',
-
-    [QuotationStatus.VIEWED]:
-      'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
-
-    [QuotationStatus.ACCEPTED]:
-      'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-
-    [QuotationStatus.REJECTED]:
-      'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-
-    [QuotationStatus.DELETE]:
-      'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-
-    [QuotationStatus.EXPIRED]:
-      'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
-  };
-
-  return colors[status] || colors[QuotationStatus.DRAFT];
-};
-
-
-  /* ---------------- LOADING STATE ---------------- */
   if (isInitialLoading) {
     return (
       <div className="ml-72 mt-14 p-6">
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-gray-600 dark:text-gray-400">Loading quotation...</p>
+            <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm text-gray-500 dark:text-gray-400">Loading quotation...</p>
           </div>
         </div>
       </div>
     );
   }
-
 
   if (!original) {
     return (
@@ -219,15 +299,13 @@ const getStatusColor = (status: QuotationStatus) => {
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <IoDocumentText className="w-20 h-20 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              Quotation Not Found
-            </h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Quotation Not Found</h2>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               The quotation you're trying to edit doesn't exist or has been removed.
             </p>
             <button
               onClick={() => router.back()}
-              className="inline-flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors"
             >
               <IoArrowBack className="w-5 h-5" />
               Go Back
@@ -238,418 +316,392 @@ const getStatusColor = (status: QuotationStatus) => {
     );
   }
 
- 
   return (
-    <div className="ml-72 mt-14 p-6 min-h-screen">
-      {/* Header */}
-      <div className="mb-6">
-        
+    <div className="ml-72 mt-14 p-6 min-h-screen bg-gray-50 dark:bg-gray-900">
 
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-              <IoDocumentText className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-              Update Quotation
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">
-              Editing quotation: <span className="font-semibold">{original.quoteId}</span>
-            </p>
-          </div>
-
-          <button
-            onClick={() => setShowPreview(!showPreview)}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-              showPreview
-                ? 'bg-blue-600 text-white hover:bg-blue-700'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-            }`}
-          >
-            <IoEyeOutline className="w-5 h-5" />
-            {showPreview ? 'Hide Preview' : 'Show Preview'}
-          </button>
+      <div className="mb-5 flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <IoDocumentText className="w-6 h-6 text-blue-500" />
+            Update Quotation
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Editing: <span className="font-mono font-semibold text-gray-700 dark:text-gray-300">{original.quoteId}</span>
+            &nbsp;·&nbsp; {original.currency} ({symbol})
+          </p>
         </div>
+        <button
+          type="button"
+          onClick={() => setShowPreview(p => !p)}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+            showPreview
+              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50'
+          }`}
+        >
+          <IoEyeOutline className="w-4 h-4" />
+          {showPreview ? 'Hide Preview' : 'Preview'}
+        </button>
       </div>
 
-      {/* Error and Success Messages */}
-      <div className="mb-6">
+      <div className="mb-4">
         <ErrorComponent error={error} />
         <SuccessComponent message={success} />
       </div>
 
-      {/* Changes Indicator */}
       {hasChanges && (
-        <div className="mb-6 p-4 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+        <div className="mb-5 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-200 dark:border-amber-800">
           <div className="flex items-start gap-3">
-            <IoAlertCircleOutline className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 shrink-0" />
+            <IoAlertCircleOutline className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
             <div>
-              <p className="text-sm font-medium text-yellow-900 dark:text-yellow-100">
-                You have unsaved changes
-              </p>
-              <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
-                {Object.keys(diffPayload).length} field{Object.keys(diffPayload).length > 1 ? 's' : ''} modified: {Object.keys(diffPayload).join(', ')}
+              <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">Unsaved changes</p>
+              <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
+                {Object.keys(diffPayload).length} field{Object.keys(diffPayload).length > 1 ? 's' : ''} modified:{' '}
+                {Object.keys(diffPayload).join(', ')}
               </p>
             </div>
           </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className={`grid gap-5 ${showPreview ? 'grid-cols-1 xl:grid-cols-3' : 'grid-cols-1'}`}>
+        <div className={showPreview ? 'xl:col-span-2' : ''}>
 
-        <div className={`${showPreview ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-6`}>
-          
-
-          <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-              <IoInformationCircleOutline className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-              Basic Information
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Section title="Basic Information" icon={<IoInformationCircleOutline className="w-4 h-4 text-blue-500" />}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
                 <Input
                   label="Quotation Title"
                   name="title"
-                  value={formData.title || ""}
-                  onChange={handleChange}
+                  value={formData.title ?? ''}
+                  onChange={handleInput}
                   placeholder="Enter quotation title"
                   className="w-full"
                 />
               </div>
-
               <div className="md:col-span-2">
                 <Input
                   type="textarea"
                   label="Description"
                   name="description"
-                  value={formData.description || ""}
-                  onChange={handleChange}
-                  placeholder="Enter quotation description..."
+                  value={formData.description ?? ''}
+                  onChange={handleInput}
+                  placeholder="Enter description..."
                   className="w-full"
                 />
               </div>
-
-              {/* <Select
-                label="Status"
-                name="quotationStatus"
-                value={formData.quotationStatus}
-                onChange={handleChange}
-                required
-                placeholder="Select status"
-                options={Object.values(QuotationStatus).map(s => ({
-                  label: s.charAt(0).toUpperCase() + s.slice(1),
-                  value: s,
-                }))}
-                className="w-full"
-              /> */}
             </div>
-          </section>
+          </Section>
 
-
-          <section className="bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-              <IoPersonOutline className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-              Customer Information
-              <span className="ml-auto text-xs font-normal text-gray-500 dark:text-gray-400">(Read-only)</span>
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input
-                label="Customer Name"
-                name="customerName"
-                value={original.customerName}
-                disabled
-                className="w-full"
-              />
-
-              <Input
-                label="Company Name"
-                name="companyName"
-                value={original.companyName || "N/A"}
-                disabled
-                className="w-full"
-              />
-
-              <Input
-                label="Email Address"
-                name="customerEmail"
-                type="email"
-                value={original.customerEmail}
-                disabled
-                className="w-full"
-              />
-
-              <Input
-                label="Phone Number"
-                name="customerPhone"
-                type="tel"
-                value={original.customerPhone || "N/A"}
-                disabled
-                className="w-full"
-              />
+          <Section title="Customer Information" icon={<IoPersonOutline className="w-4 h-4 text-blue-500" />}>
+            <p className="text-xs text-gray-400 mb-4 -mt-1">Customer details are read-only and linked to the deal.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input label="Customer Name" name="customerName" value={original.customerName} disabled className="w-full" />
+              <Input label="Company Name" name="companyName" value={original.companyName ?? '—'} disabled className="w-full" />
+              <Input label="Email" name="customerEmail" type="email" value={original.customerEmail} disabled className="w-full" />
+              <Input label="Phone" name="customerPhone" type="tel" value={original.customerPhone ?? '—'} disabled className="w-full" />
             </div>
-          </section>
+          </Section>
 
-          {/* Financial Information */}
-          <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-              <IoCashOutline className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-              Financial Details
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input
-                type="number"
-                label="Subtotal"
-                name="subTotal"
-                value={formData.subTotal ?? 0}
-                onChange={handleNumberChange}
-                required
-                step="0.01"
-                min="0"
-                placeholder="0.00"
-                className="w-full"
-              />
-
-              <Input
-                type="number"
-                label="Total Amount"
-                name="total"
-                value={formData.total ?? 0}
-                onChange={handleNumberChange}
-                required
-                step="0.01"
-                min="0"
-                placeholder="0.00"
-                className="w-full"
-              />
-
-              {(formData.total ?? 0) !== (formData.subTotal ?? 0) && (formData.subTotal ?? 0) > 0 && (
-                <div className="md:col-span-2 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <div className="flex items-start gap-2">
-                    <IoInformationCircleOutline className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                        Tax/Adjustments: {formatCurrency((formData.total ?? 0) - (formData.subTotal ?? 0))}
-                      </p>
-                      <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                        The difference between subtotal and total
-                      </p>
+          <Section title="Line Items" icon={<IoListOutline className="w-4 h-4 text-blue-500" />}>
+            {(formData.lineItems ?? []).length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-6">No line items. Add items to auto-calculate subtotal.</p>
+            ) : (
+              (formData.lineItems ?? []).map((item, index) => (
+                <div key={index} className="grid grid-cols-12 gap-2 items-start bg-gray-50 dark:bg-gray-700/40 rounded-xl p-3 mb-2">
+                  <div className="col-span-12 sm:col-span-4">
+                    <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Description *</label>
+                    <input
+                      className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Service or product"
+                      value={item.description}
+                      onChange={e => updateLineItem(index, 'description', e.target.value)}
+                    />
+                  </div>
+                  <div className="col-span-4 sm:col-span-1">
+                    <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Qty</label>
+                    <input type="number" min="0" step="0.01"
+                      className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={item.quantity}
+                      onChange={e => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)}
+                    />
+                  </div>
+                  <div className="col-span-4 sm:col-span-1">
+                    <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Unit</label>
+                    <input
+                      className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="pcs"
+                      value={item.unit ?? ''}
+                      onChange={e => updateLineItem(index, 'unit', e.target.value)}
+                    />
+                  </div>
+                  <div className="col-span-4 sm:col-span-2">
+                    <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Unit Price</label>
+                    <div className="relative">
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">{symbol}</span>
+                      <input type="number" min="0" step="0.01"
+                        className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 pl-6 pr-2 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value={item.unitPrice}
+                        onChange={e => updateLineItem(index, 'unitPrice', parseFloat(e.target.value) || 0)}
+                      />
                     </div>
+                  </div>
+                  <div className="col-span-4 sm:col-span-1">
+                    <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Disc %</label>
+                    <input type="number" min="0" max="100" step="0.01" placeholder="0"
+                      className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={item.discount ?? ''}
+                      onChange={e => updateLineItem(index, 'discount', e.target.value === '' ? null : parseFloat(e.target.value))}
+                    />
+                  </div>
+                  <div className="col-span-4 sm:col-span-1">
+                    <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Tax %</label>
+                    <input type="number" min="0" max="100" step="0.01" placeholder="0"
+                      className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={item.taxRate ?? ''}
+                      onChange={e => updateLineItem(index, 'taxRate', e.target.value === '' ? null : parseFloat(e.target.value))}
+                    />
+                  </div>
+                  <div className="col-span-4 sm:col-span-1">
+                    <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Total</label>
+                    <p className="text-sm font-bold text-gray-900 dark:text-white py-2 px-1">{fmt(item.total)}</p>
+                  </div>
+                  <div className="col-span-4 sm:col-span-1 flex items-end justify-end pb-1">
+                    <button type="button" onClick={() => removeLineItem(index)}
+                      className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                      <IoTrashOutline className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+            <button type="button" onClick={addLineItem}
+              className="mt-2 flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 border border-blue-300 dark:border-blue-700 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+              <IoAddOutline className="w-4 h-4" />
+              Add Line Item
+            </button>
+          </Section>
+
+          <Section title="Financial Details" icon={<IoCashOutline className="w-4 h-4 text-blue-500" />}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="md:col-span-2 lg:col-span-3">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Subtotal *
+                  {hasLineItems && <span className="ml-2 text-xs font-normal text-gray-400">(auto-calculated)</span>}
+                </label>
+                <div className="relative max-w-xs">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">{symbol}</span>
+                  <input type="number" name="subTotal" step="0.01" min="0"
+                    value={formData.subTotal ?? 0}
+                    onChange={handleNullableNumber}
+                    disabled={hasLineItems}
+                    className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 pl-8 pr-4 py-2 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+              {[
+                { label: `Discount Amount (${symbol})`, name: 'discountAmount', val: formData.discountAmount },
+                { label: 'Discount (%)', name: 'discountPercent', val: formData.discountPercent },
+                { label: `Tax Amount (${symbol})`, name: 'taxAmount', val: formData.taxAmount },
+                { label: 'Tax Rate (%)', name: 'taxPercent', val: formData.taxPercent },
+                { label: `Shipping (${symbol})`, name: 'shippingAmount', val: formData.shippingAmount },
+              ].map(({ label, name, val }) => (
+                <div key={name}>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
+                  <input type="number" name={name} min="0" step="0.01" placeholder="0"
+                    value={val ?? ''}
+                    onChange={handleNullableNumber}
+                    className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              ))}
+              <div className="md:col-span-2 lg:col-span-3">
+                <div className="flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl px-5 py-4">
+                  <span className="font-semibold text-gray-900 dark:text-white">Grand Total</span>
+                  <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">{fmt(formData.total ?? 0)}</span>
+                </div>
+              </div>
+            </div>
+          </Section>
+
+          <Section title="Validity Period" icon={<IoCalendarOutline className="w-4 h-4 text-blue-500" />}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input label="Issue Date *" name="issueDate" type="date" value={formData.issueDate ?? ''} onChange={handleInput} className="w-full" />
+              <Input label="Valid Until" name="valid" type="date" value={formData.valid ?? ''} onChange={handleInput} min={formData.issueDate} className="w-full" />
+              {validityDays !== null && validityDays > 0 && (
+                <div className="md:col-span-2">
+                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700/50 rounded-xl px-4 py-3">
+                    <IoCalendarOutline className="w-4 h-4 text-blue-500" />
+                    Valid for <span className="font-semibold text-gray-900 dark:text-white">{validityDays} days</span>
+                    &nbsp;— expires {formatDate(formData.valid ?? '')}
                   </div>
                 </div>
               )}
             </div>
-          </section>
+          </Section>
 
-          {/* Date Information */}
-          <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-              <IoCalendarOutline className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-              Validity Period
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input
-                type="date"
-                label="Issue Date"
-                name="issueDate"
-                value={formData.issueDate || ""}
-                onChange={handleChange}
-                required
-                className="w-full"
-              />
-
-              <Input
-                type="date"
-                label="Valid Until"
-                name="valid"
-                value={formData.valid || ""}
-                onChange={handleChange}
-                min={formData.issueDate}
-                className="w-full"
-              />
-
-              {formData.issueDate && formData.valid && (
-                <div className="md:col-span-2 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
-                    <span className="font-medium">Validity Duration:</span>{' '}
-                    {Math.ceil(
-                      (new Date(formData.valid).getTime() - new Date(formData.issueDate).getTime()) /
-                      (1000 * 60 * 60 * 24)
-                    )}{' '}
-                    days
-                  </p>
-                </div>
-              )}
+          <Section title="Payment Details" icon={<IoReceiptOutline className="w-4 h-4 text-blue-500" />} defaultOpen={false}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input label="Payment Terms" name="paymentTerms" value={formData.paymentTerms ?? ''} onChange={handleInput} placeholder="e.g., Net 30" className="w-full" />
+              <Input label="Payment Method" name="paymentMethod" value={formData.paymentMethod ?? ''} onChange={handleInput} placeholder="e.g., Bank transfer" className="w-full" />
             </div>
-          </section>
+          </Section>
 
-          {/* Action Buttons */}
-          <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-            <div className="flex flex-col sm:flex-row gap-4 justify-end">
-              <button
-                type="button"
-                onClick={() => router.back()}
-                disabled={loading}
-                className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-              >
+          <Section title="Notes & Terms" icon={<IoDocumentTextOutline className="w-4 h-4 text-blue-500" />} defaultOpen={false}>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Customer Notes</label>
+                <textarea name="notes" rows={3} value={formData.notes ?? ''}
+                  onChange={handleInput}
+                  placeholder="Notes visible to the customer..."
+                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Internal Notes
+                  <span className="ml-2 text-xs font-normal text-gray-400">(not visible to customer)</span>
+                </label>
+                <textarea name="internalNotes" rows={3} value={formData.internalNotes ?? ''}
+                  onChange={handleInput}
+                  placeholder="Internal notes for your team..."
+                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Terms & Conditions</label>
+                <textarea name="termsAndConditions" rows={4} value={formData.termsAndConditions ?? ''}
+                  onChange={handleInput}
+                  placeholder="Standard terms and conditions..."
+                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                />
+              </div>
+            </div>
+          </Section>
+
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 px-6 py-5">
+            <div className="flex flex-col sm:flex-row gap-3 justify-end">
+              <button type="button" onClick={() => router.back()} disabled={loading}
+                className="px-5 py-2.5 rounded-xl text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50">
                 Cancel
               </button>
-
-              <button
-                type="button"
-                onClick={handleUpdate}
-                disabled={!hasChanges || loading || (original.quotationStatus === QuotationStatus.DELETE)}
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-2"
-              >
-                <IoSaveOutline className="w-5 h-5" />
+              <button type="button" onClick={handleUpdate}
+                disabled={!hasChanges || loading || original.quotationStatus === QuotationStatus.DELETE}
+                className="px-5 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                <IoSaveOutline className="w-4 h-4" />
                 {loading ? 'Updating...' : 'Update Quotation'}
               </button>
             </div>
-          </section>
+          </div>
         </div>
 
-        {/* Preview Section */}
         {showPreview && (
-          <div className="lg:col-span-1">
-            <div className="sticky top-20 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <IoEyeOutline className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+          <div className="xl:col-span-1">
+            <div className="sticky top-20 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                  <IoEyeOutline className="w-4 h-4 text-blue-500" />
                   Live Preview
                 </h2>
-                <button
-                  onClick={() => setShowPreview(false)}
-                  className="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors lg:hidden"
-                >
-                  <IoCloseOutline className="w-5 h-5" />
+                <button onClick={() => setShowPreview(false)}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors xl:hidden">
+                  <IoCloseOutline className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="space-y-4">
-                {/* Header */}
-                <div className="pb-4 border-b border-gray-200 dark:border-gray-700">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">QUOTATION ID</p>
-                  <p className="text-sm font-mono text-gray-600 dark:text-gray-300 mb-3">
-                    {original.quoteId}
-                  </p>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-                    {formData.title || 'Untitled Quotation'}
-                  </h3>
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(formData.quotationStatus!)}`}>
-                    {formData.quotationStatus?.charAt(0).toUpperCase()}{formData.quotationStatus?.slice(1)}
-                  </span>
-                  
-                  {hasChanges && (
-                    <div className="mt-3 flex items-center gap-2 text-xs text-yellow-600 dark:text-yellow-400">
-                      <IoAlertCircleOutline className="w-4 h-4" />
-                      <span>Unsaved changes</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Customer Info */}
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">CUSTOMER</p>
-                  <div className="space-y-2">
-                    <p className="font-semibold text-gray-900 dark:text-white">
-                      {original.customerName}
-                    </p>
-                    {original.companyName && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1">
-                        <IoBusinessOutline className="w-4 h-4" />
-                        {original.companyName}
-                      </p>
-                    )}
-                    <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1">
-                      <IoMailOutline className="w-4 h-4" />
-                      {original.customerEmail}
-                    </p>
-                    {original.customerPhone && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1">
-                        <IoCallOutline className="w-4 h-4" />
-                        {original.customerPhone}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Dates */}
-                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Issue Date:</span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        {formatDate(formData.issueDate || "")}
-                      </span>
-                    </div>
-                    {formData.valid && (
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">Valid Until:</span>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {formatDate(formData.valid)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Financial Summary */}
-                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">FINANCIAL SUMMARY</p>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Subtotal:</span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        {formatCurrency(formData.subTotal ?? 0)}
-                      </span>
-                    </div>
-                    {(formData.total ?? 0) !== (formData.subTotal ?? 0) && (
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">Tax/Adjustments:</span>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {formatCurrency((formData.total ?? 0) - (formData.subTotal ?? 0))}
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
-                      <span className="font-semibold text-gray-900 dark:text-white">Total:</span>
-                      <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                        {formatCurrency(formData.total ?? 0)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Description */}
-                {formData.description && (
-                  <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">DESCRIPTION</p>
-                    <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                      {formData.description}
-                    </p>
-                  </div>
-                )}
-
-                {/* Modified Fields Indicator */}
+              <div className="pb-4 border-b border-gray-100 dark:border-gray-700">
+                <p className="text-xs text-gray-400 mb-1 font-mono">{original.quoteId}</p>
+                <p className="text-base font-bold text-gray-900 dark:text-white">{formData.title || 'Untitled'}</p>
+                <span className={`mt-1.5 inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(formData.quotationStatus!)}`}>
+                  {formData.quotationStatus}
+                </span>
                 {hasChanges && (
-                  <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                      <div className="flex items-start gap-2">
-                        <IoCheckmarkCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-                        <div>
-                          <p className="text-xs font-medium text-blue-900 dark:text-blue-100 mb-1">
-                            Modified Fields:
-                          </p>
-                          <p className="text-xs text-blue-700 dark:text-blue-300">
-                            {Object.keys(diffPayload).map(key => key.charAt(0).toUpperCase() + key.slice(1)).join(', ')}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                  <div className="mt-2 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+                    <IoAlertCircleOutline className="w-3.5 h-3.5" />
+                    Unsaved changes
                   </div>
                 )}
               </div>
+
+              <div className="space-y-1.5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Customer</p>
+                <p className="font-semibold text-sm text-gray-900 dark:text-white">{original.customerName}</p>
+                {original.companyName && (
+                  <p className="text-xs text-gray-500 flex items-center gap-1"><IoBusinessOutline className="w-3.5 h-3.5" />{original.companyName}</p>
+                )}
+                <p className="text-xs text-gray-500 flex items-center gap-1"><IoMailOutline className="w-3.5 h-3.5" />{original.customerEmail}</p>
+                {original.customerPhone && (
+                  <p className="text-xs text-gray-500 flex items-center gap-1"><IoCallOutline className="w-3.5 h-3.5" />{original.customerPhone}</p>
+                )}
+              </div>
+
+              <div className="space-y-1.5 pt-4 border-t border-gray-100 dark:border-gray-700">
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-400">Issue Date</span>
+                  <span className="text-gray-900 dark:text-white">{formatDate(formData.issueDate ?? '')}</span>
+                </div>
+                {formData.valid && (
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-400">Valid Until</span>
+                    <span className="text-gray-900 dark:text-white">{formatDate(formData.valid)}</span>
+                  </div>
+                )}
+              </div>
+
+              {hasLineItems && (
+                <div className="space-y-1.5 pt-4 border-t border-gray-100 dark:border-gray-700">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Items</p>
+                  {(formData.lineItems ?? []).map((item, i) => (
+                    <div key={i} className="flex justify-between text-xs">
+                      <span className="text-gray-600 dark:text-gray-300 truncate max-w-[60%]">
+                        {item.description || `Item ${i + 1}`}
+                        <span className="text-gray-400 ml-1">×{item.quantity}</span>
+                      </span>
+                      <span className="font-medium text-gray-900 dark:text-white">{fmt(item.total)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="space-y-1.5 pt-4 border-t border-gray-100 dark:border-gray-700">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Summary</p>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-400">Subtotal</span>
+                  <span className="text-gray-900 dark:text-white">{fmt(formData.subTotal ?? 0)}</span>
+                </div>
+                {formData.discountAmount && (
+                  <div className="flex justify-between text-xs">
+                    <span className="text-emerald-500">Discount</span>
+                    <span className="text-emerald-500">-{fmt(formData.discountAmount)}</span>
+                  </div>
+                )}
+                {formData.taxAmount && (
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-400">Tax</span>
+                    <span className="text-gray-900 dark:text-white">+{fmt(formData.taxAmount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
+                  <span className="text-sm font-bold text-gray-900 dark:text-white">Total</span>
+                  <span className="text-base font-bold text-blue-600 dark:text-blue-400">{fmt(formData.total ?? 0)}</span>
+                </div>
+              </div>
+
+              {hasChanges && (
+                <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
+                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
+                    <div className="flex items-start gap-2">
+                      <IoCheckmarkCircle className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-blue-900 dark:text-blue-100 mb-1">Modified:</p>
+                        <p className="text-xs text-blue-700 dark:text-blue-300">
+                          {Object.keys(diffPayload).map(k => k.charAt(0).toUpperCase() + k.slice(1)).join(', ')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

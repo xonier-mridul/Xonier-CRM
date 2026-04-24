@@ -192,7 +192,8 @@ export interface UserUpdatePageProps {
   passwordData: UserPasswordUpdatedByAdminPayload;
   handlePasswordSubmit: (e: FormEvent<HTMLFormElement>) => void
   passErr: string | string[]
-  isPassLoading: boolean
+  isPassLoading: boolean,
+  isAdmin:boolean
 }
 
 export interface ChangePasswordFormData {

@@ -148,6 +148,7 @@ export interface UserOption {
 
 export interface TaskItem {
   id: string;
+  task_id: string;
   title: string;
   description: string | null;
   category: CategoryItem;
@@ -181,6 +182,7 @@ export interface TaskItem {
   actual_days?: number;
   actual_hours?: number;
   ratedBy?: User;
+  activities: TaskActivity;
 }
 
 export interface PaginatedTaskResponse {

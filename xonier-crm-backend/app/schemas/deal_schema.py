@@ -41,6 +41,18 @@ class DealSchema(BaseModel):
             raise AppException(422 ,"Deal name must be at least 4 characters long")
 
         return value
+    
+    
+    @field_validator("amount", mode="before")
+    @classmethod
+    def validate_amount(cls, value):
+        if not value:
+            raise AppException(400, "Amount field must required")
+        
+        if value <= 0:
+            raise AppException(400, "Amount must be greater then 0")
+        
+        return value
 
 
     

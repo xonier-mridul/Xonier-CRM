@@ -20,6 +20,8 @@ export const QuoteService = {
     return api.get(`/quote/get-all?${params.toString()}`);
   },
   get_by_id: (id:string)=> api.get(`/quote/get-by-id/${id}`),
+  get_data_with_token: (token: string)=> api.get(`/quote/public/${token}`),
+  confirm: (token: string)=> api.post(`/quote/confirm/${token}`),
   create: (payload: QuotationCreatePayload)=> api.post("/quote/create", payload),
   update: (id: string, payload: QuotationUpdatePayload)=> api.put(`/quote/update/${id}`, payload),
   updateStatus: (id: string, payload: QuoteStatusUpdatePayload)=> api.patch(`/quote/update/status/${id}`, payload),

@@ -17,6 +17,17 @@ async def create(request: Request, payload: QuotationSchema):
 async def getAll(request: Request):
     return await controller.getAll(request=request)
 
+
+@router.get("/public/{token}", status_code=200 )
+async def get_by_token(request: Request, token:str):
+    return await controller.get_by_token(request=request, token=token)
+
+
+@router.post("/confirm/{token}", status_code=200 )
+async def confirm(request: Request, token:str):
+    return await controller.confirm(request=request, token=token)
+
+
 @router.get("/get-by-id/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["quote:read"]))])
 async def get_by_id(request:Request, id: str):
     return await controller.get_by_id(request=request, quoteId=id)

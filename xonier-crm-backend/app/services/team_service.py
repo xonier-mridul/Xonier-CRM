@@ -21,6 +21,14 @@ class TeamService:
     async def get_all(self, page: int = 1, limit:int = 10, filters: Dict[str, Any] = {}):
         try:
             query = {}
+
+            if "search" in filters and filters["search"].strip():
+                regex_data = {"$regex": filters["search"], "$options": "i"}
+
+                query.update({"$or": [
+                    {"name": regex_data},
+                    {"slug": regex_data}
+                ]})
             
             if "name" in filters:
                 query.update({"name": filters["name"]})

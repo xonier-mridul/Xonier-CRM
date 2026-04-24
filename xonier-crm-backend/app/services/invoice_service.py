@@ -19,6 +19,8 @@ from datetime import datetime, date
 from app.repositories.activity_repository import ActivityRepository
 from app.core.enums import ACTIVITY_ACTION, ACTIVITY_ENTITY_TYPE
 from app.db.db import Client
+from datetime import timezone
+
 
 from app.utils.activity_payload import activity_payload
 
@@ -72,9 +74,6 @@ class InvoiceService:
                 query.update(search_query)
 
 
-            
-
-            
 
             if "status" in filters:
                 query.update({"status": filters["status"]})
@@ -127,7 +126,6 @@ class InvoiceService:
                 },
             )
 
-        
 
             return result
 
@@ -188,7 +186,7 @@ class InvoiceService:
                     },
                 )
 
-                print("invoice: ", self.encryption.decrypt_data(invoice["customerEmail"]))
+                
                 if invoice["customerEmail"]:
                     invoice["customerEmail"] = self.encryption.decrypt_data(invoice["customerEmail"])
                 if invoice["customerPhone"]:

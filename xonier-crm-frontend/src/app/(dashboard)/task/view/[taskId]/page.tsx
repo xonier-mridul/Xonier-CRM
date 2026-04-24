@@ -312,7 +312,7 @@ function TaskCard({
 
       <div className="flex items-center justify-between mb-2">
         <PriorityBadge priority={task.priority} />
-        <span className="text-[9px] font-mono text-gray-300 dark:text-gray-600 truncate max-w-[80px]">
+        <span className="text-[9px] font-mono text-gray-300  dark:text-gray-300 truncate max-w-[80px]">
           {task.task_id}
         </span>
       </div>
@@ -878,7 +878,7 @@ export default function TaskViewPage() {
                 )}
                 {focusedTask.category.name || "Category"}
               </span>
-              <span className="text-[10px] font-mono text-gray-300 dark:text-gray-600">
+              <span className="text-[10px] font-mono text-gray-300 dark:text-gray-300">
                 {focusedTask.task_id}
               </span>
               {focusedTask.isRecurring && (
