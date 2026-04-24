@@ -321,6 +321,187 @@ class TaskService:
             raise AppException(500, f"Internal server error: {e}")
 
     
+    # async def get_all_tasks(self, filters: Dict[str, Any], user: Dict[str, Any]):
+    #     try:
+    #         page = int(filters.get("page", 1))
+    #         limit = int(filters.get("limit", 10))
+    #         is_admin = validate_admin(user["userRole"])
+
+    #         query: Dict[str, Any] = {"deletedAt": None}
+            
+    #         if not is_admin:
+    #             members = await self.getTeamMembers.get_team_members(user["_id"])
+    #             user_object_id = PydanticObjectId(user["_id"])
+    #             visibility_query = self._build_visibility_query(user, members, user_object_id)
+               
+    #         else:
+    #             visibility_query = None
+           
+    #         if "category" in filters:
+    #             aa =[ObjectId(item) for item in filters["category"].split(",")]
+    #             for item in aa:
+    #                 if not ObjectId.is_valid(item):
+    #                     raise AppException(400, "Invalid given category id")
+                
+    #             query["category.$id"] = {"$in": aa }
+            
+    #         if "status" in filters:
+    #             if not ObjectId.is_valid(filters["status"]):
+    #                 raise AppException(400, "Invalid status id")
+    #             query["status.$id"] = ObjectId(filters["status"])
+
+    #         if "user" in filters:
+    #             if not ObjectId.is_valid(filters["user"]):
+    #                 raise AppException(400, "Invalid user id")
+    #             query["$or"] = [
+    #                 {"assignedTo.$id": PydanticObjectId(filters["user"])},
+    #                 {"createdBy.$id": PydanticObjectId(filters["user"])}
+    #             ]
+            
+    #         if "parentTask" in filters:
+    #             if filters["parentTask"] == "null":
+    #                 query["parentTask"] = None
+    #             elif ObjectId.is_valid(filters["parentTask"]):
+    #                 query["parentTask.$id"] = ObjectId(filters["parentTask"])
+
+    #         if "isOverdue" in filters and str(filters["isOverdue"]).lower() == "true":
+    #             query["dueDate"] = {"$lt": datetime.now(timezone.utc)}
+    #             query["completedAt"] = None
+            
+    #         if "priority" in filters:
+    #             query.update({"priority": filters["priority"]})
+
+    #         if "search" in filters and filters["search"].strip():
+    #             regex_data = {"$regex": filters["search"].strip(), "$options": "i"}
+    #             query["$or"] = [
+    #                 {"title": regex_data},
+    #                 {"priority": regex_data},
+    #                 {"tags": regex_data},
+    #                 {"entityId": regex_data},
+    #                 {"entityType": regex_data},
+    #             ]
+
+    #         date_filter = {}
+    #         try:
+    #             if "fromDate" in filters:
+    #                 from_date = datetime.fromisoformat(filters["fromDate"])
+    #                 from_date = from_date.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
+    #                 date_filter["$gte"] = from_date
+
+    #             if "toDate" in filters:
+    #                 to_date = datetime.fromisoformat(filters["toDate"])
+    #                 to_date = to_date.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc) + timedelta(days=1)
+    #                 date_filter["$lt"] = to_date
+
+    #         except ValueError:
+    #             raise AppException(400, "Invalid date format. Use YYYY-MM-DD")
+
+            
+    #         and_conditions = []
+
+    #         if visibility_query:
+    #             and_conditions.append(visibility_query)
+
+    #         if date_filter:
+    #             and_conditions.append({
+    #                 "$or": [
+    #                     {"dueDate": date_filter},
+    #                     {"createdAt": date_filter},
+    #                 ]
+    #             })
+
+    #         if "search" in filters and filters["search"].strip():
+    #             regex_data = {"$regex": filters["search"].strip(), "$options": "i"}
+    #             and_conditions.append({
+    #                 "$or": [
+    #                     {"title": regex_data},
+    #                     {"priority": regex_data},
+    #                     {"tags": regex_data},
+    #                     {"entityId": regex_data},
+    #                     {"entityType": regex_data},
+    #                 ]
+    #             })
+            
+    #         query.pop("$or", None)
+
+    #         if and_conditions:
+    #             query["$and"] = and_conditions
+
+            
+    #         # def serialize_for_cache(v):
+    #         #     if isinstance(v, (PydanticObjectId, ObjectId)):
+    #         #         return str(v)
+    #         #     elif isinstance(v, datetime):
+    #         #         return v.isoformat()
+    #         #     elif isinstance(v, list):
+    #         #         return [serialize_for_cache(i) for i in v]
+    #         #     elif isinstance(v, dict):
+    #         #         return {nk: serialize_for_cache(nv) for nk, nv in v.items()}
+    #         #     return v
+
+    #         # cache_query = {k: serialize_for_cache(v) for k, v in query.items()}
+    #         # cache_key = cache_key_generator(prefix=TASK_CACHE_NAMESPACE, filters=cache_query, page=page, limit=limit)
+
+            
+            
+    #         # cache = await FastAPICache.get_backend().get(cache_key)
+ 
+    #         # if cache:
+                
+    #         #     return json.loads(cache)
+            
+    #         print("query: ",query)
+
+    #         result = await self.repo.get_all(
+    #             page=page,
+    #             limit=limit,
+    #             filters=query,
+    #             populate=["category", "status", "assignedTo", "createdBy", "updatedBy"],
+    #             sort=["order", "-createdAt"]
+    #         )
+
+    #         if not result:
+    #             raise AppException(404, "No tasks found")
+
+    #         now = datetime.now(timezone.utc)
+    #         for task in result.get("data", []):
+    #             try:
+    #                 due = task.get("dueDate")
+    #                 completed = task.get("completedAt")
+
+    #                 if due is None:
+    #                     task["isOverdue"] = False
+    #                     continue
+
+    #                 if isinstance(due, str):
+    #                     due = due.replace("Z", "+00:00")
+    #                     due_dt = datetime.fromisoformat(due)
+    #                     if due_dt.tzinfo is None:
+    #                         due_dt = due_dt.replace(tzinfo=timezone.utc)
+    #                 elif isinstance(due, datetime):
+    #                     due_dt = due if due.tzinfo else due.replace(tzinfo=timezone.utc)
+    #                 else:
+    #                     task["isOverdue"] = False
+    #                     continue
+
+    #                 if completed is not None:
+    #                     task["isOverdue"] = False
+    #                     continue
+
+    #                 task["isOverdue"] = due_dt < now
+
+    #             except Exception as ex:
+    #                 task["isOverdue"] = False
+
+    #         # await FastAPICache.get_backend().set(key=cache_key, value=json.dumps(result), expire=900)
+
+    #         return result
+
+    #     except AppException:
+    #         raise
+    #     except Exception as e:
+    #         raise AppException(500, f"Internal server error: {e}")
+     
     async def get_all_tasks(self, filters: Dict[str, Any], user: Dict[str, Any]):
         try:
             page = int(filters.get("page", 1))
@@ -328,36 +509,30 @@ class TaskService:
             is_admin = validate_admin(user["userRole"])
 
             query: Dict[str, Any] = {"deletedAt": None}
-            
+            and_conditions = []
+
             if not is_admin:
                 members = await self.getTeamMembers.get_team_members(user["_id"])
                 user_object_id = PydanticObjectId(user["_id"])
                 visibility_query = self._build_visibility_query(user, members, user_object_id)
-               
-            else:
-                visibility_query = None
-           
+                if visibility_query:
+                    and_conditions.append(visibility_query)
+
             if "category" in filters:
-                aa =[ObjectId(item) for item in filters["category"].split(",")]
-                for item in aa:
+                category_ids = [ObjectId(item) for item in filters["category"].split(",")]
+                for item in category_ids:
                     if not ObjectId.is_valid(item):
                         raise AppException(400, "Invalid given category id")
-                
-                query["category.$id"] = {"$in": aa }
-            
+                query["category.$id"] = {"$in": category_ids}
+
             if "status" in filters:
                 if not ObjectId.is_valid(filters["status"]):
                     raise AppException(400, "Invalid status id")
                 query["status.$id"] = ObjectId(filters["status"])
 
-            if "user" in filters:
-                if not ObjectId.is_valid(filters["user"]):
-                    raise AppException(400, "Invalid user id")
-                query["$or"] = [
-                    {"assignedTo.$id": PydanticObjectId(filters["user"])},
-                    {"createdBy.$id": PydanticObjectId(filters["user"])}
-                ]
-            
+            if "priority" in filters:
+                query["priority"] = filters["priority"]
+
             if "parentTask" in filters:
                 if filters["parentTask"] == "null":
                     query["parentTask"] = None
@@ -367,46 +542,14 @@ class TaskService:
             if "isOverdue" in filters and str(filters["isOverdue"]).lower() == "true":
                 query["dueDate"] = {"$lt": datetime.now(timezone.utc)}
                 query["completedAt"] = None
-            
-            if "priority" in filters:
-                query.update({"priority": filters["priority"]})
 
-            # if "search" in filters and filters["search"].strip():
-            #     regex_data = {"$regex": filters["search"].strip(), "$options": "i"}
-            #     query["$or"] = [
-            #         {"title": regex_data},
-            #         {"priority": regex_data},
-            #         {"tags": regex_data},
-            #         {"entityId": regex_data},
-            #         {"entityType": regex_data},
-            #     ]
-
-            date_filter = {}
-            try:
-                if "fromDate" in filters:
-                    from_date = datetime.fromisoformat(filters["fromDate"])
-                    from_date = from_date.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
-                    date_filter["$gte"] = from_date
-
-                if "toDate" in filters:
-                    to_date = datetime.fromisoformat(filters["toDate"])
-                    to_date = to_date.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc) + timedelta(days=1)
-                    date_filter["$lt"] = to_date
-
-            except ValueError:
-                raise AppException(400, "Invalid date format. Use YYYY-MM-DD")
-
-            
-            and_conditions = []
-
-            if visibility_query:
-                and_conditions.append(visibility_query)
-
-            if date_filter:
+            if "user" in filters:
+                if not ObjectId.is_valid(filters["user"]):
+                    raise AppException(400, "Invalid user id")
                 and_conditions.append({
                     "$or": [
-                        {"dueDate": date_filter},
-                        {"createdAt": date_filter},
+                        {"assignedTo.$id": PydanticObjectId(filters["user"])},
+                        {"createdBy.$id": PydanticObjectId(filters["user"])}
                     ]
                 })
 
@@ -421,35 +564,33 @@ class TaskService:
                         {"entityType": regex_data},
                     ]
                 })
-            
-            query.pop("$or", None)
+
+            try:
+                date_filter = {}
+                if "fromDate" in filters:
+                    from_date = datetime.fromisoformat(filters["fromDate"])
+                    from_date = from_date.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
+                    date_filter["$gte"] = from_date
+
+                if "toDate" in filters:
+                    to_date = datetime.fromisoformat(filters["toDate"])
+                    to_date = to_date.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc) + timedelta(days=1)
+                    date_filter["$lt"] = to_date
+            except ValueError:
+                raise AppException(400, "Invalid date format. Use YYYY-MM-DD")
+
+            if date_filter:
+                and_conditions.append({
+                    "$or": [
+                        {"dueDate": date_filter},
+                        {"createdAt": date_filter},
+                    ]
+                })
 
             if and_conditions:
                 query["$and"] = and_conditions
 
-            
-            # def serialize_for_cache(v):
-            #     if isinstance(v, (PydanticObjectId, ObjectId)):
-            #         return str(v)
-            #     elif isinstance(v, datetime):
-            #         return v.isoformat()
-            #     elif isinstance(v, list):
-            #         return [serialize_for_cache(i) for i in v]
-            #     elif isinstance(v, dict):
-            #         return {nk: serialize_for_cache(nv) for nk, nv in v.items()}
-            #     return v
-
-            # cache_query = {k: serialize_for_cache(v) for k, v in query.items()}
-            # cache_key = cache_key_generator(prefix=TASK_CACHE_NAMESPACE, filters=cache_query, page=page, limit=limit)
-
-            
-            
-            # cache = await FastAPICache.get_backend().get(cache_key)
- 
-            # if cache:
-                
-            #     return json.loads(cache)
-            
+            print("query: ", query)
 
             result = await self.repo.get_all(
                 page=page,
@@ -489,10 +630,8 @@ class TaskService:
 
                     task["isOverdue"] = due_dt < now
 
-                except Exception as ex:
+                except Exception:
                     task["isOverdue"] = False
-
-            # await FastAPICache.get_backend().set(key=cache_key, value=json.dumps(result), expire=900)
 
             return result
 
@@ -500,7 +639,6 @@ class TaskService:
             raise
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
- 
 
     async def get_kanban_board(self, category_id: str, user: Dict[str, Any], filters: Dict[str, Any]):
         try:
