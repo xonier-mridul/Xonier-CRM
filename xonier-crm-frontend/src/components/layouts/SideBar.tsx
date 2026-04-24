@@ -461,7 +461,7 @@ const SideBar = () => {
                             : "border-l-2 border-transparent"
                             } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                         >
-                          Today Report
+                          Today's Task
                         </Link>
                       </li>
                     }
