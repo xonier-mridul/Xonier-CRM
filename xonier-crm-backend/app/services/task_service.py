@@ -478,8 +478,6 @@ class TaskService:
                 except Exception:
                     task["isOverdue"] = False
 
-            
-
             await FastAPICache.get_backend().set(key=cache_key, value=json.dumps(result), expire=900)
 
 
@@ -649,6 +647,7 @@ class TaskService:
 
                 if task_timelog:
                     timelog_data = task_timelog.model_dump(mode="json")
+                    print("tt: ", timelog_data)
                     segments = timelog_data.get("segments", [])
                     total_seconds = timelog_data.get("totalSeconds", 0)
 

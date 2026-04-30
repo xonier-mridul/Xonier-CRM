@@ -11,4 +11,4 @@ class TaskTimeLogRepository(BaseRepository):
         super().__init__(TaskTimeLogModel)
 
     async def find_by_taskId(self,taskId: str, populate: Optional[List[str]] = None, session: Optional[AsyncIOMotorClientSession] = None):
-       return  await self.find(filter={"task.$id": ObjectId(taskId)}, populate=populate, session=session)
+       return  await self.find_one(filter={"task.$id": ObjectId(taskId)}, populate=populate, session=session)

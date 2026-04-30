@@ -79,6 +79,7 @@ class SubTaskService:
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
+                    
                     if not ObjectId.is_valid(taskId):
                         raise AppException(400, "Invalid subtask Object Id")
                     
@@ -86,7 +87,7 @@ class SubTaskService:
                     
                     if is_exist:
                         raise AppException(400, "Please use different title, subtask already exist with this title")
-                   
+                    
                     task_data = await self.taskRepo.find_by_id(PydanticObjectId(taskId), ["assignedBy"])
                    
                     if not task_data:
@@ -120,7 +121,8 @@ class SubTaskService:
                                 is_manager = True
 
                         else:
-                            if (PydanticObjectId(user["_id"]) in [PydanticObjectId(item["id"]) for item in json_task_data["assignedBy"]]):
+                            
+                            if (PydanticObjectId(user["_id"]) in [ PydanticObjectId(item["id"]) for item in json_task_data["assignedTo"]]):
                                 is_creator = True
 
 
@@ -151,7 +153,7 @@ class SubTaskService:
                         description=f"Create sub task against {json_task_data["title"]}",
                         metadata={"taskId": taskId, "title": d_result["title"], "dueDate": d_result.get("dueDate") if d_result.get("dueDate") else None, "startDate": d_result.get("startDate") if d_result.get("startDate") else None }
                     )
-                   
+                    print("done")
                     await self.activityRepo.create(activity_payload, session)
                     
                     return d_result
@@ -211,7 +213,7 @@ class SubTaskService:
                                 is_manager = True
 
                         else:
-                            if (PydanticObjectId(user["_id"]) in [PydanticObjectId(item["id"]) for item in json_task_data["assignedBy"]]):
+                            if (PydanticObjectId(user["_id"]) in [PydanticObjectId(item["id"]) for item in json_task_data["assignedTo"]]):
                                 is_creator = True
 
                     if not is_admin and not is_creator and not is_manager:
