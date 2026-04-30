@@ -61,6 +61,14 @@ class CreateTaskSchema(BaseModel):
             raise AppException(422, "category is required")
         return v.strip()
 
+    @field_validator("entityType", mode="before")
+    @classmethod 
+    def validate_entity(cls, v:str):
+        if v and v not in TASK_ENTITY_TYPE:
+            raise AppException(422, "Entity type is not valid type")
+        
+        return v
+
     @field_validator("rating")
     @classmethod
     def validate_rating(cls, v) -> Optional[int]:

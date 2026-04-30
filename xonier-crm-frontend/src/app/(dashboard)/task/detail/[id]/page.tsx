@@ -53,6 +53,7 @@ import { SubTaskModel } from "@/src/types/task/subTask.types";
 import { Check } from "lucide-react";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import { handleCopy } from "@/src/app/utils/clipboard.utils";
+import ConvertSecondToTime from "@/src/app/utils/ConvertSecondToTime";
 
 
 
@@ -1133,8 +1134,7 @@ const page = () => {
                     <div className="bg-linear-to-br from-sky-50 to-blue-50 dark:from-sky-900/20 dark:to-blue-900/10 rounded-xl p-3 text-center border border-sky-100 dark:border-sky-900/30">
                       <p className="text-[10px] font-black uppercase tracking-wider text-sky-400 mb-1">Actual</p>
                       <p className="text-2xl font-black text-sky-700 dark:text-sky-300">
-                        {taskData.actualHours ?? "—"}
-                        {taskData.actualHours && <span className="text-xs font-bold opacity-60 ml-0.5">h</span>}
+                        {taskData?.totalSeconds ? ConvertSecondToTime(taskData?.totalSeconds): "Not found"}
                       </p>
                     </div>
                   </div>

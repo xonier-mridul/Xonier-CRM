@@ -9,6 +9,8 @@ from fastapi.encoders import jsonable_encoder
 from datetime import datetime, timezone
 from typing import Dict, Any, List
 from bson import ObjectId, DBRef
+from fastapi_cache import FastAPICache
+from app.core.constants import TASK_CACHE_NAMESPACE
  
  
 class TaskStatusService:
@@ -308,6 +310,8 @@ class TaskStatusService:
                     if not updated:
                         raise AppException(400, "Task status update failed")
 
+                    await FastAPICache.get_backend().clear(namespace=TASK_CACHE_NAMESPACE)
+
                     return True
 
                 except AppException:
@@ -315,6 +319,7 @@ class TaskStatusService:
 
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
+                
  
     async def reorder_task_statuses(self, payload: Dict[str, Any], user: Dict[str, Any]):
         async with await self.client.start_session() as session:
@@ -346,6 +351,7 @@ class TaskStatusService:
  
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
+                
  
     async def delete_task_status(self, status_id: str, user: Dict[str, Any]):
         async with await self.client.start_session() as session:
@@ -386,7 +392,9 @@ class TaskStatusService:
  
                     if not updated:
                         raise AppException(400, "Task status deletion failed")
- 
+                    
+
+                    await FastAPICache.get_backend().clear(namespace=TASK_CACHE_NAMESPACE)
                     return True
  
                 except AppException:

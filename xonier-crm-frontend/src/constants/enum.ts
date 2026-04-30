@@ -101,7 +101,6 @@ export enum SOURCE {
   FREELANCER = "freelancer",
   TOPTAL = "toptal",
 
-  // Offline / Events
   EVENT = "event",
   CONFERENCE = "conference",
   MEETUP = "meetup",
@@ -208,7 +207,14 @@ export enum PERMISSIONS {
   createTaskReport = "taskReport:create",
   readTaskReport = "taskReport:read",
   updateTaskReport = "taskReport:update",
-  deleteTaskReport = "taskReport:delete"
+  deleteTaskReport = "taskReport:delete",
+  taskTimerRead= "task_timer:read",
+  taskTimerStart= "task_timer:start",
+  taskTimerPause= "task_timer:pause",
+  taskTimerResume= "task_timer:resume",
+  taskTimerStop= "task_timer:stop",
+  taskTimerDelete= "task_timer:delete",
+
 
 }
 
@@ -1095,3 +1101,5 @@ export enum TASK_ACTIVITY_ACTION {
   DELETED = "deleted",
   UPDATED = "update"
 }
+
+export type TimeLogStatus = "running" | "paused" | "stopped";

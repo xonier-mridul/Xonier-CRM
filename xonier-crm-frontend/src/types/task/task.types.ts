@@ -183,6 +183,9 @@ export interface TaskItem {
   actual_hours?: number;
   ratedBy?: User;
   activities: TaskActivity;
+  totalSeconds?: number;
+  deletedAt: string | null
+
 }
 
 export interface PaginatedTaskResponse {
