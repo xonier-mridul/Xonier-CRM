@@ -15,7 +15,7 @@ export const MessageService = {
     }
     return api.get(`/communication/sms/history?${params.toString()}`);
   },
-  getById: (id: ParamValue) => api.get(`/communication/sms/get-by-id/${id}`),
+  getById: (id: ParamValue) => .get(`/communication/sms/get-by-id/${id}`),
 };
 
 export default MessageService;

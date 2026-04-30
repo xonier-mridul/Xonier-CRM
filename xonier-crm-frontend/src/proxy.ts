@@ -7,8 +7,7 @@ export function proxy(request: NextRequest){
     const accessToken = request.cookies.get("accessToken")?.value
     const refreshToken = request.cookies.get("refreshToken")?.value
     
-    console.log("route: ", pathname)
-    console.log("jai : ", PROTECTED_ROUTES.some((item)=> pathname.startsWith(item)))
+   
     
 
     if(PROTECTED_ROUTES.some((item)=> pathname.startsWith(item) && !accessToken)){

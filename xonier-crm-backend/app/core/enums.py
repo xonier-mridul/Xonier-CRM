@@ -866,21 +866,25 @@ class TASK_STATUS_TYPE(str, Enum):
     CANCELLED = "cancelled"        
 
 class TASK_ENTITY_TYPE(str, Enum):
+    PROJECT = "project"
     LEAD = "lead"
     DEAL = "deal"
     ENQUIRY = "enquiry"
     CONTACT = "contact"
     GENERAL = "general"
 
+
 class CATEGORY_VISIBILITY(str, Enum):
     GLOBAL = "global"             
     TEAM = "team"                 
     PERSONAL = "personal"          
 
+
 class RECURRENCE_TYPE(str, Enum):
     DAILY = "daily"
     WEEKLY = "weekly"
     MONTHLY = "monthly"
+
 
 class TASK_ACTIVITY_ACTION(str, Enum):
     CREATED = "created"
@@ -902,6 +906,10 @@ class TASK_ACTIVITY_ACTION(str, Enum):
     COMPLETE_SUB_TASK = "complete_sub_task"
     UNCOMPLETE_SUB_TASK = "uncomplete_sub_task"
     DELETE_SUBTASK = "delete_subtask"
+    TIMER_STARTED = "timer_started"
+    TIMER_PAUSED = "timer_paused"
+    TIMER_RESUMED = "timer_resumed"
+    TIMER_STOPPED = "timer_stopped"
 
 
 class LEAD_REQUEST_STATUS(str, Enum):
@@ -931,3 +939,9 @@ class WORK_MOOD(str, Enum):
     TIRED = "tired"
     STRESSED = "stressed"
 
+
+
+class TIMELOG_STATUS(str, Enum):
+    RUNNING = "running"
+    PAUSED = "paused"
+    STOPPED = "stopped"

@@ -693,5 +693,47 @@ PERMISSIONS = [
         "title": "delete taskReport",
         "description": "permission for delete task report",
     },
+    {
+        "code": "task_timer:read",
+        "module": "taskTimer",
+        "action": "read",
+        "title": "read task timer",
+        "description": "permission for read task timer report",
+    },
+    {
+        "code": "task_timer:start",
+        "module": "taskTimer",
+        "action": "start",
+        "title": "start task timer",
+        "description": "permission for start task timer",
+    },
+    {
+        "code": "task_timer:pause",
+        "module": "taskTimer",
+        "action": "pause",
+        "title": "pause task timer",
+        "description": "permission for pause task timer",
+    },
+    {
+        "code": "task_timer:resume",
+        "module": "taskTimer",
+        "action": "resume",
+        "title": "resume task timer",
+        "description": "permission for resume task timer",
+    },
+    {
+        "code": "task_timer:stop",
+        "module": "taskTimer",
+        "action": "stop",
+        "title": "stop task timer",
+        "description": "permission for stop task timer",
+    },
+    {
+        "code": "task_timer:delete",
+        "module": "taskTimer",
+        "action": "delete",
+        "title": "delete task timer",
+        "description": "permission for delete task timer",
+    },
 
 ]
