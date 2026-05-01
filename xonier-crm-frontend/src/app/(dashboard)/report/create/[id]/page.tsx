@@ -1,6 +1,6 @@
 "use client";
 
-import React, { JSX, useState, useEffect, useCallback } from "react";
+import React, { JSX, useState, useEffect, useCallback, WheelEvent } from "react";
 import { toast } from "react-toastify";
 import { TaskReportService } from "@/src/services/taskReport.service";
 import { useParams } from "next/navigation";
@@ -13,7 +13,7 @@ import {
 import axios, { AxiosError } from "axios";
 import extractErrorMessages from "@/src/app/utils/error.utils";
 
-// ── Constants ─────────────────────────────────────────────────────────────────
+
 
 const PRIORITIES = ["low", "medium", "high", "critical"] as const;
 
@@ -39,7 +39,6 @@ const MOODS: { value: WorkMood; emoji: string; label: string; color: string }[] 
   { value: "stressed" as WorkMood, emoji: "😰", label: "Stressed", color: "border-red-400 bg-red-50 dark:bg-red-900/30 dark:border-red-500" },
 ];
 
-// Status bucketing
 const PENDING_STATUSES: TaskItemStatus[] = [
   TaskItemStatus.PENDING,
   TaskItemStatus.IN_PROGRESS,
@@ -145,6 +144,7 @@ function NumberInput({
       max={max}
       step={step}
       disabled={disabled}
+      onWheel={(e: WheelEvent<HTMLInputElement>) => e.currentTarget.blur()}
       className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-800/50"
     />
   );
@@ -187,8 +187,6 @@ function PrioritySelector({
   );
 }
 
-// ── Morning Readonly Card ─────────────────────────────────────────────────────
-
 function MorningReadonlyCard({ item, index }: {
   item: TaskReportItem | ReturnType<typeof EMPTY_MORNING_ITEM>; index: number;
 }) {
@@ -221,8 +219,6 @@ function MorningReadonlyCard({ item, index }: {
     </div>
   );
 }
-
-// ── Morning Edit Card ─────────────────────────────────────────────────────────
 
 function MorningEditCard({ item, index, onChange, onRemove }: {
   item: ReturnType<typeof EMPTY_MORNING_ITEM>;
@@ -277,7 +273,6 @@ function MorningEditCard({ item, index, onChange, onRemove }: {
   );
 }
 
-
 function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: {
   item: TaskReportItem;
   index: number;
@@ -296,7 +291,6 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
           : "border-amber-100 dark:border-amber-800/50"
         }`}
     >
-      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div
@@ -312,7 +306,7 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
             {isCompleted ? "✅ Completed" : "⏳ Pending"}
           </span>
         </div>
-        {/* Only show remove button if NOT read-only */}
+
         {!readOnly && (
           <button
             type="button"
@@ -346,7 +340,6 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
           />
         </div>
 
-        {/* Status selector — hidden when read-only, show badge instead */}
         {!readOnly ? (
           <div>
             <FieldLabel>
@@ -402,38 +395,34 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
             <NumberInput
               value={item.estimatedHours}
               onChange={v => onChange("estimatedHours", v)}
-              placeholder="2"
+              placeholder="eg 2"
               min={0.5}
               max={24}
               disabled={readOnly}
             />
           </div>
-          {isCompleted ? (
-            <div>
-              <FieldLabel>Actual Hours</FieldLabel>
-              <NumberInput
-                value={item.actualHours}
-                onChange={v => onChange("actualHours", v)}
-                placeholder="2.5"
-                min={0.5}
-                max={24}
-                disabled={readOnly}
-              />
-            </div>
-          ) : (
-            <div>
-              <FieldLabel>Linked Task ID</FieldLabel>
-              <TextInput
-                value={item.linkedTaskId ?? ""}
-                onChange={v => onChange("linkedTaskId", v)}
-                placeholder="TASK-101"
-                disabled={readOnly}
-              />
-            </div>
-          )}
+          <div>
+            <FieldLabel>Actual Hours</FieldLabel>
+            <NumberInput
+              value={item.actualHours}
+              onChange={v => onChange("actualHours", v)}
+              placeholder="eg 2"
+              min={0.5}
+              max={24}
+              disabled={readOnly}
+            />
+          </div>
+          <div>
+            <FieldLabel>Linked Task ID</FieldLabel>
+            <TextInput
+              value={item.linkedTaskId ?? ""}
+              onChange={v => onChange("linkedTaskId", v)}
+              placeholder="TASK-101"
+              disabled={readOnly}
+            />
+          </div>
         </div>
 
-        {/* Completion Slider */}
         <div>
           <FieldLabel>
             Completion:{" "}
@@ -456,7 +445,6 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
           </div>
         </div>
 
-        {/* Blocker reason only if blocked */}
         {item.status === "blocked" && (
           <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800">
             <FieldLabel>🚧 Blocker Reason</FieldLabel>
@@ -499,14 +487,15 @@ const TaskReportCreatePage = (): JSX.Element => {
   const [morningItems, setMorningItems] = useState<ReturnType<typeof EMPTY_MORNING_ITEM>[]>([EMPTY_MORNING_ITEM()]);
   const [morningGoals, setMorningGoals] = useState("");
 
-  // Evening — single flat list; sections are derived by status
+  // Evening
   const [eveningItems, setEveningItems] = useState<TaskReportItem[]>([]);
   const [achievements, setAchievements] = useState("");
   const [blockers, setBlockers] = useState("");
   const [tomorrowPlan, setTomorrowPlan] = useState("");
   const [overallMood, setOverallMood] = useState<WorkMood | "">("");
   const [isFinalSubmitted, setIsFinalSubmitted] = useState(false);
-  const [err, setErr] = useState<string | string[]>("")
+  const [isEditingMorning, setIsEditingMorning] = useState(false);
+  const [err, setErr] = useState<string | string[]>("");
 
   // Derived buckets
   const completedItems = eveningItems.filter(i => COMPLETED_STATUSES.includes(i.status as TaskItemStatus));
@@ -545,30 +534,21 @@ const TaskReportCreatePage = (): JSX.Element => {
         if (report.morningAgenda?.goals) {
           setMorningGoals(report.morningAgenda.goals);
         }
-        const existingCompleted: TaskReportItem[] =
-          report.eveningReport?.completedItems ?? [];
 
-        const existingPending: TaskReportItem[] =
-          report.eveningReport?.pendingItems ?? [];
-
+        const existingCompleted: TaskReportItem[] = report.eveningReport?.completedItems ?? [];
+        const existingPending: TaskReportItem[] = report.eveningReport?.pendingItems ?? [];
         const allEvening = [...existingCompleted, ...existingPending];
 
         if (allEvening.length > 0) {
-          // Add missing morning tasks into evening
           const eveningTitles = new Set(
             allEvening.map(i => i.title.toLowerCase().trim())
           );
-
           const missingFromMorning =
             (report.morningAgenda?.items ?? [])
               .filter(i => !eveningTitles.has(i.title.toLowerCase().trim()))
-              .map(i =>
-                toEveningItem(i, { status: "pending" as TaskItemStatus })
-              );
-
+              .map(i => toEveningItem(i, { status: "pending" as TaskItemStatus }));
           setEveningItems([...allEvening, ...missingFromMorning]);
         } else if (report.morningAgenda?.isSubmitted) {
-          // Pre-fill evening from morning
           setEveningItems(
             (report.morningAgenda.items ?? []).map(i =>
               toEveningItem(i, { status: "pending" as TaskItemStatus })
@@ -576,27 +556,12 @@ const TaskReportCreatePage = (): JSX.Element => {
           );
         }
 
-        // Evening meta fields
-        if (report.eveningReport?.achievements) {
-          setAchievements(report.eveningReport.achievements);
-        }
+        if (report.eveningReport?.achievements) setAchievements(report.eveningReport.achievements);
+        if (report.eveningReport?.blockers) setBlockers(report.eveningReport.blockers);
+        if (report.eveningReport?.tomorrowPlan) setTomorrowPlan(report.eveningReport.tomorrowPlan);
+        if (report.eveningReport?.overallMood) setOverallMood(report.eveningReport.overallMood);
 
-        if (report.eveningReport?.blockers) {
-          setBlockers(report.eveningReport.blockers);
-        }
-
-        if (report.eveningReport?.tomorrowPlan) {
-          setTomorrowPlan(report.eveningReport.tomorrowPlan);
-        }
-
-        if (report.eveningReport?.overallMood) {
-          setOverallMood(report.eveningReport.overallMood);
-        }
-
-        // Smart tab switching
-        setActiveTab(
-          report.morningAgenda?.isSubmitted ? "evening" : "morning"
-        );
+        setActiveTab(report.morningAgenda?.isSubmitted ? "evening" : "morning");
         setIsFinalSubmitted(report.eveningReport?.isSubmitted ?? false);
       }
     } catch (error) {
@@ -608,32 +573,34 @@ const TaskReportCreatePage = (): JSX.Element => {
 
   useEffect(() => { loadReport(); }, [loadReport]);
 
-
+  // ── Evening item helpers ───────────────────────────────────────────────────
   const updateEveningItem = (globalIdx: number, field: string, value: unknown) => {
-    console.log("val: ", value)
-    let isC = value === "completed"
-    let isP = value === "in_progress"
-    let isB = value === "blocked"
-      
-    if (isC){
+    const isC = value === "completed";
+    const isP = value === "in_progress";
+    const isCF = value === "carried_forward";
+    const isB = value === "blocked";
+
+    if (isC) {
       setEveningItems(items =>
-      items.map((item, i) => i === globalIdx ? { ...item, [field]: value, "completionPercentage": 100 } : item)
-    );
-    }else if(isP) {
+        items.map((item, i) => i === globalIdx ? { ...item, [field]: value, completionPercentage: 100, actualHours: item.estimatedHours } : item)
+      );
+    } else if (isP) {
       setEveningItems(items =>
-      items.map((item, i) => i === globalIdx ? { ...item, [field]: value, "completionPercentage": 50 } : item)
-    );
-    } else if(isB){
-       setEveningItems(items =>
-      items.map((item, i) => i === globalIdx ? { ...item, [field]: value, "completionPercentage": 0 } : item)
-    );
+        items.map((item, i) => i === globalIdx ? { ...item, [field]: value, completionPercentage: 50 } : item)
+      );
+    } else if (isCF) {
+      setEveningItems(items =>
+        items.map((item, i) => i === globalIdx ? { ...item, [field]: value, completionPercentage: 50 } : item)
+      );
+    } else if (isB) {
+      setEveningItems(items =>
+        items.map((item, i) => i === globalIdx ? { ...item, [field]: value, completionPercentage: 0 } : item)
+      );
+    } else {
+      setEveningItems(items =>
+        items.map((item, i) => i === globalIdx ? { ...item, [field]: value } : item)
+      );
     }
-    else{
-setEveningItems(items =>
-      items.map((item, i) => i === globalIdx ? { ...item, [field]: value } : item)
-    );
-    }
-    
   };
 
   const removeEveningItem = (globalIdx: number) => {
@@ -650,7 +617,7 @@ setEveningItems(items =>
     ]);
   };
 
-
+  // ── Submit Morning ─────────────────────────────────────────────────────────
   const submitMorning = async () => {
     if (morningItems.some(i => !i.title.trim())) {
       toast.error("Please fill in all task titles");
@@ -683,10 +650,47 @@ setEveningItems(items =>
       }
     } catch (error) {
       const err = error as AxiosError<{ message?: string }>;
+      toast.error(err.response?.data?.message || "Failed to submit morning agenda");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-      toast.error(
-        err.response?.data?.message || "Failed to submit morning agenda"
-      );
+  // ── Update Morning ─────────────────────────────────────────────────────────
+  const updateMorning = async () => {
+    if (morningItems.some(i => !i.title.trim())) {
+      toast.error("Please fill in all task titles");
+      return;
+    }
+    if (!existingReport?.id) {
+      toast.error("Report not found");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        reportDate: today,
+        morningAgenda: {
+          items: morningItems.map(i => ({
+            title: i.title.trim(),
+            description: i.description || undefined,
+            estimatedHours: i.estimatedHours,
+            priority: i.priority,
+            linkedTaskId: i.linkedTaskId || undefined,
+            completionPercentage: 0,
+          })),
+          goals: morningGoals.trim() || undefined,
+        },
+      };
+      const res = await TaskReportService.updateMorningAgenda(existingReport.id, payload);
+      if (res.status === 200 || res.status === 201) {
+        toast.success("Morning agenda updated! ✅");
+        setIsEditingMorning(false);
+        await loadReport();
+      }
+    } catch (error) {
+      const err = error as AxiosError<{ message?: string }>;
+      toast.error(err.response?.data?.message || "Failed to update morning agenda");
     } finally {
       setIsSubmitting(false);
     }
@@ -694,7 +698,7 @@ setEveningItems(items =>
 
   // ── Submit Evening ─────────────────────────────────────────────────────────
   const submitEvening = async () => {
-    setErr("")
+    setErr("");
     if (!existingReport?.id) {
       toast.error("Please submit your morning agenda first");
       return;
@@ -717,7 +721,7 @@ setEveningItems(items =>
           isSubmitted: isFinalSubmitted,
         },
       };
-      var res = null;
+      let res = null;
       if (!isFinalSubmitted) {
         res = await TaskReportService.updateEveningReport(existingReport.id, payload);
       } else {
@@ -727,24 +731,29 @@ setEveningItems(items =>
         toast.success("Evening report submitted! 🌆");
         await loadReport();
       }
-    } catch(error) {
+    } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) {
         const errM = extractErrorMessages(error);
-        toast.error(errM[0])
-        setErr(errM)
+        toast.error(errM[0]);
+        setErr(errM);
       } else {
-        toast.error(["Something went wrong"]);
+        toast.error("Something went wrong");
       }
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // ── Derived flags ──────────────────────────────────────────────────────────
   const morningSubmitted = existingReport?.morningAgenda?.isSubmitted ?? false;
   const eveningSubmitted = existingReport?.eveningReport?.isSubmitted ?? false;
+  const morningReadOnly = morningSubmitted && !isEditingMorning;
 
-  
+  const actualHour =
+    Number(completedItems.reduce((s, i) => s + (i.actualHours ?? 0), 0).toFixed(1)) +
+    Number(pendingItems.reduce((s, i) => s + (i.actualHours ?? 0), 0).toFixed(1));
+
   if (isLoading) {
     return (
       <div className="ml-72 mt-14 flex items-center justify-center h-80">
@@ -841,21 +850,48 @@ setEveningItems(items =>
           })}
         </div>
 
-        
+        {/* ════════════════════════════════════════════════════
+            MORNING TAB
+        ════════════════════════════════════════════════════ */}
         {activeTab === "morning" && (
           <div className="bg-white dark:bg-gray-700 rounded-xl border border-slate-900/10 dark:border-gray-600 p-6">
 
-            {/* Submitted notice */}
-            {morningSubmitted && (
-              <div className="flex items-center gap-3 mb-6 p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-                <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center text-white text-sm shrink-0">✓</div>
+            {/* Submitted & not editing — show green banner with Edit button */}
+            {morningSubmitted && !isEditingMorning && (
+              <div className="flex items-center justify-between gap-3 mb-6 p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center text-white text-sm shrink-0">✓</div>
+                  <div>
+                    <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">Morning Agenda Submitted</p>
+                    <p className="text-xs text-emerald-600/80 dark:text-emerald-500/80">
+                      {existingReport?.morningAgenda?.submittedAt
+                        ? `Submitted at ${new Date(existingReport.morningAgenda.submittedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`
+                        : "Already submitted"
+                      }
+                    </p>
+                  </div>
+                </div>
+                {/* Hide edit button once evening is finally locked */}
+                {!eveningSubmitted && (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingMorning(true)}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-xs font-bold transition-all shrink-0"
+                  >
+                    ✏️ Edit Plan
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Editing mode — show amber banner */}
+            {morningSubmitted && isEditingMorning && (
+              <div className="flex items-center gap-3 mb-6 p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                <div className="w-8 h-8 rounded-xl bg-amber-500 flex items-center justify-center text-white text-sm shrink-0">✏️</div>
                 <div>
-                  <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">Morning Agenda Submitted & Locked</p>
-                  <p className="text-xs text-emerald-600/80 dark:text-emerald-500/80">
-                    {existingReport?.morningAgenda?.submittedAt
-                      ? `Submitted at ${new Date(existingReport.morningAgenda.submittedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`
-                      : "Already submitted"
-                    } · This plan cannot be edited.
+                  <p className="text-sm font-bold text-amber-700 dark:text-amber-400">Editing Morning Agenda</p>
+                  <p className="text-xs text-amber-600/80 dark:text-amber-500/80">
+                    Changes will update your existing plan. Click Cancel to discard.
                   </p>
                 </div>
               </div>
@@ -867,15 +903,20 @@ setEveningItems(items =>
               <div>
                 <h2 className="text-lg font-extrabold text-gray-900 dark:text-white">Morning Agenda</h2>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {morningSubmitted ? "Your plan for today (read-only)" : "Plan your day — what tasks will you tackle?"}
+                  {morningReadOnly
+                    ? "Your plan for today (read-only)"
+                    : isEditingMorning
+                      ? "Update your plan — changes will be saved when you click Update"
+                      : "Plan your day — what tasks will you tackle?"
+                  }
                 </p>
               </div>
             </div>
 
             {/* Goal */}
-            <div className={`mb-6 p-4 rounded-2xl border ${morningSubmitted ? "bg-amber-50/50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30" : "bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-800"}`}>
+            <div className={`mb-6 p-4 rounded-2xl border ${morningReadOnly ? "bg-amber-50/50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30" : "bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-800"}`}>
               <FieldLabel>🎯 Today&apos;s Goal / Focus</FieldLabel>
-              {morningSubmitted ? (
+              {morningReadOnly ? (
                 <p className="text-sm text-gray-700 dark:text-gray-300 font-medium italic min-h-[20px]">
                   {morningGoals || <span className="text-gray-400 not-italic">No goal set</span>}
                 </p>
@@ -892,7 +933,7 @@ setEveningItems(items =>
             {/* Items */}
             <div className="space-y-3 mb-5">
               {morningItems.map((item, idx) =>
-                morningSubmitted
+                morningReadOnly
                   ? <MorningReadonlyCard key={idx} item={item as TaskReportItem} index={idx} />
                   : (
                     <MorningEditCard
@@ -908,7 +949,8 @@ setEveningItems(items =>
               )}
             </div>
 
-            {!morningSubmitted && (
+            {/* Add task — hidden when read-only */}
+            {!morningReadOnly && (
               <button
                 type="button"
                 onClick={() => setMorningItems(items => [...items, EMPTY_MORNING_ITEM()])}
@@ -936,7 +978,9 @@ setEveningItems(items =>
                 </div>
               </div>
 
-              {morningSubmitted ? (
+              {/* Footer action buttons — three states */}
+              {morningReadOnly ? (
+                // State 1: submitted & not editing → go to evening
                 <button
                   type="button"
                   onClick={() => setActiveTab("evening")}
@@ -944,7 +988,31 @@ setEveningItems(items =>
                 >
                   Go to Evening Report →
                 </button>
+              ) : isEditingMorning ? (
+                // State 2: editing existing submission → cancel / update
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => { setIsEditingMorning(false); loadReport(); }}
+                    disabled={isSubmitting}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 font-bold text-sm transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={updateMorning}
+                    disabled={isSubmitting || morningItems.every(i => !i.title.trim())}
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-all active:scale-95 shadow-sm"
+                  >
+                    {isSubmitting
+                      ? <><div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> Updating…</>
+                      : <><span>✏️</span> Update Morning Agenda</>
+                    }
+                  </button>
+                </div>
               ) : (
+                // State 3: new / not yet submitted → submit
                 <button
                   type="button"
                   onClick={submitMorning}
@@ -967,7 +1035,6 @@ setEveningItems(items =>
         {activeTab === "evening" && (
           <div className="bg-white dark:bg-gray-700 rounded-xl border border-slate-900/10 dark:border-gray-600 p-6">
 
-            {/* Final submission locked banner */}
             {eveningSubmitted && (
               <div className="flex items-center gap-3 mb-6 p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
                 <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center text-white text-sm shrink-0">🔒</div>
@@ -983,7 +1050,6 @@ setEveningItems(items =>
               </div>
             )}
 
-            {/* Header */}
             <div className="flex items-center gap-3 mb-5">
               <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-lg shadow-md">🌆</div>
               <div>
@@ -997,7 +1063,6 @@ setEveningItems(items =>
               </div>
             </div>
 
-            {/* Hint — only show when editable */}
             {!eveningSubmitted && (
               <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 mb-6">
                 <span className="text-base shrink-0 mt-0.5">💡</span>
@@ -1041,7 +1106,6 @@ setEveningItems(items =>
                 </div>
               )}
 
-              {/* Add button — hidden when locked */}
               {!eveningSubmitted && (
                 <button
                   type="button"
@@ -1086,7 +1150,6 @@ setEveningItems(items =>
                 </div>
               )}
 
-              {/* Add button — hidden when locked */}
               {!eveningSubmitted && (
                 <button
                   type="button"
@@ -1152,7 +1215,6 @@ setEveningItems(items =>
                 </div>
               </div>
 
-              {/* Final submission checkbox — only visible when NOT yet submitted */}
               {!eveningSubmitted && (
                 <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-900/20 border border-gray-100 dark:border-gray-700 items-center gap-3">
                   <FieldLabel>Final Submission</FieldLabel>
@@ -1181,9 +1243,7 @@ setEveningItems(items =>
                   <div className="text-[11px] text-gray-500 font-medium">Pending</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-extrabold text-indigo-600">
-                    {completedItems.reduce((s, i) => s + (i.actualHours ?? 0), 0).toFixed(1)}h
-                  </div>
+                  <div className="text-2xl font-extrabold text-indigo-600">{actualHour}h</div>
                   <div className="text-[11px] text-gray-500 font-medium">Actual Hours</div>
                 </div>
                 {overallMood && (
@@ -1193,32 +1253,31 @@ setEveningItems(items =>
                   </div>
                 )}
               </div>
+
               <div className="flex flex-col items-end gap-3">
-  {err && <div><p className="text-red-500">{err}</p></div>}
-              {/* Submit button — replaced with locked label after final submission */}
-              {!eveningSubmitted ? (
-                <button
-                  type="button"
-                  onClick={submitEvening}
-                  disabled={isSubmitting || eveningItems.filter(i => i.title.trim()).length === 0}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-all active:scale-95 shadow-sm"
-                >
-                 
-                  {isSubmitting
-                    ? <><div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> Submitting…</>
-                    : <><span>🌆</span> {!isFinalSubmitted ? "Save Evening Report" : "Submit Evening Report"}</>
-                  }
-                </button>
-              ) : (
-                <div className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-                  <span className="text-emerald-600 dark:text-emerald-400 text-lg">🔒</span>
-                  <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
-                    Report locked — final submission complete
-                  </span>
-                </div>
-              )}
+                {err && <p className="text-red-500 text-sm">{err}</p>}
+                {!eveningSubmitted ? (
+                  <button
+                    type="button"
+                    onClick={submitEvening}
+                    disabled={isSubmitting || eveningItems.filter(i => i.title.trim()).length === 0}
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-all active:scale-95 shadow-sm"
+                  >
+                    {isSubmitting
+                      ? <><div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> Submitting…</>
+                      : <><span>🌆</span> {!isFinalSubmitted ? "Save Evening Report" : "Submit Evening Report"}</>
+                    }
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+                    <span className="text-emerald-600 dark:text-emerald-400 text-lg">🔒</span>
+                    <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
+                      Report locked — final submission complete
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
           </div>
         )}
 

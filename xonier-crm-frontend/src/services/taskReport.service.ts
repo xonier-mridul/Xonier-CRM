@@ -33,6 +33,9 @@ export const TaskReportService = {
 
   deleteReport: (id: string) =>
     api.delete(`/task-reports/${id}`),
+  
   getToday: (id: ParamValue) =>
-    api.get(`/task-reports/${id}`)
+    api.get(`/task-reports/${id}`),
+
+  getReportById:(id:string)=> api.get(`/task-reports/${id}`)
 };

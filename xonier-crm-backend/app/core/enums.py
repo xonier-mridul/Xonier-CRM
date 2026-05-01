@@ -928,6 +928,7 @@ class TASK_REPORT_STATUS(str, Enum):
     MORNING_PENDING = "morning_pending"
     EVENING_PENDING = "evening_pending"
     COMPLETED_PENDING_REVIEW = "completed_pending_review"
+    SUBMITTED="submitted"
     REVIEWED = "reviewed"
     MISSED = "missed"
 

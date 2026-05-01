@@ -1,4 +1,4 @@
-// ── Enums ─────────────────────────────────────────────────────────────────────
+
 
 export enum TaskItemStatus {
   PENDING = "pending",
@@ -31,7 +31,6 @@ export enum TaskPriority {
   CRITICAL = "critical",
 }
 
-// ── Sub-models ────────────────────────────────────────────────────────────────
 
 export interface TaskReportItem {
   title: string;
@@ -74,7 +73,7 @@ export interface UserRef {
   status?: string;
 }
 
-// ── Main Model ────────────────────────────────────────────────────────────────
+
 
 export interface TaskReport {
   id: string;
@@ -95,7 +94,6 @@ export interface TaskReport {
   
 }
 
-// ── Request / Response DTOs ───────────────────────────────────────────────────
 
 export interface CreateMorningAgendaPayload {
   reportDate: string;
@@ -138,3 +136,4 @@ export interface ApiResponse<T> {
   message: string;
   data: T;
 }
+

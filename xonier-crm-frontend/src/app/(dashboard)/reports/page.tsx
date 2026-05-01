@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 import DateFilterButton from "@/src/components/common/dateFilter";
 import { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+
 
 const STATUS_META: Record<string, { label: string; dot: string; bg: string; text: string }> = {
   morning_pending: {
@@ -32,6 +32,12 @@ const STATUS_META: Record<string, { label: string; dot: string; bg: string; text
   },
   evening_submitted: {
     label: "Evening Done",
+    dot: "bg-emerald-500",
+    bg: "bg-emerald-50 dark:bg-emerald-900/20",
+    text: "text-emerald-700 dark:text-emerald-400",
+  },
+  submitted: {
+    label: "Submitted",
     dot: "bg-emerald-500",
     bg: "bg-emerald-50 dark:bg-emerald-900/20",
     text: "text-emerald-700 dark:text-emerald-400",
@@ -109,7 +115,7 @@ function ExpandableRow({ report }: { report: TaskReport }) {
   const completedItems = report.eveningReport?.completedItems ?? [];
   const pendingItems = report.eveningReport?.pendingItems ?? [];
   const totalEst = morningItems.reduce((s, i) => s + (i.estimatedHours ?? 0), 0);
-  const totalActual = completedItems.reduce((s, i) => s + (i.actualHours ?? 0), 0);
+  const totalActual = (Number(completedItems.reduce((s, i) => s + (i.actualHours ?? 0), 0)) + Number(pendingItems.reduce((s, i) => s + (i.actualHours ?? 0), 0)));
   const user = report.user;
   const initials = `${user?.firstName?.[0] ?? ""}${user?.lastName?.[0] ?? ""}`.toUpperCase();
 
@@ -121,7 +127,7 @@ function ExpandableRow({ report }: { report: TaskReport }) {
       >
         {/* User */}
         <Link
-          href={`/report/create/${report.user.id}`}>
+          href={`/report/detail/${report.id}`}>
           <td className="px-5 py-4">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-xs font-extrabold shrink-0 shadow-sm">
@@ -439,15 +445,7 @@ const TaskReportListPage = (): JSX.Element => {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {/* <a
-              href="/reports/create/new"
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold transition-all active:scale-95 shadow-sm"
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-              New Report
-            </a> */}
+          
             <button
               type="button"
               onClick={fetchReports}
