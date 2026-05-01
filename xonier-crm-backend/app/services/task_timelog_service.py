@@ -262,7 +262,7 @@ class TimeLogService:
                 raise AppException(400, "Timer is already stopped")
 
             now = datetime.now(timezone.utc)
-            print("hii")
+            
             if log.status == TIMELOG_STATUS.RUNNING and log.segments:
                 last = log.segments[-1]
                 if last.pausedAt is None:
@@ -273,7 +273,7 @@ class TimeLogService:
                         started_at = started_at.replace(tzinfo=timezone.utc)
 
                     last.durationSeconds = int((now - started_at).total_seconds())
-            print("bye")
+            
             log.status = TIMELOG_STATUS.STOPPED
             log.stoppedAt = now
             log.totalSeconds = sum(s.durationSeconds for s in log.segments)

@@ -4,6 +4,7 @@ import { StatusItem } from "./status.types";
 import { Timestamp } from "next/dist/server/lib/cache-handlers/types";
 import { User } from "../auth/auth.types";
 import { TASK_ACTIVITY_ACTION } from "@/src/constants/enum";
+import { TaskTimerEntry } from "./taskTimer.types";
 
 
 export enum TASK_PRIORITY {
@@ -230,3 +231,103 @@ export interface UpdateSubTaskPayload {
   title?: string;
   isCompleted?: boolean;
 }
+
+
+export interface FinalStatusPayload extends UpdateTaskStatusPayload {
+  remark?: string;
+  feedbackStars?: number;
+  actualHours?: number;
+}
+
+export interface PendingDrop {
+  task: TaskItem;
+  targetStatus: StatusOption;
+  categoryId: string;
+}
+
+export interface CategoryBoardProps {
+  categoryId: string;
+  categoryName: string;
+  categoryColor: string;
+  categoryIcon: string;
+  tasks: TaskItem[];
+  statuses: StatusOption[];
+  canEdit: boolean;
+  canRemark: boolean;
+  canDelete: boolean;
+  canViewTimer: boolean;
+  canStartTimer: boolean;
+  canPauseTimer: boolean;
+  canResumeTimer: boolean;
+  canStopTimer: boolean;
+  canChangeStatus: boolean;
+  canMarkFinal: boolean;
+  deleting: boolean;
+  taskTimerMap: Map<string, TaskTimerEntry>;
+  activeTimerTaskId: string | null;
+  liveElapsedSeconds: number;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+  onStatusChange: (taskId: string, payload: FinalStatusPayload) => Promise<void>;
+  onRemark: (task: TaskItem) => void;
+  onTimer: (task: TaskItem) => void;
+  onStop: (task: TaskItem) => void;
+}
+
+export interface BoardViewProps {
+  tasks: TaskItem[];
+  statusOptions: StatusOption[];
+  canEdit: boolean;
+  canRemark: boolean;
+  canDelete: boolean;
+  canViewTimer: boolean;
+  canStartTimer: boolean;
+  canPauseTimer: boolean;
+  canResumeTimer: boolean;
+  canStopTimer: boolean;
+  canChangeStatus: boolean;
+  canMarkFinal: boolean;
+  deleting: boolean;
+  isLoading: boolean;
+  skeletonlength: number;
+  taskTimerMap: Map<string, TaskTimerEntry>;
+  activeTimerTaskId: string | null;
+  liveElapsedSeconds: number;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+  onStatusChange: (taskId: string, payload: FinalStatusPayload) => Promise<void>;
+  onRemark: (task: TaskItem) => void;
+  onTimer: (task: TaskItem) => void;
+  onStop: (task: TaskItem) => void;
+}
+
+
+export interface BoardCardProps {
+  task: TaskItem;
+  canEdit: boolean;
+  canRemark: boolean;
+  canDelete: boolean;
+  canViewTimer: boolean;
+  canStartTimer: boolean;
+  canPauseTimer: boolean;
+  canResumeTimer: boolean;
+  canStopTimer: boolean;
+  deleting: boolean;
+  taskTimerMap: Map<string, TaskTimerEntry>;
+  activeTimerTaskId: string | null;
+  liveElapsedSeconds: number;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+  onDragStart: (e: React.DragEvent, task: TaskItem) => void;
+  onRemark: (task: TaskItem) => void;
+  onTimer: (task: TaskItem) => void;
+  onStop: (task: TaskItem) => void;
+}
+
+export interface CategoryMultiSelectProps {
+  categories: CategoryItem[];
+  selected: string[];
+  onChange: (selected: string[]) => void;
+}
+
+export  type ViewMode = "list" | "board";

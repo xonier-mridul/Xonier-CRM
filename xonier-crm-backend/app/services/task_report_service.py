@@ -9,6 +9,7 @@ from fastapi.encoders import jsonable_encoder
 from datetime import datetime, timezone, date
 from typing import Dict, Any
 from bson import ObjectId
+from app.core.enums import TASK_ITEM_STATUS, TASK_REPORT_STATUS
 
 
 class TaskReportService:
@@ -138,6 +139,7 @@ class TaskReportService:
                         "user": PydanticObjectId(user["_id"]),
                         "createdBy": PydanticObjectId(user["_id"]),
                         "morningAgenda": morning_data,
+                        "status": TASK_REPORT_STATUS.EVENING_PENDING.value
                     }
 
                     result = await self.repo.create(data=new_payload, session=session)
@@ -151,6 +153,7 @@ class TaskReportService:
                     raise
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
+                
 
     async def update_morning_agenda(self, report_id: str, payload: Dict[str, Any], user: Dict[str, Any]):
         async with await self.client.start_session() as session:
@@ -160,7 +163,25 @@ class TaskReportService:
                     await self._check_write_access(report, user)
 
                     if report.morningAgenda.isSubmitted:
-                        raise AppException(400, "Cannot update morning agenda after submission")
+                        submitted_at = report.morningAgenda.submittedAt
+
+                        # if submitted_at is None:
+                        #     raise AppException(400, "Cannot update morning agenda: submission timestamp is missing")
+
+                        
+                        if submitted_at.tzinfo is None:
+                            submitted_at = submitted_at.replace(tzinfo=timezone.utc)
+
+                        now = datetime.now(timezone.utc)
+                        elapsed = now - submitted_at
+                        hours_elapsed = elapsed.total_seconds() / 3600
+
+                        if hours_elapsed > 3:
+                            raise AppException(
+                                400,
+                                f"Morning agenda can only be updated within 3 hours of submission. "
+                                f"Submission window closed {hours_elapsed - 3:.1f} hour(s) ago."
+                            )
 
                     morning_data = payload.get("morningAgenda", {})
 
@@ -178,10 +199,11 @@ class TaskReportService:
 
                     return jsonable_encoder(await self._get_report_or_raise(report_id))
 
-                except AppException:
-                    raise
+                except AppException as e:
+                    raise e
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
+                
 
     async def submit_evening_report(self, report_id: str, payload: Dict[str, Any], user: Dict[str, Any]):
         async with await self.client.start_session() as session:
@@ -205,6 +227,7 @@ class TaskReportService:
                         data={
                             "eveningReport": evening_data,
                             "updatedBy": PydanticObjectId(user["_id"]),
+                            "status": TASK_REPORT_STATUS.SUBMITTED.value
                         },
                         session=session
                     )

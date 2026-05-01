@@ -29,3 +29,13 @@ export interface TaskTimeLog {
   createdAt: string;
   updatedAt: string;
 }
+
+
+export interface TaskTimerEntry {
+  logId: string;
+  status: "running" | "paused" | "stopped";
+  committedSeconds: number;
+  segmentStartedAt: string | null;
+  displaySeconds: number;
+}
+
