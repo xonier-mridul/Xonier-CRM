@@ -9,7 +9,9 @@ from fastapi.encoders import jsonable_encoder
 from datetime import datetime, timezone, date
 from typing import Dict, Any
 from bson import ObjectId
-from app.core.enums import TASK_ITEM_STATUS, TASK_REPORT_STATUS
+from app.core.enums import TASK_ITEM_STATUS, TASK_REPORT_STATUS, TIMELOG_STATUS
+from app.repositories.task_timelog_repository import TaskTimeLogRepository
+from app.db.models.task_timelog_model import TaskTimeLogModel
 
 
 class TaskReportService:
@@ -17,6 +19,7 @@ class TaskReportService:
         self.repo = TaskReportRepository()
         self.client = Client
         self.getTeamMembers = GetTeamMembers()
+        self.timelogRepo = TaskTimeLogRepository()
 
     async def _get_report_or_raise(self, report_id: str, session=None):
         if not ObjectId.is_valid(report_id):
@@ -24,6 +27,7 @@ class TaskReportService:
 
         report = await self.repo.find_by_id(
             id=PydanticObjectId(report_id),
+            populate=["createdBy"],
             session=session
         )
 
@@ -205,39 +209,140 @@ class TaskReportService:
                     raise AppException(500, f"Internal server error: {e}")
                 
 
+    # async def submit_evening_report(self, report_id: str, payload: Dict[str, Any], user: Dict[str, Any]):
+    #     async with await self.client.start_session() as session:
+    #         async with session.start_transaction():
+    #             try:
+    #                 report = await self._get_report_or_raise(report_id, session)
+    #                 await self._check_write_access(report, user)
+
+    #                 if not report.morningAgenda.isSubmitted:
+    #                     raise AppException(400, "Please submit morning agenda first")
+
+    #                 if report.eveningReport.isSubmitted:
+    #                     raise AppException(400, "Evening report already submitted")
+                    
+    #                 if str(report.createdBy.id).strip() != str(user["_id"]):
+    #                     raise AppException(403, "Only creator can submit task report")
+
+    #                 evening_data = payload.get("eveningReport", {})
+    #                 evening_data["isSubmitted"] = True
+    #                 evening_data["submittedAt"] = datetime.now(timezone.utc)
+
+    #                 await self.repo.update(
+    #                     id=PydanticObjectId(report_id),
+    #                     data={
+    #                         "eveningReport": evening_data,
+    #                         "updatedBy": PydanticObjectId(user["_id"]),
+    #                         "status": TASK_REPORT_STATUS.SUBMITTED.value
+    #                     },
+    #                     session=session
+    #                 )
+
+    #                 timelogs = await self.timelogRepo.find_active_by_user(userId=user["_id"], populate=["createdBy"])
+
+
+    #                 timelogs = jsonable_encoder(timelogs)
+
+    #                 if len(timelogs)>1:
+    #                     raise AppException(400, "Please stop first your task timer")
+                    
+    #                 prev_id = timelogs[0]["id"]
+
+    #                 currentLog = await self.timelogRepo.find_by_id(id=ObjectId(prev_id))
+
+    #                 currentLog = currentLog.model_dump(mode="json")
+
+    #                 currentLog["segment"]
+
+
+                    
+    #                 # payload = {
+    #                 #     "status": TIMELOG_STATUS.PAUSED.value, "segments": ""
+    #                 # }
+                    
+    #                 # update = await self.timelogRepo.update(id=PydanticObjectId(timelogs[0]["id"]),data=)
+
+    #                 return jsonable_encoder(await self._get_report_or_raise(report_id))
+
+    #             except AppException:
+    #                 raise
+    #             except Exception as e:
+    #                 raise AppException(500, f"Internal server error: {e}")
+                
+
     async def submit_evening_report(self, report_id: str, payload: Dict[str, Any], user: Dict[str, Any]):
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
                     report = await self._get_report_or_raise(report_id, session)
                     await self._check_write_access(report, user)
-
+ 
                     if not report.morningAgenda.isSubmitted:
                         raise AppException(400, "Please submit morning agenda first")
-
+ 
                     if report.eveningReport.isSubmitted:
                         raise AppException(400, "Evening report already submitted")
-
+ 
+                    if str(report.createdBy.id).strip() != str(user["_id"]):
+                        raise AppException(403, "Only creator can submit task report")
+ 
+                    
+                    active_logs = await self.timelogRepo.find_active_by_user(
+                        userId=str(user["_id"])
+                    )
+ 
+                    if active_logs and len(active_logs) > 1:
+                        
+                        raise AppException(
+                            400,
+                            f"You have {len(active_logs)} active task timers running. "
+                            "Please stop all timers manually before submitting your evening report."
+                        )
+ 
+                    if active_logs and len(active_logs) == 1:
+                       
+                        log: TaskTimeLogModel = active_logs[0]
+                        now = datetime.now(timezone.utc)
+ 
+                        if log.segments:
+                            last = log.segments[-1]
+                            if last.pausedAt is None:
+                                last.pausedAt = now
+                                started_at = last.startedAt
+                                if started_at.tzinfo is None:
+                                    started_at = started_at.replace(tzinfo=timezone.utc)
+                                last.durationSeconds = int((now - started_at).total_seconds())
+ 
+                        log.status = TIMELOG_STATUS.STOPPED
+                        log.stoppedAt = now
+                        log.totalSeconds = sum(s.durationSeconds for s in log.segments)
+                        log.note = "Auto-stopped on evening report submission"
+ 
+                        await log.save()
+ 
+                    
                     evening_data = payload.get("eveningReport", {})
                     evening_data["isSubmitted"] = True
                     evening_data["submittedAt"] = datetime.now(timezone.utc)
-
+ 
                     await self.repo.update(
                         id=PydanticObjectId(report_id),
                         data={
                             "eveningReport": evening_data,
                             "updatedBy": PydanticObjectId(user["_id"]),
-                            "status": TASK_REPORT_STATUS.SUBMITTED.value
+                            "status": TASK_REPORT_STATUS.COMPLETED_PENDING_REVIEW.value
                         },
                         session=session
                     )
-
+ 
                     return jsonable_encoder(await self._get_report_or_raise(report_id))
-
+ 
                 except AppException:
                     raise
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
+ 
 
     async def update_evening_report(self, report_id: str, payload: Dict[str, Any], user: Dict[str, Any]):
         async with await self.client.start_session() as session:
@@ -305,6 +410,8 @@ class TaskReportService:
                         },
                         session=session
                     )
+
+                    
 
                     return jsonable_encoder(await self._get_report_or_raise(report_id))
 

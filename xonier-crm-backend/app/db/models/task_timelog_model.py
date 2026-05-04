@@ -19,7 +19,7 @@ class TaskTimeLogModel(Document):
     task: Link[TaskModel]
     user: Link[UserModel]
 
-    status: TIMELOG_STATUS = TIMELOG_STATUS.RUNNING
+    status: TIMELOG_STATUS = TIMELOG_STATUS.PAUSED
 
     segments: List[TimeSegment] = Field(default_factory=list)
 
