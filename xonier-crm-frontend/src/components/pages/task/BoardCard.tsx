@@ -107,22 +107,36 @@ function BoardCard({
       </p>
 
       <div className="flex items-center justify-between">
-        <div className="mb-2 flex items-center">
-          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 line-clamp-1 rounded-full text-xs font-semibold ${statusColor.bg} ${statusColor.text}`}>
-            <span>{task.status?.icon ?? "📌"}</span>
-            {task.status?.name ?? task.statusName ?? "—"}
-          </span>
-        </div>
-        {task.category && (
-          <div className="mb-2">
-            <CategoryBadge
-              color={getColorOption(task.category.color || null)}
-              icon={task.category.icon || "❓"}
-              name={task.category.name}
-            />
-          </div>
-        )}
-      </div>
+  <div className="mb-2 flex items-center max-w-[50%] min-w-0">
+    
+    <span
+      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold 
+      ${statusColor.bg} ${statusColor.text} 
+      w-full min-w-0`}
+    >
+     
+      <span className="shrink-0">
+        {task.status?.icon ?? "📌"}
+      </span>
+
+      
+      <span className="truncate block min-w-0">
+        {task.status?.name ?? task.statusName ?? "—"}
+      </span>
+    </span>
+
+  </div>
+
+  {task.category && (
+    <div className="mb-2 max-w-[50%] min-w-0">
+      <CategoryBadge
+        color={getColorOption(task.category.color || null)}
+        icon={task.category.icon || "❓"}
+        name={task.category.name}
+      />
+    </div>
+  )}
+</div>
 
       {task.tags.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-2.5">

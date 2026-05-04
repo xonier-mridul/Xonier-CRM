@@ -147,6 +147,12 @@ export interface UserOption {
   avatar?: string;
 }
 
+
+export enum TimeStatus {
+    continue = "continue",
+    stopped = "stopped"
+  }
+
 export interface TaskItem {
   id: string;
   task_id: string;
@@ -185,7 +191,9 @@ export interface TaskItem {
   ratedBy?: User;
   activities: TaskActivity;
   totalSeconds?: number;
-  deletedAt: string | null
+  deletedAt: string | null;
+  timerStatus: TimeStatus
+  lastStartedTime?: string | null;
 
 }
 

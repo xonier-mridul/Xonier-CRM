@@ -29,6 +29,7 @@ from fastapi_cache import FastAPICache
 from app.utils.cache_key_generator import cache_key_generator, cache_key_generator_by_id, cache_key_generator_with_id
 from app.core.constants import TASK_CACHE_NAMESPACE
 import json
+from fastapi.encoders import jsonable_encoder
 
 logger = logging.getLogger(__name__)
  
@@ -324,7 +325,6 @@ class TaskService:
             raise AppException(500, f"Internal server error: {e}")
 
 
-     
     async def get_all_tasks(self, filters: Dict[str, Any], user: Dict[str, Any]):
         try:
             page = int(filters.get("page", 1))
@@ -644,34 +644,34 @@ class TaskService:
 
             try:
                 task_timelog = await self.timelogRepo.find_by_taskId(taskId=task_id)
-
+                final_total_seconds:int = 0
+                
                 if task_timelog:
-                    timelog_data = task_timelog.model_dump(mode="json")
-                    print("tt: ", timelog_data)
-                    segments = timelog_data.get("segments", [])
-                    total_seconds = timelog_data.get("totalSeconds", 0)
+                    timelog_data = jsonable_encoder(task_timelog)
+                    
+                    for item in timelog_data:
+                    
+                        
+                        total_seconds = item.get("totalSeconds", 0)
+                        final_total_seconds = int(final_total_seconds) + int(total_seconds)
 
-                    if segments:
-                        last_segment = segments[-1]
-                        is_running = last_segment.get("pausedAt") is None
+                    ss = timelog_data[-1].get("segments", [])
 
-                        if is_running and task_timelog.status.value == "running":
-                            segment_started_at = to_aware(last_segment["startedAt"])
-                            live_seconds = int((datetime.now(timezone.utc) - segment_started_at).total_seconds())
-                            encoded["totalSeconds"] = total_seconds + live_seconds
-                            encoded["timerStatus"] = "running"
-                        else:
-                            encoded["totalSeconds"] = total_seconds
-                            encoded["timerStatus"] = task_timelog.status.value
-                    else:
-                        encoded["totalSeconds"] = total_seconds
-                        encoded["timerStatus"] = task_timelog.status.value
+                   
+                    timer_stat = ("stopped" if ss[-1].get("pausedAt", None) else "continue")
 
-                    encoded["timerLogId"] = str(task_timelog.id)
+                    
+                    encoded["totalSeconds"] = final_total_seconds
+                    encoded["timerStatus"] = timer_stat
+                    encoded["lastStartedTime"] = ss[-1].get("startedAt", None) if (timer_stat == "continue") else None
+                    encoded["timerLogId"] = None
+
+                    
                 else:
                     encoded["totalSeconds"] = 0
                     encoded["timerStatus"] = None
                     encoded["timerLogId"] = None
+                    encoded["lastStartedTime"] = None
 
             except Exception:
                 encoded["totalSeconds"] = 0

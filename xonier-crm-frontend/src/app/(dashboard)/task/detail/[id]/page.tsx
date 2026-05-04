@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { TaskActivity, TaskItem, TASK_PRIORITY } from "@/src/types/task/task.types";
+import { TaskActivity, TaskItem, TASK_PRIORITY, TimeStatus } from "@/src/types/task/task.types";
 import { TASK_ACTIVITY_ACTION } from "@/src/constants/enum";
 import { toast } from "react-toastify";
 import { TaskService } from "@/src/services/tasks.service";
@@ -798,17 +798,49 @@ const page = () => {
   const [taskActivity, setTaskActivity] = useState<TaskActivity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activityLoading, setActivityLoading] = useState(true);
+  const [timeCount, setTimeCount] = useState<number>(0)
   const [showRemarkModal, setShowRemarkModal] = useState(false);
+  const [lastStartSecond, setLastStartSecond] = useState<number>(0)
   const { id } = useParams();
 
   const getTaskData = async (taskId: string) => {
     try {
       const result = await TaskService.getById(taskId);
-      if (result.status === 200) setTaskData(result.data.data);
+      if (result.status === 200){
+setTaskData(result.data.data);
+      const dd = result.data.data?.lastStartedTime
+     if(dd){
+      const normalized = dd.endsWith("Z") ? dd : dd + "Z";
+
+  const start = new Date(normalized).getTime();
+  const now = Date.now();
+
+  const diffSeconds = Math.floor((now - start) / 1000);
+
+  
+
+  setLastStartSecond(diffSeconds);
+     }
+      } 
+
     } catch (e) {
       if (axios.isAxiosError(e)) toast.error(e.response?.data?.message ?? "Failed to load task");
     } finally { setIsLoading(false); }
   };
+
+  
+  useEffect(() => {
+    let id:any;
+    if(taskData?.timerStatus === TimeStatus.continue){
+    id = setInterval(()=> setTimeCount((prev)=> prev +1), 1000)
+  }
+  
+    return () => {
+      clearInterval(id)
+    }
+  }, [taskData, timeCount])
+  
+  
 
   const getTaskActivity = async (taskId: string) => {
     try {
@@ -828,6 +860,9 @@ const page = () => {
     getTaskData(taskId);
     getTaskActivity(taskId);
   }, []);
+
+  console.log("achual: ", (taskData?.totalSeconds ? (taskData?.totalSeconds + lastStartSecond + timeCount) : 0))
+  console.log("define: ", taskData?.estimatedHours)
 
   if (isLoading) return <TaskDetailSkeleton />;
 
@@ -866,7 +901,7 @@ const page = () => {
   const statusColor = getColorOption(taskData.status.color);
   return (
     <div className="ml-72 mt-14">
-      <div className="bg-white dark:bg-transparent dark:backdrop-blur-sm   w-full mb-10">
+      <div className=" dark:bg-transparent dark:backdrop-blur-sm   w-full mb-10">
         <div className=" max-w-[1400px] space-y-5">
 
           
@@ -908,7 +943,7 @@ const page = () => {
                  
                   <div className="flex items-center gap-2 flex-wrap">
                     <span
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border border-slate-400
                           ${statusColor.bg}
                           ${statusColor.text}
                         `}
@@ -996,28 +1031,28 @@ const page = () => {
               label="Estimated"
               value={taskData.estimatedHours ? `${taskData.estimatedHours}h` : "—"}
               sub="planned hours"
-              icon={<Timer size={18} className="text-violet-500" />}
+              icon={<Timer size={18} className="text-white" />}
               accent="bg-violet-500"
             />
             <StatCard
               label="Actual"
-              value={taskData.actualHours ? `${taskData.actualHours}h` : "—"}
-              sub="hours logged"
-              icon={<Clock size={18} className="text-blue-500" />}
+              value={taskData?.totalSeconds ? `${ConvertSecondToTime(taskData?.totalSeconds + lastStartSecond + timeCount) }`: "Not found"}
+              sub="hours logged (hh:mm:ss)"
+              icon={<Clock size={18} className="text-white" />}
               accent="bg-blue-500"
             />
             <StatCard
               label="Activities"
               value={taskActivity.length || "0"}
               sub="events recorded"
-              icon={<Zap size={18} className="text-amber-500" />}
+              icon={<Zap size={18} className="text-white" />}
               accent="bg-amber-500"
             />
             <StatCard
               label="Priority"
               value={priority.label}
               sub="task urgency"
-              icon={<Star size={18} className="text-rose-500" />}
+              icon={<Star size={18} className="text-white" />}
               accent="bg-rose-500"
             />
           </div>
@@ -1134,7 +1169,7 @@ const page = () => {
                     <div className="bg-linear-to-br from-sky-50 to-blue-50 dark:from-sky-900/20 dark:to-blue-900/10 rounded-xl p-3 text-center border border-sky-100 dark:border-sky-900/30">
                       <p className="text-[10px] font-black uppercase tracking-wider text-sky-400 mb-1">Actual</p>
                       <p className="text-2xl font-black text-sky-700 dark:text-sky-300">
-                        {taskData?.totalSeconds ? ConvertSecondToTime(taskData?.totalSeconds): "Not found"}
+                        {taskData?.totalSeconds ? `${ConvertSecondToTime(taskData?.totalSeconds + lastStartSecond + timeCount) }`:  "Not Found"}
                       </p>
                     </div>
                   </div>
@@ -1143,13 +1178,13 @@ const page = () => {
                       <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1.5">
                         <span className="font-semibold">Progress</span>
                         <span className="font-black text-gray-700 dark:text-gray-200">
-                          {Math.min(100, Math.round(((taskData.actualHours ?? 0) / taskData.estimatedHours) * 100))}%
+                          {Math.min(100, Math.round(((taskData?.totalSeconds ? (taskData?.totalSeconds + lastStartSecond + timeCount) : 0) / (taskData.estimatedHours * 3600)) * 100))}%
                         </span>
                       </div>
                       <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-linear-to-br from-violet-400 to-violet-600 rounded-full transition-all"
-                          style={{ width: `${Math.min(100, ((taskData.actualHours ?? 0) / taskData.estimatedHours) * 100)}%` }}
+                          style={{ width: `${Math.min(100, ((taskData?.totalSeconds ? (taskData?.totalSeconds + lastStartSecond + timeCount) : 0) / (taskData.estimatedHours*3600)) * 100)}%` }}
                         />
                       </div>
                     </div>
