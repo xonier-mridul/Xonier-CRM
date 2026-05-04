@@ -69,7 +69,7 @@ class SubTaskService:
                 if common or (PydanticObjectId(user["_id"]) in [PydanticObjectId(item["id"]) for item in json_task_data["assignedTo"]]):
                     is_manager = True
             else:
-                if PydanticObjectId(user["_id"]) in [PydanticObjectId(item["id"]) for item in json_task_data["assignedBy"]]:
+                if PydanticObjectId(user["_id"]) in [PydanticObjectId(item["id"]) for item in json_task_data["assignedTo"]]:
                     is_creator = True
 
         if not is_admin and not is_creator and not is_manager:
@@ -260,15 +260,17 @@ class SubTaskService:
 
     async def get_all_subtasks(self, taskId: str, user: Dict[str, Any], filters: Dict[str, Any]):
         try:
+            
             if not ObjectId.is_valid(taskId):
                 raise AppException(400, "Invalid task Object Id")
 
             page = int(filters.get("page", 1))
             limit = int(filters.get("limit", 10))
-
+            
             json_task_data = await self._get_task_or_raise(taskId)
+            
             await self._check_task_access(json_task_data, user)
-
+           
             query: Dict[str, Any] = {
                 "taskId.$id": PydanticObjectId(taskId),
                 "deletedAt": None
@@ -279,7 +281,7 @@ class SubTaskService:
 
             if "search" in filters and filters["search"].strip():
                 query["title"] = {"$regex": filters["search"].strip(), "$options": "i"}
-
+            
             result = await self.repo.get_all(
                 page=page,
                 limit=limit,
@@ -287,7 +289,7 @@ class SubTaskService:
                 populate=["createdBy", "completedBy"],
                 sort=["order", "-createdAt"]
             )
-
+            
             if not result or not result.get("data"):
                 raise AppException(404, "No sub tasks found for this task")
 
