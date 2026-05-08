@@ -119,6 +119,7 @@ class Dependencies:
 
     async def onlyForAdmin(self, request:Request):
         try:
+            
             user = request.state.user
 
             isAdmin = False

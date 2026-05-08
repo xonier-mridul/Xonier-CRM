@@ -9,9 +9,13 @@ from fastapi.encoders import jsonable_encoder
 from datetime import datetime, timezone, date
 from typing import Dict, Any
 from bson import ObjectId
-from app.core.enums import TASK_ITEM_STATUS, TASK_REPORT_STATUS, TIMELOG_STATUS
+from app.core.enums import TASK_ITEM_STATUS, TASK_REPORT_STATUS, TIMELOG_STATUS, ACTIVITY_ENTITY_TYPE, ACTIVITY_ACTION
 from app.repositories.task_timelog_repository import TaskTimeLogRepository
 from app.db.models.task_timelog_model import TaskTimeLogModel
+from pymongo.errors import DuplicateKeyError
+from app.repositories.activity_repository import ActivityRepository
+
+from app.utils.activity_payload import activity_payload
 
 
 class TaskReportService:
@@ -20,6 +24,7 @@ class TaskReportService:
         self.client = Client
         self.getTeamMembers = GetTeamMembers()
         self.timelogRepo = TaskTimeLogRepository()
+        self.activityRepo = ActivityRepository()
 
     async def _get_report_or_raise(self, report_id: str, session=None):
         if not ObjectId.is_valid(report_id):
@@ -155,6 +160,10 @@ class TaskReportService:
 
                 except AppException:
                     raise
+
+                except DuplicateKeyError as e:
+                    raise AppException(409, "User task report already exist for today")
+                
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
                 
@@ -607,21 +616,29 @@ class TaskReportService:
                     report = await self._get_report_or_raise(report_id, session)
                     await self._check_write_access(report, user)
 
-                    if report.isReviewed:
+                    report = report.model_dump(mode="json")
+
+                    if report['isReviewed']:
                         raise AppException(400, "Cannot delete a reviewed report")
 
-                    await self.repo.update(
+                    await self.repo.delete_by_id(
                         id=PydanticObjectId(report_id),
-                        data={
-                            "deletedAt": datetime.now(timezone.utc),
-                            "updatedBy": PydanticObjectId(user["_id"]),
-                        },
+                        # data={
+                        #     "deletedAt": datetime.now(timezone.utc),
+                        #     "updatedBy": PydanticObjectId(user["_id"]),
+                        # },
                         session=session
                     )
 
+                    ac_payload = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.TASK_REPORT.value, action=ACTIVITY_ACTION.DELETE.value, title="delete task report", metadata={"reportDate": report['reportDate'], "morningAgenda": {**report["morningAgenda"]}, "eveningReport": {**report["eveningReport"]} } )
+
+                    iscreate = await self.activityRepo.create(ac_payload, session)
+                    if not iscreate:
+                        raise AppException(400, "Activity creation failed")
+
                     return {"deleted": True}
 
-                except AppException:
-                    raise
+                except AppException as e:
+                    raise e
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")

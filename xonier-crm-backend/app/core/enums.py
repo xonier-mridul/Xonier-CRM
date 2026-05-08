@@ -594,6 +594,9 @@ class ACTIVITY_ENTITY_TYPE(str, Enum):
     USER = "user"
     AUTH = "auth"
     EVENT= "event"
+    TASK="task"
+    TASK_REPORT="task_report"
+    PLAN="plan"
     
     
 
@@ -946,3 +949,67 @@ class TIMELOG_STATUS(str, Enum):
     RUNNING = "running"
     PAUSED = "paused"
     STOPPED = "stopped"
+
+
+class COMPANY_STATUS(str, Enum):
+    ACTIVE = "active"
+    PENDING_VERIFICATION = "pending_verification"
+    SUSPENDED = "suspended"
+    INACTIVE = "inactive"
+    DELETED = "deleted"
+
+
+class PLAN_STATUS(str, Enum):
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    DELETED = "deleted"
+
+
+class FEATURE_STATUS(str, Enum):
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    DELETED = "deleted"
+
+
+class PLAN_VISIBILITY(str, Enum):
+    PRIVATE= "private"
+    PUBLIC = "public"
+
+
+class SUBSCRIPTION_STATUS(str, Enum):
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    PAUSED = "pause"
+    COMPLETED = "completed"
+    TRIAL = "trial"
+    CANCELED = "canceled"
+
+
+class CURRENCY(str, Enum):
+    USD = "USD"  # US Dollar
+    EUR = "EUR"  # Euro
+    GBP = "GBP"  # British Pound
+    INR = "INR"  # Indian Rupee
+    AUD = "AUD"  # Australian Dollar
+    CAD = "CAD"  # Canadian Dollar
+    CHF = "CHF"  # Swiss Franc
+    CNY = "CNY"  # Chinese Yuan
+    JPY = "JPY"  # Japanese Yen
+    SGD = "SGD"  # Singapore Dollar
+    HKD = "HKD"  # Hong Kong Dollar
+    NZD = "NZD"  # New Zealand Dollar
+    SEK = "SEK"  # Swedish Krona
+    NOK = "NOK"  # Norwegian Krone
+    DKK = "DKK"  # Danish Krone
+    ZAR = "ZAR"  # South African Rand
+    AED = "AED"  # UAE Dirham
+    SAR = "SAR"  # Saudi Riyal
+    BRL = "BRL"  # Brazilian Real
+    MXN = "MXN"  # Mexican Peso
+    RUB = "RUB"  # Russian Ruble
+    KRW = "KRW"  # South Korean Won
+
+
+class DISCOUNT_TYPE(str, Enum):
+    AMOUNT = "amount",
+    PERCENTAGE = "percentage"

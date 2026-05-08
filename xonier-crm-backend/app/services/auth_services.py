@@ -45,6 +45,9 @@ class AuthServices:
         self.activityRepo = ActivityRepository()
         self.crypto = encryptor
 
+
+
+
     async def getAll(self, page:int=1, limit:int = 10, filters: Dict[str, Any] = {})->List[UserModel]:
         try:
            query = {"$or": [
@@ -708,6 +711,7 @@ class AuthServices:
 
         except Exception as e:
             raise AppException(status_code=500, message="internal server error")
+        
 
     async def update(self, userId: PydanticObjectId, updatedBy: PydanticObjectId, payload: Dict[str, Any])->bool:
         session = await self.client.start_session()
@@ -745,6 +749,7 @@ class AuthServices:
 
             
             updated_user = await self.repo.update_with_encryption(userId, payload, session)
+
             if not updated_user:
                 raise AppException(400, "User not updated")
             
