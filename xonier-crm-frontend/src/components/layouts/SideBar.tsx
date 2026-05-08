@@ -288,6 +288,64 @@ const SideBar = () => {
               </Link>
             </li>}
 
+            {(auth.isAdmin) && <li>
+              <button
+                onClick={() => toggleMenu("plans")}
+                className={`${isMenuActive("plans")
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
+                  } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+              >
+                <span className="flex items-center gap-3">
+                  <FiUser className="text-lg" />
+                  Plans and Subscriptions
+                </span>
+
+                <IoChevronDown
+                  className={`transition-transform ${openMenu === "plans" ? "rotate-180" : ""
+                    }`}
+                />
+              </button>
+
+              <AnimatePresence>
+                {openMenu === "plans" && (
+                  <motion.ul
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.25 }}
+                    className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
+                  >
+                    
+                    {hasPermission(PERMISSIONS.readUser) && <li>
+                      <Link
+                        href="/plans"
+                        className={`${isActive("/plans")
+                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          : "border-l-2 border-transparent"
+                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                      >
+                        Plans
+                      </Link>
+                    </li>}
+                    {
+                      hasPermission(PERMISSIONS.deletedUserView) && <li>
+                        <Link
+                          href="/subscription"
+                          className={`${isActive("/subscription")
+                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                            : "border-l-2 border-transparent"
+                            } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                        >
+                          Subscriptions
+                          </Link>
+                      </li>
+                    }
+                  </motion.ul>
+                )}
+              </AnimatePresence>
+            </li>}
+
             {/* {(hasPermission(PERMISSIONS.readTask)) && <li>
               <button
                 onClick={() => toggleMenu("team")}

@@ -52,14 +52,12 @@ const QUICK_RANGES = [
   { label: "Last 3 months", value: "last3m"    },
 ];
 
-// ── Props ─────────────────────────────────────────────────────────────────────
 
 interface Props {
   dateFilter: DateFilter;
   onChange: (filter: DateFilter) => void;
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
 
 export default function DateFilterButton({ dateFilter, onChange }: Props) {
   const [open, setOpen]               = useState(false);
@@ -68,13 +66,13 @@ export default function DateFilterButton({ dateFilter, onChange }: Props) {
   const [activeRange, setActiveRange] = useState<string | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
-  // Sync when parent resets
+
   useEffect(() => {
     setFrom(dateFilter.fromDate);
     setTo(dateFilter.toDate);
   }, [dateFilter.fromDate, dateFilter.toDate]);
 
-  // Outside click
+
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
@@ -147,7 +145,6 @@ export default function DateFilterButton({ dateFilter, onChange }: Props) {
         )}
       </button>
 
-      {/* ── Dropdown panel ── */}
       {open && (
         <div className="
           absolute top-[calc(100%+8px)] right-0 z-50 w-72
@@ -157,12 +154,11 @@ export default function DateFilterButton({ dateFilter, onChange }: Props) {
           animate-in fade-in slide-in-from-top-2 duration-150
         ">
 
-          {/* Quick ranges label */}
+
           <p className="text-[10px] font-bold tracking-widest uppercase mb-2.5 text-gray-400 dark:text-gray-600">
             Quick Ranges
           </p>
 
-          {/* Chips */}
           <div className="flex flex-wrap gap-1.5 mb-4">
             {QUICK_RANGES.map((r) => (
               <button
@@ -182,22 +178,18 @@ export default function DateFilterButton({ dateFilter, onChange }: Props) {
             ))}
           </div>
 
-          {/* Divider */}
           <hr className="border-t mb-4 border-gray-200 dark:border-white/10" />
 
-          {/* Custom range label */}
           <p className="text-[10px] font-bold tracking-widest uppercase mb-2.5 text-gray-400 dark:text-gray-600">
             Custom Range
           </p>
 
-          {/* Day count preview */}
           {from && to && (
             <p className="text-[11px] text-indigo-500 dark:text-indigo-400 font-medium mb-3 -mt-1">
               {dayCountLabel({ fromDate: from, toDate: to })} selected
             </p>
           )}
 
-          {/* From date */}
           <div className="mb-2.5">
             <label className="block text-[11px] font-medium mb-1 text-gray-400 dark:text-gray-500">
               From date
@@ -245,7 +237,6 @@ export default function DateFilterButton({ dateFilter, onChange }: Props) {
             </div>
           </div>
 
-          {/* Footer buttons */}
           <div className="flex gap-2">
             <button
               onClick={handleClear}
@@ -276,7 +267,6 @@ export default function DateFilterButton({ dateFilter, onChange }: Props) {
   );
 }
 
-// ── Cal icon ──────────────────────────────────────────────────────────────────
 
 function CalIcon() {
   return (

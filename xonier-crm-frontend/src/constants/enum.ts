@@ -1103,3 +1103,59 @@ export enum TASK_ACTIVITY_ACTION {
 }
 
 export type TimeLogStatus = "running" | "paused" | "stopped";
+
+
+export enum FEATURE_STATUS {
+  ACTIVE = "active",
+    INACTIVE = "inactive",
+    DELETED = "deleted"
+}
+
+export enum DISCOUNT_TYPE {
+  AMOUNT = "amount",
+    PERCENTAGE = "percentage"
+}
+
+export enum CURRENCY{
+    USD = "USD",  
+    EUR = "EUR",
+    GBP = "GBP",  
+    INR = "INR", 
+    AUD = "AUD", 
+    CAD = "CAD", 
+    CHF = "CHF", 
+    CNY = "CNY", 
+    JPY = "JPY",
+    SGD = "SGD",
+    HKD = "HKD",
+    NZD = "NZD",
+    SEK = "SEK",
+    NOK = "NOK",
+    DKK = "DKK",
+    ZAR = "ZAR",
+    AED = "AED",
+    SAR = "SAR",
+    BRL = "BRL",
+    MXN = "MXN",
+    RUB = "RUB",
+    KRW = "KRW",
+
+}
+
+
+
+export enum PLAN_STATUS{
+    ACTIVE = "active",
+    INACTIVE = "inactive",
+    DELETED = "deleted",
+
+
+}
+
+
+export enum PLAN_VISIBILITY{
+    PRIVATE= "private",
+    PUBLIC = "public"
+}
+
+

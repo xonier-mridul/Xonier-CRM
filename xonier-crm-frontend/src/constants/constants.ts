@@ -1,4 +1,5 @@
 import { TASK_PRIORITY } from "../types/task/task.types";
+import { CURRENCY } from "./enum";
 
 export const SIDEBAR_WIDTH = "280px"
 export const MARGIN_TOP = "12"
@@ -29,4 +30,31 @@ export const PRIORITY_STYLE: Record<
     dot: "bg-rose-500",
     label: "Urgent",
   },
+};
+
+
+
+export const CURRENCY_SYMBOL: Record<CURRENCY, string> = {
+  [CURRENCY.USD]: "$",
+  [CURRENCY.EUR]: "€",
+  [CURRENCY.GBP]: "£",
+  [CURRENCY.INR]: "₹",
+  [CURRENCY.AUD]: "A$",
+  [CURRENCY.CAD]: "C$",
+  [CURRENCY.CHF]: "Fr",
+  [CURRENCY.CNY]: "¥",
+  [CURRENCY.JPY]: "¥",
+  [CURRENCY.SGD]: "S$",
+  [CURRENCY.HKD]: "HK$",
+  [CURRENCY.NZD]: "NZ$",
+  [CURRENCY.SEK]: "kr",
+  [CURRENCY.NOK]: "kr",
+  [CURRENCY.DKK]: "kr",
+  [CURRENCY.ZAR]: "R",
+  [CURRENCY.AED]: "د.إ",
+  [CURRENCY.SAR]: "﷼",
+  [CURRENCY.BRL]: "R$",
+  [CURRENCY.MXN]: "MX$",
+  [CURRENCY.RUB]: "₽",
+  [CURRENCY.KRW]: "₩",
 };
