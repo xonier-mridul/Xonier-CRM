@@ -1,9 +1,11 @@
+"use client"
 import SubscriptionTable from '@/src/components/pages/subscription/SubscriptionTable'
 import { Subscription } from '@/src/types/subscription/subscription.types'
 import axios from 'axios'
 import React, { useState } from 'react'
 import { toast } from 'react-toastify'
 import extractErrorMessages from '../../utils/error.utils'
+import { SubscriptionService } from '@/src/services/subscription.service'
 
 const page = () => {
     const [subscriptionData, setSubscriptionData] = useState<Subscription[]>([])
@@ -13,7 +15,7 @@ const page = () => {
     const getSubscriptionsData = async()=>{
         setIsLoading(true)
         try {
-            const result = await Subs
+            const result = await SubscriptionService.getAll()
         } catch (error) {
             if (axios.isAxiosError(error)) {
         toast.error(`${extractErrorMessages(error)}`);
