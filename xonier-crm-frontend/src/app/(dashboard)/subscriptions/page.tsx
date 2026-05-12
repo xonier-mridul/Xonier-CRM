@@ -13,7 +13,7 @@ const page = () => {
     const getSubscriptionsData = async()=>{
         setIsLoading(true)
         try {
-            
+            const result = await Subs
         } catch (error) {
             if (axios.isAxiosError(error)) {
         toast.error(`${extractErrorMessages(error)}`);
