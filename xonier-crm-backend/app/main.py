@@ -51,6 +51,7 @@ from app.routes.sub_task_route import router as sub_task_route
 from app.routes.task_timelog_route import router as task_timelog_route
 from app.routes.plan_route import router as plan_route
 from app.routes.feature_route import router as feature_route
+from app.routes.company_route import router as company_route
 
 settings = get_setting()
 
@@ -137,6 +138,7 @@ app.include_router(sub_task_route, prefix="/api/sub-task")
 app.include_router(task_timelog_route, prefix="/api/task")
 app.include_router(plan_route, prefix="/api/plan")
 app.include_router(feature_route, prefix="/api/feature")
+app.include_router(company_route, prefix="/api/companies")
 
 
 app.add_exception_handler(HTTPException, http_exception_handler)

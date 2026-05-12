@@ -614,10 +614,19 @@ export enum CUSTOM_FIELD_TYPE {
 
 
 export enum ACTIVITY_ENTITY_TYPE {
-  LEAD = "lead",
-  DEAL = "deal",
-  QUOTATION = "quotation",
-  INVOICE = "invoice",
+  ENQUIRY = "enquiry",
+    LEAD = "lead",
+    DEAL = "deal",
+    QUOTATION = "quotation",
+    INVOICE = "invoice",
+    USER = "user",
+    AUTH = "auth",
+    EVENT= "event",
+    TASK="task",
+    TASK_REPORT="task_report",
+    PLAN="plan",
+    COMPANY = "company",
+    OTP = "otp",
 }
 
 export enum ACTIVITY_ACTION {
@@ -631,7 +640,15 @@ export enum ACTIVITY_ACTION {
   DELETE = "delete",
   WON = "won",
   LOST = "lost",
-  ACCEPTED = "accepted"
+  ACCEPTED = "accepted",
+  SMS_SENT = "sms_sent",
+    SMS_DELIVERED = "sms_delivered",
+    EMAIL_SENT = "email_sent",
+    EMAIL_OPENED = "email_opened",
+
+    RESTORE = "restore",
+    VERIFY = "verify",
+    REGISTER = "register",
 }
 
 
@@ -1159,3 +1176,42 @@ export enum PLAN_VISIBILITY{
 }
 
 
+
+
+export enum COMPANY_STATUS {
+  ACTIVE = "active",
+  PENDING_VERIFICATION = "pending_verification",
+  SUSPENDED = "suspended",
+  INACTIVE = "inactive",
+  DELETED = "deleted",
+}
+
+
+export enum COUNTRY_CODE {
+  US = "US",
+  GB = "GB",
+  IN = "IN",
+  CA = "CA",
+  AU = "AU",
+  DE = "DE",
+  FR = "FR",
+  AE = "AE",
+  PK = "PK",
+  SG = "SG",
+}
+
+
+export enum BILLING_CYCLE {
+  MONTHLY = "monthly",
+  YEARLY = "yearly",
+}
+
+
+export enum SUBSCRIPTION_STATUS {
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+  PAUSED = "pause",
+  COMPLETED = "completed",
+  TRIAL = "trial",
+  CANCELED = "canceled",
+}

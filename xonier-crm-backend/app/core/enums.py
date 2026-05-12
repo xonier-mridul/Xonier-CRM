@@ -597,6 +597,8 @@ class ACTIVITY_ENTITY_TYPE(str, Enum):
     TASK="task"
     TASK_REPORT="task_report"
     PLAN="plan"
+    COMPANY = "company"
+    OTP = "otp"
     
     
 
@@ -611,6 +613,7 @@ class ACTIVITY_ACTION(str, Enum):
     DELETE = "delete"
     ASSIGN = "assign"
     REASSIGN = "reassign"
+
     LOGIN = "login"            
     LOGOUT = "logout"          
     LOGIN_FAILED = "login_failed"  
@@ -623,6 +626,10 @@ class ACTIVITY_ACTION(str, Enum):
 
     SMS_SENT = "sms_sent"
     SMS_DELIVERED = "sms_delivered"
+
+    RESTORE = "restore"
+    VERIFY = "verify"
+    REGISTER = "register"
 
 
 class LEAD_SOURCE_TYPE(str, Enum):
@@ -1013,3 +1020,13 @@ class CURRENCY(str, Enum):
 class DISCOUNT_TYPE(str, Enum):
     AMOUNT = "amount",
     PERCENTAGE = "percentage"
+
+
+class REGISTRATION_SOURCE(str, Enum):
+    ADMIN_CREATED = "admin_created"      
+    SELF_REGISTERED = "self_registered"
+
+
+class BILLING_CYCLE(str, Enum):
+    MONTHLY = "monthly"
+    YEARLY = "yearly"
