@@ -76,7 +76,7 @@ class PlanService:
             page: int = int(filters.get("page", 1) or 1)
             limit: int = int(filters.get("limit", 10) or 10)
 
-            query = {}
+            query = {"status": PLAN_STATUS.ACTIVE}
 
             if "search" in filters and filters.get("search", "").strip():
                 regex_data = {"$regex": filters["search"].strip(), "$options": "i"}

@@ -9,6 +9,7 @@ from app.utils.custom_exception import AppException
 from app.core.enums import USER_STATUS
 from app.core.config import get_setting
 
+
 from datetime import datetime, timezone, timedelta
 from jose import jwt
 
@@ -31,6 +32,7 @@ class UserModel(Document):
     isActive: bool = False
     lastLogin: Optional[datetime] = None
     refreshToken: Optional[str] = None
+    companyId: Optional[Link["CompanyModel"]] = None
     assignedPhoneNumber: Optional[Link["TelephoneNumbersModel"]] = None
     createdBy: Optional[Link["UserModel"]] = None
     updatedBy: Optional[Link["UserModel"]] = None
@@ -38,6 +40,7 @@ class UserModel(Document):
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updatedAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     deletedAt: Optional[datetime] = None
+
 
     class Settings: 
         name = "users"
@@ -148,6 +151,7 @@ class UserModel(Document):
 
 from app.db.models.user_roles_model import UserRoleModel
 from app.db.models.communications.telephone_numbers_model import TelephoneNumbersModel
+from app.db.models.company_model import CompanyModel
 UserModel.model_rebuild()
 
 

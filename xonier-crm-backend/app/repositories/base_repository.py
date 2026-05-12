@@ -116,17 +116,17 @@ class BaseRepository:
                         fetched_items.append(item)
                 setattr(doc, field, fetched_items)
         
-        # Then, fetch nested fields
+       
         for parent_field, child_fields in nested_fields.items():
             parent_value = getattr(doc, parent_field, None)
             
             if parent_value is None:
                 continue
             
-            # Handle nested population
+           
             for child_field in child_fields:
                 if isinstance(parent_value, list):
-                    # If parent is a list, fetch child for each item
+                    
                     for item in parent_value:
                         child_value = getattr(item, child_field, None)
                         if child_value is None:
