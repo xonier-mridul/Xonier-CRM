@@ -21,7 +21,7 @@ export  const PlanService  = {
     return api.get(`/plan?${params.toString()}`);
   },
   create: (payload: CreatePlanPayload)=> api.post("/plan", payload),
-  getById: (id:string)=> api.get(`/${id}`),
+  getById: (id:string)=> api.get(`/plan/${id}`),
   update:(id:string, payload: UpdatePlanPayload)=> api.put(`/plan/${id}`, payload),
-  delete: (id:string) => api.delete(`/${id}`)
+  delete: (id:string) => api.delete(`/plan/${id}`)
 }

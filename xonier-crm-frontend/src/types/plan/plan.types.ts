@@ -96,3 +96,20 @@ export interface PlanTableProps {
   setCurrentPage: Dispatch<SetStateAction<number>>;
   setPageLimit: Dispatch<SetStateAction<number>>;
 }
+
+
+export interface PlanViewComponentProps {
+  plan: Plan | null;
+  isLoading?: boolean;
+  handleEdit: () => void;
+  handleDelete: () => Promise<void>;
+}
+
+
+
+ export interface PlanViewHeaderProps {
+  plan: Plan;
+  createdAt: string;
+  handleEdit: () => void;
+  handleDelete: () => Promise<void>;
+}

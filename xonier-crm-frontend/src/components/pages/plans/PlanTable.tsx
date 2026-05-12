@@ -1,7 +1,7 @@
 "use client";
 
 import { Plan, PlanTableProps } from "@/src/types/plan/plan.types";
-import React, { useState } from "react";
+import React from "react";
 import Pagination from "../../common/pagination";
 import { IoIosSearch } from "react-icons/io";
 import Skeleton from "react-loading-skeleton";
@@ -98,10 +98,11 @@ const PlanTable: React.FC<ExtendedPlanTableProps> = ({
               planData && planData.length > 0 ? (
                 planData.map((plan) => {
                   const sym = currencySymbol[plan.currency] ?? "";
+                  const isDeleted = plan.status === PLAN_STATUS.DELETED;
                   const createdBy =
                     typeof plan.createdBy === "string"
                       ? plan.createdBy
-                      : `${(plan.createdBy as any)?.firstName ?? ""} ${(plan.createdBy as any)?.lastName ?? ""}`.trim();
+                      : `${plan.createdBy?.firstName ?? ""} ${plan.createdBy?.lastName ?? ""}`.trim();
 
                   return (
                     <tr key={plan.id} className="group hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors">
@@ -157,12 +158,18 @@ const PlanTable: React.FC<ExtendedPlanTableProps> = ({
 
                       <td className="py-4">
                         <div className="flex items-center gap-2">
-                          <Link
-                            href={`/plans/${plan.id}`}
-                            className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900/30 dark:hover:text-green-400 transition-colors"
-                          >
-                            <IoEyeOutline className="text-base" />
-                          </Link>
+                          {isDeleted ? (
+                            <span className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-gray-700 text-slate-400 dark:text-gray-500 opacity-40 cursor-not-allowed">
+                              <IoEyeOutline className="text-base" />
+                            </span>
+                          ) : (
+                            <Link
+                              href={`/plans/${plan.id}`}
+                              className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900/30 dark:hover:text-green-400 transition-colors"
+                            >
+                              <IoEyeOutline className="text-base" />
+                            </Link>
+                          )}
 
                           <button
                             onClick={() => onEdit(plan)}
@@ -173,7 +180,7 @@ const PlanTable: React.FC<ExtendedPlanTableProps> = ({
 
                           <button
                             onClick={() => onDelete(plan.id)}
-                            disabled={plan.status === PLAN_STATUS.DELETED}
+                            disabled={isDeleted}
                             className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                           >
                             <IoTrash className="text-base" />
