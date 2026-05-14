@@ -61,7 +61,7 @@ const page = () => {
       searchTime.current = setTimeout(()=>{
     setCurrentPage(1)
     getSubscriptionsData(val)
-  },400)
+  },500)
   };
 
   useEffect(() => {
