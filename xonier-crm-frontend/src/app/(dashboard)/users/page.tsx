@@ -1,6 +1,6 @@
 "use client";
 import UserMonitor from "@/src/components/pages/users/UserMonitor";
-import UsersTable from "@/src/components/pages/users/UsersTable";
+import {UsersTable} from "@/src/components/pages/users/UsersTable";
 import { MARGIN_TOP, SIDEBAR_WIDTH } from "@/src/constants/constants";
 import { RegisterPayload, User, UserRole } from "@/src/types";
 import axios from "axios";
@@ -10,6 +10,12 @@ import { AuthService } from "@/src/services/auth.service";
 import { toast } from "react-toastify";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import { RoleService } from "@/src/services/role.service";
+import CompanyService from "@/src/services/company.service";
+import { Company, CompanyFilterParams } from "@/src/types/company/company.types";
+import { setIsAdmin } from "@/src/store/slices/authSlice";
+import { useSelector } from "react-redux";
+import { RootState } from "@/src/store";
+
 
 const page = (): JSX.Element => {
   const [err, setErr] = useState<string[] | string>("");
@@ -22,6 +28,8 @@ const page = (): JSX.Element => {
   const [totalPage, setTotalPage] = useState<number>(1)
   const [isPopupShow, setIsPopupShow] = useState<boolean>(false);
   const [search, setSearch] = useState<string>("");
+  const [companyData, setCompanyData] = useState<Company[]>([])
+  
   const [formData, setFormData] = useState<RegisterPayload>({
     firstName: "",
     lastName: "",
@@ -30,13 +38,18 @@ const page = (): JSX.Element => {
     password: "",
     confirmPassword: "",
     userRole: [],
-    
+    companyId:'',
+  
+  
   });
+
+  const isAdmin = useSelector((state:RootState) => state.auth.isAdmin);
+  console.log("isA: ", isAdmin)
 
   const user = async (): Promise<void> => {
     setIsLoading(true);
     try {
-      let result = await AuthService.getAll({
+      const result = await AuthService.getAll({
         page: currentPage,
         limit: pageLimit||10,
         search: search||"",
@@ -78,6 +91,18 @@ const page = (): JSX.Element => {
       }
     }
   };
+
+  const getCompanyData = async ()=>{
+    try{
+      const res = await CompanyService.getAll()
+      if(res.status === 200){
+        setCompanyData(res.data.data.data)
+      }
+    }catch(err){
+      console.log(err)
+    }
+  }
+  console.log('comp data :',companyData)
 
   const handleDelete = async (id: string): Promise<void> => {
     setErr("");
@@ -121,7 +146,6 @@ const page = (): JSX.Element => {
       toast.info("Currently only one user role allowed");
       return;
     }
-
     setFormData((prev) => ({
       ...prev,
       userRole: [...prev.userRole, roleId],
@@ -129,6 +153,17 @@ const page = (): JSX.Element => {
 
     e.target.value = "";
   };
+const handleCompanyChange = (
+  companyId: string
+) => {
+
+  setFormData((prev) => ({
+    ...prev,
+    companyId,
+  }));
+};
+console.log("id :", formData.companyId)
+
 
   const handleRemoveRole = (roleId: string) => {
     setFormData((prev) => ({
@@ -140,6 +175,7 @@ const page = (): JSX.Element => {
   useEffect(() => {
     getRoleData();
     user();
+    getCompanyData();
   }, [currentPage, pageLimit, search]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -186,6 +222,9 @@ const page = (): JSX.Element => {
     }
   };
 
+  console.log('user:',typeof(userData))
+  console.log('user:',typeof(companyData))
+
   return (
     <div className={`ml-72 mt-16 p-6`}>
       <UserMonitor />
@@ -210,6 +249,9 @@ const page = (): JSX.Element => {
         setCurrentPages={setCurrentPages}
         setSearchFilter={setSearch}
         setFormData={setFormData}
+        isAdmin={isAdmin}
+        companyData={companyData}
+        handleCompanyChange={handleCompanyChange }
       />
     </div>
   );

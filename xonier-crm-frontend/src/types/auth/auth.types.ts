@@ -1,6 +1,7 @@
 import { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
 import { Permissions } from "../roles/roles.types";
 import { TelephoneNumber } from "../communication/telephone.types";
+import { Company, CompanyState, } from "../company/company.types";
 
 
 export interface AuthState {
@@ -53,7 +54,8 @@ export interface RegisterPayload {
   password: string;
   confirmPassword: string;
   userRole: string[];
-  companyId?: string
+  companyId?: string;
+
 
 }
 
@@ -167,7 +169,10 @@ export interface UserTableComponentProps {
   totalPage: number,
   setCurrentPages: Dispatch<SetStateAction<number>>,
   setSearchFilter: Dispatch<SetStateAction<string>>,
-  setFormData: Dispatch<SetStateAction<RegisterPayload>>
+  setFormData: Dispatch<SetStateAction<RegisterPayload>>,
+  isAdmin : boolean,
+  companyData : Company[],
+  handleCompanyChange: CompanyState[]
 
 }
 

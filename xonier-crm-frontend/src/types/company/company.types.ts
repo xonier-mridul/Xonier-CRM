@@ -101,6 +101,8 @@ export interface VerifyOtpPayload {
   otp: number;
 }
 
+
+
 export interface ResendOtpPayload {
   userId: string;
 }
@@ -166,4 +168,19 @@ export interface CompanyUpdateFormProps {
   onVerifyOtp: (userId: string, email: string, otp: number) => Promise<void>;
   onResendOtp: (userId: string) => Promise<void>;
   loading: boolean
+}
+
+export interface CompanyState {
+  id: string;
+  companyName: string;
+}
+
+
+export interface CompanySelectProps {
+  companyData: CompanyState[];
+  company: string;
+  handleCompanyChange: (
+      companyId: string
+   ) => void;
+
 }
