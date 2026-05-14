@@ -1,6 +1,6 @@
 "use client";
 import UserMonitor from "@/src/components/pages/users/UserMonitor";
-import {UsersTable} from "@/src/components/pages/users/UsersTable";
+import { UsersTable } from "@/src/components/pages/users/UsersTable";
 import { MARGIN_TOP, SIDEBAR_WIDTH } from "@/src/constants/constants";
 import { RegisterPayload, User, UserRole } from "@/src/types";
 import axios from "axios";
@@ -11,27 +11,29 @@ import { toast } from "react-toastify";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import { RoleService } from "@/src/services/role.service";
 import CompanyService from "@/src/services/company.service";
-import { Company, CompanyFilterParams } from "@/src/types/company/company.types";
+import {
+  Company,
+  CompanyFilterParams,
+} from "@/src/types/company/company.types";
 import { setIsAdmin } from "@/src/store/slices/authSlice";
 import { useSelector } from "react-redux";
 import { RootState } from "@/src/store";
 
-
 const page = (): JSX.Element => {
   const [err, setErr] = useState<string[] | string>("");
   const [userData, setUserData] = useState<User[]>([]);
-  const [companyData, setCompanyData] = useState<Company[]>([])
+
   const [roleData, setRoleData] = useState<UserRole[]>([]);
-  const [companyLoading, setCompanyLoading] = useState<boolean>(false)
+  const [companyLoading, setCompanyLoading] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPages] = useState<number>(1);
   const [pageLimit, setPageLimit] = useState<number>(10);
-  const [totalPage, setTotalPage] = useState<number>(1)
+  const [totalPage, setTotalPage] = useState<number>(1);
   const [isPopupShow, setIsPopupShow] = useState<boolean>(false);
   const [search, setSearch] = useState<string>("");
-  const [companyData, setCompanyData] = useState<Company[]>([])
-  
+  const [companyData, setCompanyData] = useState<Company[]>([]);
+
   const [formData, setFormData] = useState<RegisterPayload>({
     firstName: "",
     lastName: "",
@@ -40,29 +42,27 @@ const page = (): JSX.Element => {
     password: "",
     confirmPassword: "",
     userRole: [],
-    companyId:'',
-  
-  
+    companyId: "",
   });
 
-  const isAdmin = useSelector((state:RootState) => state.auth.isAdmin);
-  console.log("isA: ", isAdmin)
+  const isAdmin = useSelector((state: RootState) => state.auth.isAdmin);
+  console.log("isA: ", isAdmin);
 
   const user = async (): Promise<void> => {
     setIsLoading(true);
     try {
       const result = await AuthService.getAll({
         page: currentPage,
-        limit: pageLimit||10,
-        search: search||"",
+        limit: pageLimit || 10,
+        search: search || "",
       });
       if (result.status === 200) {
         const resultData = result.data.data;
         setUserData(resultData.data);
-       
+
         setCurrentPages(resultData.page);
         setPageLimit(resultData.limit);
-        setTotalPage(resultData.totalPages)
+        setTotalPage(resultData.totalPages);
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
@@ -77,26 +77,25 @@ const page = (): JSX.Element => {
     }
   };
 
-  const getCompanyData = async():Promise<void>=>{
-    setCompanyLoading(true)
-      try {
-        const result = await CompanyService.getAll({page:1, limit:50})
-        if(result.status === 200){
-           setCompanyData(result.data.data.data)
-        }
-        
-      } catch (error) {
-        process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+  const getCompanyData = async (): Promise<void> => {
+    setCompanyLoading(true);
+    try {
+      const result = await CompanyService.getAll({ page: 1, limit: 50 });
+      if (result.status === 200) {
+        setCompanyData(result.data.data.data);
+      }
+    } catch (error) {
+      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) {
         const messages = extractErrorMessages(error);
         setErr(messages);
       } else {
         setErr(["Something went wrong"]);
       }
-      } finally {
+    } finally {
       setCompanyLoading(false);
     }
-  }
+  };
 
   const getRoleData = async () => {
     try {
@@ -114,18 +113,6 @@ const page = (): JSX.Element => {
       }
     }
   };
-
-  const getCompanyData = async ()=>{
-    try{
-      const res = await CompanyService.getAll()
-      if(res.status === 200){
-        setCompanyData(res.data.data.data)
-      }
-    }catch(err){
-      console.log(err)
-    }
-  }
-  console.log('comp data :',companyData)
 
   const handleDelete = async (id: string): Promise<void> => {
     setErr("");
@@ -176,17 +163,12 @@ const page = (): JSX.Element => {
 
     e.target.value = "";
   };
-const handleCompanyChange = (
-  companyId: string
-) => {
-
-  setFormData((prev) => ({
-    ...prev,
-    companyId,
-  }));
-};
-console.log("id :", formData.companyId)
-
+  const handleCompanyChange = (companyId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      companyId,
+    }));
+  };
 
   const handleRemoveRole = (roleId: string) => {
     setFormData((prev) => ({
@@ -215,11 +197,11 @@ console.log("id :", formData.companyId)
 
       if (result.status === 201) {
         toast.success(
-          `${formData.firstName} ${formData.lastName} user create successfully`
+          `${formData.firstName} ${formData.lastName} user create successfully`,
         );
         setIsPopupShow(false);
         await user();
-        
+
         setFormData({
           firstName: "",
           lastName: "",
@@ -228,7 +210,6 @@ console.log("id :", formData.companyId)
           password: "",
           confirmPassword: "",
           userRole: [],
-          
         });
       }
     } catch (error) {
@@ -244,9 +225,6 @@ console.log("id :", formData.companyId)
       setLoading(false);
     }
   };
-
-  console.log('user:',typeof(userData))
-  console.log('user:',typeof(companyData))
 
   return (
     <div className={`ml-72 mt-16 p-6`}>
@@ -274,7 +252,7 @@ console.log("id :", formData.companyId)
         setFormData={setFormData}
         isAdmin={isAdmin}
         companyData={companyData}
-        handleCompanyChange={handleCompanyChange }
+        handleCompanyChange={handleCompanyChange}
       />
     </div>
   );
