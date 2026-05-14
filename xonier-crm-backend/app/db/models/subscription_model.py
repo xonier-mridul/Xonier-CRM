@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from app.db.models.company_model import CompanyModel
 
 
-class SubscriptionModel(BaseDocument):
+class SubscriptionModel(Document):
     subscriptionId: str = Field(default_factory=lambda: str(uuid.uuid4()))
     planId: Link[PlanModel]
     companyId: Optional[Link["CompanyModel"]] = None

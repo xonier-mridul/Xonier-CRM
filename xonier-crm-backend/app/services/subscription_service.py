@@ -71,6 +71,7 @@ class SubscriptionService:
         user: Dict[str, Any]
     ):
         try:
+            print("aaya")
             page = max(int(filters.get("page", 1)), 1)
             limit = max(int(filters.get("limit", 10)), 1)
 
@@ -114,7 +115,7 @@ class SubscriptionService:
                     filters=filters,
                     field_name=field
                 )
-
+            
             result = await self.repo.get_all(
                 page=page,
                 limit=limit,
