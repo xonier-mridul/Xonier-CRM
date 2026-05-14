@@ -10,11 +10,15 @@ import { AuthService } from "@/src/services/auth.service";
 import { toast } from "react-toastify";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import { RoleService } from "@/src/services/role.service";
+import { Company } from "@/src/types/company/company.types";
+import CompanyService from "@/src/services/company.service";
 
 const page = (): JSX.Element => {
   const [err, setErr] = useState<string[] | string>("");
   const [userData, setUserData] = useState<User[]>([]);
+  const [companyData, setCompanyData] = useState<Company[]>([])
   const [roleData, setRoleData] = useState<UserRole[]>([]);
+  const [companyLoading, setCompanyLoading] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPages] = useState<number>(1);
@@ -61,6 +65,27 @@ const page = (): JSX.Element => {
       setIsLoading(false);
     }
   };
+
+  const getCompanyData = async():Promise<void>=>{
+    setCompanyLoading(true)
+      try {
+        const result = await CompanyService.getAll({page:1, limit:50})
+        if(result.status === 200){
+           setCompanyData(result.data.data.data)
+        }
+        
+      } catch (error) {
+        process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+      if (axios.isAxiosError(error)) {
+        const messages = extractErrorMessages(error);
+        setErr(messages);
+      } else {
+        setErr(["Something went wrong"]);
+      }
+      } finally {
+      setCompanyLoading(false);
+    }
+  }
 
   const getRoleData = async () => {
     try {
@@ -169,7 +194,7 @@ const page = (): JSX.Element => {
           password: "",
           confirmPassword: "",
           userRole: [],
-          company: "xonier technologies",
+          
         });
       }
     } catch (error) {
@@ -210,6 +235,7 @@ const page = (): JSX.Element => {
         setCurrentPages={setCurrentPages}
         setSearchFilter={setSearch}
         setFormData={setFormData}
+        companyData={companyData}
       />
     </div>
   );

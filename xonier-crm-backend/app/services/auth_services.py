@@ -491,12 +491,12 @@ class AuthServices:
             encrypt_opt = self.crypto.encrypt_data(str(otp))
 
 
-            send_email = await self.email_manager.send_otp_email(
-                to=data["email"], otp=otp, type=OTP_TYPE.LOGIN.value
-            )
+            # send_email = await self.email_manager.send_otp_email(
+            #     to=data["email"], otp=otp, type=OTP_TYPE.LOGIN.value
+            # )
 
-            if not send_email:
-                raise AppException(400, "Email send Failed")
+            # if not send_email:
+            #     raise AppException(400, "Email send Failed")
 
             expire_time = datetime.now(timezone.utc) + timedelta(
                 minutes=float(OTP_EXPIRY.TEN_MINUTS.value)

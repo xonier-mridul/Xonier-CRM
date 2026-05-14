@@ -5,6 +5,8 @@ from app.utils.code_generator import code_generator
 from app.db.db import Client
 from beanie import PydanticObjectId
 from app.repositories.user_repository import UserRepository
+from bson import ObjectId
+from app.utils.validate_admin import validate_admin
 
 
 
@@ -106,19 +108,25 @@ class UserRoleService:
             await session.end_session()
 
 
-    async def update(self, data: Dict[str, Any], roleId: str, updatedBy: str)->bool:
+    async def update(self, data: Dict[str, Any], roleId: str, updatedBy: Dict[str, Any])->bool:
         try:
+            if not ObjectId.is_valid(roleId):
+                raise AppException(400, "Invalid user role object id")
 
             is_exist = await self.repository.find_by_id(PydanticObjectId(roleId))
+
             
             if not is_exist:
                 raise AppException(404, "Role data not found")
+            
+            if not validate_admin(updatedBy["userRole"]) and is_exist.isSystemRole:
+                raise AppException(403, "You can't update system role, fuck you")
             
             code = code_generator(data["name"])
             
             new_payload: Dict[str, Any] = {
                  **data,
-                 "updatedBy": updatedBy,
+                 "updatedBy": updatedBy["_id"],
                  "code": code
             }
 

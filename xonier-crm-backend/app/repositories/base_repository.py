@@ -40,8 +40,8 @@ class BaseRepository:
     ):
         populate = populate or []
 
-        with system_query():
-            doc = await self.model.get(id, session=session)
+        # with system_query():
+        doc = await self.model.get(id, session=session)
 
         if not doc:
             return None
@@ -53,16 +53,16 @@ class BaseRepository:
                 continue
 
             if hasattr(value, "fetch"):
-                with system_query():
-                    fetched = await value.fetch()
+                # with system_query():
+                fetched = await value.fetch()
                 setattr(doc, field, fetched)
 
             elif isinstance(value, list):
                 fetched_items = []
                 for item in value:
                     if hasattr(item, "fetch"):
-                        with system_query():
-                            fetched_items.append(await item.fetch())
+                        # with system_query():
+                        fetched_items.append(await item.fetch())
                     else:
                         fetched_items.append(item)
                 setattr(doc, field, fetched_items)
@@ -373,6 +373,7 @@ class BaseRepository:
             "page": page,
             "totalPages": total_pages,
             "limit": limit,
+            
         }
 
 

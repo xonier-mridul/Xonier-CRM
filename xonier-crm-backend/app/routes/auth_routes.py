@@ -35,7 +35,7 @@ async def get_user_by_teams(request: Request):
     return await auth_controller.get_user_by_teams(request)
 
 
-@router.get("/all-deleted", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context),  Depends(dependencies.permissions(["user:read"]))])
+@router.get("/all-deleted", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context),  Depends(dependencies.permissions(["user:readDeleted"]))])
 async def get_all_deleted_users(request: Request):
     return await auth_controller.get_all_deleted_users(request=request)
 

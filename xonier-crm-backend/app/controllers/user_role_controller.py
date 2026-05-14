@@ -57,7 +57,7 @@ class UserRoleController:
         try:
             user = request.state.user
 
-            await self.service.update(data=data,roleId=roleId, updatedBy=user["_id"])
+            await self.service.update(data=data,roleId=roleId, updatedBy=user)
             return successResponse(200, "Role updated successfully")
 
 

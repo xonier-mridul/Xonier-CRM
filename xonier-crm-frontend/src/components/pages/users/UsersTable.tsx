@@ -41,7 +41,8 @@ const UsersTable = ({
   err,
   loading,
   setCurrentPages,
-  setSearchFilter
+  setSearchFilter,
+  getCompanyData
 }: UserTableComponentProps): JSX.Element => {
   const [selectedcountryCode, setCountryCode] = useState("+91");
   const { hasPermission } = usePermissions();

@@ -169,6 +169,7 @@ export interface UserTableComponentProps {
   setCurrentPages: Dispatch<SetStateAction<number>>,
   setSearchFilter: Dispatch<SetStateAction<string>>,
   setFormData: Dispatch<SetStateAction<RegisterPayload>>
+  getCompanyData: Company[]
 
 }
 
