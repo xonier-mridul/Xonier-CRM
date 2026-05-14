@@ -3,7 +3,7 @@ from app.utils.custom_exception import AppException
 from app.repositories.subscription_repository import SubscriptionRepository
 from fastapi.encoders import jsonable_encoder
 from datetime import datetime, time
-
+from bson import ObjectId
 
 class SubscriptionService:
     def __init__(self):
@@ -78,7 +78,7 @@ class SubscriptionService:
                 "deletedAt": None
             }
 
-            # SEARCH
+
             if filters.get("search") and filters["search"].strip():
 
                 regex_data = {
@@ -90,15 +90,15 @@ class SubscriptionService:
                     {"subscriptionId": regex_data},
                 ]
 
-            # STATUS
+
             if filters.get("status"):
                 query["status"] = filters["status"]
 
-            # BILLING
+
             if filters.get("billing"):
                 query["billingCycle"] = filters["billing"]
 
-            # DATE FILTERS
+
             date_fields = [
                 "startSubscriptionDate",
                 "endSubscriptionDate",
@@ -129,6 +129,50 @@ class SubscriptionService:
                 )
 
             return jsonable_encoder(result)
+
+        except AppException as e:
+            raise e
+
+        except Exception as e:
+            raise AppException(
+                500,
+                f"Internal server error: {str(e)}"
+            )
+        
+
+    async def getById(
+    self,
+    id: str,
+    user: Dict[str, Any]
+):
+        try:
+
+           
+            if not ObjectId.is_valid(id):
+                raise AppException(
+                    400,
+                    "Invalid subscription id"
+                )
+
+            
+            subscription = await self.repo.get_by_id(
+                id=id,
+                filters={
+                    "deletedAt": None
+                },
+                populate=["planId", "companyId"]
+            )
+
+            
+            if not subscription:
+                raise AppException(
+                    404,
+                    "Subscription not found"
+                )
+
+            
+
+            return jsonable_encoder(subscription)
 
         except AppException:
             raise

@@ -1,4 +1,4 @@
-from beanie import Document, Indexed, Link, before_event
+from beanie import Document, Indexed, Link, before_event, PydanticObjectId
 from beanie.odm.actions import Save, Replace, Insert
 from pydantic import Field, field_validator, model_validator
 from typing import Optional, List, TYPE_CHECKING
@@ -10,14 +10,16 @@ from app.core.enums import USER_STATUS
 from app.core.config import get_setting
 
 
+
 from datetime import datetime, timezone, timedelta
 from jose import jwt
+from app.db.models.base_model import BaseDocument
 
 
 
 EnvSettings = get_setting()
 
-class UserModel(Document):
+class UserModel(BaseDocument):
     firstName: str = Field(..., min_length=3, max_length=49)
     lastName: Optional[str] = Field(None, max_length=49)
     email: str = Field(...)
@@ -28,11 +30,11 @@ class UserModel(Document):
     isEmailVerified: bool = True
     status: USER_STATUS = Field(default=USER_STATUS.ACTIVE)
     userRole: List[Link["UserRoleModel"]] = Field(default_factory=list)
-    company: str = Field(...)
+
     isActive: bool = False
     lastLogin: Optional[datetime] = None
     refreshToken: Optional[str] = None
-    companyId: Optional[Link["CompanyModel"]] = None
+    companyId: Optional[PydanticObjectId] = None
     assignedPhoneNumber: Optional[Link["TelephoneNumbersModel"]] = None
     createdBy: Optional[Link["UserModel"]] = None
     updatedBy: Optional[Link["UserModel"]] = None

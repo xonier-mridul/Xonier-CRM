@@ -21,3 +21,17 @@ class SubscriptionController:
             raise e
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+        
+
+
+    async def getById(self, request:Request, id:str):
+        try:
+            user = request.state.user
+            result = await self.service.getById(id=id, user=user)
+
+            return successResponse(200, "Subscription data fetched successfully", result)
+
+        except AppException as e:
+            raise e
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")

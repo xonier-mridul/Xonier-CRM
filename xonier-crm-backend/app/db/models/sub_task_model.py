@@ -6,9 +6,10 @@ from app.db.models.user_model import UserModel
 from datetime import datetime, timedelta, timezone
 from app.utils.custom_exception import AppException
 from pymongo import IndexModel
+from app.db.models.base_model import BaseDocument
 
 
-class SubTaskModel(Document):
+class SubTaskModel(BaseDocument):
     taskId: Link[TaskModel]
     title: str
     isCompleted: bool = False

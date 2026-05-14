@@ -6,8 +6,9 @@ from app.db.models.lead_model import LeadsModel
 from app.db.models.user_model import UserModel
 from datetime import datetime, timezone
 from app.core.enums import DEAL_PIPELINE, DEAL_STAGES, DEAL_TYPE, FORECAST_CATEGORY, DEAL_STATUS
+from app.db.models.base_model import BaseDocument
 
-class DealModel(Document):
+class DealModel(BaseDocument):
     deal_id : str
     lead_id : Link[LeadsModel]
     dealName : str 

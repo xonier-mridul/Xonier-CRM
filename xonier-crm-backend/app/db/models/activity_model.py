@@ -6,9 +6,10 @@ from typing import Optional, Dict
 from app.core.enums import ACTIVITY_ENTITY_TYPE, ACTIVITY_ACTION
 from pymongo import IndexModel
 from app.db.models.user_model import UserModel
+from app.db.models.base_model import BaseDocument
 
 
-class ActivityModel(Document):
+class ActivityModel(BaseDocument):
     userId: Link[UserModel]
     entityType: ACTIVITY_ENTITY_TYPE
     entityId: Optional[PydanticObjectId] = None

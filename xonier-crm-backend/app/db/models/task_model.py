@@ -8,12 +8,12 @@ from app.db.models.user_model import UserModel
 from app.db.models.task_category_model import TaskCategoryModel
 from app.db.models.task_status_model import TaskStatusModel
 from app.core.enums import TASK_PRIORITY, TASK_ENTITY_TYPE, RECURRENCE_TYPE
-
+from app.db.models.base_model import BaseDocument
 
 
  
  
-class TaskModel(Document):
+class TaskModel(BaseDocument):
     task_id: str = Indexed(unique=True)
     title: str
     description: Optional[str] = None

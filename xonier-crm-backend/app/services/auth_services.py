@@ -30,6 +30,8 @@ from typing import Optional
 from app.utils.validate_admin import validate_admin
 from app.utils.get_team_members import GetTeamMembers
 from app.utils.activity_payload import activity_payload
+from app.core.tenant import system_query
+from app.utils.validate_admin import validate_admin
 
 
 
@@ -378,6 +380,7 @@ class AuthServices:
         try:
             session.start_transaction()
             hashed_email = hash_value(data["email"])
+            is_admin = validate_admin(user["userRole"])
 
             is_user_exist = await self.repo.find_user_by_hashMail(
                 hashMail=hashed_email, populate=["userRole"], session=session
@@ -398,9 +401,14 @@ class AuthServices:
 
             if not userModel:
                 raise AppException(404, "Current user not found")
+            
+            if is_admin:
+                companyId = data["companyId"] if data.get("companyId") else None
+            else:
+                companyId = userModel.companyId  if userModel.companyId else None
 
             new_user = await self.repo.create(
-                data={**data, "createdBy": userModel.id}, session=session
+                data={**data, "createdBy": userModel.id, "companyId": companyId}, session=session
             )
 
             if not new_user:
@@ -417,14 +425,14 @@ class AuthServices:
 
             return new_user.model_dump(mode="json")
 
-        except AppException:
+        except AppException as e:
             await session.abort_transaction()
-            raise
+            raise e
 
         except Exception as e:
             
             await session.abort_transaction()
-            raise AppException(status_code=500, message="internal server error")
+            raise AppException(status_code=500, message=f"internal server error: {e}")
         
         except ValidationError as e:
             raise AppException(
@@ -443,10 +451,11 @@ class AuthServices:
            
             hashed_mail = hash_value(data["email"])
             encrypt_email = self.crypto.encrypt_data(data["email"])
-           
-            isUserExist = await self.repo.find_user_by_hashMail(
-                hashMail=hashed_mail, projections=None, populate=["userRole"], session=session
-            )
+
+            with system_query():
+                isUserExist = await self.repo.find_user_by_hashMail(
+                    hashMail=hashed_mail, projections=None, populate=["userRole"], session=session
+                )
 
             if not isUserExist:
                 raise AppException(404, "User not found, Please create account first")
@@ -610,14 +619,17 @@ class AuthServices:
     async def verify_login_otp(self, data: Dict[str, Any], ip: Optional[str] = None, agent: Optional[str] = None):
         session = await self.client.start_session()
         try:
+            
             session.start_transaction()
 
             hashed_mail = hash_value(data["email"])
             hashed_otp = hash_value(str(data["otp"]))
-            user = await self.repo.find_user_by_hashMail(
-                hashMail=hashed_mail, projections=None, populate=["userRole"], session=session
-            )
-
+            print("one")
+            with system_query():
+                user = await self.repo.find_user_by_hashMail(
+                    hashMail=hashed_mail, projections=None, populate=["userRole"], session=session
+                )
+   
             if not user:
                 raise AppException(404, "User not found, Please create account first")
             
@@ -625,11 +637,12 @@ class AuthServices:
 
             if not isPasswordValid:
                 raise AppException(400, "Password not match, please back to the login page and try again")
-
-            latest_otp = await self.otp_repo.find_latest_otp(
-                {"email": hashed_mail, "otp_type": OTP_TYPE.LOGIN.value},
-                session=session,
-            )
+            print("tow")
+            with system_query(): 
+                latest_otp = await self.otp_repo.find_latest_otp(
+                    {"email": hashed_mail, "otp_type": OTP_TYPE.LOGIN.value},
+                    session=session,
+                )
 
             if not latest_otp:
                 raise AppException(404, "Otp not found, please try again")
@@ -644,26 +657,29 @@ class AuthServices:
                 raise AppException(400, "Invalid Otp, Please try again")
 
             latest_otp.is_used = True
-
+        
             await latest_otp.save(session=session)
 
             access_token = user.generate_access_token()
             refresh_token = user.generate_refresh_token()
 
             hash_refresh_token = hash_value(refresh_token)
+ 
 
-            await user.set(
-                {
-                    "refreshToken": hash_refresh_token,
-                    "updatedAt": datetime.now(timezone.utc),
-                    "lastLogin": datetime.now(timezone.utc),
-                },
-                session=session,
-            )
+            with system_query():
+                await user.set(
+                    {
+                        "refreshToken": hash_refresh_token,
+                        "updatedAt": datetime.now(timezone.utc),
+                        "lastLogin": datetime.now(timezone.utc),
+                    },
+                    session=session,
+                )
 
-            await session.commit_transaction()
-
-            usr =  await self.repo.find_by_id_nested(user.id, ["userRole", "userRole.permissions"])
+            
+            
+            with system_query():
+                usr =  await self.repo.find_by_id_nested(user.id, ["userRole", "userRole.permissions"])
 
             activity = activity_payload(userId=PydanticObjectId(user.id), entityType=ACTIVITY_ENTITY_TYPE.AUTH, entityId=PydanticObjectId(user.id), action=ACTIVITY_ACTION.LOGIN, title="Login user", metadata={"userName": f"{user.firstName} {user.lastName}", "company":user.company, "email": user.email}, ipAddress=ip, userAgent=agent)
 
@@ -671,7 +687,7 @@ class AuthServices:
 
             if not is_activity:
                 raise AppException(400, "Activity creation failed")
-
+            await session.commit_transaction()
             return {
                 "user": jsonable_encoder(usr,exclude={"password", "refreshToken"}),
                 "access_token": access_token,
@@ -691,10 +707,12 @@ class AuthServices:
 
     async def getMe(self, userId: PydanticObjectId)->bool:
         try:
-         
+
         
 
          user = await self.repo.find_by_id_nested(userId, ["userRole", "userRole.permissions"])
+
+ 
          
          if not user:
              raise AppException(400, "User not found")
@@ -706,11 +724,11 @@ class AuthServices:
          
          
          return result
-        except AppException:
-            raise
+        except AppException as e:
+            raise e
 
         except Exception as e:
-            raise AppException(status_code=500, message="internal server error")
+            raise AppException(status_code=500, message=f"internal server error: {e}")
         
 
     async def update(self, userId: PydanticObjectId, updatedBy: PydanticObjectId, payload: Dict[str, Any])->bool:

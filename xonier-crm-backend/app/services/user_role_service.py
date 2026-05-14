@@ -30,16 +30,18 @@ class UserRoleService:
      
             result = await self.repository.get_all(page, limit, filters=query, populate=["createdBy", "permissions"])
 
+  
+
             if not result:
                 raise AppException(404, "Roles data not found")
             
             return result
                 
-        except AppException:
-            raise
+        except AppException as e:
+            raise e
 
         except Exception as e:
-            raise AppException(status_code=500, message="internal server error")
+            raise AppException(status_code=500, message=f"internal server error {e}")
         
     
     async def get_all_active(self):

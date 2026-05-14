@@ -95,6 +95,8 @@ export interface UserRole {
   code: string;
   status: string;
   isSystemRole: boolean;
+  power: number;
+  canManageBelow: boolean;
   permissions: Permissions[];
   createdAt: string;
   updatedAt?: string;

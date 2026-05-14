@@ -241,7 +241,7 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
                   i < step
                     ? "bg-emerald-500 text-white"
                     : i === step
-                    ? "bg-violet-600 text-white ring-4 ring-violet-200 dark:ring-violet-900"
+                    ? "bg-teal-600 text-white ring-4 ring-teal-200 dark:ring-teal-900"
                     : "bg-slate-200 dark:bg-gray-700 text-slate-500 dark:text-gray-400"
                 }`}
               >
@@ -250,7 +250,7 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
               <span
                 className={`text-sm font-medium transition-colors ${
                   i === step
-                    ? "text-violet-600 dark:text-violet-400"
+                    ? "text-teal-600 dark:text-teal-400"
                     : i < step
                     ? "text-emerald-600 dark:text-emerald-400"
                     : "text-slate-400 dark:text-gray-500"

@@ -6,6 +6,8 @@ from fastapi.encoders import jsonable_encoder
 from app.repositories.user_repository import UserRepository
 from beanie import PydanticObjectId
 from app.core.constants import JWT_OPTIONS
+from app.core.tenant import current_company
+from app.core.tenant import system_query
 
 repository = UserRepository()
 class AuthMiddleware(BaseHTTPMiddleware):
@@ -33,11 +35,15 @@ class AuthMiddleware(BaseHTTPMiddleware):
                     delete_cookie = True
 
                 else:
-                 
-                    user = await repository.find_by_id(PydanticObjectId(payload["_id"]), ["userRole", "assignedPhoneNumber"])
+                    
+                    with system_query():
+                        user = await repository.find_by_id(PydanticObjectId(payload["_id"]), ["userRole", "assignedPhoneNumber"])
+            
                     
                     if user:
                         request.state.user = jsonable_encoder(user, exclude={"password", "refreshToken"})
+                        # current_company.set(user.companyId)
+
                     else: 
                         request.state.user = False
                 

@@ -6,6 +6,7 @@ from datetime import datetime, timezone, date
 from app.db.models.user_model import UserModel
 from app.core.enums import TASK_REPORT_STATUS, TASK_ITEM_STATUS ,WORK_MOOD
 from pymongo import IndexModel
+from app.db.models.base_model import BaseDocument
 
 
 class TaskReportItem(BaseModel):
@@ -40,7 +41,7 @@ class EveningReport(BaseModel):
     totalPendingHours: Optional[float] = None
 
 
-class TaskReportModel(Document):
+class TaskReportModel(BaseDocument):
     reportDate: date
     user: Link[UserModel]
 

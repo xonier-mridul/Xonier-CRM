@@ -4,7 +4,7 @@ from typing import Optional, Literal, List
 from pymongo import IndexModel
 from app.core.enums import PLAN_STATUS, PLAN_VISIBILITY, CURRENCY, DISCOUNT_TYPE
 from datetime import datetime, timezone
-from app.db.models.user_model import UserModel
+
 from app.db.models.feature_model import FeatureModel
 from app.utils.custom_exception import AppException
 
@@ -84,10 +84,10 @@ class PlanModel(Document):
     visibility: PLAN_VISIBILITY = PLAN_VISIBILITY.PUBLIC.value
     trial_days: int = 0
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    createdBy: Link[UserModel]
+    createdBy: Link["UserModel"]
     
     updatedAt: Optional[datetime] = None
-    deletedBy: Optional[Link[UserModel]] = None
+    deletedBy: Optional[Link["UserModel"]] = None
     deletedAt: Optional[datetime] = None
 
     class Settings:
@@ -101,3 +101,16 @@ class PlanModel(Document):
             raise AppException(422, "Name should be greater then 2 and less then 100 words") 
         
         return v
+    
+
+from app.db.models.user_model import UserModel
+from app.db.models.company_model import CompanyModel
+
+
+PlanModel.model_rebuild(_types_namespace={
+    "UserModel": UserModel,
+    "CompanyModel": CompanyModel,
+
+})
+
+

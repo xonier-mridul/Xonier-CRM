@@ -1,9 +1,11 @@
+"use client";
+
 import { RoleTableProps } from "@/src/types/roles/roles.types";
 import React from "react";
 import { MdOutlineEdit, MdDeleteOutline, MdAdminPanelSettings } from "react-icons/md";
-import { FaPlus, FaXmark, FaShieldHalved, FaEye } from "react-icons/fa6";
+import { FaPlus, FaXmark, FaShieldHalved, FaEye, FaBolt } from "react-icons/fa6";
 import { HiOutlineSearch, HiOutlineUserGroup } from "react-icons/hi";
-import { IoShieldCheckmarkOutline } from "react-icons/io5";
+import { IoShieldCheckmarkOutline, IoCheckmarkCircle, IoCloseCircle } from "react-icons/io5";
 import BlurryBackground from "../../common/BlurryBackground";
 import FormButton from "../../ui/FormButton";
 import Input from "../../ui/Input";
@@ -13,7 +15,39 @@ import Skeleton from "react-loading-skeleton";
 import Link from "next/link";
 import { UserRole } from "@/src/types";
 
-const UserRolesTable = ({
+const POWER_LEVELS = [
+  { value: 10, label: "Viewer", color: "bg-slate-400" },
+  { value: 30, label: "Member", color: "bg-blue-400" },
+  { value: 50, label: "Manager", color: "bg-emerald-500" },
+  { value: 70, label: "Project Manager", color: "bg-amber-500" },
+  { value: 90, label: "Admin", color: "bg-rose-500" },
+  { value: 100, label: "Owner", color: "bg-purple-600" },
+];
+
+function getPowerConfig(power: number) {
+  const match = [...POWER_LEVELS].reverse().find((p) => power >= p.value);
+  return match ?? POWER_LEVELS[0];
+}
+
+function PowerBar({ power }: { power: number }) {
+  const pct = Math.min(100, power);
+  const cfg = getPowerConfig(power);
+  return (
+    <div className="flex items-center gap-2.5 min-w-[140px]">
+      <div className="flex-1 h-1.5 bg-slate-100 dark:bg-gray-700 rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all ${cfg.color}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <span className="text-xs font-bold text-slate-700 dark:text-slate-300 w-6 text-right tabular-nums">
+        {power}
+      </span>
+    </div>
+  );
+}
+
+const UserRolesTable: React.FC<RoleTableProps> = ({
   roleData,
   handleDelete,
   isLoading,
@@ -25,15 +59,14 @@ const UserRolesTable = ({
   handleSubmit,
   hasPermissions,
   isAdmin,
-}: RoleTableProps) => {
+}) => {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [viewRoleModal, setViewRoleModal] = React.useState<UserRole | null>(null);
 
   const addPermission = (permissionId: string) => {
     if (formData.permissions.includes(permissionId)) {
       removePermission(permissionId);
-    }
-    else {
+    } else {
       setFormData((prev) => ({
         ...prev,
         permissions: [...prev.permissions, permissionId],
@@ -51,7 +84,6 @@ const UserRolesTable = ({
   const isSelected = (permissionId: string) =>
     formData.permissions.includes(permissionId);
 
-  // Group permissions by module for better organization
   const groupedPermissions = React.useMemo(() => {
     if (!permissionData) return {};
     const filtered = permissionData.filter((p) =>
@@ -69,13 +101,10 @@ const UserRolesTable = ({
 
   return (
     <>
-      {/* ── View Role Modal ── */}
       {viewRoleModal && (
         <>
           <BlurryBackground onClick={() => setViewRoleModal(null)} />
-
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-2xl w-[650px] max-h-[90vh] z-[200] shadow-2xl flex flex-col">
-            {/* Modal Header */}
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-2xl w-[680px] max-h-[90vh] z-[200] shadow-2xl flex flex-col">
             <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
               <div className="flex items-center gap-3">
                 <div
@@ -94,7 +123,7 @@ const UserRolesTable = ({
                 <div>
                   <h2 className="text-xl font-bold text-slate-900 dark:text-white capitalize flex items-center gap-2">
                     {viewRoleModal.name}
-                    {viewRoleModal.code === SUPER_ADMIN_ROLE_CODE && (
+                    {viewRoleModal.isSystemRole && (
                       <span className="text-xs font-bold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full">
                         SYSTEM
                       </span>
@@ -116,8 +145,50 @@ const UserRolesTable = ({
               </button>
             </div>
 
-            {/* Modal Body */}
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto p-6 space-y-5">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-4 border border-slate-200 dark:border-gray-600">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500 mb-2 flex items-center gap-1.5">
+                    <FaBolt className="w-3 h-3" />
+                    Power Level
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
+                      {viewRoleModal.power}
+                    </span>
+                    <div className="flex-1">
+                      <PowerBar power={viewRoleModal.power} />
+                      <span className={`text-xs font-semibold mt-1 block ${getPowerConfig(viewRoleModal.power).color.replace("bg-", "text-")}`}>
+                        {getPowerConfig(viewRoleModal.power).label}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-4 border border-slate-200 dark:border-gray-600">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500 mb-2">
+                    Can Manage Below
+                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    {viewRoleModal.canManageBelow ? (
+                      <>
+                        <IoCheckmarkCircle className="text-emerald-500 text-xl" />
+                        <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+                          Yes — can manage lower power roles
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <IoCloseCircle className="text-slate-400 text-xl" />
+                        <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                          No management access
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               {viewRoleModal.code === SUPER_ADMIN_ROLE_CODE ? (
                 <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-2 border-amber-200 dark:border-amber-800 rounded-xl p-6 text-center">
                   <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mx-auto mb-4">
@@ -132,13 +203,11 @@ const UserRolesTable = ({
                 </div>
               ) : (
                 <>
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-1">
                     <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                       Permissions ({viewRoleModal.permissions.length})
                     </h3>
                   </div>
-
-                  {/* Group permissions by module */}
                   {(() => {
                     const grouped = viewRoleModal.permissions.reduce((acc, perm) => {
                       if (!acc[perm.module]) acc[perm.module] = [];
@@ -197,13 +266,13 @@ const UserRolesTable = ({
               )}
             </div>
 
-            {/* Modal Footer */}
             <div className="flex items-center justify-between p-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
               <div className="text-xs text-slate-500 dark:text-slate-400">
-                Created {new Date(viewRoleModal.createdAt).toLocaleDateString('en-US', { 
-                  year: 'numeric', 
-                  month: 'short', 
-                  day: 'numeric' 
+                Created{" "}
+                {new Date(viewRoleModal.createdAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
                 })}
               </div>
               <div className="flex items-center gap-3">
@@ -213,39 +282,35 @@ const UserRolesTable = ({
                 >
                   Close
                 </button>
-                {hasPermissions(PERMISSIONS.updateRole) && viewRoleModal.code !== SUPER_ADMIN_ROLE_CODE && (
-                  <Link
-                    href={`/roles/update/${viewRoleModal.id}`}
-                    className="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-semibold transition-all shadow-sm hover:shadow-md flex items-center gap-2"
-                  >
-                    <MdOutlineEdit className="w-4 h-4" />
-                    Edit Role
-                  </Link>
-                )}
+                {hasPermissions(PERMISSIONS.updateRole) &&
+                  viewRoleModal.code !== SUPER_ADMIN_ROLE_CODE && (
+                    <Link
+                      href={`/roles/update/${viewRoleModal.id}`}
+                      className="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-semibold transition-all shadow-sm hover:shadow-md flex items-center gap-2"
+                    >
+                      <MdOutlineEdit className="w-4 h-4" />
+                      Edit Role
+                    </Link>
+                  )}
               </div>
             </div>
           </div>
         </>
       )}
 
-      {/* ── Create Role Modal ── */}
       {isPopupShow && (
         <>
           <BlurryBackground onClick={() => setIsPopupShow(false)} />
-
           <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-2xl w-[720px] max-h-[90vh] z-[200] shadow-2xl flex flex-col">
-            {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
                   <FaShieldHalved className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                    Create Role
-                  </h2>
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">Create Role</h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Define a new role with custom permissions
+                    Define a new role with custom permissions and power level
                   </p>
                 </div>
               </div>
@@ -257,44 +322,110 @@ const UserRolesTable = ({
               </button>
             </div>
 
-            {/* Modal Body */}
             <div className="flex-1 overflow-y-auto p-6 space-y-5">
-              {/* Role Name Input */}
               <Input
                 label="Role name"
                 name="name"
                 placeholder="e.g. Sales Manager, Team Lead, Developer"
                 value={formData.name}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, name: e.target.value }))
-                }
+                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                 required
               />
 
-              {/* Selected Permissions */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                    <FaBolt className="w-3.5 h-3.5 text-amber-500" />
+                    Power Level
+                    <span className="ml-auto text-xs font-bold text-slate-500 dark:text-slate-400 tabular-nums">
+                      {formData.power}
+                    </span>
+                  </label>
+                  <input
+                    type="range"
+                    min={1}
+                    max={100}
+                    step={1}
+                    value={formData.power}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, power: Number(e.target.value) }))
+                    }
+                    className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                  />
+                  <div className="flex items-center justify-between text-xs text-slate-400 dark:text-slate-500">
+                    <span>Viewer (1)</span>
+                    <span
+                      className={`font-semibold ${getPowerConfig(formData.power).color.replace("bg-", "text-")}`}
+                    >
+                      {getPowerConfig(formData.power).label}
+                    </span>
+                    <span>Owner (100)</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-slate-100 dark:bg-gray-700 rounded-full overflow-hidden mt-1">
+                    <div
+                      className={`h-full rounded-full transition-all ${getPowerConfig(formData.power).color}`}
+                      style={{ width: `${formData.power}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    Management Access
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData((prev) => ({ ...prev, canManageBelow: !prev.canManageBelow }))
+                    }
+                    className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left ${
+                      formData.canManageBelow
+                        ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-700"
+                        : "border-slate-200 dark:border-gray-600 bg-slate-50 dark:bg-gray-700/50 hover:border-slate-300"
+                    }`}
+                  >
+                    <div
+                      className={`w-10 h-6 rounded-full transition-colors relative flex-shrink-0 ${
+                        formData.canManageBelow ? "bg-emerald-500" : "bg-slate-300 dark:bg-gray-600"
+                      }`}
+                    >
+                      <div
+                        className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${
+                          formData.canManageBelow ? "translate-x-5" : "translate-x-1"
+                        }`}
+                      />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-slate-800 dark:text-white">
+                        Can Manage Below
+                      </p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        {formData.canManageBelow
+                          ? "Can manage users with lower power"
+                          : "Read-only, no user management"}
+                      </p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
               {formData.permissions.length > 0 && (
                 <div className="bg-indigo-50 dark:bg-indigo-950/20 rounded-xl p-4 border border-indigo-100 dark:border-indigo-900/30">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-400">
                       Selected Permissions
                     </span>
-                    <span className="text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/40 px-2 py-0.5 rounded-full">
-                      <button
-                        onClick={() => setFormData((prev) => ({ ...prev, permissions: [] }))}
-                        className="ml-1 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-                        >
-                          Remove All  
-                      &nbsp;
-                        {formData.permissions.length}
-                      </button>
-                    </span>
+                    <button
+                      onClick={() => setFormData((prev) => ({ ...prev, permissions: [] }))}
+                      className="text-xs font-medium text-red-500 hover:text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2.5 py-1 rounded-lg transition-colors"
+                    >
+                      Remove All ({formData.permissions.length})
+                    </button>
                   </div>
-
                   <div className="flex flex-wrap gap-2">
                     {formData.permissions.map((id) => {
                       const perm = permissionData?.find((p) => p.id === id);
                       if (!perm) return null;
-
                       return (
                         <span
                           key={id}
@@ -315,7 +446,6 @@ const UserRolesTable = ({
                 </div>
               )}
 
-              {/* Permissions Selector */}
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
@@ -332,10 +462,12 @@ const UserRolesTable = ({
                     />
                   </div>
                 </div>
-
-                <div className="max-h-80 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700/50">
+                <div className="max-h-72 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700/50">
                   {Object.entries(groupedPermissions).map(([module, perms]) => (
-                    <div key={module} className="border-b border-gray-200 dark:border-gray-600 last:border-0">
+                    <div
+                      key={module}
+                      className="border-b border-gray-200 dark:border-gray-600 last:border-0"
+                    >
                       <div className="sticky top-0 bg-gray-100 dark:bg-gray-700 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400 z-10">
                         {module}
                       </div>
@@ -346,34 +478,29 @@ const UserRolesTable = ({
                             <button
                               key={permission.id}
                               type="button"
-                              
                               onClick={() => addPermission(permission.id)}
-                              className={`w-full text-left px-3 py-2.5 rounded-lg mb-1 transition-all ${
-                                 "hover:bg-white dark:hover:bg-gray-600"
-                              }`}
+                              className="w-full text-left px-3 py-2.5 rounded-lg mb-1 transition-all hover:bg-white dark:hover:bg-gray-600"
                             >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <div
-                                    className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-                                      selected
-                                        ? "bg-indigo-500 border-indigo-500"
-                                        : "border-gray-300 dark:border-gray-500"
-                                    }`}
-                                  >
-                                    {selected && (
-                                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                      </svg>
-                                    )}
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0 ${
+                                    selected
+                                      ? "bg-indigo-500 border-indigo-500"
+                                      : "border-gray-300 dark:border-gray-500"
+                                  }`}
+                                >
+                                  {selected && (
+                                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  )}
+                                </div>
+                                <div>
+                                  <div className="font-medium text-slate-700 dark:text-slate-200 capitalize text-sm">
+                                    {permission.title}
                                   </div>
-                                  <div>
-                                    <div className="font-medium text-slate-700 dark:text-slate-200 capitalize text-sm">
-                                      {permission.title}
-                                    </div>
-                                    <div className="text-xs text-slate-500 dark:text-slate-400">
-                                      {permission.action}
-                                    </div>
+                                  <div className="text-xs text-slate-500 dark:text-slate-400">
+                                    {permission.action}
                                   </div>
                                 </div>
                               </div>
@@ -387,7 +514,6 @@ const UserRolesTable = ({
               </div>
             </div>
 
-            {/* Modal Footer */}
             <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
               <button
                 onClick={() => setIsPopupShow(false)}
@@ -408,27 +534,22 @@ const UserRolesTable = ({
         </>
       )}
 
-      {/* ── Main Table Container ── */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-        {/* Table Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
               <HiOutlineUserGroup className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                User Roles
-              </h2>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">User Roles</h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Manage roles and permissions
+                Manage roles, permissions and power hierarchy
               </p>
             </div>
           </div>
-
           <button
             onClick={() => setIsPopupShow(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 font-semibold disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-indigo-600 transition-all shadow-sm hover:shadow-md"
+            className="bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 font-semibold disabled:cursor-not-allowed disabled:opacity-50 transition-all shadow-sm hover:shadow-md"
             disabled={!hasPermissions(PERMISSIONS.createRole)}
           >
             <FaPlus className="w-4 h-4" />
@@ -436,20 +557,18 @@ const UserRolesTable = ({
           </button>
         </div>
 
-        {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
-                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Role
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Permissions
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Actions
-                </th>
+                {["Role", "Permissions", "Power", "Can Manage Below", "Actions"].map((col) => (
+                  <th
+                    key={col}
+                    className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                  >
+                    {col}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -460,17 +579,16 @@ const UserRolesTable = ({
                       key={role.id}
                       className="group hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                     >
-                      {/* Role Name */}
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-3">
                           <div
                             className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                              role.code === SUPER_ADMIN_ROLE_CODE
+                              role.isSystemRole
                                 ? "bg-gradient-to-br from-amber-400 to-orange-500"
                                 : "bg-gradient-to-br from-indigo-400 to-violet-500"
                             }`}
                           >
-                            {role.code === SUPER_ADMIN_ROLE_CODE ? (
+                            {role.isSystemRole ? (
                               <MdAdminPanelSettings className="w-5 h-5 text-white" />
                             ) : (
                               <FaShieldHalved className="w-4 h-4 text-white" />
@@ -479,7 +597,7 @@ const UserRolesTable = ({
                           <div>
                             <h3 className="font-semibold text-slate-900 dark:text-white capitalize flex items-center gap-2">
                               {role.name}
-                              {role.code === SUPER_ADMIN_ROLE_CODE && (
+                              {role.isSystemRole && (
                                 <span className="text-xs font-bold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full">
                                   SYSTEM
                                 </span>
@@ -495,37 +613,63 @@ const UserRolesTable = ({
                         </div>
                       </td>
 
-                      {/* Permissions */}
                       <td className="px-6 py-5">
-                        <div className="flex flex-wrap gap-2 max-w-2xl">
+                        <div className="flex flex-wrap gap-2 max-w-xs">
                           {role.code === SUPER_ADMIN_ROLE_CODE ? (
                             <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800 px-3 py-1.5 text-amber-700 dark:text-amber-400 rounded-lg text-xs font-semibold">
                               <IoShieldCheckmarkOutline className="w-3.5 h-3.5" />
                               Full Access
                             </span>
                           ) : (
-                            role.permissions.slice(0, 4).map((item, i) => (
-                              <span
-                                key={i}
-                                className="inline-flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 px-3 py-1.5 text-emerald-700 dark:text-emerald-400 rounded-lg text-xs font-medium capitalize"
-                              >
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
-                                {item.title}
-                              </span>
-                            ))
-                          )}
-                          {role.permissions.length > 4 && (
-                            <span className="inline-flex items-center bg-slate-100 dark:bg-slate-700 px-3 py-1.5 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-medium">
-                              +{role.permissions.length - 4} more
-                            </span>
+                            <>
+                              {role.permissions.slice(0, 3).map((item, i) => (
+                                <span
+                                  key={i}
+                                  className="inline-flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1 text-emerald-700 dark:text-emerald-400 rounded-lg text-xs font-medium capitalize"
+                                >
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                                  {item.title}
+                                </span>
+                              ))}
+                              {role.permissions.length > 3 && (
+                                <span className="inline-flex items-center bg-slate-100 dark:bg-slate-700 px-2.5 py-1 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-medium">
+                                  +{role.permissions.length - 3} more
+                                </span>
+                              )}
+                            </>
                           )}
                         </div>
                       </td>
 
-                      {/* Actions */}
+                      <td className="px-6 py-5 min-w-[180px]">
+                        <div className="flex flex-col gap-1.5">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`text-xs font-bold px-2 py-0.5 rounded-md ${getPowerConfig(role.power).color} text-white`}
+                            >
+                              {getPowerConfig(role.power).label}
+                            </span>
+                          </div>
+                          <PowerBar power={role.power} />
+                        </div>
+                      </td>
+
+                      <td className="px-6 py-5">
+                        {role.canManageBelow ? (
+                          <span className="inline-flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 px-3 py-1.5 rounded-lg text-xs font-semibold">
+                            <IoCheckmarkCircle className="w-3.5 h-3.5" />
+                            Yes
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 bg-slate-100 dark:bg-gray-700 border border-slate-200 dark:border-gray-600 text-slate-500 dark:text-slate-400 px-3 py-1.5 rounded-lg text-xs font-semibold">
+                            <IoCloseCircle className="w-3.5 h-3.5" />
+                            No
+                          </span>
+                        )}
+                      </td>
+
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-2">
-                          {/* View Button */}
                           <button
                             onClick={() => setViewRoleModal(role)}
                             className="w-9 h-9 flex items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-all hover:scale-105 active:scale-95"
@@ -534,9 +678,7 @@ const UserRolesTable = ({
                             <FaEye className="w-4 h-4" />
                           </button>
 
-                          {/* Edit Button */}
-                          {hasPermissions(PERMISSIONS.updateRole) &&
-                          role.code !== SUPER_ADMIN_ROLE_CODE ? (
+                          {hasPermissions(PERMISSIONS.updateRole) && !role.isSystemRole ? (
                             <Link
                               href={`/roles/update/${role.id}`}
                               className="w-9 h-9 flex items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-all hover:scale-105 active:scale-95"
@@ -550,12 +692,11 @@ const UserRolesTable = ({
                             </span>
                           )}
 
-                          {/* Delete Button */}
-                          {role.code !== SUPER_ADMIN_ROLE_CODE ? (
+                          {!role.isSystemRole ? (
                             <button
                               onClick={() => handleDelete(role.id)}
-                              className="w-9 h-9 flex items-center justify-center rounded-lg bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 hover:bg-rose-200 dark:hover:bg-rose-900/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-rose-100 dark:disabled:hover:bg-rose-900/30 transition-all hover:scale-105 active:scale-95"
                               disabled={!hasPermissions(PERMISSIONS.deleteRole)}
+                              className="w-9 h-9 flex items-center justify-center rounded-lg bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 hover:bg-rose-200 dark:hover:bg-rose-900/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-rose-100 dark:disabled:hover:bg-rose-900/30 transition-all hover:scale-105 active:scale-95"
                               title="Delete role"
                             >
                               <MdDeleteOutline className="w-4 h-4" />
@@ -571,14 +712,12 @@ const UserRolesTable = ({
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={3} className="px-6 py-12">
+                    <td colSpan={5} className="px-6 py-16">
                       <div className="flex flex-col items-center justify-center text-center">
                         <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-3">
                           <HiOutlineUserGroup className="w-8 h-8 text-gray-400" />
                         </div>
-                        <p className="text-slate-600 dark:text-slate-400 font-medium">
-                          No roles found
-                        </p>
+                        <p className="text-slate-600 dark:text-slate-400 font-medium">No roles found</p>
                         <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">
                           Create your first role to get started
                         </p>
@@ -588,7 +727,7 @@ const UserRolesTable = ({
                 )
               ) : (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="animate-pulse">
+                  <tr key={i}>
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-3">
                         <Skeleton width={40} height={40} borderRadius={10} />
@@ -600,10 +739,16 @@ const UserRolesTable = ({
                     </td>
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-2">
-                        <Skeleton height={28} width={110} borderRadius={8} />
-                        <Skeleton height={28} width={110} borderRadius={8} />
-                        <Skeleton height={28} width={110} borderRadius={8} />
+                        <Skeleton height={28} width={90} borderRadius={8} />
+                        <Skeleton height={28} width={90} borderRadius={8} />
+                        <Skeleton height={28} width={60} borderRadius={8} />
                       </div>
+                    </td>
+                    <td className="px-6 py-5">
+                      <Skeleton height={32} width={160} borderRadius={8} />
+                    </td>
+                    <td className="px-6 py-5">
+                      <Skeleton height={28} width={60} borderRadius={8} />
                     </td>
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-2">

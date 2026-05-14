@@ -42,6 +42,7 @@ from app.db.models.subscription_model import SubscriptionModel
 from app.utils.subscription_utils import calculate_price, calculate_subscription_dates
 from app.utils.enquiry_id_generator import generate_enquiry_id
 from app.core.crypto import encryptor
+from app.core.tenant import system_query
 
 
 class CompanyService:
@@ -182,7 +183,7 @@ class CompanyService:
 
         await new_company.insert(session=session)
 
-        new_user.companyId = new_company
+        new_user.companyId = new_company.id
 
         await new_user.replace(session=session)
 
@@ -416,23 +417,27 @@ class CompanyService:
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
+                    print("come")
                     user_id = PydanticObjectId(payload.userId)
-
-                    user = await self.userRepo.find_by_id(user_id, populate=["companyId"], session=session)
-                    if not user:
-                        raise AppException(404, "User not found")
+                    
+                    with system_query():
+                        user = await self.userRepo.find_by_id(user_id, ["companyId"], session=session)
+                        if not user:
+                            raise AppException(404, "User not found")
+                    
+                    print("goo")
 
                     if user.isEmailVerified:
                         raise AppException(400, "Email is already verified")
-
-                    otp_doc = await self.otpRepo.find_latest_otp(
-                        filters={
-                            "email": payload.email,
-                            "otp_type": OTP_TYPE.EMAIL_VERIFICATION,
-                            "is_used": False,
-                        },
-                        session=session,
-                    )
+                    with system_query():
+                        otp_doc = await self.otpRepo.find_latest_otp(
+                            filters={
+                                "email": payload.email,
+                                "otp_type": OTP_TYPE.EMAIL_VERIFICATION,
+                                "is_used": False,
+                            },
+                            session=session,
+                        )
 
                     if not otp_doc:
                         raise AppException(404, "No pending OTP found — request a new one")
@@ -452,16 +457,19 @@ class CompanyService:
 
                     user.isEmailVerified = True
                     user.isActive = True
+
+                    print("uu: ", user)
                     
-                    await user.replace(session=session)
-                    
+                    with system_query():
+                      await user.replace(session=session)
+                  
 
                     if user.companyId:
-                        
-                        company = await self.repo.find_by_id(
-                            user.companyId.id if hasattr(user.companyId, "id") else user.companyId,
-                            session=session,
-                        )
+                        with system_query():
+                            company = await self.repo.find_by_id(
+                                PydanticObjectId(user.companyId.id) if hasattr(user.companyId, "id") else PydanticObjectId(user.companyId),
+                                session=session,
+                            )
                         
                         if company:
                             company.status = COMPANY_STATUS.ACTIVE
@@ -500,30 +508,30 @@ class CompanyService:
             async with session.start_transaction():
                 try:
                     user_id = PydanticObjectId(payload.userId)
-
-                    user = await self.userRepo.find_by_id(user_id, session=session)
+                    with system_query():
+                         user = await self.userRepo.find_by_id(user_id, session=session)
                     if not user:
                         raise AppException(404, "User not found")
 
                     if user.isEmailVerified:
                         raise AppException(400, "Email is already verified")
 
-                    # ── decrypt email FIRST before using plain_email anywhere ──
+                   
                     from app.core.crypto import encryptor
                     plain_email = encryptor.decrypt_data(user.email)
-
-                    recent_otp = await self.otpRepo.find_latest_otp(
-                        filters={
-                            "email": plain_email,
-                            "otp_type": OTP_TYPE.EMAIL_VERIFICATION,
-                            "is_used": False,
-                        },
-                        session=session,
-                    )
+                    with system_query():
+                        recent_otp = await self.otpRepo.find_latest_otp(
+                            filters={
+                                "email": plain_email,
+                                "otp_type": OTP_TYPE.EMAIL_VERIFICATION,
+                                "is_used": False,
+                            },
+                            session=session,
+                        )
 
                     if recent_otp:
                         created_at = recent_otp.createdAt
-                        # ── make naive datetime timezone-aware ──
+                        
                         if created_at.tzinfo is None:
                             created_at = created_at.replace(tzinfo=timezone.utc)
 
@@ -534,7 +542,7 @@ class CompanyService:
                                 429, f"Please wait {wait}s before requesting a new OTP"
                             )
 
-                    # invalidate all previous unused OTPs
+                    
                     await self.otpRepo.bulk_update(
                         filters={
                             "email": plain_email,

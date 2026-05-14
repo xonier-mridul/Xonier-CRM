@@ -15,6 +15,7 @@ from app.core.rate_limiter import limiter
 from app.core.config import get_setting
 from app.middlewares.auth_middleware import AuthMiddleware
 from app.core.cache import init_cache
+from app.middlewares.tanent_middleware import TenantMiddleware
 
 # Routes
 
@@ -85,6 +86,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.add_middleware(TenantMiddleware)
 
 
 app.state.limiter = limiter

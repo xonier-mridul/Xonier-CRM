@@ -15,12 +15,12 @@ async def create(request: Request, payload: PlanCreateSchema):
     return await controller.create(request, payload.model_dump(mode="json"))
 
 
-@router.get("/", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.onlyForAdmin)])
+@router.get("/", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context), Depends(dependencies.onlyForAdmin)])
 async def getAll(request: Request):
     return await controller.getAll(request)
 
 
-@router.get("/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.onlyForAdmin)])
+@router.get("/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context), Depends(dependencies.onlyForAdmin)])
 async def getById(request: Request, id: str):
     return await controller.getById(request, id)
 
