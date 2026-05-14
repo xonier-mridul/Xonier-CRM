@@ -241,7 +241,7 @@ function InsightsPanel({ data }: { data: TaskStatsData }) {
     const insights = buildInsights(data);
     if (!insights.length) return null;
     return (
-        <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+        <div className="bg-gray-50  dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-4">
                 <Zap className="w-4 h-4 text-amber-500" />
                 <h2 className="text-sm font-semibold text-gray-800 dark:text-white">Smart insights</h2>
@@ -249,7 +249,7 @@ function InsightsPanel({ data }: { data: TaskStatsData }) {
                     {insights.length} alert{insights.length > 1 ? "s" : ""}
                 </span>
             </div>
-            <div className="flex flex-col gap-2">
+            <div className=" grid grid-cols-3 gap-2">
                 {insights.map((ins, i) => {
                     const s = INSIGHT_STYLES[ins.level];
                     return (
@@ -270,7 +270,7 @@ function ActivitySection({ activity }: { activity: ActivityData }) {
     const hasData = activity.totalActions > 0;
     return (
         <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+            <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
                 <div className="flex items-center justify-between mb-4">
                     <div>
                         <h2 className="text-sm font-semibold text-gray-800 dark:text-white">Activity insights</h2>
@@ -327,7 +327,7 @@ function ActivitySection({ activity }: { activity: ActivityData }) {
             </div>
 
             {/* Recent Activity Feed */}
-            <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+            <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
                 <SectionTitle title="Recent activity" sub="Latest 5 task events" />
                 {activity.recentActivity.length > 0 ? (
                     <div className="flex flex-col gap-0">
@@ -367,7 +367,7 @@ function ActivitySection({ activity }: { activity: ActivityData }) {
 function EntityTypeBreakdown({ entities, total }: { entities: ByEntityType[]; total: number }) {
     if (!entities.length) return null;
     return (
-        <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+        <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
             <SectionTitle title="Entity type breakdown" sub="Tasks linked by entity" />
             <div className="grid grid-cols-2 gap-3 mb-4">
                 {entities.map((e, i) => {
@@ -410,7 +410,7 @@ function OverdueInsights({ performance, summary }: { performance: TaskPerformanc
         { label: "Overdue rate", value: `${summary.overdueRate}%`, color: "bg-pink-50 dark:bg-pink-950", text: "text-pink-600 dark:text-pink-400" },
     ];
     return (
-        <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+        <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-4">
                 <TrendingDown className="w-4 h-4 text-red-500" />
                 <h2 className="text-sm font-semibold text-gray-800 dark:text-white">Overdue insights</h2>
@@ -432,7 +432,7 @@ function OverdueInsights({ performance, summary }: { performance: TaskPerformanc
 function HoursAnalytics({ performance }: { performance: TaskPerformance }) {
     const noActual = performance.actualHoursTotal === 0;
     return (
-        <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+        <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
             <SectionTitle title="Hours analytics" sub="Estimated vs actual time" />
             {noActual && (
                 <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900 mb-4">
@@ -463,7 +463,7 @@ function HoursAnalytics({ performance }: { performance: TaskPerformance }) {
 
 function RecurrenceDetail({ recurrences, total }: { recurrences: ByRecurrenceType[]; total: number }) {
     return (
-        <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+        <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-4">
                 <Repeat2 className="w-4 h-4 text-violet-500" />
                 <h2 className="text-sm font-semibold text-gray-800 dark:text-white">Recurrence detail</h2>
@@ -509,7 +509,7 @@ function RecurrenceDetail({ recurrences, total }: { recurrences: ByRecurrenceTyp
 
 function MonthlyTrendsChart({ monthly }: { monthly: { created: number; completed: number; month: string; completionRate: number }[] }) {
     return (
-        <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+        <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
             <SectionTitle title="Monthly trends" sub="Created vs completed · completion rate" />
             {monthly.length > 0 ? (
                 <ResponsiveContainer width="100%" height={220}>
@@ -550,7 +550,7 @@ function CombinedTrendChart({
     const merged = Object.values(map).sort((a, b) => a.date.localeCompare(b.date));
 
     return (
-        <div className="col-span-2 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+        <div className="col-span-2 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
             <div className="flex items-center justify-between mb-5">
                 <div>
                     <h2 className="text-sm font-semibold text-gray-800 dark:text-white">Daily task trend</h2>
@@ -706,7 +706,7 @@ export default function TaskDashboardPage() {
                 <div className="grid grid-cols-3 gap-4">
                     {kpiCards.slice(0, 3).map((card) => (
                         <div key={card.label}
-                            className="relative overflow-hidden bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 hover:shadow-md transition-shadow duration-200">
+                            className="relative overflow-hidden bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 hover:shadow-md transition-shadow duration-200">
                             <div className="flex items-start justify-between mb-3">
                                 <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{card.label}</p>
                                 <span className={`w-8 h-8 rounded-xl flex items-center justify-center text-white flex-shrink-0 ${card.iconBg}`}>{card.icon}</span>
@@ -724,7 +724,7 @@ export default function TaskDashboardPage() {
                 <div className="grid grid-cols-3 gap-4">
                     {kpiCards.slice(3).map((card) => (
                         <div key={card.label}
-                            className="relative overflow-hidden bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 hover:shadow-md transition-shadow duration-200">
+                            className="relative overflow-hidden bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 hover:shadow-md transition-shadow duration-200">
                             <div className="flex items-start justify-between mb-3">
                                 <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{card.label}</p>
                                 <span className={`w-8 h-8 rounded-xl flex items-center justify-center text-white flex-shrink-0 ${card.iconBg}`}>{card.icon}</span>
@@ -743,13 +743,18 @@ export default function TaskDashboardPage() {
                 {/* Row 2: #9 Combined trend + ring */}
                 <div className="grid grid-cols-3 gap-4">
                     <CombinedTrendChart creation={trends.daily.creation} completion={trends.daily.completion} />
-                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 flex flex-col items-center justify-center gap-4">
-                        <SectionTitle title="Completion rate" sub="Overall task progress" />
+                    <div className="bg-blue-900 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 flex flex-col items-center justify-center gap-4 text-white">
+                        
+                         <div className="mb-4">
+                                <h2 className="text-sm font-semibold text-gray-100 dark:text-white">Completion rate</h2>
+                              <p className="text-xs text-gray-100 dark:text-gray-500 mt-0.5">Overall task progress</p>
+                        </div>
+
                         <div className="relative flex items-center justify-center">
                             <RingChart pct={summary.completionRate} color="#22c55e" />
                             <div className="absolute flex flex-col items-center">
-                                <span className="font-mono text-l font-bold text-gray-900 dark:text-white">{summary.completionRate}%</span>
-                                <span className="text-[10px] text-gray-400 dark:text-gray-500">done</span>
+                                <span className="font-mono text-l font-bold text-gray-100 dark:text-white">{summary.completionRate}%</span>
+                                <span className="text-[10px] text-white dark:text-gray-500">done</span>
                             </div>
                         </div>
                         <div className="grid grid-cols-3 gap-2 w-full text-center">
@@ -758,9 +763,9 @@ export default function TaskDashboardPage() {
                                 { label: "In progress", value: summary.inProgress, color: "text-indigo-500" },
                                 { label: "Not started", value: summary.notStarted, color: "text-gray-400" },
                             ].map((item) => (
-                                <div key={item.label}>
+                                <div key={item.label} className="p-2 rounded-2xl bg-white">
                                     <p className={`font-mono text-lg font-bold ${item.color}`}>{item.value}</p>
-                                    <p className="text-[10px] text-gray-400 dark:text-gray-500">{item.label}</p>
+                                    <p className="text-[10px] text-gray-600 dark:text-gray-500">{item.label}</p>
                                 </div>
                             ))}
                         </div>
@@ -772,7 +777,7 @@ export default function TaskDashboardPage() {
                 {/* Row 3: Priority + #3 Fixed Status + Category */}
                 <div className="grid grid-cols-3 gap-4">
                     {/* Priority */}
-                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+                    <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
                         <SectionTitle title="Priority breakdown" sub="Tasks by urgency level" />
                         <div className="flex flex-col gap-3">
                             {breakdowns.byPriority.length > 0 ? breakdowns.byPriority.map((item) => {
@@ -800,7 +805,7 @@ export default function TaskDashboardPage() {
                     </div>
 
                     {/* #3 Fixed Status using byStatus */}
-                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+                    <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
                         <SectionTitle title="Status breakdown" sub="Detailed status distribution" />
                         <div className="flex flex-col gap-3">
                             {breakdowns.byStatus.length > 0 ? breakdowns.byStatus.map((item) => {
@@ -831,7 +836,7 @@ export default function TaskDashboardPage() {
                     </div>
 
                     {/* Category */}
-                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+                    <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
                         <SectionTitle title="Categories" sub="Distribution by category" />
                         <div className="flex flex-col gap-2">
                             {breakdowns.byCategory.length > 0 ? breakdowns.byCategory.map((cat, i) => {
@@ -884,7 +889,7 @@ export default function TaskDashboardPage() {
                 </div>
 
                 {/* Row 7: Weekly Activity */}
-                <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+                <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
                     <SectionTitle title="Weekly activity pattern" sub="Tasks created by day of week" />
                     <div className="flex items-end gap-2 h-32">
                         {weeklyBarData.map((d) => (
@@ -899,7 +904,7 @@ export default function TaskDashboardPage() {
                 </div>
 
                 {/* Row 8: Activity Snapshot */}
-                <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+                <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
                     <SectionTitle title="Activity snapshot" sub="Key task metrics at a glance" />
                     <div className="grid grid-cols-4 gap-3">
                         {[

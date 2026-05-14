@@ -515,7 +515,7 @@ export default function DashboardPage() {
             >
               <div
                 key={card.label}
-                className="relative overflow-hidden bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 hover:shadow-md dark:hover:shadow-gray-900 transition-shadow duration-200"
+                className="relative overflow-hidden bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 hover:shadow-md dark:hover:shadow-gray-900 transition-shadow duration-200"
               >
                 <div className="flex items-start justify-between mb-3">
                   <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
@@ -542,7 +542,7 @@ export default function DashboardPage() {
 
         {/* ── Row 2: Trend Chart + Lead Sources ── */}
         <div className="grid grid-cols-3 gap-4">
-          <div className="col-span-2 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+          <div className="col-span-2 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
             <div className="flex items-center justify-between mb-5">
               <div>
                 <h2 className="text-sm font-semibold text-gray-800 dark:text-white">
@@ -603,7 +603,7 @@ export default function DashboardPage() {
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+          <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
             <SectionTitle title="Lead Sources" sub="Distribution by channel" />
             {sourceChartData?.length > 0 ? (
               <>
@@ -651,7 +651,7 @@ export default function DashboardPage() {
 
         {/* ── Row 3: Deal Pipeline + Latest Leads ── */}
         <div className="grid grid-cols-12 gap-4">
-          <div className="col-span-6 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+          <div className="col-span-6 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
             <div className="flex items-start justify-between mb-1">
               <div>
                 <h2 className="text-sm font-semibold text-gray-800 dark:text-white">Deal Pipeline</h2>
@@ -685,7 +685,7 @@ export default function DashboardPage() {
             </ResponsiveContainer>
           </div>
 
-          <div className="col-span-6 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+          <div className="col-span-6 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-sm font-semibold text-gray-800 dark:text-white">Latest Leads</h2>
@@ -775,7 +775,7 @@ export default function DashboardPage() {
           ].map((card) => (
             <div
               key={card.label}
-              className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 hover:shadow-md dark:hover:shadow-gray-900 transition-shadow duration-200"
+              className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 hover:shadow-md dark:hover:shadow-gray-900 transition-shadow duration-200"
             >
               <div className="flex items-start justify-between mb-3">
                 <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
@@ -798,7 +798,7 @@ export default function DashboardPage() {
 
         {/* ── Row 5: Status Breakdown + Activity Snapshot ── */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+          <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
             <SectionTitle title="Lead Status Breakdown" sub="Current distribution across all statuses" />
             <div className="flex flex-col gap-3">
               {data.leadStatusBreakdown?.map((item) => {
@@ -833,7 +833,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+          <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
             <SectionTitle title="Activity Snapshot" sub="Key metrics at a glance" />
             <div className="grid grid-cols-2 gap-3">
               {[

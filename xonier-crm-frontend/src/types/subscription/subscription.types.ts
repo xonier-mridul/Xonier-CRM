@@ -1,7 +1,7 @@
 import { BILLING_CYCLE, SUBSCRIPTION_STATUS } from "@/src/constants/enum";
 
 export interface Subscription {
-  _id: string;
+  id: string;
   subscriptionId: string;
   planId: string;
   companyId: string;
@@ -18,4 +18,19 @@ export interface Subscription {
   cancelReason?: string;
   createdAt: string;
   updatedAt?: string;
+}
+
+export interface SubscriptionTableProps { 
+  currentPage: number,
+  totalPages: number,
+  onPageChange : (page:number)=>void,
+  isLoading: boolean,
+  subScriptionData:Subscription,
+  pageLimit:number
+
+}
+
+export interface subScriptionView {
+  subScriptionData: Subscription,
+  isLoading: boolean
 }

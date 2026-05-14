@@ -200,7 +200,7 @@ const PlanTable: React.FC<ExtendedPlanTableProps> = ({
             ) : (
               Array.from({ length: pageLimit }).map((_, i) => (
                 <tr key={i} className="border-b border-slate-100 dark:border-gray-700">
-                  {Array.from({ length: 8 }).map((_, j) => (
+                  {Array.from({ length: 7 }).map((_, j) => (
                     <td key={j} className="py-4 pr-4">
                       <Skeleton height={24} borderRadius={8} />
                     </td>
