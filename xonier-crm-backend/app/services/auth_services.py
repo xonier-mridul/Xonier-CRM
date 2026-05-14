@@ -64,7 +64,7 @@ class AuthServices:
                query.update({"$or": [
                    {"firstName": regex_data},
                    {"lastName": regex_data},
-                   {"company": regex_data}
+                  
                ]})
                
 
@@ -74,9 +74,7 @@ class AuthServices:
                    query.update({"status": filters["status"]})
                    
                
-           if "company" in filters:
-               query.update({"company": filters["company"]})
-
+           
 
            users = await self.repo.get_all(page, limit, query, populate=["userRole", "createdBy"], sort=["-createdAt"])
 
@@ -170,8 +168,7 @@ class AuthServices:
            
            query.update({"status": USER_STATUS.ACTIVE})
 
-           if "company" in filters:
-               query.update({"company": filters["company"]})
+           
             
 
            users = await self.repo.get_all(page, limit, query, populate=["userRole", "createdBy"])
@@ -230,7 +227,7 @@ class AuthServices:
                 query.update({"$or": [
                     {"firstName": search_regex},
                     {"lastName": search_regex},
-                    {"company": search_regex}
+                  
                 ] })
  
             
@@ -303,21 +300,20 @@ class AuthServices:
           if not exist_user:
               raise AppException(404, "User not found for this Id")
 
-          if not is_admin:
-              members = await self.get_team_members.get_team_members(user["_id"])
+        #   if not is_admin:
+        #       members = await self.get_team_members.get_team_members(user["_id"])
 
 
 
-              if exist_user.id in members:
-                  is_manager = True
+        #       if exist_user.id in members:
+        #           is_manager = True
 
           
-          if str(exist_user.id) == str(user["_id"]):
-              is_creator = True
+        #   if str(exist_user.id) == str(user["_id"]):
+        #       is_creator = True
 
                  
-          if not is_admin and not is_manager and not is_creator:
-              raise AppException(403, "Permission denied, you can not access this user profile data")
+          
           user = jsonable_encoder(exist_user, exclude={"password", "refreshToken"})
 
           user["email"] = encryptor.decrypt_data(user["email"])
@@ -414,7 +410,7 @@ class AuthServices:
             if not new_user:
                 raise AppException(400, "User not created")
             
-            activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.USER, entityId=PydanticObjectId(new_user.id), action=ACTIVITY_ACTION.CREATED, title="create user", metadata={"userName": f"{new_user.firstName} {new_user.lastName}", "company":new_user.company})
+            activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.USER, entityId=PydanticObjectId(new_user.id), action=ACTIVITY_ACTION.CREATED, title="create user", metadata={"userName": f"{new_user.firstName} {new_user.lastName}", "company": companyId})
 
             is_activity = await self.activityRepo.create(data=activity, session=session)
 
@@ -829,7 +825,7 @@ class AuthServices:
                 session=session,
             )
 
-            activity = activity_payload(userId=PydanticObjectId(user.id), entityType=ACTIVITY_ENTITY_TYPE.AUTH, entityId=PydanticObjectId(user.id), action=ACTIVITY_ACTION.LOGOUT, title="Logout user", metadata={"userName": f"{user.firstName} {user.lastName}", "company":user.company, "email": user.email}, ipAddress=ip, userAgent=agent)
+            activity = activity_payload(userId=PydanticObjectId(user.id), entityType=ACTIVITY_ENTITY_TYPE.AUTH, entityId=PydanticObjectId(user.id), action=ACTIVITY_ACTION.LOGOUT, title="Logout user", metadata={"userName": f"{user.firstName} {user.lastName}", "email": user.email}, ipAddress=ip, userAgent=agent)
 
             is_activity = await self.activityRepo.create(data=activity, session=session)
 
