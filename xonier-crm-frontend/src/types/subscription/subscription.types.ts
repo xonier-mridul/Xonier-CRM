@@ -1,10 +1,12 @@
 import { BILLING_CYCLE, SUBSCRIPTION_STATUS } from "@/src/constants/enum";
+import { Plan } from "../plan/plan.types";
+import { Company } from "../company/company.types";
 
 export interface Subscription {
   id: string;
   subscriptionId: string;
-  planId: string;
-  companyId: string;
+  planId: string | Plan;
+  companyId: string | Company;
   billingCycle: BILLING_CYCLE;
   basePrice: number;
   discountAmount: number;
@@ -25,7 +27,7 @@ export interface SubscriptionTableProps {
   totalPages: number,
   onPageChange : (page:number)=>void,
   isLoading: boolean,
-  subScriptionData:Subscription,
+  subScriptionData:Subscription[],
   pageLimit:number
 
 }

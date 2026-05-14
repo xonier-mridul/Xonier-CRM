@@ -4,6 +4,7 @@ import {
   COUNTRY_CODE,
   NUMBER_OF_EMPLOYEES,
 } from "../../constants/enum";
+import { Subscription } from "../subscription/subscription.types";
 
 export interface Company {
   id: string;
@@ -22,7 +23,7 @@ export interface Company {
 
   tradeNumber?: string;
   primary_admin?: string;
-  subscription?: string;
+  subscription?: Subscription | string;
   userLimit?: number;
   subscriptionCount: number;
   country?: COUNTRY_CODE;

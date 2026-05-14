@@ -1,6 +1,7 @@
 import { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
 import { Permissions } from "../roles/roles.types";
 import { TelephoneNumber } from "../communication/telephone.types";
+import { Company } from "../company/company.types";
 
 
 export interface AuthState {
@@ -131,7 +132,7 @@ export interface User {
   userRole: UserRole[];
   assignedPhoneNumber: TelephoneNumber
 
-  companyId: string;
+  companyId: string | Company;
   isActive: boolean;
 
   lastLogin?: Date | null;

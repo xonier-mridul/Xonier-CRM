@@ -1215,3 +1215,13 @@ export enum SUBSCRIPTION_STATUS {
   TRIAL = "trial",
   CANCELED = "canceled",
 }
+
+
+export enum FEATURES {
+  TASK = "task:feature",
+  CRM = "crm:feature",
+  TELECOM = "telecom:feature",
+  CHAT = "chat:feature",
+  CALENDER = "calender:feature",
+  NOTE = "notes:feature"
+}

@@ -49,7 +49,7 @@ const SubscriptionTable = ({currentPage,isLoading,pageLimit ,totalPages,onPageCh
                   <td className='p-4 text-start  text-nowrap'>
                     {item.subscriptionId}
                   </td><td className='p-4 text-start capitalize'>
-                    {item.planId.name}
+                    {item.planId?.name}
                   </td>
                  
                   <td className='p-4 text-start capitalize'>

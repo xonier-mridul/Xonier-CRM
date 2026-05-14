@@ -11,6 +11,7 @@ from fastapi_cache import FastAPICache
 from bson import ObjectId, DBRef
 from datetime import datetime, timezone
 from app.db.models.user_model import UserModel
+from app.core.tenant import system_query
 
 
 class PlanService:
@@ -159,7 +160,8 @@ class PlanService:
                     if not ObjectId.is_valid(id):
                         raise AppException(400, "Invalid plan object id")
                     
-                    plan = await self.repo.find_by_id(PydanticObjectId(id), ["createdBy"])
+                    with system_query():
+                        plan = await self.repo.find_by_id(PydanticObjectId(id), ["createdBy"])
 
                     if not plan:
                         raise AppException(404, "Plan data not found")
@@ -172,14 +174,14 @@ class PlanService:
                         **payload,
                         "updatedAt": datetime.now(timezone.utc)
                     }
-
-                    await self.repo.update(id=PydanticObjectId(id), data=new_payload, session=session)
+                    with system_query():
+                        await self.repo.update(id=PydanticObjectId(id), data=new_payload, session=session)
 
                     
                     pp =  activity_payload(PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.PLAN.value, action=ACTIVITY_ACTION.UPDATED, title="Update plan", entityId=PydanticObjectId(plan.id), metadata={**payload})
 
-
-                    await self.activityRepo.create(data=pp, session=session)
+                    with system_query():
+                        await self.activityRepo.create(data=pp, session=session)
 
                     return True
 
