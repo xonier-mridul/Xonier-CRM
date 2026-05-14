@@ -2,7 +2,7 @@
 import SubscriptionTable from "@/src/components/pages/subscription/SubscriptionTable";
 import { Subscription } from "@/src/types/subscription/subscription.types";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import extractErrorMessages from "../../utils/error.utils";
 import { SubscriptionService } from "@/src/services/subscription.service";
@@ -15,11 +15,22 @@ const page = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [err, setErr] = useState<string[] | string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [searchVal,setSearchVal] = useState<string>("")
+  const searchTime = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const getSubscriptionsData = async () => {
+  const getSubscriptionsData = async (search: string) => {
     setIsLoading(true);
     try {
-      const result = await SubscriptionService.getAll();
+       const filters: Record<string, string> = {};
+         
+      if (search && search.trim()) { filters.search = search;}
+
+    
+      const result = await SubscriptionService.getAll(
+        currentPage,
+         pageLimit,
+         filters
+      );
       if (result.status === 200) {
         const data = result.data.data;
 
@@ -43,8 +54,18 @@ const page = () => {
     setCurrentPage(page);
   };
 
+
+  const handleSearch= (val: string)=>{
+    setSearchVal(val)
+    if(searchTime.current) clearTimeout(searchTime.current)
+      searchTime.current = setTimeout(()=>{
+    setCurrentPage(1)
+    getSubscriptionsData(val)
+  },400)
+  };
+
   useEffect(() => {
-    getSubscriptionsData();
+    getSubscriptionsData(searchVal);
   }, [currentPage, pageLimit]);
 
   return (
@@ -56,6 +77,9 @@ const page = () => {
         onPageChange={onPageChange}
         isLoading={isLoading}
         subScriptionData={subscriptionData}
+        onSearch={handleSearch}
+        searchVal={searchVal}
+        setPageLimit={setPageLimit}
       />
     </div>
   );

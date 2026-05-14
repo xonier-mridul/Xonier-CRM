@@ -1,6 +1,6 @@
 import { UserTableComponentProps } from "@/src/types";
 
-import React, { JSX, useRef, useState, useEffect } from "react";
+import React, { JSX, useRef, useMemo, useState, useEffect } from "react";
 import { IoIosSearch } from "react-icons/io";
 
 import { MdOutlineEdit, MdDeleteOutline } from "react-icons/md";
@@ -21,7 +21,12 @@ import Pagination from "../../common/pagination";
 import { countryCodes } from "@/src/constants/countryCodes";
 import { countryCode } from "@/src/types";
 
-const UsersTable = ({
+import { ChevronDown, Search } from "lucide-react";
+import { CompanySelectProps } from "@/src/types/company/company.types";
+
+
+
+export const UsersTable = ({
   currentPage,
   pageLimit,
   userData,
@@ -42,13 +47,21 @@ const UsersTable = ({
   loading,
   setCurrentPages,
   setSearchFilter,
-  getCompanyData
+  isAdmin,
+  companyData,
+  handleCompanyChange,
 }: UserTableComponentProps): JSX.Element => {
   const [selectedcountryCode, setCountryCode] = useState("+91");
   const { hasPermission } = usePermissions();
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const [search, setSearch] = useState<string>("");
   const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const [company,setCompany] = useState('')
+
+  console.log
+
+
+  
 
   const handleLimit = (n: string) => {
     setPageLimit(Number(n))
@@ -69,6 +82,252 @@ useEffect(() => {
     phone: `${selectedcountryCode}${phoneNumber}`,
   }));
 }, [selectedcountryCode, phoneNumber]);
+
+
+
+
+
+const CompanySelect: React.FC<CompanySelectProps> = ({
+  companyData,
+    company,
+   handleCompanyChange
+}) => {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [visibleCount, setVisibleCount] =
+    useState(10);
+
+  const dropdownRef =
+    useRef<HTMLDivElement | null>(null);
+
+  // close on outside click
+  useEffect(() => {
+    const handleOutsideClick = (
+      event: MouseEvent
+    ) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(
+          event.target as Node
+        )
+      ) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener(
+      "mousedown",
+      handleOutsideClick
+    );
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleOutsideClick
+      );
+    };
+  }, []);
+
+  // filter data
+  const filteredCompanies = useMemo(() => {
+    return companyData.filter((item) =>
+      item.companyName
+        .toLowerCase()
+        .includes(search.toLowerCase())
+    );
+  }, [companyData, search]);
+
+  // visible items
+  const visibleCompanies =
+    filteredCompanies.slice(
+      0,
+      visibleCount
+    );
+
+  // infinite scroll
+  const handleScroll = (
+    e: React.UIEvent<HTMLDivElement>
+  ) => {
+    const target = e.currentTarget;
+
+    const bottomReached =
+      target.scrollHeight -
+        target.scrollTop <=
+      target.clientHeight + 20;
+
+    if (
+      bottomReached &&
+      visibleCount <
+        filteredCompanies.length
+    ) {
+      setVisibleCount((prev) => prev + 10);
+    }
+  };
+
+  // reset visible count on search
+  useEffect(() => {
+    setVisibleCount(10);
+  }, [search]);
+
+  const selectedCompany =
+    companyData.find(
+      (item) =>
+        item.id === company
+    );
+
+  return (
+    <div
+      className="relative w-full max-w-sm"
+      ref={dropdownRef}
+    >
+      {/* Selected Box */}
+      <button
+        type="button"
+        onClick={() =>
+          setOpen(!open)
+        }
+        className="
+          w-full
+          flex items-center justify-between
+          rounded-xl
+          border border-gray-300
+          bg-white
+          px-4 py-3
+          text-sm
+          shadow-sm
+          transition-all
+          hover:border-violet-400
+          focus:outline-none
+          focus:ring-2 focus:ring-violet-300
+        "
+      >
+        <span className="truncate">
+          {selectedCompany
+            ? selectedCompany.companyName
+            : "Select Company"}
+        </span>
+
+        <ChevronDown
+          size={18}
+          className={`transition-transform ${
+            open
+              ? "rotate-180"
+              : ""
+          }`}
+        />
+      </button>
+
+      {/* Dropdown */}
+      {open && (
+        <div
+          className="
+            absolute z-50 mt-2 w-full
+            overflow-hidden
+            rounded-2xl
+            border border-gray-200
+            bg-white
+            shadow-xl
+          "
+        >
+          {/* Search */}
+          <div className="border-b p-3">
+            <div className="relative">
+              <Search
+                size={16}
+                className="
+                  absolute left-3 top-1/2
+                  -translate-y-1/2
+                  text-gray-400
+                "
+              />
+
+              <input
+                type="text"
+                placeholder="Search company..."
+                value={search}
+                onChange={(e) =>
+                  setSearch(
+                    e.target.value
+                  )
+                }
+                className="
+                  w-full
+                  rounded-lg
+                  border border-gray-200
+                  py-2 pl-9 pr-3
+                  text-sm
+                  outline-none
+                  focus:border-violet-400
+                "
+              />
+            </div>
+          </div>
+
+          {/* Company List */}
+          <div
+            onScroll={
+              handleScroll
+            }
+            className="
+              max-h-72
+              overflow-y-auto
+            "
+          >
+            {visibleCompanies.length >
+            0 ? (
+              visibleCompanies.map(
+                (item) => (
+                  <button
+                    key={
+                      item.id
+                    }
+                    type="button"
+                    onClick={() => {
+                      handleCompanyChange(
+                        item.id
+                      );
+                      setOpen(false);
+                    }}
+                    className={`
+                      w-full
+                      px-4 py-3
+                      text-left text-sm
+                      transition-colors
+                      hover:bg-violet-50
+                      ${
+                        company ===
+                        item.id
+                          ? "bg-violet-100 text-violet-700"
+                          : ""
+                      }
+                    `}
+                  >
+                    {
+                      item.companyName
+                    }
+                  </button>
+                )
+              )
+            ) : (
+              <div className="p-4 text-sm text-gray-500">
+                No company found
+              </div>
+            )}
+
+            {visibleCount <
+              filteredCompanies.length && (
+              <div className="p-3 text-center text-xs text-gray-400">
+                Scroll to load more...
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+
 
   return (
     <>
@@ -203,16 +462,26 @@ useEffect(() => {
                 value={formData.confirmPassword}
                 onChange={handleChange}
               />
-              
+              {
+                isAdmin && (
+                  <div className="col-span-2 flex flex-col gap-1">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                  Company
+                </label>
+                    <CompanySelect
+                    companyData={companyData}
+                      company={formData.companyId || ""}
+                      handleCompanyChange={handleCompanyChange}
+                  />
 
-              <Input
-                label="company"
-                type="text"
-                name="company"
-                placeholder="Company Name"
-                value={formData.company}
-                onChange={handleChange}
-              />
+                  </div>
+                  
+                )
+              }
+
+            
+             
+
               {err && <div className="flex justify-end col-span-2"><p className="text-red-500">{err}</p></div>}
 
               <FormButton
@@ -332,6 +601,7 @@ useEffect(() => {
                           ? "bg-white dark:bg-transparent"
                           : "bg-blue-100/50 dark:bg-slate-500"
                         } w-full`}
+                        key={item.id}
                     >
                       <td className="p-4">{index + 1}</td>
                       <td>
@@ -344,7 +614,7 @@ useEffect(() => {
                       </td>
                       <td>
                         {item.userRole.map((item) => (
-                          <span className="bg-green-500 px-3.5 py-1.5 rounded-lg text-white text-xs tracking-wide">{item.name}</span>
+                          <span key={item.id} className="bg-green-500 px-3.5 py-1.5 rounded-lg text-white text-xs tracking-wide">{item.name}</span>
                         ))}
                       </td>
                       <td>{date}</td>
@@ -417,8 +687,8 @@ useEffect(() => {
                 </tr>
               )
             ) : (
-              Array.from({ length: 10 }).map((_) => (
-                <tr className=" text-center animate-pulse">
+              Array.from({ length: 10 }).map((_, i) => (
+                <tr className=" text-center animate-pulse" key={i}>
                   <td className="p-4" >
                     <Skeleton width={30} height={30} borderRadius={12} />
                   </td>
@@ -456,4 +726,4 @@ useEffect(() => {
   );
 };
 
-export default UsersTable;
+

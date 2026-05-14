@@ -3,7 +3,7 @@ import SubscriptionViewComponent from '@/src/components/pages/subscription/Subsc
 import { SubscriptionService } from '@/src/services/subscription.service'
 import { Subscription } from '@/src/types/subscription/subscription.types'
 import { useParams } from 'next/navigation'
-import React, { useEffect, useState } from 'react'
+import  { useEffect, useState } from 'react'
 
 const SubscriptionViewPage = () => {
 

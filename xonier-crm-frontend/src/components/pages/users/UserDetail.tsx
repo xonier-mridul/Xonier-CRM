@@ -860,7 +860,6 @@ const UserDetail = ({
                   { label: "Last Name", value: userData.lastName || "—" },
                   { label: "Email", value: userData.email },
                   { label: "Phone", value: userData.phone },
-                  { label: "Company", value: userData.company || "—" },
                   {
                     label: "Email Verified",
                     value: userData.isEmailVerified

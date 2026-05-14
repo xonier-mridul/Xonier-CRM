@@ -37,7 +37,7 @@ const page = (): JSX.Element => {
     email: "",
     phone: "",
     userRole: [],
-    company: "",
+
   });
 
   const params: ParamValue = useParams().id;
