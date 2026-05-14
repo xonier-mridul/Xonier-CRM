@@ -204,14 +204,15 @@ useEffect(() => {
               />
               
 
-              <Input
+              {/* <Input
                 label="company"
                 type="text"
                 name="company"
                 placeholder="Company Name"
                 value={formData.company}
                 onChange={handleChange}
-              />
+              /> */}
+              
               {err && <div className="flex justify-end col-span-2"><p className="text-red-500">{err}</p></div>}
 
               <FormButton
