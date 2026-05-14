@@ -26,11 +26,6 @@ import { CompanySelectProps } from "@/src/types/company/company.types";
 
 
 
-
-
-
-
-
 export const UsersTable = ({
   currentPage,
   pageLimit,
