@@ -5,9 +5,10 @@ from typing import Optional, Dict, Any
 from app.core.enums import TASK_ACTIVITY_ACTION
 from app.db.models.user_model import UserModel
 from datetime import datetime, timezone
+from app.db.models.base_model import BaseDocument
  
  
-class TaskActivityModel(Document):
+class TaskActivityModel(BaseDocument):
     task: Link[TaskModel]
     action: TASK_ACTIVITY_ACTION
     field: Optional[str] = None

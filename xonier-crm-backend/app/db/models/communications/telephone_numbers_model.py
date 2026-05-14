@@ -6,12 +6,13 @@ from app.core.enums import PHONE_NUMBER_STATUS
 from app.utils.custom_exception import AppException
 import re
 from pymongo import IndexModel
+from app.db.models.base_model import BaseDocument
 
 if TYPE_CHECKING:
     from app.db.models.user_model import UserModel  
 
 
-class TelephoneNumbersModel(Document):
+class TelephoneNumbersModel(BaseDocument):
     phoneNumber: str
     status: PHONE_NUMBER_STATUS = PHONE_NUMBER_STATUS.ACTIVE
     createdBy: Link["UserModel"]          

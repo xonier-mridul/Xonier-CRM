@@ -8,9 +8,10 @@ from datetime import datetime, timezone
 from pymongo import IndexModel
 from app.core.enums import FORM_FIELD_MODULES
 from app.db.models.custom_form_field_model import UserCustomFieldModel
+from app.db.models.base_model import BaseDocument
 
 
-class UserFormModel(Document):
+class UserFormModel(BaseDocument):
     userId: Link[UserModel] 
     selectedFormFields: List[ Union[ Link[CustomFieldModel], Link[UserCustomFieldModel]]]
     

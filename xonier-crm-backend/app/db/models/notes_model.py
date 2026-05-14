@@ -4,9 +4,10 @@ from datetime import datetime, timezone
 from app.db.models.user_model import UserModel
 from app.core.enums import NOTE_VISIBILITY, NOTE_STATUS, NOTES_ENTITIES
 from pydantic import Field, model_validator, ValidationInfo
+from app.db.models.base_model import BaseDocument
 
 
-class NoteModel(Document):
+class NoteModel(BaseDocument):
     title: str = Field(..., min_length=3, max_length=35)
     content: str  
     entityType: NOTES_ENTITIES 

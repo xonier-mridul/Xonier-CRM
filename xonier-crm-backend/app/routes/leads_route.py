@@ -9,15 +9,18 @@ dependencies = Dependencies()
 leadController = LeadController()
 
 
-@router.post("/create", status_code=201, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["lead:create"]))])
+@router.post("/create", status_code=201, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.permissions(["lead:create"]))])
 async def create(request: Request, payload: LeadBaseSchema):
     return await leadController.create(request=request, payload=payload.model_dump())
 
-@router.post("/create/bulk", status_code=201, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["lead:create"]))])
+@router.post("/create/bulk", status_code=201, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.permissions(["lead:create"]))])
 async def bulk_create(request: Request, payload: CreateBulkLeadSchema):
     return await leadController.bulk_create(request=request, payload=payload.model_dump(mode="json"))
 
-@router.patch("/assign/bulk", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["lead:assign"]))])
+@router.patch("/assign/bulk", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.permissions(["lead:assign"]))])
 async def bulk_lead_assign(request: Request, payload:BulkAssignLeadSchema):
     return await leadController.bulk_lead_assign(request, payload.model_dump(mode="json"))
 
@@ -26,6 +29,8 @@ async def bulk_lead_assign(request: Request, payload:BulkAssignLeadSchema):
     status_code=200,
     dependencies=[
         Depends(dependencies.authorized),
+        Depends(dependencies.company_active),
+Depends(dependencies.company_context),
         Depends(dependencies.permissions(["lead:reassign"]))
     ]
 )
@@ -33,45 +38,55 @@ async def bulk_reassign_lead(request: Request, payload: BulkReassignLeadSchema):
     return await leadController.bulk_reassign_lead(request, payload)
 
 
-@router.patch("/clear-assign/bulk", status_code=200, dependencies=[Depends(dependencies.authorized),Depends(dependencies.permissions(["lead:assign"]))])
+@router.patch("/clear-assign/bulk", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context),Depends(dependencies.permissions(["lead:assign"]))])
 async def bulk_clear_assign(request: Request, payload: BulkClearAssignSchema):
     return await leadController.bulk_clear_assign(request=request, payload=payload.model_dump(mode="json"))
 
 
-@router.get("/all", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["lead:read"]))])
+@router.get("/all", status_code=200, dependencies=[Depends(dependencies.authorized),Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.permissions(["lead:read"]))])
 async def get_all(request: Request):
     return await leadController.get_all(request)
 
-@router.get("/leads-by-user/all", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["lead:read"]))])
+@router.get("/leads-by-user/all", status_code=200, dependencies=[Depends(dependencies.authorized),Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.permissions(["lead:read"]))])
 async def get_all_by_user(request: Request):
     return await leadController.get_all_by_user(request)
 
-@router.get("/all-won", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["lead:read"]))])
+@router.get("/all-won", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.permissions(["lead:read"]))])
 async def get_won_lead(request: Request):
     return await leadController.get_won_leads(request)
 
-@router.get("/get-by-id/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["lead:read"]))])
+@router.get("/get-by-id/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.permissions(["lead:read"]))])
 async def get_all(request: Request, id: str):
     return await leadController.get_by_id(request=request, id=id)
 
 
-@router.put("/update/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["lead:update"]))])
+@router.put("/update/{id}", status_code=200, dependencies=[Depends(dependencies.authorized),Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.permissions(["lead:update"]))])
 async def update(request: Request, id:str, payload: LeadUpdateSchema ):
     return await leadController.update(request, id, payload.model_dump(exclude_unset=True))
 
-@router.patch("/update/{id}/status", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["lead:update"]))])
+@router.patch("/update/{id}/status", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.permissions(["lead:update"]))])
 async def update_status(request:Request, id:str, payload: LeadStatusUpdateSchema):
     return await leadController.lead_update(request, id, payload.model_dump(exclude_unset=True))
 
-@router.patch("/update/{id}/connect-status", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["lead:update"]))])
+@router.patch("/update/{id}/connect-status", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.permissions(["lead:update"]))])
 async def update_connect_status(Request: Request, id: str, payload: LeadConnectStatusUpdateSchema):
     return await leadController.update_connect_status(request=Request, id=id, payload=payload.model_dump(mode="json"))
 
-@router.delete("/delete/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["lead:delete"]))])
+@router.delete("/delete/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.permissions(["lead:delete"]))])
 async def delete(request: Request, id: str):
     return await leadController.delete(request,id)
 
 
-@router.delete("/delete/bulk", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["lead:delete"]))])
+@router.delete("/delete/bulk", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.permissions(["lead:delete"]))])
 async def bulk_delete(request: Request, payload: BulkDeleteSchema):
     return await leadController.bulkDelete(request=request, payload=payload.model_dump(mode="json"))

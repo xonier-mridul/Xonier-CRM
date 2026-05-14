@@ -20,7 +20,8 @@ controller = TaskReportController()
     "/morning/submit",
     status_code=201,
     dependencies=[
-        Depends(dependencies.authorized),
+        Depends(dependencies.authorized),Depends(dependencies.company_active),
+Depends(dependencies.company_context),
         Depends(dependencies.permissions(["taskReport:create"]))
     ]
 )
@@ -32,7 +33,8 @@ async def submit_morning_agenda(request: Request, payload: SubmitMorningAgendaSc
     "/{report_id}/morning/update",
     status_code=200,
     dependencies=[
-        Depends(dependencies.authorized),
+        Depends(dependencies.authorized),Depends(dependencies.company_active),
+Depends(dependencies.company_context),
         Depends(dependencies.permissions(["taskReport:update"]))
     ]
 )
@@ -43,7 +45,8 @@ async def update_morning_agenda(request: Request, report_id: str, payload: Updat
     "/{report_id}/evening/submit",
     status_code=200,
     dependencies=[
-        Depends(dependencies.authorized),
+        Depends(dependencies.authorized),Depends(dependencies.company_active),
+Depends(dependencies.company_context),
         Depends(dependencies.permissions(["taskReport:create"]))
     ]
 )
@@ -55,7 +58,8 @@ async def submit_evening_report(request: Request, report_id: str, payload: Submi
     "/{report_id}/evening/update",
     status_code=200,
     dependencies=[
-        Depends(dependencies.authorized),
+        Depends(dependencies.authorized),Depends(dependencies.company_active),
+Depends(dependencies.company_context),
         Depends(dependencies.permissions(["taskReport:update"]))
     ]
 )
@@ -67,7 +71,8 @@ async def update_evening_report(request: Request, report_id: str, payload: Updat
     "/{report_id}/review",
     status_code=200,
     dependencies=[
-        Depends(dependencies.authorized),
+        Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context),
         Depends(dependencies.permissions(["taskReport:review"]))
     ]
 )
@@ -79,7 +84,8 @@ async def review_task_report(request: Request, report_id: str, payload: ManagerR
     "/all",
     status_code=200,
     dependencies=[
-        Depends(dependencies.authorized),
+        Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context),
         Depends(dependencies.permissions(["taskReport:read"]))
     ]
 )
@@ -108,7 +114,8 @@ async def get_all_reports(
     "/my-reports",
     status_code=200,
     dependencies=[
-        Depends(dependencies.authorized),
+        Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context),
         Depends(dependencies.permissions(["taskReport:read"]))
     ]
 )
@@ -133,7 +140,8 @@ async def get_my_reports(
     "/{report_id}",
     status_code=200,
     dependencies=[
-        Depends(dependencies.authorized),
+        Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context),
         Depends(dependencies.permissions(["taskReport:read"]))
     ]
 )
@@ -147,7 +155,8 @@ async def get_report_by_id(request: Request, report_id: str):
     "/by-users/tasks",
     status_code=200,
     dependencies=[
-        Depends(dependencies.authorized),
+        Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context),
         Depends(dependencies.permissions(["taskReport:read"]))
     ]
 )
@@ -175,7 +184,8 @@ async def get_reports_by_user_ids(
     "/{report_id}",
     status_code=200,
     dependencies=[
-        Depends(dependencies.authorized),
+        Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context),
         Depends(dependencies.permissions(["taskReport:delete"]))
     ]
 )

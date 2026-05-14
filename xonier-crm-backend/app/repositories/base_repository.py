@@ -4,6 +4,7 @@ from beanie import PydanticObjectId
 import math
 from app.db.models.user_roles_model import UserRoleModel
 from app.db.models.user_model import UserModel
+from app.core.tenant import system_query
 
 
 class BaseRepository:
@@ -35,9 +36,9 @@ class BaseRepository:
     ):
         populate = populate or []
 
-   
+ 
         doc = await self.model.get(id, session=session)
-
+        
         if not doc:
             return None
 
@@ -62,101 +63,98 @@ class BaseRepository:
                         fetched_items.append(item)
 
                 setattr(doc, field, fetched_items)
-
+       
         return doc
     
 
     async def find_by_id_nested(
-    self,
-    id: PydanticObjectId,
-    populate: Optional[List[str]] = None,
-    session: Optional[AsyncIOMotorClientSession] = None,
+        self,
+        id: PydanticObjectId,
+        populate: Optional[List[str]] = None,
+        session: Optional[AsyncIOMotorClientSession] = None,
     ):
         populate = populate or []
 
-        doc = await self.model.get(id, session=session)
+        with system_query():
+            doc = await self.model.get(id, session=session)
 
         if not doc:
             return None
 
-        
         top_level_fields = set()
         nested_fields = {}
-        
+
         for field in populate:
             if "." in field:
-                
                 parts = field.split(".", 1)
-                parent = parts[0]
-                child = parts[1]
+                parent, child = parts[0], parts[1]
                 top_level_fields.add(parent)
-                if parent not in nested_fields:
-                    nested_fields[parent] = []
-                nested_fields[parent].append(child)
+                nested_fields.setdefault(parent, []).append(child)
             else:
                 top_level_fields.add(field)
-        
-       
+
         for field in top_level_fields:
             value = getattr(doc, field, None)
-
             if value is None:
                 continue
 
             if hasattr(value, "fetch"):
-                fetched = await value.fetch()
+                with system_query():
+                    fetched = await value.fetch()
                 setattr(doc, field, fetched)
 
             elif isinstance(value, list):
                 fetched_items = []
                 for item in value:
                     if hasattr(item, "fetch"):
-                        fetched_items.append(await item.fetch())
+                        with system_query():
+                            fetched_items.append(await item.fetch())
                     else:
                         fetched_items.append(item)
                 setattr(doc, field, fetched_items)
-        
-       
+
         for parent_field, child_fields in nested_fields.items():
             parent_value = getattr(doc, parent_field, None)
-            
             if parent_value is None:
                 continue
-            
-           
+
             for child_field in child_fields:
                 if isinstance(parent_value, list):
-                    
                     for item in parent_value:
                         child_value = getattr(item, child_field, None)
                         if child_value is None:
                             continue
-                        
+
                         if hasattr(child_value, "fetch"):
-                            fetched = await child_value.fetch()
+                            with system_query():
+                                fetched = await child_value.fetch()
                             setattr(item, child_field, fetched)
+
                         elif isinstance(child_value, list):
                             fetched_items = []
                             for child_item in child_value:
                                 if hasattr(child_item, "fetch"):
-                                    fetched_items.append(await child_item.fetch())
+                                    with system_query():
+                                        fetched_items.append(await child_item.fetch())
                                 else:
                                     fetched_items.append(child_item)
                             setattr(item, child_field, fetched_items)
                 else:
-                    # If parent is a single object
                     child_value = getattr(parent_value, child_field, None)
                     if child_value is None:
                         continue
-                    
+
                     if hasattr(child_value, "fetch"):
-                        fetched = await child_value.fetch()
+                        with system_query():
+                            fetched = await child_value.fetch()
                         setattr(parent_value, child_field, fetched)
+
                     elif isinstance(child_value, list):
                         fetched_items = []
                         for child_item in child_value:
                             if hasattr(child_item, "fetch"):
-                                fetched_items.append(await child_item.fetch())
+                                with system_query():
+                                    fetched_items.append(await child_item.fetch())
                             else:
                                 fetched_items.append(child_item)
                         setattr(parent_value, child_field, fetched_items)
@@ -336,6 +334,7 @@ class BaseRepository:
        
 
         query = self.model.find(filters).skip(skip).limit(limit)
+    
 
         if sort:
             query.sort(sort)
@@ -369,6 +368,7 @@ class BaseRepository:
 
 
         count = await self.model.find(filters).count()
+
         total_pages = math.ceil(count / limit)
 
         return {

@@ -9,6 +9,7 @@ from app.core.crypto import Encryption
 from app.core.security import hash_value
 from app.db.models.user_model import UserModel
 from beanie import PydanticObjectId
+from app.db.models.base_model import BaseDocument
 
 encryption = Encryption()
 
@@ -38,7 +39,7 @@ class QuotationNote(BaseModel):
     createdBy: Optional[PydanticObjectId] = None
 
 
-class QuotationModel(Document):
+class QuotationModel(BaseDocument):
     quoteId: str
     title: str = Field(..., min_length=1, max_length=200)
     description: Optional[str] = Field(None, max_length=5000)

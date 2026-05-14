@@ -8,6 +8,7 @@ from app.core.security import hash_password, hash_value
 from app.core.crypto import encryptor
 import phonenumbers
 from pymongo import IndexModel
+from app.db.models.base_model import BaseDocument
 
 
 PhoneNumber = Annotated[
@@ -20,7 +21,7 @@ PhoneNumber = Annotated[
     )
 ]
 
-class LeadsModel(Document):
+class LeadsModel(BaseDocument):
     lead_id: str
     fullName: str = Field(..., min_length=1, max_length=49)
     email: str

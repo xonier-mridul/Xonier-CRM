@@ -4,7 +4,7 @@ from typing import Optional, Literal, List
 from pymongo import IndexModel
 from app.core.enums import FEATURE_STATUS
 from datetime import datetime, timezone
-from app.db.models.user_model import UserModel
+
 
 
 

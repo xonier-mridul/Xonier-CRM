@@ -2,7 +2,7 @@ from pydantic import BaseModel, EmailStr, StringConstraints, field_validator, mo
 from app.core.enums import USER_ROLES, USER_STATUS
 from typing_extensions import Annotated
 from pydantic import Field
-from typing import List
+from typing import List, Optional
 from app.utils.custom_exception import AppException
 import phonenumbers
 import re
@@ -18,7 +18,8 @@ class RegisterUserSchema(BaseModel):
     phone: str
     password: Password
     userRole: List[str]
-    company: str
+    
+    companyId: Optional[str] = None
 
     @field_validator("firstName", "lastName")
     @classmethod
@@ -63,7 +64,8 @@ class UpdateUserSchema(BaseModel):
     email: EmailStr
     phone: str
     userRole: List[str]
-    company: str
+    
+    companyId: Optional[str] = None
 
     @field_validator("firstName", "lastName")
     @classmethod

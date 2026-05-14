@@ -6,9 +6,9 @@ from app.core.enums import EVENT_TYPE
 from app.db.models.user_model import UserModel
 from app.db.models.deal_model import DealModel
 from pymongo import IndexModel
+from app.db.models.base_model import BaseDocument
 
-
-class CalenderEventModel(Document):
+class CalenderEventModel(BaseDocument):
     title: str
     description: Optional[str] = None
     eventType: EVENT_TYPE

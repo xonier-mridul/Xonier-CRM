@@ -11,3 +11,7 @@ controller = SubscriptionController()
 @router.get('/', status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.onlyForAdmin)])
 async def getAll(request: Request):
     return await controller.getAll(request)
+
+@router.get("/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.onlyForAdmin)])
+async def getById(request:Request, id:str):
+    return await controller.getById(request, id)

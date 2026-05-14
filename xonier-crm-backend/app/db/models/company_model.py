@@ -8,12 +8,13 @@ from datetime import datetime, timezone
 from app.utils.custom_exception import AppException
 from app.core.crypto import Encryption
 from app.core.security import hash_value
+from app.db.models.base_model import BaseDocument
 
 
 crypto = Encryption()
 
 
-class CompanyModel(Document):
+class CompanyModel(BaseDocument):
     companyId:str
     slug: str
     subDomain: Optional[str] = None

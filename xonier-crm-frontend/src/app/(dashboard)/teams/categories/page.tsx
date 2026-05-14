@@ -37,6 +37,7 @@ const page = (): JSX.Element => {
 
   const [err, setErr] = useState<string | string[]>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageLimit, setPageLimit] = useState<number>(10);
   const [teamCatData, setTeamCateData] = useState<TeamCategory[]>([]);
@@ -100,6 +101,7 @@ const page = (): JSX.Element => {
   }, [search]);
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    setLoading(true)
     try {
       const result = await TeamCategoryService.create(formData)
       if (result.status === 201) {
@@ -119,6 +121,8 @@ const page = (): JSX.Element => {
       } else {
         setErr(["Something went wrong"]);
       }
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -202,7 +206,7 @@ const page = (): JSX.Element => {
                 />
               </div>
               {err && <div className="flex items-center justify-end w-full"><p className="text-red-500">{err}</p></div>}
-              <FormButton isLoading={isLoading} disabled={formData.name === "" || formData.description === ""}>Upload</FormButton>
+              <FormButton isLoading={loading} disabled={formData.name === "" || formData.description === ""}>Upload</FormButton>
             </form>
           </div>
         </>

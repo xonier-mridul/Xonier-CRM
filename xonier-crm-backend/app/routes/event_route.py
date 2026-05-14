@@ -9,26 +9,31 @@ dependencies = Dependencies()
 controller = EventController()
 
 
-@router.post("/create", status_code=201, dependencies=[Depends(dependencies.authorized),Depends(dependencies.permissions(["event:create"]))])
+@router.post("/create", status_code=201, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context),Depends(dependencies.permissions(["event:create"]))])
 async def create(request:Request, payload: CreateCalendarEventSchema):
     return await controller.create(request, payload.model_dump())
 
 
-@router.post("/bulk-create", status_code=201, dependencies=[Depends(dependencies.authorized),Depends(dependencies.permissions(["event:create"]))])
+@router.post("/bulk-create", status_code=201, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.permissions(["event:create"]))])
 async def bulkCreate(request: Request, payload: CreateBulkCalenderEvent):
     return await controller.bulkCreate(request, payload.model_dump(mode="json"))
 
 
-@router.get("/all", status_code=200, dependencies=[Depends(dependencies.authorized),Depends(dependencies.permissions(["event:read"]))])
+@router.get("/all", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.permissions(["event:read"]))])
 async def getAll(request: Request):
     return await controller.get_all(request)
 
 
-@router.put("/update/{id}", status_code=200, dependencies=[Depends(dependencies.authorized),Depends(dependencies.permissions(["event:update"]))])
+@router.put("/update/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context),Depends(dependencies.permissions(["event:update"]))])
 async def update(id:str, request: Request, payload: CreateCalendarEventSchema):
     return await controller.update(id, request, payload.model_dump(exclude_unset=True))
 
 
-@router.delete("/delete/{id}", status_code=200, dependencies=[Depends(dependencies.authorized),Depends(dependencies.permissions(["event:read"]))])
+@router.delete("/delete/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.permissions(["event:read"]))])
 async def delete(request: Request, id:str):
     return await controller.delete(request=request, eventId=id)

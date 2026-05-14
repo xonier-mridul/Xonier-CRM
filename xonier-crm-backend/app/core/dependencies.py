@@ -2,17 +2,23 @@ from fastapi import Request, status, Response
 from typing import List
 from app.core.exception_handler import AppException
 from app.repositories.permissions_repository import PermissionRepository
+from app.repositories.company_repository import CompanyRepository
 from app.utils.manage_tokens import verify_access_token, verify_refresh_token
 from app.repositories.user_repository import UserRepository
 from app.core.enums import USER_STATUS
 from beanie import PydanticObjectId
 from app.core.constants import SUPER_ADMIN_CODE
+from app.core.tenant import current_company, is_admin_context
+from app.core.enums import COMPANY_STATUS
+from app.core.tenant import system_query
+
 
 
 class Dependencies:
     def __init__(self):
         self.permissionRepo = PermissionRepository()
         self.userRepo = UserRepository()
+        self.companyRepo = CompanyRepository()
 
     def permissions(self, permissions: List[str]):
         async def checking(request: Request):
@@ -53,7 +59,7 @@ class Dependencies:
     async def authorized(self,request: Request, response: Response):
         try:
            token = None
-
+  
            auth_header = request.headers.get("Authorization")
            if auth_header and auth_header.startswith("Bearer "):
                 token = auth_header.split(" ")[1]
@@ -67,8 +73,8 @@ class Dependencies:
            if not payload:
                
                raise AppException(401, "Invalid or expired Tokens")
-           
-           user = await self.userRepo.find_by_id(PydanticObjectId(payload["_id"]), populate=["userRole"])
+           with system_query():
+                user = await self.userRepo.find_by_id(PydanticObjectId(payload["_id"]), populate=["userRole"])
            
            if not user:
                raise AppException(401, "User not found")
@@ -80,7 +86,7 @@ class Dependencies:
            
            if user["status"] == USER_STATUS.SUSPENDED.value:
                raise AppException(400, "Your account is suspended, please contact with the admin")
-
+      
            return True
 
         except Exception as e:
@@ -139,5 +145,53 @@ class Dependencies:
         except Exception as e:
             raise e
 
+    async def company_context(self, request: Request):
+        
+        user = request.state.user
 
-    # async def managerLead
+     
+
+        
+        if user["userRole"][0]["code"] == SUPER_ADMIN_CODE:
+            print("admin")
+            is_admin_context.set(True)
+            current_company.set(None)
+            return
+
+        company = request.state.company
+        current_company.set(str(company.id))
+        is_admin_context.set(False)
+
+
+    async def company_active(self, request: Request):
+        
+        user = request.state.user
+
+        
+        if user["userRole"][0]["code"] == SUPER_ADMIN_CODE:
+            return
+
+        # await user.fetch_link("companyId")
+        with system_query():
+            company = await self.companyRepo.find_by_id(PydanticObjectId(user["companyId"]))
+
+        
+
+
+        if not company:
+            raise AppException(403, "No company associated with this account")
+
+        if company.status == COMPANY_STATUS.DELETED:
+            raise AppException(410, "This company no longer exists")
+
+        if company.status == COMPANY_STATUS.SUSPENDED:
+            raise AppException(403, "Your company has been suspended. Contact support.")
+
+        if company.status == COMPANY_STATUS.INACTIVE:
+            raise AppException(403, "Your company account is inactive.")
+
+        if company.status == COMPANY_STATUS.PENDING_VERIFICATION:
+            raise AppException(403, "Your company is pending verification.")
+
+        request.state.company = company
+

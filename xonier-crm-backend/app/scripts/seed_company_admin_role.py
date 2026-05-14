@@ -19,6 +19,8 @@ async def seed_company_admin_role():
         admin_role = UserRoleModel(
             name="Company Admin",
             code="COMPANY_ADMIN",
+            power=80,
+            canManageBelow=True,
             permissions=[],
             isSystemRole=True
         )

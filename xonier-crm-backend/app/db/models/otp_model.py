@@ -5,10 +5,10 @@ from typing import Dict, Annotated
 from pydantic import Field
 from app.core.enums import OTP_TYPE
 from app.core.enums import OTP_EXPIRY
+from app.db.models.base_model import BaseDocument
 
 
-
-class OtpModel(Document):
+class OtpModel(BaseDocument):
     encrypt_mail:str = Field(...)
     email: str = Field(...)
     otp: str = Field(...)

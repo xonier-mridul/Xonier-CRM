@@ -317,7 +317,7 @@ const SideBar = () => {
                     className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
                   >
                     
-                    {hasPermission(PERMISSIONS.readUser) && <li>
+                    { <li>
                       <Link
                         href="/plans"
                         className={`${isActive("/plans")
@@ -328,8 +328,7 @@ const SideBar = () => {
                         Plans
                       </Link>
                     </li>}
-                    {
-                      hasPermission(PERMISSIONS.deletedUserView) && <li>
+                    { <li>
                         <Link
                           href="/subscriptions"
                           className={`${isActive("/subscriptions")
@@ -375,7 +374,7 @@ const SideBar = () => {
                     className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
                   >
                     
-                    {hasPermission(PERMISSIONS.readUser) && <li>
+                    { <li>
                       <Link
                         href="/companies"
                         className={`${isActive("/companies")
@@ -386,7 +385,7 @@ const SideBar = () => {
                         Companies
                       </Link>
                     </li>}
-                    {hasPermission(PERMISSIONS.readUser) && <li>
+                    { <li>
                       <Link
                         href="/companies/create"
                         className={`${isActive("/companies/create")
@@ -397,19 +396,7 @@ const SideBar = () => {
                         Create Companies
                       </Link>
                     </li>}
-                    {
-                      hasPermission(PERMISSIONS.deletedUserView) && <li>
-                        <Link
-                          href="/subscription"
-                          className={`${isActive("/subscription")
-                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
-                            : "border-l-2 border-transparent"
-                            } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
-                        >
-                          Subscriptions
-                          </Link>
-                      </li>
-                    }
+                    
                   </motion.ul>
                 )}
               </AnimatePresence>

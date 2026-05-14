@@ -8,12 +8,13 @@ from datetime import datetime, timezone
 from pymongo import IndexModel
 from app.core.crypto import Encryption
 from app.core.security import hash_value
+from app.db.models.base_model import BaseDocument
 
 encryption = Encryption()
 
 
 
-class QuotationHistoryModel(Document):
+class QuotationHistoryModel(BaseDocument):
     quotation: Link[QuotationModel]
 
     eventType: QuotationEventType

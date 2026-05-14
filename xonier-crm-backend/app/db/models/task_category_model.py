@@ -5,10 +5,10 @@ from typing import Optional
 from datetime import datetime, timezone
 from app.db.models.user_model import UserModel
 from app.core.enums import CATEGORY_VISIBILITY
-
+from app.db.models.base_model import BaseDocument
  
  
-class TaskCategoryModel(Document):
+class TaskCategoryModel(BaseDocument):
     category_id: str = Indexed(unique=True)
     name: str
     slug: str = Indexed(unique=True)

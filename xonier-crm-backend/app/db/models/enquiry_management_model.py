@@ -9,6 +9,7 @@ from app.core.crypto import encryptor
 from pydantic import BaseModel, field_validator, model_validator, HttpUrl
 import re
 from app.core.constants import ZIPCODE_PATTERNS
+from app.db.models.base_model import BaseDocument
 
 PhoneNumber = Annotated[
     str,
@@ -76,7 +77,7 @@ class Location(BaseModel):
         return self
 
 
-class EnquiryModel(Document):
+class EnquiryModel(BaseDocument):
     enquiry_id: str = Indexed(unique=True)
     fullName: str
     email: EmailStr

@@ -3,6 +3,7 @@ from pydantic import Field, StringConstraints
 from typing import Optional, Annotated
 from datetime import datetime, timezone
 from app.db.models.user_model import UserModel
+from app.db.models.base_model import BaseDocument
 
 
 SLUG = Annotated[
@@ -15,7 +16,7 @@ SLUG = Annotated[
 ]
 
 
-class TeamCategoryModel(Document):
+class TeamCategoryModel(BaseDocument):
     name: str = Field(..., min_length=2, max_length=100)
     slug: SLUG = Indexed(unique=True)
     description: Optional[str] = None
