@@ -15,6 +15,13 @@ PERMISSIONS = [
         "description": "permission for See the user data",
     },
     {
+        "code": "user:readDeleted",
+        "module": "user",
+        "action": "read",
+        "title": "read deleted user",
+        "description": "permission for See the deleted user data",
+    },
+    {
         "code": "user:update",
         "module": "user",
         "action": "update",

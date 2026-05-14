@@ -1030,3 +1030,12 @@ class REGISTRATION_SOURCE(str, Enum):
 class BILLING_CYCLE(str, Enum):
     MONTHLY = "monthly"
     YEARLY = "yearly"
+
+
+class FEATURE(str, Enum):
+    TASK = "task:feature",
+    CRM = "crm:feature",
+    TELECOM = "telecom:feature",
+    CHAT = "chat:feature",
+    CALENDER = "calender:feature",
+    NOTE = "notes:feature"

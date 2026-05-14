@@ -10,6 +10,7 @@ from app.schemas.task_report_schema import (
 from app.core.dependencies import Dependencies
 from app.controllers.task_report_controller import TaskReportController
 from typing import Optional
+from app.core.enums import FEATURE
 
 router = APIRouter()
 dependencies = Dependencies()
@@ -21,7 +22,7 @@ controller = TaskReportController()
     status_code=201,
     dependencies=[
         Depends(dependencies.authorized),Depends(dependencies.company_active),
-Depends(dependencies.company_context),
+Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.TASK)),
         Depends(dependencies.permissions(["taskReport:create"]))
     ]
 )
@@ -34,7 +35,7 @@ async def submit_morning_agenda(request: Request, payload: SubmitMorningAgendaSc
     status_code=200,
     dependencies=[
         Depends(dependencies.authorized),Depends(dependencies.company_active),
-Depends(dependencies.company_context),
+Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.TASK)),
         Depends(dependencies.permissions(["taskReport:update"]))
     ]
 )
@@ -46,7 +47,7 @@ async def update_morning_agenda(request: Request, report_id: str, payload: Updat
     status_code=200,
     dependencies=[
         Depends(dependencies.authorized),Depends(dependencies.company_active),
-Depends(dependencies.company_context),
+Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.TASK)),
         Depends(dependencies.permissions(["taskReport:create"]))
     ]
 )
@@ -59,7 +60,7 @@ async def submit_evening_report(request: Request, report_id: str, payload: Submi
     status_code=200,
     dependencies=[
         Depends(dependencies.authorized),Depends(dependencies.company_active),
-Depends(dependencies.company_context),
+Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.TASK)),
         Depends(dependencies.permissions(["taskReport:update"]))
     ]
 )
@@ -72,7 +73,7 @@ async def update_evening_report(request: Request, report_id: str, payload: Updat
     status_code=200,
     dependencies=[
         Depends(dependencies.authorized), Depends(dependencies.company_active),
-Depends(dependencies.company_context),
+Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.TASK)),
         Depends(dependencies.permissions(["taskReport:review"]))
     ]
 )
@@ -85,7 +86,7 @@ async def review_task_report(request: Request, report_id: str, payload: ManagerR
     status_code=200,
     dependencies=[
         Depends(dependencies.authorized), Depends(dependencies.company_active),
-Depends(dependencies.company_context),
+Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.TASK)),
         Depends(dependencies.permissions(["taskReport:read"]))
     ]
 )
@@ -115,7 +116,7 @@ async def get_all_reports(
     status_code=200,
     dependencies=[
         Depends(dependencies.authorized), Depends(dependencies.company_active),
-Depends(dependencies.company_context),
+Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.TASK)),
         Depends(dependencies.permissions(["taskReport:read"]))
     ]
 )
@@ -141,7 +142,7 @@ async def get_my_reports(
     status_code=200,
     dependencies=[
         Depends(dependencies.authorized), Depends(dependencies.company_active),
-Depends(dependencies.company_context),
+Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.TASK)),
         Depends(dependencies.permissions(["taskReport:read"]))
     ]
 )
@@ -156,7 +157,7 @@ async def get_report_by_id(request: Request, report_id: str):
     status_code=200,
     dependencies=[
         Depends(dependencies.authorized), Depends(dependencies.company_active),
-Depends(dependencies.company_context),
+Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.TASK)),
         Depends(dependencies.permissions(["taskReport:read"]))
     ]
 )
@@ -185,7 +186,7 @@ async def get_reports_by_user_ids(
     status_code=200,
     dependencies=[
         Depends(dependencies.authorized), Depends(dependencies.company_active),
-Depends(dependencies.company_context),
+Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.TASK)),
         Depends(dependencies.permissions(["taskReport:delete"]))
     ]
 )
