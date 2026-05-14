@@ -30,7 +30,7 @@ const page = (): JSX.Element => {
     password: "",
     confirmPassword: "",
     userRole: [],
-    company: "Xonier Technologies",
+    
   });
 
   const user = async (): Promise<void> => {
