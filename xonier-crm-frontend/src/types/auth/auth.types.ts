@@ -53,7 +53,8 @@ export interface RegisterPayload {
   password: string;
   confirmPassword: string;
   userRole: string[];
-  company: string;
+  companyId?: string
+
 }
 
 export interface UserUpdatePayload {
@@ -62,7 +63,7 @@ export interface UserUpdatePayload {
   email: string;
   phone: string;
   userRole: Array<string>;
-  company: string
+
 }
 
 
@@ -130,7 +131,7 @@ export interface User {
   userRole: UserRole[];
   assignedPhoneNumber: TelephoneNumber
 
-  company: string;
+  companyId: string;
   isActive: boolean;
 
   lastLogin?: Date | null;

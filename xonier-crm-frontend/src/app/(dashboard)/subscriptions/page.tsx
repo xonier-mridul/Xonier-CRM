@@ -55,7 +55,7 @@ const page = () => {
 
   return (
      <div className="ml-72 mt-14 p-6 flex flex-col gap-6">
-       <SubscriptionTable currentPage={currentPage}  totalPages={totalPages} onPageChange={onPageChange}  isLoading={isLoading} subScriptionData={subscriptionData}/>
+       <SubscriptionTable currentPage={currentPage} pageLimit={pageLimit}  totalPages={totalPages} onPageChange={onPageChange}  isLoading={isLoading} subScriptionData={subscriptionData}/>
     </div>
   )
 }

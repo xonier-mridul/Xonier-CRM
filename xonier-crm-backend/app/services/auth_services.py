@@ -506,18 +506,18 @@ class AuthServices:
             expire_time = datetime.now(timezone.utc) + timedelta(
                 minutes=float(OTP_EXPIRY.TEN_MINUTS.value)
             )
-
-            create_otp = await self.otp_repo.create(
-                {
-                    "encrypt_mail": encrypt_email,
-                    "email": hashed_mail,
-                    "otp": hashed_otp,
-                    "encrypt_opt": encrypt_opt,
-                    "otp_type": OTP_TYPE.LOGIN,
-                    "expires_at": expire_time,
-                },
-                session=session,
-            )
+            with system_query(): 
+                create_otp = await self.otp_repo.create(
+                    {
+                        "encrypt_mail": encrypt_email,
+                        "email": hashed_mail,
+                        "otp": hashed_otp,
+                        "encrypt_opt": encrypt_opt,
+                        "otp_type": OTP_TYPE.LOGIN,
+                        "expires_at": expire_time,
+                    },
+                    session=session,
+                )
 
             if not create_otp:
                 raise AppException(400, "OTP not stored in database")
@@ -544,7 +544,7 @@ class AuthServices:
         try:
             session.start_transaction()
             hashed_mail = hash_value(data["email"])
-
+         
             isUserExist = await self.repo.find_user_by_hashMail(
                 hashMail=hashed_mail, projections=None, session=session
             )
@@ -584,16 +584,16 @@ class AuthServices:
             expire_time = datetime.now(timezone.utc) + timedelta(
                 minutes=float(OTP_EXPIRY.TEN_MINUTS.value)
             )
-
-            create_otp = await self.otp_repo.create(
-                {
-                    "email": hashed_mail,
-                    "otp": hashed_otp,
-                    "otp_type": OTP_TYPE.LOGIN,
-                    "expires_at": expire_time,
-                },
-                session=session,
-            )
+            with system_query():
+                create_otp = await self.otp_repo.create(
+                    {
+                        "email": hashed_mail,
+                        "otp": hashed_otp,
+                        "otp_type": OTP_TYPE.LOGIN,
+                        "expires_at": expire_time,
+                    },
+                    session=session,
+                )
 
             if not create_otp:
                 raise AppException(400, "OTP not stored in database")
@@ -657,15 +657,15 @@ class AuthServices:
                 raise AppException(400, "Invalid Otp, Please try again")
 
             latest_otp.is_used = True
-        
-            await latest_otp.save(session=session)
+            with system_query():
+                await latest_otp.save(session=session)
 
             access_token = user.generate_access_token()
             refresh_token = user.generate_refresh_token()
 
             hash_refresh_token = hash_value(refresh_token)
  
-
+            print("user: ", user)
             with system_query():
                 await user.set(
                     {
@@ -681,9 +681,10 @@ class AuthServices:
             with system_query():
                 usr =  await self.repo.find_by_id_nested(user.id, ["userRole", "userRole.permissions"])
 
-            activity = activity_payload(userId=PydanticObjectId(user.id), entityType=ACTIVITY_ENTITY_TYPE.AUTH, entityId=PydanticObjectId(user.id), action=ACTIVITY_ACTION.LOGIN, title="Login user", metadata={"userName": f"{user.firstName} {user.lastName}", "company":user.company, "email": user.email}, ipAddress=ip, userAgent=agent)
-
-            is_activity = await self.activityRepo.create(data=activity, session=session)
+            activity = activity_payload(userId=PydanticObjectId(user.id), entityType=ACTIVITY_ENTITY_TYPE.AUTH, entityId=PydanticObjectId(user.id), action=ACTIVITY_ACTION.LOGIN, title="Login user", metadata={"userName": f"{user.firstName} {user.lastName}","email": user.email}, ipAddress=ip, userAgent=agent)
+            
+            with system_query():
+                is_activity = await self.activityRepo.create(data=activity, session=session)
 
             if not is_activity:
                 raise AppException(400, "Activity creation failed")
@@ -694,13 +695,13 @@ class AuthServices:
                 "refresh_token": refresh_token,
             }
 
-        except AppException:
+        except AppException as e:
             await session.abort_transaction()
-            raise
+            raise e
 
         except Exception as e:
              await session.abort_transaction()
-             raise AppException(status_code=500, message="internal server error")
+             raise AppException(status_code=500, message=f"internal server error: {e}")
 
         finally:
             await session.end_session()

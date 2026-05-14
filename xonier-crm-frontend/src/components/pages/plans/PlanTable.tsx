@@ -94,7 +94,8 @@ const PlanTable: React.FC<ExtendedPlanTableProps> = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-gray-700">
-            {!isLoading ? (
+            {!isLoading ? 
+            (
               planData && planData.length > 0 ? (
                 planData.map((plan) => {
                   const sym = currencySymbol[plan.currency] ?? "";
