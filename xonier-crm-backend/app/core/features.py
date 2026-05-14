@@ -38,4 +38,23 @@ FEATURE_DATA = [
         "status": FEATURE_STATUS.ACTIVE.value,
         "system": True
     },
+    {
+        "name": "calender feature",
+        "sortDescription": "Provide feature for calender",
+        "description": "Provide feature for calender",
+        "feature_key": "calender:feature",
+        
+        "status": FEATURE_STATUS.ACTIVE.value,
+        "system": True
+    },
+    {
+        "name": "notes feature",
+        "sortDescription": "Provide feature for notes",
+        "description": "Provide feature for notes",
+        "feature_key": "notes:feature",
+        
+        "status": FEATURE_STATUS.ACTIVE.value,
+        "system": True
+    },
+
 ]

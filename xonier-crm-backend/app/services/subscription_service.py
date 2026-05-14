@@ -4,6 +4,7 @@ from app.repositories.subscription_repository import SubscriptionRepository
 from fastapi.encoders import jsonable_encoder
 from datetime import datetime, time
 from bson import ObjectId
+from app.core.tenant import system_query
 
 class SubscriptionService:
     def __init__(self):
@@ -115,13 +116,13 @@ class SubscriptionService:
                     filters=filters,
                     field_name=field
                 )
-            
-            result = await self.repo.get_all(
-                page=page,
-                limit=limit,
-                filters=query,
-                populate=["planId", "companyId"]
-            )
+            with system_query(): 
+                result = await self.repo.get_all(
+                    page=page,
+                    limit=limit,
+                    filters=query,
+                    populate=["planId", "companyId"]
+                )
 
             if not result:
                 raise AppException(
@@ -155,14 +156,14 @@ class SubscriptionService:
                     "Invalid subscription id"
                 )
 
-            
-            subscription = await self.repo.get_by_id(
-                id=id,
-                filters={
-                    "deletedAt": None
-                },
-                populate=["planId", "companyId"]
-            )
+            with system_query():
+                subscription = await self.repo.find_by_id(
+                    id=id,
+                    # filters={
+                    #     "deletedAt": None
+                    # },
+                    populate=["planId", "companyId"]
+                )
 
             
             if not subscription:

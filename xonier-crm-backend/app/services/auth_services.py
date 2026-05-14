@@ -32,6 +32,7 @@ from app.utils.get_team_members import GetTeamMembers
 from app.utils.activity_payload import activity_payload
 from app.core.tenant import system_query
 from app.utils.validate_admin import validate_admin
+from app.repositories.company_repository import CompanyRepository
 
 
 
@@ -46,6 +47,7 @@ class AuthServices:
         self.get_team_members = GetTeamMembers()
         self.activityRepo = ActivityRepository()
         self.crypto = encryptor
+        self.companyRepo = CompanyRepository()
 
 
 
@@ -291,30 +293,27 @@ class AuthServices:
     async def get_user_by_id(self,id: PydanticObjectId, user: Dict[str, Any]):
         try:
           
-          is_admin = validate_admin(user["userRole"])
-          is_manager = False
-          is_creator = False
+          if not ObjectId.is_valid(id):
+              raise AppException(400, "Invalid user object id")
+              
 
-          exist_user = await self.repo.find_by_id(id, populate=["userRole", "createdBy"])
+          exist_user = await self.repo.find_by_id(id=id, populate=["userRole", "createdBy"])
+
+
 
           if not exist_user:
               raise AppException(404, "User not found for this Id")
-
-        #   if not is_admin:
-        #       members = await self.get_team_members.get_team_members(user["_id"])
-
-
-
-        #       if exist_user.id in members:
-        #           is_manager = True
-
           
-        #   if str(exist_user.id) == str(user["_id"]):
-        #       is_creator = True
+        
 
                  
           
           user = jsonable_encoder(exist_user, exclude={"password", "refreshToken"})
+
+          if user.get("companyId"):
+              company = await self.companyRepo.find_by_id_nested(PydanticObjectId(user["companyId"]), ["subscription.planId.features.feature"])
+
+              user["companyId"] = company
 
           user["email"] = encryptor.decrypt_data(user["email"])
           user["phone"] = encryptor.decrypt_data(user["phone"])
@@ -702,30 +701,46 @@ class AuthServices:
         finally:
             await session.end_session()
 
-    async def getMe(self, userId: PydanticObjectId)->bool:
+    async def getMe(self, userId: PydanticObjectId):
         try:
+            if not ObjectId.is_valid(userId):
+                raise AppException(400, "Invalid user object Id")
 
-        
+            with system_query():
+                user = await self.repo.find_by_id_nested(
+                    userId,
+                    ["userRole", "userRole.permissions"]
+                )
 
-         user = await self.repo.find_by_id_nested(userId, ["userRole", "userRole.permissions"])
+            if not user:
+                raise AppException(400, "User not found")
 
- 
-         
-         if not user:
-             raise AppException(400, "User not found")
-         
-         
-         
-         result = jsonable_encoder(user, exclude={"password", "refreshToken"})
+            result = jsonable_encoder(user, exclude={"password", "refreshToken"})
 
-         
-         
-         return result
-        except AppException as e:
-            raise e
+            result["email"] = encryptor.decrypt_data(result["email"])
+            result["phone"] = encryptor.decrypt_data(result["phone"])
 
+            
+            if result.get("companyId"):
+                with system_query():
+                    comp = await self.companyRepo.find_by_id_nested(
+                        PydanticObjectId(result["companyId"]),
+                        [
+                            "subscription.planId.features.feature",
+                        ]
+                    )
+
+                if comp:
+                    comp_data = comp.model_dump(mode="json")
+                    
+                    result["companyId"] = comp_data
+
+            return result
+
+        except AppException:
+            raise
         except Exception as e:
-            raise AppException(status_code=500, message=f"internal server error: {e}")
+            raise AppException(500, f"Internal server error: {e}")
         
 
     async def update(self, userId: PydanticObjectId, updatedBy: PydanticObjectId, payload: Dict[str, Any])->bool:

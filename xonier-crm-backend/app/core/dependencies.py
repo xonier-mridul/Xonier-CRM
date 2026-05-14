@@ -148,9 +148,6 @@ class Dependencies:
     async def company_context(self, request: Request):
         
         user = request.state.user
-
-     
-
         
         if user["userRole"][0]["code"] == SUPER_ADMIN_CODE:
             print("admin")
@@ -194,4 +191,112 @@ class Dependencies:
             raise AppException(403, "Your company is pending verification.")
 
         request.state.company = company
+
+    def feature_access(self, feature_key: str):
+       
+        async def checking(request: Request):
+            user = request.state.user
+
+            
+            if any(
+                role.get("code") == SUPER_ADMIN_CODE
+                for role in user.get("userRole", [])
+            ):
+                return
+
+            company = getattr(request.state, "company", None)
+            if not company:
+                raise AppException(403, "Company context missing")
+
+         
+            with system_query():
+                full_company = await self.companyRepo.find_by_id_nested(
+                    company.id,
+                    populate=[
+                        "subscription",
+                        "subscription.planId",
+                        "subscription.planId.features",
+                        "subscription.planId.features.feature",
+                    ]
+                )
+
+            if not full_company:
+                raise AppException(403, "Company not found")
+
+            subscription = getattr(full_company, "subscription", None)
+            if not subscription:
+                raise AppException(
+                    402,
+                    "No active subscription found. Please subscribe to a plan."
+                )
+
+            plan = getattr(subscription, "planId", None)
+            if not plan:
+                raise AppException(402, "No plan associated with your subscription.")
+
+            features = getattr(plan, "features", []) or []
+
+       
+            matched = None
+            for plan_feature in features:
+                feature_doc = getattr(plan_feature, "feature", None)
+                if feature_doc is None:
+                    continue
+
+               
+                key = (
+                    getattr(feature_doc, "feature_key", None)
+                    if hasattr(feature_doc, "feature_key")
+                    else None
+                )
+
+                if key == feature_key:
+                    matched = plan_feature
+                    break
+
+            if not matched:
+                raise AppException(
+                    403,
+                    f"Your current plan does not include the '{feature_key}' feature. Please upgrade."
+                )
+
+            if not matched.is_enabled:
+                raise AppException(
+                    403,
+                    f"The '{feature_key}' feature is disabled on your plan. Contact support."
+                )
+
+            
+            request.state.feature = matched
+
+        return checking
+
+    def feature_access_with_limit(self, feature_key: str, get_current_count):
+       
+        async def checking(request: Request):
+            # First run standard feature check
+            await self.feature_access(feature_key)(request)
+
+            feature = getattr(request.state, "feature", None)
+            if not feature:
+                return
+
+            # Unlimited — no count check needed
+            if feature.is_unlimited:
+                return
+
+            effective_limit = feature.limit_override or feature.limit
+            if effective_limit is None:
+                return
+
+            current_count = await get_current_count(request)
+
+            if current_count >= effective_limit:
+                raise AppException(
+                    403,
+                    f"You have reached the limit of {effective_limit} for '{feature_key}'. "
+                    f"Please upgrade your plan."
+                )
+
+        return checking
 

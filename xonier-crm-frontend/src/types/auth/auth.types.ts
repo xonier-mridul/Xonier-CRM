@@ -133,7 +133,7 @@ export interface User {
   userRole: UserRole[];
   assignedPhoneNumber: TelephoneNumber
 
-  companyId: string;
+  companyId: string | Company;
   isActive: boolean;
 
   lastLogin?: Date | null;

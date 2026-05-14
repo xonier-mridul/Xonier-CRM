@@ -28,10 +28,11 @@ import { GoTasklist } from "react-icons/go";
 import { IoKeyOutline } from "react-icons/io5";
 import { MdOutlineLeaderboard } from "react-icons/md";
 import { usePermissions } from "@/src/hooks/usePermissions";
-import { PERMISSIONS } from "@/src/constants/enum";
+import { FEATURES, PERMISSIONS } from "@/src/constants/enum";
 import { FaRegUser ,FaTasks } from "react-icons/fa";
 import { CiMail } from "react-icons/ci";
 import { IoMailOutline } from "react-icons/io5";
+import { useFeatures } from "@/src/hooks/useFeatures";
 
 
 const SideBar = () => {
@@ -42,6 +43,8 @@ const SideBar = () => {
   const dispatch = useDispatch();
 
   const { hasPermission } = usePermissions();
+
+  const { hasFeature} = useFeatures()
 
   const auth = useSelector((state: RootState) => state.auth);
 
@@ -204,7 +207,7 @@ const SideBar = () => {
                 </Link>
               </li>
             )}
-            {hasPermission(PERMISSIONS.readEvent) && <li>
+            {(hasPermission(PERMISSIONS.readEvent) && hasFeature(FEATURES.CALENDER)) && <li>
               <Link
                 href="/calender"
                 className={`${isActive("/calender")
@@ -217,7 +220,7 @@ const SideBar = () => {
               </Link>
             </li>}
 
-            {hasPermission(PERMISSIONS.readProspects) && <li>
+            {( hasPermission(PERMISSIONS.readProspects) && hasFeature(FEATURES.CRM)) && <li>
               <button
                 onClick={() => toggleMenu("prospects")}
                 className={`${isMenuActive("prospects")
@@ -245,7 +248,7 @@ const SideBar = () => {
                     transition={{ duration: 0.25 }}
                     className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
                   >
-                    {hasPermission(PERMISSIONS.readProspects) && <li>
+                    {(hasPermission(PERMISSIONS.readProspects)&& (hasFeature(FEATURES.CRM)) ) && <li>
                       <Link
                         href="/prospects/people"
                         className={`${isActive("/prospects/people")
@@ -258,7 +261,7 @@ const SideBar = () => {
                     </li>
                     }
                     {
-                      hasPermission(PERMISSIONS.readProspects) && <li>
+                      (hasPermission(PERMISSIONS.readProspects) && (hasFeature(FEATURES.CRM)) )&& <li>
                         <Link
                           href="/prospects/company"
                           className={`${isActive("/prospects/company")
@@ -275,7 +278,7 @@ const SideBar = () => {
                 )}
               </AnimatePresence>
             </li>}
-            {hasPermission(PERMISSIONS.readNote) && <li>
+            { (hasPermission(PERMISSIONS.readNote) && (hasFeature(FEATURES.NOTE))) && <li>
               <Link
                 href="/notes"
                 className={`${isActive("/notes")
@@ -404,7 +407,7 @@ const SideBar = () => {
 
           
             {
-              ((hasPermission(PERMISSIONS.readTask)) || hasPermission(PERMISSIONS.taskCategoryRead) || hasPermission(PERMISSIONS.taskStatusRead)) && <li>
+              (((hasPermission(PERMISSIONS.readTask)) || hasPermission(PERMISSIONS.taskCategoryRead) || hasPermission(PERMISSIONS.taskStatusRead)) && (hasFeature(FEATURES.TASK))) && <li>
                  <button
                 onClick={() => toggleMenu("task")}
                 className={`${isMenuActive("task")
@@ -431,7 +434,7 @@ const SideBar = () => {
                     transition={{ duration: 0.25 }}
                     className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
                   >
-                    {hasPermission(PERMISSIONS.readTask) && <li>
+                    {( hasPermission(PERMISSIONS.readTask) &&  (hasFeature(FEATURES.TASK)) ) && <li>
                       <Link
                         href="/task"
                         className={`${isActive("/task")
@@ -443,7 +446,7 @@ const SideBar = () => {
                       </Link>
                     </li>}
                     
-                    {hasPermission(PERMISSIONS.taskCategoryRead) && <li>
+                    {(hasPermission(PERMISSIONS.taskCategoryRead)&&  (hasFeature(FEATURES.TASK))) && <li>
                       <Link
                         href="/category"
                         className={`${isActive("/category")
@@ -454,7 +457,7 @@ const SideBar = () => {
                         Task Category
                       </Link>
                     </li>}
-                    {hasPermission(PERMISSIONS.taskStatusRead) && <li>
+                    {(hasPermission(PERMISSIONS.taskStatusRead) && (hasFeature(FEATURES.TASK))) && <li>
                       <Link
                         href="/status"
                         className={`${isActive("/status")
@@ -466,7 +469,7 @@ const SideBar = () => {
                       </Link>
                     </li>}
                     {
-                      hasPermission(PERMISSIONS.readTaskReport) && <li>
+                      (hasPermission(PERMISSIONS.readTaskReport)&&  (hasFeature(FEATURES.TASK))) && <li>
                         <Link
                           href="/reports"
                           className={`${isActive("/reports")
@@ -479,7 +482,7 @@ const SideBar = () => {
                       </li>
                     }
                     {
-                      hasPermission(PERMISSIONS.createTaskReport) && <li>
+                      (hasPermission(PERMISSIONS.createTaskReport)&&  (hasFeature(FEATURES.TASK))) && <li>
                         <Link
                           href={`/report/create/${USER_ID||"new"}`}
                           className={`${isActive(`/report/create/${USER_ID||"new"}`)
@@ -621,7 +624,7 @@ const SideBar = () => {
               </AnimatePresence>
             </li>}
 
-            {( hasPermission(PERMISSIONS.readEnquiry) || hasPermission(PERMISSIONS.readLead) || hasPermission(PERMISSIONS.readDeal) || hasPermission(PERMISSIONS.readQuote) || hasPermission(PERMISSIONS.readInvoice)) && <li>
+            {(( hasPermission(PERMISSIONS.readEnquiry) || hasPermission(PERMISSIONS.readLead) || hasPermission(PERMISSIONS.readDeal) || hasPermission(PERMISSIONS.readQuote) || hasPermission(PERMISSIONS.readInvoice)) &&  (hasFeature(FEATURES.CRM)) ) && <li>
               <button
                 onClick={() => toggleMenu("sales")}
                 className={`${isMenuActive("sales")
@@ -649,7 +652,7 @@ const SideBar = () => {
                     transition={{ duration: 0.25 }}
                     className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
                   >
-                  {hasPermission(PERMISSIONS.readEnquiry) && <li>
+                  {(hasPermission(PERMISSIONS.readEnquiry)&&  (hasFeature(FEATURES.CRM))) && <li>
                       <Link
                         href="/enquiry"
                         className={`${isActive("/enquiry")
@@ -660,7 +663,7 @@ const SideBar = () => {
                         Enquiry
                       </Link>
                     </li>}
-                    {hasPermission(PERMISSIONS.readLead) && <li>
+                    {(hasPermission(PERMISSIONS.readLead) &&  (hasFeature(FEATURES.CRM))) && <li>
                       <Link
                         href="/leads"
                         className={`${isActive("/leads")
@@ -671,7 +674,7 @@ const SideBar = () => {
                         Leads
                       </Link>
                     </li>}
-                    {hasPermission(PERMISSIONS.readDeal) && <li>
+                    {(hasPermission(PERMISSIONS.readDeal) &&  (hasFeature(FEATURES.CRM))) && <li>
                       <Link
                         href="/deals"
                         className={`${isActive("/deals")
@@ -683,7 +686,7 @@ const SideBar = () => {
                       </Link>
                     </li>}
 
-                    {hasPermission(PERMISSIONS.readQuote) && <li>
+                    {(hasPermission(PERMISSIONS.readQuote) &&  (hasFeature(FEATURES.CRM))) && <li>
                       <Link
                         href="/quotations"
                         className={`${isActive("/quotations")
@@ -694,7 +697,7 @@ const SideBar = () => {
                         Quotations
                       </Link>
                     </li>}
-                    {hasPermission(PERMISSIONS.readInvoice) && <li>
+                    {(hasPermission(PERMISSIONS.readInvoice) &&  (hasFeature(FEATURES.CRM))) && <li>
                       <Link
                         href="/invoice"
                         className={`${isActive("/invoice")
@@ -709,7 +712,7 @@ const SideBar = () => {
                 )}
               </AnimatePresence>
             </li>}
-            {hasPermission(PERMISSIONS.readClient) && <li>
+            {(hasPermission(PERMISSIONS.readClient)&&  (hasFeature(FEATURES.CRM))) && <li>
               <Link
                 href="/clients"
                 className={`${isActive("/clients")
@@ -722,7 +725,7 @@ const SideBar = () => {
               </Link>
             </li>}
 
-            {((hasPermission(PERMISSIONS.telephone))|| hasPermission(PERMISSIONS.smsReadLog) )&& <li>
+            {(((hasPermission(PERMISSIONS.telephone))|| hasPermission(PERMISSIONS.smsReadLog)) &&  (hasFeature(FEATURES.TELECOM)) )&& <li>
               <button
                 onClick={() => toggleMenu("communication")}
                 className={`${isMenuActive("communication")
@@ -750,7 +753,7 @@ const SideBar = () => {
                     transition={{ duration: 0.25 }}
                     className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
                   >
-                    {hasPermission(PERMISSIONS.telephone)  && <li>
+                    {(hasPermission(PERMISSIONS.telephone) &&  (hasFeature(FEATURES.TELECOM))) && <li>
                       <Link
                         href="/telephone"
                         className={`${isActive("/telephone")
@@ -761,7 +764,7 @@ const SideBar = () => {
                         Telephones Numbers
                       </Link>
                     </li>}
-                    {hasPermission(PERMISSIONS.smsReadLog) && <li>
+                    {(hasPermission(PERMISSIONS.smsReadLog) &&  (hasFeature(FEATURES.TELECOM)))&& <li>
                       <Link
                         href="/message"
                         className={`${isActive("/message")
@@ -778,7 +781,7 @@ const SideBar = () => {
                 )}
               </AnimatePresence>
             </li>}
-            {(hasPermission(PERMISSIONS.readTemplate) || hasPermission(PERMISSIONS.createTemplate) || hasPermission(PERMISSIONS.readEmailLog)) && <li>
+            {((hasPermission(PERMISSIONS.readTemplate) || hasPermission(PERMISSIONS.createTemplate) || hasPermission(PERMISSIONS.readEmailLog)) &&  (hasFeature(FEATURES.CRM))) && <li>
               <button
                 onClick={() => toggleMenu("emailManagement")}
                 className={`${isMenuActive("emailManagement")
