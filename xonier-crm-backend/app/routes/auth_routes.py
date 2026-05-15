@@ -16,9 +16,11 @@ dependencies = Dependencies()
 async def create(request: Request, response: Response, data: RegisterUserSchema):
     return await auth_controller.create( request,response, data)
 
+
 @router.get("/all", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context)])
 async def getAll(request: Request, response: Response):
     return await auth_controller.getAll(request, response)
+
 
 @router.get("/active/all-without-pagination", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context)])
 async def getAllForFrontend(request: Request):
@@ -120,8 +122,7 @@ async def bulk_restore_users(request: Request, payload: BulkRestoreUsersSchema):
     return await auth_controller.bulk_restore_users(request=request, payload=payload.model_dump(mode="json"))
 
 
-@router.post("/refresh", status_code=200, dependencies=[Depends(dependencies.company_active),
-Depends(dependencies.company_context)])
+@router.post("/refresh", status_code=200, dependencies=[])
 async def refresh_access_token(
     request: Request,
     response: Response,                                  

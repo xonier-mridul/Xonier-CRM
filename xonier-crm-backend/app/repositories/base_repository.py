@@ -205,7 +205,7 @@ class BaseRepository:
 
                     setattr(doc, field, fetched_items)
                    
-            print("dd: ", doc)
+
             return doc
         
 

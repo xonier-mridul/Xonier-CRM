@@ -27,7 +27,7 @@ from fastapi_cache import FastAPICache
 import json
 from typing import Optional
 
-from app.utils.validate_admin import validate_admin
+from app.utils.validate_admin import validate_admin, validate_company_admin
 from app.utils.get_team_members import GetTeamMembers
 from app.utils.activity_payload import activity_payload
 from app.core.tenant import system_query
@@ -105,11 +105,12 @@ class AuthServices:
             limit = filters.get("limit") or 10
 
             is_admin = validate_admin(user["userRole"])
+            is_c_admin = validate_company_admin(user["userRole"])
             is_manager = False
 
             query =  {"status": USER_STATUS.ACTIVE}
 
-            if not is_admin:
+            if not is_admin and not is_c_admin:
                 members = await self.get_team_members.get_team_members(user["_id"])
 
                 obj_members = [PydanticObjectId(item) for item in members]
@@ -217,8 +218,13 @@ class AuthServices:
     async def get_all_deleted_users(self, page: int = 1, limit: int = 10, user: Dict[str, Any] = {}, filters: Dict[str, Any] = {}):
         try:
             is_admin = validate_admin(user["userRole"])
+            is_com_admin = validate_company_admin(user["userRole"])
+
+            print("isad: ", is_admin)
+
+            print("is_com_admin: ", is_com_admin)
  
-            if not is_admin:
+            if not is_admin and not is_com_admin:
                 raise AppException(403, "Unauthorized, only admin can access deleted users")
  
             query = {"status": USER_STATUS.DELETED.value}
@@ -1404,11 +1410,12 @@ class AuthServices:
  
     async def verify_refresh_token(self, payload: Dict[str, Any]):
         try:
-           
-            user_obj = await self.repo.find_by_id(
-                PydanticObjectId(payload["_id"]), 
-                populate=["userRole"]
-            )
+            
+            with system_query():
+                user_obj = await self.repo.find_by_id(
+                    PydanticObjectId(payload["_id"]), 
+                    populate=["userRole"]
+                )
 
             
 
@@ -1439,13 +1446,14 @@ class AuthServices:
             access_token = user_obj.generate_access_token()
             refresh_token = user_obj.generate_refresh_token()
 
+            with system_query():
+                await user_obj.set({
+                    "refreshToken": hash_value(refresh_token),
+                    "updatedAt": datetime.now(timezone.utc),
+                })
             
-            await user_obj.set({
-                "refreshToken": hash_value(refresh_token),
-                "updatedAt": datetime.now(timezone.utc),
-            })
-
-            usr = await self.repo.find_by_id_nested(user_obj.id, ["userRole", "userRole.permissions"])
+            with system_query():
+                usr = await self.repo.find_by_id_nested(user_obj.id, ["userRole", "userRole.permissions"])
 
             return {
                 "message": "Token refreshed successfully",

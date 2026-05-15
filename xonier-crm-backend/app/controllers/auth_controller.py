@@ -400,7 +400,7 @@ class AuthController:
     async def verify_refresh_token(self, request: Request, response: Response, payload: Dict[str, Any]):
         try:
             
-
+            
             result = await self.service.verify_refresh_token(
                 payload=payload,
                
