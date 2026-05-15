@@ -11,8 +11,7 @@ from app.core.constants import SUPER_ADMIN_CODE
 from app.core.tenant import current_company, is_admin_context
 from app.core.enums import COMPANY_STATUS
 from app.core.tenant import system_query
-from app.utils.role_resolver import build_role_context, RoleContext
-from app.utils.team_scope import get_managed_user_ids
+
 
 
 
@@ -303,28 +302,4 @@ class Dependencies:
         return checking
     
 
-    def get_role_context(self, request: Request) -> RoleContext:
-        user = request.state.user
-        return build_role_context(user)
-
-    def require_permission(self, *permission_codes: str):
-        async def guard(request: Request):
-            ctx = build_role_context(request.state.user)
-            if not ctx.has_any_permission(*permission_codes):
-                raise AppException(403, "You don't have permission to perform this action")
-        return guard
-
-    def require_can_manage_below(self):
-        async def guard(request: Request):
-            ctx = build_role_context(request.state.user)
-            if not ctx.can_manage_below and not ctx.is_super_admin:
-                raise AppException(403, "You don't have authority to manage other users")
-        return guard
-
-    def require_min_power(self, min_power: int):
-        async def guard(request: Request):
-            ctx = build_role_context(request.state.user)
-            if ctx.max_power < min_power:
-                raise AppException(403, f"Insufficient authority level")
-        return guard
-
+    
