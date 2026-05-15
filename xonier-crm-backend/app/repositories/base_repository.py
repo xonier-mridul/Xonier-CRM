@@ -187,10 +187,11 @@ class BaseRepository:
                 if value is None:
                     continue
 
-                
+               
                 if hasattr(value, "fetch"):
                     fetched = await value.fetch()
                     setattr(doc, field, fetched)
+                    
 
                 
                 elif isinstance(value, list):
@@ -199,10 +200,12 @@ class BaseRepository:
                         if hasattr(item, "fetch"):
                             fetched_items.append(await item.fetch())
                         else:
+                            
                             fetched_items.append(item)
 
                     setattr(doc, field, fetched_items)
-
+                   
+            print("dd: ", doc)
             return doc
         
 

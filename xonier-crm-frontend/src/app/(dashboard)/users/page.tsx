@@ -46,7 +46,7 @@ const page = (): JSX.Element => {
   });
 
   const isAdmin = useSelector((state: RootState) => state.auth.isAdmin);
-  console.log("isA: ", isAdmin);
+
 
   const user = async (): Promise<void> => {
     setIsLoading(true);
