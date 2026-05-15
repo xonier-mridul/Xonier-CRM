@@ -2,7 +2,7 @@ from fastapi import Request
 from typing import Dict, Any, Optional
 from app.utils.custom_exception import AppException
 from app.utils.custom_response import successResponse
-from app.utils.validate_admin import validate_admin
+from app.utils.validate_admin import validate_admin, validate_company_admin
 from app.utils.get_team_members import GetTeamMembers
 from app.controllers.dashboard.admin_dashboard import AdminDashboardController
 from app.controllers.dashboard.manager_dashboard import ManagerDashboardController
@@ -35,6 +35,9 @@ class DashboardController:
                     start_date=start_date,
                     end_date=end_date,
                 )
+            
+            # is_comp_admin = validate_company_admin(user["userRole"])
+            # if  
 
             is_manager = await self.validate_manager.validate_manager(user["_id"])
 

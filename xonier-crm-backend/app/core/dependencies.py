@@ -70,6 +70,8 @@ class Dependencies:
            if not token:
                raise AppException(401, "You are logged out, please logged in again")
            payload = verify_access_token(token)
+
+           
            
            if not payload:
                

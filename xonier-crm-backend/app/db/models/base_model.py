@@ -34,7 +34,7 @@ class BaseDocument(Document):
 
 
         cid = cls._get_company_id()
-        print("nan")
+
         if cid is None:
             raise AppException(403, "Company context missing")
      
