@@ -180,8 +180,9 @@ export interface CompanyState {
 export interface CompanySelectProps {
   companyData: CompanyState[];
   company: string;
-  handleCompanyChange: (
+  handleCompanyChange?: (
       companyId: string
    ) => void;
+   
 
 }

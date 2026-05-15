@@ -172,7 +172,9 @@ export interface UserTableComponentProps {
   setFormData: Dispatch<SetStateAction<RegisterPayload>>,
   isAdmin : boolean,
   companyData : Company[],
-  handleCompanyChange: Dispatch<SetStateAction<string>>
+  handleCompanyChange: Dispatch<SetStateAction<string>>,
+  handleSearchFilter:Dispatch<SetStateAction<string>>
+
 
 }
 

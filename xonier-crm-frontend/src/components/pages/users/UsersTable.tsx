@@ -48,6 +48,7 @@ export const UsersTable = ({
   setCurrentPages,
   setSearchFilter,
   isAdmin,
+  handleSearchFilter,
   companyData,
   handleCompanyChange,
 }: UserTableComponentProps): JSX.Element => {
@@ -58,7 +59,7 @@ export const UsersTable = ({
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [company,setCompany] = useState('')
 
-  console.log
+
 
 
   
@@ -67,6 +68,8 @@ export const UsersTable = ({
     setPageLimit(Number(n))
     setCurrentPages(1)
   }
+
+
   useEffect(() => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
@@ -76,6 +79,8 @@ export const UsersTable = ({
     }, 500);
 
   }, [search]);
+
+
 useEffect(() => {
   setFormData((p) => ({
     ...p,
@@ -85,12 +90,11 @@ useEffect(() => {
 
 
 
-
-
 const CompanySelect: React.FC<CompanySelectProps> = ({
   companyData,
     company,
-   handleCompanyChange
+   handleCompanyChange,
+  
 }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -514,6 +518,31 @@ const CompanySelect: React.FC<CompanySelectProps> = ({
             <p className="text-gray-500 dark:text-gray-400">
               Create, edit or remove users. Each user can have multiple roles.
             </p>
+          </div>
+
+          <div>
+           { isAdmin && (
+            <CompanySelect
+                    companyData={companyData}
+                      company={formData.companyId || ""}
+                      handleCompanyChange={handleSearchFilter}
+                  />)
+           }
+            {/* <select 
+              className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10"
+            >
+              <option>Company </option>
+              {
+                companyData.map((item)=>(
+                  <option key={item.id}
+                  on>
+                        {item.companyName}
+                  </option>
+                ))
+              }
+              
+              
+            </select> */}
           </div>
           <div className="flex items-center gap-6">
             <select

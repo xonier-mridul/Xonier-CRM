@@ -163,12 +163,18 @@ const page = (): JSX.Element => {
 
     e.target.value = "";
   };
+
   const handleCompanyChange = (companyId: string) => {
     setFormData((prev) => ({
       ...prev,
       companyId,
     }));
   };
+
+  const handleCompanyFilter=(companyId: string)=>{
+    setSearch(companyId);
+            
+  }
 
   const handleRemoveRole = (roleId: string) => {
     setFormData((prev) => ({
@@ -180,8 +186,14 @@ const page = (): JSX.Element => {
   useEffect(() => {
     getRoleData();
     user();
-    getCompanyData();
+    
   }, [currentPage, pageLimit, search]);
+
+  useEffect(() => {
+    if(!isAdmin) return 
+    getCompanyData();
+  }, [])
+  
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -253,6 +265,7 @@ const page = (): JSX.Element => {
         isAdmin={isAdmin}
         companyData={companyData}
         handleCompanyChange={handleCompanyChange}
+        handleCompanyFilter={handleCompanyFilter}
       />
     </div>
   );
