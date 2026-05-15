@@ -72,8 +72,11 @@ const SideBar = () => {
   };
 
   useEffect(() => {
-    if (pathname.startsWith("/teams") || pathname.startsWith("/users")) {
+    if (pathname.startsWith("/teams")) {
       setOpenMenu("team");
+    }
+    if (pathname.startsWith("/users")) {
+      setOpenMenu("user");
     }
     if (pathname.startsWith("/roles")) {
       setOpenMenu("team");
@@ -134,7 +137,7 @@ const SideBar = () => {
     switch (menu) {
       case "team":
         return pathname.startsWith("/teams") ||
-          pathname.startsWith("/users") ||
+          
           pathname.startsWith("/roles")|| pathname.startsWith("/deleteduser");
       case "sales":
         return pathname.startsWith("/enquiry") ||
@@ -142,6 +145,7 @@ const SideBar = () => {
           pathname.startsWith("/deals") ||
           pathname.startsWith("/quotations") ||
           pathname.startsWith("/invoice");
+      case "user": return pathname.startsWith("/users")
       case "prospects":
         return pathname.startsWith("/prospects");
       case "emailManagement":

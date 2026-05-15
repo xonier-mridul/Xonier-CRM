@@ -633,6 +633,7 @@ class CompanyService:
         try:
             if not ObjectId.is_valid(company_id):
                 raise AppException(400, "Invalid company Object ID")
+         
             company = await self.repo.find_one(
                 filter={"_id": PydanticObjectId(company_id), "deletedAt": None},
                 populate=["subscription", "primary_admin"]

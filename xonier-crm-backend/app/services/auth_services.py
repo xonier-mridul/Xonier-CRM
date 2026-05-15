@@ -297,16 +297,12 @@ class AuthServices:
               raise AppException(400, "Invalid user object id")
               
 
-          exist_user = await self.repo.find_by_id(id=id, populate=["userRole", "createdBy"])
-
+          exist_user = await self.repo.find_by_id_nested(id=id, populate=["userRole", "createdBy"])
 
 
           if not exist_user:
               raise AppException(404, "User not found for this Id")
-          
-        
-
-                 
+   
           
           user = jsonable_encoder(exist_user, exclude={"password", "refreshToken"})
 
