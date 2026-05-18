@@ -37,6 +37,7 @@ import {
   IoCheckmarkDoneCircle,
   IoTrendingUp,
   IoBarChart,
+  IoEyeOutline,
 } from "react-icons/io5";
 import {
   FiActivity,
@@ -60,6 +61,7 @@ import PrimaryButton from "../../ui/PrimeryButton";
 import { ACTIVITY_ACTION, ACTIVITY_ENTITY_TYPE } from "@/src/constants/enum";
 import Link from "next/link";
 import ActivityDetailPopup from "./UserActivityPopup";
+import { Company } from "@/src/types/company/company.types";
 
 
 export interface DateRangeFilter {
@@ -88,6 +90,8 @@ export interface ExtendedUserDetailProps {
   onPageChange?: (page: number) => void;
   onDateFilter?: (range: DateRangeFilter | null) => void;
   onSummaryFilter?: (filter: SummaryFilter) => void;
+  companyData?: Company | null;
+  companyLoading: boolean
 }
 
 
@@ -555,9 +559,11 @@ const UserDetail = ({
   onPageChange,
   onDateFilter,
   onSummaryFilter,
+  companyData = null,
+  companyLoading = false,
 }: ExtendedUserDetailProps): JSX.Element => {
   const [activeTab, setActiveTab] = useState<
-    "overview" | "activity" | "summary" | "roles"
+    "overview" | "activity" | "summary" | "roles"| "company"
   >("overview");
   const [entityFilter, setEntityFilter] = useState("all");
   const [actionFilter, setActionFilter] = useState("all");
@@ -678,6 +684,11 @@ const UserDetail = ({
       icon: <IoShieldCheckmark className="w-4 h-4" />,
       badge: userData.userRole?.length,
     },
+    {
+    key: "company" as const,
+    label: "Company",
+    icon: <MdBusiness className="w-4 h-4" />,
+  },
   ];
   
   return (
@@ -750,12 +761,7 @@ const UserDetail = ({
                 <MdPhone className="w-4 h-4" />
                 {userData.phone}
               </Link>
-              {userData.company && (
-                <span className="flex items-center gap-1.5">
-                  <MdBusiness className="w-4 h-4" />
-                  {userData.company}
-                </span>
-              )}
+              
             </div>
           </div>
         </div>
@@ -2072,6 +2078,359 @@ const UserDetail = ({
             )}
           </div>
         )}
+
+        {activeTab === "company" && (
+  <div className="p-6">
+    {companyLoading ? (
+      <div className="flex flex-col items-center justify-center py-16 gap-3">
+        <div className="w-9 h-9 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-gray-400">Loading company…</p>
+      </div>
+    ) : !companyData ? (
+      <div className="text-center py-16 space-y-3">
+        <MdBusiness className="w-12 h-12 text-gray-200 dark:text-gray-600 mx-auto" />
+        <p className="text-base font-semibold text-gray-400">No company assigned</p>
+        <p className="text-sm text-gray-400 dark:text-gray-500">
+          This user is not linked to any company yet.
+        </p>
+        <Link
+          href={`/users/update/${userData.id ?? userData._id}`}
+          className="inline-flex items-center gap-2 mt-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+        >
+          <MdOutlineEdit className="w-4 h-4" /> Assign a company
+        </Link>
+      </div>
+    ) : (
+      <div className="space-y-5">
+
+
+        <div className="relative bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden">
+          <div className="h-20 relative" style={{ background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 60%, #a21caf 100%)" }}>
+            <div className="absolute inset-0 opacity-30" style={{ backgroundImage: "radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 60%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%)" }} />
+          </div>
+          <div className="px-6 pb-5 relative">
+            <div className="flex items-end justify-between -mt-6 mb-4 flex-wrap gap-3">
+              <div className="w-14 h-14 rounded-2xl border-4 border-white dark:border-gray-800 bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center shadow-xl">
+                <MdBusiness className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <Link
+                href={`/companies/${companyData.id ?? (companyData as any).id}`}
+                className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+              >
+                <IoEyeOutline className="w-4 h-4" /> View Full Profile
+              </Link>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white capitalize">
+                  {companyData.companyName}
+                </h2>
+                <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full capitalize ${
+                  companyData.status === "active"
+                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                    : companyData.status === "pending_verification"
+                    ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                    : companyData.status === "suspended"
+                    ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
+                    : "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
+                }`}>
+                  {companyData.status?.replace(/_/g, " ")}
+                </span>
+              </div>
+              <div className="flex items-center gap-3 flex-wrap text-xs text-gray-400">
+                <span className="font-mono">{companyData.companyId}</span>
+                {companyData.industry && (
+                  <>
+                    <span className="text-slate-300 dark:text-gray-600">·</span>
+                    <span>{companyData.industry}</span>
+                  </>
+                )}
+                {companyData.slug && (
+                  <>
+                    <span className="text-slate-300 dark:text-gray-600">·</span>
+                    <span className="font-mono">/{companyData.slug}</span>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Quick stats ─────────────────────────────────────────── */}
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            {
+              label: "Subscriptions",
+              value: companyData.subscriptionCount ?? 0,
+              icon: <HiOutlineCurrencyDollar className="w-4 h-4" />,
+              accent: "bg-blue-500",
+              bg: "bg-blue-50 dark:bg-blue-900/20",
+              text: "text-blue-600 dark:text-blue-400",
+            },
+            {
+              label: "User Limit",
+              value: companyData.userLimit ?? "Unlimited",
+              icon: <HiOutlineUserGroup className="w-4 h-4" />,
+              accent: "bg-violet-500",
+              bg: "bg-violet-50 dark:bg-violet-900/20",
+              text: "text-violet-600 dark:text-violet-400",
+            },
+            {
+              label: "Member Since",
+              value: new Date(companyData.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+              icon: <FiCalendar className="w-4 h-4" />,
+              accent: "bg-emerald-500",
+              bg: "bg-emerald-50 dark:bg-emerald-900/20",
+              text: "text-emerald-600 dark:text-emerald-400",
+            },
+          ].map((s) => (
+            <div key={s.label} className={`flex items-center gap-3 p-4 rounded-2xl border border-slate-100 dark:border-gray-700 bg-white dark:bg-gray-800`}>
+              <div className={`w-9 h-9 rounded-xl ${s.accent} flex items-center justify-center text-white shrink-0`}>
+                {s.icon}
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs text-gray-400 font-medium">{s.label}</p>
+                <p className={`text-sm font-bold truncate ${s.text}`}>{String(s.value)}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Details + Contact ────────────────────────────────────── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
+              Company Details
+            </h3>
+            <div className="space-y-0">
+              {[
+                { label: "Industry", value: companyData.industry || "—" },
+                { label: "Website", value: companyData.website || "—" },
+                { label: "Timezone", value: companyData.timezone || "—" },
+                { label: "Company Size", value: companyData.companySize || "—" },
+                { label: "Country", value: companyData.country || "—" },
+                { label: "Sub Domain", value: companyData.subDomain || "—" },
+                { label: "Reg. Number", value: companyData.registrationNumber || "—" },
+                { label: "Trade Number", value: companyData.tradeNumber || "—" },
+              ].map(({ label, value }) => (
+                <div key={label} className="flex items-start justify-between gap-4 py-2.5 border-b border-slate-50 dark:border-gray-700/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-gray-700/20 rounded-lg px-1 transition-colors">
+                  <span className="text-xs text-gray-400 min-w-28 shrink-0 mt-0.5">{label}</span>
+                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200 text-right capitalize break-all">{value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
+              Contact Info
+            </h3>
+            <div className="space-y-0">
+              {[
+                { label: "Email", value: companyData.email || "—" },
+                { label: "Phone", value: companyData.number || "—" },
+              ].map(({ label, value }) => (
+                <div key={label} className="flex items-start justify-between gap-4 py-2.5 border-b border-slate-50 dark:border-gray-700/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-gray-700/20 rounded-lg px-1 transition-colors">
+                  <span className="text-xs text-gray-400 min-w-28 shrink-0 mt-0.5">{label}</span>
+                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200 text-right break-all">{value}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Primary Admin */}
+            {(companyData as any).primary_admin && typeof (companyData as any).primary_admin === "object" && (companyData as any).primary_admin.firstName && (
+              <div className="mt-5">
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
+                  Company Admin
+                </h3>
+                <div className="flex items-center gap-3 p-3.5 bg-slate-50 dark:bg-gray-700/50 rounded-xl border border-slate-100 dark:border-gray-700">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                    {(companyData as any).primary_admin.firstName?.[0]}
+                    {(companyData as any).primary_admin.lastName?.[0] ?? ""}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 capitalize">
+                      {(companyData as any).primary_admin.firstName}{" "}
+                      {(companyData as any).primary_admin.lastName}
+                    </p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                        (companyData as any).primary_admin.isEmailVerified
+                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                          : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                      }`}>
+                        {(companyData as any).primary_admin.isEmailVerified ? "✓ Verified" : "Unverified"}
+                      </span>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full capitalize ${
+                        (companyData as any).primary_admin.status === "active"
+                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                          : "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
+                      }`}>
+                        {(companyData as any).primary_admin.status}
+                      </span>
+                    </div>
+                  </div>
+                  <Link
+                    href={`/users/${(companyData as any).primary_admin.id ?? (companyData as any).primary_admin._id}`}
+                    className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 shrink-0"
+                  >
+                    <IoEyeOutline className="w-3.5 h-3.5" /> View
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Subscription ────────────────────────────────────────── */}
+        {(companyData as any).subscription && typeof (companyData as any).subscription === "object" && (companyData as any).subscription.subscriptionId && (
+          <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                Subscription
+              </h3>
+              <span className={`text-xs font-bold px-2.5 py-1 rounded-full capitalize ${
+                (companyData as any).subscription.status === "active"
+                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                  : (companyData as any).subscription.status === "trial"
+                  ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                  : "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
+              }`}>
+                {(companyData as any).subscription.status}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              {[
+                {
+                  label: "Base Price",
+                  value: `$${(companyData as any).subscription.basePrice}`,
+                  sub: (companyData as any).subscription.billingCycle,
+                  color: "text-gray-800 dark:text-gray-100",
+                },
+                {
+                  label: "Discount",
+                  value: `$${(companyData as any).subscription.discountAmount}`,
+                  sub: "saved",
+                  color: (companyData as any).subscription.discountAmount > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-gray-400",
+                },
+                {
+                  label: "Final Price",
+                  value: `$${(companyData as any).subscription.finalPrice}`,
+                  sub: `/${(companyData as any).subscription.billingCycle}`,
+                  color: "text-indigo-600 dark:text-indigo-400",
+                },
+              ].map((s) => (
+                <div key={s.label} className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-4 text-center border border-slate-100 dark:border-gray-700">
+                  <p className="text-xs text-gray-400 font-medium mb-1">{s.label}</p>
+                  <p className={`text-lg font-black ${s.color}`}>{s.value}</p>
+                  <p className="text-xs text-gray-400 capitalize mt-0.5">{s.sub}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+              {[
+                {
+                  label: "Trial Start",
+                  value: (companyData as any).subscription.trialStartDate
+                    ? new Date((companyData as any).subscription.trialStartDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+                    : "—",
+                  icon: "🎯",
+                },
+                {
+                  label: "Trial End",
+                  value: (companyData as any).subscription.trialEndDate
+                    ? new Date((companyData as any).subscription.trialEndDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+                    : "—",
+                  icon: "⏳",
+                },
+                {
+                  label: "Start Date",
+                  value: (companyData as any).subscription.startSubscriptionDate
+                    ? new Date((companyData as any).subscription.startSubscriptionDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+                    : "—",
+                  icon: "📅",
+                },
+                {
+                  label: "End Date",
+                  value: (companyData as any).subscription.endSubscriptionDate
+                    ? new Date((companyData as any).subscription.endSubscriptionDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+                    : "—",
+                  icon: "🏁",
+                },
+              ].map((d) => (
+                <div key={d.label} className="flex flex-col gap-1 p-3 bg-slate-50 dark:bg-gray-700/50 rounded-xl border border-slate-100 dark:border-gray-700">
+                  <span className="text-gray-400">{d.icon} {d.label}</span>
+                  <span className="font-semibold text-gray-700 dark:text-gray-200">{d.value}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-3 flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-gray-700">
+              <span className="text-xs text-gray-400 font-mono truncate flex-1">
+                ID: {(companyData as any).subscription.subscriptionId}
+              </span>
+              <button
+                onClick={() => handleCopy((companyData as any).subscription.subscriptionId)}
+                className="text-gray-400 hover:text-indigo-500 transition-colors"
+              >
+                <MdOutlineContentCopy className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── Timestamps ──────────────────────────────────────────── */}
+        <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
+          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
+            Timeline
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              {
+                label: "Created At",
+                value: companyData.createdAt
+                  ? new Date(companyData.createdAt).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true })
+                  : "—",
+                icon: "📌",
+                color: "text-indigo-600 dark:text-indigo-400",
+                bg: "bg-indigo-50 dark:bg-indigo-900/20",
+              },
+              {
+                label: "Updated At",
+                value: companyData.updatedAt
+                  ? new Date(companyData.updatedAt).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true })
+                  : "Not updated",
+                icon: "✏️",
+                color: "text-amber-600 dark:text-amber-400",
+                bg: "bg-amber-50 dark:bg-amber-900/20",
+              },
+              {
+                label: "Deleted At",
+                value: companyData.deletedAt
+                  ? new Date(companyData.deletedAt).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true })
+                  : "Not deleted",
+                icon: "🗑️",
+                color: companyData.deletedAt ? "text-red-600 dark:text-red-400" : "text-gray-400",
+                bg: companyData.deletedAt ? "bg-red-50 dark:bg-red-900/20" : "bg-slate-50 dark:bg-gray-700/50",
+              },
+            ].map((t) => (
+              <div key={t.label} className={`flex flex-col gap-1.5 p-4 rounded-xl border border-slate-100 dark:border-gray-700 ${t.bg}`}>
+                <div className="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
+                  <span>{t.icon}</span>
+                  {t.label}
+                </div>
+                <p className={`text-sm font-semibold ${t.color}`}>{t.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+    )}
+  </div>
+)}
       </div>
     </div>
   );

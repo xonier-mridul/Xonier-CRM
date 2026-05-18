@@ -417,7 +417,7 @@ class CompanyService:
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
-                    print("come")
+          
                     user_id = PydanticObjectId(payload.userId)
                     
                     with system_query():
@@ -425,7 +425,7 @@ class CompanyService:
                         if not user:
                             raise AppException(404, "User not found")
                     
-                    print("goo")
+ 
 
                     if user.isEmailVerified:
                         raise AppException(400, "Email is already verified")
@@ -458,7 +458,7 @@ class CompanyService:
                     user.isEmailVerified = True
                     user.isActive = True
 
-                    print("uu: ", user)
+        
                     
                     with system_query():
                       await user.replace(session=session)
@@ -474,21 +474,21 @@ class CompanyService:
                         if company:
                             company.status = COMPANY_STATUS.ACTIVE
                             await company.replace(session=session)
-                    
-                    await self.activityRepo.create(
-                        activity_payload(
-                            userId=user_id,
-                            entityType=ACTIVITY_ENTITY_TYPE.OTP.value,
-                            entityId=user_id,
-                            action=ACTIVITY_ACTION.VERIFY.value,
-                            title="Email verified successfully",
-                            description=f"User '{user.firstName}' verified their email",
-                            metadata={"otpId": str(otp_doc.id)},
-                            ipAddress=ip_address,
-                            userAgent=user_agent,
-                        ),
-                        session=session,
-                    )
+                    with system_query():
+                        await self.activityRepo.create(
+                            activity_payload(
+                                userId=user_id,
+                                entityType=ACTIVITY_ENTITY_TYPE.OTP.value,
+                                entityId=user_id,
+                                action=ACTIVITY_ACTION.VERIFY.value,
+                                title="Email verified successfully",
+                                description=f"User '{user.firstName}' verified their email",
+                                metadata={"otpId": str(otp_doc.id)},
+                                ipAddress=ip_address,
+                                userAgent=user_agent,
+                            ),
+                            session=session,
+                        )
 
                     return {"message": "Email verified successfully. Account is now active."}
 
@@ -638,6 +638,8 @@ class CompanyService:
                 filter={"_id": PydanticObjectId(company_id), "deletedAt": None},
                 populate=["subscription", "primary_admin"]
             )
+
+           
             if not company:
                 raise AppException(404, "Company not found")
             

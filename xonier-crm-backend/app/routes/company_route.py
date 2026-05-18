@@ -19,7 +19,7 @@ controller = CompanyController()
 
 admin_only = [Depends(dependencies.authorized), Depends(dependencies.onlyForAdmin), Depends(dependencies.company_context)]
 
-authorized = [Depends(dependencies.authorized)]
+authorized = [Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context)]
 public = []
 
 
@@ -67,7 +67,7 @@ async def get_all(
     return await controller.get_all(request=request, filters=filters)
 
 
-@router.get("/{company_id}", dependencies=admin_only)
+@router.get("/{company_id}", dependencies=authorized)
 async def get_by_id(request: Request, company_id: str):
     return await controller.get_by_id(request=request, company_id=company_id)
 

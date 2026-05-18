@@ -220,9 +220,6 @@ class AuthServices:
             is_admin = validate_admin(user["userRole"])
             is_com_admin = validate_company_admin(user["userRole"])
 
-            print("isad: ", is_admin)
-
-            print("is_com_admin: ", is_com_admin)
  
             if not is_admin and not is_com_admin:
                 raise AppException(403, "Unauthorized, only admin can access deleted users")
@@ -621,7 +618,7 @@ class AuthServices:
 
             hashed_mail = hash_value(data["email"])
             hashed_otp = hash_value(str(data["otp"]))
-            print("one")
+    
             with system_query():
                 user = await self.repo.find_user_by_hashMail(
                     hashMail=hashed_mail, projections=None, populate=["userRole"], session=session
@@ -634,7 +631,7 @@ class AuthServices:
 
             if not isPasswordValid:
                 raise AppException(400, "Password not match, please back to the login page and try again")
-            print("tow")
+            
             with system_query(): 
                 latest_otp = await self.otp_repo.find_latest_otp(
                     {"email": hashed_mail, "otp_type": OTP_TYPE.LOGIN.value},
@@ -662,7 +659,7 @@ class AuthServices:
 
             hash_refresh_token = hash_value(refresh_token)
  
-            print("user: ", user)
+           
             with system_query():
                 await user.set(
                     {
@@ -762,6 +759,8 @@ class AuthServices:
             
             is_admin = validate_admin(user_data["userRole"])
             
+            # if user_data["companyId"] != payload["companyId"]:
+            #     raise AppException(400, "You not update company")
             
              
             payload = {
@@ -1416,7 +1415,8 @@ class AuthServices:
                     PydanticObjectId(payload["_id"]), 
                     populate=["userRole"]
                 )
-
+            
+        
             
 
             if not user_obj:

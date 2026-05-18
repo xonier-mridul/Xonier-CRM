@@ -277,7 +277,7 @@ class TimeLogService:
             log.status = TIMELOG_STATUS.STOPPED
             log.stoppedAt = now
             log.totalSeconds = sum(s.durationSeconds for s in log.segments)
-            print("kill: ", sum(s.durationSeconds for s in log.segments))
+           
             if note and note.strip():
                 log.note = note.strip()
 

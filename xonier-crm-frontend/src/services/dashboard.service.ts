@@ -1,8 +1,17 @@
-import api from "../lib/axios";
-import { GetDashboardParams } from "@/src/types/dashboard/dashboard.types";
 
-export const DashboardService = {
-    getAll: (params: GetDashboardParams) => api.get(`/dashboard/stats?${params.page && `page=${params.page}`}${params.limit &&`&limit=${params.limit}`} ${params.search && `&search=${params.search}`}`),
-    getAllCommon: (id:string) => api.get(`/task/stats/user/${id}`),
+
+import api from "../lib/axios";
+
+export interface DashboardStatsParams {
+  filter?: "today" | "this_week" | "this_month" | "this_year" | "custom";
+  start_date?: string;
+  end_date?: string;
 }
 
+export const DashboardService = {
+  getDashboardStats: (params?: DashboardStatsParams) =>
+    api.get("/dashboard/stats", { params }),
+
+  getAllCommon: (id: string) =>
+    api.get(`/task/stats/user/${id}`),
+};

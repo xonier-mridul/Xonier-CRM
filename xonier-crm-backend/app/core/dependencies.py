@@ -153,7 +153,7 @@ class Dependencies:
         user = request.state.user
         
         if user["userRole"][0]["code"] == SUPER_ADMIN_CODE:
-            print("admin")
+          
             is_admin_context.set(True)
             current_company.set(None)
             return

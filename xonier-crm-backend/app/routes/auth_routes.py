@@ -66,7 +66,7 @@ async def verify_login_otp(request: Request, response: Response, data: VerifyLog
 async def getMe(request: Request, response: Response):
     return await auth_controller.getMe(request=request, response=response)
 
-@router.put("/update/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["user:update"]))])
+@router.put("/update/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context), Depends(dependencies.permissions(["user:update"]))])
 async def update(request: Request,id: str, payload: UpdateUserSchema ):
     return await auth_controller.update(request, id, payload)
 
@@ -122,7 +122,7 @@ async def bulk_restore_users(request: Request, payload: BulkRestoreUsersSchema):
     return await auth_controller.bulk_restore_users(request=request, payload=payload.model_dump(mode="json"))
 
 
-@router.post("/refresh", status_code=200, dependencies=[])
+@router.post("/refresh", status_code=200)
 async def refresh_access_token(
     request: Request,
     response: Response,                                  

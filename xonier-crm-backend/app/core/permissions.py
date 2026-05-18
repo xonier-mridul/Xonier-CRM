@@ -687,6 +687,14 @@ PERMISSIONS = [
         "description": "permission for read task report",
     },
     {
+        "code": "taskReport:review",
+        "module": "taskReport",
+        "action": "read",
+        "title": "review taskReport",
+        "description": "permission for review task report",
+    },
+    
+    {
         "code": "taskReport:update",
         "module": "taskReport",
         "action": "update",

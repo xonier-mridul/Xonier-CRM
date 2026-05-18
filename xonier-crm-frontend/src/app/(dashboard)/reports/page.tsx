@@ -2,15 +2,20 @@
 
 import React, { JSX, useState, useEffect, useCallback, useRef } from "react";
 import { TaskReportService } from "@/src/services/taskReport.service";
-import type { TaskReport, TaskReportStatus } from "@/src/types/task/taskReport";
+import type { TaskReport } from "@/src/types/task/taskReport";
 import { MdDelete } from "react-icons/md";
 import Link from "next/link";
 import { toast } from "react-toastify";
 import DateFilterButton from "@/src/components/common/dateFilter";
 import { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 import { usePermissions } from "@/src/hooks/usePermissions";
-import { PERMISSIONS } from "@/src/constants/enum";
+import { PERMISSIONS, TASK_REPORT_STATUS } from "@/src/constants/enum";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
+import { User } from "@/src/types";
+import axios from "axios";
+import extractErrorMessages from "../../utils/error.utils";
+import { AuthService } from "@/src/services/auth.service";
+import { FaRegUser } from "react-icons/fa6";
 
 const STATUS_META: Record<
   string,
@@ -490,55 +495,75 @@ const TaskReportListPage = (): JSX.Element => {
   const [filterStatus, setFilterStatus] = useState("");
   const [search, setSearch] = useState("");
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const [usersData, setUsersData] = useState<User[]>([])
+  const [userId, setUserId] = useState<string>("")
+  const [loading, setLoading] = useState<boolean>(false)
+  const [err, setErr] = useState<string>("")
   const today = new Date().toISOString().split("T")[0];
   const { hasPermission } = usePermissions();
+  const [searchInput, setSearchInput] = useState("");
+const [showDropdown, setShowDropdown] = useState(false);
+const searchRef = useRef<HTMLDivElement>(null);
+
 
   const [dateFilter, setDateFilter] = useState<DateFilter>({
-    fromDate: today,
-    toDate: today,
+    fromDate: "",
+    toDate: "",
   });
 
   const canDelete = hasPermission(PERMISSIONS.deleteTaskReport);
+
+
   const fetchReports = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const res = await TaskReportService.getAll({
-        page: currentPage,
-        limit: 10,
-        search: search || undefined,
-        status: (filterStatus as TaskReportStatus) || undefined,
-        fromDate: dateFilter.fromDate || undefined,
-        toDate: dateFilter.toDate || undefined,
-      });
-      if (res.status === 200) {
-        const d = res.data.data;
-        setReports(d.data);
-        setTotalPages(d.totalPages);
-      }
-    } catch {
-      // handle silently
-    } finally {
-      setIsLoading(false);
+  setIsLoading(true);
+
+  try {
+    const res = await TaskReportService.getAll({
+      page: currentPage,
+      limit: 10,
+      userId: userId,
+      status: (filterStatus as TASK_REPORT_STATUS) || undefined,
+      fromDate: dateFilter.fromDate || undefined,
+      toDate: dateFilter.toDate || undefined,
+    });
+
+    if (res.status === 200) {
+      const d = res.data.data;
+      setReports(d.data);
+      setTotalPages(d.totalPages);
     }
-  }, [currentPage, search, filterStatus, dateFilter]);
+  } catch {
+  } finally {
+    setIsLoading(false);
+  }
+}, [currentPage, search, filterStatus, dateFilter, userId]);
+
+useEffect(() => {
+  fetchReports();
+}, [fetchReports]);
+
+
 
   useEffect(() => {
     fetchReports();
   }, [fetchReports]);
 
-  const handleSearch = (val: string) => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      setSearch(val);
-      setCurrentPage(1);
-    }, 500);
-  };
+const handleSearch = (val: string) => {
+  setSearchInput(val);
+  setShowDropdown(val.length > 0);
+  if (debounceRef.current) clearTimeout(debounceRef.current);
+  debounceRef.current = setTimeout(() => {
+    setSearch(val);
+    setCurrentPage(1);
+  }, 400);
+};
+
 
   // Stats
   const totalReports = reports.length;
   const reviewed = reports.filter((r) => r.isReviewed).length;
   const eveningDone = reports.filter(
-    (r) => r.status === "evening_submitted" || r.status === "reviewed",
+    (r) => r.status === TASK_REPORT_STATUS.SUBMITTED || r.status === TASK_REPORT_STATUS.REVIEWED,
   ).length;
   const avgCompletion = reports.length
     ? Math.round(
@@ -553,6 +578,26 @@ const TaskReportListPage = (): JSX.Element => {
       )
     : 0;
 
+  const getUserData = async()=>{
+    setLoading(true)
+    try {
+
+      const result = await AuthService.getAllTeamUsers({search: search})
+      if(result.status === 200){
+        const data = result.data.data
+        console.log("data: ", data)
+        setUsersData(data)
+      }
+      
+    } catch (error) {
+       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+            if (axios.isAxiosError(error)) setErr(String(...extractErrorMessages(error)));
+            else setErr("Something went wrong");
+      
+    } finally {
+setLoading(false)
+    }
+  }
   const handleDelete =  async (id: string, date: string) => {
     try {
       const confirm = await ConfirmPopup({
@@ -572,6 +617,31 @@ const TaskReportListPage = (): JSX.Element => {
       toast.error("Failed to delete report");
     }
   };
+
+
+  useEffect(() => {
+  const handler = (e: MouseEvent) => {
+    if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+      setShowDropdown(false);
+    }
+  };
+  document.addEventListener("mousedown", handler);
+  return () => document.removeEventListener("mousedown", handler);
+}, []);
+
+  useEffect(() => {
+    getUserData()
+  }, [search])
+
+
+const handleUserId = (user: User) => {
+  setUserId(user.id);
+  setSearchInput(`${user.firstName} ${user.lastName}`);
+  setShowDropdown(false);
+  setSearch("");
+  setCurrentPage(1);
+};
+  
 
   return (
     <div className="ml-72 mt-14">
@@ -668,17 +738,77 @@ const TaskReportListPage = (): JSX.Element => {
 
         {/* ── Filters ── */}
         <div className="flex flex-wrap items-center gap-2 mb-5">
-          <div className="relative min-w-[240px]">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
-              🔍
-            </span>
-            <input
-              type="text"
-              onChange={(e) => handleSearch(e.target.value)}
-              placeholder="Search by employee name…"
-              className="pl-9 pr-4 py-2.5 w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition"
-            />
+         <div ref={searchRef} className="relative min-w-[260px]">
+  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">
+    🔍
+  </span>
+  <input
+    type="text"
+    value={searchInput}
+    onChange={(e) => handleSearch(e.target.value)}
+    onFocus={() => searchInput.length > 0 && setShowDropdown(true)}
+    placeholder="Search by employee name…"
+    className="pl-9 pr-9 py-2.5 w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition"
+  />
+  {searchInput && (
+    <button
+      type="button"
+      onClick={() => {
+        setSearchInput("");
+        setShowDropdown(false);
+        setUserId("");
+        setSearch("");
+        setCurrentPage(1);
+      }}
+      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition"
+    >
+      ✕
+    </button>
+  )}
+
+  {showDropdown && usersData.length > 0 && (
+    <div className="absolute top-full left-0 right-0 mt-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-2xl shadow-xl z-50 overflow-hidden">
+      <div className="max-h-48 overflow-y-auto">
+        {loading ? (
+          <div className="flex items-center justify-center py-6">
+            <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
           </div>
+        ) : (
+          usersData.map((user) => (
+            <button
+              key={user.id}
+              type="button"
+              onClick={() => handleUserId(user)}
+              className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors text-left group"
+            >
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                {(user.firstName?.[0] ?? "").toUpperCase()}{(user.lastName?.[0] ?? "").toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  {user.firstName} {user.lastName}
+                </p>
+                {(user as any).company && (
+                  <p className="text-xs text-gray-400 truncate">{(user as any).company}</p>
+                )}
+              </div>
+              {userId === user.id && (
+                <span className="text-indigo-500 flex-shrink-0 text-xs font-bold">✓ Selected</span>
+              )}
+            </button>
+          ))
+        )}
+      </div>
+      {usersData.length > 0 && (
+        <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+          <p className="text-[10px] text-gray-400 dark:text-gray-500">
+            {usersData.length} user{usersData.length !== 1 ? "s" : ""} found
+          </p>
+        </div>
+      )}
+    </div>
+  )}
+</div>
 
           <select
             value={filterStatus}
@@ -704,10 +834,13 @@ const TaskReportListPage = (): JSX.Element => {
             <button
               type="button"
               onClick={() => {
-                setSearch("");
-                setFilterStatus("");
-                setCurrentPage(1);
-                setDateFilter({ fromDate: "", toDate: "" });
+               setSearchInput("");
+      setSearch("");
+      setUserId("");
+      setFilterStatus("");
+      setCurrentPage(1);
+      setDateFilter({ fromDate: "", toDate: "" });
+      setShowDropdown(false);
               }}
               className="px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-1.5"
             >

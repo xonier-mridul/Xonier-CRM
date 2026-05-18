@@ -8,7 +8,7 @@ import { ParamValue } from "next/dist/server/request/params";
 
 export const TaskReportService = {
   getAll: (params: TaskReportListParams) =>{
-    return api.get(`/task-reports/all?${params.page ? `page=${params.page}` : ""}${params.limit ? `&limit=${params.limit}` : ""}${params.search ? `&search=${params.search}` : ""}${params.fromDate ? `&fromDate=${params.fromDate}` : ""}${params.toDate ? `&toDate=${params.toDate}` : ""}`);
+    return api.get(`/task-reports/all?${params.page ? `page=${params.page}` : ""}${params.limit ? `&limit=${params.limit}` : ""}${params.userId ? `&userId=${params.userId}` : ""}${params.search ? `&search=${params.search}` : ""}${params.fromDate ? `&fromDate=${params.fromDate}` : ""}${params.toDate ? `&toDate=${params.toDate}` : ""}`);
   },
   getMine: (params: TaskReportListParams) =>
     api.get(`/task-reports/my-reports?${params.page ? `page=${params.page}` : ""}${params.limit ? `&limit=${params.limit}` : ""}${params.search ? `&search=${params.search}` : ""}`),
@@ -29,7 +29,7 @@ export const TaskReportService = {
     api.patch(`/task-reports/${id}/evening/update`, payload),
 
   reviewReport: (id: ParamValue, comment: string) =>
-    api.patch(`/task-reports/${id}/review`, { managerComment: comment }),
+    api.patch(`/task-reports/${id}/review`, { managerComment: comment,isReviewed:true }),
 
   deleteReport: (id: string) =>
     api.delete(`/task-reports/${id}`),

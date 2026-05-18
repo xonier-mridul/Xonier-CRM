@@ -48,7 +48,7 @@ export const UsersTable = ({
   setCurrentPages,
   setSearchFilter,
   isAdmin,
-  handleCompanyFilter,
+
   companyData,
   handleCompanyChange,
 }: UserTableComponentProps): JSX.Element => {
@@ -141,7 +141,7 @@ const CompanySelect: React.FC<CompanySelectProps> = ({
     );
   }, [companyData, search]);
 
-  // visible items
+  
   const visibleCompanies =
     filteredCompanies.slice(
       0,
@@ -525,19 +525,25 @@ const CompanySelect: React.FC<CompanySelectProps> = ({
             <CompanySelect
                     companyData={companyData}
                       company={formData.companyId || ""}
-                      handleCompanyChange={handleCompanyFilter}
-                  />
-          </div>)
-
-           }   
-
-
-
-
-
-
-
-
+                      handleCompanyChange={setSearchFilter}
+                  />)
+           }
+            {/* <select 
+              className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10"
+            >
+              <option>Company </option>
+              {
+                companyData.map((item)=>(
+                  <option key={item.id}
+                  on>
+                        {item.companyName}
+                  </option>
+                ))
+              }
+              
+              
+            </select> */}
+          </div>
           <div className="flex items-center gap-6">
             <select
               name="limit"

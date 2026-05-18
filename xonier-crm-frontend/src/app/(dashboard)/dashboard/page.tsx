@@ -1,927 +1,1254 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
-    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-    ResponsiveContainer, BarChart, Bar, Cell, PieChart, Pie, Legend, Line,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, BarChart, Bar, Cell, PieChart, Pie, Legend,
 } from "recharts";
 import {
-    RefreshCw, AlertCircle, CheckCircle2, Clock, AlertTriangle,
-    Repeat2, Tag, BarChart2, ShieldOff, Lock, Activity, Zap, TrendingDown,
+  RefreshCw, AlertCircle, Building2, Users, DollarSign,
+  TrendingUp, TrendingDown, Activity, Crown, Shield, Briefcase,
+  Target, Award, CheckCircle2, XCircle, Clock, Zap, Globe,
+  ArrowUpRight, ArrowDownRight, BarChart3, PieChart as PieIcon,
+  UserCheck, Layers, Star, ChevronRight, Package,
 } from "lucide-react";
 import { DashboardService } from "@/src/services/dashboard.service";
 import { useSelector } from "react-redux";
 import { RootState } from "@/src/store";
-import { Odometer } from "@/src/components/common/odometer";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ── Types ──────────────────────────────────────────────────────────────────────
 
-interface TaskSummary {
-    total: number; completed: number; inProgress: number; overdue: number;
-    notStarted: number; dueSoon: number; dueToday: number; recurring: number;
-    subTasks: number; withAttachments: number; withTags: number;
-    completionRate: number; overdueRate: number;
+interface DashboardData {
+  role: string;
+  period: { filter: string; start: string; end: string; year: number; generatedAt: string };
+  companies?: CompanyStats;
+  users?: UserStats;
+  subscriptions?: SubscriptionStats;
+  revenue?: RevenueStats;
+  plans?: PlanStat[];
+  activity?: ActivityStats;
+  trends?: TrendsStats;
+  breakdowns?: BreakdownStats;
+  latestCompanies?: LatestCompany[];
+  topCompaniesByUsers?: TopCompany[];
+  recentActivities?: RecentActivity[];
+  churn?: ChurnStats;
+  leads?: LeadStats;
+  deals?: DealStats;
+  enquiries?: EnquiryStats;
+  tasks?: TaskStats;
+  monthlyLeadTrend?: MonthlyTrend[];
+  monthlyDealTrend?: MonthlyTrend[];
+  leadSourceBreakdown?: SourceItem[];
+  dealPipelineBreakdown?: PipelineStage[];
+  topPerformers?: TopPerformer[];
+  conversionRate?: ConversionRate;
+  taskPriorityBreakdown?: PriorityItem[];
+  enabledFeatures?: string[];
 }
 
-interface TaskPerformance {
-    estimatedHoursTotal: number; actualHoursTotal: number;
-    hoursVariance: number | null; hoursAccuracyRate: number | null;
-    avgCompletionHours: number; minCompletionHours: number; maxCompletionHours: number;
-    avgOverdueDays: number; maxOverdueDays: number; overdueCount: number;
-}
+type DashboardFilter = "today" | "this_week" | "this_month" | "this_year" | "custom";
 
-interface ByPriority { count: number; priority: string }
-interface ByCategory {
-    count: number; categoryId: string; categoryName: string;
-    categoryColor: string; categoryIcon: string; visibility: string;
+interface CompanyStats { total: number; thisMonth: number; active: number; pending: number; suspended: number; inactive: number; deleted: number }
+interface UserStats { total: number; thisMonth: number; active: number; inactive: number; suspended: number; deleted: number; notVerified: number; superAdmins?: number }
+interface SubscriptionStats { total: number; active: number; trial: number; canceled: number; thisMonth: number; mrr: number; totalRevenue: number; periodRevenue: number; avgRevenue: number }
+interface RevenueStats { mrr: number; arr: number; monthlyTrend: { month: string; year: number; revenue: number; subscriptions: number }[] }
+interface PlanStat { planId: string; name: string; status: string; visibility: string; monthlyPrice: number; yearlyPrice: number; activeSubscriptions: number }
+interface ActivityStats { total: number; thisMonth: number; byAction: { action: string; count: number }[]; byEntity: { entityType: string; count: number }[] }
+interface TrendsStats { monthlyCompanies: MonthlyTrend[]; monthlyUsers: MonthlyTrend[] }
+interface BreakdownStats {
+  companiesByStatus: { status: string; count: number }[];
+  companiesByIndustry: { industry: string; count: number }[];
+  companiesByCountry: { country: string; count: number }[];
+  subscriptionsByPlan: { planId: string; planName: string; count: number; revenue: number }[];
+  subscriptionsByBillingCycle: { cycle: string; count: number; revenue: number }[];
 }
-interface ByStatus {
-    count: number; statusId: string | null; statusName: string;
-    statusColor: string; statusIcon: string; statusType: string;
-    isFinal: boolean; isDefault: boolean; order: number;
-}
-interface ByEntityType { count: number; entityType: string }
-interface ByRecurrenceType { count: number; recurrenceType: string }
-interface RecentActivity { action: string; description: string; createdAt: string }
-interface ActivityData {
-    totalActions: number;
-    byAction: { action: string; count: number }[];
-    mostEditedFields: { field: string; count: number }[];
-    recentActivity: RecentActivity[];
-    activityByDay: { date: string; count: number }[];
-}
+interface LatestCompany { companyId: string; companyName: string; industry: string; country?: string; status: string; subscriptionCount: number; userLimit?: number; createdAt: string }
+interface TopCompany { companyName: string; companyId: string; industry: string; status: string; userCount: number; userLimit?: number }
+interface RecentActivity { entityType: string; action: string; title: string; description?: string; ipAddress?: string; createdAt: string }
+interface ChurnStats { canceledThisPeriod: number; newThisPeriod: number; churnRate: number; revenueLost: number }
+interface LeadStats { total: number; thisMonth: number; active: number; won: number; lost: number; deleted: number; unassigned: number; inDeal: number }
+interface DealStats { total: number; thisMonth: number; active: number; closed: number; totalRevenue: number; periodRevenue: number; avgDealValue: number }
+interface EnquiryStats { total: number; thisMonth: number; assigned: number; unassigned: number; active: number }
+interface TaskStats { total: number; thisMonth: number; completed: number; overdue: number; unassigned: number; completionRate: number }
+interface MonthlyTrend { month: string; year: number; count: number }
+interface SourceItem { source: string; count: number }
+interface PipelineStage { pipeline: string; count: number; totalAmount: number; percentage: number }
+interface TopPerformer { userId: string; firstName: string; lastName: string; wonLeads: number }
+interface ConversionRate { total: number; won: number; lost: number; conversionRate: number }
+interface PriorityItem { priority: string; count: number }
 
-interface TaskStatsData {
-    summary: TaskSummary;
-    performance: TaskPerformance;
-    breakdowns: {
-        byStatus: ByStatus[]; byStatusType: { count: number; type: string }[];
-        byPriority: ByPriority[]; byCategory: ByCategory[];
-        byEntityType: ByEntityType[]; byRecurrenceType: ByRecurrenceType[];
-    };
-    trends: {
-        daily: { completion: { completed: number; date: string }[]; creation: { created: number; date: string }[] };
-        weekly: { count: number; dayOfWeek: number; dayName: string }[];
-        monthly: { created: number; completed: number; month: string; completionRate: number }[];
-    };
-    activity: ActivityData;
-    meta: { userId: string; generatedAt: string; filters: Record<string, unknown> };
-}
+// ── Constants ──────────────────────────────────────────────────────────────────
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+const ROLE_CONFIG = {
+  super_admin: { label: "Super Admin", icon: Crown, gradient: "from-amber-500 to-orange-600", badge: "bg-amber-500/15 border-amber-500/30 text-amber-400" },
+  company_admin: { label: "Company Admin", icon: Shield, gradient: "from-indigo-600 to-violet-700", badge: "bg-indigo-500/15 border-indigo-500/30 text-indigo-400" },
+  manager: { label: "Manager", icon: Briefcase, gradient: "from-blue-600 to-cyan-700", badge: "bg-blue-500/15 border-blue-500/30 text-blue-400" },
+  user: { label: "User", icon: UserCheck, gradient: "from-emerald-600 to-teal-700", badge: "bg-emerald-500/15 border-emerald-500/30 text-emerald-400" },
+};
 
+const FILTER_OPTIONS: { value: DashboardFilter; label: string }[] = [
+  { value: "today", label: "Today" },
+  { value: "this_week", label: "Week" },
+  { value: "this_month", label: "Month" },
+  { value: "this_year", label: "Year" },
+];
+
+const CHART_COLORS = ["#6366f1", "#8b5cf6", "#ec4899", "#f97316", "#22c55e", "#06b6d4", "#eab308", "#a855f7"];
+const PIPELINE_COLORS: Record<string, string> = {
+  qualification: "#6366f1", requirement_analysis: "#8b5cf6", proposal: "#a78bfa",
+  negotiation: "#f59e0b", won: "#10b981", lost: "#ef4444",
+};
 const PRIORITY_COLORS: Record<string, string> = {
-    urgent: "#ef4444", high: "#f97316", medium: "#eab308", low: "#22c55e",
+  urgent: "#ef4444", high: "#f97316", medium: "#eab308", low: "#22c55e",
 };
-const PRIORITY_BADGE: Record<string, string> = {
-    urgent: "bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400",
-    high: "bg-orange-50 text-orange-600 dark:bg-orange-950 dark:text-orange-400",
-    medium: "bg-yellow-50 text-yellow-600 dark:bg-yellow-950 dark:text-yellow-400",
-    low: "bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400",
+const ACTION_COLORS: Record<string, string> = {
+  login: "#6366f1", logout: "#94a3b8", created: "#10b981", updated: "#f59e0b",
+  deleted: "#ef4444", assigned: "#06b6d4", verified: "#8b5cf6",
 };
-const ACTION_BADGE: Record<string, string> = {
-    status_changed: "bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400",
-    due_date_changed: "bg-orange-50 text-orange-600 dark:bg-orange-950 dark:text-orange-400",
-    created: "bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400",
-    updated: "bg-yellow-50 text-yellow-600 dark:bg-yellow-950 dark:text-yellow-400",
-    deleted: "bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400",
-    assigned: "bg-cyan-50 text-cyan-600 dark:bg-cyan-950 dark:text-cyan-400",
+const STATUS_COLORS: Record<string, string> = {
+  active: "#10b981", pending: "#f59e0b", pending_verification: "#f59e0b",
+  suspended: "#ef4444", inactive: "#f97316", deleted: "#6b7280",
 };
-const CATEGORY_COLORS = ["#6366f1", "#8b5cf6", "#ec4899", "#f97316", "#22c55e", "#06b6d4", "#eab308", "#a855f7"];
-const ENTITY_COLORS = ["#6366f1", "#22c55e", "#f97316", "#ec4899", "#06b6d4", "#eab308"];
-const RECUR_COLORS: Record<string, string> = {
-    daily: "#6366f1", weekly: "#8b5cf6", monthly: "#ec4899", yearly: "#f97316",
-};
-const ALL_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────────
 
+function fmtMoney(n: number): string {
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `$${(n / 1_000).toFixed(1)}k`;
+  return `$${n.toFixed(0)}`;
+}
 function fmt(n: number): string {
-    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-    if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
-    return String(n);
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+  return String(n ?? 0);
 }
-function capitalize(s: string): string {
-    return s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
-function fmtHours(h: number): string {
-    if (!h || isNaN(h)) return "—";
-    return h >= 24 ? `${(h / 24).toFixed(1)}d` : `${h.toFixed(1)}h`;
+function cap(s: string): string {
+  return (s || "").replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 function relTime(iso: string): string {
-    const diff = Date.now() - new Date(iso).getTime();
-    const mins = Math.floor(diff / 60_000);
-    if (mins < 1) return "just now";
-    if (mins < 60) return `${mins}m ago`;
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
-    return `${Math.floor(hrs / 24)}d ago`;
-}
-function shortDate(iso: string): string {
-    return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60_000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
 }
 
-// ─── Shared UI ────────────────────────────────────────────────────────────────
+// ── Animation Hook ─────────────────────────────────────────────────────────────
 
-const CustomTooltip = ({ active, payload, label }: any) => {
-    if (!active || !payload?.length) return null;
-    return (
-        <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-xl px-3 py-2.5 shadow-xl text-xs">
-            <p className="font-semibold text-gray-700 dark:text-gray-200 mb-1.5">{label}</p>
-            {payload.map((p: any) => (
-                <div key={p.name} className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: p.color }} />
-                    <span className="capitalize">{p.name}:</span>
-                    <span className="font-semibold text-gray-700 dark:text-gray-200">
-                        {typeof p.value === "number" ? p.value.toLocaleString() : p.value}
-                    </span>
-                </div>
-            ))}
+function useCountUp(target: number, duration = 1000) {
+  const [value, setValue] = useState(0);
+  const raf = useRef<number>(0);
+  const startRef = useRef<number>(0);
+  useEffect(() => {
+    if (!target) { setValue(0); return; }
+    startRef.current = 0;
+    const step = (ts: number) => {
+      if (!startRef.current) startRef.current = ts;
+      const p = Math.min((ts - startRef.current) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setValue(Math.round(eased * target));
+      if (p < 1) raf.current = requestAnimationFrame(step);
+    };
+    raf.current = requestAnimationFrame(step);
+    return () => { if (raf.current) cancelAnimationFrame(raf.current); };
+  }, [target, duration]);
+  return value;
+}
+
+// ── Shared Components ──────────────────────────────────────────────────────────
+
+const Tooltip_ = ({ active, payload, label }: any) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 shadow-2xl text-xs">
+      <p className="font-semibold text-slate-200 mb-1.5">{label}</p>
+      {payload.map((p: any) => (
+        <div key={p.name} className="flex items-center gap-2 text-slate-400">
+          <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: p.color }} />
+          <span className="capitalize">{p.name}:</span>
+          <span className="font-bold text-slate-200">{typeof p.value === "number" ? p.value.toLocaleString() : p.value}</span>
         </div>
-    );
-};
-
-const Skeleton = ({ className }: { className?: string }) => (
-    <div className={`animate-pulse rounded-xl bg-gray-100 dark:bg-gray-800 ${className ?? ""}`} />
-);
-
-const SectionTitle = ({ title, sub }: { title: string; sub?: string }) => (
-    <div className="mb-4">
-        <h2 className="text-sm font-semibold text-gray-800 dark:text-white">{title}</h2>
-        {sub && <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{sub}</p>}
+      ))}
     </div>
-);
-
-function RingChart({ pct, color }: { pct: number; color: string }) {
-    const r = 38, circ = 2 * Math.PI * r, offset = circ - (pct / 100) * circ;
-    return (
-        <svg width="96" height="96" viewBox="0 0 96 96">
-            <circle cx="48" cy="48" r={r} fill="none" stroke="currentColor"
-                className="text-gray-100 dark:text-gray-800" strokeWidth="8" />
-            <circle cx="48" cy="48" r={r} fill="none" stroke={color} strokeWidth="8"
-                strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
-                transform="rotate(-90 48 48)" style={{ transition: "stroke-dashoffset .7s ease" }} />
-        </svg>
-    );
-}
-
-// ─── 403 View ─────────────────────────────────────────────────────────────────
-
-function UnauthorizedView() {
-    return (
-        <div className="mt-10 ml-72 min-h-screen">
-            <div className="bg-white mb-10 dark:bg-gray-700 p-6 rounded-xl border border-slate-900/10 w-full">
-                <div className="p-10 flex flex-col items-center text-center">
-                    <div className="relative mb-8">
-                        <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-red-50 to-rose-100 dark:from-red-900/40 dark:to-rose-900/40 border-2 border-red-100 dark:border-red-800 flex items-center justify-center">
-                            <ShieldOff className="w-10 h-10 text-red-500 dark:text-red-400" strokeWidth={1.5} />
-                        </div>
-                        <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-800 flex items-center justify-center">
-                            <Lock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                        </div>
-                    </div>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 border border-red-100 dark:border-red-800 mb-4 tracking-widest uppercase">
-                        403 · Forbidden
-                    </span>
-                    <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-2">Access Denied</h1>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-sm mb-8">
-                        You don't have permission to view the task dashboard.
-                    </p>
-                    <div className="w-full flex items-start gap-3 px-4 py-3.5 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 text-left">
-                        <AlertCircle className="w-4 h-4 text-amber-500 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-                        <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
-                            Reach out to your admin with your user ID to request access.
-                        </p>
-                    </div>
-                </div>
-                <p className="text-center text-xs text-gray-400 dark:text-gray-600 mt-5">
-                    Error code 403 · Unauthorized access attempt has been logged
-                </p>
-            </div>
-        </div>
-    );
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// NEW SECTIONS
-// ═══════════════════════════════════════════════════════════════════
-
-// ── #10 Smart Insights Panel ──────────────────────────────────────
-
-interface Insight { level: "warning" | "info" | "error"; message: string }
-
-function buildInsights(data: TaskStatsData): Insight[] {
-    const { summary, performance, breakdowns, activity } = data;
-    const ins: Insight[] = [];
-    if (performance.actualHoursTotal === 0 && summary.completed > 0)
-        ins.push({ level: "warning", message: "No actual hours logged for completed tasks." });
-    if (summary.completionRate < 60 && summary.total > 0)
-        ins.push({ level: "warning", message: `Low completion rate — only ${summary.completionRate}% of tasks are done.` });
-    const allNotStarted = breakdowns.byStatusType.every((s) => s.type === "not_started" || s.type === "unknown");
-    if (allNotStarted && summary.total > 0)
-        ins.push({ level: "error", message: "All tasks are in not-started / unknown state." });
-    if (summary.overdue > 0)
-        ins.push({ level: "error", message: `${summary.overdue} task${summary.overdue > 1 ? "s are" : " is"} overdue.` });
-    if (performance.hoursVariance !== null && Math.abs(performance.hoursVariance) > 20)
-        ins.push({ level: "warning", message: `High hours variance detected (${performance.hoursVariance > 0 ? "+" : ""}${performance.hoursVariance.toFixed(1)}h).` });
-    if (summary.dueSoon > 0)
-        ins.push({ level: "info", message: `${summary.dueSoon} task${summary.dueSoon > 1 ? "s are" : " is"} due soon.` });
-    if (activity?.totalActions === 0)
-        ins.push({ level: "info", message: "No activity logged yet for these tasks." });
-    return ins;
-}
-
-const INSIGHT_STYLES = {
-    error: { bg: "bg-red-50 dark:bg-red-950/40", border: "border-red-100 dark:border-red-900", dot: "bg-red-500" },
-    warning: { bg: "bg-amber-50 dark:bg-amber-950/40", border: "border-amber-100 dark:border-amber-900", dot: "bg-amber-500" },
-    info: { bg: "bg-blue-50 dark:bg-blue-950/40", border: "border-blue-100 dark:border-blue-900", dot: "bg-blue-500" },
+  );
 };
 
-function InsightsPanel({ data }: { data: TaskStatsData }) {
-    const insights = buildInsights(data);
-    if (!insights.length) return null;
-    return (
-        <div className="bg-gray-50  dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-            <div className="flex items-center gap-2 mb-4">
-                <Zap className="w-4 h-4 text-amber-500" />
-                <h2 className="text-sm font-semibold text-gray-800 dark:text-white">Smart insights</h2>
-                <span className="ml-auto text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400">
-                    {insights.length} alert{insights.length > 1 ? "s" : ""}
-                </span>
-            </div>
-            <div className=" grid grid-cols-3 gap-2">
-                {insights.map((ins, i) => {
-                    const s = INSIGHT_STYLES[ins.level];
-                    return (
-                        <div key={i} className={`flex items-start gap-3 px-3.5 py-2.5 rounded-xl border ${s.bg} ${s.border}`}>
-                            <span className={`w-2 h-2 rounded-full mt-1 flex-shrink-0 ${s.dot}`} />
-                            <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">{ins.message}</p>
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
-    );
+const Sk = ({ className }: { className?: string }) => (
+  <div className={`animate-pulse rounded-2xl bg-slate-800/60 ${className ?? ""}`} />
+);
+
+function AnimNum({ value, prefix = "", suffix = "" }: { value: number; prefix?: string; suffix?: string }) {
+  const v = useCountUp(value);
+  return <span>{prefix}{v.toLocaleString()}{suffix}</span>;
 }
 
-// ── #1 + #2 Activity Section ──────────────────────────────────────
-
-function ActivitySection({ activity }: { activity: ActivityData }) {
-    const hasData = activity.totalActions > 0;
-    return (
-        <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-                <div className="flex items-center justify-between mb-4">
-                    <div>
-                        <h2 className="text-sm font-semibold text-gray-800 dark:text-white">Activity insights</h2>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Actions over time</p>
-                    </div>
-                    <span className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950 px-3 py-1.5 rounded-lg">
-                        <Activity className="w-3 h-3" /> {activity.totalActions} total
-                    </span>
-                </div>
-
-                {hasData && activity.activityByDay.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={150}>
-                        <BarChart data={activity.activityByDay.map((d) => ({ date: shortDate(d.date), actions: d.count }))}
-                            margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                            <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                            <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} width={24} />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Bar dataKey="actions" fill="#6366f1" radius={[4, 4, 0, 0]} />
-                        </BarChart>
-                    </ResponsiveContainer>
-                ) : (
-                    <div className="h-36 flex items-center justify-center text-xs text-gray-400 dark:text-gray-600">
-                        No activity recorded yet
-                    </div>
-                )}
-
-                {activity.byAction.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-                        <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Top actions</p>
-                        <div className="flex flex-wrap gap-1.5">
-                            {activity.byAction.slice(0, 6).map((a) => (
-                                <span key={a.action} className={`text-xs font-semibold px-2.5 py-1 rounded-full ${ACTION_BADGE[a.action] ?? "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"}`}>
-                                    {capitalize(a.action)} · {a.count}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {activity.mostEditedFields.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
-                        <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Most edited fields</p>
-                        <div className="flex flex-col gap-1.5">
-                            {activity.mostEditedFields.slice(0, 4).map((f) => (
-                                <div key={f.field} className="flex items-center justify-between">
-                                    <span className="text-xs text-gray-600 dark:text-gray-400 capitalize">{f.field.replace(/_/g, " ")}</span>
-                                    <span className="text-xs font-mono font-semibold text-gray-700 dark:text-gray-300">{f.count}×</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* Recent Activity Feed */}
-            <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-                <SectionTitle title="Recent activity" sub="Latest 5 task events" />
-                {activity.recentActivity.length > 0 ? (
-                    <div className="flex flex-col gap-0">
-                        {activity.recentActivity.slice(0, 5).map((item, i) => (
-                            <div key={i} className="flex gap-3 relative">
-                                {i < Math.min(activity.recentActivity.length, 5) - 1 && (
-                                    <div className="absolute left-[10px] top-6 bottom-0 w-px bg-gray-100 dark:bg-gray-800" />
-                                )}
-                                <div className="flex-shrink-0 w-5 h-5 mt-0.5 rounded-full border-2 border-white dark:border-gray-800 bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center z-10">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                                </div>
-                                <div className="pb-4 flex-1 min-w-0">
-                                    <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">{item.description}</p>
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${ACTION_BADGE[item.action] ?? "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"}`}>
-                                            {capitalize(item.action)}
-                                        </span>
-                                        <span className="text-[10px] text-gray-400 dark:text-gray-600">{relTime(item.createdAt)}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="h-40 flex flex-col items-center justify-center gap-2 text-gray-400 dark:text-gray-600">
-                        <Activity className="w-6 h-6 opacity-40" />
-                        <p className="text-xs">No recent activity</p>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
+function Ring({ pct, color, size = 80 }: { pct: number; color: string; size?: number }) {
+  const r = (size - 12) / 2;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (Math.min(pct, 100) / 100) * circ;
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#1e293b" strokeWidth="8" />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth="8"
+        strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
+        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+        style={{ transition: "stroke-dashoffset 1.2s cubic-bezier(0.34,1.56,0.64,1)" }} />
+    </svg>
+  );
 }
 
-// ── #4 Entity Type ────────────────────────────────────────────────
-
-function EntityTypeBreakdown({ entities, total }: { entities: ByEntityType[]; total: number }) {
-    if (!entities.length) return null;
-    return (
-        <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-            <SectionTitle title="Entity type breakdown" sub="Tasks linked by entity" />
-            <div className="grid grid-cols-2 gap-3 mb-4">
-                {entities.map((e, i) => {
-                    const color = ENTITY_COLORS[i % ENTITY_COLORS.length];
-                    const pct = total > 0 ? ((e.count / total) * 100).toFixed(1) : "0";
-                    return (
-                        <div key={e.entityType} className="flex items-center gap-2.5 p-3 rounded-xl bg-gray-50 dark:bg-gray-800">
-                            <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: color }} />
-                            <span className="text-xs text-gray-700 dark:text-gray-300 capitalize flex-1">
-                                {e.entityType === "general" ? "General" : capitalize(e.entityType)}
-                            </span>
-                            <span className="text-xs font-mono text-gray-500 dark:text-gray-400">{e.count}</span>
-                            <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">{pct}%</span>
-                        </div>
-                    );
-                })}
-            </div>
-            <ResponsiveContainer width="100%" height={120}>
-                <PieChart>
-                    <Pie data={entities.map((e) => ({ name: capitalize(e.entityType), value: e.count }))}
-                        cx="50%" cy="50%" innerRadius={32} outerRadius={52}
-                        dataKey="value" strokeWidth={0} paddingAngle={3}>
-                        {entities.map((_, i) => <Cell key={i} fill={ENTITY_COLORS[i % ENTITY_COLORS.length]} />)}
-                    </Pie>
-                    <Tooltip formatter={(v) => [v, ""]}
-                        contentStyle={{ background: "white", border: "1px solid #f1f5f9", borderRadius: "12px", fontSize: "12px" }} />
-                </PieChart>
-            </ResponsiveContainer>
+function MetricRow({ label, value, total, color }: { label: string; value: number; total: number; color: string }) {
+  const v = useCountUp(value);
+  const p = total > 0 ? (value / total) * 100 : 0;
+  return (
+    <div className="group">
+      <div className="flex items-center justify-between mb-1.5">
+        <div className="flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
+          <span className="text-xs text-slate-400 capitalize group-hover:text-slate-300 transition-colors">{label}</span>
         </div>
-    );
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-mono font-bold text-slate-300">{v}</span>
+          <span className="text-xs text-slate-600 w-9 text-right">{p.toFixed(1)}%</span>
+        </div>
+      </div>
+      <div className="h-1 rounded-full bg-slate-700/60">
+        <div className="h-1 rounded-full transition-all duration-1000" style={{ width: `${Math.min(p, 100)}%`, backgroundColor: color }} />
+      </div>
+    </div>
+  );
 }
 
-// ── #6 Overdue Insights ───────────────────────────────────────────
+// ── Stat Card ──────────────────────────────────────────────────────────────────
 
-function OverdueInsights({ performance, summary }: { performance: TaskPerformance; summary: TaskSummary }) {
-    const cards = [
-        { label: "Overdue tasks", value: performance.overdueCount, color: "bg-red-50 dark:bg-red-950", text: "text-red-600 dark:text-red-400" },
-        { label: "Avg overdue", value: performance.avgOverdueDays > 0 ? `${performance.avgOverdueDays.toFixed(1)}d` : "0d", color: "bg-orange-50 dark:bg-orange-950", text: "text-orange-600 dark:text-orange-400" },
-        { label: "Max overdue", value: performance.maxOverdueDays > 0 ? `${performance.maxOverdueDays}d` : "0d", color: "bg-rose-50 dark:bg-rose-950", text: "text-rose-600 dark:text-rose-400" },
-        { label: "Overdue rate", value: `${summary.overdueRate}%`, color: "bg-pink-50 dark:bg-pink-950", text: "text-pink-600 dark:text-pink-400" },
-    ];
-    return (
-        <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-            <div className="flex items-center gap-2 mb-4">
-                <TrendingDown className="w-4 h-4 text-red-500" />
-                <h2 className="text-sm font-semibold text-gray-800 dark:text-white">Overdue insights</h2>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-                {cards.map((c) => (
-                    <div key={c.label} className={`${c.color} rounded-xl p-3.5`}>
-                        <p className={`font-mono text-xl font-bold ${c.text}`}>{c.value}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{c.label}</p>
-                    </div>
-                ))}
-            </div>
+function StatCard({ label, value, sub, icon: Icon, color, trend, prefix = "", suffix = "" }:
+  { label: string; value: number; sub?: string; icon: any; color: string; trend?: { val: number; up: boolean }; prefix?: string; suffix?: string }) {
+  const v = useCountUp(value);
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-slate-700/50 bg-slate-800/80 p-5 hover:border-slate-600 transition-all duration-300 hover:shadow-lg hover:shadow-slate-900/50 group cursor-default">
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+        style={{ background: `radial-gradient(circle at top right, ${color}12, transparent 70%)` }} />
+      <div className="absolute top-0 right-0 w-20 h-20 rounded-bl-full opacity-5 group-hover:opacity-10 transition-opacity duration-500"
+        style={{ backgroundColor: color }} />
+      <div className="relative z-10">
+        <div className="flex items-start justify-between mb-4">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</p>
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white flex-shrink-0"
+            style={{ backgroundColor: color }}>
+            <Icon className="w-4 h-4" />
+          </div>
         </div>
-    );
+        <p className="font-mono text-3xl font-bold text-white tracking-tight leading-none mb-1">
+          {prefix}{v.toLocaleString()}{suffix}
+        </p>
+        {sub && <p className="text-xs text-slate-500 mt-1 leading-relaxed">{sub}</p>}
+        {trend && (
+          <div className={`flex items-center gap-1 mt-3 text-xs font-semibold ${trend.up ? "text-emerald-400" : "text-red-400"}`}>
+            {trend.up ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
+            {trend.val}% vs last period
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
-// ── #5 Hours Analytics ────────────────────────────────────────────
+// ── Card Wrapper ───────────────────────────────────────────────────────────────
 
-function HoursAnalytics({ performance }: { performance: TaskPerformance }) {
-    const noActual = performance.actualHoursTotal === 0;
-    return (
-        <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-            <SectionTitle title="Hours analytics" sub="Estimated vs actual time" />
-            {noActual && (
-                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900 mb-4">
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
-                    <p className="text-xs text-amber-700 dark:text-amber-400">No actual hours logged yet.</p>
-                </div>
-            )}
-            <div className="grid grid-cols-2 gap-3">
-                {[
-                    { label: "Estimated total", value: fmtHours(performance.estimatedHoursTotal), color: "bg-violet-50 dark:bg-violet-950", text: "text-violet-600 dark:text-violet-400" },
-                    { label: "Actual total", value: fmtHours(performance.actualHoursTotal), color: noActual ? "bg-gray-50 dark:bg-gray-800" : "bg-cyan-50 dark:bg-cyan-950", text: noActual ? "text-gray-400 dark:text-gray-600" : "text-cyan-600 dark:text-cyan-400" },
-                    { label: "Variance", value: performance.hoursVariance !== null ? `${performance.hoursVariance > 0 ? "+" : ""}${performance.hoursVariance.toFixed(1)}h` : "—", color: "bg-orange-50 dark:bg-orange-950", text: "text-orange-600 dark:text-orange-400" },
-                    { label: "Accuracy rate", value: performance.hoursAccuracyRate !== null ? `${performance.hoursAccuracyRate.toFixed(0)}%` : "—", color: "bg-green-50 dark:bg-green-950", text: "text-green-600 dark:text-green-400" },
-                    { label: "Avg completion", value: fmtHours(performance.avgCompletionHours), color: "bg-indigo-50 dark:bg-indigo-950", text: "text-indigo-600 dark:text-indigo-400" },
-                    { label: "Fastest task", value: fmtHours(performance.minCompletionHours), color: "bg-teal-50 dark:bg-teal-950", text: "text-teal-600 dark:text-teal-400" },
-                ].map((item) => (
-                    <div key={item.label} className={`${item.color} rounded-xl p-3.5`}>
-                        <p className={`font-mono text-xl font-bold ${item.text}`}>{item.value}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{item.label}</p>
-                    </div>
-                ))}
-            </div>
+function Card({ title, sub, icon: Icon, children, className = "" }:
+  { title: string; sub?: string; icon?: any; children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`bg-slate-800/80 border border-slate-700/50 rounded-2xl p-5 hover:border-slate-600/60 transition-all duration-200 ${className}`}>
+      {(title || Icon) && (
+        <div className="flex items-start gap-2.5 mb-5">
+          {Icon && <div className="w-7 h-7 rounded-lg bg-slate-700/60 flex items-center justify-center text-slate-400 flex-shrink-0 mt-0.5"><Icon className="w-3.5 h-3.5" /></div>}
+          <div>
+            <h3 className="text-sm font-bold text-white tracking-tight">{title}</h3>
+            {sub && <p className="text-xs text-slate-500 mt-0.5">{sub}</p>}
+          </div>
         </div>
-    );
+      )}
+      {children}
+    </div>
+  );
 }
 
-// ── #7 Recurrence Detail ──────────────────────────────────────────
+// ── Filter Bar ─────────────────────────────────────────────────────────────────
 
-function RecurrenceDetail({ recurrences, total }: { recurrences: ByRecurrenceType[]; total: number }) {
-    return (
-        <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-            <div className="flex items-center gap-2 mb-4">
-                <Repeat2 className="w-4 h-4 text-violet-500" />
-                <h2 className="text-sm font-semibold text-gray-800 dark:text-white">Recurrence detail</h2>
-                {recurrences.length > 0 && (
-                    <span className="ml-auto text-xs font-mono font-semibold text-violet-600 dark:text-violet-400">
-                        {recurrences.reduce((s, r) => s + r.count, 0)} total
-                    </span>
-                )}
-            </div>
-            {recurrences.length > 0 ? (
-                <div className="flex flex-col gap-3">
-                    {recurrences.map((r) => {
-                        const color = RECUR_COLORS[r.recurrenceType] ?? "#94a3b8";
-                        const pct = total > 0 ? ((r.count / total) * 100).toFixed(1) : "0";
-                        return (
-                            <div key={r.recurrenceType}>
-                                <div className="flex items-center justify-between mb-1">
-                                    <div className="flex items-center gap-2">
-                                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
-                                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300 capitalize">{r.recurrenceType}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs font-mono text-gray-500 dark:text-gray-400">{r.count}</span>
-                                        <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 w-10 text-right">{pct}%</span>
-                                    </div>
-                                </div>
-                                <div className="h-1.5 rounded-full bg-gray-100 dark:bg-gray-800">
-                                    <div className="h-1.5 rounded-full transition-all duration-700"
-                                        style={{ width: `${parseFloat(pct)}%`, backgroundColor: color }} />
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            ) : (
-                <p className="text-xs text-gray-400 dark:text-gray-600">No recurring tasks</p>
-            )}
-        </div>
-    );
-}
-
-// ── #8 Monthly Trends Chart ───────────────────────────────────────
-
-function MonthlyTrendsChart({ monthly }: { monthly: { created: number; completed: number; month: string; completionRate: number }[] }) {
-    return (
-        <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-            <SectionTitle title="Monthly trends" sub="Created vs completed · completion rate" />
-            {monthly.length > 0 ? (
-                <ResponsiveContainer width="100%" height={220}>
-                    <BarChart data={monthly} margin={{ top: 5, right: 20, bottom: 0, left: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                        <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                        <YAxis yAxisId="left" tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} width={28} />
-                        <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} width={36} tickFormatter={(v) => `${v}%`} domain={[0, 100]} />
-                        <Tooltip content={<CustomTooltip />} />
-                        <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} />
-                        <Bar yAxisId="left" dataKey="created" name="Created" fill="#6366f1" radius={[4, 4, 0, 0]} />
-                        <Bar yAxisId="left" dataKey="completed" name="Completed" fill="#22c55e" radius={[4, 4, 0, 0]} />
-                        <Line yAxisId="right" type="monotone" dataKey="completionRate" name="Rate %"
-                            stroke="#f97316" strokeWidth={2} dot={{ r: 3, fill: "#f97316" }} />
-                    </BarChart>
-                </ResponsiveContainer>
-            ) : (
-                <div className="h-40 flex items-center justify-center text-xs text-gray-400 dark:text-gray-600">No monthly data</div>
-            )}
-        </div>
-    );
-}
-
-// ── #9 Combined Trend Chart ───────────────────────────────────────
-
-function CombinedTrendChart({
-    creation, completion,
-}: {
-    creation: { date: string; created: number }[];
-    completion: { date: string; completed: number }[];
+function FilterBar({ current, onChange }: {
+  current: DashboardFilter;
+  onChange: (f: DashboardFilter) => void;
 }) {
-    const map: Record<string, { date: string; created: number; completed: number }> = {};
-    creation.forEach((d) => { map[d.date] = { date: d.date, created: d.created, completed: 0 }; });
-    completion.forEach((d) => {
-        if (map[d.date]) map[d.date].completed = d.completed;
-        else map[d.date] = { date: d.date, created: 0, completed: d.completed };
-    });
-    const merged = Object.values(map).sort((a, b) => a.date.localeCompare(b.date));
-
-    return (
-        <div className="col-span-2 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-            <div className="flex items-center justify-between mb-5">
-                <div>
-                    <h2 className="text-sm font-semibold text-gray-800 dark:text-white">Daily task trend</h2>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Created and completed — combined view</p>
-                </div>
-                <div className="flex items-center gap-3 text-xs">
-                    <span className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
-                        <span className="w-2.5 h-2.5 rounded-sm" style={{ background: "#6366f1" }} /> Created
-                    </span>
-                    <span className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
-                        <span className="w-2.5 h-2.5 rounded-sm" style={{ background: "#22c55e" }} /> Completed
-                    </span>
-                </div>
-            </div>
-            <ResponsiveContainer width="100%" height={200}>
-                <AreaChart data={merged} margin={{ top: 5, right: 5, bottom: 0, left: 0 }}>
-                    <defs>
-                        <linearGradient id="gCreated" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#6366f1" stopOpacity={0.15} />
-                            <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                        </linearGradient>
-                        <linearGradient id="gCompleted" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#22c55e" stopOpacity={0.15} />
-                            <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
-                        </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                    <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} width={28} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Area type="monotone" dataKey="created" stroke="#6366f1" strokeWidth={2.5} fill="url(#gCreated)"
-                        dot={false} activeDot={{ r: 5, fill: "#6366f1", strokeWidth: 0 }} />
-                    <Area type="monotone" dataKey="completed" stroke="#22c55e" strokeWidth={2.5} fill="url(#gCompleted)"
-                        dot={false} activeDot={{ r: 5, fill: "#22c55e", strokeWidth: 0 }} />
-                </AreaChart>
-            </ResponsiveContainer>
-        </div>
-    );
+  return (
+    <div className="flex items-center gap-0.5 bg-slate-800/60 border border-slate-700/50 rounded-xl p-1">
+      {FILTER_OPTIONS.map((o) => (
+        <button key={o.value} onClick={() => onChange(o.value as DashboardFilter)}
+          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
+            current === o.value ? "bg-indigo-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"
+          }`}>{o.label}</button>
+      ))}
+    </div>
+  );
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// PAGE
-// ═══════════════════════════════════════════════════════════════════
+// ── Super Admin Sections ───────────────────────────────────────────────────────
 
+function SACompaniesCard({ companies }: { companies: CompanyStats }) {
+  return (
+    <Card title="Companies" sub="Platform company status" icon={Building2}>
+      <div className="grid grid-cols-2 gap-2 mb-4">
+        {[
+          { label: "Total", value: companies.total, color: "#6366f1" },
+          { label: "Active", value: companies.active, color: "#10b981" },
+          { label: "Pending", value: companies.pending, color: "#f59e0b" },
+          { label: "Suspended", value: companies.suspended, color: "#ef4444" },
+        ].map((i) => (
+          <div key={i.label} className="rounded-xl p-3 border border-slate-700/40 hover:border-slate-600 transition-colors"
+            style={{ background: `linear-gradient(135deg, ${i.color}12, ${i.color}05)` }}>
+            <p className="font-mono text-xl font-bold" style={{ color: i.color }}><AnimNum value={i.value} /></p>
+            <p className="text-[10px] text-slate-500 mt-0.5">{i.label}</p>
+          </div>
+        ))}
+      </div>
+      <div className="flex flex-col gap-2">
+        <MetricRow label="Active" value={companies.active} total={companies.total + companies.deleted} color="#10b981" />
+        <MetricRow label="Pending" value={companies.pending} total={companies.total + companies.deleted} color="#f59e0b" />
+        <MetricRow label="Deleted" value={companies.deleted} total={companies.total + companies.deleted} color="#6b7280" />
+      </div>
+    </Card>
+  );
+}
 
+function SARevenueCard({ subs, revenue }: { subs: SubscriptionStats; revenue: RevenueStats }) {
+  return (
+    <Card title="Revenue" sub="Subscription financials" icon={DollarSign}>
+      <div className="mb-4">
+        <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">MRR</p>
+        <p className="font-mono text-4xl font-bold text-emerald-400">{fmtMoney(revenue.mrr)}</p>
+        <p className="text-xs text-slate-500 mt-1">ARR: <span className="text-emerald-400 font-semibold">{fmtMoney(revenue.arr)}</span></p>
+      </div>
+      <div className="grid grid-cols-2 gap-2 mb-3">
+        {[
+          { label: "Total Revenue", value: fmtMoney(subs.totalRevenue), color: "#10b981" },
+          { label: "Period Revenue", value: fmtMoney(subs.periodRevenue), color: "#6366f1" },
+          { label: "Active Subs", value: fmt(subs.active), color: "#8b5cf6" },
+          { label: "Avg Revenue", value: fmtMoney(subs.avgRevenue), color: "#f59e0b" },
+        ].map((i) => (
+          <div key={i.label} className="rounded-xl p-2.5 bg-slate-700/30 border border-slate-700/40">
+            <p className="font-mono text-base font-bold" style={{ color: i.color }}>{i.value}</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">{i.label}</p>
+          </div>
+        ))}
+      </div>
+      <div className="flex flex-col gap-1.5 pt-3 border-t border-slate-700/40">
+        <div className="flex justify-between text-xs">
+          <span className="text-slate-500">Trial</span>
+          <span className="font-mono font-bold text-amber-400">{subs.trial}</span>
+        </div>
+        <div className="flex justify-between text-xs">
+          <span className="text-slate-500">Canceled</span>
+          <span className="font-mono font-bold text-red-400">{subs.canceled}</span>
+        </div>
+      </div>
+    </Card>
+  );
+}
 
-export default function TaskDashboardPage() {
-    const [data, setData] = useState<TaskStatsData | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [errorStatus, setErrStat] = useState<number | null>(null);
-    const [refreshing, setRefresh] = useState(false);
-    const auth = useSelector((state: RootState) => state.auth);
-    const USER_ID = auth.user?._id || "";
-
-    const load = useCallback(async (showRefresh = false) => {
-        try {
-            if (showRefresh) setRefresh(true); else setLoading(true);
-            setError(null); setErrStat(null);
-
-            const res = await DashboardService.getAllCommon(USER_ID);
-            if (res.status === 200) {
-                const data = res.data.data;
-                setData(data);
-            }
-            else throw new Error(res.data.message);
-
-        } catch (err: any) {
-            setErrStat(err?.response?.status ?? null);
-            setError(err?.response?.data?.message ?? err?.message ?? "Failed to load task stats");
-        } finally {
-            setLoading(false); setRefresh(false);
-        }
-    }, []);
-
-    useEffect(() => { load(); }, [load]);
-
-    if (loading) {
-        return (
-            <div className="mt-10 ml-72 flex flex-col gap-6 p-6 bg-gray-50 dark:bg-gray-700 min-h-screen">
-                <div className="grid grid-cols-3 gap-4">
-                    {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-32" />)}
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                    <Skeleton className="col-span-2 h-64" /> <Skeleton className="h-64" />
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                    {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-64" />)}
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                    <Skeleton className="h-52" /> <Skeleton className="h-52" />
-                </div>
+function SAPlansCard({ plans }: { plans: PlanStat[] }) {
+  const active = plans.filter((p) => p.status === "active");
+  return (
+    <Card title="Plans" sub="Subscription plan distribution" icon={Package}>
+      <div className="flex flex-col gap-2">
+        {plans.slice(0, 5).map((plan, i) => {
+          const color = CHART_COLORS[i % CHART_COLORS.length];
+          return (
+            <div key={plan.planId}
+              className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-700/30 border border-slate-700/40 hover:border-slate-600 transition-all group">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                style={{ background: `linear-gradient(135deg, ${color}, ${color}80)` }}>
+                {(plan.name || "P")[0].toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-slate-300 truncate">{plan.name}</p>
+                <p className="text-[10px] text-slate-600">${plan.monthlyPrice}/mo · ${plan.yearlyPrice}/yr</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs font-mono font-bold" style={{ color }}>{plan.activeSubscriptions}</p>
+                <p className="text-[10px] text-slate-600">subs</p>
+              </div>
+              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${plan.status === "active" ? "bg-emerald-500/15 text-emerald-400" : "bg-red-500/15 text-red-400"}`}>
+                {plan.status}
+              </span>
             </div>
-        );
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
+function SAChurnCard({ churn }: { churn: ChurnStats }) {
+  return (
+    <Card title="Churn Analysis" sub="Subscription health" icon={TrendingDown}>
+      <div className="grid grid-cols-2 gap-3">
+        {[
+          { label: "Churn Rate", value: `${churn.churnRate.toFixed(1)}%`, color: churn.churnRate > 5 ? "#ef4444" : "#10b981", bg: "from-red-500/10 to-rose-500/5" },
+          { label: "Revenue Lost", value: fmtMoney(churn.revenueLost), color: "#ef4444", bg: "from-red-500/10 to-rose-500/5" },
+          { label: "Canceled", value: String(churn.canceledThisPeriod), color: "#f97316", bg: "from-orange-500/10 to-amber-500/5" },
+          { label: "New This Period", value: String(churn.newThisPeriod), color: "#10b981", bg: "from-emerald-500/10 to-green-500/5" },
+        ].map((i) => (
+          <div key={i.label} className={`rounded-xl p-3.5 border border-slate-700/40 bg-gradient-to-br ${i.bg}`}>
+            <p className="font-mono text-xl font-bold" style={{ color: i.color }}>{i.value}</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">{i.label}</p>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+function SALatestCompanies({ companies }: { companies: LatestCompany[] }) {
+  return (
+    <Card title="Latest Companies" sub="5 most recently registered" icon={Building2}>
+      <div className="flex flex-col gap-2">
+        {companies.map((c, i) => {
+          const color = STATUS_COLORS[c.status] ?? "#6b7280";
+          return (
+            <div key={c.companyId} className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-700/30 border border-slate-700/40 hover:border-slate-600 transition-all group">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                style={{ background: `linear-gradient(135deg, ${CHART_COLORS[i % CHART_COLORS.length]}, ${CHART_COLORS[i % CHART_COLORS.length]}80)` }}>
+                {(c.companyName || "C")[0]}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-slate-300 truncate">{c.companyName}</p>
+                <p className="text-[10px] text-slate-600 truncate">{c.industry} {c.country ? `· ${c.country}` : ""}</p>
+              </div>
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full border flex-shrink-0"
+                style={{ color, borderColor: `${color}40`, backgroundColor: `${color}10` }}>
+                {c.status}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
+function SATopCompanies({ companies }: { companies: TopCompany[] }) {
+  const max = Math.max(...companies.map((c) => c.userCount), 1);
+  return (
+    <Card title="Top Companies by Users" sub="Most active tenants" icon={Award}>
+      <div className="flex flex-col gap-3">
+        {companies.map((c, i) => {
+          const color = CHART_COLORS[i % CHART_COLORS.length];
+          const pct = (c.userCount / max) * 100;
+          const medals = ["🥇", "🥈", "🥉", "4th", "5th"];
+          return (
+            <div key={c.companyId} className="group flex items-center gap-3 p-2 rounded-xl hover:bg-slate-700/30 transition-colors">
+              <span className="text-sm w-6 text-center flex-shrink-0">{medals[i]}</span>
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                style={{ backgroundColor: color }}>
+                {(c.companyName || "C")[0]}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-slate-300 truncate">{c.companyName}</p>
+                <div className="mt-1 h-1 rounded-full bg-slate-700/60">
+                  <div className="h-1 rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+                </div>
+              </div>
+              <span className="text-xs font-mono font-bold flex-shrink-0" style={{ color }}>{c.userCount}</span>
+            </div>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
+function SAActivityCard({ activity }: { activity: ActivityStats }) {
+  return (
+    <Card title="Platform Activity" sub="System-wide action breakdown" icon={Activity}>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-3">By Action</p>
+          <div className="flex flex-col gap-2">
+            {activity.byAction.map((a, i) => {
+              const color = ACTION_COLORS[a.action] ?? CHART_COLORS[i % CHART_COLORS.length];
+              const total = activity.byAction.reduce((s, x) => s + x.count, 0);
+              const p = total > 0 ? (a.count / total) * 100 : 0;
+              return (
+                <div key={a.action}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-slate-400 capitalize">{a.action}</span>
+                    <span className="text-xs font-mono font-bold text-slate-300">{a.count}</span>
+                  </div>
+                  <div className="h-1 rounded-full bg-slate-700/60">
+                    <div className="h-1 rounded-full" style={{ width: `${Math.min(p, 100)}%`, backgroundColor: color }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <div>
+          <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-3">By Entity</p>
+          <div className="flex flex-col gap-2">
+            {activity.byEntity.map((e, i) => {
+              const color = CHART_COLORS[i % CHART_COLORS.length];
+              const total = activity.byEntity.reduce((s, x) => s + x.count, 0);
+              const p = total > 0 ? (e.count / total) * 100 : 0;
+              return (
+                <div key={e.entityType}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-slate-400 capitalize">{e.entityType}</span>
+                    <span className="text-xs font-mono font-bold text-slate-300">{e.count}</span>
+                  </div>
+                  <div className="h-1 rounded-full bg-slate-700/60">
+                    <div className="h-1 rounded-full" style={{ width: `${Math.min(p, 100)}%`, backgroundColor: color }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+      <div className="mt-4 pt-4 border-t border-slate-700/40 flex items-center justify-between">
+        <span className="text-xs text-slate-500">Total actions</span>
+        <span className="text-sm font-mono font-bold text-indigo-400">{activity.total.toLocaleString()}</span>
+      </div>
+    </Card>
+  );
+}
+
+function SARecentActivities({ activities }: { activities: RecentActivity[] }) {
+  return (
+    <Card title="Recent Activities" sub="Latest system events" icon={Clock}>
+      <div className="flex flex-col gap-0">
+        {activities.slice(0, 8).map((a, i) => {
+          const color = ACTION_COLORS[a.action] ?? "#6366f1";
+          return (
+            <div key={i} className="flex gap-3 relative group">
+              {i < Math.min(activities.length, 8) - 1 && (
+                <div className="absolute left-[9px] top-5 bottom-0 w-px bg-slate-700/60" />
+              )}
+              <div className="w-4.5 h-4.5 mt-1 rounded-full border-2 border-slate-800 flex items-center justify-center z-10 flex-shrink-0"
+                style={{ backgroundColor: `${color}25`, borderColor: color }}>
+                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
+              </div>
+              <div className="pb-3 flex-1 min-w-0">
+                <p className="text-xs text-slate-300 leading-relaxed font-medium">{a.title}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                    style={{ color, backgroundColor: `${color}15` }}>
+                    {cap(a.action)}
+                  </span>
+                  <span className="text-[10px] text-slate-600 capitalize">{a.entityType}</span>
+                  <span className="text-[10px] text-slate-600 ml-auto">{relTime(a.createdAt)}</span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
+// ── Shared CRM/Company Admin Sections ─────────────────────────────────────────
+
+function LeadsCard({ leads }: { leads: LeadStats }) {
+  const wonPct = leads.total > 0 ? (leads.won / leads.total) * 100 : 0;
+  return (
+    <Card title="Lead Pipeline" sub="Status and conversion" icon={Target}>
+      <div className="flex items-center gap-4 mb-4">
+        <div className="relative flex-shrink-0">
+          <Ring pct={wonPct} color="#10b981" size={72} />
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="font-mono text-xs font-bold text-white">{wonPct.toFixed(0)}%</span>
+            <span className="text-[9px] text-slate-500">won</span>
+          </div>
+        </div>
+        <div className="flex-1 flex flex-col gap-1.5">
+          <MetricRow label="Won" value={leads.won} total={leads.total} color="#10b981" />
+          <MetricRow label="Active" value={leads.active} total={leads.total} color="#6366f1" />
+          <MetricRow label="Lost" value={leads.lost} total={leads.total} color="#ef4444" />
+          <MetricRow label="Unassigned" value={leads.unassigned} total={leads.total} color="#f59e0b" />
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-2 pt-3 border-t border-slate-700/40">
+        {[
+          { label: "Total", value: leads.total, color: "#6366f1" },
+          { label: "In Deal", value: leads.inDeal, color: "#8b5cf6" },
+          { label: "This Month", value: leads.thisMonth, color: "#06b6d4" },
+        ].map((i) => (
+          <div key={i.label} className="text-center rounded-xl p-2 bg-slate-700/30">
+            <p className="font-mono text-base font-bold" style={{ color: i.color }}><AnimNum value={i.value} /></p>
+            <p className="text-[10px] text-slate-500 mt-0.5">{i.label}</p>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+function DealsCard({ deals }: { deals: DealStats }) {
+  const closedPct = deals.total > 0 ? (deals.closed / deals.total) * 100 : 0;
+  return (
+    <Card title="Deal Revenue" sub="Financial performance" icon={DollarSign}>
+      <div className="mb-4">
+        <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Total Revenue</p>
+        <p className="font-mono text-4xl font-bold text-emerald-400">{fmtMoney(deals.totalRevenue)}</p>
+        <p className="text-xs text-slate-500 mt-1">Period: <span className="text-emerald-400 font-semibold">{fmtMoney(deals.periodRevenue)}</span></p>
+      </div>
+      <div className="grid grid-cols-2 gap-2 mb-3">
+        {[
+          { label: "Active", value: deals.active, color: "#6366f1" },
+          { label: "Closed", value: deals.closed, color: "#10b981" },
+          { label: "Total", value: deals.total, color: "#8b5cf6" },
+          { label: "This Month", value: deals.thisMonth, color: "#06b6d4" },
+        ].map((i) => (
+          <div key={i.label} className="rounded-xl p-2.5 bg-slate-700/30 border border-slate-700/40">
+            <p className="font-mono text-lg font-bold" style={{ color: i.color }}><AnimNum value={i.value} /></p>
+            <p className="text-[10px] text-slate-500">{i.label}</p>
+          </div>
+        ))}
+      </div>
+      <div className="pt-3 border-t border-slate-700/40">
+        <div className="flex justify-between text-xs mb-1.5">
+          <span className="text-slate-500">Close Rate</span>
+          <span className="font-mono text-emerald-400">{closedPct.toFixed(1)}%</span>
+        </div>
+        <div className="h-1.5 rounded-full bg-slate-700/60">
+          <div className="h-1.5 rounded-full bg-emerald-500" style={{ width: `${Math.min(closedPct, 100)}%` }} />
+        </div>
+        <div className="flex justify-between text-xs mt-2">
+          <span className="text-slate-500">Avg Deal</span>
+          <span className="font-mono text-amber-400">{fmtMoney(deals.avgDealValue)}</span>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function ConversionCard({ conv }: { conv: ConversionRate }) {
+  return (
+    <Card title="Conversion Funnel" sub="Lead-to-won rate" icon={TrendingUp}>
+      <div className="flex items-center justify-center mb-5">
+        <div className="relative">
+          <Ring pct={conv.conversionRate} color="#6366f1" size={110} />
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="font-mono text-2xl font-bold text-white">{conv.conversionRate.toFixed(1)}%</span>
+            <span className="text-[10px] text-slate-500">conversion</span>
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        {[
+          { label: "Total", value: conv.total, color: "#6366f1", icon: Target },
+          { label: "Won", value: conv.won, color: "#10b981", icon: CheckCircle2 },
+          { label: "Lost", value: conv.lost, color: "#ef4444", icon: XCircle },
+        ].map((i) => (
+          <div key={i.label} className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-slate-700/30 border border-slate-700/40">
+            <i.icon className="w-4 h-4" style={{ color: i.color }} />
+            <span className="font-mono text-xl font-bold" style={{ color: i.color }}><AnimNum value={i.value} /></span>
+            <span className="text-[10px] text-slate-500">{i.label}</span>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+function PipelineChart({ pipeline }: { pipeline: PipelineStage[] }) {
+  return (
+    <Card title="Deal Pipeline" sub="Stage distribution" icon={Layers}>
+      <div className="flex flex-col gap-2.5 mb-4">
+        {pipeline.map((s) => {
+          const color = PIPELINE_COLORS[s.pipeline] ?? "#6366f1";
+          return (
+            <div key={s.pipeline} className="group">
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-sm" style={{ backgroundColor: color }} />
+                  <span className="text-xs text-slate-400 capitalize group-hover:text-slate-300 transition-colors">
+                    {cap(s.pipeline)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-600">{fmtMoney(s.totalAmount)}</span>
+                  <span className="text-xs font-mono font-bold text-slate-300">{s.count}</span>
+                  <span className="text-xs text-slate-600 w-9 text-right">{s.percentage.toFixed(1)}%</span>
+                </div>
+              </div>
+              <div className="h-1.5 rounded-full bg-slate-700/60">
+                <div className="h-1.5 rounded-full" style={{ width: `${Math.min(s.percentage, 100)}%`, backgroundColor: color }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <ResponsiveContainer width="100%" height={120}>
+        <BarChart data={pipeline.map((s) => ({ name: cap(s.pipeline).split(" ")[0], count: s.count }))}
+          margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+          <XAxis dataKey="name" tick={{ fontSize: 9, fill: "#64748b" }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fontSize: 9, fill: "#64748b" }} axisLine={false} tickLine={false} width={20} />
+          <Tooltip content={<Tooltip_ />} />
+          <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+            {pipeline.map((s, i) => <Cell key={i} fill={PIPELINE_COLORS[s.pipeline] ?? "#6366f1"} />)}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </Card>
+  );
+}
+
+function TopPerformers({ performers }: { performers: TopPerformer[] }) {
+  const max = Math.max(...performers.map((p) => p.wonLeads), 1);
+  const medals = ["🥇", "🥈", "🥉", "4th", "5th"];
+  const colors = ["#f59e0b", "#94a3b8", "#cd7c4c", "#6366f1", "#8b5cf6"];
+  return (
+    <Card title="Top Performers" sub="Ranked by won leads" icon={Award}>
+      <div className="flex flex-col gap-2">
+        {performers.slice(0, 5).map((p, i) => (
+          <div key={p.userId} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-700/30 transition-colors group">
+            <span className="text-sm w-6 text-center">{medals[i]}</span>
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+              style={{ background: `linear-gradient(135deg, ${colors[i]}, ${colors[i]}80)` }}>
+              {(p.firstName || "?")[0]}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-slate-300 truncate">{p.firstName} {p.lastName}</p>
+              <div className="mt-1 h-1 rounded-full bg-slate-700/60">
+                <div className="h-1 rounded-full" style={{ width: `${(p.wonLeads / max) * 100}%`, backgroundColor: colors[i] }} />
+              </div>
+            </div>
+            <span className="text-xs font-mono font-bold flex-shrink-0" style={{ color: colors[i] }}>{p.wonLeads}</span>
+          </div>
+        ))}
+        {performers.length === 0 && (
+          <div className="flex flex-col items-center py-8 text-slate-600">
+            <Award className="w-8 h-8 mb-2 opacity-40" />
+            <p className="text-xs">No data yet</p>
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+}
+
+function UsersCard({ users }: { users: UserStats }) {
+  return (
+    <Card title="Team Overview" sub="User distribution" icon={Users}>
+      <div className="grid grid-cols-2 gap-2 mb-4">
+        {[
+          { label: "Total", value: users.total, color: "#6366f1" },
+          { label: "Active", value: users.active, color: "#10b981" },
+          { label: "Inactive", value: users.inactive, color: "#f59e0b" },
+          { label: "Not Verified", value: users.notVerified, color: "#ef4444" },
+        ].map((i) => (
+          <div key={i.label} className="rounded-xl p-3 border border-slate-700/40"
+            style={{ background: `linear-gradient(135deg, ${i.color}12, ${i.color}05)` }}>
+            <p className="font-mono text-xl font-bold" style={{ color: i.color }}><AnimNum value={i.value} /></p>
+            <p className="text-[10px] text-slate-500 mt-0.5">{i.label}</p>
+          </div>
+        ))}
+      </div>
+      <div className="flex flex-col gap-2">
+        <MetricRow label="Active" value={users.active} total={users.total} color="#10b981" />
+        <MetricRow label="Inactive" value={users.inactive} total={users.total} color="#f59e0b" />
+        <MetricRow label="Suspended" value={users.suspended} total={users.total} color="#ef4444" />
+      </div>
+      <div className="mt-3 pt-3 border-t border-slate-700/40 flex justify-between text-xs">
+        <span className="text-slate-500">This month</span>
+        <span className="font-bold text-indigo-400">+{users.thisMonth} new</span>
+      </div>
+    </Card>
+  );
+}
+
+function TaskCard({ tasks }: { tasks: TaskStats }) {
+  return (
+    <Card title="Task Pulse" sub="Completion metrics" icon={CheckCircle2}>
+      <div className="flex items-center gap-4 mb-4">
+        <div className="relative flex-shrink-0">
+          <Ring pct={tasks.completionRate} color="#10b981" size={72} />
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="font-mono text-xs font-bold text-white">{tasks.completionRate.toFixed(0)}%</span>
+          </div>
+        </div>
+        <div className="flex-1">
+          <p className="text-xs text-slate-500 mb-1">Completion Rate</p>
+          <p className="text-sm font-bold text-emerald-400">{tasks.completionRate.toFixed(1)}%</p>
+          <p className="text-xs text-slate-600 mt-1">{tasks.completed} of {tasks.total}</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        {[
+          { label: "Overdue", value: tasks.overdue, color: "#ef4444" },
+          { label: "Unassigned", value: tasks.unassigned, color: "#f59e0b" },
+          { label: "This Month", value: tasks.thisMonth, color: "#6366f1" },
+        ].map((i) => (
+          <div key={i.label} className="text-center rounded-xl p-2 bg-slate-700/30">
+            <p className="font-mono text-lg font-bold" style={{ color: i.color }}><AnimNum value={i.value} /></p>
+            <p className="text-[10px] text-slate-500 mt-0.5">{i.label}</p>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+function MonthlyTrendChart({ leads, deals }: { leads?: MonthlyTrend[]; deals?: MonthlyTrend[] }) {
+  const allMonths = Array.from(new Set([...(leads ?? []), ...(deals ?? [])].map((d) => d.month)));
+  const merged = allMonths.map((month) => ({
+    month,
+    leads: leads?.find((l) => l.month === month)?.count ?? 0,
+    deals: deals?.find((d) => d.month === month)?.count ?? 0,
+  }));
+  return (
+    <Card title="Monthly Growth" sub="Leads vs deals per month" icon={BarChart3}>
+      <ResponsiveContainer width="100%" height={200}>
+        <AreaChart data={merged} margin={{ top: 5, right: 5, bottom: 0, left: 0 }}>
+          <defs>
+            <linearGradient id="gL" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="gD" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+          <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#64748b" }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fontSize: 10, fill: "#64748b" }} axisLine={false} tickLine={false} width={24} />
+          <Tooltip content={<Tooltip_ />} />
+          <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px", color: "#94a3b8" }} />
+          <Area type="monotone" dataKey="leads" stroke="#6366f1" strokeWidth={2.5} fill="url(#gL)" dot={false} activeDot={{ r: 4, fill: "#6366f1", strokeWidth: 0 }} />
+          <Area type="monotone" dataKey="deals" stroke="#10b981" strokeWidth={2.5} fill="url(#gD)" dot={false} activeDot={{ r: 4, fill: "#10b981", strokeWidth: 0 }} />
+        </AreaChart>
+      </ResponsiveContainer>
+    </Card>
+  );
+}
+
+function SAMonthlyTrendChart({ companies, users }: { companies: MonthlyTrend[]; users: MonthlyTrend[] }) {
+  const allMonths = Array.from(new Set([...companies, ...users].map((d) => d.month)));
+  const merged = allMonths.map((m) => ({
+    month: m,
+    companies: companies.find((c) => c.month === m)?.count ?? 0,
+    users: users.find((u) => u.month === m)?.count ?? 0,
+  }));
+  return (
+    <Card title="Platform Growth" sub="Companies and users per month" icon={BarChart3}>
+      <ResponsiveContainer width="100%" height={200}>
+        <AreaChart data={merged} margin={{ top: 5, right: 5, bottom: 0, left: 0 }}>
+          <defs>
+            <linearGradient id="gC" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="gU" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+          <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#64748b" }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fontSize: 10, fill: "#64748b" }} axisLine={false} tickLine={false} width={24} />
+          <Tooltip content={<Tooltip_ />} />
+          <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px", color: "#94a3b8" }} />
+          <Area type="monotone" dataKey="companies" stroke="#f59e0b" strokeWidth={2.5} fill="url(#gC)" dot={false} />
+          <Area type="monotone" dataKey="users" stroke="#6366f1" strokeWidth={2.5} fill="url(#gU)" dot={false} />
+        </AreaChart>
+      </ResponsiveContainer>
+    </Card>
+  );
+}
+
+function SARevenueTrendChart({ trend }: { trend: { month: string; revenue: number; subscriptions: number }[] }) {
+  return (
+    <Card title="Revenue Trend" sub="Monthly revenue and subscriptions" icon={DollarSign}>
+      <ResponsiveContainer width="100%" height={200}>
+        <BarChart data={trend} margin={{ top: 5, right: 5, bottom: 0, left: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+          <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#64748b" }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fontSize: 10, fill: "#64748b" }} axisLine={false} tickLine={false} width={40}
+            tickFormatter={(v) => `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`} />
+          <Tooltip content={<Tooltip_ />} />
+          <Bar dataKey="revenue" name="Revenue ($)" fill="#10b981" radius={[4, 4, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </Card>
+  );
+}
+
+function BreakdownsSection({ breakdowns }: { breakdowns: BreakdownStats }) {
+  return (
+    <div className="grid grid-cols-3 gap-4">
+      <Card title="By Industry" sub="Companies grouped" icon={Globe}>
+        <div className="flex flex-col gap-2">
+          {breakdowns.companiesByIndustry.map((i, idx) => {
+            const color = CHART_COLORS[idx % CHART_COLORS.length];
+            const total = breakdowns.companiesByIndustry.reduce((s, x) => s + x.count, 0);
+            return (
+              <div key={i.industry}>
+                <div className="flex justify-between mb-1">
+                  <span className="text-xs text-slate-400 capitalize truncate">{i.industry}</span>
+                  <span className="text-xs font-mono font-bold text-slate-300">{i.count}</span>
+                </div>
+                <div className="h-1 rounded-full bg-slate-700/60">
+                  <div className="h-1 rounded-full" style={{ width: `${(i.count / total) * 100}%`, backgroundColor: color }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+
+      <Card title="Billing Cycles" sub="Active subscription cycles" icon={PieIcon}>
+        <div className="flex flex-col gap-3">
+          {breakdowns.subscriptionsByBillingCycle.map((c, i) => {
+            const color = i === 0 ? "#6366f1" : "#10b981";
+            const total = breakdowns.subscriptionsByBillingCycle.reduce((s, x) => s + x.count, 0);
+            return (
+              <div key={c.cycle}>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+                    <span className="text-xs text-slate-400 capitalize">{c.cycle}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-600">{fmtMoney(c.revenue)}</span>
+                    <span className="text-xs font-mono font-bold text-slate-300">{c.count}</span>
+                  </div>
+                </div>
+                <div className="h-1.5 rounded-full bg-slate-700/60">
+                  <div className="h-1.5 rounded-full" style={{ width: `${(c.count / total) * 100}%`, backgroundColor: color }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+
+      <Card title="By Country" sub="Geographic distribution" icon={Globe}>
+        <div className="flex flex-col gap-2">
+          {breakdowns.companiesByCountry.map((c, i) => {
+            const color = CHART_COLORS[i % CHART_COLORS.length];
+            const total = breakdowns.companiesByCountry.reduce((s, x) => s + x.count, 0);
+            return (
+              <div key={c.country}>
+                <div className="flex justify-between mb-1">
+                  <span className="text-xs text-slate-400 uppercase">{c.country}</span>
+                  <span className="text-xs font-mono font-bold text-slate-300">{c.count}</span>
+                </div>
+                <div className="h-1 rounded-full bg-slate-700/60">
+                  <div className="h-1 rounded-full" style={{ width: `${(c.count / total) * 100}%`, backgroundColor: color }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ── Role-Specific Layouts ──────────────────────────────────────────────────────
+
+function SuperAdminLayout({ d }: { d: DashboardData }) {
+  return (
+    <>
+      <div className="grid grid-cols-4 gap-4">
+        <StatCard label="Companies" value={d.companies!.total} sub={`${d.companies!.active} active · ${d.companies!.thisMonth} this month`} icon={Building2} color="#f59e0b" />
+        <StatCard label="Total Users" value={d.users!.total} sub={`${d.users!.active} active · ${d.users!.thisMonth} this month`} icon={Users} color="#6366f1" />
+        <StatCard label="MRR" value={Math.round(d.revenue!.mrr)} prefix="$" sub={`ARR: ${fmtMoney(d.revenue!.arr)}`} icon={DollarSign} color="#10b981" />
+        <StatCard label="Active Subs" value={d.subscriptions!.active} sub={`${d.subscriptions!.trial} trial · ${d.subscriptions!.canceled} canceled`} icon={Star} color="#8b5cf6" />
+      </div>
+
+      <div className="grid grid-cols-3 gap-4">
+        <SACompaniesCard companies={d.companies!} />
+        <SARevenueCard subs={d.subscriptions!} revenue={d.revenue!} />
+        <SAChurnCard churn={d.churn!} />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <SAMonthlyTrendChart companies={d.trends!.monthlyCompanies} users={d.trends!.monthlyUsers} />
+        <SARevenueTrendChart trend={d.revenue!.monthlyTrend} />
+      </div>
+
+      <div className="grid grid-cols-3 gap-4">
+        <SAPlansCard plans={d.plans!} />
+        <SALatestCompanies companies={d.latestCompanies!} />
+        <SATopCompanies companies={d.topCompaniesByUsers!} />
+      </div>
+
+      {d.breakdowns && <BreakdownsSection breakdowns={d.breakdowns} />}
+
+      <div className="grid grid-cols-3 gap-4">
+        <div className="col-span-2"><SAActivityCard activity={d.activity!} /></div>
+        <SARecentActivities activities={d.recentActivities!} />
+      </div>
+    </>
+  );
+}
+
+function CompanyAdminLayout({ d }: { d: DashboardData }) {
+  return (
+    <>
+      <div className="grid grid-cols-4 gap-4">
+        <StatCard label="Total Users" value={d.users!.total} sub={`${d.users!.active} active · +${d.users!.thisMonth} this month`} icon={Users} color="#6366f1" />
+        {d.leads && <StatCard label="Total Leads" value={d.leads.total} sub={`${d.leads.won} won · ${d.leads.thisMonth} this month`} icon={Target} color="#10b981" />}
+        {d.deals && <StatCard label="Revenue" value={Math.round(d.deals.totalRevenue)} prefix="$" sub={`${d.deals.closed} closed · avg ${fmtMoney(d.deals.avgDealValue)}`} icon={DollarSign} color="#f59e0b" />}
+        {d.conversionRate && <StatCard label="Conversion" value={Math.round(d.conversionRate.conversionRate)} suffix="%" sub={`${d.conversionRate.won} won of ${d.conversionRate.total}`} icon={TrendingUp} color="#8b5cf6" />}
+      </div>
+
+      <div className="grid grid-cols-3 gap-4">
+        <UsersCard users={d.users!} />
+        {d.leads && <LeadsCard leads={d.leads} />}
+        {d.deals && <DealsCard deals={d.deals} />}
+      </div>
+
+      {d.monthlyLeadTrend && d.monthlyDealTrend && (
+        <div className="grid grid-cols-3 gap-4">
+          <div className="col-span-2"><MonthlyTrendChart leads={d.monthlyLeadTrend} deals={d.monthlyDealTrend} /></div>
+          {d.conversionRate && <ConversionCard conv={d.conversionRate} />}
+        </div>
+      )}
+
+      {(d.dealPipelineBreakdown || d.topPerformers) && (
+        <div className="grid grid-cols-3 gap-4">
+          {d.dealPipelineBreakdown && <PipelineChart pipeline={d.dealPipelineBreakdown} />}
+          {d.leadSourceBreakdown && (
+            <Card title="Lead Sources" sub="Where leads come from" icon={PieIcon}>
+              <div className="flex items-center gap-3">
+                <ResponsiveContainer width={100} height={100}>
+                  <PieChart>
+                    <Pie data={d.leadSourceBreakdown.map((s) => ({ name: s.source, value: s.count }))}
+                      cx="50%" cy="50%" innerRadius={28} outerRadius={46} dataKey="value" strokeWidth={0} paddingAngle={2}>
+                      {d.leadSourceBreakdown.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+                    </Pie>
+                    <Tooltip contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "10px", fontSize: "11px" }} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="flex-1 flex flex-col gap-1">
+                  {d.leadSourceBreakdown.slice(0, 6).map((s, i) => {
+                    const color = CHART_COLORS[i % CHART_COLORS.length];
+                    const total = d.leadSourceBreakdown!.reduce((sum, x) => sum + x.count, 0);
+                    return (
+                      <div key={s.source} className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                        <span className="text-xs text-slate-400 flex-1 truncate capitalize">{s.source}</span>
+                        <span className="text-xs font-mono text-slate-300">{s.count}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </Card>
+          )}
+          {d.topPerformers && <TopPerformers performers={d.topPerformers} />}
+        </div>
+      )}
+
+      {(d.enquiries || d.tasks) && (
+        <div className="grid grid-cols-3 gap-4">
+          {d.enquiries && (
+            <Card title="Enquiries" sub="Assignment status" icon={Activity}>
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                {[
+                  { label: "Total", value: d.enquiries.total, color: "#6366f1" },
+                  { label: "Active", value: d.enquiries.active, color: "#10b981" },
+                  { label: "Assigned", value: d.enquiries.assigned, color: "#8b5cf6" },
+                  { label: "Unassigned", value: d.enquiries.unassigned, color: "#f59e0b" },
+                ].map((i) => (
+                  <div key={i.label} className="rounded-xl p-2.5 bg-slate-700/30">
+                    <p className="font-mono text-xl font-bold" style={{ color: i.color }}><AnimNum value={i.value} /></p>
+                    <p className="text-[10px] text-slate-500">{i.label}</p>
+                  </div>
+                ))}
+              </div>
+              <MetricRow label="Assigned" value={d.enquiries.assigned} total={d.enquiries.total} color="#8b5cf6" />
+            </Card>
+          )}
+          {d.tasks && <TaskCard tasks={d.tasks} />}
+          {d.taskPriorityBreakdown && (
+            <Card title="Task Priority" sub="Distribution by urgency" icon={Zap}>
+              <div className="flex flex-col gap-3">
+                {d.taskPriorityBreakdown.map((p) => {
+                  const color = PRIORITY_COLORS[p.priority] ?? "#94a3b8";
+                  const total = d.taskPriorityBreakdown!.reduce((s, x) => s + x.count, 0);
+                  const pct = total > 0 ? (p.count / total) * 100 : 0;
+                  return (
+                    <div key={p.priority}>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-xs font-semibold capitalize px-2 py-0.5 rounded-full border"
+                          style={{ color, borderColor: `${color}40`, backgroundColor: `${color}10` }}>
+                          {p.priority}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-mono text-slate-300">{p.count}</span>
+                          <span className="text-xs text-slate-600 w-9 text-right">{pct.toFixed(1)}%</span>
+                        </div>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-slate-700/60">
+                        <div className="h-1.5 rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
+
+function ManagerUserLayout({ d }: { d: DashboardData }) {
+  return (
+    <>
+      <div className="grid grid-cols-3 gap-4">
+        {d.leads && <StatCard label="Total Leads" value={d.leads.total} sub={`${d.leads.won} won · ${d.leads.active} active`} icon={Target} color="#10b981" />}
+        {d.deals && <StatCard label="Revenue" value={Math.round(d.deals.totalRevenue)} prefix="$" sub={`${d.deals.closed} deals closed`} icon={DollarSign} color="#f59e0b" />}
+        {d.tasks && <StatCard label="Tasks" value={d.tasks.total} sub={`${d.tasks.completed} done · ${d.tasks.overdue} overdue`} icon={CheckCircle2} color="#6366f1" />}
+      </div>
+      {d.leads && (
+        <div className="grid grid-cols-2 gap-4">
+          <LeadsCard leads={d.leads} />
+          {d.conversionRate && <ConversionCard conv={d.conversionRate} />}
+        </div>
+      )}
+      {d.deals && <DealsCard deals={d.deals} />}
+      {d.tasks && <TaskCard tasks={d.tasks} />}
+    </>
+  );
+}
+
+
+
+// ── Main Dashboard ─────────────────────────────────────────────────────────────
+
+export default function UnifiedDashboardPage() {
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [filter, setFilter] = useState<DashboardFilter>("this_month");
+  const auth = useSelector((state: RootState) => state.auth);
+
+// In UnifiedDashboard.tsx — replace the load function
+
+const load = useCallback(async (showRefresh = false) => {
+  try {
+    if (showRefresh) setRefreshing(true); else setLoading(true);
+    setError(null);
+
+    const res = await DashboardService.getDashboardStats({ filter });
+
+    if (res.status === 200) {
+      setData(res.data.data);
+    } else {
+      throw new Error(res.data.message);
     }
+  } catch (err: any) {
+    setError(err?.response?.data?.message ?? err?.message ?? "Failed to load dashboard");
+  } finally {
+    setLoading(false);
+    setRefreshing(false);
+  }
+}, [filter]);
 
-    if (errorStatus === 403) return <UnauthorizedView />;
+  useEffect(() => { load(); }, [load]);
 
-    if (error) return (
-        <div className="mt-10 ml-72 flex items-center justify-center h-96">
-            <div className="flex flex-col items-center gap-3 text-center">
-                <AlertCircle className="w-10 h-10 text-red-400" />
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{error}</p>
-                <button onClick={() => load()}
-                    className="mt-1 px-4 py-2 text-sm font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors">
-                    Retry
-                </button>
-            </div>
-        </div>
-    );
-
-    if (!data) return null;
-
-    const { summary, performance, breakdowns, trends, activity } = data;
-    const totalTasks = Math.max(summary.total, 1);
-
-    const weeklyBarData = ALL_DAYS.map((day) => {
-        const match = trends.weekly.find((w) => w.dayName.slice(0, 3) === day);
-        return { day, count: match?.count ?? 0 };
-    });
-    const weeklyMax = Math.max(...weeklyBarData.map((d) => d.count), 1);
-
-    const kpiCards = [
-        { label: "Total tasks", value: fmt(summary.total), sub: `${summary.completed} completed · ${summary.inProgress} in progress`, barPct: summary.completionRate, color: "#6366f1", iconBg: "bg-indigo-500", icon: <BarChart2 className="w-4 h-4" /> },
-        { label: "Completion rate", value: `${summary.completionRate}%`, sub: `${summary.completed} of ${summary.total} tasks done`, barPct: summary.completionRate, color: "#22c55e", iconBg: "bg-green-500", icon: <CheckCircle2 className="w-4 h-4" /> },
-        { label: "Overdue", value: fmt(summary.overdue), sub: `${summary.overdueRate}% overdue rate · ${summary.dueSoon} due soon`, barPct: summary.overdueRate, color: "#ef4444", iconBg: "bg-red-500", icon: <AlertTriangle className="w-4 h-4" /> },
-        { label: "Due today", value: fmt(summary.dueToday), sub: `${summary.dueSoon} due this week`, barPct: Math.min((summary.dueToday / totalTasks) * 100, 100), color: "#f97316", iconBg: "bg-orange-500", icon: <Clock className="w-4 h-4" /> },
-        { label: "Recurring", value: fmt(summary.recurring), sub: breakdowns.byRecurrenceType.map((r) => capitalize(r.recurrenceType)).join(" · ") || "No recurrences", barPct: Math.min((summary.recurring / totalTasks) * 100, 100), color: "#8b5cf6", iconBg: "bg-violet-500", icon: <Repeat2 className="w-4 h-4" /> },
-        { label: "With tags", value: fmt(summary.withTags), sub: `${summary.withAttachments} with attachments · ${summary.subTasks} subtasks`, barPct: Math.min((summary.withTags / totalTasks) * 100, 100), color: "#06b6d4", iconBg: "bg-cyan-500", icon: <Tag className="w-4 h-4" /> },
-    ];
-
+  if (loading) {
     return (
-        <div className="mt-10 ml-72">
-            <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full flex flex-col gap-5">
-
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Task Dashboard</h1>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 flex items-center gap-2">
-                            Generated {new Date(data.meta.generatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                            <span className="px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-500 dark:text-indigo-400 text-[10px] font-semibold uppercase tracking-wide">Personal</span>
-                        </p>
-                    </div>
-                    <button onClick={() => load(true)} disabled={refreshing}
-                        className="p-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors disabled:opacity-50">
-                        <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-                    </button>
-                </div>
-
-                
-                {/* Row 1: KPI cards */}
-                <div className="grid grid-cols-3 gap-4">
-                    {kpiCards.slice(0, 3).map((card) => (
-                        <div key={card.label}
-                            className="relative overflow-hidden bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 hover:shadow-md transition-shadow duration-200">
-                            <div className="flex items-start justify-between mb-3">
-                                <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{card.label}</p>
-                                <span className={`w-8 h-8 rounded-xl flex items-center justify-center text-white flex-shrink-0 ${card.iconBg}`}>{card.icon}</span>
-                            </div>
-                            <p className="font-mono text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-none">
-                                <Odometer value={(card.value.replace(/[^0-9.]/g, ""))} />{(card.label == "Completion rate")&& "%"}
-                            </p>
-                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5 leading-relaxed">{card.sub}</p>
-                            <div className="mt-4 h-1 rounded-full bg-gray-100 dark:bg-gray-800">
-                                <div className="h-1 rounded-full transition-all duration-700" style={{ width: `${Math.min(card.barPct, 100)}%`, background: card.color }} />
-                            </div>
-                        </div>
-                    ))}
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                    {kpiCards.slice(3).map((card) => (
-                        <div key={card.label}
-                            className="relative overflow-hidden bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 hover:shadow-md transition-shadow duration-200">
-                            <div className="flex items-start justify-between mb-3">
-                                <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{card.label}</p>
-                                <span className={`w-8 h-8 rounded-xl flex items-center justify-center text-white flex-shrink-0 ${card.iconBg}`}>{card.icon}</span>
-                            </div>
-                            <p className="font-mono text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-none">
-                                <Odometer value={Number(card.value.replace(/[^0-9.]/g, ""))} />
-                            </p>
-                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5 leading-relaxed">{card.sub}</p>
-                            <div className="mt-4 h-1 rounded-full bg-gray-100 dark:bg-gray-800">
-                                <div className="h-1 rounded-full transition-all duration-700" style={{ width: `${Math.min(card.barPct, 100)}%`, background: card.color }} />
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Row 2: #9 Combined trend + ring */}
-                <div className="grid grid-cols-3 gap-4">
-                    <CombinedTrendChart creation={trends.daily.creation} completion={trends.daily.completion} />
-                    <div className="bg-blue-900 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 flex flex-col items-center justify-center gap-4 text-white">
-                        
-                         <div className="mb-4">
-                                <h2 className="text-sm font-semibold text-gray-100 dark:text-white">Completion rate</h2>
-                              <p className="text-xs text-gray-100 dark:text-gray-500 mt-0.5">Overall task progress</p>
-                        </div>
-
-                        <div className="relative flex items-center justify-center">
-                            <RingChart pct={summary.completionRate} color="#22c55e" />
-                            <div className="absolute flex flex-col items-center">
-                                <span className="font-mono text-l font-bold text-gray-100 dark:text-white">{summary.completionRate}%</span>
-                                <span className="text-[10px] text-white dark:text-gray-500">done</span>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-3 gap-2 w-full text-center">
-                            {[
-                                { label: "Completed", value: summary.completed, color: "text-green-500" },
-                                { label: "In progress", value: summary.inProgress, color: "text-indigo-500" },
-                                { label: "Not started", value: summary.notStarted, color: "text-gray-400" },
-                            ].map((item) => (
-                                <div key={item.label} className="p-2 rounded-2xl bg-white">
-                                    <p className={`font-mono text-lg font-bold ${item.color}`}>{item.value}</p>
-                                    <p className="text-[10px] text-gray-600 dark:text-gray-500">{item.label}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-                {/* #10 Smart Insights */}
-                <InsightsPanel data={data} />
-
-                {/* Row 3: Priority + #3 Fixed Status + Category */}
-                <div className="grid grid-cols-3 gap-4">
-                    {/* Priority */}
-                    <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-                        <SectionTitle title="Priority breakdown" sub="Tasks by urgency level" />
-                        <div className="flex flex-col gap-3">
-                            {breakdowns.byPriority.length > 0 ? breakdowns.byPriority.map((item) => {
-                                const pct = ((item.count / totalTasks) * 100).toFixed(1);
-                                const color = PRIORITY_COLORS[item.priority] ?? "#94a3b8";
-                                return (
-                                    <div key={item.priority}>
-                                        <div className="flex items-center justify-between mb-1">
-                                            <div className="flex items-center gap-2">
-                                                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
-                                                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${PRIORITY_BADGE[item.priority] ?? "bg-gray-100 text-gray-600"}`}>{item.priority}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs font-mono text-gray-500 dark:text-gray-400">{item.count}</span>
-                                                <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 w-10 text-right">{pct}%</span>
-                                            </div>
-                                        </div>
-                                        <div className="h-1.5 rounded-full bg-gray-100 dark:bg-gray-800">
-                                            <div className="h-1.5 rounded-full transition-all duration-700" style={{ width: `${parseFloat(pct)}%`, backgroundColor: color }} />
-                                        </div>
-                                    </div>
-                                );
-                            }) : <p className="text-xs text-gray-400 dark:text-gray-600">No priority data</p>}
-                        </div>
-                    </div>
-
-                    {/* #3 Fixed Status using byStatus */}
-                    <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-                        <SectionTitle title="Status breakdown" sub="Detailed status distribution" />
-                        <div className="flex flex-col gap-3">
-                            {breakdowns.byStatus.length > 0 ? breakdowns.byStatus.map((item) => {
-                                const pct = ((item.count / totalTasks) * 100).toFixed(1);
-                                const color = item.statusColor || "#94a3b8";
-                                return (
-                                    <div key={item.statusId ?? item.statusName}>
-                                        <div className="flex items-center justify-between mb-1">
-                                            <div className="flex items-center gap-2">
-                                                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
-                                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300 capitalize">{item.statusName}</span>
-                                                {item.isFinal && (
-                                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-50 dark:bg-green-950 text-green-600 dark:text-green-400 font-semibold">Final</span>
-                                                )}
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs font-mono text-gray-500 dark:text-gray-400">{item.count}</span>
-                                                <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 w-10 text-right">{pct}%</span>
-                                            </div>
-                                        </div>
-                                        <div className="h-1.5 rounded-full bg-gray-100 dark:bg-gray-800">
-                                            <div className="h-1.5 rounded-full transition-all duration-700" style={{ width: `${parseFloat(pct)}%`, backgroundColor: color }} />
-                                        </div>
-                                    </div>
-                                );
-                            }) : <p className="text-xs text-gray-400 dark:text-gray-600">No status data</p>}
-                        </div>
-                    </div>
-
-                    {/* Category */}
-                    <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-                        <SectionTitle title="Categories" sub="Distribution by category" />
-                        <div className="flex flex-col gap-2">
-                            {breakdowns.byCategory.length > 0 ? breakdowns.byCategory.map((cat, i) => {
-                                const color = cat.categoryColor || CATEGORY_COLORS[i % CATEGORY_COLORS.length];
-                                const pct = ((cat.count / totalTasks) * 100).toFixed(1);
-                                return (
-                                    <div key={cat.categoryId} className="flex items-center gap-2.5">
-                                        <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: color }} />
-                                        <span className="text-xs text-gray-700 dark:text-gray-300 flex-1 truncate">{cat.categoryIcon} {cat.categoryName}</span>
-                                        <span className="text-xs font-mono text-gray-400 dark:text-gray-500">{cat.count}</span>
-                                        <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 w-10 text-right">{pct}%</span>
-                                    </div>
-                                );
-                            }) : <p className="text-xs text-gray-400 dark:text-gray-600">No category data</p>}
-                        </div>
-                        {breakdowns.byCategory.length > 0 && (
-                            <div className="mt-4">
-                                <ResponsiveContainer width="100%" height={100}>
-                                    <PieChart>
-                                        <Pie data={breakdowns.byCategory.map((c) => ({ name: c.categoryName, value: c.count }))}
-                                            cx="50%" cy="50%" innerRadius={28} outerRadius={44}
-                                            dataKey="value" strokeWidth={0} paddingAngle={3}>
-                                            {breakdowns.byCategory.map((c, i) => (
-                                                <Cell key={i} fill={c.categoryColor || CATEGORY_COLORS[i % CATEGORY_COLORS.length]} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip formatter={(v) => [v, ""]}
-                                            contentStyle={{ background: "white", border: "1px solid #f1f5f9", borderRadius: "12px", fontSize: "12px" }} />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Row 4: #1 + #2 Activity Section */}
-                {activity && <ActivitySection activity={activity} />}
-
-                {/* Row 5: #6 Overdue + #5 Hours + #7 Recurrence */}
-                <div className="grid grid-cols-3 gap-4">
-                    <OverdueInsights performance={performance} summary={summary} />
-                    <HoursAnalytics performance={performance} />
-                    <RecurrenceDetail recurrences={breakdowns.byRecurrenceType} total={totalTasks} />
-                </div>
-
-                {/* Row 6: #8 Monthly Trends + #4 Entity Type */}
-                <div className="grid grid-cols-2 gap-4">
-                    <MonthlyTrendsChart monthly={trends.monthly} />
-                    <EntityTypeBreakdown entities={breakdowns.byEntityType} total={totalTasks} />
-                </div>
-
-                {/* Row 7: Weekly Activity */}
-                <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-                    <SectionTitle title="Weekly activity pattern" sub="Tasks created by day of week" />
-                    <div className="flex items-end gap-2 h-32">
-                        {weeklyBarData.map((d) => (
-                            <div key={d.day} className="flex-1 flex flex-col items-center gap-1.5">
-                                <span className="text-[10px] font-mono text-gray-400 dark:text-gray-500">{d.count || ""}</span>
-                                <div className="w-full rounded-t-md transition-all duration-700"
-                                    style={{ height: `${Math.max((d.count / weeklyMax) * 80, d.count > 0 ? 6 : 2)}px`, background: d.count > 0 ? "#6366f1" : "#e2e8f0" }} />
-                                <span className="text-[10px] text-gray-400 dark:text-gray-500">{d.day}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Row 8: Activity Snapshot */}
-                <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-                    <SectionTitle title="Activity snapshot" sub="Key task metrics at a glance" />
-                    <div className="grid grid-cols-4 gap-3">
-                        {[
-                            { label: "Sub tasks", value: summary.subTasks, color: "bg-slate-100 dark:bg-slate-800", text: "text-slate-600 dark:text-slate-400" },
-                            { label: "With attachments", value: summary.withAttachments, color: "bg-cyan-50 dark:bg-cyan-950", text: "text-cyan-600 dark:text-cyan-400" },
-                            { label: "With tags", value: summary.withTags, color: "bg-violet-50 dark:bg-violet-950", text: "text-violet-600 dark:text-violet-400" },
-                            { label: "Max overdue days", value: performance.maxOverdueDays > 0 ? `${performance.maxOverdueDays}d` : "0d", color: "bg-red-50 dark:bg-red-950", text: "text-red-600 dark:text-red-400" },
-                        ].map((item) => (
-                            <div key={item.label} className={`${item.color} rounded-xl p-3.5`}>
-                                <span className={`font-mono text-xl font-bold ${item.text}`}>{item.value}</span>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{item.label}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-            </div>
+      <div className="mt-10 ml-72 min-h-screen dark:bg-slate-900 p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <Sk className="h-10 w-10" /><Sk className="h-8 w-48" /><Sk className="h-9 w-64 ml-auto" />
         </div>
+        <div className="grid grid-cols-4 gap-4 mb-5">{Array.from({ length: 4 }).map((_, i) => <Sk key={i} className="h-32" />)}</div>
+        <div className="grid grid-cols-3 gap-4 mb-5">{Array.from({ length: 3 }).map((_, i) => <Sk key={i} className="h-64" />)}</div>
+        <div className="grid grid-cols-2 gap-4 mb-5">{Array.from({ length: 2 }).map((_, i) => <Sk key={i} className="h-56" />)}</div>
+        <div className="grid grid-cols-3 gap-4">{Array.from({ length: 3 }).map((_, i) => <Sk key={i} className="h-48" />)}</div>
+      </div>
     );
+  }
+
+  if (error) {
+    return (
+      <div className="mt-10 ml-72 min-h-screen dark:bg-slate-900 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+            <AlertCircle className="w-8 h-8 text-red-400" />
+          </div>
+          <p className="text-sm text-slate-400">{error}</p>
+          <button onClick={() => load()} className="px-5 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-500 transition-colors">
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) return null;
+
+  const role = data.role as keyof typeof ROLE_CONFIG;
+  const rc = ROLE_CONFIG[role] ?? ROLE_CONFIG.user;
+  const RoleIcon = rc.icon;
+
+  return (
+    <div className="mt-10 ml-72 min-h-screen dark:bg-slate-900">
+      <div className="p-6 flex flex-col gap-5">
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${rc.gradient} flex items-center justify-center shadow-lg`}>
+              <RoleIcon className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-white tracking-tight">Dashboard</h1>
+              <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-2">
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-widest ${rc.badge}`}>
+                  <RoleIcon className="w-3 h-3" />{rc.label}
+                </span>
+                <span>·</span>
+                <span>Generated {new Date(data.period.generatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <FilterBar current={filter} onChange={(f) => setFilter(f)} />
+            <button onClick={() => load(true)} disabled={refreshing}
+              className="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 text-slate-400 hover:text-indigo-400 hover:border-indigo-500/50 transition-all disabled:opacity-50 flex items-center justify-center">
+              <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+            </button>
+          </div>
+        </div>
+
+        {data.enabledFeatures && data.enabledFeatures.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[10px] text-slate-600 uppercase tracking-widest">Modules:</span>
+            {data.enabledFeatures.map((f) => (
+              <span key={f} className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-400 capitalize">
+                {f.replace(":feature", "")}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {role === "super_admin" && <SuperAdminLayout d={data} />}
+        {role === "company_admin" && <CompanyAdminLayout d={data} />}
+        {(role === "manager" || role === "user") && <ManagerUserLayout d={data} />}
+
+      </div>
+    </div>
+  );
 }
