@@ -74,9 +74,9 @@ class AuthServices:
            if "status" in filters:
                if filters["status"] != USER_STATUS.DELETED:
                    query.update({"status": filters["status"]})
-                   
-               
-           
+
+           if "companyId" in filters:
+                   query.update({"companyId": ObjectId(filters["companyId"])})
 
            users = await self.repo.get_all(page, limit, query, populate=["userRole", "createdBy"], sort=["-createdAt"])
 
@@ -764,7 +764,7 @@ class AuthServices:
             
              
             payload = {
-                **payload, "updatedBy": updatedBy 
+                **payload, "updatedBy": updatedBy, "companyId": ObjectId(payload["companyId"]) 
             }
 
             role = payload.get("userRole")

@@ -209,7 +209,6 @@ class BaseRepository:
             return doc
         
 
-
     async def find(
         self,
         filter: Dict[str, Any] = None,

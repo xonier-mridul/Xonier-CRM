@@ -43,6 +43,7 @@ export interface GetAllUsers {
   limit: number;
   firstName?: string;
   lastName?: string;
+  companyId?: string;
   search?: string;
 }
 
@@ -177,6 +178,10 @@ export interface UserTableComponentProps {
 
   handleCompanyChange: (companyId: string) => void;
   handleCompanyFilter: (companyId: string) => void;
+  companyLoading: boolean
+companyHasMore: boolean
+onCompanyScrollEnd: () => void
+selectedCompanyId: string
 
 
 
