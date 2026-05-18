@@ -306,17 +306,19 @@ const CompanyUpdateForm: React.FC<CompanyUpdateFormProps> = ({
             <Input
               label="Sub Domain"
               value={form.subDomain ?? ""}
+              placeholder="test.xoniertech"
               onChange={(e) => set("subDomain", (e.target as HTMLInputElement).value)}
             />
             <Input
               label="Timezone"
-              placeholder="Asia/Karachi"
+              placeholder="Asia/Kolkata"
               value={form.timezone ?? ""}
               onChange={(e) => set("timezone", (e.target as HTMLInputElement).value)}
             />
             <Input
               label="User Limit"
               type="number"
+              placeholder="eg: 90"
               value={form.userLimit ?? ""}
               onChange={(e) =>
                 set("userLimit", (e.target as HTMLInputElement).value

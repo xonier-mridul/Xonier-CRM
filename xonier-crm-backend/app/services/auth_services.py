@@ -759,8 +759,8 @@ class AuthServices:
             
             is_admin = validate_admin(user_data["userRole"])
             
-            # if user_data["companyId"] != payload["companyId"]:
-            #     raise AppException(400, "You not update company")
+            if user_data["companyId"] != payload["companyId"]:
+                raise AppException(400, "You not update company, it is temporarily disabled")
             
              
             payload = {
