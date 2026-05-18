@@ -48,7 +48,7 @@ export const UsersTable = ({
   setCurrentPages,
   setSearchFilter,
   isAdmin,
-  handleSearchFilter,
+
   companyData,
   handleCompanyChange,
 }: UserTableComponentProps): JSX.Element => {
@@ -141,7 +141,7 @@ const CompanySelect: React.FC<CompanySelectProps> = ({
     );
   }, [companyData, search]);
 
-  // visible items
+  
   const visibleCompanies =
     filteredCompanies.slice(
       0,
@@ -525,7 +525,7 @@ const CompanySelect: React.FC<CompanySelectProps> = ({
             <CompanySelect
                     companyData={companyData}
                       company={formData.companyId || ""}
-                      handleCompanyChange={handleSearchFilter}
+                      handleCompanyChange={setSearchFilter}
                   />)
            }
             {/* <select 

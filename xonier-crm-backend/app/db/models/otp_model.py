@@ -8,7 +8,7 @@ from app.core.enums import OTP_EXPIRY
 from app.db.models.base_model import BaseDocument
 
 
-class OtpModel(BaseDocument):
+class OtpModel(Document):
     encrypt_mail:str = Field(...)
     email: str = Field(...)
     otp: str = Field(...)

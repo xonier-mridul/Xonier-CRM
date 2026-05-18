@@ -3,7 +3,7 @@ from app.repositories.task_report_repository import TaskReportRepository
 from app.utils.get_team_members import GetTeamMembers
 from app.db.db import Client
 from app.utils.custom_exception import AppException
-from app.utils.validate_admin import validate_admin
+from app.utils.validate_admin import validate_admin, validate_company_admin
 from beanie import PydanticObjectId
 from fastapi.encoders import jsonable_encoder
 from datetime import datetime, timezone, date
@@ -16,6 +16,7 @@ from pymongo.errors import DuplicateKeyError
 from app.repositories.activity_repository import ActivityRepository
 
 from app.utils.activity_payload import activity_payload
+from bson import DBRef
 
 
 class TaskReportService:
@@ -32,7 +33,7 @@ class TaskReportService:
 
         report = await self.repo.find_by_id(
             id=PydanticObjectId(report_id),
-            populate=["createdBy"],
+            populate=["createdBy", "reviewedBy"],
             session=session
         )
 
@@ -49,6 +50,7 @@ class TaskReportService:
 
     async def _resolve_access(self, user: Dict[str, Any]) -> Dict[str, Any]:
         is_admin = validate_admin(user["userRole"])
+        is_company_admin = validate_company_admin(user["userRole"])
         is_manager = await self.getTeamMembers.validate_manager(str(user["_id"]))
 
         member_ids = []
@@ -58,6 +60,7 @@ class TaskReportService:
 
         return {
             "is_admin": is_admin,
+            "is_company_admin": is_company_admin,
             "is_manager": is_manager,
             "member_ids": member_ids,
         }
@@ -65,7 +68,7 @@ class TaskReportService:
     async def _check_read_access(self, report, user: Dict[str, Any]):
         access = await self._resolve_access(user)
 
-        if access["is_admin"]:
+        if access["is_admin"] or access["is_company_admin"]:
             return
 
         report_user_id = self._get_report_user_id(report)
@@ -95,7 +98,7 @@ class TaskReportService:
             raise AppException(403, "You are not authorized to modify this report")
 
     def _build_access_query(self, user: Dict[str, Any], access: Dict[str, Any]) -> Dict[str, Any]:
-        if access["is_admin"]:
+        if access["is_admin"] or access["is_company_admin"]:
             return {}
 
         user_oid = ObjectId(user["_id"])
@@ -217,67 +220,6 @@ class TaskReportService:
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
                 
-
-    # async def submit_evening_report(self, report_id: str, payload: Dict[str, Any], user: Dict[str, Any]):
-    #     async with await self.client.start_session() as session:
-    #         async with session.start_transaction():
-    #             try:
-    #                 report = await self._get_report_or_raise(report_id, session)
-    #                 await self._check_write_access(report, user)
-
-    #                 if not report.morningAgenda.isSubmitted:
-    #                     raise AppException(400, "Please submit morning agenda first")
-
-    #                 if report.eveningReport.isSubmitted:
-    #                     raise AppException(400, "Evening report already submitted")
-                    
-    #                 if str(report.createdBy.id).strip() != str(user["_id"]):
-    #                     raise AppException(403, "Only creator can submit task report")
-
-    #                 evening_data = payload.get("eveningReport", {})
-    #                 evening_data["isSubmitted"] = True
-    #                 evening_data["submittedAt"] = datetime.now(timezone.utc)
-
-    #                 await self.repo.update(
-    #                     id=PydanticObjectId(report_id),
-    #                     data={
-    #                         "eveningReport": evening_data,
-    #                         "updatedBy": PydanticObjectId(user["_id"]),
-    #                         "status": TASK_REPORT_STATUS.SUBMITTED.value
-    #                     },
-    #                     session=session
-    #                 )
-
-    #                 timelogs = await self.timelogRepo.find_active_by_user(userId=user["_id"], populate=["createdBy"])
-
-
-    #                 timelogs = jsonable_encoder(timelogs)
-
-    #                 if len(timelogs)>1:
-    #                     raise AppException(400, "Please stop first your task timer")
-                    
-    #                 prev_id = timelogs[0]["id"]
-
-    #                 currentLog = await self.timelogRepo.find_by_id(id=ObjectId(prev_id))
-
-    #                 currentLog = currentLog.model_dump(mode="json")
-
-    #                 currentLog["segment"]
-
-
-                    
-    #                 # payload = {
-    #                 #     "status": TIMELOG_STATUS.PAUSED.value, "segments": ""
-    #                 # }
-                    
-    #                 # update = await self.timelogRepo.update(id=PydanticObjectId(timelogs[0]["id"]),data=)
-
-    #                 return jsonable_encoder(await self._get_report_or_raise(report_id))
-
-    #             except AppException:
-    #                 raise
-    #             except Exception as e:
-    #                 raise AppException(500, f"Internal server error: {e}")
                 
 
     async def submit_evening_report(self, report_id: str, payload: Dict[str, Any], user: Dict[str, Any]):
@@ -340,7 +282,7 @@ class TaskReportService:
                         data={
                             "eveningReport": evening_data,
                             "updatedBy": PydanticObjectId(user["_id"]),
-                            "status": TASK_REPORT_STATUS.COMPLETED_PENDING_REVIEW.value
+                            "status": TASK_REPORT_STATUS.SUBMITTED.value
                         },
                         session=session
                     )
@@ -394,7 +336,7 @@ class TaskReportService:
                     report = await self._get_report_or_raise(report_id, session)
                     access = await self._resolve_access(user)
 
-                    if not access["is_admin"] and not access["is_manager"]:
+                    if not access["is_admin"] and not access["is_manager"] and not access["is_company_admin"]:
                         raise AppException(403, "Only managers or admins can review reports")
 
                     if access["is_manager"] and not access["is_admin"]:
@@ -414,7 +356,7 @@ class TaskReportService:
                             "managerComment": payload.get("managerComment"),
                             "isReviewed": True,
                             "managerReviewedAt": datetime.now(timezone.utc),
-                            "reviewedBy": PydanticObjectId(user["_id"]),
+                            "reviewedBy": DBRef(collection="users", id=ObjectId(user["_id"])),
                             "updatedBy": PydanticObjectId(user["_id"]),
                         },
                         session=session
@@ -428,6 +370,7 @@ class TaskReportService:
                     raise
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
+                
 
     async def get_all_reports(self, user: Dict[str, Any], filters: Dict[str, Any]):
         try:
@@ -444,7 +387,7 @@ class TaskReportService:
 
                 requested_uid = str(filters["userId"])
 
-                if access["is_admin"]:
+                if access["is_admin"] or access["is_company_admin"]:
                     query["user.$id"] = ObjectId(requested_uid)
                 elif access["is_manager"]:
                     if requested_uid not in access["member_ids"] and requested_uid != str(user["_id"]):
@@ -505,7 +448,8 @@ class TaskReportService:
         try:
             report = await self._get_report_or_raise(report_id)
             await self._check_read_access(report, user)
-            return jsonable_encoder(report)
+         
+            return report.model_dump(mode="json")
         except AppException:
             raise
         except Exception as e:
@@ -534,7 +478,7 @@ class TaskReportService:
 
             access = await self._resolve_access(user)
 
-            if not access["is_admin"]:
+            if not access["is_admin"] or not access["is_company_admin"]:
                 if access["is_manager"]:
                     allowed_ids = set(access["member_ids"] + [str(user["_id"])])
                     unauthorized = [uid for uid in user_ids if uid not in allowed_ids]

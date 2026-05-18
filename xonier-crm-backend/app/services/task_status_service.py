@@ -24,80 +24,118 @@ class TaskStatusService:
             async with session.start_transaction():
                 try:
                     category_id = payload.get("category")
- 
+
                     if not ObjectId.is_valid(category_id):
                         raise AppException(400, "Invalid category id")
- 
+
                     category = await self.categoryRepo.find_by_id(
                         id=PydanticObjectId(category_id),
                         session=session
                     )
- 
+
                     if not category or category.deletedAt is not None:
                         raise AppException(404, "Task category not found")
- 
+
                     if not category.isActive:
                         raise AppException(400, "Cannot add status to an inactive category")
- 
+
                     name = payload.get("name", "").strip()
                     slug = generate_slug(name)
- 
+
                     is_exist = await self.repo.find_one({
                         "slug": slug,
                         "category.$id": ObjectId(category_id),
                         "deletedAt": None
                     })
- 
+
                     if is_exist:
                         raise AppException(409, f"Status '{name}' already exists in this category")
- 
+
                     if payload.get("isDefault"):
                         existing_default = await self.repo.find_one({
                             "category.$id": ObjectId(category_id),
                             "isDefault": True,
                             "deletedAt": None
                         })
- 
                         if existing_default:
                             await self.repo.update(
                                 id=PydanticObjectId(existing_default.id),
                                 data={"isDefault": False},
                                 session=session
                             )
- 
+
                     if payload.get("isFinal"):
                         existing_final = await self.repo.find_one({
                             "category.$id": ObjectId(category_id),
                             "isFinal": True,
                             "deletedAt": None
                         })
- 
                         if existing_final:
-                            raise AppException(400, f"Category already has a final status: '{existing_final.name}'. Only one final status allowed per category.")
- 
+                            raise AppException(
+                                400,
+                                f"Category already has a final status: '{existing_final.name}'. Only one final status allowed per category."
+                            )
+
+                    from app.db.models.task_status_model import TaskStatusModel
+                    collection = TaskStatusModel.get_pymongo_collection()
+
+                    base_filter = {
+                        "category.$id": ObjectId(category_id),
+                        "deletedAt": None,
+                    }
+
+                    requested_order = payload.get("order")
+
+                    if requested_order is not None:
+                        requested_order = int(requested_order)
+
+                        conflict = await collection.find_one(
+                            {**base_filter, "order": requested_order},
+                            session=session
+                        )
+
+                        if conflict:
+                            await collection.update_many(
+                                {**base_filter, "order": {"$gte": requested_order}},
+                                {"$inc": {"order": 1}},
+                                session=session
+                            )
+
+                        final_order = requested_order
+
+                    else:
+                        highest = await collection.find_one(
+                            base_filter,
+                            sort=[("order", -1)],
+                            session=session
+                        )
+                        final_order = (highest["order"] + 1) if highest else 1
+
                     status_id = generate_enquiry_id("STS")
- 
+
                     new_payload = {
                         **payload,
                         "status_id": status_id,
                         "slug": slug,
+                        "order": final_order,
                         "category": PydanticObjectId(category_id),
                         "createdBy": PydanticObjectId(user["_id"]),
                     }
- 
+
                     result = await self.repo.create(data=new_payload, session=session)
- 
+
                     if not result:
                         raise AppException(400, "Task status creation failed")
- 
+
+                    await FastAPICache.get_backend().clear(namespace=TASK_CACHE_NAMESPACE)
+
                     return jsonable_encoder(result)
- 
+
                 except AppException:
                     raise
- 
+
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
- 
     async def get_all_task_statuses(self, filters: Dict[str, Any], user: Dict[str, Any]):
         try:
             page = int(filters.get("page", 1))

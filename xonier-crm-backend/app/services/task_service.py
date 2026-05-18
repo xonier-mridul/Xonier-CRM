@@ -441,7 +441,7 @@ class TaskService:
                 page=page,
                 limit=limit,
                 filters=query,
-                populate=["category", "status", "assignedTo", "createdBy", "updatedBy"],
+                populate=["category", "status", "assignedTo", "createdBy"],
                 sort=["order", "-createdAt"]
             )
 
@@ -488,6 +488,7 @@ class TaskService:
             raise
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+        
 
     async def get_kanban_board(self, category_id: str, user: Dict[str, Any], filters: Dict[str, Any]):
         try:
@@ -536,9 +537,6 @@ class TaskService:
                             {"assignedTo.$id": PydanticObjectId(filters["users"])},
                             {"createdBy.$id": PydanticObjectId(filters["users"])}
                         ]})
-
-
-                     
 
  
             if "priority" in filters:

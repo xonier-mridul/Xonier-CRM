@@ -16,6 +16,8 @@ import {
   DateRangeFilter,
   SummaryFilter,
 } from "@/src/components/pages/users/UserDetail";
+import { Company } from "@/src/types/company/company.types";
+import CompanyService from "@/src/services/company.service";
 
 const Page = (): JSX.Element => {
   const [userData, setUserData] = useState<User | null>(null);
@@ -29,6 +31,8 @@ const Page = (): JSX.Element => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [dateRange, setDateRange] = useState<DateRangeFilter | null>(null);
+  const [companyData, setCompanyData] = useState<Company | null>(null);
+const [companyLoading, setCompanyLoading] = useState(false);
   const [summaryFilter, setSummaryFilter] = useState<SummaryFilter>({
     groupBy: "month",
   });
@@ -36,24 +40,49 @@ const Page = (): JSX.Element => {
   const pageLimit = 20;
   const id: ParamValue = useParams().id;
 
+    const getCompany = async (companyId: string) => {
+  if (!companyId) return;
+  setCompanyLoading(true);
+  try {
+    const result = await CompanyService.getById(companyId);
+    if (result.status === 200) setCompanyData(result.data.data);
+  } catch (error) {
+    process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+  } finally {
+    setCompanyLoading(false);
+  }
+};
+
   
-  const getUser = async (userId: ParamValue): Promise<void> => {
-    setIsLoading(true);
-    setErr(null);
-    try {
-      const result = await AuthService.getUserById(userId);
-      if (result.status === 200) setUserData(result.data.data);
-    } catch (error) {
-      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
-      setErr(
-        axios.isAxiosError(error)
-          ? extractErrorMessages(error)
-          : ["Something went wrong"],
-      );
-    } finally {
-      setIsLoading(false);
+ const getUser = async (userId: ParamValue): Promise<void> => {
+  setIsLoading(true);
+  setErr(null);
+  try {
+    const result = await AuthService.getUserById(userId);
+    if (result.status === 200) {
+      const data = result.data.data;
+      setUserData(data);
+      console.log("dd: ", data)
+      const companyId =
+        typeof data.companyId === "object"
+          ? data.companyId?._id
+          : data.companyId;
+      if (companyId) getCompany(companyId);
     }
-  };
+  } catch (error) {
+    process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+    setErr(
+      axios.isAxiosError(error)
+        ? extractErrorMessages(error)
+        : ["Something went wrong"]
+    );
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
+  
 
   const fetchActivity = useCallback(
     async (
@@ -162,6 +191,8 @@ const Page = (): JSX.Element => {
         onPageChange={handlePageChange}
         onDateFilter={handleDateFilter}
         onSummaryFilter={handleSummaryFilter}
+        companyData={companyData}
+  companyLoading={companyLoading}
       />
     </div>
   );

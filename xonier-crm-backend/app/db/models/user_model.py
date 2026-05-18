@@ -34,7 +34,7 @@ class UserModel(BaseDocument):
     isActive: bool = False
     lastLogin: Optional[datetime] = None
     refreshToken: Optional[str] = None
-    companyId: Optional[PydanticObjectId] = None
+    # companyId: Optional[PydanticObjectId] = None
     assignedPhoneNumber: Optional[Link["TelephoneNumbersModel"]] = None
     createdBy: Optional[Link["UserModel"]] = None
     updatedBy: Optional[Link["UserModel"]] = None

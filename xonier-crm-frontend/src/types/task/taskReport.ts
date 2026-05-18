@@ -1,3 +1,4 @@
+import { TASK_REPORT_STATUS } from "@/src/constants/enum";
 
 
 export enum TaskItemStatus {
@@ -8,13 +9,7 @@ export enum TaskItemStatus {
   BLOCKED = "blocked",
 }
 
-export enum TaskReportStatus {
-  MORNING_PENDING = "morning_pending",
-  MORNING_SUBMITTED = "morning_submitted",
-  EVENING_PENDING = "evening_pending",
-  EVENING_SUBMITTED = "evening_submitted",
-  REVIEWED = "reviewed",
-}
+
 
 export enum WorkMood {
   EXCELLENT = "excellent",
@@ -81,7 +76,7 @@ export interface TaskReport {
   user: UserRef;
   morningAgenda: MorningAgenda;
   eveningReport: EveningReport;
-  status: TaskReportStatus;
+  status: TASK_REPORT_STATUS;
   managerComment?: string;
   managerReviewedAt?: string;
   reviewedBy?: UserRef;
@@ -118,7 +113,8 @@ export interface TaskReportListParams {
   page?: number;
   limit?: number;
   search?: string;
-  status?: TaskReportStatus;
+  status?: TASK_REPORT_STATUS;
+  userId?: string;
   toDate?: string;
   fromDate?: string;
 }

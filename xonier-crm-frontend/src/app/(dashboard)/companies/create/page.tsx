@@ -38,7 +38,7 @@ const CreateCompanyPage = () => {
     try {
       const res = await CompanyService.create(payload);
       toast.success("Company created — verification OTP sent to admin email");
-      return res.data.data;
+      return res.data;
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) toast.error(`${extractErrorMessages(error)}`);

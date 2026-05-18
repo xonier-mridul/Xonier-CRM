@@ -167,7 +167,7 @@ class BaseRepository:
             
         ):
             populate = populate or []
-
+           
             query = self.model.find_one(filter, session=session)
 
             

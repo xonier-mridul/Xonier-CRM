@@ -2,12 +2,12 @@ from typing import Dict, Any, Optional
 from app.utils.custom_exception import AppException
 from app.utils.custom_response import successResponse
 from app.utils.validate_admin import validate_admin
-from app.services.dashboard.admin_dashboard_service import AdminDashboardService
+from app.services.dashboard.admin_dashboard_service import SuperAdminDashboardService
 
 
 class AdminDashboardController:
     def __init__(self):
-        self.service = AdminDashboardService()
+        self.service = SuperAdminDashboardService()
 
     async def get_stats(
         self,

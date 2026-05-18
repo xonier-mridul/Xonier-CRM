@@ -72,7 +72,7 @@ class SubscriptionService:
         user: Dict[str, Any]
     ):
         try:
-            print("aaya")
+        
             page = max(int(filters.get("page", 1)), 1)
             limit = max(int(filters.get("limit", 10)), 1)
 

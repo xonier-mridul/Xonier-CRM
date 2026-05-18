@@ -10,7 +10,7 @@ class FeatureService:
 
     async def getAll(self, filters: Dict[str, Any], user: Dict[str, Any]):
         try:
-            print("Err")
+  
             page = int(filters.get("page") or 1)
             limit = int(filters.get("limit") or 10)
 

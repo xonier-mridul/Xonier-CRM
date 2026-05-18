@@ -14,7 +14,7 @@ from app.db.models.base_model import BaseDocument
 crypto = Encryption()
 
 
-class CompanyModel(BaseDocument):
+class CompanyModel(Document):
     companyId:str
     slug: str
     subDomain: Optional[str] = None

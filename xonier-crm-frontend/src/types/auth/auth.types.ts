@@ -66,6 +66,7 @@ export interface UserUpdatePayload {
   phone: string;
   userRole: Array<string>;
 
+  companyId?: string;
 }
 
 
@@ -172,8 +173,11 @@ export interface UserTableComponentProps {
   setFormData: Dispatch<SetStateAction<RegisterPayload>>,
   isAdmin : boolean,
   companyData : Company[],
-  handleCompanyChange: Dispatch<SetStateAction<string>>,
-  handleSearchFilter:Dispatch<SetStateAction<string>>
+  // handleSearchFilter: Dispatch<SetStateAction<string>>;
+
+  handleCompanyChange: (companyId: string) => void;
+  handleCompanyFilter: (companyId: string) => void;
+
 
 
 }

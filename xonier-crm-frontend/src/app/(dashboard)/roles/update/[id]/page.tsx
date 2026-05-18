@@ -15,6 +15,8 @@ import { FaXmark, FaShieldHalved, FaFloppyDisk } from "react-icons/fa6";
 import { HiOutlineSearch } from "react-icons/hi";
 import { FiToggleLeft, FiToggleRight, FiZap } from "react-icons/fi";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
+import { usePermissions } from "@/src/hooks/usePermissions";
+import { PERMISSIONS } from "@/src/constants/enum";
 
 const MAX_POWER = 92;
 
@@ -33,6 +35,7 @@ const UpdateRolePage = (): JSX.Element => {
   });
 
   const { id } = useParams();
+  const {hasPermission} = usePermissions()
   const router = useRouter();
 
   const groupedPermissions = useMemo(() => {
@@ -427,7 +430,7 @@ const UpdateRolePage = (): JSX.Element => {
               <FormButton
                 type="submit"
                 isLoading={isLoading}
-                disabled={formData.name === "" || formData.permissions.length === 0}
+                disabled={formData.name === "" || formData.permissions.length === 0 || !hasPermission(PERMISSIONS.updateRole)}
               >
                 <FaFloppyDisk className="w-4 h-4" />
                 Update Role

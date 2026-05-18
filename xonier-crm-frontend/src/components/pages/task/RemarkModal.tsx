@@ -471,7 +471,7 @@ function RemarkRow({
 
 export default function RemarkModal({ taskId, onClose }: Props) {
   const [remarks, setRemarks] = useState<Remark[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [filter, setFilter] = useState<"all" | "acknowledged" | "pending">(
     "all",

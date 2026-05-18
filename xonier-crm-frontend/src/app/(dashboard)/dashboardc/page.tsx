@@ -202,11 +202,6 @@ function UnauthorizedView() {
     );
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// NEW SECTIONS
-// ═══════════════════════════════════════════════════════════════════
-
-// ── #10 Smart Insights Panel ──────────────────────────────────────
 
 interface Insight { level: "warning" | "info" | "error"; message: string }
 
@@ -264,7 +259,6 @@ function InsightsPanel({ data }: { data: TaskStatsData }) {
     );
 }
 
-// ── #1 + #2 Activity Section ──────────────────────────────────────
 
 function ActivitySection({ activity }: { activity: ActivityData }) {
     const hasData = activity.totalActions > 0;

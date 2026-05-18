@@ -1,18 +1,18 @@
 "use client";
 
 import extractErrorMessages from "@/src/app/utils/error.utils";
+import { usePermissions } from "@/src/hooks/usePermissions";
 import { TaskReportService } from "@/src/services/taskReport.service";
 import {
   TaskItemStatus,
   TaskPriority,
   TaskReport,
   TaskReportItem,
-  TaskReportStatus,
   WorkMood,
 } from "@/src/types/task/taskReport";
 import axios from "axios";
 import { useParams, useRouter } from "next/navigation";
-import React, { JSX, useCallback, useEffect, useState } from "react";
+import React, { JSX, useCallback, useEffect, useRef, useState } from "react";
 
 const STATUS_META: Record<
   string,
@@ -95,7 +95,10 @@ const ITEM_STATUS_META: Record<
   },
 };
 
-const MOOD_MAP: Record<string, { emoji: string; label: string; color: string }> = {
+const MOOD_MAP: Record<
+  string,
+  { emoji: string; label: string; color: string }
+> = {
   excellent: {
     emoji: "🚀",
     label: "Excellent",
@@ -154,7 +157,7 @@ function CompletionBar({ value }: { value: number }) {
     <div className="flex items-center gap-2">
       <div className="flex-1 h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
         <div
-          className={`h-full rounded-full transition-all duration-500 ${color}`}
+          className={`h-full rounded-full transition-all duration-700 ease-out ${color}`}
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -178,10 +181,10 @@ function TaskItemCard({
     PRIORITY_BADGE[item.priority ?? "low"] ?? PRIORITY_BADGE["low"];
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4 hover:shadow-md transition-shadow duration-200">
+    <div className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4 hover:shadow-md hover:border-gray-200 dark:hover:border-gray-600 transition-all duration-200 hover:-translate-y-0.5">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-start gap-2.5 flex-1 min-w-0">
-          <span className="mt-0.5 flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 text-xs font-bold text-gray-500 dark:text-gray-400 flex items-center justify-center">
+          <span className="mt-0.5 flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 text-xs font-bold text-gray-500 dark:text-gray-400 flex items-center justify-center group-hover:bg-blue-100 group-hover:text-blue-600 dark:group-hover:bg-blue-900/30 dark:group-hover:text-blue-400 transition-colors duration-200">
             {index + 1}
           </span>
           <div className="min-w-0">
@@ -226,7 +229,10 @@ function TaskItemCard({
               d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          Est: <span className="font-semibold text-gray-700 dark:text-gray-300">{item.estimatedHours ?? "—"}h</span>
+          Est:{" "}
+          <span className="font-semibold text-gray-700 dark:text-gray-300">
+            {item.estimatedHours ?? "—"}h
+          </span>
         </span>
         {item.actualHours != null && (
           <span className="flex items-center gap-1">
@@ -243,7 +249,10 @@ function TaskItemCard({
                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            Actual: <span className="font-semibold text-gray-700 dark:text-gray-300">{item.actualHours}h</span>
+            Actual:{" "}
+            <span className="font-semibold text-gray-700 dark:text-gray-300">
+              {item.actualHours}h
+            </span>
           </span>
         )}
         {item.blockerReason && (
@@ -272,7 +281,7 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
       <div
         className={`px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between ${accentClass}`}
       >
@@ -309,22 +318,38 @@ function SectionCard({
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
+function InfoRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) {
   return (
-    <div className="flex items-start gap-2 py-2 border-b border-gray-50 dark:border-gray-700/50 last:border-0">
+    <div className="flex items-start gap-2 py-2 border-b border-gray-50 dark:border-gray-700/50 last:border-0 group hover:bg-gray-50/50 dark:hover:bg-gray-700/20 rounded-lg px-1 transition-colors duration-150">
       <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide w-32 flex-shrink-0 mt-0.5">
         {label}
       </span>
       <span className="text-sm text-gray-700 dark:text-gray-200 font-medium flex-1">
-        {value ?? <span className="text-gray-300 dark:text-gray-600 italic">—</span>}
+        {value ?? (
+          <span className="text-gray-300 dark:text-gray-600 italic">—</span>
+        )}
       </span>
     </div>
   );
 }
 
-function SkeletonBlock({ h = "h-6", w = "w-full" }: { h?: string; w?: string }) {
+function SkeletonBlock({
+  h = "h-6",
+  w = "w-full",
+}: {
+  h?: string;
+  w?: string;
+}) {
   return (
-    <div className={`${h} ${w} rounded-lg bg-gray-100 dark:bg-gray-700 animate-pulse`} />
+    <div
+      className={`${h} ${w} rounded-lg bg-gray-100 dark:bg-gray-700 animate-pulse`}
+    />
   );
 }
 
@@ -346,12 +371,287 @@ function DetailSkeleton() {
   );
 }
 
+function ReviewPanel({
+  report,
+  onReviewed,
+}: {
+  report: TaskReport;
+  onReviewed: () => void;
+}) {
+  const [comment, setComment] = useState(report.managerComment ?? "");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [err, setErr] = useState<string | string[]>("");
+  const [charCount, setCharCount] = useState(
+    (report.managerComment ?? "").length
+  );
+  const MAX_CHARS = 500;
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    const {hasPermission} = usePermissions()
+
+  const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    if (val.length > MAX_CHARS) return;
+    setComment(val);
+    setCharCount(val.length);
+    setErr("");
+  };
+
+  const handleSubmit = async () => {
+    if (!comment.trim()) {
+      setErr("Please write a comment before submitting the review");
+      textareaRef.current?.focus();
+      return;
+    }
+    setIsSubmitting(true);
+    setErr("");
+    try {
+      await TaskReportService.reviewReport(report.id, comment.trim());
+      onReviewed();
+    } catch (error) {
+      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+      if (axios.isAxiosError(error)) {
+        setErr(extractErrorMessages(error));
+      } else {
+        setErr("Failed to submit review. Please try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const isAlreadyReviewed = report.isReviewed;
+
+  return (
+    <div
+      className={`rounded-2xl border overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 ${
+        isAlreadyReviewed
+          ? "bg-purple-50 dark:bg-purple-900/10 border-purple-200 dark:border-purple-800"
+          : "bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700"
+      }`}
+    >
+      <div
+        className={`px-5 py-4 border-b flex items-center justify-between ${
+          isAlreadyReviewed
+            ? "border-purple-200 dark:border-purple-800 bg-purple-100/50 dark:bg-purple-900/20"
+            : "border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/30"
+        }`}
+      >
+        <div className="flex items-center gap-2.5">
+          <span className="text-xl">
+            {isAlreadyReviewed ? "✅" : "📝"}
+          </span>
+          <div>
+            <h2 className="text-base font-extrabold text-gray-900 dark:text-white tracking-tight">
+              {isAlreadyReviewed ? "Review Submitted" : "Manager Review"}
+            </h2>
+            {isAlreadyReviewed && report.managerReviewedAt && (
+              <p className="text-xs text-purple-600 dark:text-purple-400 mt-0.5">
+                Reviewed on{" "}
+                {new Date(report.managerReviewedAt).toLocaleString("en-IN", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {isAlreadyReviewed && (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border border-purple-200 dark:border-purple-700">
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+            Reviewed
+          </span>
+        )}
+      </div>
+
+      <div className="p-5 space-y-4">
+        {isAlreadyReviewed && report.reviewedBy && (
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-gray-800 border border-purple-100 dark:border-purple-800/50">
+            <div className="h-8 w-8 rounded-full bg-purple-200 dark:bg-purple-800 flex items-center justify-center flex-shrink-0">
+              <span className="text-xs font-bold text-purple-700 dark:text-purple-300">
+                {report.reviewedBy.firstName.charAt(0)}
+                {report.reviewedBy.lastName?.charAt(0) ?? ""}
+              </span>
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                Reviewed by
+              </p>
+              <p className="text-sm font-bold text-gray-900 dark:text-white truncate">
+                {report.reviewedBy.firstName} {report.reviewedBy.lastName}
+              </p>
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+              {isAlreadyReviewed ? "Review Comment" : "Write your review comment"}
+            </label>
+            {!isAlreadyReviewed && (
+              <span
+                className={`text-xs font-medium tabular-nums ${
+                  charCount >= MAX_CHARS * 0.9
+                    ? "text-red-500"
+                    : charCount >= MAX_CHARS * 0.7
+                    ? "text-amber-500"
+                    : "text-gray-400 dark:text-gray-500"
+                }`}
+              >
+                {charCount}/{MAX_CHARS}
+              </span>
+            )}
+          </div>
+
+          {isAlreadyReviewed ? (
+            <div className="p-4 rounded-xl bg-white dark:bg-gray-800 border border-purple-100 dark:border-purple-800/50 min-h-[80px]">
+              <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
+                {report.managerComment ?? (
+                  <span className="text-gray-400 italic">No comment provided</span>
+                )}
+              </p>
+            </div>
+          ) : (
+            <div className="relative group">
+              <textarea
+                ref={textareaRef}
+                value={comment}
+                onChange={handleCommentChange}
+                placeholder="Write a detailed review for this task report. Include feedback on productivity, task completion, blockers, and suggestions for improvement..."
+                rows={5}
+                className={`w-full px-4 py-3 rounded-xl border text-sm resize-none transition-all duration-200 focus:outline-none focus:ring-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 ${
+                  err
+                    ? "border-red-300 dark:border-red-700 focus:ring-red-400"
+                    : "border-gray-200 dark:border-gray-600 focus:ring-blue-400 dark:focus:ring-blue-500 group-hover:border-gray-300 dark:group-hover:border-gray-500"
+                }`}
+              />
+              <div
+                className={`absolute bottom-3 right-3 h-1 rounded-full transition-all duration-300 ${
+                  charCount === 0
+                    ? "w-0 opacity-0"
+                    : charCount >= MAX_CHARS * 0.9
+                    ? "w-6 bg-red-400"
+                    : charCount >= MAX_CHARS * 0.7
+                    ? "w-4 bg-amber-400"
+                    : "w-3 bg-emerald-400"
+                }`}
+              />
+            </div>
+          )}
+
+          {err && (
+  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+    <span className="text-red-500 text-sm">⚠️</span>
+    <p className="text-xs text-red-600 dark:text-red-400 font-medium">
+      {Array.isArray(err) ? err.join(", ") : err}
+    </p>
+  </div>
+)}
+        </div>
+
+        {!isAlreadyReviewed && (
+          <div className="flex items-center gap-3 pt-1">
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isSubmitting || !comment.trim() ||!hasPermission("taskReport:review")}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold transition-all duration-200 shadow-sm hover:shadow-md hover:shadow-purple-200 dark:hover:shadow-purple-900/30"
+            >
+              {isSubmitting ? (
+                <>
+                  <svg
+                    className="animate-spin w-4 h-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      className="opacity-25"
+                    />
+                    <path
+                      fill="currentColor"
+                      className="opacity-75"
+                      d="M4 12a8 8 0 018-8v8z"
+                    />
+                  </svg>
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Submit Review
+                </>
+              )}
+            </button>
+            {comment.trim() && !isSubmitting && (
+              <button
+                type="button"
+                onClick={() => {
+                  setComment(report.managerComment ?? "");
+                  setCharCount((report.managerComment ?? "").length);
+                  setErr("");
+                }}
+                className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+              >
+                Reset
+              </button>
+            )}
+          </div>
+        )}
+
+        {!isAlreadyReviewed && (
+          <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1.5">
+            <svg
+              className="w-3.5 h-3.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            Once submitted, the review will be visible to the team member and
+            the report will be marked as reviewed.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 const TaskReportDetailPage = (): JSX.Element => {
   const [report, setReport] = useState<TaskReport | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [err, setErr] = useState<string | string[]>("");
   const { id } = useParams();
   const router = useRouter();
+
+
 
   const getTaskReport = useCallback(async () => {
     if (!id) return;
@@ -414,7 +714,7 @@ const TaskReportDetailPage = (): JSX.Element => {
           <button
             type="button"
             onClick={getTaskReport}
-            className="mt-4 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition"
+            className="mt-4 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition active:scale-95"
           >
             Retry
           </button>
@@ -428,7 +728,6 @@ const TaskReportDetailPage = (): JSX.Element => {
       <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full mb-10">
         <div className="flex items-center justify-between mb-7">
           <div className="flex items-center gap-3">
-            
             <div>
               <div className="flex items-center gap-2.5">
                 <span className="text-2xl">📋</span>
@@ -444,6 +743,11 @@ const TaskReportDetailPage = (): JSX.Element => {
                     month: "long",
                     day: "numeric",
                   })}
+                  {report.user && (
+                    <span className="ml-2 text-blue-600 dark:text-blue-400 font-semibold">
+                      · {report.user.firstName} {report.user.lastName}
+                    </span>
+                  )}
                 </p>
               )}
             </div>
@@ -456,7 +760,7 @@ const TaskReportDetailPage = (): JSX.Element => {
             <button
               type="button"
               onClick={getTaskReport}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-white text-sm font-bold transition-all active:scale-95"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-white text-sm font-bold transition-all active:scale-95 hover:shadow-sm"
             >
               <svg
                 width="14"
@@ -495,29 +799,33 @@ const TaskReportDetailPage = (): JSX.Element => {
                   value: morning?.items.length ?? 0,
                   icon: "🌅",
                   bg: "bg-amber-50 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800",
+                  hover: "hover:border-amber-300 dark:hover:border-amber-700 hover:shadow-amber-100 dark:hover:shadow-amber-900/20",
                 },
                 {
                   label: "Evening Tasks",
                   value: evening?.completedItems.length ?? 0,
                   icon: "🌆",
                   bg: "bg-emerald-50 border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800",
+                  hover: "hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-emerald-100 dark:hover:shadow-emerald-900/20",
                 },
                 {
                   label: "Total Hours",
                   value: `${totalActual || totalEstimated}h`,
                   icon: "⏱️",
                   bg: "bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800",
+                  hover: "hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-blue-100 dark:hover:shadow-blue-900/20",
                 },
                 {
                   label: "Avg Completion",
                   value: `${avgCompletion}%`,
                   icon: "📊",
                   bg: "bg-purple-50 border-purple-100 dark:bg-purple-900/20 dark:border-purple-800",
+                  hover: "hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-purple-100 dark:hover:shadow-purple-900/20",
                 },
               ].map((s) => (
                 <div
                   key={s.label}
-                  className={`flex items-center gap-3 p-4 rounded-2xl border ${s.bg}`}
+                  className={`flex items-center gap-3 p-4 rounded-2xl border transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-default ${s.bg} ${s.hover}`}
                 >
                   <span className="text-xl">{s.icon}</span>
                   <div>
@@ -549,7 +857,6 @@ const TaskReportDetailPage = (): JSX.Element => {
                   </p>
                 </div>
               )}
-
               {morning?.items.length ? (
                 <div className="space-y-3">
                   {morning.items.map((item, idx) => (
@@ -574,7 +881,7 @@ const TaskReportDetailPage = (): JSX.Element => {
               isSubmitted={evening?.isSubmitted ?? false}
             >
               {mood && (
-                <div className="mb-4 flex items-center gap-3 p-3.5 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-700">
+                <div className="mb-4 flex items-center gap-3 p-3.5 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200">
                   <span className="text-2xl">{mood.emoji}</span>
                   <div>
                     <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide">
@@ -625,7 +932,7 @@ const TaskReportDetailPage = (): JSX.Element => {
 
               <div className="mt-5 grid grid-cols-1 gap-3">
                 {evening?.achievements && (
-                  <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800">
+                  <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 hover:shadow-sm transition-shadow duration-200">
                     <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide mb-1">
                       🏆 Achievements
                     </p>
@@ -635,7 +942,7 @@ const TaskReportDetailPage = (): JSX.Element => {
                   </div>
                 )}
                 {evening?.blockers && (
-                  <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800">
+                  <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 hover:shadow-sm transition-shadow duration-200">
                     <p className="text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wide mb-1">
                       🚫 Blockers
                     </p>
@@ -645,7 +952,7 @@ const TaskReportDetailPage = (): JSX.Element => {
                   </div>
                 )}
                 {evening?.tomorrowPlan && (
-                  <div className="p-3.5 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
+                  <div className="p-3.5 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 hover:shadow-sm transition-shadow duration-200">
                     <p className="text-xs font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wide mb-1">
                       📅 Tomorrow's Plan
                     </p>
@@ -683,7 +990,9 @@ const TaskReportDetailPage = (): JSX.Element => {
               )}
             </SectionCard>
 
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+            <ReviewPanel report={report} onReviewed={getTaskReport} />
+
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
               <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2.5">
                 <span className="text-xl">ℹ️</span>
                 <h2 className="text-base font-extrabold text-gray-900 dark:text-white tracking-tight">

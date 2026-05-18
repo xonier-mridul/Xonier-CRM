@@ -153,7 +153,7 @@ class SubTaskService:
                         description=f"Create sub task against {json_task_data["title"]}",
                         metadata={"taskId": taskId, "title": d_result["title"], "dueDate": d_result.get("dueDate") if d_result.get("dueDate") else None, "startDate": d_result.get("startDate") if d_result.get("startDate") else None }
                     )
-                    print("done")
+
                     await self.activityRepo.create(activity_payload, session)
                     
                     return d_result
@@ -268,8 +268,10 @@ class SubTaskService:
             limit = int(filters.get("limit", 10))
             
             json_task_data = await self._get_task_or_raise(taskId)
+
+      
             
-            await self._check_task_access(json_task_data, user)
+            # await self._check_task_access(json_task_data, user)
            
             query: Dict[str, Any] = {
                 "taskId.$id": PydanticObjectId(taskId),
@@ -281,6 +283,8 @@ class SubTaskService:
 
             if "search" in filters and filters["search"].strip():
                 query["title"] = {"$regex": filters["search"].strip(), "$options": "i"}
+
+  
             
             result = await self.repo.get_all(
                 page=page,
@@ -289,6 +293,8 @@ class SubTaskService:
                 populate=["createdBy", "completedBy"],
                 sort=["order", "-createdAt"]
             )
+
+
             
             if not result or not result.get("data"):
                 raise AppException(404, "No sub tasks found for this task")
