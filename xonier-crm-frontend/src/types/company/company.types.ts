@@ -183,6 +183,6 @@ export interface CompanySelectProps {
   handleCompanyChange?: (
       companyId: string
    ) => void;
-   search?:
+ 
 
 }

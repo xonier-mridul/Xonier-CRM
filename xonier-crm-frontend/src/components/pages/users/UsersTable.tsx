@@ -48,7 +48,7 @@ export const UsersTable = ({
   setCurrentPages,
   setSearchFilter,
   isAdmin,
-  handleSearchFilter,
+  handleCompanyFilter,
   companyData,
   handleCompanyChange,
 }: UserTableComponentProps): JSX.Element => {
@@ -61,7 +61,7 @@ export const UsersTable = ({
 
 
 
-
+console.log("is Admin :",isAdmin)
   
 
   const handleLimit = (n: string) => {
@@ -282,9 +282,8 @@ const CompanySelect: React.FC<CompanySelectProps> = ({
               visibleCompanies.map(
                 (item) => (
                   <button
-                    key={
-                      item.id
-                    }
+                    key={item.id}
+                    // value={item.companyName}
                     type="button"
                     onClick={() => {
                       handleCompanyChange(
@@ -520,30 +519,25 @@ const CompanySelect: React.FC<CompanySelectProps> = ({
             </p>
           </div>
 
+        { isAdmin && (
           <div>
-           { isAdmin && (
+         
             <CompanySelect
                     companyData={companyData}
                       company={formData.companyId || ""}
-                      handleCompanyChange={handleSearchFilter}
-                  />)
-           }
-            {/* <select 
-              className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10"
-            >
-              <option>Company </option>
-              {
-                companyData.map((item)=>(
-                  <option key={item.id}
-                  on>
-                        {item.companyName}
-                  </option>
-                ))
-              }
-              
-              
-            </select> */}
-          </div>
+                      handleCompanyChange={handleCompanyFilter}
+                  />
+          </div>)
+
+           }   
+
+
+
+
+
+
+
+
           <div className="flex items-center gap-6">
             <select
               name="limit"
