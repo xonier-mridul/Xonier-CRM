@@ -518,11 +518,7 @@ const DeletedUsersPage = (): JSX.Element => {
                           </span>
                         </td>
 
-                        {/* Company */}
-                        <td className="px-4 py-3.5 text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                          {u.company || "—"}
-                        </td>
-
+                        
                         {/* Deleted date */}
                         <td className="px-4 py-3.5 text-gray-500 dark:text-gray-500 whitespace-nowrap text-xs">
                           {deletedDate}

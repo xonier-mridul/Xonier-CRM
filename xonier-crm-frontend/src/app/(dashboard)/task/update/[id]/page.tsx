@@ -83,7 +83,7 @@ const parseDateInput = (value: string): Date | undefined => {
   return isNaN(d.getTime()) ? undefined : d;
 };
 
-// ── UI primitives ─────────────────────────────────────────────────────────────
+
 function Section({
   icon,
   title,
@@ -150,7 +150,7 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
+
 const UpdateTaskPage = (): JSX.Element => {
   const router = useRouter();
   const params = useParams();
@@ -259,7 +259,7 @@ const UpdateTaskPage = (): JSX.Element => {
     })();
   }, [taskId]);
 
-  // ── Load categories ───────────────────────────────────────────────────────
+
   useEffect(() => {
     (async () => {
       try {
@@ -280,9 +280,7 @@ const UpdateTaskPage = (): JSX.Element => {
     fetchUsers();
   }, [userSearch]);
 
-  // ── Load statuses whenever selected category changes ──────────────────────
-  // FIX: Watch `form.category` (single source of truth) instead of a separate
-  // `selectedCategory` variable that could drift out of sync.
+
   useEffect(() => {
     if (!form.category) {
       setStatuses([]);

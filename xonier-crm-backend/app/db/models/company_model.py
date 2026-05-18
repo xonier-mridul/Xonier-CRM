@@ -39,6 +39,7 @@ class CompanyModel(Document):
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     createdBy: Link["UserModel"]
     updatedAt: Optional[datetime] = None
+    updatedBy: Optional[Link["UserModel"]] = None
     deletedAt: Optional[datetime] = None
     deletedBy: Optional[Link["UserModel"]] = None
     

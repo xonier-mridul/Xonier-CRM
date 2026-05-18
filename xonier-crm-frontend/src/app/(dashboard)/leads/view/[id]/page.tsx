@@ -619,11 +619,7 @@ const LeadViewPage = (): JSX.Element => {
                   label="Phone"
                   value={leadData.createdBy?.phone}
                 />
-                <ProfileField
-                  icon={<IoBusinessOutline className="w-4 h-4" />}
-                  label="Company"
-                  value={leadData.createdBy?.company || "—"}
-                />
+                
               </div>
             </div>
           )}

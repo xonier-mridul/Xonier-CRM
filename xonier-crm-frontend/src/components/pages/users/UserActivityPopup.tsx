@@ -9,16 +9,32 @@ interface ActivityDetailPopupProps {
   onClose: () => void;
 }
 
-const ENTITY_ICON: Record<ACTIVITY_ENTITY_TYPE, string> = {
+const ENTITY_ICON: Partial<Record<ACTIVITY_ENTITY_TYPE, string>> = {
+  [ACTIVITY_ENTITY_TYPE.ENQUIRY]: "◎",
   [ACTIVITY_ENTITY_TYPE.LEAD]: "◈",
   [ACTIVITY_ENTITY_TYPE.DEAL]: "◆",
   [ACTIVITY_ENTITY_TYPE.QUOTATION]: "◉",
   [ACTIVITY_ENTITY_TYPE.INVOICE]: "▣",
+  [ACTIVITY_ENTITY_TYPE.USER]: "👤",
+  [ACTIVITY_ENTITY_TYPE.AUTH]: "🔐",
+  [ACTIVITY_ENTITY_TYPE.EVENT]: "📅",
+  [ACTIVITY_ENTITY_TYPE.TASK]: "✅",
+  [ACTIVITY_ENTITY_TYPE.TASK_REPORT]: "📋",
+  [ACTIVITY_ENTITY_TYPE.PLAN]: "📦",
+  [ACTIVITY_ENTITY_TYPE.COMPANY]: "🏢",
+  [ACTIVITY_ENTITY_TYPE.OTP]: "🔢",
 };
 
-const ACTION_STYLE: Record<
-  ACTIVITY_ACTION,
-  { bg: string; text: string; dot: string; bar: string }
+const ACTION_STYLE: Partial<
+  Record<
+    ACTIVITY_ACTION,
+    {
+      bg: string;
+      text: string;
+      dot: string;
+      bar: string;
+    }
+  >
 > = {
   [ACTIVITY_ACTION.CREATED]: {
     bg: "bg-emerald-100 dark:bg-emerald-950/40",
@@ -26,65 +42,124 @@ const ACTION_STYLE: Record<
     dot: "bg-emerald-500",
     bar: "bg-emerald-500",
   },
+
   [ACTIVITY_ACTION.UPDATED]: {
     bg: "bg-blue-100 dark:bg-blue-950/40",
     text: "text-blue-700 dark:text-blue-400",
     dot: "bg-blue-500",
     bar: "bg-blue-500",
   },
+
   [ACTIVITY_ACTION.SENT]: {
     bg: "bg-violet-100 dark:bg-violet-950/40",
     text: "text-violet-700 dark:text-violet-400",
     dot: "bg-violet-500",
     bar: "bg-violet-500",
   },
+
   [ACTIVITY_ACTION.RESEND]: {
     bg: "bg-indigo-100 dark:bg-indigo-950/40",
     text: "text-indigo-700 dark:text-indigo-400",
     dot: "bg-indigo-500",
     bar: "bg-indigo-500",
   },
+
   [ACTIVITY_ACTION.CONVERTED]: {
     bg: "bg-cyan-100 dark:bg-cyan-950/40",
     text: "text-cyan-700 dark:text-cyan-400",
     dot: "bg-cyan-500",
     bar: "bg-cyan-500",
   },
+
   [ACTIVITY_ACTION.CLOSED_WON]: {
     bg: "bg-yellow-100 dark:bg-yellow-950/40",
     text: "text-yellow-700 dark:text-yellow-400",
     dot: "bg-yellow-500",
     bar: "bg-yellow-500",
   },
+
   [ACTIVITY_ACTION.CLOSED_LOST]: {
     bg: "bg-rose-100 dark:bg-rose-950/40",
     text: "text-rose-700 dark:text-rose-400",
     dot: "bg-rose-500",
     bar: "bg-rose-500",
   },
+
   [ACTIVITY_ACTION.DELETE]: {
     bg: "bg-red-100 dark:bg-red-950/40",
     text: "text-red-700 dark:text-red-400",
     dot: "bg-red-500",
     bar: "bg-red-500",
   },
+
   [ACTIVITY_ACTION.WON]: {
     bg: "bg-amber-100 dark:bg-amber-950/40",
     text: "text-amber-700 dark:text-amber-400",
     dot: "bg-amber-500",
     bar: "bg-amber-500",
   },
+
   [ACTIVITY_ACTION.LOST]: {
     bg: "bg-pink-100 dark:bg-pink-950/40",
     text: "text-pink-700 dark:text-pink-400",
     dot: "bg-pink-500",
     bar: "bg-pink-500",
   },
+
   [ACTIVITY_ACTION.ACCEPTED]: {
     bg: "bg-teal-100 dark:bg-teal-950/40",
     text: "text-teal-700 dark:text-teal-400",
     dot: "bg-teal-500",
     bar: "bg-teal-500",
+  },
+
+  [ACTIVITY_ACTION.SMS_SENT]: {
+    bg: "bg-sky-100 dark:bg-sky-950/40",
+    text: "text-sky-700 dark:text-sky-400",
+    dot: "bg-sky-500",
+    bar: "bg-sky-500",
+  },
+
+  [ACTIVITY_ACTION.SMS_DELIVERED]: {
+    bg: "bg-lime-100 dark:bg-lime-950/40",
+    text: "text-lime-700 dark:text-lime-400",
+    dot: "bg-lime-500",
+    bar: "bg-lime-500",
+  },
+
+  [ACTIVITY_ACTION.EMAIL_SENT]: {
+    bg: "bg-fuchsia-100 dark:bg-fuchsia-950/40",
+    text: "text-fuchsia-700 dark:text-fuchsia-400",
+    dot: "bg-fuchsia-500",
+    bar: "bg-fuchsia-500",
+  },
+
+  [ACTIVITY_ACTION.EMAIL_OPENED]: {
+    bg: "bg-purple-100 dark:bg-purple-950/40",
+    text: "text-purple-700 dark:text-purple-400",
+    dot: "bg-purple-500",
+    bar: "bg-purple-500",
+  },
+
+  [ACTIVITY_ACTION.RESTORE]: {
+    bg: "bg-green-100 dark:bg-green-950/40",
+    text: "text-green-700 dark:text-green-400",
+    dot: "bg-green-500",
+    bar: "bg-green-500",
+  },
+
+  [ACTIVITY_ACTION.VERIFY]: {
+    bg: "bg-orange-100 dark:bg-orange-950/40",
+    text: "text-orange-700 dark:text-orange-400",
+    dot: "bg-orange-500",
+    bar: "bg-orange-500",
+  },
+
+  [ACTIVITY_ACTION.REGISTER]: {
+    bg: "bg-cyan-100 dark:bg-cyan-950/40",
+    text: "text-cyan-700 dark:text-cyan-400",
+    dot: "bg-cyan-500",
+    bar: "bg-cyan-500",
   },
 };
 

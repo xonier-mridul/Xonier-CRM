@@ -1,302 +1,594 @@
-import { subScriptionView } from '@/src/types/subscription/subscription.types'
-import React from 'react'
-import PlanViewSkeleton from '../../ui/PlanView/PlanViewSkeleton'
-import { LuCrown } from "react-icons/lu";
-import { GoDotFill } from 'react-icons/go';
-import { IoCalendarOutline, IoDiamondOutline, IoFlagSharp } from "react-icons/io5";
-import { CiCalendar } from "react-icons/ci";
-import { CiGlobe } from "react-icons/ci";
-import { AiOutlineDollar } from "react-icons/ai";
-import { RiProfileLine } from "react-icons/ri";
-import { BiDollarCircle } from "react-icons/bi";
-import { IoHeartOutline } from "react-icons/io5";
-import { BiDollar } from "react-icons/bi";
-import { FaDollarSign } from 'react-icons/fa6';
-import { FaPlay, FaUser } from 'react-icons/fa';
-import { ImCancelCircle } from 'react-icons/im';
-import { HiOutlineBuildingOffice2 } from 'react-icons/hi2';
+"use client";
 
+import { subScriptionView, Subscription } from "@/src/types/subscription/subscription.types";
+import { Plan } from "@/src/types/plan/plan.types";
+import { Company } from "@/src/types/company/company.types";
+import React from "react";
+import DataNotFound from "../../common/DataNotFound";
+import Link from "next/link";
+import {
+  LuCrown,
+  LuCalendarDays,
+  LuZap,
+  LuBuilding2,
+  LuUser,
+  LuClock,
+  LuBadgeCheck,
+  LuCircleDollarSign,
+  LuArrowUpRight,
+  LuFlag,
+  LuPlay,
 
+  LuGlobe,
+  LuRefreshCw,
+} from "react-icons/lu";
+import { GoDotFill } from "react-icons/go";
+import Skeleton from "react-loading-skeleton";
+import { LucideXCircle } from "lucide-react";
 
+const fmt = (d?: string | null) =>
+  d
+    ? new Date(d).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+    : "—";
 
+const fmtFull = (d?: string | null) =>
+  d
+    ? new Date(d).toLocaleString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      })
+    : "—";
 
+const STATUS_MAP: Record<
+  string,
+  { label: string; dot: string; bg: string; text: string; ring: string }
+> = {
+  active: {
+    label: "Active",
+    dot: "bg-emerald-500",
+    bg: "bg-emerald-50 dark:bg-emerald-900/20",
+    text: "text-emerald-700 dark:text-emerald-400",
+    ring: "ring-emerald-200 dark:ring-emerald-800",
+  },
+  trial: {
+    label: "Trial",
+    dot: "bg-blue-500",
+    bg: "bg-blue-50 dark:bg-blue-900/20",
+    text: "text-blue-700 dark:text-blue-400",
+    ring: "ring-blue-200 dark:ring-blue-800",
+  },
+  paused: {
+    label: "Paused",
+    dot: "bg-amber-500",
+    bg: "bg-amber-50 dark:bg-amber-900/20",
+    text: "text-amber-700 dark:text-amber-400",
+    ring: "ring-amber-200 dark:ring-amber-800",
+  },
+  cancelled: {
+    label: "Cancelled",
+    dot: "bg-red-500",
+    bg: "bg-red-50 dark:bg-red-900/20",
+    text: "text-red-700 dark:text-red-400",
+    ring: "ring-red-200 dark:ring-red-800",
+  },
+  expired: {
+    label: "Expired",
+    dot: "bg-gray-400",
+    bg: "bg-gray-100 dark:bg-gray-700",
+    text: "text-gray-600 dark:text-gray-400",
+    ring: "ring-gray-200 dark:ring-gray-600",
+  },
+  inactive: {
+    label: "Inactive",
+    dot: "bg-gray-400",
+    bg: "bg-gray-100 dark:bg-gray-700",
+    text: "text-gray-600 dark:text-gray-400",
+    ring: "ring-gray-200 dark:ring-gray-600",
+  },
+};
 
-
-
-
-const SubscriptionViewComponent = ({subScriptionData,isLoading,}:subScriptionView) => {
-
-   
+function InfoRow({
+  label,
+  value,
+  mono,
+}: {
+  label: string;
+  value: React.ReactNode;
+  mono?: boolean;
+}) {
   return (
-    <div className='flex p-6 flex-col gap-8'>
-
-        <div className='flex justify-between p-4'>
-            <div className='flex gap-6 items-center'>
-                <div className='p-4 rounded-full bg-purple-200 text-purple-600'>
-                <LuCrown  className='text-5xl '/>
-
-
-                </div>
-            
-            <div> 
-                <h1 className='text-lg font-bold text-gray-800'>Subscription Detail</h1>
-                <h2 className='text-gray-500 text-sm'>Subscription ID : {}</h2>
-                <h2 className='text-gray-500 text-sm'>subscription Reference :</h2>
-            </div>
-            </div>
-        
-                 <div className='bg-green-100 h-10 text-green-500 flex gap-1 items-center py-2 px-4 rounded-full text-sm w-fit'>
-                    <GoDotFill />Active
-                </div>
-            
-        </div>
-
-        <div className='flex   border border-gray-300 rounded-2xl text-lg p-4 justify-between'>
-            <div className='w-[80%] flex flex-col gap-7'>
-
-               <div className='flex gap-10 items-center'>
-                <div className='p-4 rounded-2xl bg-purple-200 text-purple-600 '>
-                <IoDiamondOutline className='text-4xl ' />
-
-
-                </div>
-                <div className='flex flex-col justify-end h-full gap-2 border-b w-full pb-5 border-gray-300'>
-                    <h1 className='text-lg font-bold '>Test 4</h1>  
-                    <p className='text-gray-500 text-xs'>des</p>
-                </div>
-        
-                
-            </div>
-            <div className='flex justify-between   w-full '>
-                <div className='flex gap-5 items-center p-4 border-r  w-1/3 justify-center border-gray-300'>
-                <CiCalendar className='text-4xl text-blue-400 font-bold' />
-                <div >
-                    <h1 className='text-gray-800 font-bold text-sm'>Trials date</h1>
-                    <h2 className='text-gray-500 text-xs'>20 Days</h2>
-                </div>
-            </div>
-                            <div className='flex gap-5 p-4 items-center border-r  border-gray-300 w-1/3 justify-center'>
-
-                <CiGlobe   className='text-4xl text-blue-400 font-bold'/>
-                <div>
-                    <h1 className='text-gray-800 font-bold text-sm'>Visibility</h1>
-                    <h2 className='text-gray-500 text-xs'>Public</h2>
-                </div>
-            </div>
-                           <div className='flex gap-5 p-4 items-center w-1/3 justify-center'>
-
-                <AiOutlineDollar  className='text-4xl text-blue-400 font-bold' />
-                <div>
-  <h1 className='text-gray-800 font-bold text-sm'>Currency</h1>
-                <h2 className='text-gray-500 text-xs'>USD</h2>
-                </div>
-              
-            </div>
-            </div>
-
-            </div>
-            <div className='w-[18%] flex flex-col justify-between border-l border-gray-300'> 
-                 <div className='h-1/2  py-4 border-b border-gray-300 mx-4'>
-                <h2 className='text-sm mb-2'>MonthlyPrice</h2>
-                <h1 className='text-xl '>$59</h1>
-            </div>
-                  <div className='h-1/2  py-4   mx-4'>
-                 <h2 className='text-sm mb-2'>YearlyPrice</h2>
-                <h1 className='text-xl '>$599</h1>
-            </div>
-                 </div>
-        </div>
-        <div className='flex justify-between text-lg  '>
-            <div className='w-[48%]   border border-gray-300 rounded-2xl'>
-            <div className=' flex  items-center bg-slate-100 rounded-t-2xl  gap-4 p-4'>
-                <div className='p-2 rounded-xl text-blue-400 text-xl bg-blue-100'>
-                       <RiProfileLine />
-                </div>
-                
-                <h1 className='text-lg font-bold'>Billing & Pricing</h1>
-                 
-                   
-             
-            </div>
-             <div className='flex  justify-between items-center gap-4 p-4'> 
-                <div className='flex gap-4 items-center'>
-                    <div className='p-2 rounded-full text-blue-400 text-lg bg-blue-100'>
-<CiCalendar  />
-                </div>
-                                    
-                <h1 className='text-gray-600 text-sm'> Billing Cycle</h1>
-                </div>
-                 <p className='text-blue-500 '>Monthly</p>
-                
-            </div>
-            <div className='flex  justify-between items-center gap-4 p-4'> 
-                <div className='flex gap-4 items-center'>
-
-                     <div className='p-2 rounded-full text-blue-400 text-lg bg-blue-100'>
-                    <FaDollarSign />
-
-                </div>
-
-                <h1 className='text-gray-600 text-sm'> Basic Price</h1>
-                </div>
-                 <p className='text-lg'>$59.00</p>
-                
-            </div><div className='flex  justify-between items-center gap-4 p-4'> 
-                <div className='flex gap-4 items-center'>
-                     <div className='p-2 rounded-full text-blue-400 text-lg bg-blue-100'>
-                   <IoHeartOutline />
-
-                </div>
-                    
-                <h1 className='text-gray-600 text-sm'> Discount Amount </h1>
-                </div>
-                 <p className='text-green-500 text-lg'>$0.00</p>
-                
-            </div><div className='flex  justify-between items-center gap-4 p-4'> 
-                <div className='flex gap-4 items-center'>
-                     <div className='p-2 rounded-full text-blue-400 text-lg bg-blue-100'>
-                                       <BiDollar />
-
-                </div>
-                <h1 className='text-gray-600 text-sm'>Final Price</h1>
-                </div>
-                 <p className='text-blue-500 text-lg'>$59.00</p>
-                
-            </div>
-           
-            </div>
-            <div className='w-[48%] flex flex-col  border border-gray-300 rounded-2xl'>
-            <div className=''>
-               <div className=' flex  items-center bg-green-100 rounded-t-2xl  gap-4 p-4'>
-                <div className='p-2 rounded-xl text-green-400 text-xl bg-green-200'>
-                       <IoCalendarOutline />
-                </div>
-                <h1 className='text-lg font-bold'>Subscription Timeline</h1>
-            </div>
-
-            <div className='relative p-4 flex flex-col gap-4'>
-                <div className='absolute z-0 h-[250px] top-7 w-[2px] left-8 border-gray-400 border-l-2 left-1 border-dashed'></div>
-                <div className='flex gap-4 items-center'>
-                    <div className='p-2 rounded-full bg-green-100 z-1 text-green-400 w-fit text-xl '>
-                    <FaPlay />
-
-                    </div>
-                    <div>
-                        <h1 className='text-sm text-gray-700'>Trial Start Date</h1>
-                        <span className='text-gray-500 text-xs'>May</span>
-                    </div>
-                </div>
-                <div className='flex gap-4 items-center'>
-                    <div className='p-2 rounded-full z-1 bg-green-100 text-green-400 w-fit text-xl '>
-                    <IoFlagSharp />
-
-                    </div>
-                    <div>
-                        <h1 className='text-sm text-gray-700'>Trial End Date</h1>
-                        <span className='text-gray-500 text-xs'>May</span>
-                    </div>
-                </div>
-                <div className='flex gap-4 items-center'>
-                    <div className='p-2 z-1 rounded-full bg-blue-100 text-blue-400 w-fit text-xl '>
-                    <FaPlay />
-
-                    </div>
-                    <div>
-                        <h1 className='text-sm text-gray-700'>Subscription Start Date</h1>
-                        <span className='text-gray-500 text-xs'>May</span>
-                    </div>
-                </div>
-                <div className='flex gap-4 items-center'>
-                    <div className='p-2 rounded-full z-1 bg-blue-100 text-blue-400 w-fit text-xl '>
-                    <IoFlagSharp />
-
-                    </div>
-                    <div>
-                        <h1 className='text-sm text-gray-700'>Subscription End Date</h1>
-                        <span className='text-gray-500 text-xs'>May</span>
-                    </div>
-                </div>
-                <div className='flex gap-4 items-center'>
-                    <div className='p-2 rounded-full z-1 bg-white w-fit text-xl '>
-                    <ImCancelCircle />
-
-                    </div>
-                    <div className='flex flex-col'>
-                        <h1 className='text-sm text-gray-700'>Cancelled At</h1>
-                        <span className='text-gray-500 text-xs'>-</span>
-                        <span className='text-xs'>Reason :-</span>
-                    </div>
-                </div>
-            </div>
-                
-
-            </div>
-            
-            </div>
-
-        </div>
-        <div className='flex border border-gray-300 gap-4  p-4 rounded-2xl'>
-            <div className='flex w-1/2 gap-4 items-center border-r border-gray-200'>
-                <div className='p-4 bg-purple-200 text-purple-400 text-2xl relative   rounded-full' ><HiOutlineBuildingOffice2 /></div>
-                <div className='flex flex-col gap-2'>
-                    <h1 className='text-lg font-bold text-purple-400'>Company</h1>
-                    <h2 className='text-sm text-gray-600'>Company Id : <span>Id</span></h2>
-                    
-                    <h2 className='text-sm text-gray-600'>Collection :  <span>Company</span></h2>
-                   
-
-                </div>
-            </div>
-            <div className='flex w-1/2 gap-4 items-center'>
-                <div className='p-4 bg-amber-200 text-amber-400 text-2xl relative   rounded-full' ><FaUser /></div>
-                <div className='flex flex-col gap-2'>
-                    <h1 className='text-lg font-bold text-amber-400'>Created By</h1>
-                    <h2 className='text-sm text-gray-600'>User Id : <span>Id</span></h2>
-                    
-                    <h2 className='text-sm text-gray-600'>Collection :  <span>User</span></h2>
-                   
-
-                </div>
-            </div>
-           
-
-
-        </div>
-        <div className='flex  border border-gray-300 text-sm gap-4 p-4 text-gray-500 rounded-2xl'>
-            <div className='flex gap-2 w-1/3  border-r border-gray-200 items-center'>
-                <div className='text-xl  font-bold'>
-                <CiCalendar  />
-                </div>
-                <div className='flex flex-col'>
-                    <h1>Created At</h1>
-                    <h2 className='text-xs'> May</h2>
-                </div>
-            </div>
-            <div className='flex gap-2 w-1/3  border-r border-gray-200 items-center'>
-                <div className='text-xl  font-bold'>
-                <CiCalendar  />
-                </div>
-                <div className='flex flex-col '>
-                    <h1>Updated At</h1>
-                    <h2 className='text-xs'>--</h2>
-                </div>
-            </div>
-            <div className='flex gap-2 w-1/3 items-center'>
-                <div className='text-xl  font-bold'>
-                <CiCalendar  />
-                </div>
-                <div className='flex flex-col '>
-                    <h1>Deleted At</h1>
-                    <h2 className='text-xs'>--</h2>
-                </div>
-            </div>
-
-        </div>
-
-
-        
+    <div className="flex items-start justify-between gap-4 py-2.5 border-b border-slate-50 dark:border-gray-700/50 last:border-0 hover:bg-slate-50/60 dark:hover:bg-gray-700/20 px-1 rounded-lg transition-colors">
+      <span className="text-xs text-gray-400 dark:text-gray-500 min-w-32 shrink-0 mt-0.5 font-medium">
+        {label}
+      </span>
+      <span
+        className={`text-sm font-semibold text-right text-gray-800 dark:text-gray-100 break-all ${mono ? "font-mono text-xs text-gray-400" : ""}`}
+      >
+        {value ?? <span className="text-gray-300 dark:text-gray-600 italic font-normal">—</span>}
+      </span>
     </div>
-  )
+  );
 }
 
-export default SubscriptionViewComponent
+function SectionHeader({
+  icon,
+  title,
+  accent,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  accent: string;
+}) {
+  return (
+    <div className={`flex items-center gap-3 px-5 py-4 border-b border-slate-100 dark:border-gray-700 ${accent}`}>
+      <div className="w-8 h-8 rounded-xl bg-white/70 dark:bg-gray-800/70 flex items-center justify-center shadow-sm">
+        {icon}
+      </div>
+      <h2 className="text-sm font-bold text-gray-800 dark:text-white tracking-tight">
+        {title}
+      </h2>
+    </div>
+  );
+}
+
+function ViewSkeleton() {
+  return (
+    <div className="space-y-5 p-1">
+      <Skeleton height={120} borderRadius={16} />
+      <div className="grid grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} height={80} borderRadius={12} />
+        ))}
+      </div>
+      <div className="grid grid-cols-2 gap-5">
+        <Skeleton height={260} borderRadius={16} />
+        <Skeleton height={260} borderRadius={16} />
+      </div>
+      <Skeleton height={200} borderRadius={16} />
+      <Skeleton height={80} borderRadius={16} />
+    </div>
+  );
+}
+
+const SubscriptionViewComponent = ({
+  subScriptionData,
+  isLoading,
+}: subScriptionView) => {
+  if (isLoading) return <ViewSkeleton />;
+  if (!subScriptionData) return <DataNotFound title="Subscription data not found" />;
+
+  const s = subScriptionData;
+  const plan = typeof s.planId === "object" ? (s.planId as Plan) : null;
+  const company = typeof s.companyId === "object" ? (s.companyId as Company) : null;
+
+  const status = STATUS_MAP[s.status] ?? STATUS_MAP["inactive"];
+
+  const companyId =
+    company ? (company.id ?? (company as any).id ?? s.companyId) : s.companyId;
+  const companyName = company?.companyName ?? null;
+
+  const createdById =
+    typeof (s as any).createdBy === "object"
+      ? (s as any).createdBy?.id ?? (s as any).createdBy?._id
+      : (s as any).createdBy;
+
+  const timelineEvents = [
+    {
+      icon: <LuPlay className="w-3.5 h-3.5" />,
+      label: "Trial Start",
+      date: s.trialStartDate,
+      color: "bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400",
+      line: "bg-violet-200 dark:bg-violet-800",
+      active: !!s.trialStartDate,
+    },
+    {
+      icon: <LuFlag className="w-3.5 h-3.5" />,
+      label: "Trial End",
+      date: s.trialEndDate,
+      color: "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400",
+      line: "bg-blue-200 dark:bg-blue-800",
+      active: !!s.trialEndDate,
+    },
+    {
+      icon: <LuBadgeCheck className="w-3.5 h-3.5" />,
+      label: "Subscription Start",
+      date: s.startSubscriptionDate,
+      color: "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400",
+      line: "bg-emerald-200 dark:bg-emerald-800",
+      active: !!s.startSubscriptionDate,
+    },
+    {
+      icon: <LuFlag className="w-3.5 h-3.5" />,
+      label: "Subscription End",
+      date: s.endSubscriptionDate,
+      color: "bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400",
+      line: "bg-amber-200 dark:bg-amber-800",
+      active: !!s.endSubscriptionDate,
+    },
+    {
+      icon: <LucideXCircle className="w-3.5 h-3.5" />,
+      label: "Cancelled At",
+      date: s.cancelledAt,
+      color: s.cancelledAt
+        ? "bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400"
+        : "bg-slate-100 dark:bg-gray-700 text-gray-400",
+      line: "bg-gray-200 dark:bg-gray-700",
+      active: !!s.cancelledAt,
+      sub: s.cancelReason,
+    },
+  ];
+
+  const daysRemaining = s.endSubscriptionDate
+    ? Math.max(
+        0,
+        Math.ceil(
+          (new Date(s.endSubscriptionDate).getTime() - Date.now()) / 86400000
+        )
+      )
+    : null;
+
+  return (
+    <div className="flex flex-col gap-5">
+
+      {/* ── Hero banner ───────────────────────────────────────────── */}
+      <div className="relative bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden shadow-sm">
+        <div
+          className="h-24 relative"
+          style={{
+            background:
+              "linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4f46e5 75%, #7c3aed 100%)",
+          }}
+        >
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage:
+                "radial-gradient(ellipse at 15% 50%, rgba(167,139,250,0.25) 0%, transparent 55%), radial-gradient(ellipse at 85% 20%, rgba(99,102,241,0.3) 0%, transparent 50%)",
+            }}
+          />
+          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.03) 20px, rgba(255,255,255,0.03) 40px)" }} />
+        </div>
+
+        <div className="px-6 pb-5 relative">
+          <div className="flex items-end justify-between -mt-7 mb-4 flex-wrap gap-3">
+            <div className="w-14 h-14 rounded-2xl border-4 border-white dark:border-gray-800 bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-xl">
+              <LuCrown className="w-7 h-7 text-white" />
+            </div>
+            <div className={`mb-1 flex items-center gap-2 px-3 py-1.5 rounded-full ring-1 text-xs font-bold ${status.bg} ${status.text} ${status.ring}`}>
+              <GoDotFill className={`text-sm ${status.dot.replace("bg-", "text-")}`} />
+              {status.label}
+              {daysRemaining !== null && s.status === "active" && (
+                <span className="opacity-70 font-normal">· {daysRemaining}d left</span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h1 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">
+                {plan ? (typeof plan === "object" && (plan as any).name ? (plan as any).name : "Subscription") : "Subscription"}
+              </h1>
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 capitalize border border-indigo-100 dark:border-indigo-800">
+                {s.billingCycle}
+              </span>
+            </div>
+            <div className="flex items-center gap-3 flex-wrap text-xs text-gray-400">
+              <span className="font-mono">{s.subscriptionId}</span>
+              <span className="text-slate-300 dark:text-gray-600">·</span>
+              <span>ID: {s.id}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Stat cards ───────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          {
+            label: "Final Price",
+            value: `$${s.finalPrice.toFixed(2)}`,
+            sub: `/${s.billingCycle}`,
+            icon: <LuCircleDollarSign className="w-5 h-5" />,
+            accent: "bg-indigo-500",
+            text: "text-indigo-600 dark:text-indigo-400",
+            bg: "bg-indigo-50 dark:bg-indigo-900/20",
+          },
+          {
+            label: "Base Price",
+            value: `$${s.basePrice.toFixed(2)}`,
+            sub: "before discount",
+            icon: <LuZap className="w-5 h-5" />,
+            accent: "bg-violet-500",
+            text: "text-violet-600 dark:text-violet-400",
+            bg: "bg-violet-50 dark:bg-violet-900/20",
+          },
+          {
+            label: "Discount",
+            value: `$${s.discountAmount.toFixed(2)}`,
+            sub: s.discountAmount > 0 ? "saved" : "no discount",
+            icon: <LuBadgeCheck className="w-5 h-5" />,
+            accent: "bg-emerald-500",
+            text: "text-emerald-600 dark:text-emerald-400",
+            bg: "bg-emerald-50 dark:bg-emerald-900/20",
+          },
+          {
+            label: daysRemaining !== null ? "Days Left" : "Start Date",
+            value:
+              daysRemaining !== null
+                ? `${daysRemaining}d`
+                : fmt(s.startSubscriptionDate),
+            sub:
+              daysRemaining !== null
+                ? `ends ${fmt(s.endSubscriptionDate)}`
+                : "subscription start",
+            icon: <LuCalendarDays className="w-5 h-5" />,
+            accent: "bg-amber-500",
+            text: "text-amber-600 dark:text-amber-400",
+            bg: "bg-amber-50 dark:bg-amber-900/20",
+          },
+        ].map((c) => (
+          <div
+            key={c.label}
+            className={`flex items-center gap-3 p-4 rounded-2xl border border-slate-100 dark:border-gray-700 bg-white dark:bg-gray-800 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200`}
+          >
+            <div className={`w-10 h-10 rounded-xl ${c.accent} flex items-center justify-center text-white shrink-0`}>
+              {c.icon}
+            </div>
+            <div className="min-w-0">
+              <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wide">{c.label}</p>
+              <p className={`text-lg font-black ${c.text} leading-tight`}>{c.value}</p>
+              <p className="text-[10px] text-gray-400 truncate">{c.sub}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Billing + Timeline ────────────────────────────────────── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+        {/* Billing */}
+        <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+          <SectionHeader
+            icon={<LuCircleDollarSign className="w-4 h-4 text-blue-500" />}
+            title="Billing & Pricing"
+            accent="bg-blue-50/60 dark:bg-blue-900/10"
+          />
+          <div className="p-5 space-y-0">
+            <InfoRow label="Billing Cycle" value={<span className="capitalize">{s.billingCycle}</span>} />
+            <InfoRow label="Base Price" value={`$${s.basePrice.toFixed(2)}`} />
+            <InfoRow
+              label="Discount"
+              value={
+                <span className={s.discountAmount > 0 ? "text-emerald-600 dark:text-emerald-400" : ""}>
+                  ${s.discountAmount.toFixed(2)}
+                </span>
+              }
+            />
+            <InfoRow
+              label="Final Price"
+              value={
+                <span className="text-indigo-600 dark:text-indigo-400 font-black text-base">
+                  ${s.finalPrice.toFixed(2)}
+                </span>
+              }
+            />
+            <InfoRow label="Status" value={
+              <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold ${status.bg} ${status.text}`}>
+                <GoDotFill />
+                {status.label}
+              </span>
+            } />
+            {plan && typeof plan === "object" && (
+              <>
+                {(plan as any).name && <InfoRow label="Plan Name" value={(plan as any).name} />}
+                {(plan as any).id && (
+                  <InfoRow
+                    label="Plan ID"
+                    value={
+                      <Link href={`/plans/${(plan as any).id}`} className="text-indigo-500 hover:underline flex items-center gap-1 justify-end">
+                        {String((plan as any).id).slice(0, 16)}…
+                        <LuArrowUpRight className="w-3 h-3" />
+                      </Link>
+                    }
+                  />
+                )}
+                {(plan as any).currency && <InfoRow label="Currency" value={(plan as any).currency?.toUpperCase()} />}
+                {(plan as any).price?.monthlyPrice != null && (
+                  <InfoRow label="Monthly Rate" value={`$${(plan as any).price.monthlyPrice}`} />
+                )}
+                {(plan as any).price?.yearlyPrice != null && (
+                  <InfoRow label="Yearly Rate" value={`$${(plan as any).price.yearlyPrice}`} />
+                )}
+                {(plan as any).visibility && (
+                  <InfoRow
+                    label="Plan Visibility"
+                    value={
+                      <span className="flex items-center gap-1 capitalize">
+                        <LuGlobe className="w-3 h-3" />
+                        {(plan as any).visibility}
+                      </span>
+                    }
+                  />
+                )}
+                {(plan as any).trial_days != null && (
+                  <InfoRow label="Trial Days" value={`${(plan as any).trial_days} days`} />
+                )}
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Timeline */}
+        <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+          <SectionHeader
+            icon={<LuCalendarDays className="w-4 h-4 text-emerald-500" />}
+            title="Subscription Timeline"
+            accent="bg-emerald-50/60 dark:bg-emerald-900/10"
+          />
+          <div className="p-5">
+            <div className="relative">
+              {timelineEvents.map((ev, idx) => (
+                <div key={ev.label} className="relative flex gap-4 pb-5 last:pb-0">
+                  {idx < timelineEvents.length - 1 && (
+                    <div className="absolute left-[17px] top-8 bottom-0 w-0.5 border-l-2 border-dashed border-gray-200 dark:border-gray-700" />
+                  )}
+                  <div className={`relative z-10 w-9 h-9 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${ev.color} ${!ev.active ? "opacity-40" : ""}`}>
+                    {ev.icon}
+                  </div>
+                  <div className="flex-1 min-w-0 pt-1.5">
+                    <p className={`text-sm font-semibold ${ev.active ? "text-gray-800 dark:text-gray-100" : "text-gray-400 dark:text-gray-500"}`}>
+                      {ev.label}
+                    </p>
+                    <p className={`text-xs mt-0.5 font-mono ${ev.active ? "text-gray-500 dark:text-gray-400" : "text-gray-300 dark:text-gray-600"}`}>
+                      {ev.date ? fmt(ev.date) : "—"}
+                    </p>
+                    {ev.sub && (
+                      <p className="text-xs text-red-500 dark:text-red-400 mt-0.5">
+                        Reason: {ev.sub}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Company + Created By ─────────────────────────────────── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+          <SectionHeader
+            icon={<LuBuilding2 className="w-4 h-4 text-purple-500" />}
+            title="Company"
+            accent="bg-purple-50/60 dark:bg-purple-900/10"
+          />
+          <div className="p-5">
+            {companyName ? (
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center shrink-0">
+                  <LuBuilding2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-gray-800 dark:text-gray-100 capitalize truncate">
+                    {companyName}
+                  </p>
+                  {company?.status && (
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full capitalize ${
+                      company.status === "active"
+                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                        : "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
+                    }`}>
+                      {company.status.replace(/_/g, " ")}
+                    </span>
+                  )}
+                </div>
+                <Link
+                  href={`/companies/${companyId}`}
+                  className="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-1 shrink-0"
+                >
+                  View <LuArrowUpRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            ) : null}
+            <div className="space-y-0">
+              <InfoRow label="Company ID" value={String(companyId ?? "—")} mono />
+              {company?.industry && <InfoRow label="Industry" value={company.industry} />}
+              {company?.country && <InfoRow label="Country" value={company.country} />}
+              {company?.companyId && <InfoRow label="Ref ID" value={company.companyId} mono />}
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+          <SectionHeader
+            icon={<LuUser className="w-4 h-4 text-amber-500" />}
+            title="Created By"
+            accent="bg-amber-50/60 dark:bg-amber-900/10"
+          />
+          <div className="p-5 space-y-0">
+            <InfoRow label="User ID" value={String(createdById ?? "—")} mono />
+            <InfoRow label="Collection" value="users" />
+            {createdById && (
+              <div className="pt-3">
+                <Link
+                  href={`/users/${createdById}`}
+                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 text-sm font-semibold hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+                >
+                  <LuUser className="w-4 h-4" />
+                  View Creator Profile
+                  <LuArrowUpRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Timestamps ───────────────────────────────────────────── */}
+      <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden shadow-sm">
+        <SectionHeader
+          icon={<LuClock className="w-4 h-4 text-gray-500" />}
+          title="Record Timestamps"
+          accent="bg-slate-50/60 dark:bg-gray-700/30"
+        />
+        <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[
+            {
+              label: "Created At",
+              value: fmtFull(s.createdAt),
+              icon: <LuCalendarDays className="w-4 h-4" />,
+              color: "text-indigo-600 dark:text-indigo-400",
+              bg: "bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-800",
+            },
+            {
+              label: "Updated At",
+              value: s.updatedAt ? fmtFull(s.updatedAt) : "Never updated",
+              icon: <LuRefreshCw className="w-4 h-4" />,
+              color: s.updatedAt
+                ? "text-amber-600 dark:text-amber-400"
+                : "text-gray-400",
+              bg: s.updatedAt
+                ? "bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800"
+                : "bg-slate-50 dark:bg-gray-700/50 border-slate-100 dark:border-gray-700",
+            },
+            {
+              label: "Cancelled At",
+              value: s.cancelledAt ? fmtFull(s.cancelledAt) : "Not cancelled",
+              icon: <LucideXCircle className="w-4 h-4" />,
+              color: s.cancelledAt
+                ? "text-red-600 dark:text-red-400"
+                : "text-gray-400",
+              bg: s.cancelledAt
+                ? "bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-800"
+                : "bg-slate-50 dark:bg-gray-700/50 border-slate-100 dark:border-gray-700",
+            },
+          ].map((t) => (
+            <div
+              key={t.label}
+              className={`flex flex-col gap-2 p-4 rounded-xl border ${t.bg}`}
+            >
+              <div className={`flex items-center gap-2 ${t.color}`}>
+                {t.icon}
+                <span className="text-xs font-bold uppercase tracking-wide">
+                  {t.label}
+                </span>
+              </div>
+              <p className={`text-sm font-semibold ${t.color}`}>{t.value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SubscriptionViewComponent;

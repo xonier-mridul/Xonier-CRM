@@ -227,14 +227,19 @@ const CompanyUpdateForm: React.FC<CompanyUpdateFormProps> = ({
     const errs = validate(form);
     if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
 
-    const changed: CompanyUpdatePayload = {};
-    (Object.keys(form) as (keyof CompanyUpdatePayload)[]).forEach((key) => {
-      const original = (company as Record<string, unknown>)[key];
-      if (form[key] !== original && form[key] !== "" && form[key] !== undefined) {
-        (changed as Record<string, unknown>)[key] = form[key];
-      }
-    });
+    const changed: Partial<CompanyUpdatePayload> = {};
 
+(Object.keys(form) as (keyof CompanyUpdatePayload)[]).forEach((key) => {
+  const original = company[key as keyof Company];
+
+  if (
+    form[key] !== original &&
+    form[key] !== "" &&
+    form[key] !== undefined
+  ) {
+    changed[key] = form[key] as never;
+  }
+});
     if (Object.keys(changed).length === 0) return;
     await onUpdate(changed);
   };

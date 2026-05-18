@@ -658,13 +658,7 @@ const EnquiryViewPage = (): JSX.Element => {
                       value={enquiryData!.createdBy.phone}
                     />
                   )}
-                  {enquiryData!.createdBy?.company && (
-                    <ProfileField
-                      icon={<IoBusinessOutline className="w-4 h-4" />}
-                      label="Company"
-                      value={enquiryData!.createdBy.company}
-                    />
-                  )}
+                 
                 </div>
               </div>
             )}

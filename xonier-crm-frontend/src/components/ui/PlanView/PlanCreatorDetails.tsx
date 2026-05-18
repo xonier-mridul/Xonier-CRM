@@ -37,7 +37,7 @@ const PlanCreatorDetails = ({ createdBy, formatDate, formatLabel }: PlanCreatorD
         </div>
         <div>
           <h3 className="text-base font-semibold capitalize text-slate-900 dark:text-white">{fullName}</h3>
-          <p className="text-sm capitalize text-slate-500 dark:text-gray-400">{createdBy.company || "No company"}</p>
+          
         </div>
         <PlanViewBadge variant={createdBy.status}>{formatLabel(createdBy.status)}</PlanViewBadge>
       </div>
