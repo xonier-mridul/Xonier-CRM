@@ -649,11 +649,7 @@ const DealViewPage = (): JSX.Element => {
                     label="Phone"
                     value={dealData.createdBy?.phone}
                   />
-                  <ProfileField
-                    icon={<IoBusinessOutline className="w-4 h-4" />}
-                    label="Company"
-                    value={dealData.createdBy?.company || "—"}
-                  />
+                  
                 </div>
               ) : (
                 <p className="text-white text-center py-4">

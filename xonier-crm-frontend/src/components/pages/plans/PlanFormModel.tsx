@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { CreatePlanPayload, PlanFeaturePayload, UpdatePlanPayload, Plan } from "@/src/types/plan/plan.types";
-import { Feature } from "@/src/types/plan/feature.types";
+import { Feature } from "@/src/types/plan/plan.types";
 import { CURRENCY, DISCOUNT_TYPE, PLAN_STATUS, PLAN_VISIBILITY } from "@/src/constants/enum";
 
 

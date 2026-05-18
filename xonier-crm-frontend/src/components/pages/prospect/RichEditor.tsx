@@ -25,11 +25,11 @@ export interface RichTextEditorHandle {
   editor: Editor | null;
 }
 
-// ─── Props ────────────────────────────────────────────────────────────────────
+
 export interface RichTextEditorProps {
-  /** Controlled HTML value */
+
   value?: string;
-  /** Called on every content change with the new HTML string */
+  
   onChange?: (html: string) => void;
   /** Placeholder text shown when editor is empty */
   placeholder?: string;
@@ -47,9 +47,6 @@ export interface RichTextEditorProps {
   hideFooter?: boolean;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// INTERNAL: Toolbar Button
-// ═══════════════════════════════════════════════════════════════════════════════
 const TBtn = ({
   onClick, active, title, children, disabled,
 }: {

@@ -5,7 +5,7 @@ import { Company } from "../company/company.types";
 export interface Subscription {
   id: string;
   subscriptionId: string;
-  planId: string | Plan;
+  planId:Plan | string ;
   companyId: string | Company;
   billingCycle: BILLING_CYCLE;
   basePrice: number;
@@ -33,6 +33,6 @@ export interface SubscriptionTableProps {
 }
 
 export interface subScriptionView {
-  subScriptionData: Subscription,
+  subScriptionData: Subscription | null,
   isLoading: boolean
 }

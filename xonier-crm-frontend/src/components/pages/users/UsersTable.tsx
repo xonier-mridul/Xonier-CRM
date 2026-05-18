@@ -508,7 +508,7 @@ const CompanySelect: React.FC<CompanySelectProps> = ({
         </>
       )}
 
-      <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm flex flex-col gap-5 p-6 rounded-xl border-[1px] border-slate-900/10 w-full ">
+      <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm flex flex-col gap-5 p-6 rounded-xl border border-slate-900/10 w-full ">
         <div className="flex items-center gap-12 justify-between">
           <div className="flex flex-col gap-2">
             <h2 className="text-xl font-bold  dark:text-white text-slate-900 capitalize">
@@ -528,27 +528,13 @@ const CompanySelect: React.FC<CompanySelectProps> = ({
                       handleCompanyChange={setSearchFilter}
                   />)
            }
-            {/* <select 
-              className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10"
-            >
-              <option>Company </option>
-              {
-                companyData.map((item)=>(
-                  <option key={item.id}
-                  on>
-                        {item.companyName}
-                  </option>
-                ))
-              }
-              
-              
-            </select> */}
+            
           </div>
           <div className="flex items-center gap-6">
             <select
               name="limit"
               id="limit"
-              className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10"
+              className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10"
               onChange={(e) => handleLimit(e.target.value)}
             >
               <option value="10">10</option>
@@ -556,7 +542,7 @@ const CompanySelect: React.FC<CompanySelectProps> = ({
               <option value="30">30</option>
               <option value="40">50</option>
             </select>
-            <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2">
+            <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2">
               <IoIosSearch className="text-xl" />
               <input type="text" placeholder="Search by name" onChange={(e) => { setSearch(e.target.value) }} className="border-none bg-transparent outline-none text-sm font-medium text-slate-900 dark:text-white w-full" />
             </div>

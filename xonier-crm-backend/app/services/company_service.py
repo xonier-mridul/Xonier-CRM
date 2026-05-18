@@ -681,7 +681,7 @@ class CompanyService:
                 setattr(company, field, value)
 
             company.updatedAt = datetime.now(timezone.utc)
-            company.updatedBy = PydanticObjectId(actor["_id"])
+            # company.updatedBy = DBRef(collection="users", id=PydanticObjectId(actor["_id"]))
             await company.save()
 
             await self.activityRepo.create(

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { Dispatch, SetStateAction } from "react";
 import Pagination from "../../common/pagination";
 import { IoIosSearch } from "react-icons/io";
 import Skeleton from "react-loading-skeleton";
@@ -10,12 +10,13 @@ import { CURRENCY } from "@/src/constants/enum";
 import { SubscriptionTableProps } from "@/src/types/subscription/subscription.types";
 import Link from "next/link";
 
+
 // ─── Extended Props ────────────────────────────────────────────────────────────
 
 interface ExtendedSubscriptionTableProps extends SubscriptionTableProps {
   searchVal: string;
   onSearch: (val: string) => void;
-  setPageLimit: number
+  setPageLimit: Dispatch<SetStateAction<number>>
 }
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
@@ -116,7 +117,7 @@ const SubscriptionTable: React.FC<ExtendedSubscriptionTableProps> = ({
             {!isLoading ? (
               subScriptionData && subScriptionData.length > 0 ? (
                 subScriptionData.map((item) => {
-                  const symbol = currencySymbol[item.planId.currency] ?? "";
+                  const symbol = (item.planId &&  item.planId instanceof Object) ? currencySymbol[item.planId?.currency] ?? "" : "";
                   const startDate = new Date(item.startSubscriptionDate).toLocaleDateString(
                     "en-IN",
                     { day: "numeric", month: "long", year: "numeric" }
@@ -138,7 +139,7 @@ const SubscriptionTable: React.FC<ExtendedSubscriptionTableProps> = ({
                       {/* Plan Name */}
                       <td className="py-4 pr-4">
                         <span className="font-semibold text-sm text-slate-900 dark:text-white capitalize">
-                          {item.planId?.name ?? "—"}
+                          {(item.planId &&  item.planId instanceof Object) ?item.planId?.name ?? "—" : "-"}
                         </span>
                       </td>
 
@@ -180,7 +181,7 @@ const SubscriptionTable: React.FC<ExtendedSubscriptionTableProps> = ({
                       <td className="py-4">
                         <div className="flex items-center gap-2">
                           <Link
-                            href={`/subscription/${item.id}`}
+                            href={`/subscriptions/${item.id}`}
                             className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900/30 dark:hover:text-green-400 transition-colors"
                           >
                             <IoEyeOutline className="text-base" />
