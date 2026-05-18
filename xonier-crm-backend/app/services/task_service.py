@@ -7,7 +7,7 @@ from app.db.models.task_activity_model import TaskActivityModel
 from app.db.db import Client
 from app.utils.custom_exception import AppException
 from app.utils.enquiry_id_generator import generate_enquiry_id
-from app.utils.validate_admin import validate_admin
+from app.utils.validate_admin import validate_admin, validate_company_admin
 from app.utils.get_team_members import GetTeamMembers
 from app.core.enums import TASK_ACTIVITY_ACTION, TASK_PRIORITY
 from beanie import PydanticObjectId, BeanieObjectId
@@ -330,11 +330,14 @@ class TaskService:
             page = int(filters.get("page", 1))
             limit = int(filters.get("limit", 10))
             is_admin = validate_admin(user["userRole"])
+            is_c_admin = validate_company_admin(user["userRole"])
 
             query: Dict[str, Any] = {"deletedAt": None}
             and_conditions = []
 
-            if not is_admin:
+            
+
+            if not is_admin and not is_c_admin:
                 members = await self.getTeamMembers.get_team_members(user["_id"])
                 user_object_id = PydanticObjectId(user["_id"])
                 visibility_query = self._build_visibility_query(user, members, user_object_id)
@@ -436,7 +439,7 @@ class TaskService:
                 return json.loads(cache)
 
             
-
+            
             result = await self.repo.get_all(
                 page=page,
                 limit=limit,
