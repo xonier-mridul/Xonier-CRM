@@ -208,14 +208,14 @@ function MetricRow({ label, value, total, color }: { label: string; value: numbe
       <div className="flex items-center justify-between mb-1.5">
         <div className="flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
-          <span className="text-xs text-slate-400 capitalize group-hover:text-slate-300 transition-colors">{label}</span>
+          <span className="text-xs text-slate-400 capitalize group-hover:text-slate-500 dark:group-hover:text-slate-300 transition-colors">{label}</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs font-mono font-bold text-slate-300">{v}</span>
           <span className="text-xs text-slate-600 w-9 text-right">{p.toFixed(1)}%</span>
         </div>
       </div>
-      <div className="h-1 rounded-full bg-slate-700/60">
+      <div className="h-1 rounded-full bg-white dark:bg-slate-700/60">
         <div className="h-1 rounded-full transition-all duration-1000" style={{ width: `${Math.min(p, 100)}%`, backgroundColor: color }} />
       </div>
     </div>
@@ -228,7 +228,7 @@ function StatCard({ label, value, sub, icon: Icon, color, trend, prefix = "", su
   { label: string; value: number; sub?: string; icon: any; color: string; trend?: { val: number; up: boolean }; prefix?: string; suffix?: string }) {
   const v = useCountUp(value);
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-slate-700/50 bg-slate-800/80 p-5 hover:border-slate-600 transition-all duration-300 hover:shadow-lg hover:shadow-slate-900/50 group cursor-default">
+    <div className="relative overflow-hidden rounded-2xl border bg-slate-50 border-slate-200 hover:border-slate-300 dark:border-slate-700/50 dark:bg-slate-800/80 p-5 dark:hover:border-slate-600 transition-all duration-300 hover:shadow-lg hover:shadow-slate-900/50 group cursor-default">
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
         style={{ background: `radial-gradient(circle at top right, ${color}12, transparent 70%)` }} />
       <div className="absolute top-0 right-0 w-20 h-20 rounded-bl-full opacity-5 group-hover:opacity-10 transition-opacity duration-500"
@@ -241,7 +241,7 @@ function StatCard({ label, value, sub, icon: Icon, color, trend, prefix = "", su
             <Icon className="w-4 h-4" />
           </div>
         </div>
-        <p className="font-mono text-3xl font-bold text-white tracking-tight leading-none mb-1">
+        <p className="font-mono text-3xl font-bold text-slate-400 dark:text-white tracking-tight leading-none mb-1">
           {prefix}{v.toLocaleString()}{suffix}
         </p>
         {sub && <p className="text-xs text-slate-500 mt-1 leading-relaxed">{sub}</p>}
@@ -261,12 +261,12 @@ function StatCard({ label, value, sub, icon: Icon, color, trend, prefix = "", su
 function Card({ title, sub, icon: Icon, children, className = "" }:
   { title: string; sub?: string; icon?: any; children: React.ReactNode; className?: string }) {
   return (
-    <div className={`bg-slate-800/80 border border-slate-700/50 rounded-2xl p-5 hover:border-slate-600/60 transition-all duration-200 ${className}`}>
+    <div className={`dark:bg-slate-800/80 bg-slate-50 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 dark:hover:border-slate-600/60 hover:border-slate-300 transition-all duration-200 ${className}`}>
       {(title || Icon) && (
         <div className="flex items-start gap-2.5 mb-5">
-          {Icon && <div className="w-7 h-7 rounded-lg bg-slate-700/60 flex items-center justify-center text-slate-400 flex-shrink-0 mt-0.5"><Icon className="w-3.5 h-3.5" /></div>}
+          {Icon && <div className="w-7 h-7 rounded-lg bg-slate-200 dark:bg-slate-700/60 flex items-center justify-center text-slate-500 flex-shrink-0 mt-0.5"><Icon className="w-3.5 h-3.5" /></div>}
           <div>
-            <h3 className="text-sm font-bold text-white tracking-tight">{title}</h3>
+            <h3 className="text-sm font-bold dark:text-white text-gray-400 tracking-tight">{title}</h3>
             {sub && <p className="text-xs text-slate-500 mt-0.5">{sub}</p>}
           </div>
         </div>
@@ -283,7 +283,7 @@ function FilterBar({ current, onChange }: {
   onChange: (f: DashboardFilter) => void;
 }) {
   return (
-    <div className="flex items-center gap-0.5 bg-slate-800/60 border border-slate-700/50 rounded-xl p-1">
+    <div className="flex items-center gap-0.5 bg-slate-50 border-slate-200 hover:slate-300 dark:bg-slate-800/60 border dark:border-slate-700/50 rounded-xl p-1">
       {FILTER_OPTIONS.map((o) => (
         <button key={o.value} onClick={() => onChange(o.value as DashboardFilter)}
           className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
@@ -306,7 +306,7 @@ function SACompaniesCard({ companies }: { companies: CompanyStats }) {
           { label: "Pending", value: companies.pending, color: "#f59e0b" },
           { label: "Suspended", value: companies.suspended, color: "#ef4444" },
         ].map((i) => (
-          <div key={i.label} className="rounded-xl p-3 border border-slate-700/40 hover:border-slate-600 transition-colors"
+          <div key={i.label} className="rounded-xl p-3 border border-slate-200 hover:border-slate-300 dark:border-slate-700/40 dark:hover:border-slate-600 transition-colors"
             style={{ background: `linear-gradient(135deg, ${i.color}12, ${i.color}05)` }}>
             <p className="font-mono text-xl font-bold" style={{ color: i.color }}><AnimNum value={i.value} /></p>
             <p className="text-[10px] text-slate-500 mt-0.5">{i.label}</p>
@@ -337,13 +337,13 @@ function SARevenueCard({ subs, revenue }: { subs: SubscriptionStats; revenue: Re
           { label: "Active Subs", value: fmt(subs.active), color: "#8b5cf6" },
           { label: "Avg Revenue", value: fmtMoney(subs.avgRevenue), color: "#f59e0b" },
         ].map((i) => (
-          <div key={i.label} className="rounded-xl p-2.5 bg-slate-700/30 border border-slate-700/40">
+          <div key={i.label} className="rounded-xl p-2.5 bg-white dark:bg-slate-700/30 border border-slate-200 hover:border-slate-300 dark:border-slate-700/40">
             <p className="font-mono text-base font-bold" style={{ color: i.color }}>{i.value}</p>
             <p className="text-[10px] text-slate-500 mt-0.5">{i.label}</p>
           </div>
         ))}
       </div>
-      <div className="flex flex-col gap-1.5 pt-3 border-t border-slate-700/40">
+      <div className="flex flex-col gap-1.5 pt-3 border-t border-slate-300 dark:border-slate-700/40">
         <div className="flex justify-between text-xs">
           <span className="text-slate-500">Trial</span>
           <span className="font-mono font-bold text-amber-400">{subs.trial}</span>
@@ -366,13 +366,13 @@ function SAPlansCard({ plans }: { plans: PlanStat[] }) {
           const color = CHART_COLORS[i % CHART_COLORS.length];
           return (
             <div key={plan.planId}
-              className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-700/30 border border-slate-700/40 hover:border-slate-600 transition-all group">
+              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white dark:bg-slate-700/30 border border-slate-200 hover:border-slate-300  dark:border-slate-700/40 dark:hover:border-slate-600 transition-all group">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
                 style={{ background: `linear-gradient(135deg, ${color}, ${color}80)` }}>
                 {(plan.name || "P")[0].toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-slate-300 truncate">{plan.name}</p>
+                <p className="text-xs font-semibold text-slate-400 dark:text-slate-300 truncate">{plan.name}</p>
                 <p className="text-[10px] text-slate-600">${plan.monthlyPrice}/mo · ${plan.yearlyPrice}/yr</p>
               </div>
               <div className="text-right">
@@ -400,7 +400,7 @@ function SAChurnCard({ churn }: { churn: ChurnStats }) {
           { label: "Canceled", value: String(churn.canceledThisPeriod), color: "#f97316", bg: "from-orange-500/10 to-amber-500/5" },
           { label: "New This Period", value: String(churn.newThisPeriod), color: "#10b981", bg: "from-emerald-500/10 to-green-500/5" },
         ].map((i) => (
-          <div key={i.label} className={`rounded-xl p-3.5 border border-slate-700/40 bg-gradient-to-br ${i.bg}`}>
+          <div key={i.label} className={`rounded-xl p-3.5 border  dark:border-slate-700/40 border-slate-200 hover:border-slate-300  bg-gradient-to-br ${i.bg}`}>
             <p className="font-mono text-xl font-bold" style={{ color: i.color }}>{i.value}</p>
             <p className="text-[10px] text-slate-500 mt-0.5">{i.label}</p>
           </div>
@@ -417,13 +417,13 @@ function SALatestCompanies({ companies }: { companies: LatestCompany[] }) {
         {companies.map((c, i) => {
           const color = STATUS_COLORS[c.status] ?? "#6b7280";
           return (
-            <div key={c.companyId} className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-700/30 border border-slate-700/40 hover:border-slate-600 transition-all group">
+            <div key={c.companyId} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white dark:bg-slate-700/30 border dark:border-slate-700/40 border-slate-200 hover:border-slate-300 dark:hover:border-slate-600 transition-all group">
               <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
                 style={{ background: `linear-gradient(135deg, ${CHART_COLORS[i % CHART_COLORS.length]}, ${CHART_COLORS[i % CHART_COLORS.length]}80)` }}>
                 {(c.companyName || "C")[0]}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-slate-300 truncate">{c.companyName}</p>
+                <p className="text-xs font-semibold text-slate-400 dark:text-slate-300 truncate">{c.companyName}</p>
                 <p className="text-[10px] text-slate-600 truncate">{c.industry} {c.country ? `· ${c.country}` : ""}</p>
               </div>
               <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full border flex-shrink-0"
@@ -455,8 +455,8 @@ function SATopCompanies({ companies }: { companies: TopCompany[] }) {
                 {(c.companyName || "C")[0]}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-slate-300 truncate">{c.companyName}</p>
-                <div className="mt-1 h-1 rounded-full bg-slate-700/60">
+                <p className="text-xs font-semibold text-slate-400 dark:text-slate-300 truncate">{c.companyName}</p>
+                <div className="mt-1 h-1 rounded-full bg-white dark:bg-slate-700/60">
                   <div className="h-1 rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
                 </div>
               </div>
@@ -486,7 +486,7 @@ function SAActivityCard({ activity }: { activity: ActivityStats }) {
                     <span className="text-xs text-slate-400 capitalize">{a.action}</span>
                     <span className="text-xs font-mono font-bold text-slate-300">{a.count}</span>
                   </div>
-                  <div className="h-1 rounded-full bg-slate-700/60">
+                  <div className="h-1 rounded-full bg-white dark:bg-slate-700/60">
                     <div className="h-1 rounded-full" style={{ width: `${Math.min(p, 100)}%`, backgroundColor: color }} />
                   </div>
                 </div>
@@ -507,7 +507,7 @@ function SAActivityCard({ activity }: { activity: ActivityStats }) {
                     <span className="text-xs text-slate-400 capitalize">{e.entityType}</span>
                     <span className="text-xs font-mono font-bold text-slate-300">{e.count}</span>
                   </div>
-                  <div className="h-1 rounded-full bg-slate-700/60">
+                  <div className="h-1 rounded-full bg-white dark:bg-slate-700/60">
                     <div className="h-1 rounded-full" style={{ width: `${Math.min(p, 100)}%`, backgroundColor: color }} />
                   </div>
                 </div>
@@ -516,7 +516,7 @@ function SAActivityCard({ activity }: { activity: ActivityStats }) {
           </div>
         </div>
       </div>
-      <div className="mt-4 pt-4 border-t border-slate-700/40 flex items-center justify-between">
+      <div className="mt-4 pt-4 border-t border-slate-300 dark:border-slate-700/40 flex items-center justify-between">
         <span className="text-xs text-slate-500">Total actions</span>
         <span className="text-sm font-mono font-bold text-indigo-400">{activity.total.toLocaleString()}</span>
       </div>
@@ -533,14 +533,14 @@ function SARecentActivities({ activities }: { activities: RecentActivity[] }) {
           return (
             <div key={i} className="flex gap-3 relative group">
               {i < Math.min(activities.length, 8) - 1 && (
-                <div className="absolute left-[9px] top-5 bottom-0 w-px bg-slate-700/60" />
+                <div className="absolute left-[9px] top-5 bottom-0 w-px bg-slate-300 dark:bg-slate-700/60" />
               )}
               <div className="w-4.5 h-4.5 mt-1 rounded-full border-2 border-slate-800 flex items-center justify-center z-10 flex-shrink-0"
                 style={{ backgroundColor: `${color}25`, borderColor: color }}>
                 <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
               </div>
               <div className="pb-3 flex-1 min-w-0">
-                <p className="text-xs text-slate-300 leading-relaxed font-medium">{a.title}</p>
+                <p className="text-xs text-slate-400 dark:text-slate-300 leading-relaxed font-medium">{a.title}</p>
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
                     style={{ color, backgroundColor: `${color}15` }}>
@@ -902,7 +902,7 @@ function BreakdownsSection({ breakdowns }: { breakdowns: BreakdownStats }) {
                   <span className="text-xs text-slate-400 capitalize truncate">{i.industry}</span>
                   <span className="text-xs font-mono font-bold text-slate-300">{i.count}</span>
                 </div>
-                <div className="h-1 rounded-full bg-slate-700/60">
+                <div className="h-1 rounded-full bg-white dark:bg-slate-700/60">
                   <div className="h-1 rounded-full" style={{ width: `${(i.count / total) * 100}%`, backgroundColor: color }} />
                 </div>
               </div>
@@ -928,7 +928,7 @@ function BreakdownsSection({ breakdowns }: { breakdowns: BreakdownStats }) {
                     <span className="text-xs font-mono font-bold text-slate-300">{c.count}</span>
                   </div>
                 </div>
-                <div className="h-1.5 rounded-full bg-slate-700/60">
+                <div className="h-1.5 rounded-full bg-white dark:bg-slate-700/60">
                   <div className="h-1.5 rounded-full" style={{ width: `${(c.count / total) * 100}%`, backgroundColor: color }} />
                 </div>
               </div>
@@ -948,7 +948,7 @@ function BreakdownsSection({ breakdowns }: { breakdowns: BreakdownStats }) {
                   <span className="text-xs text-slate-400 uppercase">{c.country}</span>
                   <span className="text-xs font-mono font-bold text-slate-300">{c.count}</span>
                 </div>
-                <div className="h-1 rounded-full bg-slate-700/60">
+                <div className="h-1 rounded-full bg-white dark:bg-slate-700/60">
                   <div className="h-1 rounded-full" style={{ width: `${(c.count / total) * 100}%`, backgroundColor: color }} />
                 </div>
               </div>
@@ -1227,7 +1227,7 @@ const load = useCallback(async (showRefresh = false) => {
           <div className="flex items-center gap-3">
             <FilterBar current={filter} onChange={(f) => setFilter(f)} />
             <button onClick={() => load(true)} disabled={refreshing}
-              className="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 text-slate-400 hover:text-indigo-400 hover:border-indigo-500/50 transition-all disabled:opacity-50 flex items-center justify-center">
+              className="w-9 h-9 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-indigo-400 hover:border-indigo-500/50 transition-all disabled:opacity-50 flex items-center justify-center">
               <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
             </button>
           </div>
