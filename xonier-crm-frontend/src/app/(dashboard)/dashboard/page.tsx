@@ -246,7 +246,7 @@ function StatCard({ label, value, sub, icon: Icon, color, trend, prefix = "", su
             <Icon className="w-4 h-4" />
           </div>
         </div>
-        <p className="font-mono text-3xl font-bold text-slate-400 dark:text-white tracking-tight leading-none mb-1">
+        <p className="font-mono text-3xl font-bold text-slate-700 dark:text-white tracking-tight leading-none mb-1">
           {prefix}{v.toLocaleString()}{suffix}
         </p>
         {sub && <p className="text-xs text-slate-500 mt-1 leading-relaxed">{sub}</p>}
@@ -271,7 +271,7 @@ function Card({ title, sub, icon: Icon, children, className = "" }:
         <div className="flex items-start gap-2.5 mb-5">
           {Icon && <div className="w-7 h-7 rounded-lg bg-slate-200 dark:bg-slate-700/60 flex items-center justify-center text-slate-500 flex-shrink-0 mt-0.5"><Icon className="w-3.5 h-3.5" /></div>}
           <div>
-            <h3 className="text-sm font-bold dark:text-white text-gray-400 tracking-tight">{title}</h3>
+            <h3 className="text-sm font-bold dark:text-white text-gray-700 tracking-tight">{title}</h3>
             {sub && <p className="text-xs text-slate-500 mt-0.5">{sub}</p>}
           </div>
         </div>
@@ -372,7 +372,7 @@ function SAPlansCard({ plans }: { plans: PlanStat[] }) {
           return (
             <div key={plan.planId}
               className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white dark:bg-slate-700/30 border border-slate-200 hover:border-slate-300  dark:border-slate-700/40 dark:hover:border-slate-600 transition-all group">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold dark:text-white flex-shrink-0"
                 style={{ background: `linear-gradient(135deg, ${color}, ${color}80)` }}>
                 {(plan.name || "P")[0].toUpperCase()}
               </div>
@@ -423,7 +423,7 @@ function SALatestCompanies({ companies }: { companies: LatestCompany[] }) {
           const color = STATUS_COLORS[c.status] ?? "#6b7280";
           return (
             <div key={c.companyId} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white dark:bg-slate-700/30 border dark:border-slate-700/40 border-slate-200 hover:border-slate-300 dark:hover:border-slate-600 transition-all group">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold dark:text-white flex-shrink-0"
                 style={{ background: `linear-gradient(135deg, ${CHART_COLORS[i % CHART_COLORS.length]}, ${CHART_COLORS[i % CHART_COLORS.length]}80)` }}>
                 {(c.companyName || "C")[0]}
               </div>
@@ -455,7 +455,7 @@ function SATopCompanies({ companies }: { companies: TopCompany[] }) {
           return (
             <div key={c.companyId} className="group flex items-center gap-3 p-2 rounded-xl hover:bg-slate-700/30 transition-colors">
               <span className="text-sm w-6 text-center flex-shrink-0">{medals[i]}</span>
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold dark:text-white flex-shrink-0"
                 style={{ backgroundColor: color }}>
                 {(c.companyName || "C")[0]}
               </div>
@@ -573,7 +573,7 @@ function LeadsCard({ leads }: { leads: LeadStats }) {
         <div className="relative flex-shrink-0">
           <Ring pct={wonPct} color="#10b981" size={72} />
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-mono text-xs font-bold text-white">{wonPct.toFixed(0)}%</span>
+            <span className="font-mono text-xs font-bold dark:text-white">{wonPct.toFixed(0)}%</span>
             <span className="text-[9px] text-slate-500">won</span>
           </div>
         </div>
@@ -590,7 +590,7 @@ function LeadsCard({ leads }: { leads: LeadStats }) {
           { label: "In Deal", value: leads.inDeal, color: "#8b5cf6" },
           { label: "This Month", value: leads.thisMonth, color: "#06b6d4" },
         ].map((i) => (
-          <div key={i.label} className="text-center rounded-xl p-2 bg-slate-700/30">
+          <div key={i.label} className="text-center rounded-xl p-2 bg-slate-200/30 dark:bg-slate-700/30">
             <p className="font-mono text-base font-bold" style={{ color: i.color }}><AnimNum value={i.value} /></p>
             <p className="text-[10px] text-slate-500 mt-0.5">{i.label}</p>
           </div>
@@ -616,13 +616,13 @@ function DealsCard({ deals }: { deals: DealStats }) {
           { label: "Total", value: deals.total, color: "#8b5cf6" },
           { label: "This Month", value: deals.thisMonth, color: "#06b6d4" },
         ].map((i) => (
-          <div key={i.label} className="rounded-xl p-2.5 bg-slate-700/30 border border-slate-700/40">
+          <div key={i.label} className="rounded-xl p-2.5 bg-slate-200 dark:bg-slate-700/30 border border-slate-200/40 dark:border-slate-700/40">
             <p className="font-mono text-lg font-bold" style={{ color: i.color }}><AnimNum value={i.value} /></p>
             <p className="text-[10px] text-slate-500">{i.label}</p>
           </div>
         ))}
       </div>
-      <div className="pt-3 border-t border-slate-700/40">
+      <div className="pt-3 border-t border-slate-200/40 dark:border-slate-700/40">
         <div className="flex justify-between text-xs mb-1.5">
           <span className="text-slate-500">Close Rate</span>
           <span className="font-mono text-emerald-400">{closedPct.toFixed(1)}%</span>
@@ -646,7 +646,7 @@ function ConversionCard({ conv }: { conv: ConversionRate }) {
         <div className="relative">
           <Ring pct={conv.conversionRate} color="#6366f1" size={110} />
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-mono text-2xl font-bold text-white">{conv.conversionRate.toFixed(1)}%</span>
+            <span className="font-mono text-2xl font-bold dark:text-white">{conv.conversionRate.toFixed(1)}%</span>
             <span className="text-[10px] text-slate-500">conversion</span>
           </div>
         </div>
@@ -657,7 +657,7 @@ function ConversionCard({ conv }: { conv: ConversionRate }) {
           { label: "Won", value: conv.won, color: "#10b981", icon: CheckCircle2 },
           { label: "Lost", value: conv.lost, color: "#ef4444", icon: XCircle },
         ].map((i) => (
-          <div key={i.label} className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-slate-700/30 border border-slate-700/40">
+          <div key={i.label} className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-slate-200/30 dark:bg-slate-700/30 border border-slate-200/40 dark:border-slate-700/40">
             <i.icon className="w-4 h-4" style={{ color: i.color }} />
             <span className="font-mono text-xl font-bold" style={{ color: i.color }}><AnimNum value={i.value} /></span>
             <span className="text-[10px] text-slate-500">{i.label}</span>
@@ -722,7 +722,7 @@ function TopPerformers({ performers }: { performers: TopPerformer[] }) {
         {performers.slice(0, 5).map((p, i) => (
           <div key={p.userId} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-700/30 transition-colors group">
             <span className="text-sm w-6 text-center">{medals[i]}</span>
-            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold dark:text-white flex-shrink-0"
               style={{ background: `linear-gradient(135deg, ${colors[i]}, ${colors[i]}80)` }}>
               {(p.firstName || "?")[0]}
             </div>
@@ -756,7 +756,7 @@ function UsersCard({ users }: { users: UserStats }) {
           { label: "Inactive", value: users.inactive, color: "#f59e0b" },
           { label: "Not Verified", value: users.notVerified, color: "#ef4444" },
         ].map((i) => (
-          <div key={i.label} className="rounded-xl p-3 border border-slate-700/40"
+          <div key={i.label} className="rounded-xl p-3 border border-slate-200/40 dark:border-slate-700/40"
             style={{ background: `linear-gradient(135deg, ${i.color}12, ${i.color}05)` }}>
             <p className="font-mono text-xl font-bold" style={{ color: i.color }}><AnimNum value={i.value} /></p>
             <p className="text-[10px] text-slate-500 mt-0.5">{i.label}</p>
@@ -783,7 +783,7 @@ function TaskCard({ tasks }: { tasks: TaskStats }) {
         <div className="relative flex-shrink-0">
           <Ring pct={tasks.completionRate} color="#10b981" size={72} />
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-mono text-xs font-bold text-white">{tasks.completionRate.toFixed(0)}%</span>
+            <span className="font-mono text-xs font-bold dark:text-white">{tasks.completionRate.toFixed(0)}%</span>
           </div>
         </div>
         <div className="flex-1">
@@ -798,7 +798,7 @@ function TaskCard({ tasks }: { tasks: TaskStats }) {
           { label: "Unassigned", value: tasks.unassigned, color: "#f59e0b" },
           { label: "This Month", value: tasks.thisMonth, color: "#6366f1" },
         ].map((i) => (
-          <div key={i.label} className="text-center rounded-xl p-2 bg-slate-700/30">
+          <div key={i.label} className="text-center rounded-xl p-2 bg-slate-200/30 dark:bg-slate-700/30">
             <p className="font-mono text-lg font-bold" style={{ color: i.color }}><AnimNum value={i.value} /></p>
             <p className="text-[10px] text-slate-500 mt-0.5">{i.label}</p>
           </div>
@@ -1073,7 +1073,7 @@ function CompanyAdminLayout({ d }: { d: DashboardData }) {
                   { label: "Assigned", value: d.enquiries.assigned, color: "#8b5cf6" },
                   { label: "Unassigned", value: d.enquiries.unassigned, color: "#f59e0b" },
                 ].map((i) => (
-                  <div key={i.label} className="rounded-xl p-2.5 bg-slate-700/30">
+                  <div key={i.label} className="rounded-xl p-2.5 bg-slate-200/30 dark:bg-slate-700/30">
                     <p className="font-mono text-xl font-bold" style={{ color: i.color }}><AnimNum value={i.value} /></p>
                     <p className="text-[10px] text-slate-500">{i.label}</p>
                   </div>
@@ -1102,7 +1102,7 @@ function CompanyAdminLayout({ d }: { d: DashboardData }) {
                           <span className="text-xs text-slate-600 w-9 text-right">{pct.toFixed(1)}%</span>
                         </div>
                       </div>
-                      <div className="h-1.5 rounded-full bg-slate-700/60">
+                      <div className="h-1.5 rounded-full bg-slate-200/50 dark:bg-slate-700/60">
                         <div className="h-1.5 rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
                       </div>
                     </div>
@@ -1195,7 +1195,7 @@ const load = useCallback(async (showRefresh = false) => {
             <AlertCircle className="w-8 h-8 text-red-400" />
           </div>
           <p className="text-sm text-slate-400">{error}</p>
-          <button onClick={() => load()} className="px-5 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-500 transition-colors">
+          <button onClick={() => load()} className="px-5 py-2 rounded-xl bg-indigo-600 dark:text-white text-sm font-semibold hover:bg-indigo-500 transition-colors">
             Retry
           </button>
         </div>
