@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, ReactNode } from "react"
+import { ReactNode } from "react"
 
 
 declare global {
@@ -16,9 +16,21 @@ declare global {
   interface PrimaryButtonProps {
     text: string,
     isLoading?: boolean,
+    isLoadingTxt?: string
     disabled?: boolean,
     link: string,
     icon?:  ReactNode
+  }
+
+
+  interface EventPrimaryButtonProps {
+    text: string,
+    isLoading?: boolean,
+    isLoadingTxt?: string
+    disabled?: boolean,
+    event: ()=> void | Promise<void>,
+    icon?:  ReactNode,
+    variant?: "default" | "danger"
   }
 
   interface SecondaryButtonProps {

@@ -7,6 +7,7 @@ from pymongo import IndexModel
 from app.db.models.task_model import TaskModel
 from app.db.models.user_model import UserModel
 from app.core.enums import TIMELOG_STATUS
+from app.db.models.base_model import BaseDocument
 
 
 class TimeSegment(BaseModel):
@@ -15,7 +16,7 @@ class TimeSegment(BaseModel):
     durationSeconds: int = 0
 
 
-class TaskTimeLogModel(Document):
+class TaskTimeLogModel(BaseDocument):
     task: Link[TaskModel]
     user: Link[UserModel]
 

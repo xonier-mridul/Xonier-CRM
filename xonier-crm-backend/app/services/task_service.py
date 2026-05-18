@@ -441,7 +441,7 @@ class TaskService:
                 page=page,
                 limit=limit,
                 filters=query,
-                populate=["category", "status", "assignedTo", "createdBy", "updatedBy"],
+                populate=["category", "status", "assignedTo", "createdBy"],
                 sort=["order", "-createdAt"]
             )
 
@@ -488,6 +488,7 @@ class TaskService:
             raise
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+        
 
     async def get_kanban_board(self, category_id: str, user: Dict[str, Any], filters: Dict[str, Any]):
         try:
@@ -536,9 +537,6 @@ class TaskService:
                             {"assignedTo.$id": PydanticObjectId(filters["users"])},
                             {"createdBy.$id": PydanticObjectId(filters["users"])}
                         ]})
-
-
-                     
 
  
             if "priority" in filters:
@@ -914,7 +912,6 @@ class TaskService:
                     raise AppException(500, f"Internal server error: {e}")
         
 
-    
     async def update_task_status(self, task_id: str, payload: Dict[str, Any], user: Dict[str, Any]):
         async with await self.client.start_session() as session:
             async with session.start_transaction():
@@ -986,9 +983,7 @@ class TaskService:
                     raise
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
- 
-    
-                
+           
     async def move_task(self, task_id: str, payload: Dict[str, Any], user: Dict[str, Any]):
         async with await self.client.start_session() as session:
             async with session.start_transaction():
@@ -1100,7 +1095,6 @@ class TaskService:
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
  
-
     async def reorder_tasks(self, payload: Dict[str, Any], user: Dict[str, Any]):
         async with await self.client.start_session() as session:
             async with session.start_transaction():
@@ -1606,7 +1600,6 @@ class TaskService:
         
         except Exception as e:
             raise AppException(status_code=500, message=f"Internal server error: {e}")
-
 
 
     # new

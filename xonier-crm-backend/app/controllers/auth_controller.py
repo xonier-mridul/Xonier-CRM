@@ -22,8 +22,11 @@ class AuthController:
         try:
             filters = request.query_params
 
+            page = filters.get("page") or 1
+            limit =  filters.get("limit") or 10
+
            
-            result = await self.service.getAll(int(filters["page"]), int(filters["limit"]), {**filters})
+            result = await self.service.getAll(int(page), int(limit), {**filters})
 
             return successResponse(200, "All users fetched successfully", result)
 
@@ -397,7 +400,7 @@ class AuthController:
     async def verify_refresh_token(self, request: Request, response: Response, payload: Dict[str, Any]):
         try:
             
-
+            
             result = await self.service.verify_refresh_token(
                 payload=payload,
                

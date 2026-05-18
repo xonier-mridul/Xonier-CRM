@@ -8,9 +8,10 @@ from app.db.models.user_model import UserModel
 
 
 from app.core.enums import MESSAGE_CHANNEL, MESSAGE_DIRECTION, MESSAGE_STATUS
+from app.db.models.base_model import BaseDocument
 
 
-class SMSHistory(Document):
+class SMSHistory(BaseDocument):
 
     provider_message_sid: Optional[str] = None      
     conversation_id: Optional[str] = None          

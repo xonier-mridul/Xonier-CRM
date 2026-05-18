@@ -43,6 +43,7 @@ NOTE_PRIVATE_CACHE_NAMESPACE = "notes:privateList"
 
 
 SUPER_ADMIN_CODE:str = "SUPER_ADMIN"
+COMPANY_ADMIN_CODE:str = "COMPANY_ADMIN"
 MANGER_CODE:str = "MANAGER"
 
 COMPANY_LOGO_LINK:str = "https://xoniertechnologies.com/asset/images/logo.png"

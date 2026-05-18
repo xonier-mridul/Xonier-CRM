@@ -1,6 +1,7 @@
 import { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
 import { Permissions } from "../roles/roles.types";
 import { TelephoneNumber } from "../communication/telephone.types";
+import { Company, CompanyState, } from "../company/company.types";
 
 
 export interface AuthState {
@@ -42,6 +43,7 @@ export interface GetAllUsers {
   limit: number;
   firstName?: string;
   lastName?: string;
+  companyId?: string;
   search?: string;
 }
 
@@ -53,7 +55,9 @@ export interface RegisterPayload {
   password: string;
   confirmPassword: string;
   userRole: string[];
-  company: string;
+  companyId?: string;
+
+
 }
 
 export interface UserUpdatePayload {
@@ -62,7 +66,8 @@ export interface UserUpdatePayload {
   email: string;
   phone: string;
   userRole: Array<string>;
-  company: string
+
+  companyId?: string;
 }
 
 
@@ -95,6 +100,8 @@ export interface UserRole {
   code: string;
   status: string;
   isSystemRole: boolean;
+  power: number;
+  canManageBelow: boolean;
   permissions: Permissions[];
   createdAt: string;
   updatedAt?: string;
@@ -128,7 +135,7 @@ export interface User {
   userRole: UserRole[];
   assignedPhoneNumber: TelephoneNumber
 
-  company: string;
+  companyId: string | Company;
   isActive: boolean;
 
   lastLogin?: Date | null;
@@ -164,7 +171,19 @@ export interface UserTableComponentProps {
   totalPage: number,
   setCurrentPages: Dispatch<SetStateAction<number>>,
   setSearchFilter: Dispatch<SetStateAction<string>>,
-  setFormData: Dispatch<SetStateAction<RegisterPayload>>
+  setFormData: Dispatch<SetStateAction<RegisterPayload>>,
+  isAdmin : boolean,
+  companyData : Company[],
+  // handleSearchFilter: Dispatch<SetStateAction<string>>;
+
+  handleCompanyChange: (companyId: string) => void;
+  handleCompanyFilter: (companyId: string) => void;
+  companyLoading: boolean
+companyHasMore: boolean
+onCompanyScrollEnd: () => void
+selectedCompanyId: string
+
+
 
 }
 

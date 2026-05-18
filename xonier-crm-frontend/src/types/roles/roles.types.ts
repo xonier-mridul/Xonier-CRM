@@ -22,22 +22,6 @@ export interface Permissions{
 
 
 
-
-
-// export interface UserRole {
-//     _id: string;
-//     name: string;
-//     code: string;
-//     permissions: Array<Permissions>;
-//     status: boolean;
-//     isSystemRole: boolean;
-//     createdBy?:User | null;
-//     updatedBy?: User | null;
-//     createdAt: Date;
-//     updatedAt: Date;
-//     deletedAt: Date;
-// }
-
 // Props
 
 export interface RoleTableProps {
@@ -60,5 +44,7 @@ export interface RoleTableProps {
 
 export interface UserRolePayload {
     name: string;
-    permissions: string[]
+    permissions: string[];
+    power: number;
+    canManageBelow: boolean;
 }

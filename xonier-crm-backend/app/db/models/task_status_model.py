@@ -6,9 +6,10 @@ from datetime import datetime, timezone
 from app.db.models.user_model import UserModel
 from app.db.models.task_category_model import TaskCategoryModel
 from app.core.enums import TASK_STATUS_TYPE
+from app.db.models.base_model import BaseDocument
  
  
-class TaskStatusModel(Document):
+class TaskStatusModel(BaseDocument):
     status_id: str = Indexed(unique=True)
     name: str
     slug: str

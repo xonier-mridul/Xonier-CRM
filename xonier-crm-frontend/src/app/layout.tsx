@@ -8,7 +8,7 @@ import ReduxProvider from "../store/providers";
 import ToastProvider from "../components/providers/TostProvider";
 import ScrollToTop from "../components/common/ScrollToTop";
 
-// ✅ Route-based loader
+
 import { LoaderProvider } from "../context/LoaderContext";
 import GlobalLoader from "../components/loader/GlobalLoader";
 import RouteLoader from "../components/loader/RouteLoader";

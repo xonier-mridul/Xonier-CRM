@@ -8,14 +8,14 @@ from app.core.enums import FORM_FIELD_MODULES
 from app.db.models.user_model import UserModel
 from enum import Enum
 
-
+from app.db.models.base_model import BaseDocument
 
 class SelectOption(BaseModel):
     label: str
     value: str
 
 
-class UserCustomFieldModel(Document):
+class UserCustomFieldModel(BaseDocument):
     userId: Link[UserModel]
     isCustomFiled: bool = True
     name: str = Field(..., description="Human readable label")

@@ -32,6 +32,10 @@ from app.db.models.task_remark_model import TaskRemarkModel
 from app.db.models.task_report_model import TaskReportModel
 from app.db.models.sub_task_model import SubTaskModel
 from app.db.models.task_timelog_model import TaskTimeLogModel
+from app.db.models.feature_model import FeatureModel
+from app.db.models.plan_model import PlanModel
+from app.db.models.company_model import CompanyModel
+from app.db.models.subscription_model import SubscriptionModel
 
 
 settings = get_setting()
@@ -50,7 +54,7 @@ async def connect_db():
         
         await init_beanie(
             database=db,
-            document_models=[UserModel, PermissionModel, UserRoleModel, OtpModel, EnquiryModel, TeamModel, TeamCategoryModel, LeadsModel, CustomFieldModel, UserFormModel, DealModel, CalenderEventModel, QuotationModel, QuotationHistoryModel, NoteModel, UserCustomFieldModel, ActivityModel, TelephoneNumbersModel, SMSHistory, EmailTemplateModel, EmailHistoryModel, TaskCategoryModel, TaskActivityModel, TaskStatusModel, TaskModel, TaskRemarkModel, TaskReportModel, SubTaskModel, InvoiceModel, TaskTimeLogModel]
+            document_models=[UserModel, PermissionModel, UserRoleModel, OtpModel, EnquiryModel, TeamModel, TeamCategoryModel, LeadsModel, CustomFieldModel, UserFormModel, DealModel, CalenderEventModel, QuotationModel, QuotationHistoryModel, NoteModel, UserCustomFieldModel, ActivityModel, TelephoneNumbersModel, SMSHistory, EmailTemplateModel, EmailHistoryModel, TaskCategoryModel, TaskActivityModel, TaskStatusModel, TaskModel, TaskRemarkModel, TaskReportModel, SubTaskModel, InvoiceModel, TaskTimeLogModel, FeatureModel, PlanModel, CompanyModel, SubscriptionModel]
         )
         print("Successfully connected to MongoDB and initialized Beanie")
     except Exception as e:

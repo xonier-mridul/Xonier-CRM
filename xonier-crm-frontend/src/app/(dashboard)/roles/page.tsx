@@ -32,6 +32,9 @@ const page = (): JSX.Element => {
   const [formData, setFormData] = useState<UserRolePayload>({
     name: "",
     permissions: [],
+    power: 10,
+    canManageBelow: false
+
   });
 
   const auth = useSelector((state: RootState)=>state.auth)
@@ -120,6 +123,8 @@ const page = (): JSX.Element => {
         setFormData({
           name: "",
           permissions: [],
+          power: 10,
+          canManageBelow: false
         });
         toast.success("Roles created successfully");
         setIsPopShow(false);

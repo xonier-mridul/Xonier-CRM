@@ -6,9 +6,10 @@ from datetime import datetime, timezone
 from app.db.models.user_model import UserModel
 from app.db.models.task_model import TaskModel
 from pymongo import IndexModel
+from app.db.models.base_model import BaseDocument
 
 
-class TaskRemarkModel(Document):
+class TaskRemarkModel(BaseDocument):
     task: Link[TaskModel]
     content: str = Field(..., min_length=1, max_length=5000)
     mentions: Optional[List[Link[UserModel]]] = Field(default_factory=list)

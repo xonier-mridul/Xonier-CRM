@@ -7,10 +7,11 @@ from app.core.enums import EmailStatus
 
 from app.db.models.user_model import UserModel
 from app.db.models.email_template_model import EmailTemplateModel
+from app.db.models.base_model import BaseDocument
 
 
 
-class EmailHistoryModel(Document):
+class EmailHistoryModel(BaseDocument):
 
     
     template: Optional[Link[EmailTemplateModel]] = None  

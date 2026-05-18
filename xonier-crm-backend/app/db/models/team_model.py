@@ -7,8 +7,9 @@ from app.db.models.team_category_model import TeamCategoryModel
 
 
 SLUG = Annotated[str, StringConstraints(pattern=r"^[a-z]+(_[a-z]+)*$", min_length=2, max_length=50)]
+from app.db.models.base_model import BaseDocument
 
-class TeamModel(Document):
+class TeamModel(BaseDocument):
     name: str = Field(...)
     slug: SLUG = Indexed(unique=True)
     category: Link[TeamCategoryModel]

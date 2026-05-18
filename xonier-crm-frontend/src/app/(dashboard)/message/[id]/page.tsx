@@ -187,11 +187,7 @@ export default function Page() {
               label="Name"
               value={`${data!.sent_by.firstName} ${data!.sent_by.lastName}`}
             />
-            <InfoCard
-              icon={<Building2 size={16} />}
-              label="Company"
-              value={data!.sent_by.company}
-            />
+            
           </div>
         </Section>
       )}

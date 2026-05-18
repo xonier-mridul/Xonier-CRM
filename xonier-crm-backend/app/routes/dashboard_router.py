@@ -14,7 +14,8 @@ dependencies = Dependencies()
     "/stats",
     status_code=200,
     dependencies=[
-        Depends(dependencies.authorized),
+        Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context),
         Depends(dependencies.permissions(["dashboard:read"]))
     ]
 )

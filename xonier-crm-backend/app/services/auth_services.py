@@ -27,9 +27,12 @@ from fastapi_cache import FastAPICache
 import json
 from typing import Optional
 
-from app.utils.validate_admin import validate_admin
+from app.utils.validate_admin import validate_admin, validate_company_admin
 from app.utils.get_team_members import GetTeamMembers
 from app.utils.activity_payload import activity_payload
+from app.core.tenant import system_query
+from app.utils.validate_admin import validate_admin
+from app.repositories.company_repository import CompanyRepository
 
 
 
@@ -44,6 +47,10 @@ class AuthServices:
         self.get_team_members = GetTeamMembers()
         self.activityRepo = ActivityRepository()
         self.crypto = encryptor
+        self.companyRepo = CompanyRepository()
+
+
+
 
     async def getAll(self, page:int=1, limit:int = 10, filters: Dict[str, Any] = {})->List[UserModel]:
         try:
@@ -59,7 +66,7 @@ class AuthServices:
                query.update({"$or": [
                    {"firstName": regex_data},
                    {"lastName": regex_data},
-                   {"company": regex_data}
+                  
                ]})
                
 
@@ -67,11 +74,9 @@ class AuthServices:
            if "status" in filters:
                if filters["status"] != USER_STATUS.DELETED:
                    query.update({"status": filters["status"]})
-                   
-               
-           if "company" in filters:
-               query.update({"company": filters["company"]})
 
+           if "companyId" in filters:
+                   query.update({"companyId": ObjectId(filters["companyId"])})
 
            users = await self.repo.get_all(page, limit, query, populate=["userRole", "createdBy"], sort=["-createdAt"])
 
@@ -100,11 +105,12 @@ class AuthServices:
             limit = filters.get("limit") or 10
 
             is_admin = validate_admin(user["userRole"])
+            is_c_admin = validate_company_admin(user["userRole"])
             is_manager = False
 
             query =  {"status": USER_STATUS.ACTIVE}
 
-            if not is_admin:
+            if not is_admin and not is_c_admin:
                 members = await self.get_team_members.get_team_members(user["_id"])
 
                 obj_members = [PydanticObjectId(item) for item in members]
@@ -165,8 +171,7 @@ class AuthServices:
            
            query.update({"status": USER_STATUS.ACTIVE})
 
-           if "company" in filters:
-               query.update({"company": filters["company"]})
+           
             
 
            users = await self.repo.get_all(page, limit, query, populate=["userRole", "createdBy"])
@@ -213,8 +218,10 @@ class AuthServices:
     async def get_all_deleted_users(self, page: int = 1, limit: int = 10, user: Dict[str, Any] = {}, filters: Dict[str, Any] = {}):
         try:
             is_admin = validate_admin(user["userRole"])
+            is_com_admin = validate_company_admin(user["userRole"])
+
  
-            if not is_admin:
+            if not is_admin and not is_com_admin:
                 raise AppException(403, "Unauthorized, only admin can access deleted users")
  
             query = {"status": USER_STATUS.DELETED.value}
@@ -225,7 +232,7 @@ class AuthServices:
                 query.update({"$or": [
                     {"firstName": search_regex},
                     {"lastName": search_regex},
-                    {"company": search_regex}
+                  
                 ] })
  
             
@@ -289,31 +296,23 @@ class AuthServices:
     async def get_user_by_id(self,id: PydanticObjectId, user: Dict[str, Any]):
         try:
           
-          is_admin = validate_admin(user["userRole"])
-          is_manager = False
-          is_creator = False
+          if not ObjectId.is_valid(id):
+              raise AppException(400, "Invalid user object id")
+              
 
-          exist_user = await self.repo.find_by_id(id, populate=["userRole", "createdBy"])
+          exist_user = await self.repo.find_by_id_nested(id=id, populate=["userRole", "createdBy"])
+
 
           if not exist_user:
               raise AppException(404, "User not found for this Id")
-
-          if not is_admin:
-              members = await self.get_team_members.get_team_members(user["_id"])
-
-
-
-              if exist_user.id in members:
-                  is_manager = True
-
+   
           
-          if str(exist_user.id) == str(user["_id"]):
-              is_creator = True
-
-                 
-          if not is_admin and not is_manager and not is_creator:
-              raise AppException(403, "Permission denied, you can not access this user profile data")
           user = jsonable_encoder(exist_user, exclude={"password", "refreshToken"})
+
+          if user.get("companyId"):
+              company = await self.companyRepo.find_by_id_nested(PydanticObjectId(user["companyId"]), ["subscription.planId.features.feature"])
+
+              user["companyId"] = company
 
           user["email"] = encryptor.decrypt_data(user["email"])
           user["phone"] = encryptor.decrypt_data(user["phone"])
@@ -375,6 +374,7 @@ class AuthServices:
         try:
             session.start_transaction()
             hashed_email = hash_value(data["email"])
+            is_admin = validate_admin(user["userRole"])
 
             is_user_exist = await self.repo.find_user_by_hashMail(
                 hashMail=hashed_email, populate=["userRole"], session=session
@@ -395,15 +395,20 @@ class AuthServices:
 
             if not userModel:
                 raise AppException(404, "Current user not found")
+            
+            if is_admin:
+                companyId = data["companyId"] if data.get("companyId") else None
+            else:
+                companyId = userModel.companyId  if userModel.companyId else None
 
             new_user = await self.repo.create(
-                data={**data, "createdBy": userModel.id}, session=session
+                data={**data, "createdBy": userModel.id, "companyId": companyId}, session=session
             )
 
             if not new_user:
                 raise AppException(400, "User not created")
             
-            activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.USER, entityId=PydanticObjectId(new_user.id), action=ACTIVITY_ACTION.CREATED, title="create user", metadata={"userName": f"{new_user.firstName} {new_user.lastName}", "company":new_user.company})
+            activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.USER, entityId=PydanticObjectId(new_user.id), action=ACTIVITY_ACTION.CREATED, title="create user", metadata={"userName": f"{new_user.firstName} {new_user.lastName}", "company": companyId})
 
             is_activity = await self.activityRepo.create(data=activity, session=session)
 
@@ -414,14 +419,14 @@ class AuthServices:
 
             return new_user.model_dump(mode="json")
 
-        except AppException:
+        except AppException as e:
             await session.abort_transaction()
-            raise
+            raise e
 
         except Exception as e:
             
             await session.abort_transaction()
-            raise AppException(status_code=500, message="internal server error")
+            raise AppException(status_code=500, message=f"internal server error: {e}")
         
         except ValidationError as e:
             raise AppException(
@@ -440,10 +445,11 @@ class AuthServices:
            
             hashed_mail = hash_value(data["email"])
             encrypt_email = self.crypto.encrypt_data(data["email"])
-           
-            isUserExist = await self.repo.find_user_by_hashMail(
-                hashMail=hashed_mail, projections=None, populate=["userRole"], session=session
-            )
+
+            with system_query():
+                isUserExist = await self.repo.find_user_by_hashMail(
+                    hashMail=hashed_mail, projections=None, populate=["userRole"], session=session
+                )
 
             if not isUserExist:
                 raise AppException(404, "User not found, Please create account first")
@@ -484,28 +490,28 @@ class AuthServices:
             encrypt_opt = self.crypto.encrypt_data(str(otp))
 
 
-            send_email = await self.email_manager.send_otp_email(
-                to=data["email"], otp=otp, type=OTP_TYPE.LOGIN.value
-            )
+            # send_email = await self.email_manager.send_otp_email(
+            #     to=data["email"], otp=otp, type=OTP_TYPE.LOGIN.value
+            # )
 
-            if not send_email:
-                raise AppException(400, "Email send Failed")
+            # if not send_email:
+            #     raise AppException(400, "Email send Failed")
 
             expire_time = datetime.now(timezone.utc) + timedelta(
                 minutes=float(OTP_EXPIRY.TEN_MINUTS.value)
             )
-
-            create_otp = await self.otp_repo.create(
-                {
-                    "encrypt_mail": encrypt_email,
-                    "email": hashed_mail,
-                    "otp": hashed_otp,
-                    "encrypt_opt": encrypt_opt,
-                    "otp_type": OTP_TYPE.LOGIN,
-                    "expires_at": expire_time,
-                },
-                session=session,
-            )
+            with system_query(): 
+                create_otp = await self.otp_repo.create(
+                    {
+                        "encrypt_mail": encrypt_email,
+                        "email": hashed_mail,
+                        "otp": hashed_otp,
+                        "encrypt_opt": encrypt_opt,
+                        "otp_type": OTP_TYPE.LOGIN,
+                        "expires_at": expire_time,
+                    },
+                    session=session,
+                )
 
             if not create_otp:
                 raise AppException(400, "OTP not stored in database")
@@ -532,7 +538,7 @@ class AuthServices:
         try:
             session.start_transaction()
             hashed_mail = hash_value(data["email"])
-
+         
             isUserExist = await self.repo.find_user_by_hashMail(
                 hashMail=hashed_mail, projections=None, session=session
             )
@@ -572,16 +578,16 @@ class AuthServices:
             expire_time = datetime.now(timezone.utc) + timedelta(
                 minutes=float(OTP_EXPIRY.TEN_MINUTS.value)
             )
-
-            create_otp = await self.otp_repo.create(
-                {
-                    "email": hashed_mail,
-                    "otp": hashed_otp,
-                    "otp_type": OTP_TYPE.LOGIN,
-                    "expires_at": expire_time,
-                },
-                session=session,
-            )
+            with system_query():
+                create_otp = await self.otp_repo.create(
+                    {
+                        "email": hashed_mail,
+                        "otp": hashed_otp,
+                        "otp_type": OTP_TYPE.LOGIN,
+                        "expires_at": expire_time,
+                    },
+                    session=session,
+                )
 
             if not create_otp:
                 raise AppException(400, "OTP not stored in database")
@@ -607,14 +613,17 @@ class AuthServices:
     async def verify_login_otp(self, data: Dict[str, Any], ip: Optional[str] = None, agent: Optional[str] = None):
         session = await self.client.start_session()
         try:
+            
             session.start_transaction()
 
             hashed_mail = hash_value(data["email"])
             hashed_otp = hash_value(str(data["otp"]))
-            user = await self.repo.find_user_by_hashMail(
-                hashMail=hashed_mail, projections=None, populate=["userRole"], session=session
-            )
-
+    
+            with system_query():
+                user = await self.repo.find_user_by_hashMail(
+                    hashMail=hashed_mail, projections=None, populate=["userRole"], session=session
+                )
+   
             if not user:
                 raise AppException(404, "User not found, Please create account first")
             
@@ -622,11 +631,12 @@ class AuthServices:
 
             if not isPasswordValid:
                 raise AppException(400, "Password not match, please back to the login page and try again")
-
-            latest_otp = await self.otp_repo.find_latest_otp(
-                {"email": hashed_mail, "otp_type": OTP_TYPE.LOGIN.value},
-                session=session,
-            )
+            
+            with system_query(): 
+                latest_otp = await self.otp_repo.find_latest_otp(
+                    {"email": hashed_mail, "otp_type": OTP_TYPE.LOGIN.value},
+                    session=session,
+                )
 
             if not latest_otp:
                 raise AppException(404, "Otp not found, please try again")
@@ -641,73 +651,96 @@ class AuthServices:
                 raise AppException(400, "Invalid Otp, Please try again")
 
             latest_otp.is_used = True
-
-            await latest_otp.save(session=session)
+            with system_query():
+                await latest_otp.save(session=session)
 
             access_token = user.generate_access_token()
             refresh_token = user.generate_refresh_token()
 
             hash_refresh_token = hash_value(refresh_token)
+ 
+           
+            with system_query():
+                await user.set(
+                    {
+                        "refreshToken": hash_refresh_token,
+                        "updatedAt": datetime.now(timezone.utc),
+                        "lastLogin": datetime.now(timezone.utc),
+                    },
+                    session=session,
+                )
 
-            await user.set(
-                {
-                    "refreshToken": hash_refresh_token,
-                    "updatedAt": datetime.now(timezone.utc),
-                    "lastLogin": datetime.now(timezone.utc),
-                },
-                session=session,
-            )
+            
+            
+            with system_query():
+                usr =  await self.repo.find_by_id_nested(user.id, ["userRole", "userRole.permissions"])
 
-            await session.commit_transaction()
-
-            usr =  await self.repo.find_by_id_nested(user.id, ["userRole", "userRole.permissions"])
-
-            activity = activity_payload(userId=PydanticObjectId(user.id), entityType=ACTIVITY_ENTITY_TYPE.AUTH, entityId=PydanticObjectId(user.id), action=ACTIVITY_ACTION.LOGIN, title="Login user", metadata={"userName": f"{user.firstName} {user.lastName}", "company":user.company, "email": user.email}, ipAddress=ip, userAgent=agent)
-
-            is_activity = await self.activityRepo.create(data=activity, session=session)
+            activity = activity_payload(userId=PydanticObjectId(user.id), entityType=ACTIVITY_ENTITY_TYPE.AUTH, entityId=PydanticObjectId(user.id), action=ACTIVITY_ACTION.LOGIN, title="Login user", metadata={"userName": f"{user.firstName} {user.lastName}","email": user.email}, ipAddress=ip, userAgent=agent)
+            
+            with system_query():
+                is_activity = await self.activityRepo.create(data=activity, session=session)
 
             if not is_activity:
                 raise AppException(400, "Activity creation failed")
-
+            await session.commit_transaction()
             return {
                 "user": jsonable_encoder(usr,exclude={"password", "refreshToken"}),
                 "access_token": access_token,
                 "refresh_token": refresh_token,
             }
 
-        except AppException:
+        except AppException as e:
             await session.abort_transaction()
-            raise
+            raise e
 
         except Exception as e:
              await session.abort_transaction()
-             raise AppException(status_code=500, message="internal server error")
+             raise AppException(status_code=500, message=f"internal server error: {e}")
 
         finally:
             await session.end_session()
 
-    async def getMe(self, userId: PydanticObjectId)->bool:
+    async def getMe(self, userId: PydanticObjectId):
         try:
-         
-        
+            if not ObjectId.is_valid(userId):
+                raise AppException(400, "Invalid user object Id")
 
-         user = await self.repo.find_by_id_nested(userId, ["userRole", "userRole.permissions"])
-         
-         if not user:
-             raise AppException(400, "User not found")
-         
-         
-         
-         result = jsonable_encoder(user, exclude={"password", "refreshToken"})
+            with system_query():
+                user = await self.repo.find_by_id_nested(
+                    userId,
+                    ["userRole", "userRole.permissions"]
+                )
 
-         
-         
-         return result
+            if not user:
+                raise AppException(400, "User not found")
+
+            result = jsonable_encoder(user, exclude={"password", "refreshToken"})
+
+            result["email"] = encryptor.decrypt_data(result["email"])
+            result["phone"] = encryptor.decrypt_data(result["phone"])
+
+            
+            if result.get("companyId"):
+                with system_query():
+                    comp = await self.companyRepo.find_by_id_nested(
+                        PydanticObjectId(result["companyId"]),
+                        [
+                            "subscription.planId.features.feature",
+                        ]
+                    )
+
+                if comp:
+                    comp_data = comp.model_dump(mode="json")
+                    
+                    result["companyId"] = comp_data
+
+            return result
+
         except AppException:
             raise
-
         except Exception as e:
-            raise AppException(status_code=500, message="internal server error")
+            raise AppException(500, f"Internal server error: {e}")
+        
 
     async def update(self, userId: PydanticObjectId, updatedBy: PydanticObjectId, payload: Dict[str, Any])->bool:
         session = await self.client.start_session()
@@ -726,10 +759,12 @@ class AuthServices:
             
             is_admin = validate_admin(user_data["userRole"])
             
+            # if user_data["companyId"] != payload["companyId"]:
+            #     raise AppException(400, "You not update company")
             
              
             payload = {
-                **payload, "updatedBy": updatedBy 
+                **payload, "updatedBy": updatedBy, "companyId": ObjectId(payload["companyId"]) 
             }
 
             role = payload.get("userRole")
@@ -745,6 +780,7 @@ class AuthServices:
 
             
             updated_user = await self.repo.update_with_encryption(userId, payload, session)
+
             if not updated_user:
                 raise AppException(400, "User not updated")
             
@@ -805,7 +841,7 @@ class AuthServices:
                 session=session,
             )
 
-            activity = activity_payload(userId=PydanticObjectId(user.id), entityType=ACTIVITY_ENTITY_TYPE.AUTH, entityId=PydanticObjectId(user.id), action=ACTIVITY_ACTION.LOGOUT, title="Logout user", metadata={"userName": f"{user.firstName} {user.lastName}", "company":user.company, "email": user.email}, ipAddress=ip, userAgent=agent)
+            activity = activity_payload(userId=PydanticObjectId(user.id), entityType=ACTIVITY_ENTITY_TYPE.AUTH, entityId=PydanticObjectId(user.id), action=ACTIVITY_ACTION.LOGOUT, title="Logout user", metadata={"userName": f"{user.firstName} {user.lastName}", "email": user.email}, ipAddress=ip, userAgent=agent)
 
             is_activity = await self.activityRepo.create(data=activity, session=session)
 
@@ -1373,12 +1409,14 @@ class AuthServices:
  
     async def verify_refresh_token(self, payload: Dict[str, Any]):
         try:
-           
-            user_obj = await self.repo.find_by_id(
-                PydanticObjectId(payload["_id"]), 
-                populate=["userRole"]
-            )
-
+            
+            with system_query():
+                user_obj = await self.repo.find_by_id(
+                    PydanticObjectId(payload["_id"]), 
+                    populate=["userRole"]
+                )
+            
+        
             
 
             if not user_obj:
@@ -1408,13 +1446,14 @@ class AuthServices:
             access_token = user_obj.generate_access_token()
             refresh_token = user_obj.generate_refresh_token()
 
+            with system_query():
+                await user_obj.set({
+                    "refreshToken": hash_value(refresh_token),
+                    "updatedAt": datetime.now(timezone.utc),
+                })
             
-            await user_obj.set({
-                "refreshToken": hash_value(refresh_token),
-                "updatedAt": datetime.now(timezone.utc),
-            })
-
-            usr = await self.repo.find_by_id_nested(user_obj.id, ["userRole", "userRole.permissions"])
+            with system_query():
+                usr = await self.repo.find_by_id_nested(user_obj.id, ["userRole", "userRole.permissions"])
 
             return {
                 "message": "Token refreshed successfully",

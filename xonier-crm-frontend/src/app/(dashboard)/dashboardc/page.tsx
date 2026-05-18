@@ -202,11 +202,6 @@ function UnauthorizedView() {
     );
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// NEW SECTIONS
-// ═══════════════════════════════════════════════════════════════════
-
-// ── #10 Smart Insights Panel ──────────────────────────────────────
 
 interface Insight { level: "warning" | "info" | "error"; message: string }
 
@@ -241,7 +236,7 @@ function InsightsPanel({ data }: { data: TaskStatsData }) {
     const insights = buildInsights(data);
     if (!insights.length) return null;
     return (
-        <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+        <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-4">
                 <Zap className="w-4 h-4 text-amber-500" />
                 <h2 className="text-sm font-semibold text-gray-800 dark:text-white">Smart insights</h2>
@@ -264,7 +259,6 @@ function InsightsPanel({ data }: { data: TaskStatsData }) {
     );
 }
 
-// ── #1 + #2 Activity Section ──────────────────────────────────────
 
 function ActivitySection({ activity }: { activity: ActivityData }) {
     const hasData = activity.totalActions > 0;

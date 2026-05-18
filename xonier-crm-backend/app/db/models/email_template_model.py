@@ -8,10 +8,11 @@ from enum import Enum
 
 from app.db.models.user_model import UserModel
 from app.core.enums import TemplateCategory, TemplateStatus, TemplateVariable
+from app.db.models.base_model import BaseDocument
 
 
 
-class EmailTemplateModel(Document):
+class EmailTemplateModel(BaseDocument):
     name: str                                        
     slug: str                                        
     description: Optional[str] = None

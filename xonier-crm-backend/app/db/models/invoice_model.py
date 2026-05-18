@@ -10,11 +10,12 @@ from app.db.models.quotation_model import QuotationModel, QuotationLineItem
 from app.db.models.user_model import UserModel
 from app.core.enums import INVOICE_STATUS
 from app.core.crypto import Encryption
+from app.db.models.base_model import BaseDocument
 
 encryption = Encryption()
 
 
-class InvoiceModel(Document):
+class InvoiceModel(BaseDocument):
     invoiceId: str
     sourceQuoteId: Optional[str] = None
 

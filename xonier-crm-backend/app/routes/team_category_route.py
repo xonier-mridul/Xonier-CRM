@@ -11,23 +11,28 @@ dependencies = Dependencies()
 controller = TeamCategoryController()
 
 
-@router.post("/create", status_code=201, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions("team_cat:create"))])
+@router.post("/create", status_code=201, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.permissions(["team_cat:create"]))])
 async def register(request: Request, payload: TeamCategoryCreateSchema):
     return await controller.create(request, payload.model_dump())
 
-@router.get("/all", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["team_cat:read"]))])
+@router.get("/all", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.permissions(["team_cat:read"]))])
 async def get_all(request:Request):
     return await controller.get_all(request)
 
-@router.get("/get-all-without-pagination", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["team_cat:read"]))])
+@router.get("/get-all-without-pagination", status_code=200,  dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.permissions(["team_cat:read"]))])
 async def get_all_without_pagination(request: Request):
     return await controller.get_all_without_pagination(request)
 
-@router.put("/update/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["team_cat:update"]))])
+@router.put("/update/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.permissions(["team_cat:update"]))])
 async def update(id:str, request: Request, payload: TeamCategoryUpdateSchema):
     return await controller.update(id, request, payload.model_dump(mode="json"))
 
 
-@router.delete("/delete/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["team_cat:delete"]))])
+@router.delete("/delete/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.permissions(["team_cat:delete"]))])
 async def delete(request: Request, id: str):
     return await controller.delete(request, id)

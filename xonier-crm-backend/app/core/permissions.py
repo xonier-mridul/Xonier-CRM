@@ -15,6 +15,13 @@ PERMISSIONS = [
         "description": "permission for See the user data",
     },
     {
+        "code": "user:readDeleted",
+        "module": "user",
+        "action": "read",
+        "title": "read deleted user",
+        "description": "permission for See the deleted user data",
+    },
+    {
         "code": "user:update",
         "module": "user",
         "action": "update",
@@ -679,6 +686,14 @@ PERMISSIONS = [
         "title": "read taskReport",
         "description": "permission for read task report",
     },
+    {
+        "code": "taskReport:review",
+        "module": "taskReport",
+        "action": "read",
+        "title": "review taskReport",
+        "description": "permission for review task report",
+    },
+    
     {
         "code": "taskReport:update",
         "module": "taskReport",

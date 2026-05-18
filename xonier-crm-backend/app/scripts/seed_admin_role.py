@@ -20,6 +20,8 @@ async def seed_admin_role():
             name="Super Admin",
             code="SUPER_ADMIN",
             permissions=[],
+            power=100,
+            canManageBelow=True,
             isSystemRole=True
         )
 
