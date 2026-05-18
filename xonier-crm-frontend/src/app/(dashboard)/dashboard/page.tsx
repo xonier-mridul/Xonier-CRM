@@ -114,19 +114,25 @@ const STATUS_COLORS: Record<string, string> = {
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 function fmtMoney(n: number): string {
-  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `$${(n / 1_000).toFixed(1)}k`;
-  return `$${n.toFixed(0)}`;
+  const val = n ?? 0;
+  if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(1)}M`;
+  if (val >= 1_000) return `$${(val / 1_000).toFixed(1)}k`;
+  return `$${val.toFixed(0)}`;
 }
+
 function fmt(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
-  return String(n ?? 0);
+  const val = n ?? 0;
+  if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M`;
+  if (val >= 1_000) return `${(val / 1_000).toFixed(1)}k`;
+  return String(val);
 }
+
 function cap(s: string): string {
   return (s || "").replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
+
 function relTime(iso: string): string {
+  if (!iso) return "—";
   const diff = Date.now() - new Date(iso).getTime();
   const m = Math.floor(diff / 60_000);
   if (m < 1) return "just now";
@@ -136,7 +142,6 @@ function relTime(iso: string): string {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-// ── Animation Hook ─────────────────────────────────────────────────────────────
 
 function useCountUp(target: number, duration = 1000) {
   const [value, setValue] = useState(0);
@@ -1214,7 +1219,7 @@ const load = useCallback(async (showRefresh = false) => {
               <RoleIcon className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white tracking-tight">Dashboard</h1>
+              <h1 className="text-xl font-bold dark:text-white tracking-tight">Dashboard</h1>
               <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-2">
                 <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-widest ${rc.badge}`}>
                   <RoleIcon className="w-3 h-3" />{rc.label}
