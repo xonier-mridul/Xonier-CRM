@@ -27,6 +27,7 @@ const UpdateRolePage = (): JSX.Element => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [permissionData, setPermissionData] = useState<Permissions[]>([]);
 
+ 
   const [formData, setFormData] = useState<UserRolePayload>({
     name: "",
     permissions: [],

@@ -132,8 +132,9 @@ const StatusTable = ({
       </div>
 
       {/* Search */}
-      <div className="relative flex mb-5 max-w-sm ml-auto gap-3">
+      <div className="relative grid grid-cols-2 mb-5 max-w-sm ml-auto gap-3">
         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+        
         <input
           type="text"
           onChange={e => handleSearch(e.target.value)}
