@@ -83,6 +83,7 @@ export interface SubscriptionStats {
   totalRevenue: number;
   periodRevenue: number;
   avgRevenue: number;
+  expiringSoon: number;
 }
 
 export interface RevenueStats {

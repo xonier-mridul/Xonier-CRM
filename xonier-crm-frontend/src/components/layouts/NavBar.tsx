@@ -141,12 +141,12 @@ const NavBar = () => {
                         </div>{" "}
                       </Link>
                     </li>
-                    <li>
+                    {/* <li>
                       <Link
                         href={
                           isAdmin
                             ? "/companies"
-                            : `/companies/${auth?.user?.companyId?.id}`
+                            : `/companies/${auth?.user?.companyId ? auth?.user?.companyId?.id : ""}`
                         }
                         className="flex items-center gap-4 group"
                       >
@@ -161,7 +161,7 @@ const NavBar = () => {
                           </h4>
                         </div>
                       </Link>
-                    </li>
+                    </li> */}
                   </ul>
                   <button
                     onClick={handleLogout}
