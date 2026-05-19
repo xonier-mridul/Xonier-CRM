@@ -194,7 +194,7 @@ const SideBar = () => {
                 Dashboard
               </Link>
             </li>
-            {hasPermission(PERMISSIONS.readSalesDashbord) && (
+            {(hasPermission(PERMISSIONS.readSalesDashbord) && !auth.isAdmin )&& (
               <li>
                 <Link
                   href="/sales-dashboard"
