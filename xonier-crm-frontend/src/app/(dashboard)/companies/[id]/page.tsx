@@ -33,6 +33,8 @@ import { Company } from "@/src/types/company/company.types";
 import { COMPANY_STATUS } from "@/src/constants/enum";
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import Skeleton from "react-loading-skeleton";
+import { useSelector } from "react-redux";
+import { RootState } from "@/src/store";
 
 const statusConfig: Record<
   string,
@@ -188,8 +190,12 @@ export default function CompanyDetailPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
+  
+
+
   const fetchCompany = useCallback(async () => {
     setIsLoading(true);
+    if(!id) return;
     try {
       const res = await CompanyService.getById(id as string);
       setCompany(res.data.data);
@@ -204,7 +210,7 @@ export default function CompanyDetailPage() {
     }
   }, [id]);
 
-  useEffect(() => {
+  useEffect(() => { 
     fetchCompany();
   }, [fetchCompany]);
 
@@ -336,7 +342,7 @@ export default function CompanyDetailPage() {
               {/* Actions */}
               <div className="flex items-center gap-2 relative">
                 <Link
-                  href={`/companies/${company.companyId}/edit`}
+                  href={`/companies/update/${company.id}`}
                   className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl bg-slate-100 dark:bg-gray-700 text-slate-700 dark:text-gray-200 hover:bg-slate-200 dark:hover:bg-gray-600 transition-colors"
                 >
                   <IoCreateOutline className="text-base" />
@@ -750,7 +756,7 @@ export default function CompanyDetailPage() {
               <Card title="Quick Actions" icon={<IoShieldCheckmarkOutline />}>
                 <div className="py-3 flex flex-col gap-2">
                   <Link
-                    href={`/companies/${company.companyId}/users`}
+                    href={`/companies/${company.id}`}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors group"
                   >
                     <div className="h-8 w-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
@@ -762,7 +768,7 @@ export default function CompanyDetailPage() {
                   </Link>
 
                   <Link
-                    href={`/subscriptions?company=${company.companyId}`}
+                    href={`/subscriptions?company=${company.id}`}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors group"
                   >
                     <div className="h-8 w-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
@@ -774,7 +780,7 @@ export default function CompanyDetailPage() {
                   </Link>
 
                   <Link
-                    href={`/companies/${company.companyId}/edit`}
+                    href={`/companies/update/${company.id}`}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors group"
                   >
                     <div className="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">

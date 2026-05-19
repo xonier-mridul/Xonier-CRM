@@ -94,7 +94,7 @@ Depends(dependencies.company_context)])
 async def clear_phone_number(request: Request, id:str):
     return await auth_controller.clear_phone_number(request, id)
 
-@router.patch("/reset-password", status_code=200, dependencies=[Depends(dependencies.authorized)])
+@router.patch("/reset-password", status_code=200, dependencies=[Depends(dependencies.authorized),  Depends(dependencies.company_active), Depends(dependencies.company_context)])
 async def reset_password(request: Request, data: ResetPasswordSchema):
     return await auth_controller.reset_password(request, data.model_dump(exclude_unset=True))
 

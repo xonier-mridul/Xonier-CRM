@@ -21,12 +21,13 @@ class AuthController:
     async def getAll(self, request: Request, response:Response):
         try:
             filters = request.query_params
+            user = request.state.user
 
             page = filters.get("page") or 1
             limit =  filters.get("limit") or 10
 
            
-            result = await self.service.getAll(int(page), int(limit), {**filters})
+            result = await self.service.getAll(int(page), int(limit), {**filters}, user=user)
 
             return successResponse(200, "All users fetched successfully", result)
 

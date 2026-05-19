@@ -221,7 +221,7 @@ const SideBar = () => {
               </Link>
             </li>}
 
-            {( hasPermission(PERMISSIONS.readProspects) && hasFeature(FEATURES.CRM)) && <li>
+            {( hasPermission(PERMISSIONS.readProspects) && hasFeature(FEATURES.CRM) && !auth.isAdmin) && <li>
               <button
                 onClick={() => toggleMenu("prospects")}
                 className={`${isMenuActive("prospects")
@@ -408,7 +408,7 @@ const SideBar = () => {
 
           
             {
-              (((hasPermission(PERMISSIONS.readTask)) || hasPermission(PERMISSIONS.taskCategoryRead) || hasPermission(PERMISSIONS.taskStatusRead)) && (hasFeature(FEATURES.TASK))) && <li>
+              (((hasPermission(PERMISSIONS.readTask)) || hasPermission(PERMISSIONS.taskCategoryRead) || hasPermission(PERMISSIONS.taskStatusRead)) && (hasFeature(FEATURES.TASK)) && !auth.isAdmin) && <li>
                  <button
                 onClick={() => toggleMenu("task")}
                 className={`${isMenuActive("task")
@@ -597,7 +597,7 @@ const SideBar = () => {
                         Roles
                       </Link>
                     </li>}
-                    {hasPermission(PERMISSIONS.readTeamCategory) && <li>
+                    {(hasPermission(PERMISSIONS.readTeamCategory) && !auth.isAdmin ) && <li>
                       <Link
                         href="/teams/categories"
                         className={`${isActive("/teams/categories")
@@ -608,7 +608,7 @@ const SideBar = () => {
                         Teams Categories
                       </Link>
                     </li>}
-                    {hasPermission(PERMISSIONS.readTeam) && <li>
+                    {(hasPermission(PERMISSIONS.readTeam)&& !auth.isAdmin) && <li>
                       <Link
                         href="/teams"
                         className={`${(isActive("/teams") && !isActive("/teams/categories"))
@@ -625,7 +625,7 @@ const SideBar = () => {
               </AnimatePresence>
             </li>}
 
-            {(( hasPermission(PERMISSIONS.readEnquiry) || hasPermission(PERMISSIONS.readLead) || hasPermission(PERMISSIONS.readDeal) || hasPermission(PERMISSIONS.readQuote) || hasPermission(PERMISSIONS.readInvoice)) &&  (hasFeature(FEATURES.CRM)) ) && <li>
+            {(( hasPermission(PERMISSIONS.readEnquiry) || hasPermission(PERMISSIONS.readLead) || hasPermission(PERMISSIONS.readDeal) || hasPermission(PERMISSIONS.readQuote) || hasPermission(PERMISSIONS.readInvoice)) &&  (hasFeature(FEATURES.CRM)) && !auth.isAdmin) && <li>
               <button
                 onClick={() => toggleMenu("sales")}
                 className={`${isMenuActive("sales")
@@ -713,7 +713,7 @@ const SideBar = () => {
                 )}
               </AnimatePresence>
             </li>}
-            {(hasPermission(PERMISSIONS.readClient)&&  (hasFeature(FEATURES.CRM))) && <li>
+            {(hasPermission(PERMISSIONS.readClient)&&  (hasFeature(FEATURES.CRM)) && !auth.isAdmin) && <li>
               <Link
                 href="/clients"
                 className={`${isActive("/clients")
@@ -726,7 +726,7 @@ const SideBar = () => {
               </Link>
             </li>}
 
-            {(((hasPermission(PERMISSIONS.telephone))|| hasPermission(PERMISSIONS.smsReadLog)) &&  (hasFeature(FEATURES.TELECOM)) )&& <li>
+            {(((hasPermission(PERMISSIONS.telephone))|| hasPermission(PERMISSIONS.smsReadLog)) &&  (hasFeature(FEATURES.TELECOM)) && !auth.isAdmin )&& <li>
               <button
                 onClick={() => toggleMenu("communication")}
                 className={`${isMenuActive("communication")
@@ -782,7 +782,7 @@ const SideBar = () => {
                 )}
               </AnimatePresence>
             </li>}
-            {((hasPermission(PERMISSIONS.readTemplate) || hasPermission(PERMISSIONS.createTemplate) || hasPermission(PERMISSIONS.readEmailLog)) &&  (hasFeature(FEATURES.CRM))) && <li>
+            {((hasPermission(PERMISSIONS.readTemplate) || hasPermission(PERMISSIONS.createTemplate) || hasPermission(PERMISSIONS.readEmailLog)) &&  (hasFeature(FEATURES.CRM)) && !auth.isAdmin) && <li>
               <button
                 onClick={() => toggleMenu("emailManagement")}
                 className={`${isMenuActive("emailManagement")

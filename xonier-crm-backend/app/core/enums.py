@@ -909,6 +909,7 @@ class TASK_ACTIVITY_ACTION(str, Enum):
     COMPLETED = "completed"
     REOPENED = "reopened"
     DELETED = "deleted"
+    DELETE_REMARK = "delete_remark"
     UPDATE = "update"
     REMARK_CREATED="remark_created"
     REMARK_ACKNOWLEDGED = "remark_acknowledged"

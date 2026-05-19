@@ -233,7 +233,7 @@ function StatCard({ label, value, sub, icon: Icon, color, trend, prefix = "", su
   { label: string; value: number; sub?: string; icon: any; color: string; trend?: { val: number; up: boolean }; prefix?: string; suffix?: string }) {
   const v = useCountUp(value);
   return (
-    <div className="relative overflow-hidden rounded-2xl border bg-slate-50 border-slate-200 hover:border-slate-300 dark:border-slate-700/50 dark:bg-slate-800/80 p-5 dark:hover:border-slate-600 transition-all duration-300 hover:shadow-lg hover:shadow-slate-900/50 group cursor-default">
+    <div className="relative overflow-hidden rounded-2xl border bg-slate-50 border-slate-200 hover:border-slate-300 dark:border-slate-700/50 dark:bg-slate-800/80 p-5 dark:hover:border-slate-600 transition-all duration-300  hover:shadow-slate-900/50 group cursor-default">
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
         style={{ background: `radial-gradient(circle at top right, ${color}12, transparent 70%)` }} />
       <div className="absolute top-0 right-0 w-20 h-20 rounded-bl-full opacity-5 group-hover:opacity-10 transition-opacity duration-500"
@@ -606,7 +606,7 @@ function DealsCard({ deals }: { deals: DealStats }) {
     <Card title="Deal Revenue" sub="Financial performance" icon={DollarSign}>
       <div className="mb-4">
         <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Total Revenue</p>
-        <p className="font-mono text-4xl font-bold text-emerald-400">{fmtMoney(deals.totalRevenue)}</p>
+        <p className="font-mono text-4xl font-bold text-emerald-400">{fmtMoney(deals?.totalRevenue ?? 0)}</p>
         <p className="text-xs text-slate-500 mt-1">Period: <span className="text-emerald-400 font-semibold">{fmtMoney(deals.periodRevenue)}</span></p>
       </div>
       <div className="grid grid-cols-2 gap-2 mb-3">
@@ -627,7 +627,7 @@ function DealsCard({ deals }: { deals: DealStats }) {
           <span className="text-slate-500">Close Rate</span>
           <span className="font-mono text-emerald-400">{closedPct.toFixed(1)}%</span>
         </div>
-        <div className="h-1.5 rounded-full bg-slate-700/60">
+        <div className="h-1.5 rounded-full bg-white dark:bg-slate-700/60">
           <div className="h-1.5 rounded-full bg-emerald-500" style={{ width: `${Math.min(closedPct, 100)}%` }} />
         </div>
         <div className="flex justify-between text-xs mt-2">
@@ -679,7 +679,7 @@ function PipelineChart({ pipeline }: { pipeline: PipelineStage[] }) {
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-sm" style={{ backgroundColor: color }} />
-                  <span className="text-xs text-slate-400 capitalize group-hover:text-slate-300 transition-colors">
+                  <span className="text-xs text-slate-400 capitalize group-hover:text-slate-400 dark:group-hover:text-slate-300 transition-colors">
                     {cap(s.pipeline)}
                   </span>
                 </div>
@@ -689,7 +689,7 @@ function PipelineChart({ pipeline }: { pipeline: PipelineStage[] }) {
                   <span className="text-xs text-slate-600 w-9 text-right">{s.percentage.toFixed(1)}%</span>
                 </div>
               </div>
-              <div className="h-1.5 rounded-full bg-slate-700/60">
+              <div className="h-1.5 rounded-full bg-white dark:bg-slate-700/60">
                 <div className="h-1.5 rounded-full" style={{ width: `${Math.min(s.percentage, 100)}%`, backgroundColor: color }} />
               </div>
             </div>
@@ -1210,7 +1210,7 @@ const load = useCallback(async (showRefresh = false) => {
   const RoleIcon = rc.icon;
 
   return (
-    <div className="mt-10 ml-72 min-h-screen dark:bg-slate-900">
+    <div className="mt-10 ml-72 min-h-screen ">
       <div className="p-6 flex flex-col gap-5">
 
         <div className="flex items-center justify-between">

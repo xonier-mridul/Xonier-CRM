@@ -27,7 +27,7 @@ from fastapi_cache import FastAPICache
 import json
 from typing import Optional
 
-from app.utils.validate_admin import validate_admin, validate_company_admin
+from app.utils.validate_admin import validate_admin, validate_company_admin, validate_admin_company_admin
 from app.utils.get_team_members import GetTeamMembers
 from app.utils.activity_payload import activity_payload
 from app.core.tenant import system_query
@@ -52,13 +52,41 @@ class AuthServices:
 
 
 
-    async def getAll(self, page:int=1, limit:int = 10, filters: Dict[str, Any] = {})->List[UserModel]:
+    async def getAll(self, page:int=1, limit:int = 10, filters: Dict[str, Any] = {}, user: Dict[str, Any] = [])->List[UserModel]:
         try:
            query = {"$or": [
                {"status": USER_STATUS.ACTIVE},
                {"status": USER_STATUS.INACTIVE},
                {"status": USER_STATUS.SUSPENDED},
            ]}
+
+           is_admin = validate_admin(user["userRole"])
+           is_c_admin = validate_company_admin(user["userRole"])
+
+           if is_admin:
+               c_role = await self.role_repo.get_company_admin_role()
+               query.update({
+                   "userRole": {"$elemMatch": {"$id": PydanticObjectId(c_role.id)}}
+               })
+
+           if not is_admin and not is_c_admin:
+                members = await self.get_team_members.get_team_members(user["_id"])
+
+                obj_members = [PydanticObjectId(item) for item in members]
+
+                
+
+                if members:
+                    query.update({"$or":[
+                        {"_id": {"$in": obj_members}},
+                        {"id": PydanticObjectId(user["_id"])}
+                        ]})
+                    is_manager = True
+
+                else:
+                    query.update({"_id": PydanticObjectId(user["_id"])})
+
+            
 
            if "search" in filters and filters["search"].strip():
                regex_data = {"$regex": filters["search"].strip(), "$options": "i"}
@@ -118,7 +146,11 @@ class AuthServices:
                 
 
                 if members:
-                    query.update({"_id": {"$in": obj_members}})
+                    query.update({"$or":[
+                        {"_id": {"$in": obj_members}},
+                        {"id": PydanticObjectId(user["_id"])}
+                        ]
+                        })
                     is_manager = True
 
                 else:
@@ -1151,8 +1183,8 @@ class AuthServices:
             session.start_transaction()
 
             
-            
-            user = await self.repo.find_by_id(ObjectId(userId), False, session=session)
+            with system_query():
+                user = await self.repo.find_by_id(ObjectId(userId), False, session=session)
 
             if not user:
                 raise AppException(404, "User not found")
@@ -1169,15 +1201,15 @@ class AuthServices:
             hashed = hash_password(data["newPassword"])
 
 
-
-            result = await self.repo.update(
-                id=ObjectId(userId),
-                data={
-                    "password": hashed,
-                    "updatedAt": datetime.now(timezone.utc)
-                },
-                session=session
-            )
+            with system_query():
+                result = await self.repo.update(
+                    id=ObjectId(userId),
+                    data={
+                        "password": hashed,
+                        "updatedAt": datetime.now(timezone.utc)
+                    },
+                    session=session
+                )
 
             if not result:
                 raise AppException(400, "Password not updated")
@@ -1202,8 +1234,8 @@ class AuthServices:
 
     async def reset_user_password(self, userId: str, payload: Dict[str, Any], updatedBy: Dict[str, Any] )->bool:
         try:
-            
-            is_exist = await self.repo.find_by_id(id=PydanticObjectId(userId))
+            with system_query():
+                is_exist = await self.repo.find_by_id(id=PydanticObjectId(userId))
             
             if(payload.get("password") != payload.get("confirmPassword")):
                 raise AppException(400, "Password and Confirm Password not matching, please check and try again")
@@ -1229,8 +1261,8 @@ class AuthServices:
                 "updatedAt": datetime.now(timezone.utc)
             }
             
-
-            update = await self.repo.update_with_encryption(PydanticObjectId(userId), new_payload)
+            with system_query():
+                update = await self.repo.update_with_encryption(PydanticObjectId(userId), new_payload)
             
             if not update:
                 raise AppException(400, "User update failed")

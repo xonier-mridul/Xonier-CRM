@@ -4,7 +4,7 @@ from typing import Dict, Any
 from app.utils.custom_exception import AppException
 from app.db.db import Client
 from beanie import PydanticObjectId
-from app.utils.validate_admin import validate_admin
+from app.utils.validate_admin import validate_admin, validate_company_admin
 from app.utils.get_team_members import GetTeamMembers
 from app.repositories.task_activity_repository import TaskActivityRepository
 from app.core.enums import TASK_ACTIVITY_ACTION
@@ -104,10 +104,11 @@ class SubTaskService:
                         raise AppException(400, "Task is completed, action denied")
                     
                     is_admin = validate_admin(user["userRole"])
+                    is_c_admin = validate_company_admin(user["userRole"])
                     is_manager = False
                     is_creator = False
 
-                    if not is_admin:
+                    if not is_admin or not is_c_admin:
                         members = await self.getTeamMembers.get_team_members(user["_id"])
                        
                         if members:
@@ -127,7 +128,7 @@ class SubTaskService:
 
 
                     
-                    if not is_admin and not is_creator and not is_manager:
+                    if not is_admin and not is_c_admin and not is_creator and not is_manager:
                         raise AppException(403, f"You are not authorized person for create sub task against")
                 
                     new_payload = {
@@ -195,11 +196,11 @@ class SubTaskService:
                         raise AppException(400, "Task is completed, action denied")
 
                     is_admin = validate_admin(user["userRole"])
-
+                    is_c_admin = validate_company_admin(user["userRole"])
                     is_manager = False
                     is_creator = False
 
-                    if not is_admin:
+                    if not is_admin or not is_c_admin:
                         members = await self.getTeamMembers.get_team_members(user["_id"])
                        
                         if members:
@@ -216,7 +217,7 @@ class SubTaskService:
                             if (PydanticObjectId(user["_id"]) in [PydanticObjectId(item["id"]) for item in json_task_data["assignedTo"]]):
                                 is_creator = True
 
-                    if not is_admin and not is_creator and not is_manager:
+                    if not is_admin and not is_c_admin and not is_creator and not is_manager:
                         raise AppException(403, f"You are not authorized person for create sub task against")
                     
 

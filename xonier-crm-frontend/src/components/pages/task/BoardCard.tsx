@@ -166,7 +166,7 @@ function BoardCard({
                   title={u.firstName}
                   className="px-2 h-6 rounded-full bg-linear-to-br cursor-pointer hover:scale-105 from-blue-400 to-indigo-600 border-2 border-white dark:border-gray-800 flex items-center justify-center capitalize text-white text-[8px] font-bold shrink-0"
                 >
-                  {u.firstName} {u?.lastName}
+                  {u.firstName ?? "N/A"} {u?.lastName}
                 </button>
               ))}
               {task.assignedTo.length > 2 && (

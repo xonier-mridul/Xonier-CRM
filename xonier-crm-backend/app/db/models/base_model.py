@@ -53,7 +53,7 @@ class BaseDocument(Document):
         resolved = cls._resolve_filter(args)
         scoped = cls._inject_scope(resolved)
         remaining_args = args[1:] if args else ()
-        print("remain: ", scoped)
+      
         return super().find(scoped, *remaining_args, **kwargs)
     
 

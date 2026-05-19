@@ -182,6 +182,7 @@ const TaskListPage = (): JSX.Element => {
   const [pageLimit] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCatLoading, setIsCatLoading] = useState(false)
   const [deleting, setDeleting] = useState(false);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
@@ -300,41 +301,44 @@ const TaskListPage = (): JSX.Element => {
   }, []);
 
   const handleTimer = async (task: TaskItem) => {
-    try {
-      const entry = taskTimerMap.get(task.id);
-      const isThisRunning = activeTimerTaskId === task.id && entry?.status === "running";
-      const isThisPaused = entry?.status === "paused";
 
-      if (isThisRunning) {
-        if (!canPauseTimer) { toast.error("You don't have permission to pause timers."); return; }
-        const res = await TimerService.pause(entry!.logId);
-        applyLog(task.id, res.data.data);
-        return;
-      }
+    return toast.info("Timer feature currently disabled, coming soon")
+    // try {
 
-      if (isThisPaused) {
-        if (!canResumeTimer) { toast.error("You don't have permission to resume timers."); return; }
-        if (activeTimerTaskId && activeTimerTaskId !== task.id) {
-          toast.error("Please pause your current running timer first. You can only track one task timer at a time.");
-          return;
-        }
-        const res = await TimerService.resume(entry!.logId);
-        applyLog(task.id, res.data.data);
-        return;
-      }
+    //   const entry = taskTimerMap.get(task.id);
+    //   const isThisRunning = activeTimerTaskId === task.id && entry?.status === "running";
+    //   const isThisPaused = entry?.status === "paused";
 
-      if (!canStartTimer) { toast.error("You don't have permission to start timers."); return; }
-      if (activeTimerTaskId && activeTimerTaskId !== task.id) {
-        toast.error("Please pause your current running timer first. You can only track one task timer at a time.");
-        return;
-      }
+    //   if (isThisRunning) {
+    //     if (!canPauseTimer) { toast.error("You don't have permission to pause timers."); return; }
+    //     const res = await TimerService.pause(entry!.logId);
+    //     applyLog(task.id, res.data.data);
+    //     return;
+    //   }
 
-      const res = await TimerService.start(task.id);
-      applyLog(task.id, res.data.data);
-    } catch (error) {
-      if (axios.isAxiosError(error))
-        toast.error(error.response?.data?.message ?? "Timer action failed");
-    }
+    //   if (isThisPaused) {
+    //     if (!canResumeTimer) { toast.error("You don't have permission to resume timers."); return; }
+    //     if (activeTimerTaskId && activeTimerTaskId !== task.id) {
+    //       toast.error("Please pause your current running timer first. You can only track one task timer at a time.");
+    //       return;
+    //     }
+    //     const res = await TimerService.resume(entry!.logId);
+    //     applyLog(task.id, res.data.data);
+    //     return;
+    //   }
+
+    //   if (!canStartTimer) { toast.error("You don't have permission to start timers."); return; }
+    //   if (activeTimerTaskId && activeTimerTaskId !== task.id) {
+    //     toast.error("Please pause your current running timer first. You can only track one task timer at a time.");
+    //     return;
+    //   }
+
+    //   const res = await TimerService.start(task.id);
+    //   applyLog(task.id, res.data.data);
+    // } catch (error) {
+    //   if (axios.isAxiosError(error))
+    //     toast.error(error.response?.data?.message ?? "Timer action failed");
+    // }
   };
 
   const handleStop = async (task: TaskItem) => {
@@ -425,7 +429,7 @@ const TaskListPage = (): JSX.Element => {
         const tasks: TaskItem[] = d.data ?? [];
         setTaskData(tasks);
         setTotalCount(tasks.length);
-        if (!restoredRef.current && tasks.length > 0) restoreActiveTimer(tasks);
+        // if (!restoredRef.current && tasks.length > 0) restoreActiveTimer(tasks);
       }
     } catch (e) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
@@ -458,16 +462,21 @@ const TaskListPage = (): JSX.Element => {
   };
 
   const fetchCategories = async () => {
+    setIsCatLoading(true)
     try {
       const res = await CategoryService.getAll({ currentPage: 1, pageLimit: 100, search: "" });
       if (res.status === 200) setCategories(res.data.data.data ?? []);
     } catch (e) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
+    } finally {
+      setIsCatLoading(false)
     }
   };
 
   useEffect(() => { setCurrentPage(1); }, [filterAssigned]);
-  useEffect(() => { fetchStatuses(); fetchCategories(); }, []);
+  useEffect(() => { fetchStatuses();
+    //  fetchCategories();
+     }, []);
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
   const handleStatusChange = async (taskId: string, payload: FinalStatusPayload): Promise<void> => {
@@ -543,9 +552,9 @@ const TaskListPage = (): JSX.Element => {
               <button
                 type="button"
                 onClick={() => router.push("/task/create")}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-sm font-bold shadow-md shadow-blue-200 dark:shadow-blue-900/40 transition-all"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-sm font-bold shadow-md group cursor-pointer shadow-blue-200 dark:shadow-blue-900/40 transition-all"
               >
-                <span>＋</span> New Task
+                <span className="group-hover:rotate-90">＋</span> New Task
               </button>
             )}
           </div>
@@ -596,7 +605,7 @@ const TaskListPage = (): JSX.Element => {
                 <option key={p} value={p}>{p.charAt(0) + p.slice(1).toLowerCase()}</option>
               ))}
             </select>
-            <CategoryMultiSelect categories={categories} selected={filtrCategory} onChange={(val) => { setFiltrCategory(val); setCurrentPage(1); }} />
+            <CategoryMultiSelect categories={categories} isCatLoading={isCatLoading} fetchCategories={fetchCategories}  selected={filtrCategory} onChange={(val) => { setFiltrCategory(val); setCurrentPage(1); }} />
             <UserSelect
               mode="single"
               value={filterAssigned}
