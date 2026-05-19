@@ -203,11 +203,12 @@ class TaskService:
                         raise AppException(400, "Sorry the task is deleted, you not make remark on it")
                     
                     is_admin = validate_admin(user["userRole"])
+                    is_c_admin = validate_company_admin(user["userRole"])
                     is_manager = False
                     is_creator = False
 
                     task_data = jsonable_encoder(task_data)
-                    if not is_admin:
+                    if not is_admin or not is_c_admin:
                         members = await self.getTeamMembers.get_team_members(user["_id"])
                         
                         
@@ -229,7 +230,7 @@ class TaskService:
                                 is_creator = True
 
                     
-                    if not is_admin and not is_manager and not is_creator:
+                    if not is_admin and not is_c_admin and not is_manager and not is_creator:
                         raise AppException(400, "You are invalid user to create")
                     
                     new_payload = {
@@ -282,11 +283,12 @@ class TaskService:
             
 
             is_admin = validate_admin(user["userRole"])
+            is_c_Admin = validate_company_admin(user["userRole"])
             is_manager = False
             is_creator = False
             
 
-            if not is_admin:
+            if not is_admin or not is_c_Admin:
                 members = await self.getTeamMembers.get_team_members(user["_id"])
                 
 
@@ -305,8 +307,8 @@ class TaskService:
                         is_creator = True
 
             
-            if not is_admin and not is_manager and not is_creator:
-                raise AppException(400, "You are invalid user to create")
+            if not is_admin and not is_c_Admin and not is_manager and not is_creator:
+                raise AppException(400, "You are invalid user to get remark")
 
 
             result = await self.remarkRepo.get_by_taskId(taskId=taskId, populate=["mentions", "createdBy", "acknowledgedBy"])
@@ -856,9 +858,11 @@ class TaskService:
                         raise AppException(404, "Task not found")
 
                     is_admin = validate_admin(user["userRole"])
+                    if not is_admin:
+                        is_C_admin = validate_company_admin(user["userRole"])
                     user_oid = PydanticObjectId(user["_id"])
 
-                    if not is_admin:
+                    if not is_admin or not is_C_admin:
                         task_assigned_oids = []
                         for ref in (task.assignedTo or []):
                             try:
@@ -876,7 +880,7 @@ class TaskService:
 
                         is_team_task = any(uid in members_oids for uid in task_assigned_oids)
 
-                        if not is_own_task and not is_team_task:
+                        if not is_own_task and not is_team_task and not is_C_admin:
                             raise AppException(403, "You do not have permission to acknowledge this remark")
 
                     update_payload = {
@@ -1355,13 +1359,18 @@ class TaskService:
         try:
             if not ObjectId.is_valid(task_id):
                 raise AppException(400, "Invalid task id")
+            
+           
  
             activities = await self.activityRepo.find_many(
                 filters={"task.$id": ObjectId(task_id)},
                 populate=["performedBy"]
             )
+
+
  
             activities = sorted(activities, key=lambda x: x.createdAt, reverse=True)
+
             return jsonable_encoder(activities)
  
         except AppException:
@@ -1555,54 +1564,73 @@ class TaskService:
             raise AppException(500, f"Internal server error: {e}")
         
     async def delete_remark(self, remarkId: str, user: Dict[str, Any]):
-        try:
-            
-            if not ObjectId.is_valid(remarkId):
-                raise AppException(400, "Invalid task object id")
-
-            task = await self.remarkRepo.find_by_id(PydanticObjectId(remarkId), ["createdBy"])
-            
-            if not task:
-                raise AppException(400, "Task remark not found")
-            
-            if task.deletedAt:
-                raise AppException(400, "Task remark is already deleted, action denied")
-           
-            is_admin = validate_admin(user["userRole"])
-            is_manager = False
-            is_creator = False
-
-            if not is_admin:
-                members = await self.getTeamMembers.get_team_members(user["_id"])
-                
-                if members:
-                    mem = [PydanticObjectId(item) for item in members]
+        async with await self.client.start_session() as session:
+            async with session.start_transaction():
+                try:
                     
-                    if PydanticObjectId(task.createdBy.id) in mem or (PydanticObjectId(user["_id"]) == PydanticObjectId(task.createdBy.id)):
-                        is_manager = True
+                    if not ObjectId.is_valid(remarkId):
+                        raise AppException(400, "Invalid task object id")
+
+                    task = await self.remarkRepo.find_by_id(PydanticObjectId(remarkId), ["createdBy", "task"])
+                    
+                    if not task:
+                        raise AppException(400, "Task remark not found")
+                    
+                    
+                    
+                    if task.deletedAt:
+                        raise AppException(400, "Task remark is already deleted, action denied")
+                
+                    is_admin = validate_admin(user["userRole"])
+                    is_c_admin = validate_company_admin(user["userRole"])
+                    is_manager = False
+                    is_creator = False
+
+                    if not is_admin or not is_c_admin:
+                        members = await self.getTeamMembers.get_team_members(user["_id"])
+                        
+                        if members:
+                            mem = [PydanticObjectId(item) for item in members]
+                            
+                            if PydanticObjectId(task.createdBy.id) in mem or (PydanticObjectId(user["_id"]) == PydanticObjectId(task.createdBy.id)):
+                                is_manager = True
 
 
-                else:
-                    if PydanticObjectId(user["_id"]) == PydanticObjectId(task.createdBy.id):
-                        is_creator = True
+                        else:
+                            if PydanticObjectId(user["_id"]) == PydanticObjectId(task.createdBy.id):
+                                is_creator = True
 
-            if not is_admin and not is_manager and not is_creator:
-                raise AppException(403, "Permission denied, You are not authenticated user")
-            
-            delete = await self.remarkRepo.delete_by_id(PydanticObjectId(remarkId))
+                    if not is_admin and not is_c_admin and not is_manager and not is_creator:
+                        raise AppException(403, "Permission denied, You are not authenticated user")
+                    
+                    
+                    
+                    delete = await self.remarkRepo.delete_by_id(PydanticObjectId(remarkId), session)
 
-            if not delete:
-                raise AppException(400, "Remark deletion failed")
-            
-            
-            return True
+                    if not delete:
+                        raise AppException(400, "Remark deletion failed")
+                    
+
+                    payload = _activity(
+                        task_id= ObjectId(task.task.id),
+                        action= TASK_ACTIVITY_ACTION.DELETE_REMARK.value,
+                        performer_id= ObjectId(user["_id"]),
+                        description="Delete task remark",
+                        metadata={"remarkId": str(task.id), "remark": task.content}, 
+                        
+                    )
+
+                    await self.activityRepo.create(payload, session)
+                    
+                    
+                    return True
 
 
-        except AppException as e:
-            raise e
-        
-        except Exception as e:
-            raise AppException(status_code=500, message=f"Internal server error: {e}")
+                except AppException as e:
+                    raise e
+                
+                except Exception as e:
+                    raise AppException(status_code=500, message=f"Internal server error: {e}")
 
 
     # new

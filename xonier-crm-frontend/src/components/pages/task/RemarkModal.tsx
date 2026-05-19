@@ -19,7 +19,7 @@ interface Remark {
   _id: string;
   content: string;
   createdAt: string;
-  acknowledgedBy?: User; // array of user ids who acknowledged
+  acknowledgedBy?: User; 
   createdBy: {
     id: string;
     firstName: string;
@@ -32,9 +32,7 @@ interface Props {
   onClose?: () => void;
 }
 
-// ─── Constants ────────────────────────────────────────────────────────────────
 
-// 10 distinct, visually balanced avatar/accent colours
 const USER_PALETTES = [
   {
     bg: "bg-violet-100  dark:bg-violet-900/40",
@@ -106,7 +104,7 @@ function getPalette(userId: string) {
 }
 
 function initials(r: Remark["createdBy"]) {
-  return `${r.firstName[0] ?? ""}${r.lastName?.[0] ?? ""}`.toUpperCase();
+  return `${r?.firstName[0] ?? ""}${r?.lastName?.[0] ?? ""}`.toUpperCase();
 }
 
 function relTime(iso: string) {
@@ -125,7 +123,6 @@ function relTime(iso: string) {
   });
 }
 
-// ─── Add Remark Panel (inline, slides in from top) ───────────────────────────
 
 interface AddRemarkPanelProps {
   onSend: (content: string) => Promise<void>;
@@ -407,7 +404,7 @@ function RemarkRow({
       <div
         className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0 ring-2 ring-white dark:ring-gray-900 ${palette.avatar}`}
       >
-        {initials(remark.createdBy)}
+        {initials(remark?.createdBy)}
       </div>
 
       {/* Content */}
@@ -516,8 +513,13 @@ export default function RemarkModal({ taskId, onClose }: Props) {
     try {
       await RemarkService.acknowledge(remarkId);
       loadRemarks();
-    } catch {
-      toast.error("Failed to acknowledge");
+    } catch(error) {
+      if (axios.isAxiosError(error)) {
+        const messages = extractErrorMessages(error);
+        toast.error(`${messages}`);
+      } else {
+        toast.error("Something went wrong");
+      }
       await loadRemarks();
     }
   };

@@ -336,6 +336,8 @@ export interface CategoryMultiSelectProps {
   categories: CategoryItem[];
   selected: string[];
   onChange: (selected: string[]) => void;
+  fetchCategories: ()=> Promise<void>,
+  isCatLoading: boolean
 }
 
 export  type ViewMode = "list" | "board";
