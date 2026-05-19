@@ -129,6 +129,7 @@ export interface CreateCompanyResponse {
   companyId: string;
   userId: string;
   subscriptionId: string | null;
+  data: any;
   message: string;
 }
 

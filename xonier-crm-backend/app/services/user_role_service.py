@@ -48,7 +48,7 @@ class UserRoleService:
     
     async def get_all_active(self):
         try:
-
+            
             result = await self.repository.get_all_without_pagination(filters={"status": True}, populate=["createdBy", "permissions"])
 
             if not result:

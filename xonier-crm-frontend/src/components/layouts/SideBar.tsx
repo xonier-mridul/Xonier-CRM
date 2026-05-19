@@ -75,16 +75,13 @@ const SideBar = () => {
     if (pathname.startsWith("/teams")) {
       setOpenMenu("team");
     }
-    if (pathname.startsWith("/users")) {
+    if (pathname.startsWith("/users") || pathname.startsWith("/deleteduser")) {
       setOpenMenu("user");
     }
     if (pathname.startsWith("/roles")) {
       setOpenMenu("team");
     }
-    if (pathname.startsWith("/deleteduser")) {
-      setOpenMenu("team");
-    }
-
+    
     if (pathname.startsWith("/enquiry")) {
       setOpenMenu("sales")
     }
@@ -138,14 +135,14 @@ const SideBar = () => {
       case "team":
         return pathname.startsWith("/teams") ||
           
-          pathname.startsWith("/roles")|| pathname.startsWith("/deleteduser");
+          pathname.startsWith("/roles");
       case "sales":
         return pathname.startsWith("/enquiry") ||
           pathname.startsWith("/leads") ||
           pathname.startsWith("/deals") ||
           pathname.startsWith("/quotations") ||
           pathname.startsWith("/invoice");
-      case "user": return pathname.startsWith("/users")
+      case "user": return pathname.startsWith("/users") || pathname.startsWith("/deleteduser")
       case "prospects":
         return pathname.startsWith("/prospects");
       case "emailManagement":

@@ -18,6 +18,7 @@ getAll: (data: GetAllUsers) => {
   if (data.firstName) params.append("firstName", data.firstName);
   if (data.lastName) params.append("lastName", data.lastName);
   if (data.search) params.append("search", data.search);
+  if (data.companyId) params.append("companyId", data.companyId);
 
   return api.get(`/auth/all?${params.toString()}`);
 },

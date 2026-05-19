@@ -418,9 +418,9 @@ const DeletedUsersPage = (): JSX.Element => {
                 <th className="px-4 py-3 text-left font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-xs">
                   Role
                 </th>
-                <th className="px-4 py-3 text-left font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-xs">
+                {/* <th className="px-4 py-3 text-left font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-xs">
                   Company
-                </th>
+                </th> */}
                 <th className="px-4 py-3 text-left font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-xs">
                   Deleted On
                 </th>

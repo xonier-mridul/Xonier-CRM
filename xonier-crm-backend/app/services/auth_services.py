@@ -74,9 +74,9 @@ class AuthServices:
            if "status" in filters:
                if filters["status"] != USER_STATUS.DELETED:
                    query.update({"status": filters["status"]})
-                   
-               
-           
+
+           if "companyId" in filters:
+                   query.update({"companyId": ObjectId(filters["companyId"])})
 
            users = await self.repo.get_all(page, limit, query, populate=["userRole", "createdBy"], sort=["-createdAt"])
 
@@ -759,12 +759,12 @@ class AuthServices:
             
             is_admin = validate_admin(user_data["userRole"])
             
-            # if user_data["companyId"] != payload["companyId"]:
-            #     raise AppException(400, "You not update company")
+            if user_data["companyId"] != payload["companyId"]:
+                raise AppException(400, "You not update company, it is temporarily disabled")
             
              
             payload = {
-                **payload, "updatedBy": updatedBy 
+                **payload, "updatedBy": updatedBy, "companyId": ObjectId(payload["companyId"]) 
             }
 
             role = payload.get("userRole")
