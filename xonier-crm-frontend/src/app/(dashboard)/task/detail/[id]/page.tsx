@@ -861,8 +861,7 @@ setTaskData(result.data.data);
     getTaskActivity(taskId);
   }, []);
 
-  console.log("achual: ", (taskData?.totalSeconds ? (taskData?.totalSeconds + lastStartSecond + timeCount) : 0))
-  console.log("define: ", taskData?.estimatedHours)
+
 
   if (isLoading) return <TaskDetailSkeleton />;
 
@@ -1359,13 +1358,7 @@ setTaskData(result.data.data);
 
             </div>
           </div>
-          {/* Remark Chat  */}
-          {/* <button
-            onClick={() => setShowRemarkModal(true)}
-            className="px-3 py-2 bg-blue-500 text-white rounded-lg"
-          >
-            Open Remarks
-          </button> */}
+         
           {(
             <RemarkModal
               taskId={taskId}

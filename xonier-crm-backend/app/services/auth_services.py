@@ -1151,8 +1151,8 @@ class AuthServices:
             session.start_transaction()
 
             
-            
-            user = await self.repo.find_by_id(ObjectId(userId), False, session=session)
+            with system_query():
+                user = await self.repo.find_by_id(ObjectId(userId), False, session=session)
 
             if not user:
                 raise AppException(404, "User not found")
@@ -1169,15 +1169,15 @@ class AuthServices:
             hashed = hash_password(data["newPassword"])
 
 
-
-            result = await self.repo.update(
-                id=ObjectId(userId),
-                data={
-                    "password": hashed,
-                    "updatedAt": datetime.now(timezone.utc)
-                },
-                session=session
-            )
+            with system_query():
+                result = await self.repo.update(
+                    id=ObjectId(userId),
+                    data={
+                        "password": hashed,
+                        "updatedAt": datetime.now(timezone.utc)
+                    },
+                    session=session
+                )
 
             if not result:
                 raise AppException(400, "Password not updated")
@@ -1202,8 +1202,8 @@ class AuthServices:
 
     async def reset_user_password(self, userId: str, payload: Dict[str, Any], updatedBy: Dict[str, Any] )->bool:
         try:
-            
-            is_exist = await self.repo.find_by_id(id=PydanticObjectId(userId))
+            with system_query():
+                is_exist = await self.repo.find_by_id(id=PydanticObjectId(userId))
             
             if(payload.get("password") != payload.get("confirmPassword")):
                 raise AppException(400, "Password and Confirm Password not matching, please check and try again")
@@ -1229,8 +1229,8 @@ class AuthServices:
                 "updatedAt": datetime.now(timezone.utc)
             }
             
-
-            update = await self.repo.update_with_encryption(PydanticObjectId(userId), new_payload)
+            with system_query():
+                update = await self.repo.update_with_encryption(PydanticObjectId(userId), new_payload)
             
             if not update:
                 raise AppException(400, "User update failed")
