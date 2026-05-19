@@ -21,6 +21,8 @@ const NavBar = () => {
   const dispatch = useDispatch();
   const [open, setOpen] = useState(false);
   const router = useRouter()
+  const isAdmin = useSelector((state: RootState) => state.auth.isAdmin);
+  
   const handleLogout = async():Promise<void> => {
     try {
     
@@ -41,7 +43,7 @@ const NavBar = () => {
 
   };
 
-  console.log("cc: ", auth.user?.companyId.id)
+  // console.log("cc: ", auth.user?.companyId.id)
 
   return (
     <div className="h-14 z-99 fixed top-0 left-74 backdrop-blur-sm right-0 px-4 flex justify-between items-center my-2">
@@ -99,16 +101,16 @@ const NavBar = () => {
                   </div>
                   </div>
                   <div className="w-full border-b-[1px] border-gray-200 dark:border-gray-700"></div>
-                  <ul className="flex flex-col gap-2">
+                  <ul className="flex flex-col gap-5">
                     <li><Link href={`/users/${auth?.user?._id}`} className="flex items-center gap-4 group"> <span className="h-11 w-11 rounded-md bg-blue-800/10 dark:bg-slate-100 dark:text-slate-900 flex items-center justify-center overflow-hidden"> <FiUser className="text-2xl group-hover:scale-110 transition-all duration-300"/> </span> <div className="flex flex-col">
                      <h4 className="text-slate-900 dark:text-white font-semibold group-hover:text-blue-600"> My Profile</h4>
                      <span className="text-gray-500 dark:text-gray-400 text-sm">Account Settings</span>
                       </div> </Link></li>
                       <li>
-                        <Link href={`/companies/${auth?.user?.companyId?.id}`} className="flex items-center gap-4 group">
-                         <span className="h-11 w-11 rounded-md bg-blue-800/10 dark:bg-slate-100 dark:text-slate-900 flex items-center justify-center overflow-hidden"> <FaRegBuilding className="text-2xl group-hover:scale-110 transition-all duration-300"/> </span> 
+                        <Link href={ isAdmin ? '/companies' : `/companies/${auth?.user?.companyId?.id}`} className="flex items-center gap-4 group">
+                         <span className="h-11 w-11 rounded-md bg-blue-800/10 dark:bg-slate-100 dark:text-slate-900 flex items-center justify-center overflow-hidden"> <FaRegBuilding className="text-xl group-hover:scale-110 transition-all duration-300"/> </span> 
                         <div className="flex">
-                     <h4 className="text-slate-900 dark:text-white font-semibold group-hover:text-blue-600">My Company</h4>
+                     <h4 className="text-slate-900 dark:text-white font-semibold group-hover:text-blue-600"> {isAdmin ? 'Companies' :'My Company'}</h4>
                        </div>
 
                         </Link>
