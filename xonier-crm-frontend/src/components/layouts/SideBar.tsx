@@ -597,7 +597,7 @@ const SideBar = () => {
                         Roles
                       </Link>
                     </li>}
-                    {hasPermission(PERMISSIONS.readTeamCategory) && <li>
+                    {(hasPermission(PERMISSIONS.readTeamCategory) && !auth.isAdmin ) && <li>
                       <Link
                         href="/teams/categories"
                         className={`${isActive("/teams/categories")
@@ -608,7 +608,7 @@ const SideBar = () => {
                         Teams Categories
                       </Link>
                     </li>}
-                    {hasPermission(PERMISSIONS.readTeam) && <li>
+                    {(hasPermission(PERMISSIONS.readTeam)&& !auth.isAdmin) && <li>
                       <Link
                         href="/teams"
                         className={`${(isActive("/teams") && !isActive("/teams/categories"))

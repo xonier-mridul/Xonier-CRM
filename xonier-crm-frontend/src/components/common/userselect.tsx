@@ -4,14 +4,14 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { User } from "@/src/types";
 import { AuthService } from "@/src/services/auth.service";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+
 
 interface BaseUserSelectProps {
-  /** Show the full scrollable user list below the search bar (default: false — dropdown only) */
+  
   showList?: boolean;
   placeholder?: string;
   cls?: string;
-  /** "Assign to Me" button — pass current user id to enable */
+  
   currentUserId?: string;
   disabled?: boolean;
 }
@@ -119,7 +119,7 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
           hasMoreRef.current = false;
           setHasMore(false);
         } else {
-          pageRef.current = currentPage + 1; // ✅ FIX: update AFTER using snapshot
+          pageRef.current = currentPage + 1; 
         }
       }
     } catch (err) {
@@ -130,12 +130,11 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
     }
   }, []);
 
-  // ── Initial load ────────────────────────────────────────────────────────────
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+ 
+  // useEffect(() => {
+  //   fetchUsers();
+  // }, [fetchUsers]);
 
-  // ── Search debounce ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (debounce.current) clearTimeout(debounce.current);
 
@@ -250,7 +249,7 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
               }`}
           >
             <div className="flex items-center gap-2 min-w-0">
-              {/* Avatar */}
+       
               <span className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 text-[10px] font-bold flex items-center justify-center flex-shrink-0 uppercase">
                 {user.firstName?.[0]}{user.lastName?.[0] ?? ""}
               </span>
@@ -294,7 +293,7 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
     </div>
   );
 
-  // ── Selected pills (multiple mode) ──────────────────────────────────────────
+
   const SelectedPills = isMultiple && selectedIds.length > 0 ? (
     <div className="flex flex-wrap gap-1.5">
       {selectedIds.map((id) => {
@@ -321,15 +320,12 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
     </div>
   ) : null;
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // RENDER: showList mode (inline, no dropdown)
-  // ────────────────────────────────────────────────────────────────────────────
   if (showList) {
     return (
       <div className={`space-y-3 ${cls ?? ""}`}>
 
 
-        {/* Single-mode selected display */}
+       
         {isSingle && props.value && userMap[props.value] && (
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700">
             <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-300">
@@ -347,7 +343,7 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
           </div>
         )}
 
-        {/* Search */}
+        
         <input
           type="text"
           value={search}
@@ -361,13 +357,11 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
     );
   }
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // RENDER: dropdown mode
-  // ────────────────────────────────────────────────────────────────────────────
+
   return (
     <div className={`relative ${cls ?? "min-w-52"}`} ref={dropdownRef}>
 
-      {/* Search input */}
+     
       <input
         type="text"
         placeholder={
@@ -388,10 +382,10 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
           ) + " px-3 py-1.5"}
       />
 
-      {/* Dropdown */}
+
       {isOpen && !disabled && (
         <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-lg overflow-hidden">
-          {/* Assign to me row */}
+          
           {currentUserId && (
             <div
               onClick={assignToMe}

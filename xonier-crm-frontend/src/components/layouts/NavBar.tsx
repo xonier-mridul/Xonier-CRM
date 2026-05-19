@@ -41,7 +41,6 @@ const NavBar = () => {
 
   };
 
-  console.log("cc: ", auth.user?.companyId.id)
 
   return (
     <div className="h-14 z-99 fixed top-0 left-74 backdrop-blur-sm right-0 px-4 flex justify-between items-center my-2">
