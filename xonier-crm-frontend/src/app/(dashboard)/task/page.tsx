@@ -411,46 +411,88 @@ const TaskListPage = (): JSX.Element => {
     }
   };
 
-  const fetchTaskAll = useCallback(async () => {
-    try {
-      const res = await TaskService.getAll({
-        currentPage,
-        pageLimit: viewMode === "board" ? 500 : pageLimit,
-        status: filterStatus || undefined,
-        priority: filterPriority || undefined,
-        category: filtrCategory.length > 0 ? filtrCategory.join(",") : undefined,
-        search: search || undefined,
-        user: filterAssigned || undefined,
-        fromDate: dateFilter.fromDate || undefined,
-        toDate: dateFilter.toDate || undefined,
-      });
-      if (res.status === 200) {
-        const d = res.data?.data || {};
-        const tasks: TaskItem[] = d.data ?? [];
-        setTaskData(tasks);
-        setTotalCount(tasks.length);
-        // if (!restoredRef.current && tasks.length > 0) restoreActiveTimer(tasks);
-      }
-    } catch (e) {
-      process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
-      if (axios.isAxiosError(e)) toast.error("Failed to load tasks");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentPage, pageLimit, viewMode, filterStatus, filterPriority, filtrCategory, search, filterAssigned, dateFilter, restoreActiveTimer]);
+  // const fetchTaskAll = useCallback(async (silent = false) => {
+  //   if (!silent) setIsLoading(true);
+  //   try {
+  //     const res = await TaskService.getAll({
+  //       currentPage,
+  //       pageLimit: viewMode === "board" ? 500 : pageLimit,
+  //       status: filterStatus || undefined,
+  //       priority: filterPriority || undefined,
+  //       category: filtrCategory.length > 0 ? filtrCategory.join(",") : undefined,
+  //       search: search || undefined,
+  //       user: filterAssigned || undefined,
+  //       fromDate: dateFilter.fromDate || undefined,
+  //       toDate: dateFilter.toDate || undefined,
+  //     });
+  //     if (res.status === 200) {
+  //       const d = res.data?.data || {};
+  //       const tasks: TaskItem[] = d.data ?? [];
+  //       setTaskData(tasks);
+  //       setTotalCount(tasks.length);
+  //       // if (!restoredRef.current && tasks.length > 0) restoreActiveTimer(tasks);
+  //     }
+  //   } catch (e) {
+  //     process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
+  //     if (axios.isAxiosError(e)) toast.error("Failed to load tasks");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // }, [currentPage, pageLimit, viewMode, filterStatus, filterPriority, filtrCategory, search, filterAssigned, dateFilter, restoreActiveTimer]);
 
-  const fetchTasks = useCallback(
-    (silent = false) => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      if (silent) {
-        debounceRef.current = setTimeout(fetchTaskAll, 3000);
-      } else {
-        setIsLoading(true);
-        fetchTaskAll();
-      }
-    },
-    [fetchTaskAll],
-  );
+  // const fetchTasks = useCallback(
+  //   (silent = false) => {
+  //     if (debounceRef.current) clearTimeout(debounceRef.current);
+  //     if (silent) {
+  //       debounceRef.current = setTimeout(fetchTaskAll, 3000);
+  //     } else {
+        
+  //       fetchTaskAll();
+  //     }
+  //   },
+  //   [fetchTaskAll],
+  // );
+
+
+  const fetchTaskAll = useCallback(async (silent = false) => {
+  if (!silent) setIsLoading(true);   // ← moved here
+  try {
+    const res = await TaskService.getAll({
+      currentPage,
+      pageLimit: viewMode === "board" ? 500 : pageLimit,
+      status: filterStatus || undefined,
+      priority: filterPriority || undefined,
+      category: filtrCategory.length > 0 ? filtrCategory.join(",") : undefined,
+      search: search || undefined,
+      user: filterAssigned || undefined,
+      fromDate: dateFilter.fromDate || undefined,
+      toDate: dateFilter.toDate || undefined,
+    });
+    if (res.status === 200) {
+      const d = res.data?.data || {};
+      const tasks: TaskItem[] = d.data ?? [];
+      setTaskData(tasks);
+      setTotalCount(tasks.length);
+    }
+  } catch (e) {
+    process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
+    if (axios.isAxiosError(e)) toast.error("Failed to load tasks");
+  } finally {
+    setIsLoading(false);
+  }
+}, [currentPage, pageLimit, viewMode, filterStatus, filterPriority, filtrCategory, search, filterAssigned, dateFilter, restoreActiveTimer]);
+
+const fetchTasks = useCallback(
+  (silent = false) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (silent) {
+      debounceRef.current = setTimeout(() => fetchTaskAll(true), 3000);
+    } else {
+      fetchTaskAll(false);   
+    }
+  },
+  [fetchTaskAll],
+);
 
   const fetchStatuses = async () => {
     try {
@@ -643,7 +685,7 @@ const TaskListPage = (): JSX.Element => {
               canMarkFinal={canMarkFinal}
               deleting={deleting}
               isLoading={isLoading}
-              skeletonlength={categories.length}
+              skeletonlength={categories.length > 0 ? categories.length : 3}
               taskTimerMap={taskTimerMap}
               activeTimerTaskId={activeTimerTaskId}
               liveElapsedSeconds={liveElapsedSeconds}
