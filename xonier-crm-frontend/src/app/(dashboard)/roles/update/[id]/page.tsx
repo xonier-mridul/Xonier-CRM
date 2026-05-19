@@ -431,6 +431,7 @@ const UpdateRolePage = (): JSX.Element => {
               <FormButton
                 type="submit"
                 isLoading={isLoading}
+                onClick={()=> router.back()}
                 disabled={formData.name === "" || formData.permissions.length === 0 || !hasPermission(PERMISSIONS.updateRole)}
               >
                 <FaFloppyDisk className="w-4 h-4" />
