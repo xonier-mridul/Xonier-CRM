@@ -14,6 +14,7 @@ import { AuthService } from "@/src/services/auth.service";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { FaArrowLeftLong, FaArrowRightLong } from "react-icons/fa6";
+import { FaRegBuilding } from "react-icons/fa";
 
 const NavBar = () => {
   const auth = useSelector((state: RootState) => state.auth);
@@ -39,6 +40,8 @@ const NavBar = () => {
     }
 
   };
+
+  console.log("cc: ", auth.user?.companyId.id)
 
   return (
     <div className="h-14 z-99 fixed top-0 left-74 backdrop-blur-sm right-0 px-4 flex justify-between items-center my-2">
@@ -96,11 +99,22 @@ const NavBar = () => {
                   </div>
                   </div>
                   <div className="w-full border-b-[1px] border-gray-200 dark:border-gray-700"></div>
-                  <ul>
+                  <ul className="flex flex-col gap-2">
                     <li><Link href={`/users/${auth?.user?._id}`} className="flex items-center gap-4 group"> <span className="h-11 w-11 rounded-md bg-blue-800/10 dark:bg-slate-100 dark:text-slate-900 flex items-center justify-center overflow-hidden"> <FiUser className="text-2xl group-hover:scale-110 transition-all duration-300"/> </span> <div className="flex flex-col">
                      <h4 className="text-slate-900 dark:text-white font-semibold group-hover:text-blue-600"> My Profile</h4>
                      <span className="text-gray-500 dark:text-gray-400 text-sm">Account Settings</span>
                       </div> </Link></li>
+                      <li>
+                        <Link href={`/companies/${auth?.user?.companyId?.id}`} className="flex items-center gap-4 group">
+                         <span className="h-11 w-11 rounded-md bg-blue-800/10 dark:bg-slate-100 dark:text-slate-900 flex items-center justify-center overflow-hidden"> <FaRegBuilding className="text-2xl group-hover:scale-110 transition-all duration-300"/> </span> 
+                        <div className="flex">
+                     <h4 className="text-slate-900 dark:text-white font-semibold group-hover:text-blue-600">My Company</h4>
+                       </div>
+
+                        </Link>
+                       
+                        
+                      </li>
                   </ul>
                   <button onClick={handleLogout} className="bg-blue-600 hover:bg-blue-700 text-white w-full rounded-md py-2.5 capitalize font-medium cursor-pointer">Log out</button>
                   

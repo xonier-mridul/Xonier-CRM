@@ -114,11 +114,13 @@ const STATUS_COLORS: Record<string, string> = {
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 function fmtMoney(n: number): string {
-  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `$${(n / 1_000).toFixed(1)}k`;
-  return `$${n.toFixed(0)}`;
+  const val = n ?? 0;
+  if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(1)}M`;
+  if (val >= 1_000) return `$${(val / 1_000).toFixed(1)}k`;
+  return `$${val.toFixed(0)}`;
 }
 function fmt(n: number): string {
+   const val = n ?? 0;
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
   return String(n ?? 0);
@@ -228,7 +230,7 @@ function StatCard({ label, value, sub, icon: Icon, color, trend, prefix = "", su
   { label: string; value: number; sub?: string; icon: any; color: string; trend?: { val: number; up: boolean }; prefix?: string; suffix?: string }) {
   const v = useCountUp(value);
   return (
-    <div className="relative overflow-hidden rounded-2xl border bg-slate-50 border-slate-200 hover:border-slate-300 dark:border-slate-700/50 dark:bg-slate-800/80 p-5 dark:hover:border-slate-600 transition-all duration-300 hover:shadow-lg hover:shadow-slate-900/50 group cursor-default">
+    <div className="relative overflow-hidden rounded-2xl border bg-slate-50 border-slate-200 hover:border-slate-300 dark:border-slate-700/50 dark:bg-slate-800/80 p-5 dark:hover:border-slate-600 transition-all duration-300  hover:shadow-slate-900/50 group cursor-default">
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
         style={{ background: `radial-gradient(circle at top right, ${color}12, transparent 70%)` }} />
       <div className="absolute top-0 right-0 w-20 h-20 rounded-bl-full opacity-5 group-hover:opacity-10 transition-opacity duration-500"
@@ -568,7 +570,7 @@ function LeadsCard({ leads }: { leads: LeadStats }) {
         <div className="relative flex-shrink-0">
           <Ring pct={wonPct} color="#10b981" size={72} />
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-mono text-xs font-bold text-white">{wonPct.toFixed(0)}%</span>
+            <span className="font-mono text-xs font-bold text-slate-500 dark:text-white">{wonPct.toFixed(0)}%</span>
             <span className="text-[9px] text-slate-500">won</span>
           </div>
         </div>
@@ -585,7 +587,7 @@ function LeadsCard({ leads }: { leads: LeadStats }) {
           { label: "In Deal", value: leads.inDeal, color: "#8b5cf6" },
           { label: "This Month", value: leads.thisMonth, color: "#06b6d4" },
         ].map((i) => (
-          <div key={i.label} className="text-center rounded-xl p-2 bg-slate-700/30">
+          <div key={i.label} className="text-center rounded-xl p-2 bg-white border border-slate-200 hover:border-slate-300  dark:bg-slate-700/30">
             <p className="font-mono text-base font-bold" style={{ color: i.color }}><AnimNum value={i.value} /></p>
             <p className="text-[10px] text-slate-500 mt-0.5">{i.label}</p>
           </div>
@@ -601,7 +603,7 @@ function DealsCard({ deals }: { deals: DealStats }) {
     <Card title="Deal Revenue" sub="Financial performance" icon={DollarSign}>
       <div className="mb-4">
         <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Total Revenue</p>
-        <p className="font-mono text-4xl font-bold text-emerald-400">{fmtMoney(deals.totalRevenue)}</p>
+        <p className="font-mono text-4xl font-bold text-emerald-400">{fmtMoney(deals?.totalRevenue ?? 0)}</p>
         <p className="text-xs text-slate-500 mt-1">Period: <span className="text-emerald-400 font-semibold">{fmtMoney(deals.periodRevenue)}</span></p>
       </div>
       <div className="grid grid-cols-2 gap-2 mb-3">
@@ -611,7 +613,7 @@ function DealsCard({ deals }: { deals: DealStats }) {
           { label: "Total", value: deals.total, color: "#8b5cf6" },
           { label: "This Month", value: deals.thisMonth, color: "#06b6d4" },
         ].map((i) => (
-          <div key={i.label} className="rounded-xl p-2.5 bg-slate-700/30 border border-slate-700/40">
+          <div key={i.label} className="rounded-xl p-2.5 bg-white dark:bg-slate-700/30 border dark:border-slate-700/40 border-slate-200">
             <p className="font-mono text-lg font-bold" style={{ color: i.color }}><AnimNum value={i.value} /></p>
             <p className="text-[10px] text-slate-500">{i.label}</p>
           </div>
@@ -622,7 +624,7 @@ function DealsCard({ deals }: { deals: DealStats }) {
           <span className="text-slate-500">Close Rate</span>
           <span className="font-mono text-emerald-400">{closedPct.toFixed(1)}%</span>
         </div>
-        <div className="h-1.5 rounded-full bg-slate-700/60">
+        <div className="h-1.5 rounded-full bg-white dark:bg-slate-700/60">
           <div className="h-1.5 rounded-full bg-emerald-500" style={{ width: `${Math.min(closedPct, 100)}%` }} />
         </div>
         <div className="flex justify-between text-xs mt-2">
@@ -641,7 +643,7 @@ function ConversionCard({ conv }: { conv: ConversionRate }) {
         <div className="relative">
           <Ring pct={conv.conversionRate} color="#6366f1" size={110} />
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-mono text-2xl font-bold text-white">{conv.conversionRate.toFixed(1)}%</span>
+            <span className="font-mono text-2xl font-bold text-slate-500 dark:text-white">{conv.conversionRate.toFixed(1)}%</span>
             <span className="text-[10px] text-slate-500">conversion</span>
           </div>
         </div>
@@ -652,7 +654,7 @@ function ConversionCard({ conv }: { conv: ConversionRate }) {
           { label: "Won", value: conv.won, color: "#10b981", icon: CheckCircle2 },
           { label: "Lost", value: conv.lost, color: "#ef4444", icon: XCircle },
         ].map((i) => (
-          <div key={i.label} className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-slate-700/30 border border-slate-700/40">
+          <div key={i.label} className="flex flex-col items-center gap-1.5 p-3 rounded-xl dark:bg-slate-700/30 bg-white border border-slate-200  dark:border-slate-700/40">
             <i.icon className="w-4 h-4" style={{ color: i.color }} />
             <span className="font-mono text-xl font-bold" style={{ color: i.color }}><AnimNum value={i.value} /></span>
             <span className="text-[10px] text-slate-500">{i.label}</span>
@@ -674,7 +676,7 @@ function PipelineChart({ pipeline }: { pipeline: PipelineStage[] }) {
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-sm" style={{ backgroundColor: color }} />
-                  <span className="text-xs text-slate-400 capitalize group-hover:text-slate-300 transition-colors">
+                  <span className="text-xs text-slate-400 capitalize group-hover:text-slate-400 dark:group-hover:text-slate-300 transition-colors">
                     {cap(s.pipeline)}
                   </span>
                 </div>
@@ -684,7 +686,7 @@ function PipelineChart({ pipeline }: { pipeline: PipelineStage[] }) {
                   <span className="text-xs text-slate-600 w-9 text-right">{s.percentage.toFixed(1)}%</span>
                 </div>
               </div>
-              <div className="h-1.5 rounded-full bg-slate-700/60">
+              <div className="h-1.5 rounded-full bg-white dark:bg-slate-700/60">
                 <div className="h-1.5 rounded-full" style={{ width: `${Math.min(s.percentage, 100)}%`, backgroundColor: color }} />
               </div>
             </div>
@@ -778,7 +780,7 @@ function TaskCard({ tasks }: { tasks: TaskStats }) {
         <div className="relative flex-shrink-0">
           <Ring pct={tasks.completionRate} color="#10b981" size={72} />
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-mono text-xs font-bold text-white">{tasks.completionRate.toFixed(0)}%</span>
+            <span className="font-mono text-xs font-bold text-slate-500 dark:text-white">{tasks.completionRate.toFixed(0)}%</span>
           </div>
         </div>
         <div className="flex-1">
@@ -793,7 +795,7 @@ function TaskCard({ tasks }: { tasks: TaskStats }) {
           { label: "Unassigned", value: tasks.unassigned, color: "#f59e0b" },
           { label: "This Month", value: tasks.thisMonth, color: "#6366f1" },
         ].map((i) => (
-          <div key={i.label} className="text-center rounded-xl p-2 bg-slate-700/30">
+          <div key={i.label} className="text-center rounded-xl p-2 bg-white border border-slate-200 dark:bg-slate-700/30">
             <p className="font-mono text-lg font-bold" style={{ color: i.color }}><AnimNum value={i.value} /></p>
             <p className="text-[10px] text-slate-500 mt-0.5">{i.label}</p>
           </div>
@@ -1068,7 +1070,7 @@ function CompanyAdminLayout({ d }: { d: DashboardData }) {
                   { label: "Assigned", value: d.enquiries.assigned, color: "#8b5cf6" },
                   { label: "Unassigned", value: d.enquiries.unassigned, color: "#f59e0b" },
                 ].map((i) => (
-                  <div key={i.label} className="rounded-xl p-2.5 bg-slate-700/30">
+                  <div key={i.label} className="rounded-xl p-2.5 bg-white border border-slate-200 dark:bg-slate-700/30">
                     <p className="font-mono text-xl font-bold" style={{ color: i.color }}><AnimNum value={i.value} /></p>
                     <p className="text-[10px] text-slate-500">{i.label}</p>
                   </div>
@@ -1097,7 +1099,7 @@ function CompanyAdminLayout({ d }: { d: DashboardData }) {
                           <span className="text-xs text-slate-600 w-9 text-right">{pct.toFixed(1)}%</span>
                         </div>
                       </div>
-                      <div className="h-1.5 rounded-full bg-slate-700/60">
+                      <div className="h-1.5 rounded-full bg-white dark:bg-slate-700/60">
                         <div className="h-1.5 rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
                       </div>
                     </div>
@@ -1205,7 +1207,7 @@ const load = useCallback(async (showRefresh = false) => {
   const RoleIcon = rc.icon;
 
   return (
-    <div className="mt-10 ml-72 min-h-screen dark:bg-slate-900">
+    <div className="mt-10 ml-72 min-h-screen ">
       <div className="p-6 flex flex-col gap-5">
 
         <div className="flex items-center justify-between">

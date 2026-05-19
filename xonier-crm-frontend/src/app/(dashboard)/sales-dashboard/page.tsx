@@ -212,6 +212,7 @@ export default function SalesDashboardPage() {
     .map((s) => ({ name: capitalize(s.source), value: s.count })) ?? [];
 
   const totalLeads = Math.max(leads?.total ?? 1, 1);
+  
 
   const pipelineTotalAmount = data?.dealPipelineBreakdown?.reduce(
     (sum, p) => sum + p.totalAmount, 0
@@ -261,68 +262,130 @@ export default function SalesDashboardPage() {
     );
   }
 
-  if (!data || !leads || !deals || !enquiries) return null;
+  // if (!data || !leads || !deals || !enquiries) return null;
 
-  const kpiCards = [
-    {
-      label: "Total Leads",
-      value: fmt(leads.total),
-      sub: `${fmt(leads.active)} active · ${leads.won} won · ${leads.deleted ?? 0} deleted`,
-      barPct: Math.min((leads.active / totalLeads) * 100, 100),
-      color: "#6366f1",
-      icon: <TrendingUp className="w-4 h-4" />,
-      iconBg: "bg-indigo-500",
-      link: "/leads",
-      show: hasPermission(PERMISSIONS.readLead),
-    },
-    {
-      label: "Active Deals",
-      value: deals.active,
-      sub: `${fmtCurrency(pipelineTotalAmount)} pipeline · ${deals.closed} closed`,
-      barPct: Math.min((deals.active / Math.max(deals.total, 1)) * 100, 100),
-      color: "#ec4899",
-      icon: <Handshake className="w-4 h-4" />,
-      iconBg: "bg-pink-500",
-      link: "/deals",
-      show: hasPermission(PERMISSIONS.readDeal),
-    },
-    {
-      label: "Total Users",
-      value: users?.total ?? 0,
-      sub: `${users?.thisMonth ?? 0} joined · ${users?.inactive ?? 0} inactive · ${users?.deleted ?? 0} deleted`,
-      barPct: Math.min(((users?.active ?? 0) / Math.max(users?.total ?? 1, 1)) * 100, 100),
-      color: "#22c55e",
-      icon: <Users className="w-4 h-4" />,
-      iconBg: "bg-green-500",
-      link: "/users",
-      show: isAdmin && hasPermission(PERMISSIONS.readUser),
-    },
-    {
-      label: "Teams",
-      value: teams?.totalTeams ?? 0,
-      sub: `${teams?.activeTeams ?? 0} active · ${teams?.deletedTeams ?? 0} deleted`,
-      barPct: Math.min(((teams?.activeTeams ?? 0) / Math.max(teams?.totalTeams ?? 1, 1)) * 100, 100),
-      color: "#06b6d4",
-      icon: <Users className="w-4 h-4" />,
-      iconBg: "bg-cyan-500",
-      link: "/teams",
-      show: !isAdmin && hasPermission(PERMISSIONS.readTeam),
-    },
-    {
-      label: "Enquiries",
-      value: enquiries.total,
-      sub: `${enquiries.assigned} assigned · ${enquiries.unassigned ?? 0} unassigned · ${enquiries.active ?? 0} active`,
-      barPct: Math.min((enquiries.assigned / Math.max(enquiries.total, 1)) * 100, 100),
-      color: "#f97316",
-      icon: <MessageSquare className="w-4 h-4" />,
-      iconBg: "bg-orange-500",
-      link: "/enquiry",
-      show: hasPermission(PERMISSIONS.readEnquiry),
-    },
-  ].filter((c) => c.show);
+ const isAdminRole = data?.role === "super_admin" || data?.role === "company_admin";
+
+if (!data) return null;
+
+if (!isAdminRole && (!leads || !deals || !enquiries)) return null; 
+
+  const kpiCards = isAdmin ? [
+    // {
+    //   label: "Total Leads",
+    //   value: fmt(leads.total),
+    //   sub: `${fmt(leads.active)} active · ${leads.won} won · ${leads.deleted ?? 0} deleted`,
+    //   barPct: Math.min((leads.active / totalLeads) * 100, 100),
+    //   color: "#6366f1",
+    //   icon: <TrendingUp className="w-4 h-4" />,
+    //   iconBg: "bg-indigo-500",
+    //   link: "/leads",
+    //   show: hasPermission(PERMISSIONS.readLead),
+    // },
+    // {
+    //   label: "Active Deals",
+    //   value: deals.active,
+    //   sub: `${fmtCurrency(pipelineTotalAmount)} pipeline · ${deals.closed} closed`,
+    //   barPct: Math.min((deals.active / Math.max(deals.total, 1)) * 100, 100),
+    //   color: "#ec4899",
+    //   icon: <Handshake className="w-4 h-4" />,
+    //   iconBg: "bg-pink-500",
+    //   link: "/deals",
+    //   show: hasPermission(PERMISSIONS.readDeal),
+    // },
+    // {
+    //   label: "Total Users",
+    //   value: users?.total ?? 0,
+    //   sub: `${users?.thisMonth ?? 0} joined · ${users?.inactive ?? 0} inactive · ${users?.deleted ?? 0} deleted`,
+    //   barPct: Math.min(((users?.active ?? 0) / Math.max(users?.total ?? 1, 1)) * 100, 100),
+    //   color: "#22c55e",
+    //   icon: <Users className="w-4 h-4" />,
+    //   iconBg: "bg-green-500",
+    //   link: "/users",
+    //   show: isAdmin && hasPermission(PERMISSIONS.readUser),
+    // },
+    // {
+    //   label: "Teams",
+    //   value: teams?.totalTeams ?? 0,
+    //   sub: `${teams?.activeTeams ?? 0} active · ${teams?.deletedTeams ?? 0} deleted`,
+    //   barPct: Math.min(((teams?.activeTeams ?? 0) / Math.max(teams?.totalTeams ?? 1, 1)) * 100, 100),
+    //   color: "#06b6d4",
+    //   icon: <Users className="w-4 h-4" />,
+    //   iconBg: "bg-cyan-500",
+    //   link: "/teams",
+    //   show: !isAdmin && hasPermission(PERMISSIONS.readTeam),
+    // },
+    // {
+    //   label: "Enquiries",
+    //   value: enquiries.total,
+    //   sub: `${enquiries.assigned} assigned · ${enquiries.unassigned ?? 0} unassigned · ${enquiries.active ?? 0} active`,
+    //   barPct: Math.min((enquiries.assigned / Math.max(enquiries.total, 1)) * 100, 100),
+    //   color: "#f97316",
+    //   icon: <MessageSquare className="w-4 h-4" />,
+    //   iconBg: "bg-orange-500",
+    //   link: "/enquiry",
+    //   show: hasPermission(PERMISSIONS.readEnquiry),
+    // },
+          {
+        label: "Total Companies",
+        value: data.companies?.total ?? 0,
+        sub: `${data.companies?.active ?? 0} active · ${data.companies?.deleted ?? 0} deleted`,
+        barPct: Math.min(((data.companies?.active ?? 0) / Math.max(data.companies?.total ?? 1, 1)) * 100, 100),
+        color: "#6366f1",
+        icon: <Users className="w-4 h-4" />,
+        iconBg: "bg-indigo-500",
+        link: "/companies",
+        show: true,
+      },
+      {
+        label: "Total Users",
+        value: data.users?.total ?? 0,
+        sub: `${data.users?.thisMonth ?? 0} joined · ${data.users?.inactive ?? 0} inactive`,
+        barPct: Math.min(((data.users?.active ?? 0) / Math.max(data.users?.total ?? 1, 1)) * 100, 100),
+        color: "#22c55e",
+        icon: <Users className="w-4 h-4" />,
+        iconBg: "bg-green-500",
+        link: "/users",
+        show: hasPermission(PERMISSIONS.readUser),
+      },
+      {
+        label: "Subscriptions",
+        value: data.subscriptions?.active ?? 0,
+        sub: `${data.subscriptions?.expiringSoon ?? 0} expiring soon`,
+        barPct: 100,
+        color: "#ec4899",
+        icon: <DollarSign className="w-4 h-4" />,
+        iconBg: "bg-pink-500",
+        link: "/subscriptions",
+        show: true,
+      },
+
+  ] :
+  [
+      // your existing non-admin cards
+      {
+        label: "Total Leads",
+        value: fmt(leads?.total ?? 0),
+        sub: `${fmt(leads?.active ?? 0)} active · ${leads?.won ?? 0} won`,
+        barPct: Math.min(((leads?.active ?? 0) / Math.max(leads?.total ?? 1, 1)) * 100, 100),
+        color: "#6366f1",
+        icon: <TrendingUp className="w-4 h-4" />,
+        iconBg: "bg-indigo-500",
+        link: "/leads",
+        show: hasPermission(PERMISSIONS.readLead),
+      },
+      // ... rest of your existing cards
+    ]
+  
+  .filter((c) => c.show);
+
+  console.log("kpiCards visible:", kpiCards.length, kpiCards.map(c => c.label));
+console.log("data.role:", data?.role, "isAdmin:", isAdmin);
 
   return (
+    
     <div className="mt-10 ml-72">
+      
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full flex flex-col gap-5">
 
         <div className="flex items-center justify-between">
@@ -388,6 +451,9 @@ export default function SalesDashboardPage() {
           ))}
         </div>
 
+
+        {leads && deals && enquiries ? (
+          <>
         <div className="grid grid-cols-3 gap-4">
           <div className="col-span-2 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
             <div className="flex items-center justify-between mb-5">
@@ -681,6 +747,18 @@ export default function SalesDashboardPage() {
             </div>
           </div>
         </div>
+        </>
+
+        ) : isAdmin ? (
+  // Super admin sees a placeholder where lead/deal sections would be
+  <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-8 flex flex-col items-center justify-center gap-2">
+    <ShieldCheck className="w-8 h-8 text-indigo-400" />
+    <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Admin Overview</p>
+    <p className="text-xs text-gray-400 dark:text-gray-500 text-center max-w-sm">
+      Lead and deal analytics are available at the company level. Select a company to drill down.
+    </p>
+  </div>
+) : null}
 
         <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
           <div className="flex justify-between items-center mb-4">

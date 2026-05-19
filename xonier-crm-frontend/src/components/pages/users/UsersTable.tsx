@@ -520,16 +520,18 @@ const CompanySelect: React.FC<CompanySelectProps> = ({
           </div>
 
         { isAdmin && (
-          <div>
+          
          
             <CompanySelect
                     companyData={companyData}
                       company={formData.companyId || ""}
                       handleCompanyChange={setSearchFilter}
-                  />)
-           }
-            
-          </div>
+                  />
+                  )
+           
+
+          
+          }
           <div className="flex items-center gap-6">
             <select
               name="limit"
