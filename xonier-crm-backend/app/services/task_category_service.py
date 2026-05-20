@@ -226,6 +226,7 @@ class TaskCategoryService:
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
+                
                     if not PydanticObjectId.is_valid(category_id):
                         raise AppException(400, "Invalid category id")
  
@@ -243,24 +244,26 @@ class TaskCategoryService:
                     if is_exist.isDefault:
                         raise AppException(400, "Default categories cannot be deleted")
                     
-
+                
                     status_count = await self.taskStatusRepo.find({
                         "category.$id": PydanticObjectId(category_id),
                         "deletedAt": None
                     })
 
-                   
+
  
                     if len(status_count) > 0:
                         raise AppException(
                             400,
-                            f"Cannot delete — {status_count} status{'es' if status_count > 1 else ''} are using this category. Delete statuses first"
+                            f"Cannot delete — {len(status_count)} status{'es' if len(status_count) > 1 else ''} are using this category. Delete statuses first"
                         )
  
                     task_count = await TaskModel.find({
                         "category.$id": ObjectId(category_id),
                         "deletedAt": None
                     }).count()
+
+             
  
                     if task_count > 0:
                         raise AppException(

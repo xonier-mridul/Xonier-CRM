@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { TaskActivity, TaskItem, TASK_PRIORITY, TimeStatus } from "@/src/types/task/task.types";
-import { TASK_ACTIVITY_ACTION } from "@/src/constants/enum";
+import { PERMISSIONS, TASK_ACTIVITY_ACTION } from "@/src/constants/enum";
 import { toast } from "react-toastify";
 import { TaskService } from "@/src/services/tasks.service";
 import ComingSoonOverlay from "@/src/components/ui/ComingSoonOverlay";
@@ -54,6 +54,7 @@ import { Check } from "lucide-react";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import { handleCopy } from "@/src/app/utils/clipboard.utils";
 import ConvertSecondToTime from "@/src/app/utils/ConvertSecondToTime";
+import { usePermissions } from "@/src/hooks/usePermissions";
 
 
 
@@ -398,6 +399,8 @@ const SubTaskItem = ({ subtask, isToggling, onToggle, onDelete, onEdit }: SubTas
     setEditing(false);
   };
 
+  const {hasPermission} = usePermissions()
+
   return (
     <div className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
       subtask.isCompleted
@@ -456,18 +459,18 @@ const SubTaskItem = ({ subtask, isToggling, onToggle, onDelete, onEdit }: SubTas
       
       {!subtask.isCompleted && (
         <div className="flex items-center gap-1 shrink-0">
-          <button
+          {hasPermission(PERMISSIONS.updateTask) && <button
             onClick={() => setEditing(true)}
             className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-600 transition-colors"
           >
             <Pencil size={12} />
-          </button>
-          <button
+          </button>}
+          {hasPermission(PERMISSIONS.deleteTask) && <button
             onClick={() => onDelete(subtask.id)}
             className="p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500 transition-colors"
           >
             <Trash2 size={12} />
-          </button>
+          </button>}
         </div>
       )}
 
@@ -573,9 +576,9 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
 
       }
       
-    } catch {
-      toast.error("Failed to remove sub-task");
-      load();
+    } catch(error) {
+      if (axios.isAxiosError(error)) toast.error(error.response?.data?.message ?? "Something went wrong");
+      // load();
     }
   };
 

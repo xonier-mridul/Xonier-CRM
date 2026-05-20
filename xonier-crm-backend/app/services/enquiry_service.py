@@ -9,7 +9,7 @@ from app.schemas.enquiry_schema import EnquiryRegisterSchema
 from pydantic import ValidationError
 from pymongo.errors import BulkWriteError
 from bson import ObjectId, DBRef
-from app.utils.validate_admin import validate_admin
+from app.utils.validate_admin import validate_admin, validate_admin_company_admin
 from app.utils.get_team_members import GetTeamMembers
 from datetime import datetime, timezone
 from app.core.crypto import Encryption
@@ -219,7 +219,8 @@ class EnquiryService:
         user=Dict[str, Any],
     ):
         try:
-            is_admin = validate_admin(user["userRole"])
+            is_admin = validate_admin_company_admin(user["userRole"])
+
             is_manager = False
 
             query = {}
@@ -315,8 +316,8 @@ class EnquiryService:
                 sort=["-createdAt"],
             )
 
-            # if not is_admin and not is_manager and not is_creator:
-            #     raise AppException(403, "Permission denied, you not authorized for access enquiry data")
+            if not is_admin and not is_manager and not is_creator:
+                raise AppException(403, "Permission denied, you not authorized for access enquiry data")
 
             if not result:
                 raise AppException(404, "Enquiry data not found")

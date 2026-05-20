@@ -4,7 +4,7 @@ from contextvars import ContextVar
 from beanie import Document, PydanticObjectId, Link
 
 from bson import ObjectId, DBRef
-from typing import Optional
+from typing import Optional,  List
 from pydantic import Field
 from app.core.tenant import current_company, is_admin_context, bypass_scope
 from app.utils.custom_exception import AppException
@@ -77,6 +77,7 @@ class BaseDocument(Document):
 
 
     async def insert(self, *args, **kwargs):
+        
         if not self._is_admin() and not bypass_scope.get():
             cid = self._get_company_id()
             if cid is None:
@@ -84,6 +85,18 @@ class BaseDocument(Document):
             self.companyId = cid
         return await super().insert(*args, **kwargs)
 
+    @classmethod
+    async def insert_many(cls, documents: List, *args, **kwargs):
+        
+        if not cls._is_admin() and not bypass_scope.get():
+            cid = cls._get_company_id()
+            if cid is None:
+                raise AppException(403, "Company context missing on bulk insert")
+            for doc in documents:
+                if isinstance(doc, cls) and doc.companyId is None:
+                    doc.companyId = PydanticObjectId(cid)
+        return await super().insert_many(documents, *args, **kwargs)
+    
     async def save(self, *args, **kwargs):
         if not self._is_admin() and not bypass_scope.get() and self.companyId is None:
             cid = self._get_company_id()

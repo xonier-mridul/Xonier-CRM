@@ -2,7 +2,7 @@
 from typing import Dict, Any
 from app.utils.custom_exception import AppException
 from app.utils.get_team_members import GetTeamMembers
-from app.utils.validate_admin import validate_admin
+from app.utils.validate_admin import validate_admin, validate_admin_company_admin
 from app.repositories.note_repository import NoteRepository
 from app.core.enums import NOTE_VISIBILITY, NOTE_STATUS, NOTES_ENTITIES
 from fastapi.encoders import jsonable_encoder
@@ -62,14 +62,13 @@ class NoteService:
             page = int(filters.get("page") or 1)
             limit = int(filters.get("limit") or 10)
 
-            is_admin: bool = validate_admin(user["userRole"])
+            is_admin: bool = validate_admin_company_admin(user["userRole"])
 
             query = {
                 "status": NOTE_STATUS.ACTIVE.value
             }
 
             visibility_conditions = []
-
 
 
             if is_admin:
@@ -249,7 +248,7 @@ class NoteService:
             if not ObjectId.is_valid(id):
                raise AppException(400, "Invalid note object id")
             
-            is_admin: bool = validate_admin(user["userRole"])
+            is_admin: bool = validate_admin_company_admin(user["userRole"])
             is_creator: bool = False
             
             note = await self.noteRepo.find_by_id(id=PydanticObjectId(id), populate=["createdBy"])
@@ -258,11 +257,11 @@ class NoteService:
                 raise AppException(404, "Note not found against the Id")
             
 
-            if note.createdBy == user["_id"]:
+            if str(note.createdBy.id) == str(user["_id"]):
                 is_creator = True
 
             if not is_admin and not is_creator:
-                raise AppException(403, "Permission denied")
+                raise AppException(403, "Permission denied for update pin status")
 
 
             note.isPinned = False if note.isPinned else True
@@ -286,7 +285,7 @@ class NoteService:
             if not ObjectId.is_valid(id):
                raise AppException(400, "Invalid note object id")
             
-            is_admin: bool = validate_admin(user["userRole"])
+            is_admin: bool = validate_admin_company_admin(user["userRole"])
             is_creator: bool = False
 
 
