@@ -549,7 +549,12 @@ const Page = (): JSX.Element => {
         toast.success("Note pin status updated");
       }
     } catch (error) {
-      toast.error("Failed to update pin status");
+      if (axios.isAxiosError(error)) {
+        const messages = extractErrorMessages(error);
+        toast.error(`${messages}`);
+      } else {
+        toast.error("Something went wrong");
+      }
     }
   };
 

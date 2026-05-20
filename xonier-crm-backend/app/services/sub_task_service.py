@@ -4,7 +4,7 @@ from typing import Dict, Any
 from app.utils.custom_exception import AppException
 from app.db.db import Client
 from beanie import PydanticObjectId
-from app.utils.validate_admin import validate_admin, validate_company_admin
+from app.utils.validate_admin import validate_admin, validate_company_admin, validate_admin_company_admin
 from app.utils.get_team_members import GetTeamMembers
 from app.repositories.task_activity_repository import TaskActivityRepository
 from app.core.enums import TASK_ACTIVITY_ACTION
@@ -54,7 +54,7 @@ class SubTaskService:
         return json_task_data
 
     async def _check_task_access(self, json_task_data: Dict[str, Any], user: Dict[str, Any]):
-        is_admin = validate_admin(user["userRole"])
+        is_admin = validate_admin_company_admin(user["userRole"])
         is_manager = False
         is_creator = False
 

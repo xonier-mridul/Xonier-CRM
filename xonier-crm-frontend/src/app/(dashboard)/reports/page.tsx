@@ -516,6 +516,7 @@ const searchRef = useRef<HTMLDivElement>(null);
 
   const fetchReports = useCallback(async () => {
   setIsLoading(true);
+  console.log("ss: ", filterStatus)
 
   try {
     const res = await TaskReportService.getAll({
@@ -542,11 +543,6 @@ useEffect(() => {
   fetchReports();
 }, [fetchReports]);
 
-
-
-  useEffect(() => {
-    fetchReports();
-  }, [fetchReports]);
 
 const handleSearch = (val: string) => {
   setSearchInput(val);
@@ -819,11 +815,14 @@ const handleUserId = (user: User) => {
             className="px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition"
           >
             <option value="">All Statuses</option>
-            <option value="morning_pending">🌅 Morning Pending</option>
-            <option value="morning_submitted">📝 Morning Submitted</option>
-            <option value="evening_pending">🌆 Evening Pending</option>
-            <option value="evening_submitted">✅ Evening Submitted</option>
-            <option value="reviewed">💬 Reviewed</option>
+           
+            <option value={`${TASK_REPORT_STATUS.MORNING_PENDING}`}>🌅 Morning Pending</option>
+            <option value={`${TASK_REPORT_STATUS.EVENING_PENDING}`}>🌆 Evening Pending</option>
+            <option value={`${TASK_REPORT_STATUS.COMPLETED_PENDING_REVIEW}`}>⌛ Complete Pending Review</option>
+            <option value={`${TASK_REPORT_STATUS.SUBMITTED}`}>✅ Submitted</option>
+            <option value={`${TASK_REPORT_STATUS.REVIEWED}`}>💬  Reviewed</option>
+
+ 
           </select>
           <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
 

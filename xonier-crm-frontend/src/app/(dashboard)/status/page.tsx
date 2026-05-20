@@ -39,7 +39,6 @@ const page = (): JSX.Element => {
   const auth = useSelector((state: RootState) => state.auth);
   const { hasPermission } = usePermissions();
 
-  // ── Data fetching ─────────────────────────────────────────────────────────
   const getAllStatuses = async (): Promise<void> => {
     setErr(null);
     setIsLoading(true);
@@ -81,6 +80,7 @@ const page = (): JSX.Element => {
 
     debounceRef.current = setTimeout(() => {
       setSearchVal(search);
+      setCurrentPage(1)
     }, 300);
   };
 
@@ -195,6 +195,7 @@ const page = (): JSX.Element => {
     resetForm();
   };
   const handleCategory = (category: string): void => {
+    setCurrentPage(1)
     setCategory(category);
   };
 

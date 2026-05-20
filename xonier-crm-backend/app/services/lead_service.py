@@ -29,7 +29,7 @@ from app.core.crypto import Encryption
 from app.repositories.activity_repository import ActivityRepository
 from app.db.db import Client
 from app.utils.activity_payload import activity_payload
-from app.utils.validate_admin import validate_admin
+from app.utils.validate_admin import validate_admin, validate_admin_company_admin
 from app.repositories.user_repository import UserRepository
 
 
@@ -709,13 +709,13 @@ class LeadService:
 
     async def get_all(self, filters: Dict[str, Any], user: Dict[str, Any]):
         try:
-            is_admin = False
+            is_admin = validate_admin_company_admin(user["userRole"])
             is_manager = False
 
-            for item in user["userRole"]:
-                if item["code"] == SUPER_ADMIN_CODE:
-                    is_admin = True
-                    break
+            # for item in user["userRole"]:
+            #     if item["code"] == SUPER_ADMIN_CODE:
+            #         is_admin = True
+            #         break
 
             query = {
                 "status": {
@@ -970,12 +970,7 @@ class LeadService:
     async def get_won_leads(self, filters: Dict[str, Any], user: Dict[str, Any]):
         try:
 
-            is_admin = False
-
-            for item in user["userRole"]:
-                if item["code"] == SUPER_ADMIN_CODE:
-                    is_admin = True
-                    break
+            is_admin = validate_admin_company_admin(user["userRole"])
 
             if not is_admin:
                 raise AppException(403, "Unauthorized, only super admin can access")
@@ -1034,15 +1029,12 @@ class LeadService:
             if not result:
                 raise AppException(404, "Lead data not found")
 
-            is_admin = False
+            is_admin = validate_admin_company_admin(user["userRole"])
             is_creator = False
             is_manager = False
             is_assigner = False
 
-            for item in user["userRole"]:
-                if item["code"] == SUPER_ADMIN_CODE:
-                    is_admin = True
-                    break
+            
             
             if not is_admin:
                 members = await self.getTeamMem.get_team_members(user["_id"])
