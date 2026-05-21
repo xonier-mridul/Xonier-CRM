@@ -9,6 +9,7 @@ from app.core.enums import ACTIVITY_ENTITY_TYPE, ACTIVITY_ACTION
 from app.repositories.activity_repository import ActivityRepository
 from app.utils.activity_payload import activity_payload
 from app.db.db import Client
+from app.schemas.project.calender_project import CALENDER_LOOKUPS, CALENDER_PROJECT
 
 
 from beanie import PydanticObjectId
@@ -144,13 +145,12 @@ class EventService:
     async def get_all(self):
         try:
 
-            result = await self.repo.get_all_without_pagination(populate=["createdBy"])
+            result = await self.repo.get_all_with_lookup(page=1, limit=1100, lookups=CALENDER_LOOKUPS, project=CALENDER_PROJECT)
 
             if not result:
                 raise AppException(400, "Event data not found")
             
             return jsonable_encoder(result)
-
 
 
         except AppException as e:
