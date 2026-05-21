@@ -16,6 +16,7 @@ import axios from "axios";
 import extractErrorMessages from "../../utils/error.utils";
 import { AuthService } from "@/src/services/auth.service";
 import { FaRegUser } from "react-icons/fa6";
+import { useRouter } from "next/navigation";
 
 const STATUS_META: Record<
   string,
@@ -144,6 +145,10 @@ function ExpandableRow({
   handleDelete: (id: string, date: string) => Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
+  const router = useRouter()
+
+
+
   const morningItems = report.morningAgenda?.items ?? [];
   const completedItems = report.eveningReport?.completedItems ?? [];
   const pendingItems = report.eveningReport?.pendingItems ?? [];
@@ -151,6 +156,7 @@ function ExpandableRow({
     (s, i) => s + (i.estimatedHours ?? 0),
     0,
   );
+
   const totalActual =
     Number(completedItems.reduce((s, i) => s + (i.actualHours ?? 0), 0)) +
     Number(pendingItems.reduce((s, i) => s + (i.actualHours ?? 0), 0));
@@ -162,10 +168,11 @@ function ExpandableRow({
     <>
       <tr
         className="text-nowrap border-b border-gray-50 dark:border-gray-700/60 hover:bg-slate-50/60 dark:hover:bg-gray-700/30 transition-colors cursor-pointer group"
-        onClick={() => setOpen((o) => !o)}
+        onClick={()=>router.push(`/report/detail/${report.id}`)}
+        
       >
-        {/* User */}
-        <Link href={`/report/detail/${report.id}`}>
+       
+        
           <td className="px-5 py-4">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-xs font-extrabold shrink-0 shadow-sm">
@@ -181,7 +188,7 @@ function ExpandableRow({
               </div>
             </div>
           </td>
-        </Link>
+       
 
         {/* Date */}
         <td className="px-5 py-4">
@@ -283,6 +290,7 @@ function ExpandableRow({
           <button
             type="button"
             className="w-7 h-7 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all"
+            onClick={(e) =>{ setOpen((o) => !o); e.stopPropagation()}}
           >
             <svg
               width="12"
@@ -384,7 +392,7 @@ function ExpandableRow({
                 </div>
               </div>
 
-              {/* Evening Report */}
+             
               <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700 p-4 shadow-sm">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-lg">🌆</span>
@@ -400,7 +408,45 @@ function ExpandableRow({
 
                 {report.eveningReport?.isSubmitted ? (
                   <div className="space-y-3">
-                    {/* Achievements */}
+                     {report.eveningReport.completedItems.map((item, index)=>( <div
+                        key={index}
+                        className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700"
+                      >
+                        <ProgressRing pct={item.completionPercentage} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-bold text-gray-800 dark:text-white">
+                              {item.title}
+                            </span>
+                            {item.priority && (
+                              <span
+                                className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${PRIORITY_BADGE[item.priority] ?? PRIORITY_BADGE.low}`}
+                              >
+                                {item.priority}
+                              </span>
+                            )}
+                            {item.linkedTaskId && (
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
+                                {item.linkedTaskId}
+                              </span>
+                            )}
+                          </div>
+                          {item.description && (
+                            <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
+                              {item.description}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-3 mt-1">
+                            <span className="text-[10px] text-gray-400">
+                              ⏱ Est:{" "}
+                              <b className="text-gray-600 dark:text-gray-300">
+                                {item.estimatedHours ?? "—"}h
+                              </b>
+                            </span>
+                          </div>
+                        </div>
+                      </div>))}
+                    
                     {report.eveningReport.achievements && (
                       <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800">
                         <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-1">
@@ -516,7 +562,7 @@ const searchRef = useRef<HTMLDivElement>(null);
 
   const fetchReports = useCallback(async () => {
   setIsLoading(true);
-  console.log("ss: ", filterStatus)
+
 
   try {
     const res = await TaskReportService.getAll({
@@ -555,7 +601,6 @@ const handleSearch = (val: string) => {
 };
 
 
-  // Stats
   const totalReports = reports.length;
   const reviewed = reports.filter((r) => r.isReviewed).length;
   const eveningDone = reports.filter(
@@ -564,7 +609,7 @@ const handleSearch = (val: string) => {
   const avgCompletion = reports.length
     ? Math.round(
         reports.reduce((sum, r) => {
-          const items = r.morningAgenda?.items ?? [];
+          const items = r.eveningReport?.completedItems ?? [];
           if (!items.length) return sum;
           return (
             sum +

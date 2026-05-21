@@ -45,7 +45,7 @@ const Page = (): JSX.Element => {
     try {
       const result = await EventService.getAll();
       if (result.status === 200) {
-        const mapped = mapToCalendarEvents(result.data.data);
+        const mapped = mapToCalendarEvents(result.data.data.data);
         setEventData(mapped);
       }
     } catch (error) {
@@ -65,7 +65,9 @@ const Page = (): JSX.Element => {
   
 
   const mapToCalendarEvents = (events: CalendarEvent[]): EventInput[] => {
-    return events.map((event) => ({
+   
+    console.log("eeee: ", events)
+    const gg = events.map((event) => ({
       id: event.id,
       title: event.title,
       start: event.start,
@@ -75,9 +77,11 @@ const Page = (): JSX.Element => {
         description: event.description,
         priority: event.priority,
         eventType: event.eventType,
-        meetingLink: event.meetingLink,
+        meetingLink: event.meetingLink??null,
       },
     }));
+     console.log("evnt: ", gg)
+    return  gg
   };
 
   const handleEventClick = (info: any) => {
