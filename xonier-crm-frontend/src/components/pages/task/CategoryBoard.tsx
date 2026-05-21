@@ -120,7 +120,7 @@ function CategoryBoard({
                   className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${sc.text}`}
                   style={{ backgroundColor: s.color ? `${s.color}15` : "#f1f5f9", borderColor: s.color ? `${s.color}30` : "#e2e8f0" }}
                 >
-                  {s.icon} {tasks.filter((t) => t.status.id === s.id).length}
+                  {s.icon} {tasks.filter((t) => t?.status?.id === s.id).length}
                   {s.isFinal && " ✓"}
                 </span>
               );
@@ -136,7 +136,7 @@ function CategoryBoard({
             </div>
           ) : (
             statuses.map((status) => {
-              const columnTasks = tasks.filter((t) => t.status.id === status.id);
+              const columnTasks = tasks.filter((t) => t?.status?.id === status.id);
               const isDragOver = dragOverStatusId === status.id;
               const isFinal = status.isFinal;
               return (
