@@ -1,10 +1,13 @@
-from typing import Optional, Dict, Any, List, Tuple
+from typing import Optional, Dict, Any, List, Tuple, Type
 from motor.motor_asyncio import AsyncIOMotorClientSession
 from beanie import PydanticObjectId
 import math
 from app.db.models.user_roles_model import UserRoleModel
 from app.db.models.user_model import UserModel
 from app.core.tenant import system_query
+from pydantic import BaseModel
+from app.utils.mongo_serializer import serialize_mongo
+
 
 
 
@@ -323,7 +326,8 @@ class BaseRepository:
     filters: Optional[Dict[str, Any]] = None,
     populate: Optional[List[str]] = None,
     session: Optional[AsyncIOMotorClientSession] = None,
-    sort: Optional[List[str]] = None
+    sort: Optional[List[str]] = None,
+
     ):
         filters = filters or {}
         populate = populate or []
@@ -333,6 +337,7 @@ class BaseRepository:
        
 
         query = self.model.find(filters).skip(skip).limit(limit)
+
     
 
         if sort:
@@ -378,6 +383,68 @@ class BaseRepository:
             
         }
 
+
+
+    async def get_all_with_lookup(
+    self,
+    page: int = 1,
+    limit: int = 10,
+    filters: Optional[Dict[str, Any]] = None,
+    lookups: Optional[List[Dict[str, Any]]] = None,
+    project: Optional[Dict[str, Any]] = None,
+    sort: Optional[List[Any]] = None,
+    session: Optional[AsyncIOMotorClientSession] = None,
+) -> Dict[str, Any]:
+        filters = filters or {}
+        lookups = lookups or []
+        skip = (page - 1) * limit
+
+        pipeline: List[Dict[str, Any]] = [{"$match": filters}]
+
+        for lookup in lookups:
+            unwind = lookup.get("unwind", False)
+            pipeline.append({"$lookup": lookup["lookup"]})
+            if unwind:
+                pipeline.append({
+                    "$unwind": {
+                        "path": f"${lookup['lookup']['as']}",
+                        "preserveNullAndEmptyArrays": True,
+                    }
+                })
+
+        if sort:
+            sort_doc = {}
+            for item in sort:
+                if isinstance(item, tuple):
+                    sort_doc[item[0]] = item[1]
+                elif isinstance(item, str):
+                    sort_doc[item[1:]] = -1 if item.startswith("-") else 1
+            if sort_doc:
+                pipeline.append({"$sort": sort_doc})
+
+        if project:
+            pipeline.append({"$project": project})
+
+        count_pipeline = [{"$match": filters}, {"$count": "total"}]
+
+        collection = self.model.get_pymongo_collection()
+
+        count_result = await collection.aggregate(count_pipeline).to_list(length=1)
+        total = count_result[0]["total"] if count_result else 0
+        total_pages = math.ceil(total / limit) if total > 0 else 1
+
+        pipeline.append({"$skip": skip})
+        pipeline.append({"$limit": limit})
+
+        cursor = collection.aggregate(pipeline)        
+        results = await cursor.to_list(length=limit)
+
+        return {
+            "data": [serialize_mongo(doc) for doc in results],
+            "page": page,
+            "totalPages": total_pages,
+            "limit": limit,
+        }
 
     async def update(
         self,

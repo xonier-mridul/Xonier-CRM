@@ -28,7 +28,7 @@ class DashboardController:
         try:
             user = request.state.user
 
-            
+            print("one: ", user)
             if validate_admin(user["userRole"]):
                 return await self.admin_dashboard.get_stats(
                     user=user,
@@ -37,7 +37,7 @@ class DashboardController:
                     end_date=end_date,
                 )
 
-            
+            print("tow")
             if validate_company_admin(user["userRole"]):
                 return await self.company_admin_dashboard.get_stats(
                     request=request,
@@ -48,6 +48,7 @@ class DashboardController:
 
      
             is_manager = await self.validate_manager.validate_manager(user["_id"])
+            print("ismm: ", is_manager)
             if is_manager:
                 return await self.manager_dashboard.get_stats(
                     user=user,

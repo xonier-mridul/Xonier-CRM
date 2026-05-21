@@ -163,14 +163,14 @@ const AvatarCircle = ({ name, avatar, size = "sm" }: { name: string; avatar?: st
   if (avatar)
     return <img src={avatar} alt={name} className={`${sizeClass} rounded-full object-cover ring-2 ring-white dark:ring-gray-900`} />;
   return (
-    <div className={`${sizeClass} ${color} rounded-full flex items-center justify-center text-white font-bold ring-2 ring-white dark:ring-gray-900 flex-shrink-0`}>
+    <div className={`${sizeClass} ${color} rounded-full flex items-center justify-center text-white font-bold ring-2 ring-white dark:ring-gray-900 shrink-0`}>
       {name[0]?.toUpperCase()}
     </div>
   );
 };
 
 const SkeletonBlock = ({ className }: { className?: string }) => (
-  <div className={`animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800 rounded-xl ${className}`} />
+  <div className={`animate-pulse bg-linear-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800 rounded-xl ${className}`} />
 );
 
 const TaskDetailSkeleton = () => (
@@ -261,10 +261,10 @@ const ActivityLog = ({ activities, loading }: { activities: TaskActivity[]; load
       style={{ height: "600px" }}>
 
       
-      <div className="flex-shrink-0 px-5 pt-4 pb-0">
+      <div className="shrink-0 px-5 pt-4 pb-0">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-linear-to-r from-violet-500 to-purple-600 flex items-center justify-center">
               <Activity size={15} className="text-white" />
             </div>
             <div>
@@ -293,7 +293,7 @@ const ActivityLog = ({ activities, loading }: { activities: TaskActivity[]; load
             </div>
             <div className="relative h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
               <div
-                className={`h-full bg-gradient-to-r ${barColor} rounded-full transition-all duration-700 ease-out relative`}
+                className={`h-full bg-linear-to-r ${barColor} rounded-full transition-all duration-700 ease-out relative`}
                 style={{ width: `${progressPercent}%` }}
               >
                 <div className="absolute inset-0 bg-white/20 rounded-full animate-pulse" />
@@ -307,7 +307,7 @@ const ActivityLog = ({ activities, loading }: { activities: TaskActivity[]; load
         )}
 
         
-        <div className="h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent mb-1" />
+        <div className="h-px bg-linear-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent mb-1" />
       </div>
 
       

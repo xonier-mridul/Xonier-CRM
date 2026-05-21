@@ -18,6 +18,7 @@ class ManagerDashboardController:
         end_date: Optional[str] = None,
     ):
         try:
+            print("errrp")
             is_manager = await self.validate_manager.validate_manager(user["_id"])
 
             if not is_manager:

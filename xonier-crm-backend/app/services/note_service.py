@@ -256,9 +256,11 @@ class NoteService:
             if not note:
                 raise AppException(404, "Note not found against the Id")
             
-
+            print("dd: ", note)
             if str(note.createdBy.id) == str(user["_id"]):
                 is_creator = True
+
+            print("fuck")
 
             if not is_admin and not is_creator:
                 raise AppException(403, "Permission denied for update pin status")

@@ -30,6 +30,7 @@ from app.utils.cache_key_generator import cache_key_generator, cache_key_generat
 from app.core.constants import TASK_CACHE_NAMESPACE
 import json
 from fastapi.encoders import jsonable_encoder
+from app.schemas.project.task_project import TASK_BOARD_LOOKUPS, TASK_BOARD_PROJECT
 
 logger = logging.getLogger(__name__)
  
@@ -186,6 +187,7 @@ class TaskService:
                     raise
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
+                
  
     async def create_remark(self,taskId:str, payload: Dict[str, Any], user:Dict[str, Any]):
         async with await self.client.start_session() as session:
@@ -221,8 +223,10 @@ class TaskService:
                             set2 = set(obj_members)
                             
                             common = set1 & set2
+                            if ObjectId(user["_id"]) in (PydanticObjectId(item["id"]) for item in task_data["assignedTo"]):
+                                is_creator = True
                             
-                            if common:
+                            if common or is_creator:
                                 is_manager = True
 
                         else:
@@ -237,7 +241,6 @@ class TaskService:
                         **payload,
                         "task": taskId,
                         "createdBy": user["_id"],
-                        
                     }
 
                     
@@ -299,7 +302,10 @@ class TaskService:
 
                     common = set1 & set2
 
-                    if common:
+                    if ObjectId(user["_id"]) in (PydanticObjectId(item["id"]) for item in encoded_result["assignedTo"]):
+                        is_creator = True
+
+                    if common or is_creator:
                         is_manager = True
 
                 else:
@@ -442,13 +448,16 @@ class TaskService:
 
             
             
-            result = await self.repo.get_all(
+            result = await self.repo.get_all_with_lookup(
                 page=page,
                 limit=limit,
                 filters=query,
-                populate=["category", "status", "assignedTo", "createdBy"],
-                sort=["order", "-createdAt"]
+                # populate=["category", "status", "assignedTo", "createdBy"],
+                lookups=TASK_BOARD_LOOKUPS,
+                sort=["order", "-createdAt"],
+                project=TASK_BOARD_PROJECT
             )
+           
 
             if not result:
                 raise AppException(404, "No tasks found")

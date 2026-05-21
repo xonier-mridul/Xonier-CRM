@@ -504,8 +504,14 @@ export default function RemarkModal({ taskId, onClose }: Props) {
         await loadRemarks();
         toast.success("Remark posted");
       }
-    } catch {
-      toast.error("Failed to post remark");
+    } catch(error) {
+      if (axios.isAxiosError(error)) {
+        const messages = extractErrorMessages(error);
+        toast.error(`${messages}`);
+      } else {
+        toast.error("Failed to create remark");
+      }
+     
     }
   };
 
