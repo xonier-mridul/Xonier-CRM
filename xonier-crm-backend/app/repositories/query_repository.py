@@ -1,7 +1,7 @@
 # app/repositories/query_repository.py
 
-from app.base.base_repository import BaseRepository
-from app.models.query_model import QueryModel
+from app.repositories.base_repository import BaseRepository
+from app.db.models.query_model import QueryModel
 from beanie import PydanticObjectId
 from typing import Optional, List, Dict, Any
 from motor.motor_asyncio import AsyncIOMotorClientSession

@@ -144,7 +144,7 @@ app.include_router(plan_route, prefix="/api/plan")
 app.include_router(feature_route, prefix="/api/feature")
 app.include_router(company_route, prefix="/api/companies")
 app.include_router(subscription_route, prefix="/api/subscription")
-app.include_router(query_route, "/api/query")
+app.include_router(query_route, prefix="/api/query")
 
 
 app.add_exception_handler(HTTPException, http_exception_handler)
