@@ -243,8 +243,6 @@ class TaskService:
                         "createdBy": user["_id"],
                     }
 
-                    
-
                     result = await self.remarkRepo.create(data=new_payload)
 
                     if not result:
@@ -258,7 +256,6 @@ class TaskService:
                                 metadata={"taskId": taskId, "remark content": result.content, "mention": result.mentions if result.mentions else []}
                             )
                     result = await self.activityRepo.create(data=activity, session=session)
-
                     
                     
                     return result.model_dump(mode="json")

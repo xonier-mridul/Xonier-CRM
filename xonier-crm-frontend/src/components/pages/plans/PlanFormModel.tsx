@@ -342,7 +342,7 @@ const PlanFormModal: React.FC<PlanFormModalProps> = ({
                   step="any"
                   value={form.price.monthlyPrice}
                   onChange={(e) =>
-                    setForm((p) => ({ ...p, price: { ...p.price, monthlyPrice: parseFloat(e.target.value) || 0 } }))
+                    setForm((p) => ({ ...p, price: { ...p.price, monthlyPrice: parseFloat(e.target.value) || 0, yearlyPrice: (parseFloat(e.target.value) * 12) || 0 } }))
                   }
                   className={`w-full pl-7 pr-3 py-2 rounded-md border bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-violet-500 ${errors.monthlyPrice ? "border-red-500 focus:ring-red-500" : ""}`}
                 />

@@ -476,7 +476,7 @@ const TaskListPage = (): JSX.Element => {
     }
   } catch (e) {
     process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
-    if (axios.isAxiosError(e)) toast.error("Failed to load tasks");
+    // if (axios.isAxiosError(e)) toast.error("Failed to load tasks");
   } finally {
     setIsLoading(false);
   }

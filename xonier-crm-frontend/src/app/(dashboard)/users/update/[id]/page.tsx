@@ -16,7 +16,7 @@ import UserUpdate from "@/src/components/pages/users/UserUpdate";
 import { toast } from "react-toastify";
 import { RoleService } from "@/src/services/role.service";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/src/store";
 import { Company } from "@/src/types/company/company.types";
 import CompanyService from "@/src/services/company.service";
@@ -38,6 +38,8 @@ const page = (): JSX.Element => {
   const [companyLoading, setCompanyLoading] = useState<boolean>(false);
   const [companyPage, setCompanyPage] = useState<number>(1);
   const [companyHasMore, setCompanyHasMore] = useState<boolean>(true);
+
+  
 
   const [statusData, setStatusData] = useState<UserStatusPayload>({
     status: "",
@@ -95,7 +97,10 @@ const page = (): JSX.Element => {
     if (!companyHasMore || companyLoading) return;
     const next = companyPage + 1;
     setCompanyPage(next);
-    getCompanyData(next);
+    if(auth.isAdmin){
+      getCompanyData(next);
+    }
+    
   }, [companyHasMore, companyLoading, companyPage, getCompanyData]);
 
   const getRoleData = async () => {
@@ -138,7 +143,10 @@ const page = (): JSX.Element => {
   useEffect(() => {
     user();
     getRoleData();
-    getCompanyData(1);
+    if(auth.isAdmin){
+
+      getCompanyData(1);
+    }
   }, []);
 
   const handleChange = (

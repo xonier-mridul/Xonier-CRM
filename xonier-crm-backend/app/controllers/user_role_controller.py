@@ -25,8 +25,9 @@ class UserRoleController:
     async def get_all(self, request: Request):
         try:
             filters = request.query_params
+            user = request.state.user
             
-            result = await self.service.get_all(int(filters["page"]), int(filters["limit"]), filters)
+            result = await self.service.get_all(int(filters["page"]), int(filters["limit"]), filters, user)
             return successResponse(200, f"All roles fetch successfully", result)
 
         except AppException as e:

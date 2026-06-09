@@ -1,4 +1,5 @@
 from app.core.config import get_setting
+from zoneinfo import ZoneInfo
 
 settings = get_setting()
 
@@ -20,6 +21,7 @@ GET_ME_NAMESPACE:str = "auth:me"
 LEAD_CACHE_NAMESPACE:str = "leads:list"
 
 USER_LEAD_CACHE_NAMESPACE:str = "userleads:list"
+TIME_ZONE = ZoneInfo("Asia/Kolkata")
 
 
 

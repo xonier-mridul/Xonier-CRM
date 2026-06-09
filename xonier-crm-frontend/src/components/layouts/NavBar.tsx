@@ -118,11 +118,11 @@ const NavBar = () => {
                       <span>{}</span>
                     </div>
                   </div>
-                  <div className="w-full border-b-[1px] border-gray-200 dark:border-gray-700"></div>
+                  <div className="w-full border-b border-gray-200 dark:border-gray-700"></div>
                   <ul className="flex flex-col gap-5">
                     <li>
                       <Link
-                        href={`/users/${auth?.user?._id}`}
+                        href={`/users/${auth?.user?.id}`}
                         className="flex items-center gap-4 group"
                       >
                         {" "}
