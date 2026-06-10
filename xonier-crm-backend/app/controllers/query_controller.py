@@ -11,11 +11,11 @@ class QueryController:
     def __init__(self):
         self.service = QueryService()
 
-    # ─── Create ───────────────────────────────────────────────────────────────
+    
     async def create(self, request: Request, payload: Dict[str, Any]):
         try:
-            user   = request.state.user
-            result = await self.service.create(payload=payload, user=user)
+            
+            result = await self.service.create(payload=payload)
 
             return successResponse(201, "Query submitted successfully", result)
 

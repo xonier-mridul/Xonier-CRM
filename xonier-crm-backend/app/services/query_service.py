@@ -11,25 +11,17 @@ class QueryService:
     def __init__(self):
         self.repo = QueryRepository()
 
-    # ─── Create ───────────────────────────────────────────────────────────────
+    
     async def create(
         self,
         payload: Dict[str, Any],
-        user: Dict[str, Any]
+       
     ):
         try:
-            data = {
-                "name":          payload.get("name"),
-                "email":         payload.get("email"),
-                "phone":         payload.get("phone"),
-                "address":       payload.get("address"),
-                "industry_type": payload.get("industryType"),
-                "company_name":  payload.get("companyName"),
-                "team_size":     payload.get("teamSize"),
-                "message":       payload.get("message"),
-            }
+            
+            
 
-            result = await self.repo.create(data=data)
+            result = await self.repo.create(data=payload)
 
             if not result:
                 raise AppException(400, "Query registration failed, please try again")
@@ -41,7 +33,7 @@ class QueryService:
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
 
-    # ─── Get All ──────────────────────────────────────────────────────────────
+  
     async def get_all(
         self,
         filters: Dict[str, Any],
@@ -49,13 +41,13 @@ class QueryService:
     ):
         try:
             query = {
-                "deleted_at": None   # Exclude soft deleted
+                "deleted_at": None   
             }
 
             page  = int(filters.get("page")  or 1)
             limit = int(filters.get("limit") or 10)
 
-            # ─── Search Filter ────────────────────────────────────────────────
+            
             if filters.get("search") and filters["search"].strip():
                 regex = {
                     "$regex":   filters["search"].strip(),
@@ -70,43 +62,43 @@ class QueryService:
                     {"industry_type":regex},
                 ]
 
-            # ─── Name Filter ──────────────────────────────────────────────────
+            
             if filters.get("name"):
                 query["name"] = {
                     "$regex":   filters["name"],
                     "$options": "i"
                 }
 
-            # ─── Email Filter ─────────────────────────────────────────────────
+            
             if filters.get("email"):
                 query["email"] = {
                     "$regex":   filters["email"],
                     "$options": "i"
                 }
 
-            # ─── Company Filter ───────────────────────────────────────────────
+            
             if filters.get("companyName"):
                 query["company_name"] = {
                     "$regex":   filters["companyName"],
                     "$options": "i"
                 }
 
-            # ─── Industry Filter ──────────────────────────────────────────────
+            
             if filters.get("industryType"):
                 query["industry_type"] = {
                     "$regex":   filters["industryType"],
                     "$options": "i"
                 }
 
-            # ─── Team Size Filter ─────────────────────────────────────────────
+            
             if filters.get("teamSize"):
                 query["team_size"] = filters["teamSize"]
 
-            # ─── Status Filter ────────────────────────────────────────────────
+            
             if filters.get("status"):
                 query["status"] = filters["status"]
 
-            # ─── Date Range Filter ────────────────────────────────────────────
+            
             if filters.get("fromDate") or filters.get("toDate"):
                 date_filter = {}
 
@@ -141,7 +133,7 @@ class QueryService:
                 if date_filter:
                     query["created_at"] = date_filter
 
-            # ─── Fetch From DB ─────────────────────────────────────────────────
+            
             result = await self.repo.get_all_queries(
                 page=page,
                 limit=limit,
@@ -158,7 +150,7 @@ class QueryService:
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
 
-    # ─── Delete ───────────────────────────────────────────────────────────────
+   
     async def delete(
         self,
         query_id: str,
@@ -170,7 +162,7 @@ class QueryService:
 
             object_id = PydanticObjectId(query_id)
 
-            # ─── Check If Exists ──────────────────────────────────────────────
+            
             existing = await self.repo.find_one({
                 "_id":        object_id,
                 "deleted_at": None
@@ -191,14 +183,14 @@ class QueryService:
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
 
-    # ─── Bulk Delete ──────────────────────────────────────────────────────────
+    
     async def bulk_delete(
         self,
         ids: List[str],
         user: Dict[str, Any]
     ):
         try:
-            # ─── Validate All IDs ─────────────────────────────────────────────
+            
             invalid_ids = [
                 id for id in ids
                 if not PydanticObjectId.is_valid(id)
@@ -212,7 +204,7 @@ class QueryService:
 
             object_ids = [PydanticObjectId(id) for id in ids]
 
-            # ─── Check All Exist ──────────────────────────────────────────────
+            
             existing_count = await self.repo.count(
                 filter={
                     "_id":        {"$in": object_ids},
