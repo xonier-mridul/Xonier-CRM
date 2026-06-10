@@ -32,8 +32,8 @@ function validate(form: CompanyUpdatePayload): FormErrors {
     errors.industry = "Industry cannot be empty";
   if (form.number !== undefined && !form.number.trim())
     errors.number = "Phone cannot be empty";
-  if (form.userLimit !== undefined && form.userLimit < 1)
-    errors.userLimit = "User limit must be at least 1";
+  // if (form.userLimit !== undefined && form.userLimit < 1)
+  //   errors.userLimit = "User limit must be at least 1";
   return errors;
 }
 
@@ -358,8 +358,8 @@ const CompanyUpdateForm: React.FC<CompanyUpdateFormProps> = ({
                 className="w-full px-3 py-2 rounded-md border bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               >
                 <option value="">Select country</option>
-                {Object.values(COUNTRY_CODE).map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                {Object.values(COUNTRY_CODE).map((c,i) => (
+                  <option key={i} value={c}>{c}</option>
                 ))}
               </select>
             </div>

@@ -118,6 +118,30 @@ export interface UserRef {
 }
 
 
+export interface TaskDataForUser {
+  _id: string;
+  title: string;
+  rating?: number | null;
+  remark?: string | null;
+  assignedAt?: Date | string | null;
+  dueDate?: Date | string | null;
+  completedAt?: Date | string | null;
+  estimatedHours?: number | null;
+  actualHours?: number | null;
+  isOverdue?: boolean | null;
+}
+
+// ── Paginated Task Data ────────────────────────────────────────
+
+export interface PaginatedTaskData {
+  data: TaskDataForUser[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+
 export interface User {
   id: string;
   _id?: string
@@ -147,6 +171,13 @@ export interface User {
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: string | null;
+  rating?: number | null;
+  taskData?: PaginatedTaskData | null;
+}
+
+export interface UserRatingParams {
+  page?: number;
+  limit?: number;
 }
 
 // Props

@@ -102,11 +102,11 @@ class PlanService:
 
             
 
-            result = await self.repo.get_all(
+            result = await self.repo.get_all_nested(
                 page=page,
                 limit=limit,
                 filters=query,
-                populate=["createdBy"],
+                populate=["createdBy", "features.feature"],
                 sort=["-createdAt"],
             )
 

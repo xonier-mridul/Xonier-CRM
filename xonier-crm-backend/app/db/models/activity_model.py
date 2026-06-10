@@ -7,6 +7,8 @@ from app.core.enums import ACTIVITY_ENTITY_TYPE, ACTIVITY_ACTION
 from pymongo import IndexModel
 from app.db.models.user_model import UserModel
 from app.db.models.base_model import BaseDocument
+from app.core.constants import TIME_ZONE
+
 
 
 class ActivityModel(BaseDocument):
@@ -27,7 +29,7 @@ class ActivityModel(BaseDocument):
     metadata: Optional[Dict] = None
 
     createdAt: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc)
+        default_factory=lambda: datetime.now(TIME_ZONE)
     )
 
     class Settings:

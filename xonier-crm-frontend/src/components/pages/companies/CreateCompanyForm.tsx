@@ -391,7 +391,7 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
                         {plan.features.slice(0, 4).map((f, i) => (
                           <li key={i} className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
                             <FiZap className="text-violet-400 flex-shrink-0 text-[11px]" />
-                            <span>{typeof f.feature === "object" && f.feature !== null && "name" in f.feature ? (f.feature as { name: string }).name : "Feature"}{f.is_unlimited ? " — Unlimited" : f.limit ? ` — up to ${f.limit}` : ""}</span>
+                            <span className="Capitalize">{typeof f.feature === "object" && f.feature !== null && "name" in f.feature ? (f.feature as { name: string }).name : "Feature"}{f.is_unlimited ? " — Unlimited" : f.limit ? ` — up to ${f.limit}` : ""}</span>
                           </li>
                         ))}
                         {plan.features.length > 4 && (<li className="text-xs text-gray-400 pl-4">+{plan.features.length - 4} more</li>)}

@@ -227,7 +227,7 @@ const UserUpdate = ({
                   </div>
                 ))}
 
-              {!isLoading ? (
+              {isAdmin && (!isLoading ? (
                 <div className="flex flex-col gap-1 w-full" ref={companyDropdownRef}>
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-200 capitalize">
                     Company
@@ -391,7 +391,7 @@ const UserUpdate = ({
                   <Skeleton height={14} width={80} />
                   <Skeleton height={34} width={500} />
                 </div>
-              )}
+              ))}
 
               {err && (
                 <div className="flex items-end col-span-2">

@@ -16,9 +16,14 @@ class UserRoleService:
         self.user_repo = UserRepository()
         self.client = Client
 
-    async def get_all(self, page:int = 1, limit: int = 10, filters: Dict[str, Any] = {}):
+    async def get_all(self, page:int = 1, limit: int = 10, filters: Dict[str, Any] = {}, user: Dict[str, Any] = {}):
         try:
+            
             query = {}
+            is_admin = validate_admin(user.get("userRole", None))
+
+            if is_admin:
+                query["isSystemRole"] = True
 
             if "name" in filters:
                 query.update("title", filters["name"])

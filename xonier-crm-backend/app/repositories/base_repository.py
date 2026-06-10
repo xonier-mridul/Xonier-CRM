@@ -7,6 +7,7 @@ from app.db.models.user_model import UserModel
 from app.core.tenant import system_query
 from pydantic import BaseModel
 from app.utils.mongo_serializer import serialize_mongo
+from app.core.tenant import bypass_scope
 
 
 
@@ -71,7 +72,95 @@ class BaseRepository:
                 setattr(doc, field, fetched_items)
 
         return doc
-        
+    
+    async def find_by_id_with_project(
+    self,
+    id: PydanticObjectId,
+    populate: Optional[List[str]] = None,
+    session: Optional[AsyncIOMotorClientSession] = None,
+    project: Optional[Dict[str, Any]] = None,
+    lookups: Optional[List[Dict[str, Any]]] = None,
+):
+        populate = populate or []
+        lookups = lookups or []
+
+        if project or lookups:
+            collection = self.model.get_pymongo_collection()
+
+            pipeline: List[Dict[str, Any]] = [{"$match": {"_id": id}}]
+
+            for lookup in lookups:
+                unwind = lookup.get("unwind", False)
+                lookup_def = lookup["lookup"]
+                pipeline.append({"$lookup": lookup_def})
+                if unwind:
+                    pipeline.append({
+                        "$unwind": {
+                            "path": f"${lookup_def['as']}",
+                            "preserveNullAndEmptyArrays": True,
+                        }
+                    })
+
+            if project:
+                pipeline.append({"$project": project})
+
+            cursor = collection.aggregate(pipeline)
+            results = await cursor.to_list(length=1)
+            if not results:
+                return None
+            return serialize_mongo(results[0])
+
+        doc = await self.model.get(id, session=session)
+
+        if not doc:
+            return None
+
+        token = bypass_scope.set(True)
+        try:
+            for field in populate:
+                if "." in field:
+                    parent_field, child_field = field.split(".", 1)
+                    parent_value = getattr(doc, parent_field, None)
+
+                    if parent_value is None:
+                        continue
+
+                    if isinstance(parent_value, list):
+                        for item in parent_value:
+                            child_value = getattr(item, child_field, None)
+                            if child_value is None:
+                                continue
+                            if hasattr(child_value, "fetch"):
+                                fetched = await child_value.fetch()
+                                item.__dict__[child_field] = fetched
+                    else:
+                        child_value = getattr(parent_value, child_field, None)
+                        if child_value is not None and hasattr(child_value, "fetch"):
+                            fetched = await child_value.fetch()
+                            parent_value.__dict__[child_field] = fetched
+                    continue
+
+                value = getattr(doc, field, None)
+                if value is None:
+                    continue
+
+                if hasattr(value, "fetch"):
+                    fetched = await value.fetch()
+                    doc.__dict__[field] = fetched
+                elif isinstance(value, list):
+                    fetched_items = []
+                    for item in value:
+                        if hasattr(item, "fetch"):
+                            fetched_items.append(await item.fetch())
+                        else:
+                            fetched_items.append(item)
+                    doc.__dict__[field] = fetched_items
+
+        finally:
+            bypass_scope.reset(token)
+
+        return doc
+            
 
     async def find_by_id_nested(
     self,
@@ -210,6 +299,106 @@ class BaseRepository:
                    
 
             return doc
+    
+
+    async def find_one_with_project(
+    self,
+    filter: Dict[str, Any] = {},
+    projections: Optional[Dict[str, int]] = None,
+    populate: Optional[List[str]] = None,
+    session: Optional[AsyncIOMotorClientSession] = None,
+    lookups: Optional[List[Dict[str, Any]]] = None,
+    project: Optional[Dict[str, Any]] = None,
+    ):
+        populate = populate or []
+        lookups = lookups or []
+
+        if project or lookups:
+            collection = self.model.get_pymongo_collection()
+
+            pipeline: List[Dict[str, Any]] = [{"$match": filter}]
+
+            for lookup in lookups:
+                unwind = lookup.get("unwind", False)
+                lookup_def = lookup["lookup"]
+                pipeline.append({"$lookup": lookup_def})
+                if unwind:
+                    pipeline.append({
+                        "$unwind": {
+                            "path": f"${lookup_def['as']}",
+                            "preserveNullAndEmptyArrays": True,
+                        }
+                    })
+
+            if project:
+                pipeline.append({"$project": project})
+
+            pipeline.append({"$limit": 1})
+
+            cursor = collection.aggregate(pipeline)
+            results = await cursor.to_list(length=1)
+            if not results:
+                return None
+            return serialize_mongo(results[0])
+
+        query = self.model.find_one(filter, session=session)
+
+        if projections:
+            query = query.project(projections)
+
+        doc = await query
+
+        if not doc:
+            return None
+
+        token = bypass_scope.set(True)
+        try:
+            for field in populate:
+                if "." in field:
+                    parent_field, child_field = field.split(".", 1)
+                    parent_value = getattr(doc, parent_field, None)
+
+                    if parent_value is None:
+                        continue
+
+                    if isinstance(parent_value, list):
+                        for item in parent_value:
+                            child_value = getattr(item, child_field, None)
+                            if child_value is None:
+                                continue
+                            if hasattr(child_value, "fetch"):
+                                fetched = await child_value.fetch()
+                                item.__dict__[child_field] = fetched
+                    else:
+                        child_value = getattr(parent_value, child_field, None)
+                        if child_value is not None and hasattr(child_value, "fetch"):
+                            fetched = await child_value.fetch()
+                            parent_value.__dict__[child_field] = fetched
+
+                    continue
+
+                value = getattr(doc, field, None)
+
+                if value is None:
+                    continue
+
+                if hasattr(value, "fetch"):
+                    fetched = await value.fetch()
+                    doc.__dict__[field] = fetched
+
+                elif isinstance(value, list):
+                    fetched_items = []
+                    for item in value:
+                        if hasattr(item, "fetch"):
+                            fetched_items.append(await item.fetch())
+                        else:
+                            fetched_items.append(item)
+                    doc.__dict__[field] = fetched_items
+
+        finally:
+            bypass_scope.reset(token)
+
+        return doc
         
 
     async def find(
@@ -267,6 +456,132 @@ class BaseRepository:
                             fetched_items.append(item)
 
                     setattr(doc, field, fetched_items)
+
+        return docs
+    
+
+    async def find_with_project(
+        self,
+        filter: Dict[str, Any] = None,
+        projections: Optional[Dict[str, int]] = None,
+        populate: Optional[List[str]] = None,
+        session: Optional[AsyncIOMotorClientSession] = None,
+        skip: int = 0,
+        limit: int = 0,
+        sort: Optional[List[tuple]] = None,
+        lookups: Optional[List[Dict[str, Any]]] = None,
+        project: Optional[Dict[str, Any]] = None,
+    ):
+        populate = populate or []
+        lookups = lookups or []
+        filter = filter or {}
+
+        if project or lookups:
+            collection = self.model.get_pymongo_collection()
+
+            pipeline: List[Dict[str, Any]] = [{"$match": filter}]
+
+            for lookup in lookups:
+                unwind = lookup.get("unwind", False)
+                lookup_def = lookup["lookup"]
+                pipeline.append({"$lookup": lookup_def})
+                if unwind:
+                    pipeline.append({
+                        "$unwind": {
+                            "path": f"${lookup_def['as']}",
+                            "preserveNullAndEmptyArrays": True,
+                        }
+                    })
+
+            if sort:
+                sort_doc = {}
+                for item in sort:
+                    if isinstance(item, tuple):
+                        sort_doc[item[0]] = item[1]
+                    elif isinstance(item, str):
+                        sort_doc[item[1:]] = -1 if item.startswith("-") else 1
+                if sort_doc:
+                    pipeline.append({"$sort": sort_doc})
+
+            if skip:
+                pipeline.append({"$skip": skip})
+
+            if limit:
+                pipeline.append({"$limit": limit})
+
+            if project:
+                pipeline.append({"$project": project})
+
+            cursor = collection.aggregate(pipeline)
+            results = await cursor.to_list(length=limit if limit else None)
+            return [serialize_mongo(doc) for doc in results]
+
+        query = self.model.find(filter, session=session)
+
+        if projections:
+            query = query.project(projections)
+
+        if sort:
+            query = query.sort(sort)
+
+        if skip:
+            query = query.skip(skip)
+
+        if limit:
+            query = query.limit(limit)
+
+        docs = await query.to_list()
+
+        if not docs:
+            return []
+
+        token = bypass_scope.set(True)
+        try:
+            for doc in docs:
+                for field in populate:
+                    if "." in field:
+                        parent_field, child_field = field.split(".", 1)
+                        parent_value = getattr(doc, parent_field, None)
+
+                        if parent_value is None:
+                            continue
+
+                        if isinstance(parent_value, list):
+                            for item in parent_value:
+                                child_value = getattr(item, child_field, None)
+                                if child_value is None:
+                                    continue
+                                if hasattr(child_value, "fetch"):
+                                    fetched = await child_value.fetch()
+                                    item.__dict__[child_field] = fetched
+                        else:
+                            child_value = getattr(parent_value, child_field, None)
+                            if child_value is not None and hasattr(child_value, "fetch"):
+                                fetched = await child_value.fetch()
+                                parent_value.__dict__[child_field] = fetched
+
+                        continue
+
+                    value = getattr(doc, field, None)
+
+                    if value is None:
+                        continue
+
+                    if hasattr(value, "fetch"):
+                        fetched = await value.fetch()
+                        doc.__dict__[field] = fetched
+
+                    elif isinstance(value, list):
+                        fetched_items = []
+                        for item in value:
+                            if hasattr(item, "fetch"):
+                                fetched_items.append(await item.fetch())
+                            else:
+                                fetched_items.append(item)
+                        doc.__dict__[field] = fetched_items
+
+        finally:
+            bypass_scope.reset(token)
 
         return docs
 
@@ -334,11 +649,7 @@ class BaseRepository:
 
         skip = (page - 1) * limit
 
-       
-
         query = self.model.find(filters).skip(skip).limit(limit)
-
-    
 
         if sort:
             query.sort(sort)
@@ -383,6 +694,90 @@ class BaseRepository:
             
         }
 
+
+    async def get_all_nested(
+    self,
+    page: int = 1,
+    limit: int = 10,
+    filters: Optional[Dict[str, Any]] = None,
+    populate: Optional[List[str]] = None,
+    session: Optional[AsyncIOMotorClientSession] = None,
+    sort: Optional[List[str]] = None,
+):
+        filters = filters or {}
+        populate = populate or []
+
+        skip = (page - 1) * limit
+        query = self.model.find(filters).skip(skip).limit(limit)
+
+        if sort:
+            query.sort(sort)
+
+        if session:
+            query = query.session(session)
+
+        results = await query.to_list()
+
+        token = bypass_scope.set(True)
+        try:
+            for doc in results:
+                for field in populate:
+
+                    # ── nested field e.g. "features.feature" ──────────
+                    if "." in field:
+                        parent_field, child_field = field.split(".", 1)
+                        parent_value = getattr(doc, parent_field, None)
+
+                        if parent_value is None:
+                            continue
+
+                        if isinstance(parent_value, list):
+                            for item in parent_value:
+                                child_value = getattr(item, child_field, None)
+                                if child_value is None:
+                                    continue
+                                if hasattr(child_value, "fetch"):
+                                    fetched = await child_value.fetch()
+                                    item.__dict__[child_field] = fetched
+                        else:
+                            child_value = getattr(parent_value, child_field, None)
+                            if child_value is not None and hasattr(child_value, "fetch"):
+                                fetched = await child_value.fetch()
+                                parent_value.__dict__[child_field] = fetched
+
+                        continue
+
+                    # ── top-level field ────────────────────────────────
+                    value = getattr(doc, field, None)
+
+                    if value is None:
+                        continue
+
+                    if hasattr(value, "fetch"):
+                        fetched = await value.fetch()
+                        doc.__dict__[field] = fetched
+
+                    elif isinstance(value, list):
+                        fetched_items = []
+                        for item in value:
+                            if hasattr(item, "fetch"):
+                                fetched_items.append(await item.fetch())
+                            else:
+                                fetched_items.append(item)
+                        doc.__dict__[field] = fetched_items
+
+        finally:
+            bypass_scope.reset(token)
+
+        count = await self.model.find(filters).count()
+        total_pages = math.ceil(count / limit)
+
+        return {
+            "data": [doc.model_dump(mode="json") for doc in results],
+            "page": page,
+            "totalPages": total_pages,
+            "limit": limit,
+        }
 
 
     async def get_all_with_lookup(
@@ -573,3 +968,11 @@ class BaseRepository:
 
         await user.delete()
         return True
+
+
+    async def count(
+    self,
+    filter: Dict[str, Any] = None,
+    ) -> int:
+        filter = filter or {}
+        return await self.model.find(filter).count()
