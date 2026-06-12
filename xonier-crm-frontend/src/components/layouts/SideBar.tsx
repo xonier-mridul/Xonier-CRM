@@ -54,7 +54,7 @@ const SideBar = () => {
   const handleLogout = async (): Promise<void> => {
     try {
 
-      let isConfirmed = await ConfirmPopup({ title: "Logout", text: "Are you want to logout", btnTxt: "Yes, Logout" });
+      const isConfirmed = await ConfirmPopup({ title: "Logout", text: "Are you want to logout", btnTxt: "Yes, Logout" });
 
       if (isConfirmed) {
         const isLogout = await AuthService.logout()
@@ -627,7 +627,7 @@ const SideBar = () => {
               </AnimatePresence>
             </li>}
 
-            {(( hasPermission(PERMISSIONS.readEnquiry) || hasPermission(PERMISSIONS.readLead) || hasPermission(PERMISSIONS.readDeal) || hasPermission(PERMISSIONS.readQuote) || hasPermission(PERMISSIONS.readInvoice)) &&  (hasFeature(FEATURES.CRM)) && !auth.isAdmin) && <li>
+            {(( hasPermission(PERMISSIONS.readEnquiry) || hasPermission(PERMISSIONS.readLead) || hasPermission(PERMISSIONS.readDeal) || hasPermission(PERMISSIONS.readQuote) || hasPermission(PERMISSIONS.readInvoice)) &&  (hasFeature(FEATURES.CRM)) && auth.isAdmin) && <li>
               <button
                 onClick={() => toggleMenu("sales")}
                 className={`${isMenuActive("sales")

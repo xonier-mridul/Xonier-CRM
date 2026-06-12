@@ -157,6 +157,9 @@ class QueryService:
             raise e
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+        
+        
+        
 
    
     async def delete(
@@ -165,6 +168,7 @@ class QueryService:
         user: Dict[str, Any]
     ):
         try:
+            print("ccc")
             if not PydanticObjectId.is_valid(query_id):
                 raise AppException(400, "Invalid query id")
 
@@ -198,7 +202,7 @@ class QueryService:
         user: Dict[str, Any]
     ):
         try:
-            
+            print("ids: ", ids)
             invalid_ids = [
                 id for id in ids
                 if not PydanticObjectId.is_valid(id)

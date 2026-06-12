@@ -1,4 +1,5 @@
 
+import { Dispatch, SetStateAction } from "react";
 
 export interface QueryData{
     id: string ;
@@ -10,6 +11,25 @@ export interface QueryData{
     message?: string;
     phone: string;
     teamSize: string;
+    createdAt:string;
 
 
 }
+
+export interface QueryTableProps {
+        queryData:QueryData[];
+        totalPage:number;
+        handleChange:(val: string) => void;
+        onBulkDelete:() => void ;
+        onDelete:(val: string) => void;
+        currentPage:number;
+        pageLimit:number;
+        setPageLimit:(val: number) => void;
+        search:string;
+        setCurrentPage: number;
+        isLoading:boolean
+        onSelect:(val: string) => void
+        selected:string[]
+}
+
+
