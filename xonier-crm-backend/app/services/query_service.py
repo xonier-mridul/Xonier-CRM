@@ -18,10 +18,18 @@ class QueryService:
        
     ):
         try:
-            
-            
+            data = {
+                "name":          payload.get("name"),
+                "email":         payload.get("email"),
+                "phone":         payload.get("phone"),
+                "address":       payload.get("address"),
+                "industry_type": payload.get("industryType"),
+                "company_name":  payload.get("companyName"),
+                "team_size":     payload.get("teamSize"),
+                "message":       payload.get("message"),
+            }
 
-            result = await self.repo.create(data=payload)
+            result = await self.repo.create(data=data)
 
             if not result:
                 raise AppException(400, "Query registration failed, please try again")

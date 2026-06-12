@@ -291,6 +291,8 @@ const SideBar = () => {
                 Notes
               </Link>
             </li>}
+            
+           
 
             {(auth.isAdmin) && <li>
               <button
@@ -836,6 +838,19 @@ const SideBar = () => {
                 )}
               </AnimatePresence>
             </li>}
+            {(auth.isAdmin)  && <li>
+              <Link
+                href="/query"
+                className={`${isActive("/query")
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "border-l-2 border-transparent"
+                  } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+              >
+                <TbNotes className="text-lg" />
+                Query
+              </Link>
+            </li>}
+           
             {
               hasPermission(PERMISSIONS.readOTP) && <li>
                 

@@ -14,8 +14,8 @@ class QueryController:
     
     async def create(self, request: Request, payload: Dict[str, Any]):
         try:
-            
-            result = await self.service.create(payload=payload)
+            user   = request.state.user
+            result = await self.service.create(payload=payload, user=user)
 
             return successResponse(201, "Query submitted successfully", result)
 
