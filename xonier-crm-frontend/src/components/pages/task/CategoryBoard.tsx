@@ -34,6 +34,8 @@ function CategoryBoard({
   onTimer,
   onStop,
 }: CategoryBoardProps) {
+  const boardRef = useRef<HTMLDivElement>(null)
+  const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const [dragOverStatusId, setDragOverStatusId] = useState<string | null>(null);
   const dragTaskRef = useRef<TaskItem | null>(null);
   const [pendingDrop, setPendingDrop] = useState<PendingDrop | null>(null);
@@ -46,6 +48,40 @@ function CategoryBoard({
     e.currentTarget.addEventListener("dragend", () => { el.style.opacity = "1"; }, { once: true });
   };
 
+  const handleAutoScroll = (e:React.DragEvent)=>{
+    const container = boardRef.current
+    if(!container) return;
+
+    const rect = container.getBoundingClientRect();
+
+    const threshold = 500
+    const speed = 10
+
+    const mouseX = e.clientX
+
+    if(scrollIntervalRef.current){
+      clearInterval(scrollIntervalRef.current)
+      scrollIntervalRef.current = null
+    }
+
+    if(mouseX < rect.left + threshold){
+      scrollIntervalRef.current= setInterval(()=>{
+        container.scrollLeft -= speed;
+      },16)
+    }
+    else if(mouseX > rect.right - threshold){
+      scrollIntervalRef.current = setInterval(()=>{
+      container.scrollLeft +=speed},16)
+    }
+  };
+
+  const stopAutoScroll=()=>{
+    if(scrollIntervalRef.current){
+      clearInterval(scrollIntervalRef.current)
+      scrollIntervalRef.current = null
+    }
+  }
+
   const handleDragOver = (e: React.DragEvent, statusId: string) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
@@ -57,7 +93,9 @@ function CategoryBoard({
   };
 
   const handleDrop = (e: React.DragEvent, targetStatusId: string) => {
+    stopAutoScroll()
     e.preventDefault();
+
     setDragOverStatusId(null);
     const task = dragTaskRef.current;
     dragTaskRef.current = null;
@@ -87,9 +125,13 @@ function CategoryBoard({
     });
   };
 
+  const handleDragEnd =()=>{
+    stopAutoScroll()
+  }
+
   return (
     <>
-      <div className="mb-8 max-h-130 overflow-y-scroll">
+      <div className="mb-8 max-h-130 overflow-y-scroll ">
         <div
           className="flex items-center gap-3 mb-4 pb-3 border-b-2 sticky top-0 bg-white dark:bg-slate-700"
           style={{ borderColor: categoryColor + "40" }}
@@ -128,7 +170,14 @@ function CategoryBoard({
           </div>
         </div>
 
-        <div className="flex gap-4 overflow-x-auto pb-3" onDragLeave={handleDragLeave}>
+       <div
+  ref={boardRef}
+  className="flex gap-4 overflow-x-auto pb-3"
+  onDragLeave={handleDragLeave}
+  onDragOver={(e) => {
+    handleAutoScroll(e);
+  }}
+>
           {statuses.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center py-12 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 text-gray-400">
               <span className="text-3xl mb-2">🗂️</span>
@@ -179,6 +228,7 @@ function CategoryBoard({
                     ) : (
                       columnTasks.map((task) => (
                         <BoardCard
+                          handleDragEnd={handleDragEnd}
                           key={task.id}
                           task={task}
                           canEdit={canEdit}

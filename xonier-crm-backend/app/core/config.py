@@ -60,8 +60,6 @@ class EnvSettings(BaseSettings):
 
 
 
-    
-
 @lru_cache
 def get_setting()->EnvSettings:
     return EnvSettings()

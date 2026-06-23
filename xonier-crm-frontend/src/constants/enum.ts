@@ -1232,5 +1232,7 @@ export enum FEATURES {
   TELECOM = "telecom:feature",
   CHAT = "chat:feature",
   CALENDER = "calender:feature",
-  NOTE = "notes:feature"
+  NOTE = "notes:feature",
+  SALES = "sales:feature"
+
 }

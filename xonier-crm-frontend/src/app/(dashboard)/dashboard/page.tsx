@@ -228,12 +228,13 @@ function AnimNum({ value, prefix = "", suffix = "" }: { value: number; prefix?: 
 }
 
 function Ring({ pct, color, size = 80 }: { pct: number; color: string; size?: number }) {
+  
   const r = (size - 12) / 2;
   const circ = 2 * Math.PI * r;
   const offset = circ - (Math.min(pct, 100) / 100) * circ;
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#1e293b" strokeWidth="8" />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#9CA3AF" strokeWidth="8" />
       <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth="8"
         strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
         transform={`rotate(-90 ${size / 2} ${size / 2})`}
@@ -254,10 +255,10 @@ function MetricRow({ label, value, total, color }: { label: string; value: numbe
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs font-mono font-bold text-slate-300">{v}</span>
-          <span className="text-xs text-slate-600 w-9 text-right">{p.toFixed(1)}%</span>
+          <span className="text-xs text-slate-500 w-9 text-right">{p.toFixed(1)}%</span>
         </div>
       </div>
-      <div className="h-1 rounded-full bg-white dark:bg-slate-700/60">
+      <div className="h-1 rounded-full bg-slate-200 dark:bg-slate-700/60">
         <div className="h-1 rounded-full transition-all duration-1000" style={{ width: `${Math.min(p, 100)}%`, backgroundColor: color }} />
       </div>
     </div>
@@ -269,30 +270,103 @@ function StatCard({ label, value, sub, icon: Icon, color, trend, prefix = "", su
   trend?: { val: number; up: boolean }; prefix?: string; suffix?: string;
 }) {
   const v = useCountUp(value);
+const gradientId = `gradient-${label.replace(/\s+/g, '-')}`;
+const trendPaths = [
+  "M0 42 C25 15, 55 55, 85 28 C115 8, 145 52, 175 30 C205 10, 235 40, 265 25 C285 18, 295 32, 300 28",
+
+  "M0 35 C30 50, 60 10, 90 40 C120 60, 150 15, 180 35 C210 55, 240 20, 300 30",
+
+  "M0 30 C40 5, 80 55, 120 20 C130 0, 200 50, 240 15 C270 5, 290 35, 300 25",
+
+];
+
+const trendPath =
+  trendPaths[Math.floor(Math.random() * trendPaths.length)];
+
   return (
-    <div className="relative overflow-hidden rounded-2xl border bg-slate-50 border-slate-200 hover:border-slate-300 dark:border-slate-700/50 dark:bg-slate-800/80 p-5 dark:hover:border-slate-600 transition-all duration-300 hover:shadow-slate-900/50 group cursor-default">
+    <div
+  className="
+    relative overflow-hidden
+    rounded-3xl
+    border border-slate-200/80 hover:border-slate-200 dark:hover:border-slate-500 dark:border-slate-700/50
+    bg-white dark:bg-slate-900
+    p-6
+  
+    hover:-translate-y-1
+    transition-all duration-300
+    group cursor-default
+    min-h-[150px]
+  "
+>
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
         style={{ background: `radial-gradient(circle at top right, ${color}12, transparent 70%)` }} />
-      <div className="absolute top-0 right-0 w-20 h-20 rounded-bl-full opacity-5 group-hover:opacity-10 transition-opacity duration-500"
+      <div className="absolute top-0 left-0 w-20 h-20  rounded-br-full opacity-5 group-hover:opacity-10 group-hover:w-25 group-hover:h-25 transition-opacity duration-500"
         style={{ backgroundColor: color }} />
-      <div className="relative z-10">
-        <div className="flex items-start justify-between mb-4">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</p>
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white flex-shrink-0" style={{ backgroundColor: color }}>
-            <Icon className="w-4 h-4" />
+
+      <div className="relative z-10 flex gap-6 mb-4">
+        <div>
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white flex-shrink-0"
+           style={{ backgroundColor: color }}>
+            <Icon className="w-6 h-6" />
+
           </div>
+
         </div>
-        <p className="font-mono text-3xl font-bold text-slate-700 dark:text-white tracking-tight leading-none mb-1">
-          {prefix}{v.toLocaleString()}{suffix}
-        </p>
-        {sub && <p className="text-xs text-slate-500 mt-1 leading-relaxed">{sub}</p>}
+        <div>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</p>
+                   <p className="text-4xl font-black tracking-tight text-slate-800 dark:text-white mb-1">
+  {prefix}{v.toLocaleString()}{suffix}
+</p>
+            {sub && <p className="text-xs text-slate-500 mt-1 leading-relaxed">{sub}</p>}
         {trend && (
           <div className={`flex items-center gap-1 mt-3 text-xs font-semibold ${trend.up ? "text-emerald-400" : "text-red-400"}`}>
             {trend.up ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
             {trend.val}% vs last period
           </div>
+
         )}
+  
+
+        </div>
+
+        
+        
+     
+       
+      
       </div>
+       <div className="absolute bottom-0 left-0 w-full h-14 pointer-events-none overflow-hidden">
+  <svg
+    viewBox="0 0 300 60"
+    preserveAspectRatio="none"
+    className="w-full h-full"
+  >
+
+<defs>
+  <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stopColor={color} stopOpacity="0.2" />
+    <stop offset="100%" stopColor={color} stopOpacity="0" />
+  </linearGradient>
+</defs>
+
+
+
+    <path
+      d={trendPath}
+      fill="none"
+      stroke={color}
+      strokeWidth="2.5"
+      strokeLinecap="round"
+    />
+    <path
+  d={`${trendPath} L300 60 L0 60 Z`}
+  fill={`url(#${gradientId})`}
+/>
+
+    
+  </svg>
+</div>
+     
     </div>
   );
 }
@@ -301,18 +375,41 @@ function Card({ title, sub, icon: Icon, children, className = "" }: {
   title: string; sub?: string; icon?: any; children: React.ReactNode; className?: string;
 }) {
   return (
-    <div className={`dark:bg-slate-800/80 bg-slate-50 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 dark:hover:border-slate-600/60 hover:border-slate-300 transition-all duration-200 ${className}`}>
-      {(title || Icon) && (
-        <div className="flex items-start gap-2.5 mb-5">
-          {Icon && <div className="w-7 h-7 rounded-lg bg-slate-200 dark:bg-slate-700/60 flex items-center justify-center text-slate-500 flex-shrink-0 mt-0.5"><Icon className="w-3.5 h-3.5" /></div>}
-          <div>
-            <h3 className="text-sm font-bold dark:text-white text-gray-700 tracking-tight">{title}</h3>
-            {sub && <p className="text-xs text-slate-500 mt-0.5">{sub}</p>}
+    
+    <div className={`dark:bg-slate-800/80 bg-white border h-full border-slate-200  rounded-2xl p-5   hover:border-slate-200 dark:hover:border-slate-500 dark:border-slate-700/50 hover:-translate-y-1 transition-all duration-200 ${className}`}>
+     {(title || Icon) && (
+    <div className="flex items-start justify-between mb-6 relative z-10">
+      <div className="flex items-center gap-3">
+        {Icon && (
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#16c2cf] to-[#0fb8a5] flex items-center justify-center">
+            <Icon className="w-5 h-5 text-white" />
           </div>
+        )}
+
+        <div>
+          <h3 className="text-sm font-bold text-slate-800 dark:text-white tracking-tight whitespace-nowrap">
+            {title}
+          </h3>
+
+          {sub && (
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 whitespace-nowrap">
+              {sub}
+            </p>
+          )}
         </div>
-      )}
-      {children}
+      </div>
+
+      <button className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+        <span className="text-slate-500">↗</span>
+      </button>
     </div>
+  )}
+
+      {children}
+      </div>
+    
+  
+
   );
 }
 
@@ -348,8 +445,8 @@ function LeadsCard({ leads }: { leads: LeadStats }) {
         <div className="relative flex-shrink-0">
           <Ring pct={wonPct} color="#10b981" size={72} />
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-mono text-xs font-bold dark:text-white">{wonPct.toFixed(0)}%</span>
-            <span className="text-[9px] text-slate-500">won</span>
+            <span className="font-mono text-slate-500 text-xs font-bold dark:text-white">{wonPct.toFixed(0)}%</span>
+            <span className="text-[9px] text-slate-400">won</span>
           </div>
         </div>
         <div className="flex-1 flex flex-col gap-1.5">
@@ -361,11 +458,56 @@ function LeadsCard({ leads }: { leads: LeadStats }) {
       </div>
       <div className="grid grid-cols-3 gap-2 pt-3 border-t border-slate-200 dark:border-slate-700/40">
         {[
-          { label: "Total", value: leads.total, color: "#6366f1" },
-          { label: "In Deal", value: leads.inDeal, color: "#8b5cf6" },
-          { label: "This Period", value: leads.inRange, color: "#06b6d4" },
+          {
+  label: "Total",
+  value: leads.total,
+  color: "#6366f1",
+  style: `
+    bg-gradient-to-br
+    from-indigo-50 to-indigo-100
+    dark:from-indigo-950/40 dark:to-slate-900
+    border border-indigo-200
+    dark:border-indigo-800/50
+    hover:border-indigo-400
+    dark:hover:border-indigo-500
+    hover:-translate-y-1
+    transition-all duration-300
+  `
+},
+          {
+  label: "In Deal",
+  value: leads.inDeal,
+  color: "#8b5cf6",
+  style: `
+    bg-gradient-to-br
+    from-violet-50 to-violet-100
+    dark:from-violet-950/40 dark:to-slate-900
+    border border-violet-200
+    dark:border-violet-800/50
+    hover:border-violet-400
+    dark:hover:border-violet-500
+    hover:-translate-y-1
+    transition-all duration-300
+  `
+},{
+  label: "This Period",
+  value: leads.inRange,
+  color: "#06b6d4",
+  style: `
+    bg-gradient-to-br
+    from-cyan-50 to-cyan-100
+    dark:from-cyan-950/40 dark:to-slate-900
+    border border-cyan-200
+    dark:border-cyan-800/50
+    hover:border-cyan-400
+    dark:hover:border-cyan-500
+
+    hover:-translate-y-1
+    transition-all duration-300
+  `
+},
         ].map((i) => (
-          <div key={i.label} className="text-center rounded-xl p-2 bg-slate-200/30 dark:bg-slate-700/30">
+          <div key={i.label} className={`text-center rounded-xl p-2 border ${i.style} dark:bg-slate-700/30`}>
             <p className="font-mono text-base font-bold" style={{ color: i.color }}><AnimNum value={i.value} /></p>
             <p className="text-[10px] text-slate-500 mt-0.5">{i.label}</p>
           </div>
@@ -385,14 +527,14 @@ function DealsCard({ deals }: { deals: DealStats }) {
         <p className="font-mono text-4xl font-bold text-emerald-400">{fmtMoney(deals.totalRevenue ?? 0)}</p>
         <p className="text-xs text-slate-500 mt-1">Period: <span className="text-emerald-400 font-semibold">{fmtMoney(periodRevenue)}</span></p>
       </div>
-      <div className="grid grid-cols-2 gap-2 mb-3">
+      <div className="grid grid-cols-4 rounded-xl py-2  border border-slate-200 mb-3 dark:border-slate-700">
         {[
-          { label: "Active", value: deals.active, color: "#6366f1" },
-          { label: "Closed", value: deals.closed, color: "#10b981" },
-          { label: "Total", value: deals.total, color: "#8b5cf6" },
-          { label: "This Period", value: deals.inRange, color: "#06b6d4" },
+          { label: "Active", value: deals.active, color: "#6366f1",border:"border-none" },
+          { label: "Closed", value: deals.closed, color: "#10b981",border:"border-l border-slate-200" },
+          { label: "Total", value: deals.total, color: "#8b5cf6",border:"border-l border-slate-200"  },
+          { label: "This Period", value: deals.inRange, color: "#06b6d4",border:"border-l border-slate-200" },
         ].map((i) => (
-          <div key={i.label} className="rounded-xl p-2.5 bg-slate-200 dark:bg-slate-700/30 border border-slate-200/40 dark:border-slate-700/40">
+          <div key={i.label} className={`flex flex-col justify-center ${i.border} items-center px-2.5  border-slate-200/40 dark:border-slate-700/40 hover:-translate-y-1`}>
             <p className="font-mono text-lg font-bold" style={{ color: i.color }}><AnimNum value={i.value} /></p>
             <p className="text-[10px] text-slate-500">{i.label}</p>
           </div>
@@ -541,48 +683,103 @@ function RecentActivitiesCard({ activities }: { activities: RecentActivity[] }) 
 
 function SACompaniesCard({ companies }: { companies: CompanyStats }) {
   return (
+    <div className='col-span-2  h-full'>
+
     <Card title="Companies" sub="Platform company status" icon={Building2}>
-      <div className="grid grid-cols-2 gap-2 mb-4">
+      <div className="grid grid-cols-2 gap-2 mb-4 text-center justify-center mt-5">
         {[
-          { label: "Total", value: companies.total, color: "#6366f1" },
-          { label: "Active", value: companies.active, color: "#10b981" },
-          { label: "Pending", value: companies.pending, color: "#f59e0b" },
-          { label: "Suspended", value: companies.suspended, color: "#ef4444" },
+          { label: "Total", value: companies.total, color: "#6366f1" ,border:'border border-indigo-200 hover:border-indigo-400'},
+          { label: "Active", value: companies.active, color: "#10b981",border:'border border-green-200 hover:border-green-400' },
+          { label: "Pending", value: companies.pending, color: "#f59e0b" ,border:'border border-orange-200 hover:border-orange-400'},
+          { label: "Suspended", value: companies.suspended, color: "#ef4444",border:'border border-red-200 hover:border-red-400' },
         ].map((i) => (
-          <div key={i.label} className="rounded-xl p-3 border border-slate-200 hover:border-slate-300 dark:border-slate-700/40 dark:hover:border-slate-600 transition-colors"
+          <div key={i.label} className={`rounded-xl p-3 ${i.border} dark:border-slate-700/40 dark:hover:border-slate-600 transition-colors`}
             style={{ background: `linear-gradient(135deg, ${i.color}12, ${i.color}05)` }}>
             <p className="font-mono text-xl font-bold" style={{ color: i.color }}><AnimNum value={i.value} /></p>
             <p className="text-[10px] text-slate-500 mt-0.5">{i.label}</p>
           </div>
         ))}
       </div>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 mt-5">
         <MetricRow label="Active" value={companies.active} total={companies.total + companies.deleted} color="#10b981" />
         <MetricRow label="Pending" value={companies.pending} total={companies.total + companies.deleted} color="#f59e0b" />
         <MetricRow label="Deleted" value={companies.deleted} total={companies.total + companies.deleted} color="#6b7280" />
       </div>
     </Card>
+    </div>
+
   );
 }
 
 function SARevenueCard({ subs, revenue }: { subs: SubscriptionStats; revenue: RevenueStats }) {
+  const data = [
+  { name: "Enterprise", value: 45 },
+  { name: "Pro", value: 30 },
+  { name: "Starter", value: 15 },
+  { name: "Free", value: 10 },
+];
+
+const COLORS = ["#8b5cf6", "#3b82f6", "#10b981", "#f59e0b"];
   return (
+    <div className='col-span-2'>
     <Card title="Revenue" sub="Subscription financials" icon={DollarSign}>
-      <div className="mb-4">
+      <div className="mb-4 grid grid-cols-2   ">
+           <div className="flex flex-col justify-center">
         <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">MRR</p>
         <p className="font-mono text-4xl font-bold text-emerald-400">{fmtMoney(revenue.mrr)}</p>
         <p className="text-xs text-slate-500 mt-1">ARR: <span className="text-emerald-400 font-semibold">{fmtMoney(revenue.arr)}</span></p>
+        </div>
+        <div>
+          <div className="relative h-[100px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Tooltip />
+
+            <Pie
+              data={data}
+              cx="50%"
+              cy="50%"
+              innerRadius={40}
+              outerRadius={50}
+              paddingAngle={2}
+              dataKey="value"
+              strokeWidth={0}
+            >
+              {data.map((entry, index) => (
+                <Cell
+                  key={index}
+                  fill={COLORS[index % COLORS.length]}
+                />
+              ))}
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
+
+        {/* Center Content */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+          <span className="text-xl font-bold text-slate-800 dark:text-white">
+            {fmtMoney(subs.totalRevenue)}
+          </span>
+          <span className="text-[10px] text-slate-500">
+            Total Revenue
+          </span>
+        </div>
       </div>
-      <div className="grid grid-cols-2 gap-2 mb-3">
+
+
+        </div>
+     
+      </div>
+      <div className="grid grid-cols-4 justify-center border border-slate-200 mt-5 py-2.5 rounded-xl overflow-hidden  mb-4">
         {[
-          { label: "Total Revenue", value: fmtMoney(subs.totalRevenue), color: "#10b981" },
-          { label: "Period Revenue", value: fmtMoney(subs.periodRevenue), color: "#6366f1" },
-          { label: "Active Subs", value: fmt(subs.active), color: "#8b5cf6" },
-          { label: "Avg Revenue", value: fmtMoney(subs.avgRevenue), color: "#f59e0b" },
+          { label: "Total Revenue", value: fmtMoney(subs.totalRevenue), color: "#10b981", border:'border-none' },
+          { label: "Period Revenue", value: fmtMoney(subs.periodRevenue), color: "#6366f1", border:'border-l' },
+          { label: "Active Subs", value: fmt(subs.active), color: "#8b5cf6", border:'border-l' },
+          { label: "Avg Revenue", value: fmtMoney(subs.avgRevenue), color: "#f59e0b", border:'border-l' },
         ].map((i) => (
-          <div key={i.label} className="rounded-xl p-2.5 bg-white dark:bg-slate-700/30 border border-slate-200 hover:border-slate-300 dark:border-slate-700/40">
+          <div key={i.label} className={`  bg-white dark:bg-slate-700/30 ${i.border} border-slate-200 hover:border-slate-300 dark:border-slate-700/40 flex flex-col justify-center items-center`}>
             <p className="font-mono text-base font-bold" style={{ color: i.color }}>{i.value}</p>
-            <p className="text-[10px] text-slate-500 mt-0.5">{i.label}</p>
+            <p className="text-[10px] text-slate-500 mt-0.5 whitespace-nowrap ">{i.label}</p>
           </div>
         ))}
       </div>
@@ -597,6 +794,7 @@ function SARevenueCard({ subs, revenue }: { subs: SubscriptionStats; revenue: Re
         </div>
       </div>
     </Card>
+    </div>
   );
 }
 
@@ -634,16 +832,17 @@ function SAPlansCard({ plans }: { plans: PlanStat[] }) {
 function SAChurnCard({ churn }: { churn: ChurnStats }) {
   return (
     <Card title="Churn Analysis" sub="Subscription health" icon={TrendingDown}>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid gap-2">
         {[
-          { label: "Churn Rate", value: `${churn.churnRate.toFixed(1)}%`, color: churn.churnRate > 5 ? "#ef4444" : "#10b981", bg: "from-red-500/10 to-rose-500/5" },
-          { label: "Revenue Lost", value: fmtMoney(churn.revenueLost), color: "#ef4444", bg: "from-red-500/10 to-rose-500/5" },
-          { label: "Canceled", value: String(churn.canceledThisPeriod), color: "#f97316", bg: "from-orange-500/10 to-amber-500/5" },
-          { label: "New This Period", value: String(churn.newThisPeriod), color: "#10b981", bg: "from-emerald-500/10 to-green-500/5" },
+          { label: "Churn Rate", value: `${churn.churnRate.toFixed(1)}%`, color: "#6366f1", bg: "from-indigo-500/10 to-blue-500/5",border:'border border-indigo-200 hover:border-indigo-400' },
+          { label: "Revenue Lost", value: fmtMoney(churn.revenueLost), color: "#ef4444", bg: "from-red-500/10 to-rose-500/5", border:'border border-red-200 hover:border-red-400'},
+          { label: "Canceled", value: String(churn.canceledThisPeriod), color: "#f97316", bg: "from-orange-500/10 to-amber-500/5" ,border:'border border-orange-200 hover:border-orange-400'},
+          { label: "New This Period", value: String(churn.newThisPeriod), color: "#10b981", bg: "from-emerald-500/10 to-green-500/5",border:'border border-green-200 hover:border-green-400' },
         ].map((i) => (
-          <div key={i.label} className={`rounded-xl p-3.5 border dark:border-slate-700/40 border-slate-200 hover:border-slate-300 bg-gradient-to-br ${i.bg}`}>
-            <p className="font-mono text-xl font-bold" style={{ color: i.color }}>{i.value}</p>
-            <p className="text-[10px] text-slate-500 mt-0.5">{i.label}</p>
+          <div key={i.label} className={`rounded-xl grid grid-cols-3 gap-4 p-3 ${i.border} dark:border-slate-700/40  bg-gradient-to-br ${i.bg}`}>
+            <div className="font-mono text-lg font-bold flex justify-center " style={{ color: i.color }}>{i.value}</div>
+
+            <div className="text-[11px] text-slate-500 mt-0.5 whitespace-nowrap col-span-2 flex items-center">{i.label}</div>
           </div>
         ))}
       </div>
@@ -923,7 +1122,7 @@ function ConversionCard({ conv }: { conv: ConversionRate }) {
         <div className="relative">
           <Ring pct={conv.conversionRate} color="#6366f1" size={110} />
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-mono text-2xl font-bold dark:text-white">{conv.conversionRate.toFixed(1)}%</span>
+            <span className="font-mono text-slate-400 text-2xl font-bold dark:text-white">{conv.conversionRate.toFixed(1)}%</span>
             <span className="text-[10px] text-slate-500">conversion</span>
           </div>
         </div>
@@ -1129,8 +1328,8 @@ function EnquiriesCard({ enquiries }: { enquiries: EnquiryStats }) {
         <div className="relative flex-shrink-0">
           <Ring pct={assignedPct} color="#8b5cf6" size={72} />
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-mono text-xs font-bold dark:text-white">{assignedPct.toFixed(0)}%</span>
-            <span className="text-[9px] text-slate-500">assigned</span>
+            <span className="font-mono text-xs text-slate-500 font-bold dark:text-white">{assignedPct.toFixed(0)}%</span>
+            <span className="text-[9px] text-slate-400">assigned</span>
           </div>
         </div>
         <div className="flex-1 flex flex-col gap-1.5">
@@ -1144,11 +1343,28 @@ function EnquiriesCard({ enquiries }: { enquiries: EnquiryStats }) {
         </div>
       </div>
       <div className="grid grid-cols-2 gap-2 pt-3 border-t border-slate-200 dark:border-slate-700/40">
-        <div className="text-center rounded-xl p-2 bg-slate-200/30 dark:bg-slate-700/30">
+        <div className=" bg-gradient-to-br
+    from-indigo-50 to-indigo-100
+    dark:from-indigo-950/40 dark:to-slate-900
+    border border-indigo-200
+    dark:border-indigo-800/50
+    hover:border-indigo-400
+    dark:hover:border-indigo-500
+    hover:-translate-y-1
+    transition-all duration-300 flex flex-col justify-center items-center  py-2 rounded-xl">
           <p className="font-mono text-base font-bold text-indigo-400"><AnimNum value={enquiries.total} /></p>
           <p className="text-[10px] text-slate-500 mt-0.5">Total</p>
         </div>
-        <div className="text-center rounded-xl p-2 bg-slate-200/30 dark:bg-slate-700/30">
+        <div className="bg-gradient-to-br
+    from-cyan-50 to-cyan-100
+    dark:from-cyan-950/40 dark:to-slate-900
+    border border-cyan-200
+    dark:border-cyan-800/50
+    hover:border-cyan-400
+    dark:hover:border-cyan-500
+
+    hover:-translate-y-1
+    transition-all duration-300 flex flex-col justify-center items-center  py-2 rounded-xl">
           <p className="font-mono text-base font-bold text-cyan-400"><AnimNum value={enquiries.inRange} /></p>
           <p className="text-[10px] text-slate-500 mt-0.5">This Period</p>
         </div>
@@ -1168,11 +1384,28 @@ function QuotationsCard({ quotations }: { quotations: QuotationStats }) {
         <p className="text-xs text-slate-500 mt-1">Period: <span className="text-indigo-400 font-semibold">{fmtMoney(quotations.rangeValue)}</span></p>
       </div>
       <div className="grid grid-cols-2 gap-2 pt-3 border-t border-slate-200 dark:border-slate-700/40">
-        <div className="text-center rounded-xl p-2.5 bg-slate-200/30 dark:bg-slate-700/30">
+        <div className="  bg-gradient-to-br
+    from-indigo-50 to-indigo-100
+    dark:from-indigo-950/40 dark:to-slate-900
+    border border-indigo-200
+    dark:border-indigo-800/50
+    hover:border-indigo-400
+    dark:hover:border-indigo-500
+    hover:-translate-y-1
+    transition-all duration-300 flex flex-col justify-center items-center  py-2 rounded-xl">
           <p className="font-mono text-xl font-bold text-indigo-400"><AnimNum value={quotations.total} /></p>
           <p className="text-[10px] text-slate-500 mt-0.5">Total</p>
         </div>
-        <div className="text-center rounded-xl p-2.5 bg-slate-200/30 dark:bg-slate-700/30">
+        <div className="bg-gradient-to-br
+    from-cyan-50 to-cyan-100
+    dark:from-cyan-950/40 dark:to-slate-900
+    border border-cyan-200
+    dark:border-cyan-800/50
+    hover:border-cyan-400
+    dark:hover:border-cyan-500
+
+    hover:-translate-y-1
+    transition-all duration-300 flex flex-col justify-center items-center  py-2 rounded-xl">
           <p className="font-mono text-xl font-bold text-cyan-400"><AnimNum value={quotations.inRange} /></p>
           <p className="text-[10px] text-slate-500 mt-0.5">This Period</p>
         </div>
@@ -1288,7 +1521,9 @@ function SuperAdminLayout({ d }: { d: DashboardData }) {
         <StatCard label="MRR" value={Math.round(d.revenue!.mrr)} prefix="$" sub={`ARR: ${fmtMoney(d.revenue!.arr)}`} icon={DollarSign} color="#10b981" />
         <StatCard label="Active Subs" value={d.subscriptions!.active} sub={`${d.subscriptions!.trial} trial · ${d.subscriptions!.canceled} canceled`} icon={Star} color="#8b5cf6" />
       </div>
-      <div className="grid grid-cols-3 gap-4">
+
+
+      <div className="grid grid-cols-5 gap-4">
         <SACompaniesCard companies={d.companies!} />
         <SARevenueCard subs={d.subscriptions!} revenue={d.revenue!} />
         <SAChurnCard churn={d.churn!} />
@@ -1675,7 +1910,8 @@ export default function UnifiedDashboardPage() {
   const RoleIcon = rc.icon;
 
   return (
-    <div className="mt-10 ml-72 min-h-screen">
+    <div className=" relative  mt-10 ml-72 min-h-screen">
+     
       <div className="p-6 flex flex-col gap-5">
 
         {/* Header */}
