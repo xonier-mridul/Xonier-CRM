@@ -38,6 +38,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
                     
                     with system_query():
                         user = await repository.find_by_id(PydanticObjectId(payload["_id"]), ["userRole", "assignedPhoneNumber"])
+
+                       
             
                     
                     if user:

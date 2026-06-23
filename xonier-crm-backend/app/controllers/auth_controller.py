@@ -175,6 +175,7 @@ class AuthController:
     async def get_user_by_id(self, request:Request, id: PydanticObjectId ):
         try:
            user = request.state.user
+          
            result = await self.service.get_user_by_id(id, user)
            return successResponse(200, "User fetched successfully", result)
             
