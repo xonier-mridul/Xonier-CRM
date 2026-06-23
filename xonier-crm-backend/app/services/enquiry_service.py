@@ -226,6 +226,7 @@ class EnquiryService:
             query = {}
             if not is_admin:
                 members = await self.getTeamMembers.get_team_members(user["_id"])
+                
 
                 user_object_id = PydanticObjectId(user["_id"])
                 
@@ -238,6 +239,7 @@ class EnquiryService:
                             {"assignTo.$id": user_object_id},
                         ]
                     })
+                    is_manager = True
                     
 
                 else:
@@ -255,6 +257,14 @@ class EnquiryService:
 
             if "enquiry_id" in filters:
                 query.update({"enquiry_id": filters["enquiry_id"]})
+
+            if "search" in filters and filters["search"].strip():
+                regex_Data = {"regex": filters["search"], "$options": "i"}
+            
+                query.update({"$or": [
+                    {"fullName": regex_Data},
+
+                ]})
 
             if "fullName" in filters:
                 query.update({"fullName": {"$regex": filters["fullName"], "$options": "i"}})
@@ -316,7 +326,7 @@ class EnquiryService:
                 sort=["-createdAt"],
             )
 
-            if not is_admin and not is_manager and not is_creator:
+            if not is_admin and not is_manager:
                 raise AppException(403, "Permission denied, you not authorized for access enquiry data")
 
             if not result:

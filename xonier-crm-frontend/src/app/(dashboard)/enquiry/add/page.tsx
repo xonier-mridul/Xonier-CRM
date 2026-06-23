@@ -226,6 +226,8 @@ const page = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [err, setErr] = useState<string[] | string | null>();
   const [usersData, setUsersData] = useState<User[]>([]);
+  const [userSearch, setUserSearch] = useState<string>("")
+  const [userCurrentPage, setUserCurrentPage] = useState<number>(1)
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -261,7 +263,7 @@ const page = (): JSX.Element => {
 
   const getUsers = async () => {
     try {
-      const result = await AuthService.getAllActiveWithoutPagination();
+      const result = await AuthService.getAllTeamUsers({search: userSearch, page: userCurrentPage});
       if (result.status === 200) setUsersData(result.data.data);
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);

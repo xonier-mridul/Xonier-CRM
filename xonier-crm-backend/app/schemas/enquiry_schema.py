@@ -113,7 +113,7 @@ class Location(BaseModel):
 class EnquiryRegisterSchema(BaseModel):
     fullName: str
     email: EmailStr
-    phone: PhoneNumber
+    phone: str
     companyName: Optional[str] = None
     designation: DESIGNATION = DESIGNATION.OTHER
     socialLinks: Optional[SocialLinks] = None
@@ -139,13 +139,13 @@ class EnquiryRegisterSchema(BaseModel):
             raise AppException(422, "Phone number must contain only digits")
 
         if len(digits_only) < 10:
-            raise AppException("Phone number must be at least 10 digits")
+            raise AppException(422, "Phone number must be at least 10 digits")
 
         if len(digits_only) > 15:
-            raise AppException("Phone number must not exceed 15 digits")
+            raise AppException(422, "Phone number must not exceed 15 digits")
 
         if not re.match(r"^\+?[1-9]\d{9,14}$", value):
-            raise AppException(
+            raise AppException(422, 
                 "Invalid phone number format. Use 9876543210 or +919876543210"
             )
 
@@ -182,14 +182,14 @@ class BulkEnquiryRegisterSchema(BaseModel):
     @classmethod
     def validate_not_empty(cls, value):
         if not value:
-            raise ValueError("Enquiries list cannot be empty")
+            raise AppException(422, "Enquiries list cannot be empty")
         return value
 
 
 class UpdateEnquirySchema(BaseModel):
     fullName: str
     email: EmailStr
-    phone: PhoneNumber
+    phone: str
     companyName: Optional[str] = None
     designation: DESIGNATION = DESIGNATION.OTHER
     infoType: INFO_TYPE
@@ -212,16 +212,16 @@ class UpdateEnquirySchema(BaseModel):
         digits_only = value.replace("+", "")
 
         if not digits_only.isdigit():
-            raise AppException("Phone number must contain only digits")
+            raise AppException(422, "Phone number must contain only digits")
 
         if len(digits_only) < 10:
-            raise AppException("Phone number must be at least 10 digits")
+            raise AppException(422, "Phone number must be at least 10 digits")
 
         if len(digits_only) > 15:
-            raise AppException("Phone number must not exceed 15 digits")
+            raise AppException(422, "Phone number must not exceed 15 digits")
 
         if not re.match(r"^\+?[1-9]\d{9,14}$", value):
-            raise AppException(
+            raise AppException( 422, 
                 "Invalid phone number format. Use 9876543210 or +919876543210"
             )
 
