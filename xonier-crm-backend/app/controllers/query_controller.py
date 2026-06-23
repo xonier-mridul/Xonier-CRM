@@ -14,8 +14,8 @@ class QueryController:
     
     async def create(self, request: Request, payload: Dict[str, Any]):
         try:
-            
-            result = await self.service.create(payload=payload)
+            user   = request.state.user
+            result = await self.service.create(payload=payload, user=user)
 
             return successResponse(201, "Query submitted successfully", result)
 
@@ -37,6 +37,20 @@ class QueryController:
             raise e
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+        
+    #---- Get By Id-------------------------------------------------------------
+    
+    async def getBy_id(self,request:Request,query_id:str):
+        try:
+            user=request.state.user
+            result = await self.service.getBy_id(query_id=query_id,user=user)
+            
+            return successResponse(200,"Query featched successfully",result)
+        except AppException as e:
+            raise e
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+            
 
     # ─── Delete ───────────────────────────────────────────────────────────────
     async def delete(self, request: Request, query_id: str):
@@ -54,8 +68,11 @@ class QueryController:
     # ─── Bulk Delete ──────────────────────────────────────────────────────────
     async def bulk_delete(self, request: Request, payload: Dict[str, Any]):
         try:
+            print("hii")
             user   = request.state.user
             ids    = payload.get("ids", [])
+            
+            
             result = await self.service.bulk_delete(ids=ids, user=user)
 
             return successResponse(200, "Queries deleted successfully", result)

@@ -307,7 +307,7 @@ const StatCard = ({
 }) => (
   <Link
     href={link}
-    className="relative overflow-hidden hover:scale-105 hover:shadow-[0_0_6px_10px_#00000015] border-gray-200 bg-white dark:bg-gray-800 rounded-2xl border dark:border-gray-700 p-5 flex items-start gap-4"
+    className="relative overflow-hidden hover:scale-105 hover:shadow-sm border-gray-200 bg-white dark:bg-gray-800 rounded-2xl border dark:border-gray-700 p-5 flex items-start gap-4"
   >
     <div
       className={`shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-white text-lg ${accent}`}

@@ -61,10 +61,23 @@ const [isLoading, setIsLoading] = useState<boolean>(false)
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
-    setForm(prev => ({ ...prev, [name]: checked }));
-  };
+  
+const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const { name, checked } = e.target;
+
+  setForm((prev) => {
+    const updatedForm = {
+      ...prev,
+      [name]: checked,
+    };
+
+    if (name === "isAllDay" && checked) {
+      updatedForm.end = null;
+    }
+
+    return updatedForm;
+  });
+};
 
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -77,9 +90,10 @@ const [isLoading, setIsLoading] = useState<boolean>(false)
          if (!form.title || !form.start){
       return toast.info("Please fill all required fill  properly")
     };
-
+  
     const result  = await EventService.create(form)
-    if(result.status === 200){
+    console.log("event created:",result)
+    if(result.status === 201){
 
     toast.success("Event created successfully")
     await getAllEvent()

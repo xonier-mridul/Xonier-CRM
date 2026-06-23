@@ -109,7 +109,7 @@ const PlanTable: React.FC<ExtendedPlanTableProps> = ({
                     <tr key={plan.id} className="group hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors">
                       <td className="py-4 pr-4">
                         <div className="flex flex-col">
-                          <span className="font-semibold text-sm text-slate-900 dark:text-white capitalize">{plan.name}</span>
+                          <span className="font-semibold text-sm text-slate-500 dark:text-white capitalize">{plan.name}</span>
                           <span className="text-xs text-gray-400 mt-0.5 line-clamp-1 max-w-[160px]">{plan.description}</span>
                         </div>
                       </td>

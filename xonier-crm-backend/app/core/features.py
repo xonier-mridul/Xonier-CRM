@@ -56,5 +56,14 @@ FEATURE_DATA = [
         "status": FEATURE_STATUS.ACTIVE.value,
         "system": True
     },
+    {
+        "name": "sales feature",
+        "sortDescription": "Provide feature for sales",
+        "description": "Provide feature for sales",
+        "feature_key": "sales:feature",
+        
+        "status": FEATURE_STATUS.ACTIVE.value,
+        "system": True
+    },
 
 ]

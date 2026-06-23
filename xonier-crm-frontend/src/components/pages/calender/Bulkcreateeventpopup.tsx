@@ -248,7 +248,8 @@ const BulkCreateEventModal: React.FC<BulkCreateEventModalProps> = ({
                     name="end"
                     value={event.end ?? ""}
                     onChange={(e) =>
-                      handleFieldChange(index, "end", e.target.value || null)
+                    
+                    handleFieldChange(index, "end", e.target.value || null)
                     }
                   />
                 )}
@@ -289,9 +290,14 @@ const BulkCreateEventModal: React.FC<BulkCreateEventModalProps> = ({
                     <input
                       type="checkbox"
                       checked={event.isAllDay}
-                      onChange={(e) =>
-                        handleFieldChange(index, "isAllDay", e.target.checked)
-                      }
+                      onChange={(e) => {
+                              const checked = e.target.checked;
+
+                                handleFieldChange(index, "isAllDay", checked);
+
+                                if (checked) {
+                                  handleFieldChange(index, "end", null);
+                                }}}
                       className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
                     All day event

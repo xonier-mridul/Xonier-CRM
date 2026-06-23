@@ -36,8 +36,18 @@ async def get_all_queries(request: Request):
 
 
 
-@router.delete(
+@router.get(
     "/{query_id}",
+    dependencies=[AUTHORIZED,ADMIN_ONLY]
+)
+async def getById_query(request:Request, query_id:str):
+    return await controller.getBy_id(request=request,query_id=query_id)
+    
+
+
+
+@router.delete(
+    "/delete/{query_id}",
     dependencies=[AUTHORIZED, ADMIN_ONLY]
 )
 async def delete_query(request: Request, query_id: str):

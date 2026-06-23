@@ -96,7 +96,7 @@ class BulkDeleteSchema(BaseModel):
     @classmethod
     def validate_ids(cls, fields: Any):
         ids = fields.get("ids")
-
+        
         if not ids:
             raise AppException(422, "ids field must be required")
         if not isinstance(ids, list):

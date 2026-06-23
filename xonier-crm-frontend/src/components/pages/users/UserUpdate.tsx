@@ -19,7 +19,7 @@ interface ExtendedUserUpdatePageProps extends UserUpdatePageProps {
   handleChange: any;
 }
 
-const UserUpdate = ({
+const  UserUpdate = ({
   formData,
   isLoading,
   handleChange,

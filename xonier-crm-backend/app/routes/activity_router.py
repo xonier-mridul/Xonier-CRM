@@ -12,8 +12,7 @@ controller = ActivityController()
 dependencies = Dependencies()
 
 
-@router.get("/user/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
-Depends(dependencies.company_context),])
+@router.get("/user/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),Depends(dependencies.company_context),])
 async def get_user_activity(id: str, request: Request):
     return await controller.get_user_activity(id, request)
 
@@ -21,7 +20,7 @@ async def get_user_activity(id: str, request: Request):
     "/user/{id}/summary",
     status_code=200,
     dependencies=[Depends(dependencies.authorized),Depends(dependencies.company_active),
-Depends(dependencies.company_context),]
+                Depends(dependencies.company_context),]
 )
 async def get_user_activity_summary(id: str, request: Request):
     return await controller.get_user_activity_summary(id, request)

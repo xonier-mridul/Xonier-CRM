@@ -5,6 +5,7 @@ from app.core.constants import SUPER_ADMIN_CODE, COMPANY_ADMIN_CODE
 def validate_admin(userRole)->bool:
     
     for item in userRole:
+        print("users role: ", userRole)
         if item["code"] == SUPER_ADMIN_CODE:
             return True
     

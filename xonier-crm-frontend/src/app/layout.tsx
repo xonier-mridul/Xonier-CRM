@@ -37,8 +37,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
       <body
-        className={`${dmSans.variable} antialiased bg-stone-100 dark:bg-gray-800 min-h-screen`}
+        className={`${dmSans.variable} antialiased bg-stone-100 dark:bg-gray-800   min-h-screen`}
       >
+
         <Providers>
           <ReduxProvider>
             <LoaderProvider>
