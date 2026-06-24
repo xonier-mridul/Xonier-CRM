@@ -1,6 +1,6 @@
 import { jobDetails } from "../../data/careers";
 
-import Hero from "../../components/pages/jobDetails/hero";
+import Hero from "../../components/pages/jobDetails/Hero";
 import { useParams } from "react-router-dom";
 import Side from "../../components/pages/jobDetails/Side";
 
