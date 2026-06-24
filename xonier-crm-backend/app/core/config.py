@@ -51,6 +51,13 @@ class EnvSettings(BaseSettings):
     TWILIO_WEBHOOK_URL_FOR_SMS_STATUS: str
 
 
+    # PayPal
+    PAYPAL_CLIENT_ID: str
+    PAYPAL_CLIENT_SECRET: str
+    PAYPAL_MODE: str = "sandbox"  # sandbox | live
+    PAYPAL_WEBHOOK_ID: str
+
+
 
     model_config = SettingsConfigDict(
         env_file=".env",

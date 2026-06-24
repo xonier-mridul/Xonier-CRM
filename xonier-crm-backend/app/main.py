@@ -55,6 +55,7 @@ from app.routes.feature_route import router as feature_route
 from app.routes.company_route import router as company_route
 from app.routes.subscription_route import router as subscription_route
 from app.routes.query_route import router as query_route
+from app.routes.payment_route import router as payment_router
 
 settings = get_setting()
 
@@ -145,7 +146,11 @@ app.include_router(feature_route, prefix="/api/feature")
 app.include_router(company_route, prefix="/api/companies")
 app.include_router(subscription_route, prefix="/api/subscription")
 app.include_router(query_route, prefix="/api/query")
-
+app.include_router(
+    payment_router,
+    prefix="/api/v1/payments",
+    tags=["Payments"]
+)
 
 app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(AppException, app_exception_handler)

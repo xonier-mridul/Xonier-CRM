@@ -1040,3 +1040,22 @@ class FEATURE(str, Enum):
     CHAT = "chat:feature",
     CALENDER = "calender:feature",
     NOTE = "notes:feature"
+
+
+class PAYMENT_STATUS(str, Enum):
+    PENDING = "PENDING"
+    APPROVED = "APPROVED"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+    REFUNDED = "REFUNDED"
+    PARTIALLY_REFUNDED = "PARTIALLY_REFUNDED"
+
+class PAYMENT_METHOD(str, Enum):
+    PAYPAL = "PAYPAL"
+    STRIPE = "STRIPE"  # for future
+    CARD = "CARD"      # for future
+
+class BILLING_CYCLE(str, Enum):
+    MONTHLY = "monthly"
+    YEARLY = "yearly"
