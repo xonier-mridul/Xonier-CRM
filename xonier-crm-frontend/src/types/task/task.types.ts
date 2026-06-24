@@ -330,6 +330,7 @@ export interface BoardCardProps {
   onRemark: (task: TaskItem) => void;
   onTimer: (task: TaskItem) => void;
   onStop: (task: TaskItem) => void;
+  handleDragEnd:(task: TaskItem) => void;
 }
 
 export interface CategoryMultiSelectProps {

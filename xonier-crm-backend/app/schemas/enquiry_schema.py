@@ -113,7 +113,7 @@ class Location(BaseModel):
 class EnquiryRegisterSchema(BaseModel):
     fullName: str
     email: EmailStr
-    phone: PhoneNumber
+    phone: str
     companyName: Optional[str] = None
     designation: DESIGNATION = DESIGNATION.OTHER
     socialLinks: Optional[SocialLinks] = None
@@ -127,7 +127,7 @@ class EnquiryRegisterSchema(BaseModel):
     priority: PRIORITY = PRIORITY.MEDIUM.value
     source: str
     extra_fields: Optional[List[ExtraFieldSchema]] = Field(default=[])
-    assignTo: Optional[str] = None
+    assignTo: Optional[PydanticObjectId] = None
     message: Optional[str] = None
 
     @field_validator("phone")
@@ -139,13 +139,13 @@ class EnquiryRegisterSchema(BaseModel):
             raise AppException(422, "Phone number must contain only digits")
 
         if len(digits_only) < 10:
-            raise AppException("Phone number must be at least 10 digits")
+            raise AppException(422, "Phone number must be at least 10 digits")
 
         if len(digits_only) > 15:
-            raise AppException("Phone number must not exceed 15 digits")
+            raise AppException(422, "Phone number must not exceed 15 digits")
 
         if not re.match(r"^\+?[1-9]\d{9,14}$", value):
-            raise AppException(
+            raise AppException(422, 
                 "Invalid phone number format. Use 9876543210 or +919876543210"
             )
 
@@ -157,21 +157,16 @@ class EnquiryRegisterSchema(BaseModel):
         if not values.get("projectType"):
             raise AppException(422, "Project type field must be required")
 
-        # if values.get("projectType") not in PROJECT_TYPES.__members__:
-        #    print("vv: ", PROJECT_TYPES.__members__)
-        #    raise AppException(422, "Project type field must be a valid enum")
-
+       
         if not values.get("priority"):
             raise AppException(422, "Priority field must be required")
 
-        # if values.get("priority") != PRIORITY:
-        #     raise AppException(422, "Priority field must be a valid enum")
+       
 
         if not values.get("source"):
             raise AppException(422, "Source  field must be required")
 
-        # if values.get("source") != SOURCE:
-        #     raise AppException(422, "Source  field must be a valid enum")
+    
         return values
 
 
@@ -182,14 +177,14 @@ class BulkEnquiryRegisterSchema(BaseModel):
     @classmethod
     def validate_not_empty(cls, value):
         if not value:
-            raise ValueError("Enquiries list cannot be empty")
+            raise AppException(422, "Enquiries list cannot be empty")
         return value
 
 
 class UpdateEnquirySchema(BaseModel):
     fullName: str
     email: EmailStr
-    phone: PhoneNumber
+    phone: str
     companyName: Optional[str] = None
     designation: DESIGNATION = DESIGNATION.OTHER
     infoType: INFO_TYPE
@@ -203,7 +198,7 @@ class UpdateEnquirySchema(BaseModel):
     priority: PRIORITY
     source: str
     extra_fields: Optional[List[ExtraFieldSchema]] = Field(default=[])
-    assignTo: Optional[str] = None
+    assignTo: Optional[PydanticObjectId] = None
     message: Optional[str] = None
 
     @field_validator("phone")
@@ -212,16 +207,16 @@ class UpdateEnquirySchema(BaseModel):
         digits_only = value.replace("+", "")
 
         if not digits_only.isdigit():
-            raise AppException("Phone number must contain only digits")
+            raise AppException(422, "Phone number must contain only digits")
 
         if len(digits_only) < 10:
-            raise AppException("Phone number must be at least 10 digits")
+            raise AppException(422, "Phone number must be at least 10 digits")
 
         if len(digits_only) > 15:
-            raise AppException("Phone number must not exceed 15 digits")
+            raise AppException(422, "Phone number must not exceed 15 digits")
 
         if not re.match(r"^\+?[1-9]\d{9,14}$", value):
-            raise AppException(
+            raise AppException( 422, 
                 "Invalid phone number format. Use 9876543210 or +919876543210"
             )
 
@@ -233,20 +228,12 @@ class UpdateEnquirySchema(BaseModel):
         if not values.get("projectType"):
             raise AppException(422, "Project type field must be required")
 
-        # if values.get("projectType") != PROJECT_TYPES:
-        #     raise AppException(422, "Project type field must be a valid enum")
-
         if not values.get("priority"):
             raise AppException(422, "Priority field must be required")
-
-        # if values.get("priority") != PRIORITY:
-        #     raise AppException(422, "Priority field must be a valid enum")
 
         if not values.get("source"):
             raise AppException(422, "Source  field must be required")
 
-        # if values.get("source") != SOURCE:
-        #     raise AppException(422, "Source  field must be a valid enum")
         return values
 
 

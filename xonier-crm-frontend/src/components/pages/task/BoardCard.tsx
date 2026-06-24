@@ -9,6 +9,7 @@ import CategoryBadge from "./CategoryBadge";
 
 function BoardCard({
   task,
+  handleDragEnd,
   canEdit,
   canRemark,
   canDelete,
@@ -59,6 +60,7 @@ function BoardCard({
     <div
       draggable
       onDragStart={(e) => onDragStart(e, task)}
+      onDragEnd={handleDragEnd}
       onClick={() => router.push(`/task/detail/${task.id}`)}
       className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-3.5 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-gray-200 dark:hover:border-gray-600 transition-all group select-none"
     >

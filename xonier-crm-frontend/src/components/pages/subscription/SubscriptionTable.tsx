@@ -138,7 +138,7 @@ const SubscriptionTable: React.FC<ExtendedSubscriptionTableProps> = ({
 
                       {/* Plan Name */}
                       <td className="py-4 pr-4">
-                        <span className="font-semibold text-sm text-slate-900 dark:text-white capitalize">
+                        <span className="font-semibold text-sm text-slate-500 dark:text-white capitalize">
                           {(item.planId &&  item.planId instanceof Object) ?item.planId?.name ?? "—" : "-"}
                         </span>
                       </td>

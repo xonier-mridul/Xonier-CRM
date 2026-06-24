@@ -607,6 +607,7 @@ class CompanyService:
                 limit=filters.limit,
                 filters=query,
                 populate=["primary_admin", "subscription"],
+                sort=["-createdAt"]
             )
 
             if not result:

@@ -63,7 +63,6 @@ import Link from "next/link";
 import ActivityDetailPopup from "./UserActivityPopup";
 import { Company } from "@/src/types/company/company.types";
 
-
 export interface DateRangeFilter {
   from: string; // "2026-01-01"
   to: string; // "2026-02-17"
@@ -91,9 +90,8 @@ export interface ExtendedUserDetailProps {
   onDateFilter?: (range: DateRangeFilter | null) => void;
   onSummaryFilter?: (filter: SummaryFilter) => void;
   companyData?: Company | null;
-  companyLoading: boolean
+  companyLoading: boolean;
 }
-
 
 const ENTITY_CONFIG: Record<
   string,
@@ -183,7 +181,6 @@ const BAR_COLORS = [
   "#f97316",
 ];
 
-
 const toIso = (d: Date) => d.toISOString().slice(0, 10);
 
 const PRESETS = [
@@ -233,7 +230,6 @@ const PRESETS = [
   },
 ];
 
-
 const formatDate = (date?: Date | string | null) =>
   date
     ? new Date(date).toLocaleString("en-IN", {
@@ -258,7 +254,6 @@ const displayDate = (iso: string) =>
     month: "short",
     year: "numeric",
   });
-
 
 interface TooltipPayloadItem {
   color?: string;
@@ -295,23 +290,25 @@ const ChartTooltip = ({ active, payload, label }: ChartTooltipProps) => {
   );
 };
 
-
 const StatCard = ({
   label,
   value,
   sub,
   icon,
   accent,
-  link
+  link,
 }: {
   label: string;
   value: string | number;
   sub?: string;
   icon: JSX.Element;
   accent: string;
-  link: string
+  link: string;
 }) => (
-  <Link href={link} className="relative overflow-hidden hover:scale-105 hover:shadow-[0_0_6px_10px_#00000015] border-gray-200 bg-white dark:bg-gray-800 rounded-2xl border dark:border-gray-700 p-5 flex items-start gap-4">
+  <Link
+    href={link}
+    className="relative overflow-hidden hover:scale-105 hover:shadow-sm border-gray-200 bg-white dark:bg-gray-800 rounded-2xl border dark:border-gray-700 p-5 flex items-start gap-4"
+  >
     <div
       className={`shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-white text-lg ${accent}`}
     >
@@ -332,7 +329,6 @@ const StatCard = ({
   </Link>
 );
 
-
 const ActivityRow = ({ activity }: { activity: Activity }) => {
   const entity = ENTITY_CONFIG[activity.entityType] ?? {
     label: activity.entityType,
@@ -349,68 +345,73 @@ const ActivityRow = ({ activity }: { activity: Activity }) => {
     ([k]) => !["leadId", "quoteId"].includes(k),
   );
 
-  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(
+    null,
+  );
 
   return (
     <>
-    <ActivityDetailPopup
-  activity={selectedActivity}
-  onClose={() => setSelectedActivity(null)}
-/>
-    <div className="flex gap-4">
-      <div className="flex flex-col items-center">
-        <div
-          className={`w-3 h-3 rounded-full mt-1.5 ring-2 ring-white dark:ring-gray-800 ${action.dot} shrink-0`}
-        />
-        <div className="w-px flex-1 bg-gray-100 dark:bg-gray-700 mt-1" />
-      </div>
-      <div className="pb-5 flex-1 min-w-0">
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-100 dark:border-gray-700 p-4 hover:shadow-[0_0_8px_12px_#00000012] transition-shadow duration-200" onClick={() => setSelectedActivity(activity)}>
-          <div className="flex items-start justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ${entity.bg}`}
-                style={{ color: entity.color }}
-              >
-                {entity.icon}
-                {entity.label}
-              </span>
-              <span
-                className={`text-xs font-semibold capitalize ${action.color}`}
-              >
-                {action.label}
-              </span>
-            </div>
-            <time className="text-xs text-gray-400 whitespace-nowrap flex items-center gap-1">
-              <IoTimeOutline className="w-3 h-3" />
-              {formatDate(activity.createdAt)}
-            </time>
-          </div>
-          <p className="mt-2 text-sm font-medium text-gray-800 dark:text-gray-100 capitalize">
-            {activity.title}
-          </p>
-          {metaEntries.length > 0 && (
-            <div className="mt-2.5 flex flex-wrap gap-2">
-              {metaEntries.map(([key, val]) => (
+      <ActivityDetailPopup
+        activity={selectedActivity}
+        onClose={() => setSelectedActivity(null)}
+      />
+      <div className="flex gap-4">
+        <div className="flex flex-col items-center">
+          <div
+            className={`w-3 h-3 rounded-full mt-1.5 ring-2 ring-white dark:ring-gray-800 ${action.dot} shrink-0`}
+          />
+          <div className="w-px flex-1 bg-gray-100 dark:bg-gray-700 mt-1" />
+        </div>
+        <div className="pb-5 flex-1 min-w-0">
+          <div
+            className="bg-white dark:bg-gray-800 rounded-xl border border-slate-100 dark:border-gray-700 p-4 hover:shadow-[0_0_8px_12px_#00000012] transition-shadow duration-200"
+            onClick={() => setSelectedActivity(activity)}
+          >
+            <div className="flex items-start justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span
-                  key={key}
-                  className="text-xs bg-slate-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded-md font-mono"
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ${entity.bg}`}
+                  style={{ color: entity.color }}
                 >
-                  <span className="text-gray-400">{key}: </span>
-                  {typeof val === "object" ? (
-                    <span className="text-amber-600 dark:text-amber-400">
-                      {JSON.stringify(val)}
-                    </span>
-                  ) : (
-                    String(val)
-                  )}
+                  {entity.icon}
+                  {entity.label}
                 </span>
-              ))}
+                <span
+                  className={`text-xs font-semibold capitalize ${action.color}`}
+                >
+                  {action.label}
+                </span>
+              </div>
+              <time className="text-xs text-gray-400 whitespace-nowrap flex items-center gap-1">
+                <IoTimeOutline className="w-3 h-3" />
+                {formatDate(activity.createdAt)}
+              </time>
             </div>
-          )}
+            <p className="mt-2 text-sm font-medium text-gray-800 dark:text-gray-100 capitalize">
+              {activity.title}
+            </p>
+            {metaEntries.length > 0 && (
+              <div className="mt-2.5 flex flex-wrap gap-2">
+                {metaEntries.map(([key, val]) => (
+                  <span
+                    key={key}
+                    className="text-xs bg-slate-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded-md font-mono"
+                  >
+                    <span className="text-gray-400">{key}: </span>
+                    {typeof val === "object" ? (
+                      <span className="text-amber-600 dark:text-amber-400">
+                        {JSON.stringify(val)}
+                      </span>
+                    ) : (
+                      String(val)
+                    )}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
     </>
   );
 };
@@ -543,7 +544,6 @@ const DateFilterPanel = ({
   );
 };
 
-
 const UserDetail = ({
   userData,
   isLoading,
@@ -563,14 +563,13 @@ const UserDetail = ({
   companyLoading = false,
 }: ExtendedUserDetailProps): JSX.Element => {
   const [activeTab, setActiveTab] = useState<
-    "overview" | "activity" | "summary" | "roles"| "company"
+    "overview" | "activity" | "summary" | "roles" | "company"
   >("overview");
   const [entityFilter, setEntityFilter] = useState("all");
   const [actionFilter, setActionFilter] = useState("all");
   const [showDatePanel, setShowDatePanel] = useState(false);
   const [showSummaryDatePanel, setShowSummaryDatePanel] = useState(false);
 
-  
   const { entityPieData, actionBarData, dailyAreaData, entityCounts } =
     useMemo(() => {
       if (!activityData.length)
@@ -609,7 +608,6 @@ const UserDetail = ({
       };
     }, [activityData]);
 
-
   const filteredActivities = useMemo(
     () =>
       activityData.filter((a) => {
@@ -622,7 +620,6 @@ const UserDetail = ({
   );
 
   const hasClientFilters = entityFilter !== "all" || actionFilter !== "all";
-
 
   if (isLoading) return <ComponentLoader />;
 
@@ -685,23 +682,22 @@ const UserDetail = ({
       badge: userData.userRole?.length,
     },
     {
-    key: "company" as const,
-    label: "Company",
-    icon: <MdBusiness className="w-4 h-4" />,
-  },
+      key: "company" as const,
+      label: "Company",
+      icon: <MdBusiness className="w-4 h-4" />,
+    },
   ];
-  
+
   return (
     <div className="flex flex-col gap-6 font-sans">
-      
       <div className="relative bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden">
         <div className="h-28 bg-linear-to-r from-slate-700 via-slate-800 to-slate-900 relative">
           <div
             className="absolute inset-0 opacity-20"
             style={{
-  background: "linear-gradient(135deg, #2dd4bf 0%, #14b8a6 50%, #059669 100%)"
-}}
-
+              background:
+                "linear-gradient(135deg, #2dd4bf 0%, #14b8a6 50%, #059669 100%)",
+            }}
           />
         </div>
         <div className="px-6 pb-6">
@@ -747,6 +743,143 @@ const UserDetail = ({
                 <GoDotFill className={statusConfig.dot} />
                 {userData.status}
               </span>
+              {userData.rating != null
+                ? (() => {
+                    const rating = userData.rating ?? 0;
+
+                    const colorConfig =
+                      rating >= 4.5
+                        ? {
+                            badge:
+                              "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800",
+                            // glow: "shadow-emerald-200 dark:shadow-emerald-900/50",
+                            star: "#10b981",
+                            label: "Excellent",
+                            pulse: "bg-emerald-400",
+                          }
+                        : rating >= 3.5
+                          ? {
+                              badge:
+                                "bg-blue-50 text-green-600 border-green-200 dark:bg-green-800/30 dark:text-green-400 dark:border-green-700",
+                              // glow: "shadow-green-200 dark:shadow-green-900/50",
+                              star: "#39e118",
+                              label: "Good",
+                              pulse: "bg-green-400",
+                            }
+                          : rating >= 2.5
+                            ? {
+                                badge:
+                                  "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800",
+                                // glow: "shadow-amber-200 dark:shadow-amber-900/50",
+                                star: "#f59e0b",
+                                label: "Average",
+                                pulse: "bg-amber-400",
+                              }
+                            : rating >= 1.5
+                              ? {
+                                  badge:
+                                    "bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800",
+                                  // glow: "shadow-orange-200 dark:shadow-orange-900/50",
+                                  star: "#f97316",
+                                  label: "Poor",
+                                  pulse: "bg-orange-400",
+                                }
+                              : {
+                                  badge:
+                                    "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800",
+                                  // glow: "shadow-red-200 dark:shadow-red-900/50",
+                                  star: "#ef4444",
+                                  label: "Very Poor",
+                                  pulse: "bg-red-400",
+                                };
+
+                    return (
+                      <Link
+                        href={`/users/rating/${userData._id}`}
+                        className={`
+          inline-flex items-center gap-2 text-xs font-bold
+          px-3 py-1.5 rounded-full border cursor-pointer
+         
+          transition-all duration-200 hover:scale-105 
+          cursor-default select-none
+          ${colorConfig.badge}
+        `}
+                      >
+                        {/* Animated pulse dot */}
+                        <span className="relative flex h-2 w-2 shrink-0">
+                          <span
+                            className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-60 ${colorConfig.pulse}`}
+                          />
+                          <span
+                            className={`relative inline-flex rounded-full h-2 w-2 ${colorConfig.pulse}`}
+                          />
+                        </span>
+
+                        {/* Fractional stars */}
+                        <span className="flex items-center gap-[2px]">
+                          {[1, 2, 3, 4, 5].map((star) => {
+                            // how much of this star is filled: 0 → 1
+                            const fill = Math.min(
+                              1,
+                              Math.max(0, rating - (star - 1)),
+                            );
+                            const fillPct = Math.round(fill * 100);
+                            const uid = `star-${star}-${Math.round(rating * 10)}`;
+
+                            return (
+                              <svg
+                                key={star}
+                                viewBox="0 0 20 20"
+                                className="w-3.5 h-3.5 shrink-0"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <defs>
+                                  <linearGradient
+                                    id={uid}
+                                    x1="0%"
+                                    y1="0%"
+                                    x2="100%"
+                                    y2="0%"
+                                  >
+                                    {/* filled portion */}
+                                    <stop
+                                      offset={`${fillPct}%`}
+                                      stopColor={colorConfig.star}
+                                      stopOpacity="1"
+                                    />
+                                    {/* empty portion */}
+                                    <stop
+                                      offset={`${fillPct}%`}
+                                      stopColor={colorConfig.star}
+                                      stopOpacity="0.2"
+                                    />
+                                  </linearGradient>
+                                </defs>
+                                <path
+                                  fill={`url(#${uid})`}
+                                  d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                                />
+                              </svg>
+                            );
+                          })}
+                        </span>
+
+                        {/* Numeric value */}
+                        <span className="tabular-nums font-extrabold tracking-tight">
+                          {rating.toFixed(1)}
+                        </span>
+
+                        {/* Divider */}
+                        <span className="opacity-30 font-normal">|</span>
+
+                        {/* Label */}
+                        <span className="font-semibold opacity-80 tracking-wide">
+                          {colorConfig.label}
+                        </span>
+                      </Link>
+                    );
+                  })()
+                : null}
             </div>
             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mt-1">
               <button
@@ -757,17 +890,18 @@ const UserDetail = ({
                 {userData.email}
                 <MdOutlineContentCopy className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
               </button>
-              <Link href={`tel:${userData.phone}`} className="flex items-center cursor-pointer hover:text-blue-600 gap-1.5">
+              <Link
+                href={`tel:${userData.phone}`}
+                className="flex items-center cursor-pointer hover:text-blue-600 gap-1.5"
+              >
                 <MdPhone className="w-4 h-4" />
                 {userData.phone}
               </Link>
-              
             </div>
           </div>
         </div>
       </div>
 
-      
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Total Activities"
@@ -801,7 +935,7 @@ const UserDetail = ({
           accent="bg-blue-500"
         />
         <StatCard
-        link={`/roles`}
+          link={`/roles`}
           label="Assigned Roles"
           value={userData.userRole?.length ?? 0}
           sub="access roles"
@@ -820,7 +954,6 @@ const UserDetail = ({
           accent="bg-emerald-500"
         />
       </div>
-
 
       <div className="bg-white  dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
         <div className="border-b border-slate-100 dark:border-gray-700 px-4">
@@ -853,7 +986,6 @@ const UserDetail = ({
           </nav>
         </div>
 
-        
         {activeTab === "overview" && (
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -958,7 +1090,6 @@ const UserDetail = ({
           </div>
         )}
 
-       
         {activeTab === "activity" && (
           <div className="p-6 space-y-6">
             {activityLoading ? (
@@ -968,9 +1099,7 @@ const UserDetail = ({
               </div>
             ) : (
               <>
-               
                 <div className="flex flex-wrap items-center gap-3">
-                  
                   <div className="relative">
                     <button
                       onClick={() => setShowDatePanel((v) => !v)}
@@ -1026,7 +1155,6 @@ const UserDetail = ({
                     )}
                   </div>
 
-          
                   {dateRange && (
                     <div className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-full border border-indigo-200 dark:border-indigo-800">
                       <FiCalendar className="w-3 h-3" />
@@ -1037,7 +1165,6 @@ const UserDetail = ({
 
                   <div className="flex-1" />
 
-               
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="flex items-center gap-1 text-xs font-medium text-gray-400">
                       <FiFilter className="w-3.5 h-3.5" />
@@ -1101,9 +1228,7 @@ const UserDetail = ({
                   </div>
                 ) : (
                   <>
-                   
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                     
                       <div className="lg:col-span-2 bg-slate-50 dark:bg-gray-700/40 rounded-2xl p-5 border border-slate-100 dark:border-gray-700">
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center gap-2">
@@ -1185,7 +1310,6 @@ const UserDetail = ({
                         </ResponsiveContainer>
                       </div>
 
-                      
                       <div className="bg-slate-50 dark:bg-gray-700/40 rounded-2xl p-5 border border-slate-100 dark:border-gray-700 flex flex-col">
                         <div className="flex items-center gap-2 mb-4">
                           <div className="w-7 h-7 bg-amber-100 dark:bg-amber-900/40 rounded-lg flex items-center justify-center">
@@ -1217,7 +1341,7 @@ const UserDetail = ({
                             <Tooltip content={<ChartTooltip />} />
                           </PieChart>
                         </ResponsiveContainer>
-                        
+
                         <div className="mt-3 space-y-1.5">
                           {entityPieData.map((e, i) => (
                             <div
@@ -1346,7 +1470,6 @@ const UserDetail = ({
           </div>
         )}
 
-        
         {activeTab === "summary" && (
           <div className="p-6 space-y-6">
             {summaryLoading ? (
@@ -1363,9 +1486,7 @@ const UserDetail = ({
               </div>
             ) : (
               <>
-                
                 <div className="flex flex-wrap items-center gap-3">
-                 
                   <div className="relative">
                     <button
                       onClick={() => setShowSummaryDatePanel((v) => !v)}
@@ -1437,7 +1558,6 @@ const UserDetail = ({
                     )}
                   </div>
 
-                  
                   <div className="flex items-center gap-1 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-xl p-1">
                     {(["day", "week", "month"] as const).map((g) => (
                       <button
@@ -1457,27 +1577,26 @@ const UserDetail = ({
                   </div>
 
                   <div className="flex items-center gap-3">
-                  {summaryFilter?.from && summaryFilter?.to && (
-                    <div className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-full border border-indigo-200 dark:border-indigo-800">
-                      <FiCalendar className="w-3 h-3" />
-                      {displayDate(summaryFilter.from)} —{" "}
-                      {displayDate(summaryFilter.to)}
-                    </div>
-                  )}
+                    {summaryFilter?.from && summaryFilter?.to && (
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-full border border-indigo-200 dark:border-indigo-800">
+                        <FiCalendar className="w-3 h-3" />
+                        {displayDate(summaryFilter.from)} —{" "}
+                        {displayDate(summaryFilter.to)}
+                      </div>
+                    )}
 
-                  
-                  {(summaryFilter?.from ||
-                    summaryFilter?.to ||
-                    summaryFilter?.groupBy) && (
-                    <button
-                      onClick={() => onSummaryFilter?.({})}
-                      className="text-xs text-red-500 hover:text-white bg-red-50 hover:bg-red-500 px-2.5 py-1 rounded-full cursor-pointer group font-medium flex items-center gap-1 ml-auto"
-                    >
-                      <FiX className="w-3 h-3 group-hover:rotate-90" /> Reset
-                    </button>
-                  )}
-                   </div>
-                  
+                    {(summaryFilter?.from ||
+                      summaryFilter?.to ||
+                      summaryFilter?.groupBy) && (
+                      <button
+                        onClick={() => onSummaryFilter?.({})}
+                        className="text-xs text-red-500 hover:text-white bg-red-50 hover:bg-red-500 px-2.5 py-1 rounded-full cursor-pointer group font-medium flex items-center gap-1 ml-auto"
+                      >
+                        <FiX className="w-3 h-3 group-hover:rotate-90" /> Reset
+                      </button>
+                    )}
+                  </div>
+
                   {activitySummary && (
                     <span className="ml-auto text-xs text-gray-400 flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
@@ -1490,10 +1609,11 @@ const UserDetail = ({
                   )}
                 </div>
 
-               
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  
-                  <Link href={`/leads?userid=${userData._id}`} className="relative overflow-hidden hover:scale-105 cursor-point hover:shadow-[0_0_8px_10px_#00000014] bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
+                  <Link
+                    href={`/leads?userid=${userData._id}`}
+                    className="relative overflow-hidden hover:scale-105 cursor-point hover:shadow-[0_0_8px_10px_#00000014] bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5"
+                  >
                     <div className="flex items-start gap-3">
                       <div className="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center shrink-0">
                         <HiOutlineUserGroup className="w-5 h-5 text-white" />
@@ -1516,8 +1636,10 @@ const UserDetail = ({
                     <div className="absolute -right-3 -bottom-3 w-16 h-16 rounded-full bg-indigo-500 opacity-[0.07]" />
                   </Link>
 
-          
-                  <Link href={`/deals?userid=${userData._id}`} className="relative overflow-hidden hover:scale-105 cursor-point hover:shadow-[0_0_8px_10px_#00000014] bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
+                  <Link
+                    href={`/deals?userid=${userData._id}`}
+                    className="relative overflow-hidden hover:scale-105 cursor-point hover:shadow-[0_0_8px_10px_#00000014] bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5"
+                  >
                     <div className="flex items-start gap-3">
                       <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shrink-0">
                         <HiOutlineBriefcase className="w-5 h-5 text-white" />
@@ -1574,7 +1696,6 @@ const UserDetail = ({
                     <div className="absolute -right-3 -bottom-3 w-16 h-16 rounded-full bg-amber-500 opacity-[0.07]" />
                   </div>
 
-              
                   <div className="relative overflow-hidden bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
                     <div className="flex items-start gap-3">
                       <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center shrink-0">
@@ -1594,7 +1715,6 @@ const UserDetail = ({
                   </div>
                 </div>
 
-             
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                   {/* Leads over time */}
                   <div className="bg-slate-50 dark:bg-gray-700/40 rounded-2xl p-5 border border-slate-100 dark:border-gray-700">
@@ -2034,7 +2154,10 @@ const UserDetail = ({
                   className="border border-slate-100 dark:border-gray-700 rounded-xl p-5"
                 >
                   <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
-                    <Link href={`/roles`}  className="flex items-center gap-2 group">
+                    <Link
+                      href={`/roles`}
+                      className="flex items-center gap-2 group"
+                    >
                       <div className="w-8 h-8 bg-linear-to-br from-violet-500 to-indigo-600 rounded-lg flex items-center justify-center">
                         <IoShieldCheckmark className="w-4 h-4 text-white group-hover:scale-112" />
                       </div>
@@ -2080,357 +2203,538 @@ const UserDetail = ({
         )}
 
         {activeTab === "company" && (
-  <div className="p-6">
-    {companyLoading ? (
-      <div className="flex flex-col items-center justify-center py-16 gap-3">
-        <div className="w-9 h-9 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm text-gray-400">Loading company…</p>
-      </div>
-    ) : !companyData ? (
-      <div className="text-center py-16 space-y-3">
-        <MdBusiness className="w-12 h-12 text-gray-200 dark:text-gray-600 mx-auto" />
-        <p className="text-base font-semibold text-gray-400">No company assigned</p>
-        <p className="text-sm text-gray-400 dark:text-gray-500">
-          This user is not linked to any company yet.
-        </p>
-        <Link
-          href={`/users/update/${userData.id ?? userData._id}`}
-          className="inline-flex items-center gap-2 mt-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
-        >
-          <MdOutlineEdit className="w-4 h-4" /> Assign a company
-        </Link>
-      </div>
-    ) : (
-      <div className="space-y-5">
-
-
-        <div className="relative bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden">
-          <div className="h-20 relative" style={{ background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 60%, #a21caf 100%)" }}>
-            <div className="absolute inset-0 opacity-30" style={{ backgroundImage: "radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 60%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%)" }} />
-          </div>
-          <div className="px-6 pb-5 relative">
-            <div className="flex items-end justify-between -mt-6 mb-4 flex-wrap gap-3">
-              <div className="w-14 h-14 rounded-2xl border-4 border-white dark:border-gray-800 bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center shadow-xl">
-                <MdBusiness className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
+          <div className="p-6">
+            {companyLoading ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-3">
+                <div className="w-9 h-9 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                <p className="text-sm text-gray-400">Loading company…</p>
               </div>
-              <Link
-                href={`/companies/${companyData.id ?? (companyData as any).id}`}
-                className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
-              >
-                <IoEyeOutline className="w-4 h-4" /> View Full Profile
-              </Link>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white capitalize">
-                  {companyData.companyName}
-                </h2>
-                <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full capitalize ${
-                  companyData.status === "active"
-                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                    : companyData.status === "pending_verification"
-                    ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-                    : companyData.status === "suspended"
-                    ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
-                    : "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
-                }`}>
-                  {companyData.status?.replace(/_/g, " ")}
-                </span>
+            ) : !companyData ? (
+              <div className="text-center py-16 space-y-3">
+                <MdBusiness className="w-12 h-12 text-gray-200 dark:text-gray-600 mx-auto" />
+                <p className="text-base font-semibold text-gray-400">
+                  No company assigned
+                </p>
+                <p className="text-sm text-gray-400 dark:text-gray-500">
+                  This user is not linked to any company yet.
+                </p>
+                <Link
+                  href={`/users/update/${userData.id ?? userData._id}`}
+                  className="inline-flex items-center gap-2 mt-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                >
+                  <MdOutlineEdit className="w-4 h-4" /> Assign a company
+                </Link>
               </div>
-              <div className="flex items-center gap-3 flex-wrap text-xs text-gray-400">
-                <span className="font-mono">{companyData.companyId}</span>
-                {companyData.industry && (
-                  <>
-                    <span className="text-slate-300 dark:text-gray-600">·</span>
-                    <span>{companyData.industry}</span>
-                  </>
-                )}
-                {companyData.slug && (
-                  <>
-                    <span className="text-slate-300 dark:text-gray-600">·</span>
-                    <span className="font-mono">/{companyData.slug}</span>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Quick stats ─────────────────────────────────────────── */}
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            {
-              label: "Subscriptions",
-              value: companyData.subscriptionCount ?? 0,
-              icon: <HiOutlineCurrencyDollar className="w-4 h-4" />,
-              accent: "bg-blue-500",
-              bg: "bg-blue-50 dark:bg-blue-900/20",
-              text: "text-blue-600 dark:text-blue-400",
-            },
-            {
-              label: "User Limit",
-              value: companyData.userLimit ?? "Unlimited",
-              icon: <HiOutlineUserGroup className="w-4 h-4" />,
-              accent: "bg-violet-500",
-              bg: "bg-violet-50 dark:bg-violet-900/20",
-              text: "text-violet-600 dark:text-violet-400",
-            },
-            {
-              label: "Member Since",
-              value: new Date(companyData.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
-              icon: <FiCalendar className="w-4 h-4" />,
-              accent: "bg-emerald-500",
-              bg: "bg-emerald-50 dark:bg-emerald-900/20",
-              text: "text-emerald-600 dark:text-emerald-400",
-            },
-          ].map((s) => (
-            <div key={s.label} className={`flex items-center gap-3 p-4 rounded-2xl border border-slate-100 dark:border-gray-700 bg-white dark:bg-gray-800`}>
-              <div className={`w-9 h-9 rounded-xl ${s.accent} flex items-center justify-center text-white shrink-0`}>
-                {s.icon}
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs text-gray-400 font-medium">{s.label}</p>
-                <p className={`text-sm font-bold truncate ${s.text}`}>{String(s.value)}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* ── Details + Contact ────────────────────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
-              Company Details
-            </h3>
-            <div className="space-y-0">
-              {[
-                { label: "Industry", value: companyData.industry || "—" },
-                { label: "Website", value: companyData.website || "—" },
-                { label: "Timezone", value: companyData.timezone || "—" },
-                { label: "Company Size", value: companyData.companySize || "—" },
-                { label: "Country", value: companyData.country || "—" },
-                { label: "Sub Domain", value: companyData.subDomain || "—" },
-                { label: "Reg. Number", value: companyData.registrationNumber || "—" },
-                { label: "Trade Number", value: companyData.tradeNumber || "—" },
-              ].map(({ label, value }) => (
-                <div key={label} className="flex items-start justify-between gap-4 py-2.5 border-b border-slate-50 dark:border-gray-700/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-gray-700/20 rounded-lg px-1 transition-colors">
-                  <span className="text-xs text-gray-400 min-w-28 shrink-0 mt-0.5">{label}</span>
-                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200 text-right capitalize break-all">{value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
-              Contact Info
-            </h3>
-            <div className="space-y-0">
-              {[
-                { label: "Email", value: companyData.email || "—" },
-                { label: "Phone", value: companyData.number || "—" },
-              ].map(({ label, value }) => (
-                <div key={label} className="flex items-start justify-between gap-4 py-2.5 border-b border-slate-50 dark:border-gray-700/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-gray-700/20 rounded-lg px-1 transition-colors">
-                  <span className="text-xs text-gray-400 min-w-28 shrink-0 mt-0.5">{label}</span>
-                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200 text-right break-all">{value}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Primary Admin */}
-            {(companyData as any).primary_admin && typeof (companyData as any).primary_admin === "object" && (companyData as any).primary_admin.firstName && (
-              <div className="mt-5">
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
-                  Company Admin
-                </h3>
-                <div className="flex items-center gap-3 p-3.5 bg-slate-50 dark:bg-gray-700/50 rounded-xl border border-slate-100 dark:border-gray-700">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
-                    {(companyData as any).primary_admin.firstName?.[0]}
-                    {(companyData as any).primary_admin.lastName?.[0] ?? ""}
+            ) : (
+              <div className="space-y-5">
+                <div className="relative bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden">
+                  <div
+                    className="h-20 relative"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, #4f46e5 0%, #7c3aed 60%, #a21caf 100%)",
+                    }}
+                  >
+                    <div
+                      className="absolute inset-0 opacity-30"
+                      style={{
+                        backgroundImage:
+                          "radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 60%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%)",
+                      }}
+                    />
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 capitalize">
-                      {(companyData as any).primary_admin.firstName}{" "}
-                      {(companyData as any).primary_admin.lastName}
-                    </p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                        (companyData as any).primary_admin.isEmailVerified
-                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                          : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-                      }`}>
-                        {(companyData as any).primary_admin.isEmailVerified ? "✓ Verified" : "Unverified"}
-                      </span>
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full capitalize ${
-                        (companyData as any).primary_admin.status === "active"
-                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                          : "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
-                      }`}>
-                        {(companyData as any).primary_admin.status}
-                      </span>
+                  <div className="px-6 pb-5 relative">
+                    <div className="flex items-end justify-between -mt-6 mb-4 flex-wrap gap-3">
+                      <div className="w-14 h-14 rounded-2xl border-4 border-white dark:border-gray-800 bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center shadow-xl">
+                        <MdBusiness className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
+                      </div>
+                      <Link
+                        href={`/companies/${companyData.id ?? (companyData as any).id}`}
+                        className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                      >
+                        <IoEyeOutline className="w-4 h-4" /> View Full Profile
+                      </Link>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex items-center gap-2.5 flex-wrap">
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white capitalize">
+                          {companyData.companyName}
+                        </h2>
+                        <span
+                          className={`text-xs font-bold px-2.5 py-0.5 rounded-full capitalize ${
+                            companyData.status === "active"
+                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                              : companyData.status === "pending_verification"
+                                ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                                : companyData.status === "suspended"
+                                  ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
+                                  : "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
+                          }`}
+                        >
+                          {companyData.status?.replace(/_/g, " ")}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 flex-wrap text-xs text-gray-400">
+                        <span className="font-mono">
+                          {companyData.companyId}
+                        </span>
+                        {companyData.industry && (
+                          <>
+                            <span className="text-slate-300 dark:text-gray-600">
+                              ·
+                            </span>
+                            <span>{companyData.industry}</span>
+                          </>
+                        )}
+                        {companyData.slug && (
+                          <>
+                            <span className="text-slate-300 dark:text-gray-600">
+                              ·
+                            </span>
+                            <span className="font-mono">
+                              /{companyData.slug}
+                            </span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <Link
-                    href={`/users/${(companyData as any).primary_admin.id ?? (companyData as any).primary_admin._id}`}
-                    className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 shrink-0"
-                  >
-                    <IoEyeOutline className="w-3.5 h-3.5" /> View
-                  </Link>
+                </div>
+
+                {/* ── Quick stats ─────────────────────────────────────────── */}
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    {
+                      label: "Subscriptions",
+                      value: companyData.subscriptionCount ?? 0,
+                      icon: <HiOutlineCurrencyDollar className="w-4 h-4" />,
+                      accent: "bg-blue-500",
+                      bg: "bg-blue-50 dark:bg-blue-900/20",
+                      text: "text-blue-600 dark:text-blue-400",
+                    },
+                    {
+                      label: "User Limit",
+                      value: companyData.userLimit ?? "Unlimited",
+                      icon: <HiOutlineUserGroup className="w-4 h-4" />,
+                      accent: "bg-violet-500",
+                      bg: "bg-violet-50 dark:bg-violet-900/20",
+                      text: "text-violet-600 dark:text-violet-400",
+                    },
+                    {
+                      label: "Member Since",
+                      value: new Date(companyData.createdAt).toLocaleDateString(
+                        "en-IN",
+                        { day: "2-digit", month: "short", year: "numeric" },
+                      ),
+                      icon: <FiCalendar className="w-4 h-4" />,
+                      accent: "bg-emerald-500",
+                      bg: "bg-emerald-50 dark:bg-emerald-900/20",
+                      text: "text-emerald-600 dark:text-emerald-400",
+                    },
+                  ].map((s) => (
+                    <div
+                      key={s.label}
+                      className={`flex items-center gap-3 p-4 rounded-2xl border border-slate-100 dark:border-gray-700 bg-white dark:bg-gray-800`}
+                    >
+                      <div
+                        className={`w-9 h-9 rounded-xl ${s.accent} flex items-center justify-center text-white shrink-0`}
+                      >
+                        {s.icon}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs text-gray-400 font-medium">
+                          {s.label}
+                        </p>
+                        <p className={`text-sm font-bold truncate ${s.text}`}>
+                          {String(s.value)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* ── Details + Contact ────────────────────────────────────── */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
+                      Company Details
+                    </h3>
+                    <div className="space-y-0">
+                      {[
+                        {
+                          label: "Industry",
+                          value: companyData.industry || "—",
+                        },
+                        { label: "Website", value: companyData.website || "—" },
+                        {
+                          label: "Timezone",
+                          value: companyData.timezone || "—",
+                        },
+                        {
+                          label: "Company Size",
+                          value: companyData.companySize || "—",
+                        },
+                        { label: "Country", value: companyData.country || "—" },
+                        {
+                          label: "Sub Domain",
+                          value: companyData.subDomain || "—",
+                        },
+                        {
+                          label: "Reg. Number",
+                          value: companyData.registrationNumber || "—",
+                        },
+                        {
+                          label: "Trade Number",
+                          value: companyData.tradeNumber || "—",
+                        },
+                      ].map(({ label, value }) => (
+                        <div
+                          key={label}
+                          className="flex items-start justify-between gap-4 py-2.5 border-b border-slate-50 dark:border-gray-700/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-gray-700/20 rounded-lg px-1 transition-colors"
+                        >
+                          <span className="text-xs text-gray-400 min-w-28 shrink-0 mt-0.5">
+                            {label}
+                          </span>
+                          <span className="text-sm font-medium text-gray-800 dark:text-gray-200 text-right capitalize break-all">
+                            {value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
+                      Contact Info
+                    </h3>
+                    <div className="space-y-0">
+                      {[
+                        { label: "Email", value: companyData.email || "—" },
+                        { label: "Phone", value: companyData.number || "—" },
+                      ].map(({ label, value }) => (
+                        <div
+                          key={label}
+                          className="flex items-start justify-between gap-4 py-2.5 border-b border-slate-50 dark:border-gray-700/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-gray-700/20 rounded-lg px-1 transition-colors"
+                        >
+                          <span className="text-xs text-gray-400 min-w-28 shrink-0 mt-0.5">
+                            {label}
+                          </span>
+                          <span className="text-sm font-medium text-gray-800 dark:text-gray-200 text-right break-all">
+                            {value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Primary Admin */}
+                    {(companyData as any).primary_admin &&
+                      typeof (companyData as any).primary_admin === "object" &&
+                      (companyData as any).primary_admin.firstName && (
+                        <div className="mt-5">
+                          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
+                            Company Admin
+                          </h3>
+                          <div className="flex items-center gap-3 p-3.5 bg-slate-50 dark:bg-gray-700/50 rounded-xl border border-slate-100 dark:border-gray-700">
+                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                              {
+                                (companyData as any).primary_admin
+                                  .firstName?.[0]
+                              }
+                              {(companyData as any).primary_admin
+                                .lastName?.[0] ?? ""}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 capitalize">
+                                {(companyData as any).primary_admin.firstName}{" "}
+                                {(companyData as any).primary_admin.lastName}
+                              </p>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span
+                                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                                    (companyData as any).primary_admin
+                                      .isEmailVerified
+                                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                                      : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                                  }`}
+                                >
+                                  {(companyData as any).primary_admin
+                                    .isEmailVerified
+                                    ? "✓ Verified"
+                                    : "Unverified"}
+                                </span>
+                                <span
+                                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full capitalize ${
+                                    (companyData as any).primary_admin
+                                      .status === "active"
+                                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                                      : "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
+                                  }`}
+                                >
+                                  {(companyData as any).primary_admin.status}
+                                </span>
+                              </div>
+                            </div>
+                            <Link
+                              href={`/users/${(companyData as any).primary_admin.id ?? (companyData as any).primary_admin._id}`}
+                              className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 shrink-0"
+                            >
+                              <IoEyeOutline className="w-3.5 h-3.5" /> View
+                            </Link>
+                          </div>
+                        </div>
+                      )}
+                  </div>
+                </div>
+
+                {/* ── Subscription ────────────────────────────────────────── */}
+                {(companyData as any).subscription &&
+                  typeof (companyData as any).subscription === "object" &&
+                  (companyData as any).subscription.subscriptionId && (
+                    <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                          Subscription
+                        </h3>
+                        <span
+                          className={`text-xs font-bold px-2.5 py-1 rounded-full capitalize ${
+                            (companyData as any).subscription.status ===
+                            "active"
+                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                              : (companyData as any).subscription.status ===
+                                  "trial"
+                                ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                                : "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
+                          }`}
+                        >
+                          {(companyData as any).subscription.status}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        {[
+                          {
+                            label: "Base Price",
+                            value: `$${(companyData as any).subscription.basePrice}`,
+                            sub: (companyData as any).subscription.billingCycle,
+                            color: "text-gray-800 dark:text-gray-100",
+                          },
+                          {
+                            label: "Discount",
+                            value: `$${(companyData as any).subscription.discountAmount}`,
+                            sub: "saved",
+                            color:
+                              (companyData as any).subscription.discountAmount >
+                              0
+                                ? "text-emerald-600 dark:text-emerald-400"
+                                : "text-gray-400",
+                          },
+                          {
+                            label: "Final Price",
+                            value: `$${(companyData as any).subscription.finalPrice}`,
+                            sub: `/${(companyData as any).subscription.billingCycle}`,
+                            color: "text-indigo-600 dark:text-indigo-400",
+                          },
+                        ].map((s) => (
+                          <div
+                            key={s.label}
+                            className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-4 text-center border border-slate-100 dark:border-gray-700"
+                          >
+                            <p className="text-xs text-gray-400 font-medium mb-1">
+                              {s.label}
+                            </p>
+                            <p className={`text-lg font-black ${s.color}`}>
+                              {s.value}
+                            </p>
+                            <p className="text-xs text-gray-400 capitalize mt-0.5">
+                              {s.sub}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                        {[
+                          {
+                            label: "Trial Start",
+                            value: (companyData as any).subscription
+                              .trialStartDate
+                              ? new Date(
+                                  (companyData as any).subscription
+                                    .trialStartDate,
+                                ).toLocaleDateString("en-IN", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                })
+                              : "—",
+                            icon: "🎯",
+                          },
+                          {
+                            label: "Trial End",
+                            value: (companyData as any).subscription
+                              .trialEndDate
+                              ? new Date(
+                                  (companyData as any).subscription
+                                    .trialEndDate,
+                                ).toLocaleDateString("en-IN", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                })
+                              : "—",
+                            icon: "⏳",
+                          },
+                          {
+                            label: "Start Date",
+                            value: (companyData as any).subscription
+                              .startSubscriptionDate
+                              ? new Date(
+                                  (companyData as any).subscription
+                                    .startSubscriptionDate,
+                                ).toLocaleDateString("en-IN", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                })
+                              : "—",
+                            icon: "📅",
+                          },
+                          {
+                            label: "End Date",
+                            value: (companyData as any).subscription
+                              .endSubscriptionDate
+                              ? new Date(
+                                  (companyData as any).subscription
+                                    .endSubscriptionDate,
+                                ).toLocaleDateString("en-IN", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                })
+                              : "—",
+                            icon: "🏁",
+                          },
+                        ].map((d) => (
+                          <div
+                            key={d.label}
+                            className="flex flex-col gap-1 p-3 bg-slate-50 dark:bg-gray-700/50 rounded-xl border border-slate-100 dark:border-gray-700"
+                          >
+                            <span className="text-gray-400">
+                              {d.icon} {d.label}
+                            </span>
+                            <span className="font-semibold text-gray-700 dark:text-gray-200">
+                              {d.value}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="mt-3 flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-gray-700">
+                        <span className="text-xs text-gray-400 font-mono truncate flex-1">
+                          ID: {(companyData as any).subscription.subscriptionId}
+                        </span>
+                        <button
+                          onClick={() =>
+                            handleCopy(
+                              (companyData as any).subscription.subscriptionId,
+                            )
+                          }
+                          className="text-gray-400 hover:text-indigo-500 transition-colors"
+                        >
+                          <MdOutlineContentCopy className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                {/* ── Timestamps ──────────────────────────────────────────── */}
+                <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
+                    Timeline
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[
+                      {
+                        label: "Created At",
+                        value: companyData.createdAt
+                          ? new Date(companyData.createdAt).toLocaleString(
+                              "en-IN",
+                              {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: true,
+                              },
+                            )
+                          : "—",
+                        icon: "📌",
+                        color: "text-indigo-600 dark:text-indigo-400",
+                        bg: "bg-indigo-50 dark:bg-indigo-900/20",
+                      },
+                      {
+                        label: "Updated At",
+                        value: companyData.updatedAt
+                          ? new Date(companyData.updatedAt).toLocaleString(
+                              "en-IN",
+                              {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: true,
+                              },
+                            )
+                          : "Not updated",
+                        icon: "✏️",
+                        color: "text-amber-600 dark:text-amber-400",
+                        bg: "bg-amber-50 dark:bg-amber-900/20",
+                      },
+                      {
+                        label: "Deleted At",
+                        value: companyData.deletedAt
+                          ? new Date(companyData.deletedAt).toLocaleString(
+                              "en-IN",
+                              {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: true,
+                              },
+                            )
+                          : "Not deleted",
+                        icon: "🗑️",
+                        color: companyData.deletedAt
+                          ? "text-red-600 dark:text-red-400"
+                          : "text-gray-400",
+                        bg: companyData.deletedAt
+                          ? "bg-red-50 dark:bg-red-900/20"
+                          : "bg-slate-50 dark:bg-gray-700/50",
+                      },
+                    ].map((t) => (
+                      <div
+                        key={t.label}
+                        className={`flex flex-col gap-1.5 p-4 rounded-xl border border-slate-100 dark:border-gray-700 ${t.bg}`}
+                      >
+                        <div className="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
+                          <span>{t.icon}</span>
+                          {t.label}
+                        </div>
+                        <p className={`text-sm font-semibold ${t.color}`}>
+                          {t.value}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
           </div>
-        </div>
-
-        {/* ── Subscription ────────────────────────────────────────── */}
-        {(companyData as any).subscription && typeof (companyData as any).subscription === "object" && (companyData as any).subscription.subscriptionId && (
-          <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                Subscription
-              </h3>
-              <span className={`text-xs font-bold px-2.5 py-1 rounded-full capitalize ${
-                (companyData as any).subscription.status === "active"
-                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                  : (companyData as any).subscription.status === "trial"
-                  ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                  : "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
-              }`}>
-                {(companyData as any).subscription.status}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              {[
-                {
-                  label: "Base Price",
-                  value: `$${(companyData as any).subscription.basePrice}`,
-                  sub: (companyData as any).subscription.billingCycle,
-                  color: "text-gray-800 dark:text-gray-100",
-                },
-                {
-                  label: "Discount",
-                  value: `$${(companyData as any).subscription.discountAmount}`,
-                  sub: "saved",
-                  color: (companyData as any).subscription.discountAmount > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-gray-400",
-                },
-                {
-                  label: "Final Price",
-                  value: `$${(companyData as any).subscription.finalPrice}`,
-                  sub: `/${(companyData as any).subscription.billingCycle}`,
-                  color: "text-indigo-600 dark:text-indigo-400",
-                },
-              ].map((s) => (
-                <div key={s.label} className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-4 text-center border border-slate-100 dark:border-gray-700">
-                  <p className="text-xs text-gray-400 font-medium mb-1">{s.label}</p>
-                  <p className={`text-lg font-black ${s.color}`}>{s.value}</p>
-                  <p className="text-xs text-gray-400 capitalize mt-0.5">{s.sub}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-              {[
-                {
-                  label: "Trial Start",
-                  value: (companyData as any).subscription.trialStartDate
-                    ? new Date((companyData as any).subscription.trialStartDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
-                    : "—",
-                  icon: "🎯",
-                },
-                {
-                  label: "Trial End",
-                  value: (companyData as any).subscription.trialEndDate
-                    ? new Date((companyData as any).subscription.trialEndDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
-                    : "—",
-                  icon: "⏳",
-                },
-                {
-                  label: "Start Date",
-                  value: (companyData as any).subscription.startSubscriptionDate
-                    ? new Date((companyData as any).subscription.startSubscriptionDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
-                    : "—",
-                  icon: "📅",
-                },
-                {
-                  label: "End Date",
-                  value: (companyData as any).subscription.endSubscriptionDate
-                    ? new Date((companyData as any).subscription.endSubscriptionDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
-                    : "—",
-                  icon: "🏁",
-                },
-              ].map((d) => (
-                <div key={d.label} className="flex flex-col gap-1 p-3 bg-slate-50 dark:bg-gray-700/50 rounded-xl border border-slate-100 dark:border-gray-700">
-                  <span className="text-gray-400">{d.icon} {d.label}</span>
-                  <span className="font-semibold text-gray-700 dark:text-gray-200">{d.value}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-3 flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-gray-700">
-              <span className="text-xs text-gray-400 font-mono truncate flex-1">
-                ID: {(companyData as any).subscription.subscriptionId}
-              </span>
-              <button
-                onClick={() => handleCopy((companyData as any).subscription.subscriptionId)}
-                className="text-gray-400 hover:text-indigo-500 transition-colors"
-              >
-                <MdOutlineContentCopy className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
         )}
-
-        {/* ── Timestamps ──────────────────────────────────────────── */}
-        <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
-            Timeline
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              {
-                label: "Created At",
-                value: companyData.createdAt
-                  ? new Date(companyData.createdAt).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true })
-                  : "—",
-                icon: "📌",
-                color: "text-indigo-600 dark:text-indigo-400",
-                bg: "bg-indigo-50 dark:bg-indigo-900/20",
-              },
-              {
-                label: "Updated At",
-                value: companyData.updatedAt
-                  ? new Date(companyData.updatedAt).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true })
-                  : "Not updated",
-                icon: "✏️",
-                color: "text-amber-600 dark:text-amber-400",
-                bg: "bg-amber-50 dark:bg-amber-900/20",
-              },
-              {
-                label: "Deleted At",
-                value: companyData.deletedAt
-                  ? new Date(companyData.deletedAt).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true })
-                  : "Not deleted",
-                icon: "🗑️",
-                color: companyData.deletedAt ? "text-red-600 dark:text-red-400" : "text-gray-400",
-                bg: companyData.deletedAt ? "bg-red-50 dark:bg-red-900/20" : "bg-slate-50 dark:bg-gray-700/50",
-              },
-            ].map((t) => (
-              <div key={t.label} className={`flex flex-col gap-1.5 p-4 rounded-xl border border-slate-100 dark:border-gray-700 ${t.bg}`}>
-                <div className="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
-                  <span>{t.icon}</span>
-                  {t.label}
-                </div>
-                <p className={`text-sm font-semibold ${t.color}`}>{t.value}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-      </div>
-    )}
-  </div>
-)}
       </div>
     </div>
   );

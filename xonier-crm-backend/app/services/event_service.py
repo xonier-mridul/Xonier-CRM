@@ -144,7 +144,7 @@ class EventService:
     
     async def get_all(self):
         try:
-
+            
             result = await self.repo.get_all_with_lookup(page=1, limit=1100, lookups=CALENDER_LOOKUPS, project=CALENDER_PROJECT)
 
             if not result:

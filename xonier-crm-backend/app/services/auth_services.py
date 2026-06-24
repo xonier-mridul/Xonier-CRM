@@ -2,10 +2,12 @@ from app.utils.custom_exception import AppException
 from app.repositories.user_repository import UserRepository
 from app.core.security import hash_value
 from app.db.db import Client
+
 from typing import Dict, Any, List
 from app.utils.otp_manager import generate_otp
+
 from app.utils.email_manager import EmailManager
-from app.core.enums import OTP_TYPE, OTP_EXPIRY, USER_STATUS, ACTIVITY_ENTITY_TYPE, ACTIVITY_ACTION
+from app.core.enums import OTP_TYPE, OTP_EXPIRY, USER_STATUS, ACTIVITY_ENTITY_TYPE, ACTIVITY_ACTION,COMPANY_STATUS
 from datetime import datetime, timezone, timedelta
 from app.core.config import get_setting
 from fastapi.encoders import jsonable_encoder
@@ -18,7 +20,7 @@ from app.schemas.user_schema import UpdateUserSchema
 from app.core.security import hash_password
 from bson import ObjectId, DBRef
 
-from app.core.constants import SUPER_ADMIN_CODE
+from app.core.constants import SUPER_ADMIN_CODE, COMPANY_ADMIN_CODE
 from app.repositories.user_role_repository import UserRoleRepository
 from app.utils.cache_key_generator import cache_key_generator_by_id
 from app.repositories.activity_repository import ActivityRepository
@@ -33,6 +35,13 @@ from app.utils.activity_payload import activity_payload
 from app.core.tenant import system_query
 from app.utils.validate_admin import validate_admin
 from app.repositories.company_repository import CompanyRepository
+from app.repositories.task_repository import TaskRepository
+from app.schemas.project.user_project import USER_GET_ME_PROJECT, USER_LOOKUP
+import math
+from app.core.lookup_constants import USER_ROLE_LOOKEUP
+from app.schemas.project.user_project import USER_GET_RATING_PROJECT
+import asyncio
+
 
 
 
@@ -48,6 +57,7 @@ class AuthServices:
         self.activityRepo = ActivityRepository()
         self.crypto = encryptor
         self.companyRepo = CompanyRepository()
+        self.taskRepo = TaskRepository()
 
 
 
@@ -188,7 +198,6 @@ class AuthServices:
         except Exception as e:
             raise AppException(status_code=500, message="internal server error")
         
-
 
     async def get_all_for_frontend(self, page:int=1, limit:int = 10, filters: Dict[str, Any] = {})->List[UserModel]:
         try:
@@ -332,33 +341,146 @@ class AuthServices:
               raise AppException(400, "Invalid user object id")
               
 
-          exist_user = await self.repo.find_by_id_nested(id=id, populate=["userRole", "createdBy"])
+          exist_user = await self.repo.find_by_id(id=id, populate=["userRole", "createdBy"])
 
 
           if not exist_user:
               raise AppException(404, "User not found for this Id")
-   
           
-          user = jsonable_encoder(exist_user, exclude={"password", "refreshToken"})
+          
+          ex_user = jsonable_encoder(exist_user, exclude={"password", "refreshToken"})
 
-          if user.get("companyId"):
-              company = await self.companyRepo.find_by_id_nested(PydanticObjectId(user["companyId"]), ["subscription.planId.features.feature"])
 
-              user["companyId"] = company
+          is_admin = validate_admin_company_admin(user["userRole"])
 
-          user["email"] = encryptor.decrypt_data(user["email"])
-          user["phone"] = encryptor.decrypt_data(user["phone"])
+          sums = None
+
+          if not is_admin:
+            task_data = await self.taskRepo.find_with_project(filter={"assignedTo.$id": {"$in":[PydanticObjectId(id)]},"completedAt": {"$ne": None}}, project={"rating": 1})
+
+            
+
+
+            sums = [(item.get("rating") or None) for item in task_data]
+
+            filtered_sums = [x for x in sums if isinstance(x, (int, float))]
+            
+            if sums:
+                overall_rating = round((sum(filtered_sums)/len(filtered_sums)),1) or None
 
           
-          return user
+
+          if ex_user.get("companyId"):
+              company = await self.companyRepo.find_by_id_nested(PydanticObjectId(ex_user["companyId"]), ["subscription.planId.features.feature"])
+
+              ex_user["companyId"] = company
+
+          ex_user["email"] = encryptor.decrypt_data(ex_user["email"])
+          ex_user["phone"] = encryptor.decrypt_data(ex_user["phone"])
+          ex_user["rating"] = overall_rating if sums else None
+
+          
+          return ex_user
 
         except Exception as e:
-            raise
+            raise e
 
         except Exception as e:
-            raise AppException(status_code=500, message="internal server error")
+            raise AppException(status_code=500, message=f"internal server error: {e}")
     
 
+    async def get_user_rating_data(
+        self,
+        userId: str,
+        user: Dict[str, Any],
+        page: int = 1,
+        limit: int = 20,
+    ):
+        try:
+            if not ObjectId.is_valid(userId):
+                raise AppException(400, "Invalid user object id")
+
+            exist_user = await self.repo.find_by_id_with_project(
+                id=PydanticObjectId(userId),
+                lookups=[USER_ROLE_LOOKEUP],
+                project=USER_GET_RATING_PROJECT,
+            )
+
+            if not exist_user:
+                raise AppException(404, "User not found for this Id")
+
+            user = jsonable_encoder(exist_user)
+            is_admin = validate_admin_company_admin(user["userRole"])
+
+            overall_rating = None
+            task_data = []
+            total = 0
+            total_pages = 0
+
+            if not is_admin:
+                task_filter = {
+                    "assignedTo.$id": {"$in": [PydanticObjectId(userId)]},
+                    "completedAt": {"$ne": None},
+                }
+
+                task_project = {
+                    "rating": 1,
+                    "remark": 1,
+                    "title": 1,
+                    "assignedAt": 1,
+                    "dueDate": 1,
+                    "completedAt": 1,
+                    "estimatedHours": 1,
+                    "actualHours": 1,
+                    "isOverdue": 1,
+                }
+
+                # ── Run all queries concurrently for performance ────────
+                paginated_result, all_tasks_for_rating, total = await asyncio.gather(
+                    self.taskRepo.find_with_project(
+                        filter=task_filter,
+                        project=task_project,
+                        skip=(page - 1) * limit,
+                        limit=limit,
+                    ),
+                    self.taskRepo.find_with_project(
+                        filter=task_filter,
+                        project={"rating": 1},
+                    ),
+                    self.taskRepo.count(filter=task_filter),
+                )
+
+                total_pages = math.ceil(total / limit) if total > 0 else 1
+                task_data = paginated_result or []
+
+                # ── Calculate overall rating from all tasks ────────────
+                all_ratings = [
+                    item.get("rating")
+                    for item in all_tasks_for_rating
+                    if isinstance(item.get("rating"), (int, float))
+                ]
+
+                if all_ratings:
+                    overall_rating = round(sum(all_ratings) / len(all_ratings), 1)
+
+            user["email"] = encryptor.decrypt_data(user["email"])
+            user["phone"] = encryptor.decrypt_data(user["phone"])
+            user["rating"] = overall_rating
+            user["taskData"] = {
+                "data": task_data,
+                "page": page,
+                "limit": limit,
+                "total": total,
+                "totalPages": total_pages,
+            }
+
+            return user
+
+        except AppException:
+            raise
+        except Exception as e:
+            raise AppException(status_code=500, message=f"Internal server error: {e}")
+        
     async def get_user_profile(self, user: Dict[str, Any]):
         try:
           
@@ -510,6 +632,19 @@ class AuthServices:
                 raise AppException(400, "Password is not valid, please try again")
             
             userRoles = [item.code for item in isUserExist.userRole]
+
+            if isUserExist.companyId:
+                comp = await self.companyRepo.find_by_id_with_project(id=PydanticObjectId(isUserExist.companyId), project={"_id": 1, "status": 1, "companyName": 1 })
+
+                if comp["status"] == COMPANY_STATUS.INACTIVE:
+                    raise AppException(400, "Your company is currently inactive, Unauthorized for login")
+                
+                if comp["status"] == COMPANY_STATUS.SUSPENDED:
+                    raise AppException(400, "Your company is currently Suspended, Unauthorized for login")
+                
+                if comp["status"] == COMPANY_STATUS.SUSPENDED:
+                    raise AppException(400, "Your company is currently Suspended, Unauthorized for login")
+
 
 
             otp = generate_otp(6)
@@ -736,43 +871,45 @@ class AuthServices:
         try:
             if not ObjectId.is_valid(userId):
                 raise AppException(400, "Invalid user object Id")
-
+            
             with system_query():
-                user = await self.repo.find_by_id_nested(
-                    userId,
-                    ["userRole", "userRole.permissions"]
+                user = await self.repo.find_by_id_with_project(
+                    id=PydanticObjectId(userId),
+                    lookups=USER_LOOKUP,
+                    project=USER_GET_ME_PROJECT,
                 )
+
+                
 
             if not user:
                 raise AppException(400, "User not found")
 
-            result = jsonable_encoder(user, exclude={"password", "refreshToken"})
+            user["email"] = encryptor.decrypt_data(user["email"])
+            user["phone"] = encryptor.decrypt_data(user["phone"])
 
-            result["email"] = encryptor.decrypt_data(result["email"])
-            result["phone"] = encryptor.decrypt_data(result["phone"])
+            if user.get("companyId"):
+                company_id = user["companyId"]
+                print("cc: ", company_id)
+                if isinstance(company_id, dict):
+                    company_id = company_id.get("id") or company_id.get("_id")
 
-            
-            if result.get("companyId"):
                 with system_query():
                     comp = await self.companyRepo.find_by_id_nested(
-                        PydanticObjectId(result["companyId"]),
-                        [
-                            "subscription.planId.features.feature",
-                        ]
+                        PydanticObjectId(str(company_id)),
+                        ["subscription.planId.features.feature"]
                     )
-
+                    # comp = await self.companyRepo.find_by_id_with_project(
+                    #     id=PydanticObjectId(str(company_id))
+                    # )
                 if comp:
-                    comp_data = comp.model_dump(mode="json")
-                    
-                    result["companyId"] = comp_data
+                    user["companyId"] = comp.model_dump(mode="json")
 
-            return result
+            return user
 
-        except AppException:
-            raise
+        except AppException as e:
+            raise e
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
-        
 
     async def update(self, userId: PydanticObjectId, updatedBy: PydanticObjectId, payload: Dict[str, Any])->bool:
         session = await self.client.start_session()
@@ -912,6 +1049,9 @@ class AuthServices:
             for item in roles:
                 if item["code"] == SUPER_ADMIN_CODE:
                     raise AppException(400, "Super Admin user deletion not allowed")
+                
+                if item["code"] == COMPANY_ADMIN_CODE:
+                    raise AppException(400, "Company Admin user deletion not allowed, please delete company direct")
             
 
             
@@ -1234,8 +1374,8 @@ class AuthServices:
 
     async def reset_user_password(self, userId: str, payload: Dict[str, Any], updatedBy: Dict[str, Any] )->bool:
         try:
-            with system_query():
-                is_exist = await self.repo.find_by_id(id=PydanticObjectId(userId))
+            # with system_query():
+            is_exist = await self.repo.find_by_id(id=PydanticObjectId(userId))
             
             if(payload.get("password") != payload.get("confirmPassword")):
                 raise AppException(400, "Password and Confirm Password not matching, please check and try again")
@@ -1243,13 +1383,9 @@ class AuthServices:
             if not is_exist:
                 raise AppException(404, "User not found")
             
-            is_super_admin = False
+            is_super_admin = validate_admin_company_admin(updatedBy["userRole"])
 
-            for role in updatedBy.get("userRole", []):
-                if role.get("code") == "SUPER_ADMIN":
-                    is_super_admin = True
-                    break
-            
+           
             if not is_super_admin:
                 raise AppException(403, "Permission denied")
             
@@ -1261,12 +1397,10 @@ class AuthServices:
                 "updatedAt": datetime.now(timezone.utc)
             }
             
-            with system_query():
-                update = await self.repo.update_with_encryption(PydanticObjectId(userId), new_payload)
+            update = await self.repo.update_with_encryption(PydanticObjectId(userId), new_payload)
             
             if not update:
                 raise AppException(400, "User update failed")
-            
             
             
             return True
@@ -1287,7 +1421,7 @@ class AuthServices:
         try:
             session.start_transaction()
  
-            is_admin = validate_admin(user["userRole"])
+            is_admin = validate_admin_company_admin(user["userRole"])
  
             if not is_admin:
                 raise AppException(403, "Unauthorized, only admin can restore users")
@@ -1326,6 +1460,10 @@ class AuthServices:
             result["email"] = encryptor.decrypt_data(target_user.email)
             if target_user.phone:
                 result["phone"] = encryptor.decrypt_data(target_user.phone)
+
+            ap =  activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.AUTH.value, action=ACTIVITY_ACTION.RESTORE.value, title="Restore deleted user", entityId=result.get("id", None), metadata={"performedBy": str(user["_id"]), "performedTo": str(result.get("id", None))})
+
+            await self.activityRepo.create(data=ap, session=session)
  
             return result
  
@@ -1450,9 +1588,11 @@ class AuthServices:
             
         
             
-
+            
             if not user_obj:
+              
                 raise AppException(404, "User not found")
+            
 
             if user_obj.status == USER_STATUS.DELETED.value:
                 raise AppException(400, "Your account has been deleted")

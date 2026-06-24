@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Response, Request
+from fastapi import APIRouter, Depends, Response, Request, Query
 
 
 from app.middlewares.auth_middleware import AuthMiddleware
@@ -41,12 +41,30 @@ async def get_user_by_teams(request: Request):
 async def get_all_deleted_users(request: Request):
     return await auth_controller.get_all_deleted_users(request=request)
 
-@router.get("/user/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context)])
+@router.get("/user/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context), Depends(dependencies.permissions(["user:read"]))])
 async def get_user_by_id(id: PydanticObjectId, request: Request):
     return await auth_controller.get_user_by_id(request, id)
 
 
-@router.get("/profile", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_context)])
+@router.get(
+    "/task-data/{id}",
+    status_code=200,
+    dependencies=[
+        Depends(dependencies.authorized),
+        Depends(dependencies.company_active),
+        Depends(dependencies.company_context),
+        Depends(dependencies.permissions(["user:read"]))
+    ]
+)
+async def get_user_rating_data(
+    id: str,
+    request: Request,
+    page: int = Query(default=1, ge=1, description="Page number"),
+    limit: int = Query(default=20, ge=1, le=100, description="Items per page"),
+):
+    return await auth_controller.get_user_rating_data(request, id, page, limit)
+
+@router.get("/profile", status_code=200, dependencies=[Depends(dependencies.authorized),Depends(dependencies.company_active), Depends(dependencies.company_context), Depends(dependencies.permissions(["user:read"]))])
 async def get_user_profiles( request: Request):
     return await auth_controller.get_user_profile(request)
 
@@ -98,7 +116,7 @@ async def clear_phone_number(request: Request, id:str):
 async def reset_password(request: Request, data: ResetPasswordSchema):
     return await auth_controller.reset_password(request, data.model_dump(exclude_unset=True))
 
-@router.patch("/reset-user-password/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["user:update"]))])
+@router.patch("/reset-user-password/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context), Depends(dependencies.permissions(["user:update"]))])
 async def reset_user_password(request:Request, id:str, payload: ResetPasswordByAdminSchema):
     return await auth_controller.reset_user_password(request, id, payload.model_dump())
 

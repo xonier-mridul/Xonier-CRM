@@ -1,7 +1,7 @@
 
 import { register } from "module";
 import api from "../lib/axios";
-import { VerifyLoginOtpPayload, ResendLoginOtpPayload, GetAllUsers, changePasswordPayload, RegisterPayload, UserUpdatePayload, UserStatusPayload, UserPasswordUpdatedByAdminPayload, AssignedPhoneNumber } from "../types";
+import { VerifyLoginOtpPayload, ResendLoginOtpPayload, GetAllUsers, changePasswordPayload, RegisterPayload, UserUpdatePayload, UserStatusPayload, UserPasswordUpdatedByAdminPayload, AssignedPhoneNumber, UserRatingParams } from "../types";
 import { ParamValue } from "next/dist/server/request/params";
 import { data } from "framer-motion/client";
 
@@ -50,7 +50,15 @@ getAll: (data: GetAllUsers) => {
             userIds:payload.userIds,
         }),
 
-    refreshAccessToken: ()=> api.post("/auth/refresh")
+    refreshAccessToken: ()=> api.post("/auth/refresh"),
+    getUserRatingData: (id: ParamValue, params?: UserRatingParams) => {
+  const queryParams = new URLSearchParams();
+  
+  queryParams.append("page", String(params?.page || 1));
+  queryParams.append("limit", String(params?.limit || 20));
+
+  return api.get(`/auth/task-data/${id}?${queryParams.toString()}`);
+},
 
 }
 

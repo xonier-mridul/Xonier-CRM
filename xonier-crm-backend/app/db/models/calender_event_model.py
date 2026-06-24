@@ -1,5 +1,5 @@
 from beanie import Document, Link
-from pydantic import Field, model_validator
+from pydantic import Field, model_validator, field_serializer
 from typing import Optional, Literal
 from datetime import datetime, timezone
 from app.core.enums import EVENT_TYPE
@@ -7,6 +7,7 @@ from app.db.models.user_model import UserModel
 from app.db.models.deal_model import DealModel
 from pymongo import IndexModel
 from app.db.models.base_model import BaseDocument
+from app.core.constants import TIME_ZONE
 
 class CalenderEventModel(BaseDocument):
     title: str
@@ -30,6 +31,15 @@ class CalenderEventModel(BaseDocument):
             [("title", 1)],
             name="unique_title"
         )]
+
+
+    @field_serializer("createdAt", when_used="json")
+    def serialize_createdAt(self, value: datetime):
+
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=timezone.utc)
+
+        return value.astimezone(TIME_ZONE)
 
     
     

@@ -4,7 +4,7 @@ from typing import Dict, Any
 from app.repositories.deal_repository import DealRepository
 from bson import ObjectId
 from app.db.db import Client
-from app.utils.validate_admin import validate_admin
+
 from beanie import PydanticObjectId
 from app.utils.get_team_members import GetTeamMembers
 from app.repositories.enquiry_repository import EnquiryRepository

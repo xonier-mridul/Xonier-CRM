@@ -28,7 +28,7 @@ class DashboardController:
         try:
             user = request.state.user
 
-            print("one: ", user)
+           
             if validate_admin(user["userRole"]):
                 return await self.admin_dashboard.get_stats(
                     user=user,

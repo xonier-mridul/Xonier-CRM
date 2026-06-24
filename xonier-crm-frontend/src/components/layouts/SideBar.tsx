@@ -50,11 +50,12 @@ const SideBar = () => {
 
   const router = useRouter();
   const USER_ID = auth.user?._id;
+  console.log('side :', hasFeature(FEATURES.SALES))
 
   const handleLogout = async (): Promise<void> => {
     try {
 
-      let isConfirmed = await ConfirmPopup({ title: "Logout", text: "Are you want to logout", btnTxt: "Yes, Logout" });
+      const isConfirmed = await ConfirmPopup({ title: "Logout", text: "Are you want to logout", btnTxt: "Yes, Logout" });
 
       if (isConfirmed) {
         const isLogout = await AuthService.logout()
@@ -77,6 +78,12 @@ const SideBar = () => {
     }
     if (pathname.startsWith("/users") || pathname.startsWith("/deleteduser")) {
       setOpenMenu("user");
+    }
+    if (pathname.startsWith("/plans") || pathname.startsWith("/subscriptions")) {
+      setOpenMenu("plans");
+    }
+    if (pathname.startsWith("/companies") || pathname.startsWith("/companies/create")) {
+      setOpenMenu("company");
     }
     if (pathname.startsWith("/roles")) {
       setOpenMenu("team");
@@ -136,6 +143,14 @@ const SideBar = () => {
         return pathname.startsWith("/teams") ||
           
           pathname.startsWith("/roles");
+        case "plans":
+          return pathname.startsWith("/plans") ||
+          pathname.startsWith("/subscriptions")
+
+          case "company":
+          return pathname.startsWith("/companies") ||
+          pathname.startsWith("/companies/create")
+
       case "sales":
         return pathname.startsWith("/enquiry") ||
           pathname.startsWith("/leads") ||
@@ -186,11 +201,14 @@ const SideBar = () => {
               <Link
                 href="/dashboard"
                 className={`${isActive("/dashboard")
-                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  ? " dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                   : "border-l-2 border-transparent"
                   } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
               >
+              <span  className={`${isActive("/dashboard")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 <BiHome className="text-lg" />
+
+              </span>
                 Dashboard
               </Link>
             </li>
@@ -199,39 +217,50 @@ const SideBar = () => {
                 <Link
                   href="/sales-dashboard"
                   className={`${isActive("/sales-dashboard")
-                    ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                    ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                     : "border-l-2 border-transparent"
                     } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
                 >
+                  <span  className={`${isActive("/sales-dashboard")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                   <MdOutlineLeaderboard className="text-lg" />
+
+                  </span>
                   Sales Dashboard
                 </Link>
               </li>
             )}
-            {(hasPermission(PERMISSIONS.readEvent) && hasFeature(FEATURES.CALENDER)) && <li>
+            {(hasPermission(PERMISSIONS.readEvent) && hasFeature(FEATURES.CALENDER)) &&
+             <li>
               <Link
                 href="/calender"
                 className={`${isActive("/calender")
-                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                   : "border-l-2 border-transparent"
                   } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
               >
+              <span  className={`${isActive("/calender")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                
                 <SlCalender className="text-lg" />
+                </span>
                 Calender
               </Link>
             </li>}
 
-            {( hasPermission(PERMISSIONS.readProspects) && hasFeature(FEATURES.CRM) && !auth.isAdmin) && <li>
+            {( hasPermission(PERMISSIONS.readProspects) && hasFeature(FEATURES.CRM) && !auth.isAdmin) &&
+             <li>
               <button
                 onClick={() => toggleMenu("prospects")}
                 className={`${isMenuActive("prospects")
-                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                   : "border-l-2 border-transparent"
                   }
                flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
-                  <HiOutlineAdjustments className="text-lg" />
+                   <span  className={`${isMenuActive("prospects")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                
+
+                  <HiOutlineAdjustments className="text-lg" /></span>
                   Prospects
                 </span>
 
@@ -266,7 +295,7 @@ const SideBar = () => {
                         <Link
                           href="/prospects/company"
                           className={`${isActive("/prospects/company")
-                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                            ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                             : "border-l-2 border-transparent"
                             } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                         >
@@ -283,25 +312,32 @@ const SideBar = () => {
               <Link
                 href="/notes"
                 className={`${isActive("/notes")
-                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                   : "border-l-2 border-transparent"
                   } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
               >
+                       <span  className={`${isActive("/notes")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 <TbNotes className="text-lg" />
+                </span>
                 Notes
               </Link>
             </li>}
+            
+           
 
             {(auth.isAdmin) && <li>
               <button
                 onClick={() => toggleMenu("plans")}
                 className={`${isMenuActive("plans")
-                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
-                  : "border-l-2 border-transparent"
-                  } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 px-3 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                  : "border-l-2 border-transparent px-4"
+                  } flex w-full items-center justify-between  py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
               >
-                <span className="flex items-center gap-3">
+                <span className="flex items-center gap-2 whitespace-nowrap">
+                  <span  className={`${isMenuActive("plans")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                  
                   <FiUser className="text-lg" />
+                  </span>
                   Plans and Subscriptions
                 </span>
 
@@ -325,7 +361,7 @@ const SideBar = () => {
                       <Link
                         href="/plans"
                         className={`${isActive("/plans")
-                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
@@ -336,7 +372,7 @@ const SideBar = () => {
                         <Link
                           href="/subscriptions"
                           className={`${isActive("/subscriptions")
-                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                            ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                             : "border-l-2 border-transparent"
                             } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                         >
@@ -353,12 +389,15 @@ const SideBar = () => {
               <button
                 onClick={() => toggleMenu("company")}
                 className={`${isMenuActive("company")
-                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                   : "border-l-2 border-transparent"
                   } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
-                  <BsBuildingGear className="text-lg" />
+                  <span  className={`${isMenuActive("company")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+
+
+                  <BsBuildingGear className="text-lg" /></span>
                   Company Management
                 </span>
 
@@ -382,9 +421,9 @@ const SideBar = () => {
                       <Link
                         href="/companies"
                         className={`${isActive("/companies")
-                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
-                          : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 px-3 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                          : "border-l-2 border-transparent px-4"
+                          } block  py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
                         Companies
                       </Link>
@@ -393,7 +432,7 @@ const SideBar = () => {
                       <Link
                         href="/companies/create"
                         className={`${isActive("/companies/create")
-                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
@@ -412,12 +451,14 @@ const SideBar = () => {
                  <button
                 onClick={() => toggleMenu("task")}
                 className={`${isMenuActive("task")
-                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                   : "border-l-2 border-transparent"
                   } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
-                  <GoTasklist  className="text-lg" />
+                  <span  className={`${isMenuActive("task")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                    <GoTasklist  className="text-lg"/>
+                  </span>
                   Task Management
                 </span>
 
@@ -439,7 +480,7 @@ const SideBar = () => {
                       <Link
                         href="/task"
                         className={`${isActive("/task")
-                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
@@ -451,7 +492,7 @@ const SideBar = () => {
                       <Link
                         href="/category"
                         className={`${isActive("/category")
-                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
@@ -462,7 +503,7 @@ const SideBar = () => {
                       <Link
                         href="/status"
                         className={`${isActive("/status")
-                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
@@ -474,7 +515,7 @@ const SideBar = () => {
                         <Link
                           href="/reports"
                           className={`${isActive("/reports")
-                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                            ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                             : "border-l-2 border-transparent"
                             } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                         >
@@ -487,7 +528,7 @@ const SideBar = () => {
                         <Link
                           href={`/report/create/${USER_ID||"new"}`}
                           className={`${isActive(`/report/create/${USER_ID||"new"}`)
-                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                            ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                             : "border-l-2 border-transparent"
                             } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                         >
@@ -505,12 +546,15 @@ const SideBar = () => {
               <button
                 onClick={() => toggleMenu("user")}
                 className={`${isMenuActive("user")
-                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                   : "border-l-2 border-transparent"
                   } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
+                  <span className={`${isMenuActive("user") ?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
                   <FiUser className="text-lg" />
+
+                  </span>
                   User Management
                 </span>
 
@@ -534,7 +578,7 @@ const SideBar = () => {
                       <Link
                         href="/users"
                         className={`${isActive("/users")
-                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
@@ -546,7 +590,7 @@ const SideBar = () => {
                         <Link
                           href="/deleteduser"
                           className={`${isActive("/deleteduser")
-                            ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                            ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                             : "border-l-2 border-transparent"
                             } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                         >
@@ -562,12 +606,16 @@ const SideBar = () => {
               <button
                 onClick={() => toggleMenu("team")}
                 className={`${isMenuActive("team")
-                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                   : "border-l-2 border-transparent"
                   } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
+                   <span className={`${isMenuActive("team") ?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
+
+
                   <AiOutlineTeam className="text-lg" />
+                  </span>
                   Team Management
                 </span>
 
@@ -590,7 +638,7 @@ const SideBar = () => {
                       <Link
                         href="/roles"
                         className={`${isActive("/roles")
-                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
@@ -601,7 +649,7 @@ const SideBar = () => {
                       <Link
                         href="/teams/categories"
                         className={`${isActive("/teams/categories")
-                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
@@ -612,7 +660,7 @@ const SideBar = () => {
                       <Link
                         href="/teams"
                         className={`${(isActive("/teams") && !isActive("/teams/categories"))
-                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
@@ -625,7 +673,7 @@ const SideBar = () => {
               </AnimatePresence>
             </li>}
 
-            {(( hasPermission(PERMISSIONS.readEnquiry) || hasPermission(PERMISSIONS.readLead) || hasPermission(PERMISSIONS.readDeal) || hasPermission(PERMISSIONS.readQuote) || hasPermission(PERMISSIONS.readInvoice)) &&  (hasFeature(FEATURES.CRM)) && !auth.isAdmin) && <li>
+            {(( hasPermission(PERMISSIONS.readEnquiry) || hasPermission(PERMISSIONS.readLead) || hasPermission(PERMISSIONS.readDeal) || hasPermission(PERMISSIONS.readQuote) || hasPermission(PERMISSIONS.readInvoice))  &&  (hasFeature(FEATURES.SALES)) && !auth.isAdmin) && <li>
               <button
                 onClick={() => toggleMenu("sales")}
                 className={`${isMenuActive("sales")
@@ -634,7 +682,9 @@ const SideBar = () => {
                   } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
+                   <span className={`${isMenuActive("sales") ?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
                   <BsBarChart className="text-lg" />
+                  </span>
                   Sales
                 </span>
 
@@ -657,7 +707,7 @@ const SideBar = () => {
                       <Link
                         href="/enquiry"
                         className={`${isActive("/enquiry")
-                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
@@ -668,7 +718,7 @@ const SideBar = () => {
                       <Link
                         href="/leads"
                         className={`${isActive("/leads")
-                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
@@ -679,7 +729,7 @@ const SideBar = () => {
                       <Link
                         href="/deals"
                         className={`${isActive("/deals")
-                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
@@ -691,7 +741,7 @@ const SideBar = () => {
                       <Link
                         href="/quotations"
                         className={`${isActive("/quotations")
-                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
@@ -702,7 +752,7 @@ const SideBar = () => {
                       <Link
                         href="/invoice"
                         className={`${isActive("/invoice")
-                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
@@ -717,11 +767,13 @@ const SideBar = () => {
               <Link
                 href="/clients"
                 className={`${isActive("/clients")
-                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                   : "border-l-2 border-transparent"
                   } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
               >
+                       <span  className={`${isActive("/clients")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 <FiUserCheck className="text-lg" />
+                </span>
                 Clients
               </Link>
             </li>}
@@ -730,12 +782,14 @@ const SideBar = () => {
               <button
                 onClick={() => toggleMenu("communication")}
                 className={`${isMenuActive("communication")
-                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                   : "border-l-2 border-transparent"
                   } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
+                   <span className={`${isMenuActive("communication") ?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
                   <AiOutlineTeam className="text-lg" />
+                  </span>
                   Communication
                 </span>
 
@@ -758,7 +812,7 @@ const SideBar = () => {
                       <Link
                         href="/telephone"
                         className={`${isActive("/telephone")
-                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
@@ -769,7 +823,7 @@ const SideBar = () => {
                       <Link
                         href="/message"
                         className={`${isActive("/message")
-                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
@@ -786,12 +840,14 @@ const SideBar = () => {
               <button
                 onClick={() => toggleMenu("emailManagement")}
                 className={`${isMenuActive("emailManagement")
-                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                   : "border-l-2 border-transparent"
                   } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
+                   <span className={`${isMenuActive("emailManagement") ?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
                   <IoMailOutline className="text-lg" />
+                  </span>
                   Email Management
                 </span>
 
@@ -814,7 +870,7 @@ const SideBar = () => {
                       <Link
                         href="/emailManagement/templates"
                         className={`${isActive("/emailManagement/templates")
-                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
@@ -825,7 +881,7 @@ const SideBar = () => {
                       <Link
                         href="/emailManagement/outbox"
                         className={`${isActive("/emailManagement/outbox")
-                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                       >
@@ -836,19 +892,38 @@ const SideBar = () => {
                 )}
               </AnimatePresence>
             </li>}
+            {(auth.isAdmin)  && <li>
+              <Link
+                href="/query"
+                className={`${isActive("/query")
+                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                  : "border-l-2 border-transparent"
+                  } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+              >
+                       <span  className={`${isActive("/query")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                <TbNotes className="text-lg" />
+                </span>
+                Query
+              </Link>
+            </li>}
+           
             {
               hasPermission(PERMISSIONS.readOTP) && <li>
                 
                 <Link
                   href="/otp"
                   className={`${isActive("/otp")
-                    ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                    ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                     : "border-l-2 border-transparent"
                     } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
                 >
                   <span className="flex items-center gap-3">
 
+                         <span  className={`${isActive("/otp")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                   <IoKeyOutline className="text-lg" />
+
+                    </span>
+
                   OTP
                   </span>
                 </Link>
@@ -873,13 +948,15 @@ const SideBar = () => {
             </li>
             <li>
               <Link
-                href={`/users/${auth.user?._id}`}
-                className={`${isActive("/reset-password")
-                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                href={`/users/${auth?.user?.id}`}
+                className={`${isActive("/profile")
+                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                   : "border-l-2 border-transparent"
                   } w-full flex items-center cursor-pointer gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all capitalize`}
               >
+                       <span  className={`${isActive("/profile")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 <FaRegUser className="text-lg" />
+                </span>
                 Profile
               </Link>
             </li>
@@ -887,11 +964,13 @@ const SideBar = () => {
               <Link
                 href={"/reset-password"}
                 className={`${isActive("/reset-password")
-                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
                   : "border-l-2 border-transparent"
                   } w-full flex items-center cursor-pointer gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all capitalize`}
               >
+                       <span  className={`${isActive("/reset-password")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 <RiLockPasswordLine className="text-lg" />
+                </span>
                 Reset password
               </Link>
             </li>
