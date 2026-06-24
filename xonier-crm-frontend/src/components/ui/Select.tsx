@@ -38,7 +38,7 @@ const Select: React.FC<SelectProps> = ({
           bg-white dark:bg-gray-700 text-black dark:text-white
           border-gray-300 dark:border-gray-300/30
           disabled:opacity-60 disabled:cursor-not-allowed
-          focus:outline-none focus:ring-2 focus:ring-violet-500
+          focus:outline-none focus:ring-2 focus:ring-cyan-500
           ${error ? "border-red-500 focus:ring-red-500" : ""}
           ${className}
         `}

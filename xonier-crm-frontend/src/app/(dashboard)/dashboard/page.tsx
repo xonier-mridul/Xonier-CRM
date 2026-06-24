@@ -1088,14 +1088,54 @@ function BreakdownsSection({ breakdowns }: { breakdowns: BreakdownStats }) {
 function UsersCard({ users }: { users: UserStats }) {
   return (
     <Card title="Team Overview" sub="User distribution" icon={Users}>
-      <div className="grid grid-cols-2 gap-2 mb-4">
+      <div className="grid grid-cols-4 gap-2 mb-4">
         {[
-          { label: "Total", value: users.total, color: "#6366f1" },
-          { label: "Active", value: users.active, color: "#10b981" },
-          { label: "Inactive", value: users.inactive, color: "#f59e0b" },
-          { label: "Not Verified", value: users.notVerified ?? 0, color: "#ef4444" },
+          { label: "Total", value: users.total, color: "#6366f1" ,style: `
+    bg-gradient-to-br
+    from-indigo-50 to-indigo-100
+    dark:from-indigo-950/40 dark:to-slate-900
+    border border-indigo-200
+    dark:border-indigo-800/50
+    hover:border-indigo-400
+    dark:hover:border-indigo-500
+    hover:-translate-y-1
+    transition-all duration-300
+  ` },
+          { label: "Active", value: users.active, color: "#10b981" ,style: `
+    bg-gradient-to-br
+    from-green-50 to-green-100
+    dark:from-green-950/40 dark:to-slate-900
+    border border-green-200
+    dark:border-green-800/50
+    hover:border-green-400
+    dark:hover:border-green-500
+    hover:-translate-y-1
+    transition-all duration-300
+  `},
+          { label: "Inactive", value: users.inactive, color: "#f59e0b",style: `
+    bg-gradient-to-br
+    from-amber-50 to-amber-100
+    dark:from-amber-950/40 dark:to-slate-900
+    border border-amber-200
+    dark:border-amber-800/50
+    hover:border-amber-400
+    dark:hover:border-amber-500
+    hover:-translate-y-1
+    transition-all duration-300
+  ` },
+          { label: "Not Verified", value: users.notVerified ?? 0, color: "#ef4444",style: `
+    bg-gradient-to-br
+    from-red-50 to-red-100
+    dark:from-red-950/40 dark:to-slate-900
+    border border-red-200
+    dark:border-red-800/50
+    hover:border-red-400
+    dark:hover:border-red-500
+    hover:-translate-y-1
+    transition-all duration-300
+  ` },
         ].map((i) => (
-          <div key={i.label} className="rounded-xl p-3 border border-slate-200/40 dark:border-slate-700/40"
+          <div key={i.label} className={`rounded-xl p-3 border flex flex-col justify-center ${i.style} items-center text-center`}
             style={{ background: `linear-gradient(135deg, ${i.color}12, ${i.color}05)` }}>
             <p className="font-mono text-xl font-bold" style={{ color: i.color }}><AnimNum value={i.value} /></p>
             <p className="text-[10px] text-slate-500 mt-0.5">{i.label}</p>
@@ -1183,7 +1223,7 @@ function TaskCard({ tasks }: { tasks: TaskStats }) {
         <div className="relative flex-shrink-0">
           <Ring pct={tasks.completionRate} color="#10b981" size={72} />
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-mono text-xs font-bold dark:text-white">{tasks.completionRate.toFixed(0)}%</span>
+            <span className="font-mono text-slate-500 text-xs font-bold dark:text-white">{tasks.completionRate.toFixed(0)}%</span>
           </div>
         </div>
         <div className="flex-1">

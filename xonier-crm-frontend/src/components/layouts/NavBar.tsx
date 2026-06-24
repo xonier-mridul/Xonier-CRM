@@ -480,7 +480,7 @@ const results = searchableData.filter((item) =>
                   animate={{ opacity: 1, y: 8 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2, ease: "easeOut" }}
-                  className="absolute right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden w-55 p-4 pt-4 flex flex-col gap-3"
+                  className="absolute right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden w-65 p-4 pt-4 flex flex-col gap-3"
                 >
                   {/* <h2 className="font-bold text-xl text-slate-900 dark:text-blue-50">
                     User Profile
@@ -509,7 +509,7 @@ const results = searchableData.filter((item) =>
                   </div>
                   <div className="w-full border-b border-gray-200 dark:border-gray-700"></div>
                   <ul className="flex flex-col ">
-                    <li className="dark:hover:bg-slate-500 hover:bg-slate-100 group py-2 rounded-lg">
+                    <li className="dark:hover:bg-slate-500 hover:bg-slate-100 group py-2 px-2 rounded-lg">
                       <Link
                         href={`/users/${auth?.user?.id}`}
                         className="flex items-center gap-4 group"
@@ -525,8 +525,8 @@ const results = searchableData.filter((item) =>
                     </li>
                     {
                      !isAdmin &&
-                    <li className="dark:hover:bg-slate-500 hover:bg-slate-100 group py-2 rounded-lg">
-                      <Link href={`/companies/${auth?.user?.id}`}
+                    <li className="dark:hover:bg-slate-500 hover:bg-slate-100 group py-2 px-2 rounded-lg">
+                      <Link href={`/companies/${auth?.user?.companyId?.id}`}
                         className="flex items-center gap-4 group"
                       >
                       <span className="h-8 w-8 rounded-md text-slate-500 dark:text-white/80  dark:bg-slate-500 flex items-center justify-center overflow-hidden">

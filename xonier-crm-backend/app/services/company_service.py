@@ -206,13 +206,13 @@ class CompanyService:
         )
         await otp_doc.insert(session=session)
 
-        sent = await self.emailManager.send_otp_email(
-            to=plain_email,
-            otp=otp_code,
-            type=OTP_TYPE.EMAIL_VERIFICATION,
-        )
-        if not sent:
-            raise AppException(502, "Failed to send verification email — please retry")
+        # sent = await self.emailManager.send_otp_email(
+        #     to=plain_email,
+        #     otp=otp_code,
+        #     type=OTP_TYPE.EMAIL_VERIFICATION,
+        # )
+        # if not sent:
+        #     raise AppException(502, "Failed to send verification email — please retry")
 
     async def create(
         self,

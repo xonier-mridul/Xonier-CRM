@@ -17,7 +17,7 @@ const selectClass = (hasErr?: boolean) => `
   bg-white dark:bg-gray-800 text-black dark:text-white
   border-gray-200 dark:border-gray-700
   disabled:opacity-60 disabled:cursor-not-allowed
-  focus:outline-none focus:border-violet-400 dark:focus:border-violet-500 focus:ring-2 focus:ring-violet-400/20
+  focus:outline-none focus:border-cyan-400 dark:focus:border-cyan-500 focus:ring-2 focus:ring-cyan-400/20
   ${hasErr ? "border-red-400 focus:border-red-400 focus:ring-red-400/20" : ""}
 `;
 
@@ -26,7 +26,7 @@ const textareaClass = (hasErr?: boolean) => `
   bg-white dark:bg-gray-800 text-black dark:text-white
   border-gray-200 dark:border-gray-700
   disabled:opacity-60 disabled:cursor-not-allowed
-  focus:outline-none focus:border-violet-400 dark:focus:border-violet-500 focus:ring-2 focus:ring-violet-400/20
+  focus:outline-none focus:border-cyan-400 dark:focus:border-cyan-500 focus:ring-2 focus:ring-cyan-400/20
   placeholder-gray-400 dark:placeholder-gray-500 resize-none
   ${hasErr ? "border-red-400 focus:border-red-400 focus:ring-red-400/20" : ""}
 `;
@@ -35,7 +35,7 @@ const inputClass = (hasErr?: boolean) => `
   w-full px-3 py-2 rounded-lg border transition-all duration-200
   bg-white dark:bg-gray-800 text-black dark:text-white
   border-gray-200 dark:border-gray-700
-  focus:outline-none focus:border-violet-400 dark:focus:border-violet-500 focus:ring-2 focus:ring-violet-400/20
+  focus:outline-none focus:border-cyan-400 dark:focus:border-cyan-500 focus:ring-2 focus:ring-cyan-400/20
   placeholder-gray-400 dark:placeholder-gray-500
   ${hasErr ? "border-red-400 focus:border-red-400 focus:ring-red-400/20" : ""}
 `;
@@ -45,11 +45,11 @@ const SectionHeading = ({ title, icon }: { title: string; icon?: string }) => (
   <div className="col-span-1 md:col-span-2 mt-4">
     <div className="flex items-center gap-2 mb-1">
       {icon && <span className="text-base">{icon}</span>}
-      <h3 className="text-xs font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest">
+      <h3 className="text-xs font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-widest">
         {title}
       </h3>
     </div>
-    <div className="h-px bg-gradient-to-r from-violet-300 via-violet-100 to-transparent dark:from-violet-700 dark:via-violet-900 dark:to-transparent" />
+    <div className="h-px bg-gradient-to-r  from-[#16c2cf]  via-cyan-100 to-transparent dark:from-cyan-700 dark:via-cyan-900 dark:to-transparent" />
   </div>
 );
 
@@ -57,7 +57,7 @@ const SectionHeading = ({ title, icon }: { title: string; icon?: string }) => (
 const FieldLabel = ({ children, required }: { children: React.ReactNode; required?: boolean }) => (
   <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-1">
     {children}
-    {required && <span className="text-violet-500">*</span>}
+    {required && <span className="text-cyan-500">*</span>}
   </label>
 );
 
@@ -79,14 +79,14 @@ const TagInput = ({ tags, onChange }: { tags: string[]; onChange: (t: string[]) 
   return (
     <div
       className="flex flex-wrap gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700
-        bg-white dark:bg-gray-800 focus-within:border-violet-400 dark:focus-within:border-violet-500
-        focus-within:ring-2 focus-within:ring-violet-400/20 min-h-[44px] transition-all duration-200 cursor-text"
+        bg-white dark:bg-gray-800 focus-within:border-cyan-400 dark:focus-within:border-cyan-500
+        focus-within:ring-2 focus-within:ring-cyan-400/20 min-h-[44px] transition-all duration-200 cursor-text"
       onClick={() => document.getElementById("template-tag-input")?.focus()}
     >
       {tags.map((t) => (
         <span
           key={t}
-          className="inline-flex items-center gap-1 bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-xs px-2.5 py-1 rounded-full font-medium border border-violet-200 dark:border-violet-700"
+          className="inline-flex items-center gap-1 bg-cyan-50 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 text-xs px-2.5 py-1 rounded-full font-medium border border-cyan-200 dark:border-cyan-700"
         >
           {t}
           <button
@@ -522,16 +522,16 @@ const Page = (): JSX.Element => {
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
 
           {/* ── Card Header ─────────────────────────────────────────── */}
-          <div className="bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-700 dark:to-indigo-700 px-8 py-5">
+          <div className="bg-gradient-to-r from-[#16c2cf] to-[#0fb8a5] dark:from-cyan-700 dark:to-teal-700 px-8 py-5">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-lg shadow-inner">
+              <div className="w-9 h-9 rounded-xl bg-white/50 backdrop-blur-sm flex items-center justify-center text-lg shadow-inner">
                 ✉️
               </div>
               <div>
                 <h2 className="text-xl font-bold text-white tracking-tight">
                   Create Email Template
                 </h2>
-                <p className="text-xs text-violet-200 mt-0.5">
+                <p className="text-xs text-cyan-200 mt-0.5">
                   Build reusable, dynamic email templates with variable placeholders
                 </p>
               </div>
@@ -631,7 +631,7 @@ const Page = (): JSX.Element => {
                     onClick={generateWithAI}
                     // disabled={isGenerating || !form.aiPrompt}
                     disabled={true}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-500 dark:to-indigo-500 hover:shadow-md hover:scale-[1.02] active:scale-100 transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white bg-gradient-to-r from-[#16c2cf] to-[#0fb8a5] dark:from-cyan-500 dark:to-teal-500 hover:shadow-md hover:scale-[1.02] active:scale-100 transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100"
                   >
                     {isGenerating ? (
                       <>
@@ -654,7 +654,7 @@ const Page = (): JSX.Element => {
                 {/* Panel header */}
                 <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center text-sm text-violet-600 dark:text-violet-400 flex-shrink-0">
+                    <div className="w-7 h-7 rounded-lg bg-cyan-100 dark:bg-cyan-900/40 flex items-center justify-center text-sm text-cyan-600 dark:text-cyan-400 flex-shrink-0">
                       ⚡
                     </div>
                     <div>
@@ -742,7 +742,7 @@ const Page = (): JSX.Element => {
               {/* ── FOOTER ──────────────────────────────────────────── */}
               <div className="col-span-1 md:col-span-2 flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800 mt-2">
                 <p className="text-xs text-gray-400 dark:text-gray-500">
-                  Fields marked <span className="text-violet-500 font-bold">*</span> are required
+                  Fields marked <span className="text-cyan-500 font-bold">*</span> are required
                 </p>
                 <div className="flex items-center gap-3">
                   <button
@@ -755,7 +755,7 @@ const Page = (): JSX.Element => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="inline-flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-500 dark:to-indigo-500 hover:shadow-md hover:scale-[1.02] active:scale-100 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
+                    className="inline-flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold text-white bg-gradient-to-r from-[#16c2cf] to-[#0fb8a5] dark:from-cyan-500 dark:to-teal-500 hover:shadow-md hover:scale-[1.02] active:scale-100 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
                   >
                     {isLoading ? (
                       <>
