@@ -542,6 +542,7 @@ export const UsersTable = ({
               type="text"
               placeholder="Search by name"
               onChange={(e) => {
+                setCurrentPages(1)
                 setSearch(e.target.value);
               }}
               className="border-none bg-transparent outline-none text-sm font-medium text-slate-900 dark:text-white w-full"

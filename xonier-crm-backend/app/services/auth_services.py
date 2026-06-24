@@ -348,7 +348,8 @@ class AuthServices:
               raise AppException(404, "User not found for this Id")
           
           
-          user = jsonable_encoder(exist_user, exclude={"password", "refreshToken"})
+          ex_user = jsonable_encoder(exist_user, exclude={"password", "refreshToken"})
+
 
           is_admin = validate_admin_company_admin(user["userRole"])
 
@@ -369,17 +370,17 @@ class AuthServices:
 
           
 
-          if user.get("companyId"):
-              company = await self.companyRepo.find_by_id_nested(PydanticObjectId(user["companyId"]), ["subscription.planId.features.feature"])
+          if ex_user.get("companyId"):
+              company = await self.companyRepo.find_by_id_nested(PydanticObjectId(ex_user["companyId"]), ["subscription.planId.features.feature"])
 
-              user["companyId"] = company
+              ex_user["companyId"] = company
 
-          user["email"] = encryptor.decrypt_data(user["email"])
-          user["phone"] = encryptor.decrypt_data(user["phone"])
-          user["rating"] = overall_rating if sums else None
+          ex_user["email"] = encryptor.decrypt_data(ex_user["email"])
+          ex_user["phone"] = encryptor.decrypt_data(ex_user["phone"])
+          ex_user["rating"] = overall_rating if sums else None
 
           
-          return user
+          return ex_user
 
         except Exception as e:
             raise e

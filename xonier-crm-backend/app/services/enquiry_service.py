@@ -57,7 +57,7 @@ class EnquiryService:
             if is_exist or is_enquiry_exist:
                 raise AppException(400, "Enquiry already exist")
 
-            new_payload = {**payload, "createdBy": createdBy, "enquiry_id": enquiry_id}
+            new_payload = {**payload,  "createdBy": createdBy, "enquiry_id": enquiry_id}
 
             new_enquiry = await self.repo.create(data=new_payload, session=session)
 
@@ -205,8 +205,8 @@ class EnquiryService:
 
             return result
 
-        except AppException:
-            raise
+        except AppException as e:
+            raise e
 
         except Exception as e:
             raise AppException(status_code=500, message="internal server error")
@@ -222,12 +222,16 @@ class EnquiryService:
             is_admin = validate_admin_company_admin(user["userRole"])
 
             is_manager = False
+            is_assigner = False
 
             query = {}
             if not is_admin:
                 members = await self.getTeamMembers.get_team_members(user["_id"])
+                
 
                 user_object_id = PydanticObjectId(user["_id"])
+
+                # str_mem = [str(item) for item in members]
                 
                 if members:
                     query.update({
@@ -238,23 +242,35 @@ class EnquiryService:
                             {"assignTo.$id": user_object_id},
                         ]
                     })
+                    is_manager = True
                     
 
                 else:
                     query.update(
                         {
                             "$or": [
-                                {"createdBy.$id": PydanticObjectId(user["_id"])},
-                                {"assignTo.$id": PydanticObjectId(user["_id"])},
+                                
+                                {"createdBy.$id": user_object_id},
+                                {"assignTo.$id": user_object_id},
                             ]
                         }
                     )
+
+                    is_assigner = True
 
             if "info" in filters:
                 query.update({"infoType": filters["info"]})
 
             if "enquiry_id" in filters:
                 query.update({"enquiry_id": filters["enquiry_id"]})
+
+            if "search" in filters and filters["search"].strip():
+                regex_Data = {"regex": filters["search"], "$options": "i"}
+            
+                query.update({"$or": [
+                    {"fullName": regex_Data},
+
+                ]})
 
             if "fullName" in filters:
                 query.update({"fullName": {"$regex": filters["fullName"], "$options": "i"}})
@@ -307,6 +323,9 @@ class EnquiryService:
                 if date_filter:
                     query.update({"createdAt": date_filter})
 
+
+            print("query: ", query)
+
             
             result = await self.repo.get_all(
                 page=page,
@@ -316,7 +335,7 @@ class EnquiryService:
                 sort=["-createdAt"],
             )
 
-            if not is_admin and not is_manager and not is_creator:
+            if not is_admin and not is_manager and not is_assigner:
                 raise AppException(403, "Permission denied, you not authorized for access enquiry data")
 
             if not result:

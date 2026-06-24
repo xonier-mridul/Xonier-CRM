@@ -234,6 +234,7 @@ const page = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [err, setErr] = useState<string[] | string | null>();
   const [usersData, setUsersData] = useState<User[]>([]);
+<<<<<<< HEAD
   const [searchVal,setSearchVal]= useState('')
    const [openDropDown,setOpenDropDown] = useState(false)
    const [selectedUser, setSelectedUser] = useState(null);
@@ -241,6 +242,10 @@ const page = (): JSX.Element => {
  
 
    
+=======
+  const [userSearch, setUserSearch] = useState<string>("")
+  const [userCurrentPage, setUserCurrentPage] = useState<number>(1)
+>>>>>>> d3b79796b661fba4d90e1cfd2adc10bf9bd7be34
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -276,6 +281,7 @@ const page = (): JSX.Element => {
 
   const router = useRouter();
 
+<<<<<<< HEAD
   // const getUsers = async () => {
   //   try {
   //     const result = await AuthService.getAllActiveWithoutPagination();
@@ -306,6 +312,13 @@ const page = (): JSX.Element => {
        setUsersData(result.data.data)
       }
     }catch(error){
+=======
+  const getUsers = async () => {
+    try {
+      const result = await AuthService.getAllTeamUsers({search: userSearch, page: userCurrentPage});
+      if (result.status === 200) setUsersData(result.data.data);
+    } catch (error) {
+>>>>>>> d3b79796b661fba4d90e1cfd2adc10bf9bd7be34
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) {
         const messages = extractErrorMessages(error);
@@ -942,7 +955,7 @@ const page = (): JSX.Element => {
                   onClick={addExtraField}
                   className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 bg-cyan-50 dark:bg-cyan-900/20 hover:bg-cyan-100 dark:hover:bg-cyan-900/40 px-3 py-1 rounded-full border border-cyan-200 dark:border-cyan-800 transition-all"
                 >
-                  + Add Field
+                  + Add New Field
                 </button>
               </div>
               <div className="flex flex-col gap-2">

@@ -50,7 +50,7 @@ const SideBar = () => {
 
   const router = useRouter();
   const USER_ID = auth.user?._id;
-  console.log('side :',auth.user)
+  console.log('side :', hasFeature(FEATURES.SALES))
 
   const handleLogout = async (): Promise<void> => {
     try {

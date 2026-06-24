@@ -175,6 +175,7 @@ class AuthController:
     async def get_user_by_id(self, request:Request, id: PydanticObjectId ):
         try:
            user = request.state.user
+          
            result = await self.service.get_user_by_id(id, user)
            return successResponse(200, "User fetched successfully", result)
             
@@ -444,9 +445,12 @@ class AuthController:
         except AppException as e:
             response.delete_cookie(key="accessToken", **JWT_OPTIONS)
             response.delete_cookie(key="refreshToken", **JWT_OPTIONS)
-            raise e
+
+            return AppException(e.status_code, e.message)
 
         except Exception as e:
+            response.delete_cookie(key="accessToken", **JWT_OPTIONS)
+            response.delete_cookie(key="refreshToken", **JWT_OPTIONS)
             raise AppException(500, f"Internal server error: {e}")
     
             

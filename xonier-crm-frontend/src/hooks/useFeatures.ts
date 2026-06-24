@@ -41,6 +41,7 @@ export const useFeatures = () => {
   const hasFeature = useMemo(() => {
     
     return (featureCode: string): boolean => {
+      
         if(isAdmin) return true
       if (!features.length) return false;
       const match = features.find((f) => {
