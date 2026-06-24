@@ -4,7 +4,7 @@ import Story from '../../components/pages/company/Story';
 // import Team from '../../components/pages/company/Team';
 import Stats from '../../components/pages/company/Stats';
 import Hero from '../../components/pages/company/Hero';
-import CompanyCta from '../../components/pages/company/CompanyCTA';
+import CompanyCta from '../../components/pages/company/CompanyCta';
 
 
 
