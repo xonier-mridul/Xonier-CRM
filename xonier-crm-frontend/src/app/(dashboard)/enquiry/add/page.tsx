@@ -774,7 +774,7 @@ const page = (): JSX.Element => {
                   onClick={addExtraField}
                   className="text-xs font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-900/40 px-3 py-1 rounded-full border border-violet-200 dark:border-violet-800 transition-all"
                 >
-                  + Add Field
+                  + Add New Field
                 </button>
               </div>
               <div className="flex flex-col gap-2">
