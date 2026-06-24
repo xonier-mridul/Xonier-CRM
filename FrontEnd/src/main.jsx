@@ -7,7 +7,7 @@ import CompanyPage from './pages/company/Company.jsx'
 import Form from './pages/form/Form.jsx'
 import CheckOutButton from './components/pages/payment/CheckOutButton.jsx'
 import SolutionPage from './components/common/SolutionPage.jsx'
-import Feature from './pages/Feature/Feature.jsx'
+
 import Pricing from './pages/pricing/Pricing.jsx'
 import FooterPage from './components/common/FooterPage.jsx'
 import Careers from './pages/career/Careers.jsx'
@@ -16,6 +16,7 @@ import Blogs from './pages/blogs/Blogs.jsx'
 import CheckoutForm from './components/pages/payment/CheckoutForm.jsx'
 import PaymentSuccess from './components/pages/payment/Success.jsx'
 import PaymentCancel from './components/pages/payment/Cancel.jsx'
+import Feature from './pages/feature/Feature.jsx'
 
 
 
