@@ -23,9 +23,9 @@ class QueryService:
                 "email":         payload.get("email"),
                 "phone":         payload.get("phone"),
                 "address":       payload.get("address"),
-                "industry_type": payload.get("industryType"),
-                "company_name":  payload.get("companyName"),
-                "team_size":     payload.get("teamSize"),
+                "industryType": payload.get("industryType"),
+                "companyName":  payload.get("companyName"),
+                "teamSize":     payload.get("teamSize"),
                 "message":       payload.get("message"),
             }
 

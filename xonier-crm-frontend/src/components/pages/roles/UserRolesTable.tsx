@@ -352,7 +352,7 @@ const handleAllPermissions = (checked: boolean) => {
       {isPopupShow && (
         <>
           <BlurryBackground onClick={() => setIsPopupShow(false)} />
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-2xl w-[720px] max-h-[90vh] z-[200] shadow-2xl flex flex-col">
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-2xl md:w-[720px] max-h-[90vh] z-[200] shadow-2xl flex flex-col">
             <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center">
@@ -498,7 +498,7 @@ const handleAllPermissions = (checked: boolean) => {
               )}
 
               <div>
-                <div className="flex items-center justify-between mb-3">
+                <div className="grid md:grid-cols-3 items-center justify-between mb-3">
                   <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                     Available Permissions
                   </span>
@@ -546,7 +546,7 @@ const handleAllPermissions = (checked: boolean) => {
                           </svg>
                         )}
                       </div>
-                      <span className="font-semibold text-sm text-slate-700 dark:text-slate-200">
+                      <span className="font-semibold text-sm text-slate-700 dark:text-slate-200 whitespace-nowrap">
                         {isAllSelected? 'Deselect All Permissions':'Select All Permissions'}
                       </span>
                     </label>
@@ -676,7 +676,7 @@ const handleAllPermissions = (checked: boolean) => {
           </div>
           <button
             onClick={() => setIsPopupShow(true)}
-            className="bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-600 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 font-semibold disabled:cursor-not-allowed disabled:opacity-50 transition-all shadow-sm hover:shadow-md"
+            className="bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-600 text-white px-5 py-2.5 rounded-xl flex text-sm  md:text-lg  items-center gap-2 font-semibold disabled:cursor-not-allowed disabled:opacity-50 transition-all shadow-sm hover:shadow-md"
             disabled={!hasPermissions(PERMISSIONS.createRole)}
           >
             <FaPlus className="w-4 h-4" />
@@ -741,7 +741,7 @@ const handleAllPermissions = (checked: boolean) => {
                       </td>
 
                       <td className="px-6 py-5">
-                        <div className="flex flex-wrap gap-2 max-w-xs">
+                        <div className="flex flex-wrap whitespace-nowrap gap-2 max-w-xs">
                           {role.code === SUPER_ADMIN_ROLE_CODE ? (
                             <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800 px-3 py-1.5 text-amber-700 dark:text-amber-400 rounded-lg text-xs font-semibold">
                               <IoShieldCheckmarkOutline className="w-3.5 h-3.5" />

@@ -105,7 +105,7 @@ const SubscriptionTable: React.FC<ExtendedSubscriptionTableProps> = ({
               {COLUMNS.map((col) => (
                 <th
                   key={col}
-                  className="pb-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 pr-4"
+                  className="pb-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 pr-4 whitespace-nowrap"
                 >
                   {col}
                 </th>

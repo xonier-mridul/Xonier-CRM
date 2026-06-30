@@ -91,7 +91,8 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-3 md:justify-between w-full flex-wrap ">
+          <div className="grid grid-cols-3  gap-3">
           <select
             value={filters.status ?? ""}
             onChange={(e) =>
@@ -137,6 +138,7 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
               </option>
             ))}
           </select>
+          </div>
 
           <div className="bg-slate-50 dark:bg-gray-700 px-3 py-2 rounded-lg border border-slate-900/10 dark:border-gray-600 flex items-center gap-2">
             <IoIosSearch className="text-lg text-gray-400" />

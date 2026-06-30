@@ -2,6 +2,7 @@ from typing import Any, Dict, Optional
 from datetime import datetime, timezone, timedelta
 from bson import ObjectId
 from fastapi.encoders import jsonable_encoder
+from app.core.enums import PLAN_STATUS
 import logging
 
 from app.utils.custom_exception import AppException
@@ -124,7 +125,7 @@ class PaymentService:
             if not plan:
                 raise AppException(404, "Plan not found")
 
-            if plan.status != "ACTIVE":
+            if plan.status.value != PLAN_STATUS.ACTIVE.value:
                 raise AppException(400, "This plan is not available for purchase")
 
             # Check if company already has active subscription
@@ -226,8 +227,8 @@ class PaymentService:
                 }
             }
 
-        except AppException:
-            raise
+        except AppException as e:
+            raise e
         except Exception as e:
             logger.error(f"Create order error: {str(e)}")
             raise AppException(500, f"Internal server error: {str(e)}")

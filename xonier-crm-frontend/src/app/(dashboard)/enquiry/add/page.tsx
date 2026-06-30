@@ -234,18 +234,9 @@ const page = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [err, setErr] = useState<string[] | string | null>();
   const [usersData, setUsersData] = useState<User[]>([]);
-<<<<<<< HEAD
-  const [searchVal,setSearchVal]= useState('')
-   const [openDropDown,setOpenDropDown] = useState(false)
-   const [selectedUser, setSelectedUser] = useState(null);
-
- 
-
-   
-=======
-  const [userSearch, setUserSearch] = useState<string>("")
-  const [userCurrentPage, setUserCurrentPage] = useState<number>(1)
->>>>>>> d3b79796b661fba4d90e1cfd2adc10bf9bd7be34
+  const [searchVal,setSearchVal]= useState<string>('')
+  const [openDropDown,setOpenDropDown]=useState<boolean>(false)
+  const [selectedUser,setSelectedUser]= useState<string |null>(null)
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -276,49 +267,20 @@ const page = (): JSX.Element => {
     },
     extra_fields: [] as { label: string; value: string }[],
   });
+const handleSearch = (e) => {
+  setSearchVal(e.target.value);
+};
+
 
    
 
   const router = useRouter();
 
-<<<<<<< HEAD
-  // const getUsers = async () => {
-  //   try {
-  //     const result = await AuthService.getAllActiveWithoutPagination();
-  //     if (result.status === 200) setUsersData(result.data.data);
-  //   } catch (error) {
-  //     process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
-  //     if (axios.isAxiosError(error)) {
-  //       const messages = extractErrorMessages(error);
-  //       setErr(messages);
-  //       toast.error(`${messages}`);
-  //     } else {
-  //       setErr(["Something went wrong"]);
-  //     }
-  //   }
-  // };
-
-   const handleSearch =(e:React.ChangeEvent<HTMLInputElement>)=>{
-    setSearchVal(e.target.value)
-  }
-
-  const fetchUsers = async(search)=>{
-    
-    try{
-      const result = await AuthService.getAllTeamUsers({
-        search
-      })
-      if(result.status == 200){
-       setUsersData(result.data.data)
-      }
-    }catch(error){
-=======
   const getUsers = async () => {
     try {
-      const result = await AuthService.getAllTeamUsers({search: userSearch, page: userCurrentPage});
+      const result = await AuthService.getAllActiveWithoutPagination();
       if (result.status === 200) setUsersData(result.data.data);
     } catch (error) {
->>>>>>> d3b79796b661fba4d90e1cfd2adc10bf9bd7be34
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) {
         const messages = extractErrorMessages(error);
@@ -330,6 +292,11 @@ const page = (): JSX.Element => {
     }
       
   }
+  const filteredUsers = usersData?.filter((user) => {
+  const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+
+  return fullName.includes(searchVal.toLowerCase());
+});
   // const filteredUser = usersData?.filter((user)=>
   // `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchVal.toLowerCase()))
 
@@ -831,7 +798,7 @@ const page = (): JSX.Element => {
                         Unassigned
                       </div>
 
-                      {/* {usersData?.map((i) => (
+                      {usersData?.map((i) => (
                         <div
                           key={i.id}
                           className="px-4 py-2 rounded-lg cursor-pointer capitalize hover:bg-gray-100"
@@ -843,10 +810,10 @@ const page = (): JSX.Element => {
                         >
                           {i.firstName} {i.lastName}
                         </div>
-                      ))} */}
-                      {
-                      usersData?.length ? (
-                      usersData.map((user) => (
+                      ))} 
+                      {/* {
+                     filteredUsers?.length ? (
+  filteredUsers.map((user) => (
                         <div
                           key={user.id}
                           className="px-4 py-2 rounded-lg cursor-pointer text-slate-600 capitalize  dark:hover:bg-slate-600 hover:bg-stone-100 flex justify-between items-center"
@@ -869,7 +836,7 @@ const page = (): JSX.Element => {
                       <div className="px-4 py-3 text-sm text-gray-500">
                         No users found
                       </div>
-                    )}
+                    )} */}
                     </div>
                   )}
               </div>

@@ -261,7 +261,7 @@ const results = searchableData.filter((item) =>
   console.log("setQuery :",setSearchDetail)
 
   return (
-    <div className="h-14 z-99 fixed top-0 left-74 bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl right-0 px-4 flex justify-between items-center my-2 border border-gray-200/50 dark:border-gray-700/50 rounded-xl mx-2 shadow-sm">
+    <div className="h-14 z-99 fixed top-0 left-0 lg:left-74 bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl right-0 px-4 flex justify-between items-center my-2 border border-gray-200/50 dark:border-gray-700/50 rounded-xl mx-2 shadow-sm">
       
        {
         calOpen &&(
@@ -281,7 +281,7 @@ const results = searchableData.filter((item) =>
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search menu..."
-            className="w-full pl-10 pr-16 py-2 text-sm bg-slate-100/60 dark:bg-gray-800/60 border border-transparent focus:border-blue-500/30 focus:bg-white dark:focus:bg-gray-800 rounded-lg outline-none transition-all placeholder:text-gray-400 text-slate-800 dark:text-white"
+            className="md:w-full pl-10 pr-16 py-2 text-sm bg-slate-100/60 dark:bg-gray-800/60 border border-transparent focus:border-blue-500/30 focus:bg-white dark:focus:bg-gray-800 rounded-lg outline-none transition-all placeholder:text-gray-400 text-slate-800 dark:text-white"
           />
           
         </form>
@@ -326,7 +326,7 @@ const results = searchableData.filter((item) =>
      
 
       {/* RIGHT SIDE — Actions */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 md:gap-3">
         
         {/* Theme Toggle */}
         <ThemeToggle />
@@ -353,7 +353,7 @@ const results = searchableData.filter((item) =>
                 animate={{ opacity: 1, y: 8 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
-                className="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden"
+                className="absolute -right-20 md:right-0 mt-2 w-96 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden"
               >
                 {/* Header */}
                 <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700">

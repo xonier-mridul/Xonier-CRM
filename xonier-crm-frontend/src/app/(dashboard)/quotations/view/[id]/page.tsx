@@ -305,7 +305,7 @@ const Page = (): JSX.Element => {
                 <button className="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl transition-colors">
                   <IoEllipsisVertical className="w-4 h-4" />
                 </button>
-                <div className="hidden group-hover:block absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10">
+                <div className=" absolute border border-slate-200 rounded-xl bg-white right-0 top-20 pt-2 w-48 opacity-0 invisible translate-y-2  group-hover:opacity-100  group-hover:visible  group-hover:translate-y-0 transition-all duration-300">
                   {hasPermission(PERMISSIONS.updateQuote) && quoteData.quotationStatus !== QuotationStatus.DELETE
                     ? <Link
                         href={`/quotations/update/${quoteData.id}`}
