@@ -152,7 +152,7 @@ function LineItemRow({
       <div className="col-span-12 sm:col-span-4">
         <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Description *</label>
         <input
-          className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
           placeholder="Service or product"
           value={item.description}
           onChange={e => onChange(index, 'description', e.target.value)}
@@ -166,7 +166,7 @@ function LineItemRow({
           type="number"
           min="0"
           step="0.01"
-          className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
           value={item.quantity}
           onChange={e => onChange(index, 'quantity', parseFloat(e.target.value) || 0)}
         />
@@ -176,7 +176,7 @@ function LineItemRow({
       <div className="col-span-4 sm:col-span-1">
         <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Unit</label>
         <input
-          className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
           placeholder="pcs"
           value={item.unit || ''}
           onChange={e => onChange(index, 'unit', e.target.value)}
@@ -192,7 +192,7 @@ function LineItemRow({
             type="number"
             min="0"
             step="0.01"
-            className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 pl-6 pr-2 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 pl-6 pr-2 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
             value={item.unitPrice}
             onChange={e => onChange(index, 'unitPrice', parseFloat(e.target.value) || 0)}
           />
@@ -207,7 +207,7 @@ function LineItemRow({
           min="0"
           max="100"
           step="0.01"
-          className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
           placeholder="0"
           value={item.discount ?? ''}
           onChange={e => onChange(index, 'discount', e.target.value === '' ? null : parseFloat(e.target.value))}
@@ -222,7 +222,7 @@ function LineItemRow({
           min="0"
           max="100"
           step="0.01"
-          className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
           placeholder="0"
           value={item.taxRate ?? ''}
           onChange={e => onChange(index, 'taxRate', e.target.value === '' ? null : parseFloat(e.target.value))}
@@ -282,7 +282,7 @@ function FinancialSummary({
       ))}
       <div className="flex justify-between pt-3 border-t border-gray-200 dark:border-gray-600">
         <span className="font-bold text-gray-900 dark:text-white">Total</span>
-        <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
+        <span className="text-xl font-bold text-cyan-600 dark:text-cyan-400">
           {symbol}{form.total.toFixed(2)}
         </span>
       </div>
@@ -490,7 +490,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
       <div className="mb-6 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <IoDocumentText className="w-7 h-7 text-blue-600 dark:text-blue-400" />
+            <IoDocumentText className="w-7 h-7 text-cyan-600 dark:text-cyan-400" />
             New Quotation
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -502,7 +502,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
           onClick={() => setShowPreview(p => !p)}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
             showPreview
-              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              ? 'bg-cyan-600 text-white hover:bg-cyan-700'
               : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-750'
           }`}
         >
@@ -523,7 +523,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
         <div className={showPreview ? 'xl:col-span-2' : ''}>
 
           {/* 1. Basic Info */}
-          <Section title="Basic Information" icon={<IoInformationCircleOutline className="w-5 h-5 text-blue-500" />}>
+          <Section title="Basic Information" icon={<IoInformationCircleOutline className="w-5 h-5 text-cyan-500" />}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
                 <Input
@@ -569,7 +569,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
           </Section>
 
           {/* 2. Customer Info */}
-          <Section title="Customer Information" icon={<IoPersonOutline className="w-5 h-5 text-blue-500" />}>
+          <Section title="Customer Information" icon={<IoPersonOutline className="w-5 h-5 text-cyan-500" />}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Customer Name *"
@@ -633,7 +633,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
           </Section>
 
           {/* 3. Line Items */}
-          <Section title="Line Items" icon={<IoListOutline className="w-5 h-5 text-blue-500" />}>
+          <Section title="Line Items" icon={<IoListOutline className="w-5 h-5 text-cyan-500" />}>
             {(formData.lineItems ?? []).length === 0 ? (
               <div className="text-center py-8 text-gray-400 dark:text-gray-500 text-sm">
                 No line items yet. Add items below to auto-calculate the subtotal.
@@ -655,7 +655,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
             <button
               type="button"
               onClick={addLineItem}
-              className="mt-2 flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 border border-blue-300 dark:border-blue-700 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+              className="mt-2 flex items-center gap-2 px-4 py-2 text-sm font-medium text-cyan-600 dark:text-cyan-400 border border-cyan-300 dark:border-cyan-700 rounded-xl hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-colors"
             >
               <IoAddOutline className="w-4 h-4" />
               Add Line Item
@@ -663,7 +663,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
           </Section>
 
           {/* 4. Financial Details */}
-          <Section title="Financial Details" icon={<IoCashOutline className="w-5 h-5 text-blue-500" />}>
+          <Section title="Financial Details" icon={<IoCashOutline className="w-5 h-5 text-cyan-500" />}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
               {/* Subtotal — editable only when no line items */}
@@ -684,7 +684,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                     disabled={(formData.lineItems ?? []).length > 0}
                     step="0.01"
                     min="0"
-                    className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 pl-8 pr-4 py-2 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 pl-8 pr-4 py-2 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   />
                 </div>
               </div>
@@ -702,7 +702,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                   min="0"
                   step="0.01"
                   placeholder="0.00"
-                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
 
@@ -719,7 +719,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                   max="100"
                   step="0.01"
                   placeholder="0"
-                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
 
@@ -736,7 +736,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                   min="0"
                   step="0.01"
                   placeholder="0.00"
-                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
 
@@ -753,7 +753,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                   max="100"
                   step="0.01"
                   placeholder="0"
-                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
 
@@ -770,15 +770,15 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                   min="0"
                   step="0.01"
                   placeholder="0.00"
-                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
 
               {/* Total (read-only, auto-computed) */}
               <div className="md:col-span-2 lg:col-span-3">
-                <div className="flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl px-5 py-4">
+                <div className="flex items-center justify-between bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded-xl px-5 py-4">
                   <span className="font-semibold text-gray-900 dark:text-white">Grand Total</span>
-                  <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  <span className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">
                     {formatCurrency(formData.total)}
                   </span>
                 </div>
@@ -787,7 +787,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
           </Section>
 
           {/* 5. Dates */}
-          <Section title="Validity Period" icon={<IoCalendarOutline className="w-5 h-5 text-blue-500" />}>
+          <Section title="Validity Period" icon={<IoCalendarOutline className="w-5 h-5 text-cyan-500" />}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Issue Date *"
@@ -809,7 +809,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
               {validityDays !== null && validityDays > 0 && (
                 <div className="md:col-span-2">
                   <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700/50 rounded-xl px-4 py-3">
-                    <IoCalendarOutline className="w-4 h-4 text-blue-500" />
+                    <IoCalendarOutline className="w-4 h-4 text-cyan-500" />
                     Valid for <span className="font-semibold text-gray-900 dark:text-white">{validityDays} days</span>
                     &nbsp;— expires {formatDate(formData.valid ?? '')}
                   </div>
@@ -819,7 +819,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
           </Section>
 
           {/* 6. Payment */}
-          <Section title="Payment Details" icon={<IoReceiptOutline className="w-5 h-5 text-blue-500" />} defaultOpen={false}>
+          <Section title="Payment Details" icon={<IoReceiptOutline className="w-5 h-5 text-cyan-500" />} defaultOpen={false}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Payment Terms"
@@ -841,7 +841,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
           </Section>
 
           {/* 7. Notes & Terms */}
-          <Section title="Notes & Terms" icon={<IoDocumentTextOutline className="w-5 h-5 text-blue-500" />} defaultOpen={false}>
+          <Section title="Notes & Terms" icon={<IoDocumentTextOutline className="w-5 h-5 text-cyan-500" />} defaultOpen={false}>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -853,7 +853,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                   onChange={handleInput}
                   rows={3}
                   placeholder="Notes visible to the customer..."
-                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
                 />
               </div>
               <div>
@@ -867,7 +867,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                   onChange={handleInput}
                   rows={3}
                   placeholder="Internal notes for your team..."
-                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
                 />
               </div>
               <div>
@@ -880,7 +880,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                   onChange={handleInput}
                   rows={4}
                   placeholder="Standard terms and conditions..."
-                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
                 />
               </div>
             </div>
@@ -917,7 +917,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                   formData.total <= 0 ||
                   formData.subTotal <= 0
                 }
-                className="px-5 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="px-5 py-2.5 rounded-xl text-sm font-medium bg-cyan-600 hover:bg-cyan-700 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 <IoCheckmarkCircle className="w-4 h-4" />
                 {isLoading ? 'Creating...' : 'Create & Send'}
@@ -932,7 +932,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
             <div className="sticky top-20 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
               <div className="flex items-center justify-between">
                 <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <IoEyeOutline className="w-5 h-5 text-blue-500" />
+                  <IoEyeOutline className="w-5 h-5 text-cyan-500" />
                   Live Preview
                 </h2>
                 <button
@@ -948,7 +948,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                 <p className="text-lg font-bold text-gray-900 dark:text-white leading-snug">
                   {formData.title || 'Untitled Quotation'}
                 </p>
-                <span className="mt-1 inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                <span className="mt-1 inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300">
                   {formData.quotationStatus}
                 </span>
               </div>

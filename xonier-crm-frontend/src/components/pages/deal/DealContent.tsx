@@ -225,7 +225,7 @@ const DealContent = (): JSX.Element => {
             <select
               name="limit"
               id="limit"
-              className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10"
+              className="bg-slate-50  dark:bg-gray-600 px-3 py-2.5 rounded-lg border text-slate-500 border-slate-900/10 outline-none dark:text-white/70"
               onChange={(e) => handlePageLimit(Number(e.target.value))}
             >
               <option value="10">10</option>
@@ -233,9 +233,9 @@ const DealContent = (): JSX.Element => {
               <option value="30">30</option>
               <option value="40">50</option>
             </select>
-            <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2">
+            <div className="bg-slate-50 dark:bg-gray-600 text-slate-500 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2 dark:text-white/70">
               <IoIosSearch className="text-xl" />
-              <input type="text" className="outline-none" placeholder="Search..." value={searchVal} onChange={(e) => handleSearch(e.target.value)} />
+              <input type="text" className="outline-none " placeholder="Search..." value={searchVal} onChange={(e) => handleSearch(e.target.value)} />
             </div>
             <div>
               <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
@@ -243,7 +243,7 @@ const DealContent = (): JSX.Element => {
             {(hasPermission(PERMISSIONS.readLead)) && (
               <Link
                 href={"/leads"}
-                className="bg-blue-600 hover:bg-blue-700
+                className="bg-cyan-600 hover:bg-cyan-700
                                     text-white px-5 py-2 rounded-md
                                     flex items-center gap-2 group"
               >
@@ -261,35 +261,36 @@ const DealContent = (): JSX.Element => {
         <div className="w-full rounded-xl overflow-x-scroll text-nowrap">
           {(currentTab === 1) && <> <table className="w-full rounded-xl overflow-hidden">
             <thead>
-              <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
+              <tr className="w-full border-b-2 border-zinc-300 dark:border-zinc-400 bg-slate-200 dark:bg-gray-800">
                 {/* <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
                   deal Id
                 </th> */}
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
                   deal name
                 </th>
 
-                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
                   {" "}
                   Deal stage
                 </th>
 
-                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
                   against
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
                   created date
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
                   created by
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody className="">
-              {!isLoading ? ((dealData && Array.isArray(dealData) && dealData.length > 0) ? (
+              {!isLoading ? 
+              ((dealData && Array.isArray(dealData) && dealData.length > 0) ? (
                 dealData.map((item, i) => {
                   let rr = i % 2 == 0;
 
@@ -301,26 +302,26 @@ const DealContent = (): JSX.Element => {
                       key={item.deal_id}
                       className={`${rr
                           ? "bg-white dark:bg-transparent"
-                          : "bg-blue-100/50 dark:bg-slate-500"
+                          : "bg-slate-100/50 dark:bg-slate-800"
                         } w-full`}
                     >
                       {/* <td className="p-4">
                         <Link
                           href={`/deals/view/${item.id}`}
-                          className="text-xs cursor-pointer hover:scale-110 transition-all hover:text-blue-300"
+                          className="text-xs cursor-pointer hover:scale-110 transition-all hover:text-cyan-300"
                         >
                           {" "}
                           {item.deal_id}
                         </Link>
                       </td> */}
                       <td className="flex gap-1 flex-col p-4">
-                        <h4 className="capitalize text-sm">{item.dealName}</h4>{" "}
+                        <h4 className="capitalize text-slate-500 text-[16px] dark:text-white/70">{item.dealName}</h4>{" "}
 
 
                       </td>
 
                       <td className="p-4 ">
-                        <span className={`${(item.dealStage.trim() === DEAL_STAGES.REQUIREMENT_ANALYSIS) ? "bg-orange-500" : (item.dealStage.trim() === DEAL_STAGES.QUALIFICATION) ? "bg-blue-600" : (item.dealStage.trim() === DEAL_STAGES.PROPOSAL) ? "bg-cyan-500" : (item.dealPipeline.trim() === DEAL_STAGES.NEGOTIATION) ? "bg-teal-600" : (item.dealStage.trim() === DEAL_STAGES.WON) ? "bg-green-500" : (item.dealStage.trim() === DEAL_STAGES.LOST) ? "bg-red-500" : (item.dealStage.trim() === DEAL_STAGES.DELETE) ? "bg-red-500" : "bg-gray-600"} text-white px-4 py-1.5 text-sm rounded-md capitalize`}>{item.dealStage.trim()}</span>
+                        <span className={`${(item.dealStage.trim() === DEAL_STAGES.REQUIREMENT_ANALYSIS) ? "bg-orange-500" : (item.dealStage.trim() === DEAL_STAGES.QUALIFICATION) ? "bg-cyan-600" : (item.dealStage.trim() === DEAL_STAGES.PROPOSAL) ? "bg-cyan-500" : (item.dealPipeline.trim() === DEAL_STAGES.NEGOTIATION) ? "bg-teal-600" : (item.dealStage.trim() === DEAL_STAGES.WON) ? "bg-green-500" : (item.dealStage.trim() === DEAL_STAGES.LOST) ? "bg-red-500" : (item.dealStage.trim() === DEAL_STAGES.DELETE) ? "bg-red-500" : "bg-gray-600"} text-white px-4 py-1.5 text-sm rounded-md capitalize`}>{item.dealStage.trim()}</span>
                       </td>
                       <td className="p-4 ">
                         <span
@@ -331,8 +332,9 @@ const DealContent = (): JSX.Element => {
                           {item?.lead_id?.lead_id ?? "N/A"}
                         </span>
                       </td>
-                      <td className="p-4"> <span className="px-3 py-1.5 rounded-md bg-blue-100 text-xs text-blue-600 font-medium">{date}</span></td>
-                      <td className="p-4"><Link href={`/users/${item.createdBy.id}`} className="flex text-[12px] items-center capitalize gap-1.5 bg-green-100/80 text-green-500 px-3.5 py-1 rounded-full w-fit cursor-pointer hover:scale-103 hover:bg-green-500 hover:text-white"> <FaRegUser className="text-[12px]"/> {item.createdBy?.firstName + " " + item.createdBy?.lastName}</Link></td>
+                      <td className="p-4"> <span className="px-3 py-1.5 rounded-md bg-cyan-100 text-xs text-cyan-600 font-medium">{date}</span></td>
+                      <td className="p-4"><Link href={`/users/${item.createdBy.id}`} className="flex text-[12px] items-center capitalize gap-1.5 bg-green-100/80 dark:bg-green-100 text-green-500 px-3.5 py-1 rounded-full w-fit cursor-pointer hover:scale-103 hover:bg-green-500 hover:text-white"> 
+                      <FaRegUser className="text-[12px]"/> {item.createdBy?.firstName + " " + item.createdBy?.lastName}</Link></td>
                       <td>
                         <div className="flex items-center gap-2">
                           {hasPermission(PERMISSIONS.readDeal) ? (
@@ -349,11 +351,12 @@ const DealContent = (): JSX.Element => {
                             </span>
                           )}
                           {(hasPermission(PERMISSIONS.updateDeal) && (item.status !== DEAL_STATUS.DELETE)) ? (
+                            
                             <Link
                               href={`/deals/update/${item.id}`}
                               className="h-9 w-9 flex items-center justify-center rounded-md bg-yellow-200/80 dark:bg-yellow-100
-               hover:bg-yellow-300/70 dark:hover:bg-yellow-200
-               text-yellow-500 hover:scale-104"
+                            hover:bg-yellow-300/70 dark:hover:bg-yellow-200
+                            text-yellow-500 hover:scale-104"
                             >
                               <MdOutlineEdit className="text-xl" />
                             </Link>
@@ -366,12 +369,14 @@ const DealContent = (): JSX.Element => {
                             </span>
                           )}
                           {(hasPermission(PERMISSIONS.createQuote) && (item.status !== DEAL_STATUS.DELETE)) ? (
-                            item.inQuotation ? <span
+                            item.inQuotation ?
+                             <span
                               className="h-9 w-9 flex items-center justify-center rounded-md
-               bg-orange-500 text-white  cursor-no-drop"
+                               bg-orange-500 text-white  cursor-no-drop"
                             >
                               <FaRegPaperPlane className="text-lg" />
-                            </span> : <Link
+                            </span> : 
+                            <Link
                               href={`/deals/quotation/${item.id}`}
                               className={`${item.inQuotation ? "" : "bg-orange-200/80 dark:bg-orange-100 hover:bg-orange-300/70 dark:hover:bg-orange-200 text-orange-500"} h-9 w-9 flex items-center justify-center rounded-md  hover:scale-104`}
                             >
@@ -392,14 +397,14 @@ const DealContent = (): JSX.Element => {
                     </tr>
                   );
                 })
-              ) : <tr><td className="p-4 text-center" colSpan={6}>Data not found</td></tr>) : (
+              ) : <tr><td className="p-4 text-center text-slate-500 dark:text-white/70" colSpan={6}>Data not found</td></tr>) : (
                 Array.from({ length: 10 }).map((item, i) => {
                   let rr = i % 2 == 0;
 
                   return (<tr key={i}
                     className={`${rr
                         ? "bg-white dark:bg-transparent"
-                        : "bg-blue-100/50 dark:bg-slate-500"
+                        : "bg-slate-100/50 dark:bg-slate-800"
                       } w-full`}>
                     <td className="text-center p-4">
                       <Skeleton height={30} borderRadius={14} />
@@ -438,7 +443,7 @@ const DealContent = (): JSX.Element => {
           </table> </>}
           {(currentTab === 2) && <> <table className="w-full rounded-xl overflow-hidden">
             <thead>
-              <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
+              <tr className="w-full border-b-2 border-zinc-300 bg-slate-200 dark:bg-gray-800">
                 {/* <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
                   deal Id
                 </th> */}
@@ -482,28 +487,28 @@ const DealContent = (): JSX.Element => {
                       key={item.deal_id}
                       className={`${rr
                           ? "bg-white dark:bg-transparent"
-                          : "bg-blue-100/50 dark:bg-slate-500"
+                          : "bg-slate-100/50 dark:bg-slate-800"
                         } w-full`}
                     >
                       {/* <td className="p-4">
                         <Link
                           href={`/deals/view/${item.id}`}
-                          className="text-sm cursor-pointer hover:scale-110 transition-all hover:text-blue-300"
+                          className="text-sm cursor-pointer hover:scale-110 transition-all hover:text-cyan-300"
                         >
                           {" "}
                           {item.deal_id}
                         </Link>
                       </td> */}
                       <td className="flex gap-1 flex-col p-4">
-                        <h4 className="capitalize">{item.dealName}</h4>{" "}
+                        <h4 className="capitalize text-slate-500 text-[16px] dark:text-white/70">{item.dealName}</h4>{" "}
 
 
                       </td>
                       {/* <td className="p-4">
-                        <span className={`${(item.dealPipeline.trim() === DEAL_PIPELINE.REQUIREMENT_ANALYSIS) ? "bg-orange-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.QUALIFICATION) ? "bg-blue-600" : (item.dealPipeline.trim() === DEAL_PIPELINE.PROPOSAL) ? "bg-cyan-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.NEGOTIATION) ? "bg-teal-600" : (item.dealPipeline.trim() === DEAL_PIPELINE.WON) ? "bg-green-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.LOST) ? "bg-red-500" : "bg-gray-600"} text-white px-4 py-1.5 text-sm rounded-md capitalize`}>{item.dealPipeline.trim()}</span>
+                        <span className={`${(item.dealPipeline.trim() === DEAL_PIPELINE.REQUIREMENT_ANALYSIS) ? "bg-orange-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.QUALIFICATION) ? "bg-cyan-600" : (item.dealPipeline.trim() === DEAL_PIPELINE.PROPOSAL) ? "bg-cyan-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.NEGOTIATION) ? "bg-teal-600" : (item.dealPipeline.trim() === DEAL_PIPELINE.WON) ? "bg-green-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.LOST) ? "bg-red-500" : "bg-gray-600"} text-white px-4 py-1.5 text-sm rounded-md capitalize`}>{item.dealPipeline.trim()}</span>
                       </td> */}
                       <td className="p-4 ">
-                        <span className={`${(item.dealStage.trim() === DEAL_STAGES.REQUIREMENT_ANALYSIS) ? "bg-orange-500" : (item.dealStage.trim() === DEAL_STAGES.QUALIFICATION) ? "bg-blue-600" : (item.dealStage.trim() === DEAL_STAGES.PROPOSAL) ? "bg-cyan-500" : (item.dealStage.trim() === DEAL_STAGES.NEGOTIATION) ? "bg-teal-600" : (item.dealStage.trim() === DEAL_STAGES.WON) ? "bg-green-500" : (item.dealStage.trim() === DEAL_STAGES.LOST) ? "bg-red-500" : "bg-gray-600"} text-white px-4 py-1.5 text-sm rounded-md capitalize`}>{item.dealStage.trim()}</span>
+                        <span className={`${(item.dealStage.trim() === DEAL_STAGES.REQUIREMENT_ANALYSIS) ? "bg-orange-500" : (item.dealStage.trim() === DEAL_STAGES.QUALIFICATION) ? "bg-cyan-600" : (item.dealStage.trim() === DEAL_STAGES.PROPOSAL) ? "bg-cyan-500" : (item.dealStage.trim() === DEAL_STAGES.NEGOTIATION) ? "bg-teal-600" : (item.dealStage.trim() === DEAL_STAGES.WON) ? "bg-green-500" : (item.dealStage.trim() === DEAL_STAGES.LOST) ? "bg-red-500" : "bg-gray-600"} text-white px-4 py-1.5 text-sm rounded-md capitalize`}>{item.dealStage.trim()}</span>
                       </td>
                       <td className="p-4 ">
                         <span
@@ -514,7 +519,7 @@ const DealContent = (): JSX.Element => {
                           {item?.lead_id?.lead_id}
                         </span>
                       </td>
-                      <td className="p-4"> <span className="px-4 py-1.5 rounded-md bg-blue-200 text-sm text-blue-600 font-medium">{date}</span></td>
+                      <td className="p-4"> <span className="px-4 py-1.5 rounded-md bg-cyan-200 text-sm text-cyan-600 font-medium">{date}</span></td>
                       <td className="p-4">{item.createdBy?.firstName + " " + item.createdBy?.lastName}</td>
                       <td>
                         <div className="flex items-center gap-2">
@@ -555,14 +560,14 @@ const DealContent = (): JSX.Element => {
                     </tr>
                   );
                 })
-              ) : <tr> <td className="p-4 text-center" colSpan={7}>Data not found</td></tr>) : (
+              ) : <tr> <td className="p-4 text-center text-slate-500 dark:text-white/70" colSpan={7}>Data not found</td></tr>) : (
                 Array.from({ length: 10 }).map((item, i) => {
                   let rr = i % 2 == 0;
 
                   return (<tr key={i}
                     className={`${rr
                         ? "bg-white dark:bg-transparent"
-                        : "bg-blue-100/50 dark:bg-slate-500"
+                        : "bg-slate-100/50 dark:bg-slate-800"
                       } w-full`}>
                     <td className="text-center p-4">
                       <Skeleton height={30} borderRadius={14} />
@@ -603,7 +608,7 @@ const DealContent = (): JSX.Element => {
           </table> </>}
           {(currentTab === 3) && <><table className="w-full rounded-xl overflow-hidden">
             <thead>
-              <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
+              <tr className="w-full border-b-2 border-zinc-300 bg-slate-200 dark:bg-gray-800">
                 {/* <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
                   deal Id
                 </th> */}
@@ -647,28 +652,28 @@ const DealContent = (): JSX.Element => {
                       key={item.deal_id}
                       className={`${rr
                           ? "bg-white dark:bg-transparent"
-                          : "bg-blue-100/50 dark:bg-slate-500"
+                          : "bg-slate-100/50 dark:bg-slate-800"
                         } w-full`}
                     >
                       {/* <td className="p-4">
                         <Link
                           href={`/deals/view/${item.id}`}
-                          className="text-sm cursor-pointer hover:scale-110 transition-all hover:text-blue-300"
+                          className="text-sm cursor-pointer hover:scale-110 transition-all hover:text-cyan-300"
                         >
                           {" "}
                           {item.deal_id}
                         </Link>
                       </td> */}
                       <td className="flex gap-1 flex-col p-4">
-                        <h4 className="capitalize">{item.dealName}</h4>{" "}
+                        <h4 className="capitalize text-slate-500 text-[16px] dark:text-white/70">{item.dealName}</h4>{" "}
 
 
                       </td>
                       {/* <td className="p-4">
-                        <span className={`${(item.dealPipeline.trim() === DEAL_PIPELINE.REQUIREMENT_ANALYSIS) ? "bg-orange-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.QUALIFICATION) ? "bg-blue-600" : (item.dealPipeline.trim() === DEAL_PIPELINE.PROPOSAL) ? "bg-cyan-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.NEGOTIATION) ? "bg-teal-600" : (item.dealPipeline.trim() === DEAL_PIPELINE.WON) ? "bg-green-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.LOST) ? "bg-red-500" : "bg-gray-600"} text-white px-4 py-1.5 text-sm rounded-md capitalize`}>{item.dealPipeline.trim()}</span>
+                        <span className={`${(item.dealPipeline.trim() === DEAL_PIPELINE.REQUIREMENT_ANALYSIS) ? "bg-orange-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.QUALIFICATION) ? "bg-cyan-600" : (item.dealPipeline.trim() === DEAL_PIPELINE.PROPOSAL) ? "bg-cyan-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.NEGOTIATION) ? "bg-teal-600" : (item.dealPipeline.trim() === DEAL_PIPELINE.WON) ? "bg-green-500" : (item.dealPipeline.trim() === DEAL_PIPELINE.LOST) ? "bg-red-500" : "bg-gray-600"} text-white px-4 py-1.5 text-sm rounded-md capitalize`}>{item.dealPipeline.trim()}</span>
                       </td> */}
                       <td className="p-4 ">
-                        <span className={`${(item.dealStage.trim() === DEAL_STAGES.REQUIREMENT_ANALYSIS) ? "bg-orange-500" : (item.dealStage.trim() === DEAL_STAGES.QUALIFICATION) ? "bg-blue-600" : (item.dealStage.trim() === DEAL_STAGES.PROPOSAL) ? "bg-cyan-500" : (item.dealStage.trim() === DEAL_STAGES.NEGOTIATION) ? "bg-teal-600" : (item.dealStage.trim() === DEAL_STAGES.WON) ? "bg-green-500" : (item.dealStage.trim() === DEAL_STAGES.LOST) ? "bg-red-500" : "bg-gray-600"} text-white px-4 py-1.5 text-sm rounded-md capitalize`}>{item.dealStage.trim()}</span>
+                        <span className={`${(item.dealStage.trim() === DEAL_STAGES.REQUIREMENT_ANALYSIS) ? "bg-orange-500" : (item.dealStage.trim() === DEAL_STAGES.QUALIFICATION) ? "bg-cyan-600" : (item.dealStage.trim() === DEAL_STAGES.PROPOSAL) ? "bg-cyan-500" : (item.dealStage.trim() === DEAL_STAGES.NEGOTIATION) ? "bg-teal-600" : (item.dealStage.trim() === DEAL_STAGES.WON) ? "bg-green-500" : (item.dealStage.trim() === DEAL_STAGES.LOST) ? "bg-red-500" : "bg-gray-600"} text-white px-4 py-1.5 text-sm rounded-md capitalize`}>{item.dealStage.trim()}</span>
                       </td>
                       <td className="p-4 ">
                         <span
@@ -679,7 +684,7 @@ const DealContent = (): JSX.Element => {
                           {item?.lead_id?.lead_id}
                         </span>
                       </td>
-                      <td className="p-4"> <span className="px-4 py-1.5 rounded-md bg-blue-200 text-sm text-blue-600 font-medium">{date}</span></td>
+                      <td className="p-4"> <span className="px-4 py-1.5 rounded-md bg-cyan-200 text-sm text-cyan-600 font-medium">{date}</span></td>
                       <td className="p-4">{item.createdBy?.firstName + " " + item.createdBy?.lastName}</td>
                       <td>
                         <div className="flex items-center gap-2">
@@ -720,14 +725,14 @@ const DealContent = (): JSX.Element => {
                     </tr>
                   );
                 })
-              ) : <tr> <td className="p-4 text-center" colSpan={7}>Data not found</td></tr>) : (
+              ) : <tr> <td className="p-4 text-center text-slate-500 dark:text-white/70" colSpan={7}>Data not found</td></tr>) : (
                 Array.from({ length: 10 }).map((item, i) => {
                   let rr = i % 2 == 0;
 
                   return (<tr key={i}
                     className={`${rr
                         ? "bg-white dark:bg-transparent"
-                        : "bg-blue-100/50 dark:bg-slate-500"
+                        : "bg-slate-100/50 dark:bg-slate-800"
                       } w-full`}>
                     <td className="text-center p-4">
                       <Skeleton height={30} borderRadius={14} />

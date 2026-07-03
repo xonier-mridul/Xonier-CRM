@@ -179,7 +179,7 @@ const SideBar = () => {
     <div className={`fixed top-0 left-0 w-72 p-6 z-100  ${activeDashboard ?'translate-x-0':'-translate-x-70 lg:translate-x-0'}   transition-all duration-300 bg-slate-50 h-screen dark:bg-gray-800 flex flex-col gap-6 border border-slate-900/15 dark:border-gray-700 `}>
       <button className={`block lg:hidden absolute z-20 left-full top-50`} onClick={handleClick} >
         <span className={`w-10 rounded-tr-xl rounded-br-xl h-10 border dark:bg-gray-800 border-slate-900/15 dark:border-gray-700  bg-slate-50 text-slate-400 hover:text-slate-500  flex justify-center items-center`}><MdKeyboardDoubleArrowRight className={`text-2xl  ${activeDashboard ?'rotate-180':''} transition-all duration-300`} /></span></button>
-      <div className="h-[89vh] overflow-y-scroll flex flex-col gap-6">
+      <div className="h-[89vh] overflow-y-scroll flex flex-col gap-6 custom-scrollbar">
         <Link href={"/"}>
           <Image
             src="/images/trakeroo.png"
@@ -683,7 +683,7 @@ const SideBar = () => {
               <button
                 onClick={() => toggleMenu("sales")}
                 className={`${isMenuActive("sales")
-                  ? "bg-cyan-600/10 text-cyan-700 dark:text-cyan-300 border-l-2 border-cyan-600 dark:border-cyan-400"
+                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300 "
                   : "border-l-2 border-transparent"
                   } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >

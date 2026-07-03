@@ -37,17 +37,17 @@ const DesignationModal = ({ isOpen, onClose }: Props): React.JSX.Element | null 
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm "
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 w-full max-w-lg flex flex-col max-h-[60vh] min-h-[60vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-900 z-100 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 w-full max-w-lg flex flex-col max-h-[60vh] min-h-[60vh] overflow-y-auto ">
 
         {/* ── Header ── */}
-        <div className="bg-linear-to-r from-violet-600 to-indigo-600 px-6 py-4 flex items-center justify-between shrink-0">
+        <div className="bg-linear-to-r from-[#16c2cf] to-[#0fb8a5] px-6 py-4 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-base">
+            <div className="w-8 h-8 rounded-lg bg-white/60 flex items-center justify-center text-base">
               🏷️
             </div>
             <div>
               <h2 className="text-base font-bold text-white">Designation List</h2>
-              <p className="text-xs text-violet-200 mt-0.5">
+              <p className="text-xs text-cyan-200 mt-0.5">
                 {Object.keys(DESIGNATION).length} designations available
               </p>
             </div>
@@ -70,7 +70,7 @@ const DesignationModal = ({ isOpen, onClose }: Props): React.JSX.Element | null 
               placeholder="Search designations..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-400/20 transition-all"
+              className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all"
             />
             {search && (
               <button
@@ -89,7 +89,7 @@ const DesignationModal = ({ isOpen, onClose }: Props): React.JSX.Element | null 
         </div>
 
         {/* ── List ── */}
-        <div className="overflow-y-auto flex-1 px-4 py-3 space-y-1">
+        <div className="overflow-y-auto custom-scrollbar flex-1 px-4 py-3 space-y-1">
           {designations.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <span className="text-4xl mb-3">🔍</span>
@@ -110,7 +110,7 @@ const DesignationModal = ({ isOpen, onClose }: Props): React.JSX.Element | null 
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     {/* Enum key badge */}
-                    <span className="shrink-0 text-[10px] font-bold text-violet-500 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 border border-violet-100 dark:border-violet-800 px-2 py-0.5 rounded-md font-mono uppercase tracking-wide">
+                    <span className="shrink-0 text-[10px] font-bold text-cyan-500 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/30 border border-cyan-100 dark:border-cyan-800 px-2 py-0.5 rounded-md font-mono uppercase tracking-wide">
                       {enumKey}
                     </span>
                     {/* Enum value */}
@@ -127,7 +127,7 @@ const DesignationModal = ({ isOpen, onClose }: Props): React.JSX.Element | null 
                     className={`shrink-0 flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-lg border transition-all
                       ${isCopied
                         ? "bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border-green-200 dark:border-green-800"
-                        : "bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-violet-300 hover:text-violet-600 dark:hover:text-violet-400 dark:hover:border-violet-700 opacity-0 group-hover:opacity-100"
+                        : "bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-cyan-300 hover:text-cyan-600 dark:hover:text-cyan-400 dark:hover:border-cyan-700 opacity-0 group-hover:opacity-100"
                       }`}
                   >
                     {isCopied ? (

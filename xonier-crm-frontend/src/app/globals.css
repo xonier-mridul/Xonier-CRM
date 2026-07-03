@@ -4,6 +4,7 @@
 
 html {
   scroll-behavior: smooth !important;
+
 }
 
 * {
@@ -53,24 +54,46 @@ input[type=number] {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2563EB;
+  background: linear-gradient(to bottom, #22d3ee, #0891b2);
   border-radius: 10px;
   transition: background 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #1d4ed8;
+  background: linear-gradient(to bottom, #67e8f9, #0e7490);
 }
 
 
 
-* {
+html {
   scrollbar-width: thin;
-  scrollbar-color: #2563EB #f1f5f9;
+  scrollbar-color: #0891b2 #f1f5f9;
 }
 
 
 
+/* scrollbar in sidebar*/
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #22d3ee, #0891b2);
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #67e8f9, #0e7490);
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #0891b2 transparent;
+}
 
 
 

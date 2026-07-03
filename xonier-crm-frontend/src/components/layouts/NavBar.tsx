@@ -8,9 +8,9 @@ import { logout } from "@/src/store/slices/authSlice";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { FiUser, FiSearch, FiBell, FiSettings, FiCheckCircle } from "react-icons/fi";
+import { FiUser, FiSearch,  FiCheckCircle } from "react-icons/fi";
 import { IoMdNotificationsOutline } from "react-icons/io";
-import { FaBuilding, FaRegBuilding } from "react-icons/fa";
+import { FaBuilding, } from "react-icons/fa";
 import ConfirmPopup from "../ui/ConfirmPopup";
 import { AuthService } from "@/src/services/auth.service";
 import { toast } from "react-toastify";
@@ -40,6 +40,7 @@ import {FiHome,FiCalendar,
   FiBookOpen,
 } from "react-icons/fi";
 import { MdKeyboardArrowRight } from "react-icons/md";
+import { FaArrowLeftLong, FaArrowRightLong } from "react-icons/fa6";
 
 
 const mockNotifications = [
@@ -260,6 +261,7 @@ const results = searchableData.filter((item) =>
   };
   console.log("setQuery :",setSearchDetail)
 
+
   return (
     <div className="h-14 z-99 fixed top-0 left-0 lg:left-74 bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl right-0 px-4 flex justify-between items-center my-2 border border-gray-200/50 dark:border-gray-700/50 rounded-xl mx-2 shadow-sm">
       
@@ -275,13 +277,13 @@ const results = searchableData.filter((item) =>
       ref={searchRef}
        className="flex relative  items-center gap-3 flex-1 max-w-md">
         <form onSubmit={handleSearch} className="relative w-full group">
-          <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
+          <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-cyan-600 transition-colors" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search menu..."
-            className="md:w-full pl-10 pr-16 py-2 text-sm bg-slate-100/60 dark:bg-gray-800/60 border border-transparent focus:border-blue-500/30 focus:bg-white dark:focus:bg-gray-800 rounded-lg outline-none transition-all placeholder:text-gray-400 text-slate-800 dark:text-white"
+            className="md:w-full pl-10 pr-16 py-2 text-sm bg-slate-100/60 dark:bg-gray-800/60 border border-transparent focus:border-cyan-500/30 focus:bg-white dark:focus:bg-gray-800 rounded-lg outline-none transition-all placeholder:text-gray-400 text-slate-500 dark:text-white"
           />
           
         </form>
@@ -327,6 +329,18 @@ const results = searchableData.filter((item) =>
 
       {/* RIGHT SIDE — Actions */}
       <div className="flex items-center gap-2 md:gap-3">
+         <button 
+                    onClick={()=>router.back()} 
+                    className="h-10 w-10 flex items-center text-slate-600 justify-center text-xl border rounded-full dark:bg-[#1a2432] bg-slate-50 hover:text-cyan-600 hover:border-cyan-600/20 group border-[#ecf0f2] dark:border-gray-700 cursor-pointer hover:scale-103"
+                  >
+                    <FaArrowLeftLong className="group-hover:scale-105 transition-all"/>
+                  </button>
+                  <button 
+                    onClick={()=>router.forward()} 
+                    className="h-10 w-10 flex items-center justify-center text-slate-600 text-xl border rounded-full dark:bg-[#1a2432] bg-slate-50 hover:text-cyan-600 hover:border-cyan-600/20 group border-[#ecf0f2] dark:border-gray-700 cursor-pointer hover:scale-103"
+                  >
+                    <FaArrowRightLong className="group-hover:scale-105 transition-all"/>
+                  </button>
         
         {/* Theme Toggle */}
         <ThemeToggle />
@@ -337,7 +351,7 @@ const results = searchableData.filter((item) =>
           onMouseEnter={() => setNotifOpen(true)}
           onMouseLeave={() => setNotifOpen(false)}
         >
-          <button className="relative h-10 w-10 flex items-center justify-center rounded-full bg-slate-100/60 dark:bg-gray-800/60 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 transition-all group cursor-pointer">
+          <button className="relative h-10 w-10 flex items-center justify-center rounded-full bg-slate-100/60 dark:bg-gray-800/60 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 hover:text-cyan-600 transition-all group cursor-pointer">
             <IoMdNotificationsOutline className="text-2xl group-hover:scale-110 transition-transform" />
             {unreadCount > 0 && (
               <span className="absolute top-1 right-1 h-4 w-4 text-[10px] font-bold text-white bg-red-500 rounded-full flex items-center justify-center ring-2 ring-white dark:ring-gray-900 animate-pulse">
@@ -361,11 +375,11 @@ const results = searchableData.filter((item) =>
                     <h3 className="font-bold text-slate-900 dark:text-white">
                       Notifications
                     </h3>
-                    <span className="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 px-2 py-0.5 rounded-full font-medium">
+                    <span className="text-xs bg-cyan-100 dark:bg-cyan-900/40 text-cyan-600 dark:text-cyan-300 px-2 py-0.5 rounded-full font-medium">
                       {unreadCount} new
                     </span>
                   </div>
-                  <button className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+                  <button className="text-xs text-cyan-600 hover:text-cyan-700 font-medium flex items-center gap-1">
                     <FiCheckCircle /> Mark all read
                   </button>
                 </div>
@@ -376,10 +390,10 @@ const results = searchableData.filter((item) =>
                     <div
                       key={n.id}
                       className={`flex gap-3 px-5 py-3 hover:bg-slate-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors border-b border-gray-50 dark:border-gray-700/50 last:border-0 ${
-                        n.unread ? "bg-blue-50/40 dark:bg-blue-900/10" : ""
+                        n.unread ? "bg-cyan-50/40 dark:bg-cyan-900/10" : ""
                       }`}
                     >
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/40 dark:to-blue-800/40 flex items-center justify-center text-lg flex-shrink-0">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-cyan-100 to-cyan-200 dark:from-cyan-900/40 dark:to-cyan-800/40 flex items-center justify-center text-lg flex-shrink-0">
                         {getNotifIcon(n.type)}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -388,7 +402,7 @@ const results = searchableData.filter((item) =>
                             {n.title}
                           </h4>
                           {n.unread && (
-                            <span className="h-2 w-2 bg-blue-500 rounded-full flex-shrink-0"></span>
+                            <span className="h-2 w-2 bg-cyan-500 rounded-full flex-shrink-0"></span>
                           )}
                         </div>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
@@ -405,7 +419,7 @@ const results = searchableData.filter((item) =>
                 {/* Footer */}
                 <Link
                   href="/notifications"
-                  className="block text-center py-3 text-sm font-medium text-blue-600 hover:bg-slate-50 dark:hover:bg-gray-700/50 border-t border-gray-100 dark:border-gray-700 transition-colors"
+                  className="block text-center py-3 text-sm font-medium text-cyan-600 hover:bg-slate-50 dark:hover:bg-gray-700/50 border-t border-gray-100 dark:border-gray-700 transition-colors"
                 >
                   View all notifications →
                 </Link>
@@ -423,7 +437,7 @@ const results = searchableData.filter((item) =>
         
           <button 
           onClick={()=>setCalOpen(!calOpen)}
-          className="relative h-10 w-10 flex items-center justify-center rounded-full bg-slate-100/60 dark:bg-gray-800/60 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 transition-all group cursor-pointer">
+          className="relative h-10 w-10 flex items-center justify-center rounded-full bg-slate-100/60 dark:bg-gray-800/60 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 hover:text-cyan-600 transition-all group cursor-pointer">
             <LuCalculator  className="text-xl group-hover:scale-110 transition-transform" />  
           </button>
 
@@ -458,7 +472,7 @@ const results = searchableData.filter((item) =>
             onMouseLeave={() => setProfileOpen(false)}
           >
             <div className="flex items-center gap-2 cursor-pointer group">
-              <span className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-blue-500/30 transition-all">
+              <span className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-cyan-500/30 transition-all">
                 <Image
                   src="/images/user-1.png"
                   height={200}
@@ -468,7 +482,7 @@ const results = searchableData.filter((item) =>
                   quality={100}
                 />
               </span>
-              <span className="group-hover:text-blue-700 dark:group-hover:text-blue-500 capitalize text-sm font-medium hidden md:block">
+              <span className="group-hover:text-cyan-700 dark:group-hover:text-cyan-500 capitalize text-sm font-medium hidden md:block">
                 {auth.user?.firstName} {auth.user?.lastName}
               </span>
             </div>
@@ -482,11 +496,11 @@ const results = searchableData.filter((item) =>
                   transition={{ duration: 0.2, ease: "easeOut" }}
                   className="absolute right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden w-65 p-4 pt-4 flex flex-col gap-3"
                 >
-                  {/* <h2 className="font-bold text-xl text-slate-900 dark:text-blue-50">
+                  {/* <h2 className="font-bold text-xl text-slate-900 dark:text-cyan-50">
                     User Profile
                   </h2> */}
                   <div className="flex items-center gap-4">
-                    <div className="w-1/3 border border-slate-200 hover:border-blue-400 rounded-full">
+                    <div className="w-1/3 border border-slate-200 hover:border-cyan-400 rounded-full">
                       <Image
                         src={"/images/user-1.png"}
                         className="rounded-full"
@@ -543,7 +557,7 @@ const results = searchableData.filter((item) =>
                   </ul>
                   <button
                     onClick={handleLogout}
-                    className="bg-blue-600 hover:bg-blue-700 text-white w-full rounded-md py-2.5 capitalize font-medium cursor-pointer"
+                    className="bg-cyan-600 hover:bg-cyan-700 text-white w-full rounded-md py-2.5 capitalize font-medium cursor-pointer"
                   >
                     Log out
                   </button>

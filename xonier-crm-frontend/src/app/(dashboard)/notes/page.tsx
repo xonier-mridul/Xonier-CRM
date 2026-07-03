@@ -52,7 +52,7 @@ const NoteCard = ({
       className="relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 hover:scale-105 transition-all hover:shadow-[0_0_20px_#00000020] duration-300 cursor-pointer group overflow-hidden"
     >
       {note.byAdmin && (
-        <div className="absolute -right-10 top-6 w-40 bg-blue-600 text-white text-xs font-semibold py-1 text-center transform rotate-45 shadow-md z-10">
+        <div className="absolute -right-10 top-6 w-40 bg-cyan-600 text-white text-xs font-semibold py-1 text-center transform rotate-45 shadow-md z-10">
           BY ADMIN
         </div>
       )}
@@ -152,7 +152,7 @@ const NoteDetailModal = ({
                 </span>
               )}
               {note.byAdmin && (
-                <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-2 py-1 rounded-full text-xs font-medium">
+                <span className="bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400 px-2 py-1 rounded-full text-xs font-medium">
                   BY ADMIN
                 </span>
               )}
@@ -423,7 +423,7 @@ const CreateNoteModal = ({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2.5 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white transition-colors font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>
@@ -644,7 +644,7 @@ const Page = (): JSX.Element => {
             <li
               className={`${
                 active === ACTIVE.ALL
-                  ? "bg-blue-600 text-white shadow-lg"
+                  ? "bg-cyan-600 text-white shadow-lg"
                   : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
               } px-5 py-2.5 cursor-pointer flex items-center gap-2 capitalize rounded-lg transition-all duration-200 text-sm font-medium`}
               onClick={() => handleActive(ACTIVE.ALL)}
@@ -688,7 +688,7 @@ const Page = (): JSX.Element => {
           </ul>
           <div className="flex items-center gap-3">
             <select
-              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 dark:bg-gray-700 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 dark:bg-gray-700 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none"
               value={displayPageLimit}
               onChange={(e) => {
                 if (active === ACTIVE.PRIVATE) {

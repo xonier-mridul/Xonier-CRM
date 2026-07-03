@@ -46,7 +46,7 @@ const inlineInputClass = `
   px-3 py-2 rounded-lg border transition-all duration-200
   bg-white dark:bg-gray-800 text-black dark:text-white text-sm
   border-gray-200 dark:border-gray-700
-  focus:outline-none focus:border-violet-400 dark:focus:border-violet-500 focus:ring-2 focus:ring-violet-400/20
+  focus:outline-none focus:border-cyan-400 dark:focus:border-cyan-500 focus:ring-2 focus:ring-cyan-400/20
   placeholder-gray-400
 `;
 
@@ -83,7 +83,7 @@ const TagInput = ({
     <div className="flex flex-col gap-1.5">
       <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-1">
         {label}
-        {required && <span className="text-violet-500">*</span>}
+        {required && <span className="text-cyan-500">*</span>}
       </label>
       <div
         className="flex flex-wrap gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700
@@ -94,7 +94,7 @@ const TagInput = ({
         {values.map((v, i) => (
           <span
             key={i}
-            className="inline-flex items-center gap-1 bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-xs px-2.5 py-1 rounded-full font-medium border border-violet-200 dark:border-violet-700"
+            className="inline-flex items-center gap-1 bg-cyan-50 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 text-xs px-2.5 py-1 rounded-full font-medium border border-cyan-200 dark:border-cyan-700"
           >
             {v}
             <button
@@ -267,6 +267,7 @@ const page = (): JSX.Element => {
     },
     extra_fields: [] as { label: string; value: string }[],
   });
+  
 const handleSearch = (e) => {
   setSearchVal(e.target.value);
 };
@@ -276,29 +277,39 @@ const handleSearch = (e) => {
 
   const router = useRouter();
 
-  const getUsers = async () => {
-    try {
-      const result = await AuthService.getAllActiveWithoutPagination();
-      if (result.status === 200) setUsersData(result.data.data);
-    } catch (error) {
-      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
-      if (axios.isAxiosError(error)) {
-        const messages = extractErrorMessages(error);
-        setErr(messages);
-        toast.error(`${messages}`);
-      } else {
-        setErr(["Something went wrong"]);
-      }
-    }
+  // const getUsers = async () => {
+  //   try {
+  //     const result = await AuthService.getAllActiveWithoutPagination();
+  //     if (result.status === 200) 
+  //       setUsersData(result.data.data);
+  //   } catch (error) {
+  //     process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+  //     if (axios.isAxiosError(error)) {
+  //       const messages = extractErrorMessages(error);
+  //       setErr(messages);
+  //       toast.error(`${messages}`);
+  //     } else {
+  //       setErr(["Something went wrong"]);
+  //     }
+  //   }
       
-  }
-  const filteredUsers = usersData?.filter((user) => {
-  const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+  // }
 
-  return fullName.includes(searchVal.toLowerCase());
+  console.log("userData : ",usersData)
+ const filteredUsers = usersData?.filter((user) => {
+  const search = searchVal.trim().toLowerCase();
+
+  const firstName = user.firstName?.toLowerCase();
+  const lastName = user.lastName?.toLowerCase();
+  const fullName = `${firstName} ${lastName}`;
+
+  return (
+    firstName?.includes(search) ||
+    lastName?.includes(search) ||
+    fullName.includes(search)
+  );
 });
-  // const filteredUser = usersData?.filter((user)=>
-  // `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchVal.toLowerCase()))
+  
 
   const searchRef = useRef(null)
 
@@ -319,6 +330,27 @@ const handleSearch = (e) => {
 
 
   }, []);
+
+  const fetchUsers=async(search?: string)=>{
+    try{
+      const res =  await AuthService.getAllTeamUsers({search})
+      if(res.status == 200){
+        setUsersData(res.data.data)
+      }
+
+    }catch(error){
+       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+      if (axios.isAxiosError(error)) {
+        const messages = extractErrorMessages(error);
+        setErr(messages);
+        toast.error(`${messages}`);
+      } else {
+        setErr(["Something went wrong"]);
+      }
+
+    }
+
+  }
 
   useEffect(() => {
     
@@ -798,7 +830,7 @@ const handleSearch = (e) => {
                         Unassigned
                       </div>
 
-                      {usersData?.map((i) => (
+                      {/* {usersData?.map((i) => (
                         <div
                           key={i.id}
                           className="px-4 py-2 rounded-lg cursor-pointer capitalize hover:bg-gray-100"
@@ -810,10 +842,10 @@ const handleSearch = (e) => {
                         >
                           {i.firstName} {i.lastName}
                         </div>
-                      ))} 
-                      {/* {
+                      ))}  */}
+                      {
                      filteredUsers?.length ? (
-  filteredUsers.map((user) => (
+                    filteredUsers.map((user) => (
                         <div
                           key={user.id}
                           className="px-4 py-2 rounded-lg cursor-pointer text-slate-600 capitalize  dark:hover:bg-slate-600 hover:bg-stone-100 flex justify-between items-center"
@@ -836,7 +868,7 @@ const handleSearch = (e) => {
                       <div className="px-4 py-3 text-sm text-gray-500">
                         No users found
                       </div>
-                    )} */}
+                    )}
                     </div>
                   )}
               </div>
@@ -968,7 +1000,7 @@ const handleSearch = (e) => {
             <div className="col-span-1 md:col-span-2 flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800 mt-2">
               <p className="text-xs text-gray-400 dark:text-gray-500">
                 Fields marked{" "}
-                <span className="text-violet-500 font-bold">*</span> are
+                <span className="text-cyan-500 font-bold">*</span> are
                 required
               </p>
               <FormButton isLoading={isLoading} type="submit">

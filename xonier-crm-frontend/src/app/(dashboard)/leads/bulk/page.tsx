@@ -312,14 +312,14 @@ const BulkLeadUpload = (): JSX.Element => {
     <div className="ml-72 mt-14 p-6 space-y-6">
 
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
-        <div className="bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-700 dark:to-indigo-700 px-8 py-5">
+        <div className="bg-gradient-to-br from-[#16c2cf] to-[#0fb8a5] dark:to-cyan-700  px-8 py-5">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-lg">
               🚀
             </div>
             <div>
               <h2 className="text-xl font-bold text-white tracking-tight">Bulk Leads</h2>
-              <p className="text-xs text-violet-200 mt-0.5">
+              <p className="text-xs text-cyan-200 mt-0.5">
                 Upload a CSV or XLSX to create multiple leads at once
               </p>
             </div>
@@ -339,7 +339,7 @@ const BulkLeadUpload = (): JSX.Element => {
           <button
             onClick={downloadCSVTemplate}
             disabled={isLoading || !userFormData}
-            className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap ml-6 flex-shrink-0"
+            className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap ml-6 flex-shrink-0"
           >
             <HiDownload className="text-base" /> Download Sample
           </button>
@@ -353,14 +353,14 @@ const BulkLeadUpload = (): JSX.Element => {
         onDrop={handleDrop}
         className={`bg-white dark:bg-gray-900 rounded-2xl border-2 border-dashed transition-all duration-200 p-12
           ${isDragging
-            ? "border-violet-400 bg-violet-50 dark:bg-violet-900/10 scale-[1.01]"
-            : "border-gray-200 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-700"}`}
+            ? "border-cyan-400 bg-cyan-50 dark:bg-cyan-900/10 scale-[1.01]"
+            : "border-gray-200 dark:border-gray-700 hover:border-cyan-300 dark:hover:border-cyan-700"}`}
       >
         <div className="flex flex-col items-center gap-4">
           <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-colors
-            ${isDragging ? "bg-violet-100 dark:bg-violet-900/30" : "bg-gray-100 dark:bg-gray-800"}`}>
+            ${isDragging ? "bg-cyan-100 dark:bg-cyan-900/30" : "bg-gray-100 dark:bg-gray-800"}`}>
             <FaFileCsv className={`text-3xl transition-colors
-              ${isDragging ? "text-violet-500" : "text-gray-400 dark:text-gray-500"}`} />
+              ${isDragging ? "text-cyan-500" : "text-gray-400 dark:text-gray-500"}`} />
           </div>
 
           <div className="text-center">
@@ -380,16 +380,16 @@ const BulkLeadUpload = (): JSX.Element => {
           />
           <label
             htmlFor="leadFileUpload"
-            className="cursor-pointer flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors shadow-sm"
+            className="cursor-pointer flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors shadow-sm"
           >
             <FaUpload /> Choose File
           </label>
 
           {file && (
-            <div className="flex items-center gap-3 mt-1 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 px-4 py-2.5 rounded-xl">
-              <FaFileCsv className="text-violet-500 text-lg" />
+            <div className="flex items-center gap-3 mt-1 bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 px-4 py-2.5 rounded-xl">
+              <FaFileCsv className="text-cyan-500 text-lg" />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{file.name}</span>
-              <span className="text-xs bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300 px-2 py-0.5 rounded-full font-medium">
+              <span className="text-xs bg-cyan-100 dark:bg-cyan-900/40 text-cyan-600 dark:text-cyan-300 px-2 py-0.5 rounded-full font-medium">
                 {parsedData.length} rows
               </span>
               <button
@@ -406,8 +406,8 @@ const BulkLeadUpload = (): JSX.Element => {
       {file && (
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 px-6 py-4">
           <div className="flex items-center gap-4">
-            <div className="w-9 h-9 rounded-lg bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center shrink-0">
-              <Tag size={17} className="text-violet-600 dark:text-violet-400" />
+            <div className="w-9 h-9 rounded-lg bg-cyan-50 dark:bg-cyan-900/30 flex items-center justify-center shrink-0">
+              <Tag size={17} className="text-cyan-600 dark:text-cyan-400" />
             </div>
             <div className="shrink-0">
               <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Data Tag</p>
@@ -422,7 +422,7 @@ const BulkLeadUpload = (): JSX.Element => {
                 onChange={(e) => setDataTag(e.target.value)}
                 placeholder="e.g. Q2-Campaign, Mumbai-Expo-2025"
                 maxLength={60}
-                className="w-full px-3 py-2 pr-8 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-colors"
+                className="w-full px-3 py-2 pr-8 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-colors"
               />
               {dataTag && (
                 <button
@@ -486,7 +486,7 @@ const BulkLeadUpload = (): JSX.Element => {
               )}
 
               {dataTag.trim() && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-300 border border-violet-100 dark:border-violet-800">
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-300 border border-cyan-100 dark:border-cyan-800">
                   <Tag size={10} /> {dataTag.trim()}
                 </span>
               )}
@@ -657,7 +657,7 @@ const BulkLeadUpload = (): JSX.Element => {
                     onClick={() => setCurrentPage(p)}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
                       ${currentPage === p
-                        ? "bg-violet-600 text-white shadow-sm"
+                        ? "bg-cyan-600 text-white shadow-sm"
                         : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"}`}
                   >
                     {p}
@@ -687,7 +687,7 @@ const BulkLeadUpload = (): JSX.Element => {
           <button
             onClick={handleBulkUpload}
             disabled={isUploading || invalidCount > 0}
-            className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold px-6 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-semibold px-6 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <FiUpload />
             {isUploading

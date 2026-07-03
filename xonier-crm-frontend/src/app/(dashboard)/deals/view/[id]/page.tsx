@@ -146,7 +146,7 @@ const DealViewPage = (): JSX.Element => {
   const getDealStageColor = (stage: string) => {
     const colors: Record<string, string> = {
       qualification:
-        "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+        "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400",
       proposal:
         "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
       negotiation:
@@ -230,7 +230,7 @@ const DealViewPage = (): JSX.Element => {
             </p>
             <button
               onClick={() => router.back()}
-              className="inline-flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors"
             >
               <IoArrowBack className="w-5 h-5" />
               Go Back
@@ -301,7 +301,7 @@ const DealViewPage = (): JSX.Element => {
                   </span>
                 </div>
                 <p
-                  className="text-gray-500 dark:text-gray-400 cursor-pointer hover:text-blue-500 dark:hover:text-blue-400 transition-colors flex items-center gap-2"
+                  className="text-gray-500 dark:text-gray-400 cursor-pointer hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors flex items-center gap-2"
                   onClick={() => handleCopy(dealData ? dealData.deal_id : "")}
                 >
                   <IoDocumentText className="w-4 h-4" />
@@ -310,7 +310,8 @@ const DealViewPage = (): JSX.Element => {
               </div>
 
               {/* Hide action buttons when printing */}
-              <div className="flex flex-wrap items-center gap-2 print:hidden">
+           
+                <div className="flex flex-wrap items-center gap-2 print:hidden">
                 {hasPermission(PERMISSIONS.createQuote) &&
                   dealData.status !== DEAL_STATUS.DELETE && (
                     <Link
@@ -330,16 +331,16 @@ const DealViewPage = (): JSX.Element => {
                 </button> */}
 
                 {/* More Actions Dropdown */}
-                <div className="relative group">
-                  <button className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded-lg transition-colors">
-                    <IoEllipsisVertical className="w-4 h-4" />
+                <div className="relative group ">
+                  <button className="inline-flexitems-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded-lg transition-colors">
+                    <IoEllipsisVertical className="w-5 h-5" />
                   </button>
-                  <div className="hidden group-hover:block absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10">
+                  <div className="opacity-0 invisible  group-hover:visible   translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 absolute right-0 top-10 mt-2 w-48 py-3  bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700  z-10">
                     {hasPermission(PERMISSIONS.updateDeal) &&
                     dealData.status !== DEAL_STATUS.DELETE ? (
                       <Link
                         href={`/deals/update/${dealData.id}`}
-                        className="w-full flex items-center gap-2 px-4 py-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                        className="w-full flex items-center gap-2  px-4 py-2 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-colors"
                       >
                         <MdOutlineSettings className="w-4 h-4" />
                         Update Deal
@@ -364,6 +365,7 @@ const DealViewPage = (): JSX.Element => {
                   </div>
                 </div>
               </div>
+            
             </div>
           </div>
         </div>
@@ -380,7 +382,7 @@ const DealViewPage = (): JSX.Element => {
             icon={<FaPercent className="w-5 h-5" />}
             label="Deal Probability"
             value={`${dealData?.dealProbability ?? 0}%`}
-            color="bg-blue-500"
+            color="bg-cyan-500"
           />
           <MetricCard
             icon={<FaChartLine className="w-5 h-5" />}
@@ -408,13 +410,13 @@ const DealViewPage = (): JSX.Element => {
                   onClick={() => setActiveTab(tab)}
                   className={`pb-1.5 px-1 font-medium transition-colors cursor-pointer relative whitespace-nowrap ${
                     activeTab === tab
-                      ? "text-blue-600 dark:text-blue-400"
+                      ? "text-cyan-600 dark:text-cyan-400"
                       : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                   }`}
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
                   {activeTab === tab && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400"></div>
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-600 dark:bg-cyan-400"></div>
                   )}
                 </button>
               ))}
@@ -429,7 +431,7 @@ const DealViewPage = (): JSX.Element => {
             {(activeTab === "overview" || isPrinting) && (
               <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700 break-inside-avoid">
                 <div className="flex items-center gap-2 mb-6">
-                  <IoStatsChartOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <IoStatsChartOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     Deal Information
                   </h3>
@@ -533,7 +535,7 @@ const DealViewPage = (): JSX.Element => {
             {(activeTab === "lead" || isPrinting) && (
               <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700 break-inside-avoid">
                 <div className="flex items-center gap-2 mb-6">
-                  <IoPersonOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <IoPersonOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     Lead Information
                   </h3>
@@ -604,7 +606,7 @@ const DealViewPage = (): JSX.Element => {
             {activeTab === "activity" && !isPrinting && (
               <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-2 mb-6">
-                  <MdTimeline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <MdTimeline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     Activity Timeline
                   </h3>
@@ -622,7 +624,7 @@ const DealViewPage = (): JSX.Element => {
           {/* Sidebar - full width on print */}
           <div className="w-1/3 print:w-full flex flex-col gap-6">
             {/* Creator Information */}
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl border border-blue-400 shadow-lg break-inside-avoid">
+            <div className="bg-gradient-to-br from-cyan-500 to-cyan-600 p-6 rounded-xl border border-cyan-400 shadow-lg break-inside-avoid">
               <div className="flex items-center gap-2 mb-4">
                 <FaRegUser className="text-xl text-white" />
                 <h2 className="text-white font-semibold text-xl">

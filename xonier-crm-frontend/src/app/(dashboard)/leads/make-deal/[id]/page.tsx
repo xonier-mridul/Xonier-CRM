@@ -39,6 +39,7 @@ import { usePermissions } from "@/src/hooks/usePermissions";
 import LeadService from "@/src/services/lead.service";
 import { Lead } from "@/src/types/leads/leads.types";
 import LeadInfoCard from "@/src/components/pages/lead/LeadInfoCard";
+import { FaCheck } from "react-icons/fa";
 
 const page = (): JSX.Element => {
   const [err, setErr] = useState<string | string[]>("");
@@ -236,13 +237,13 @@ const page = (): JSX.Element => {
     <div className="fixed min-h-screen overflow-y-scroll z-100 top-0 left-0 right-0 border-0 w-full h-full bg-stone-100 dark:bg-gray-800">
       <div className="fixed z-100 left-0 top-0 w-88 border-r flex flex-col gap-6  border-slate-900/15 dark:border-gray-700 bg-slate-50 h-screen dark:bg-gray-800/50 pt-12 px-6">
         <div className="flex items-center gap-4 w-full border-b border-slate-600 py-4">
-          <MdOutlineFormatIndentIncrease className="text-blue-500" />
+          <MdOutlineFormatIndentIncrease className="text-cyan-500" />
 
           <h2 className="text-slate-900 dark:text-white font-semibold text-lg tracking-wide ">
             All Form Fields
           </h2>
         </div>
-        <ul className="flex flex-col gap-3 px-4 py-2.5 min-h-[70vh] overflow-y-scroll">
+        <ul className="flex flex-col gap-3 px-4 py-2.5 min-h-[70vh] overflow-y-scroll custom-scrollbar">
           {!fieldDataLoading
             ? allFormFiled &&
               allFormFiled.length > 0 &&
@@ -257,23 +258,50 @@ const page = (): JSX.Element => {
                   : false;
 
                 return (
-                  <li className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      id={item.key}
-                      name={item.name}
-                      value={item.id}
-                      className="peer cursor-pointer "
-                      checked={checked}
-                      onChange={handleChecked}
-                    />
-                    <label
-                      htmlFor={item.key}
-                      className="capitalize checked:text-blue-200 hover:text-blue-700 dark:hover:text-blue-200 hover:scale-104 transition-all duration-200 cursor-pointer peer-checked:text-blue-600 dark:peer-checked:text-blue-300  "
-                    >
-                      {item.name}
-                    </label>
-                  </li>
+                    <li key={item.id} className="flex items-center gap-3">
+                      <label
+                        htmlFor={item.key}
+                        className="flex items-center gap-3 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          id={item.key}
+                          name={item.name}
+                          value={item.id}
+                          checked={checked}
+                          onChange={handleChecked}
+                          className="peer sr-only"
+                        />
+
+                        {/* Custom Checkbox */}
+                        <div
+                          className="
+                            w-5 h-5
+                            rounded-md
+                            border-2 border-slate-300 dark:border-slate-600
+                            bg-white dark:bg-slate-700
+                            flex items-center justify-center
+                            transition-all duration-200
+                            peer-checked:bg-cyan-600
+                            peer-checked:border-cyan-600
+                          "
+                        >
+                          {/* White Tick */}
+                          {checked && <FaCheck className="text-white text-[10px]" />}
+                        </div>
+
+                        <span
+                          className="
+                            capitalize
+                            transition-colors duration-200
+                            peer-checked:text-cyan-600
+                            dark:peer-checked:text-cyan-300
+                          "
+                        >
+                          {item.name}
+                        </span>
+                      </label>
+                    </li>
                 );
               })
             : Array.from({ length: 18 }).map((item, i) => (
@@ -297,7 +325,7 @@ const page = (): JSX.Element => {
       </div>
       <div className="fixed top-4 z-50 left-96 w-[72vw] backdrop-blur-sm flex items-center justify-between gap-10 p-5">
         <div className="flex items-center gap-3 w-1/2">
-          <GrDocumentUpdate className="text-xl text-blue-500" />{" "}
+          <GrDocumentUpdate className="text-xl text-cyan-500" />{" "}
           <h2 className="text-slate-900 dark:text-white font-semibold text-2xl tracking-wide ">
             {" "}
             Create new Deal
@@ -306,13 +334,13 @@ const page = (): JSX.Element => {
         <div className="flex items-center justify-end gap-3 ml-6">
           <button
             onClick={() => router.back()}
-            className="h-10 w-10 flex items-center justify-center text-xl  border rounded-full dark:bg-[#1a2432] bg-slate-50 hover:text-blue-600 hover:border-blue-600/20 group border-[#ecf0f2] dark:border-gray-700 cursor-pointer hover:scale-103"
+            className="h-10 w-10 flex items-center justify-center text-xl  border rounded-full dark:bg-[#1a2432] bg-slate-50 hover:text-cyan-600 hover:border-cyan-600/20 group border-[#ecf0f2] dark:border-gray-700 cursor-pointer hover:scale-103"
           >
             <FaArrowLeftLong className="group-hover:scale-105 transition-all" />
           </button>
           <button
             onClick={() => router.forward()}
-            className="h-10 w-10 flex items-center justify-center text-xl  border rounded-full dark:bg-[#1a2432] bg-slate-50 hover:text-blue-600 hover:border-blue-600/20 group border-[#ecf0f2] dark:border-gray-700 cursor-pointer hover:scale-103"
+            className="h-10 w-10 flex items-center justify-center text-xl  border rounded-full dark:bg-[#1a2432] bg-slate-50 hover:text-cyan-600 hover:border-cyan-600/20 group border-[#ecf0f2] dark:border-gray-700 cursor-pointer hover:scale-103"
           >
             <FaArrowRightLong className="group-hover:scale-105 transition-all" />
           </button>
@@ -464,8 +492,8 @@ const page = (): JSX.Element => {
               onClick={handleSubmit}
               className="w-fit flex items-center justify-center gap-2
               rounded-md px-4 py-2 font-medium text-nowrap
-              bg-blue-600 text-white
-              hover:bg-blue-700 hover:cursor-pointer
+              bg-cyan-600 text-white
+              hover:bg-cyan-700 hover:cursor-pointer
               disabled:opacity-50 disabled:cursor-not-allowed
               transition-colors duration-200 capitalize"
               disabled={loading || selectedFieldsIds.length <= 0 || !hasPermission(PERMISSIONS.createDeal)}
@@ -476,8 +504,8 @@ const page = (): JSX.Element => {
 
             <button
               className="w-fit flex items-center justify-center gap-2
-              rounded-md px-4 py-2 font-medium bg-blue-200 text-blue-600 hover:text-blue-700
-              hover:bg-blue-300 hover:cursor-pointer
+              rounded-md px-4 py-2 font-medium bg-cyan-200 text-cyan-600 hover:text-cyan-700
+              hover:bg-cyan-300 hover:cursor-pointer
               disabled:opacity-50 disabled:cursor-not-allowed
               transition-colors duration-200"
               onClick={() => router.back()}
