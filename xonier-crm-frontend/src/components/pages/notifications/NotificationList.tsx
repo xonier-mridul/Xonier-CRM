@@ -8,6 +8,7 @@ import { FiCheckCircle, FiTrash2, FiFilter } from "react-icons/fi";
 import DateFilterButton from "../../common/dateFilter";
 import { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 import { IoSearchOutline } from "react-icons/io5";
+import { TbRefresh } from "react-icons/tb";
 
 
 
@@ -55,7 +56,7 @@ const NotificationList = () => {
                <div className="flex items-center gap-2">
           <button
             onClick={markAllAsRead}
-            className="flex items-center gap-2 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
           >
             <FiCheckCircle /> Mark all as read
           </button>
@@ -69,10 +70,10 @@ const NotificationList = () => {
       </div>
 
 
-      <div className="flex items-center gap-4 mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+      <div className="flex items-center gap-4 mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 justify-between">
         {/* <FiFilter className="text-gray-400" /> */}
-        <div>
-        <label className="flex flex-col gap-2 text-[14px] text-slate-500">
+        <div className="flex gap-10">
+        <label className="flex flex-col gap-2 text-[14px] text-slate-500 dark:text-white/70">
           Status
         <select
           value={filter.status || ""}
@@ -87,7 +88,7 @@ const NotificationList = () => {
         </select>
         </label>
 
-       <label className="flex flex-col gap-2 text-[14px] text-slate-500">
+       <label className="flex flex-col gap-2 text-[14px] text-slate-500 dark:text-white/70">
           Type
         <select
           value={filter.isRead !== undefined ? String(filter.isRead) : ""}
@@ -104,28 +105,29 @@ const NotificationList = () => {
           <option value="true">Read Only</option>
         </select>
         </label>
-        <label className="flex flex-col gap-2 text-[14px] text-slate-500">
+        <label className="flex flex-col gap-2 text-[14px] text-slate-500 dark:text-white/70">
           Date Range
           <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter}  />
           </label>
 
-          <label className="flex flex-col gap-2 text-[14px] text-slate-500   " >
+          <label className="flex flex-col gap-2 text-[14px] text-slate-500 dark:text-white/70  " >
             Search
-            <div className='flex border border-slate-200 rounded-lg text-slate-500 px-4 py-2.5 items-center gap-2'>
+            <div className='flex border border-slate-200 rounded-lg text-slate-500 px-4 py-2.5 items-center dark:text-white/70 gap-2 dark:border-gray-600' >
               <IoSearchOutline className='text-xl '/>
             <input type='text' placeholder='Search..'  className='outline-none text-sm'/>
             </div>
 
           </label>
           </div>
-          <button>
-             
+          <button className=" group flex gap-2 px-4 py-2.5 rounded-lg border border-slate-200 text-[14px] dark:text-white/70 items-center text-slate-500 dark:border-gray-600">
+            <TbRefresh  className="group-hover:rotate-180 transition-all duration-200" />
+            Clear Filter 
           </button>
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600"></div>
         </div>
       ) : notifications.length === 0 ? (
         <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">

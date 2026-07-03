@@ -315,7 +315,7 @@ export const UsersTable = ({
       {isPopupShow && (
         <>
           <BlurryBackground onClick={() => setIsPopupShow(false)} />
-         <div className="fixed top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 p-6 rounded-xl  z-[200] flex flex-col gap-5 shadow-xl ">
+         <div className="fixed top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 p-6 rounded-xl  z-[200] flex flex-col gap-5 shadow-xl w-150 h-140 ">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold dark:text-white">Create User</h2>
               <button
@@ -359,7 +359,7 @@ export const UsersTable = ({
                   onChange={handleUserRoleChange}
                   className="w-full px-3 py-2 rounded-md border
       bg-white dark:bg-gray-700 text-black dark:text-white
-      border-gray-300 dark:border-gray-300/30"
+      border-gray-300 dark:border-gray-300/30 outline-none"
                 >
                   <option value="">Select user role</option>
                   {roleData.map((role) => (
@@ -410,7 +410,7 @@ export const UsersTable = ({
                   <select
                     value={selectedcountryCode}
                     onChange={(e) => setCountryCode(e.target.value)}
-                    className="px-3 py-2 text-xs rounded-lg border border-gray-300 dark:border-gray-300/30 bg-white dark:bg-gray-800 text-black dark:text-white"
+                    className="px-3 py-2 text-xs rounded-lg border outline-none border-gray-300 dark:border-gray-300/30 bg-white dark:bg-gray-800 text-black dark:text-white"
                   >
                     {countryCodes.map((c: countryCode) => (
                       <option key={c.code} value={c.code}>

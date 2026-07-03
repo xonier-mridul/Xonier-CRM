@@ -340,7 +340,7 @@ const SideBar = () => {
                   : "border-l-2 border-transparent"
                   } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
-              <span  className={`${isActive("/calender")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+              <span  className={`${isActive("/notifications")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 
                 <MdOutlineNotificationsActive className="text-lg" />
                 </span>
