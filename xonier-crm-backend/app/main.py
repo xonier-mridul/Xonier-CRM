@@ -16,6 +16,9 @@ from app.core.config import get_setting
 from app.middlewares.auth_middleware import AuthMiddleware
 from app.core.cache import init_cache
 from app.middlewares.tanent_middleware import TenantMiddleware
+from app.core.notification_scheduler import notification_scheduler
+from app.jobs.event_reminder_job import send_event_reminders
+from apscheduler.triggers.interval import IntervalTrigger
 
 # Routes
 
@@ -56,17 +59,27 @@ from app.routes.company_route import router as company_route
 from app.routes.subscription_route import router as subscription_route
 from app.routes.query_route import router as query_route
 from app.routes.payment_route import router as payment_router
+from app.routes.notification_route import router as notification_router
 
 settings = get_setting()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-
     await connect_db()
     await init_cache()
-    
-    yield  
+
+    notification_scheduler.add_job(
+        send_event_reminders,
+        trigger=IntervalTrigger(minutes=5),
+        id="event_reminder_job",
+        replace_existing=True,
+    )
+    notification_scheduler.start()
+
+    yield
+
+    notification_scheduler.shutdown()
 
 app = FastAPI(lifespan=lifespan)
 
@@ -93,19 +106,22 @@ app.add_middleware(TenantMiddleware)
 
 app.state.limiter = limiter
 
+
+app.add_middleware(SlowAPIMiddleware)
+
 @app.exception_handler(RateLimitExceeded)
 async def rate_limit_handler(request, exc):
     return JSONResponse(
-        status_code=429,
-        content= ApiResponse(
-           success=False,
-           status_code=429,
-           message="Rate limit exceeded"
-        ).model_dump()
-    )
-
-
-app.add_middleware(SlowAPIMiddleware)
+    status_code=429,
+    content={
+        "success": False,
+        "error": {
+            "code": "RATE_LIMIT_EXCEEDED",
+            "message": "Too many requests"
+        }
+    }
+)
+    
 
 app.add_middleware(AuthMiddleware)
 
@@ -151,6 +167,7 @@ app.include_router(
     prefix="/api/v1/payments",
     tags=["Payments"]
 )
+app.include_router(notification_router, prefix="/api/v1/notifications", tags=["Notifications"])
 
 app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(AppException, app_exception_handler)
@@ -159,3 +176,8 @@ app.add_exception_handler(AppException, app_exception_handler)
 @app.get("/")
 def welcome():
     return {"message": "Mridul Singh Saklani, naam to suna hi hoga!"}
+
+
+@app.get("/health")
+def health():
+    return {"success": True}

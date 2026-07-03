@@ -23,7 +23,8 @@ class PlanService:
 
 
     async def _plan_is_valid(self, id:str):
-        plan = await self.repo.find_by_id(PydanticObjectId(id), ["createdBy"])
+        with system_query():
+            plan = await self.repo.find_by_id(PydanticObjectId(id), ["createdBy"])
 
         if not plan:
             raise AppException(404, "Plan data not found")
@@ -199,18 +200,20 @@ class PlanService:
                 try:
                     if not ObjectId.is_valid(id):
                         raise AppException(400, "Invalid plan object id")
-
+                 
                     plan = await self._plan_is_valid(id=id)
 
-                    user_doc = await UserModel.get(PydanticObjectId(user["_id"]), session=session)
-                    if not user_doc:
-                        raise AppException(404, "User not found")
+                    with system_query(): 
+                        user_doc = await UserModel.get(PydanticObjectId(user["_id"]), session=session)
+                        if not user_doc:
+                            raise AppException(404, "User not found")
 
                     plan.deletedAt = datetime.now(timezone.utc)
                     plan.deletedBy = user_doc
                     plan.status = PLAN_STATUS.DELETED.value
 
-                    await plan.save(session=session)
+                    with system_query():
+                        await plan.save(session=session)
 
                     plan_dict = plan.model_dump(mode="json")
 
@@ -228,7 +231,8 @@ class PlanService:
                         }
                     )
 
-                    await self.activityRepo.create(data=pp, session=session)
+                    with system_query():
+                        await self.activityRepo.create(data=pp, session=session)
 
                     return plan_dict
 
