@@ -13,7 +13,7 @@ import { HiOutlineAdjustments } from "react-icons/hi";
 import { SlCalender } from "react-icons/sl";
 import { TbNotes, TbMoneybag } from "react-icons/tb";
 import { BsBarChart, BsBuildingGear } from "react-icons/bs";
-import { MdEmail, MdOutlineHelpOutline, MdOutlineLogout } from "react-icons/md";
+import { MdEmail, MdKeyboardDoubleArrowRight, MdOutlineHelpOutline, MdOutlineLogout } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import ConfirmPopup from "../ui/ConfirmPopup";
 import { AuthService } from "@/src/services/auth.service";
@@ -39,6 +39,7 @@ const SideBar = () => {
   const pathname = usePathname();
 
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [activeDashboard,setActiveDashboard] = useState<boolean >(false)
 
   const dispatch = useDispatch();
 
@@ -170,9 +171,14 @@ const SideBar = () => {
         return false;
     }
   };
+  const handleClick =()=>{
+    setActiveDashboard(!activeDashboard)
+  }
 
   return (
-    <div className={`fixed top-0 left-0 w-72 p-6 bg-slate-50 h-screen dark:bg-gray-800 flex flex-col gap-6 border-r border-slate-900/15 dark:border-gray-700 `}>
+    <div className={`fixed top-0 left-0 w-72 p-6 z-100  ${activeDashboard ?'translate-x-0':'-translate-x-70 lg:translate-x-0'}   transition-all duration-300 bg-slate-50 h-screen dark:bg-gray-800 flex flex-col gap-6 border border-slate-900/15 dark:border-gray-700 `}>
+      <button className={`block lg:hidden absolute z-20 left-full top-50`} onClick={handleClick} >
+        <span className={`w-10 rounded-tr-xl rounded-br-xl h-10 border dark:bg-gray-800 border-slate-900/15 dark:border-gray-700  bg-slate-50 text-slate-400 hover:text-slate-500  flex justify-center items-center`}><MdKeyboardDoubleArrowRight className={`text-2xl  ${activeDashboard ?'rotate-180':''} transition-all duration-300`} /></span></button>
       <div className="h-[89vh] overflow-y-scroll flex flex-col gap-6">
         <Link href={"/"}>
           <Image
@@ -201,11 +207,11 @@ const SideBar = () => {
               <Link
                 href="/dashboard"
                 className={`${isActive("/dashboard")
-                  ? " dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                  ? " dark:text-cyan-300 text-cyan-700   border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"
-                  } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+                  } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
-              <span  className={`${isActive("/dashboard")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+              <span  className={`${isActive("/dashboard")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 <BiHome className="text-lg" />
 
               </span>
@@ -217,11 +223,11 @@ const SideBar = () => {
                 <Link
                   href="/sales-dashboard"
                   className={`${isActive("/sales-dashboard")
-                    ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                    ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                     : "border-l-2 border-transparent"
-                    } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+                    } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
                 >
-                  <span  className={`${isActive("/sales-dashboard")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                  <span  className={`${isActive("/sales-dashboard")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                   <MdOutlineLeaderboard className="text-lg" />
 
                   </span>
@@ -234,11 +240,11 @@ const SideBar = () => {
               <Link
                 href="/calender"
                 className={`${isActive("/calender")
-                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"
-                  } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+                  } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
-              <span  className={`${isActive("/calender")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+              <span  className={`${isActive("/calender")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 
                 <SlCalender className="text-lg" />
                 </span>
@@ -251,13 +257,13 @@ const SideBar = () => {
               <button
                 onClick={() => toggleMenu("prospects")}
                 className={`${isMenuActive("prospects")
-                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"
                   }
-               flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+               flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
-                   <span  className={`${isMenuActive("prospects")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                   <span  className={`${isMenuActive("prospects")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 
 
                   <HiOutlineAdjustments className="text-lg" /></span>
@@ -282,9 +288,9 @@ const SideBar = () => {
                       <Link
                         href="/prospects/people"
                         className={`${isActive("/prospects/people")
-                          ? "text-blue-700 dark:text-blue-300 bg-blue-600/5 border-l-2 border-blue-600 dark:border-blue-400"
+                          ? "text-cyan-700 dark:text-cyan-300 bg-cyan-600/5 border-l-2 border-cyan-600 dark:border-cyan-400"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
                         People
                       </Link>
@@ -295,9 +301,9 @@ const SideBar = () => {
                         <Link
                           href="/prospects/company"
                           className={`${isActive("/prospects/company")
-                            ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                            ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                             : "border-l-2 border-transparent"
-                            } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                            } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                         >
                           Company
                         </Link>
@@ -312,11 +318,11 @@ const SideBar = () => {
               <Link
                 href="/notes"
                 className={`${isActive("/notes")
-                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"
-                  } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+                  } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
-                       <span  className={`${isActive("/notes")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                       <span  className={`${isActive("/notes")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 <TbNotes className="text-lg" />
                 </span>
                 Notes
@@ -329,12 +335,12 @@ const SideBar = () => {
               <button
                 onClick={() => toggleMenu("plans")}
                 className={`${isMenuActive("plans")
-                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 px-3 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 px-3 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent px-4"
-                  } flex w-full items-center justify-between  py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+                  } flex w-full items-center justify-between  py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
                 <span className="flex items-center gap-2 whitespace-nowrap">
-                  <span  className={`${isMenuActive("plans")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                  <span  className={`${isMenuActive("plans")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                   
                   <FiUser className="text-lg" />
                   </span>
@@ -361,9 +367,9 @@ const SideBar = () => {
                       <Link
                         href="/plans"
                         className={`${isActive("/plans")
-                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
                         Plans
                       </Link>
@@ -372,9 +378,9 @@ const SideBar = () => {
                         <Link
                           href="/subscriptions"
                           className={`${isActive("/subscriptions")
-                            ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                            ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                             : "border-l-2 border-transparent"
-                            } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                            } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                         >
                           Subscriptions
                           </Link>
@@ -389,12 +395,12 @@ const SideBar = () => {
               <button
                 onClick={() => toggleMenu("company")}
                 className={`${isMenuActive("company")
-                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"
-                  } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+                  } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
-                  <span  className={`${isMenuActive("company")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                  <span  className={`${isMenuActive("company")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
 
 
                   <BsBuildingGear className="text-lg" /></span>
@@ -421,9 +427,9 @@ const SideBar = () => {
                       <Link
                         href="/companies"
                         className={`${isActive("/companies")
-                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 px-3 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 px-3 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent px-4"
-                          } block  py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                          } block  py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
                         Companies
                       </Link>
@@ -432,9 +438,9 @@ const SideBar = () => {
                       <Link
                         href="/companies/create"
                         className={`${isActive("/companies/create")
-                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
                         Create Companies
                       </Link>
@@ -451,12 +457,12 @@ const SideBar = () => {
                  <button
                 onClick={() => toggleMenu("task")}
                 className={`${isMenuActive("task")
-                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"
-                  } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+                  } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
-                  <span  className={`${isMenuActive("task")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                  <span  className={`${isMenuActive("task")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                     <GoTasklist  className="text-lg"/>
                   </span>
                   Task Management
@@ -480,9 +486,9 @@ const SideBar = () => {
                       <Link
                         href="/task"
                         className={`${isActive("/task")
-                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
                         Tasks
                       </Link>
@@ -492,9 +498,9 @@ const SideBar = () => {
                       <Link
                         href="/category"
                         className={`${isActive("/category")
-                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
                         Task Category
                       </Link>
@@ -503,9 +509,9 @@ const SideBar = () => {
                       <Link
                         href="/status"
                         className={`${isActive("/status")
-                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
                         Task Status
                       </Link>
@@ -515,9 +521,9 @@ const SideBar = () => {
                         <Link
                           href="/reports"
                           className={`${isActive("/reports")
-                            ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                            ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                             : "border-l-2 border-transparent"
-                            } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                            } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                         >
                           Task Reports
                         </Link>
@@ -528,9 +534,9 @@ const SideBar = () => {
                         <Link
                           href={`/report/create/${USER_ID||"new"}`}
                           className={`${isActive(`/report/create/${USER_ID||"new"}`)
-                            ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                            ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                             : "border-l-2 border-transparent"
-                            } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                            } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                         >
                           Today's Task
                         </Link>
@@ -546,12 +552,12 @@ const SideBar = () => {
               <button
                 onClick={() => toggleMenu("user")}
                 className={`${isMenuActive("user")
-                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"
-                  } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+                  } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
-                  <span className={`${isMenuActive("user") ?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
+                  <span className={`${isMenuActive("user") ?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
                   <FiUser className="text-lg" />
 
                   </span>
@@ -578,9 +584,9 @@ const SideBar = () => {
                       <Link
                         href="/users"
                         className={`${isActive("/users")
-                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
                         Users
                       </Link>
@@ -590,9 +596,9 @@ const SideBar = () => {
                         <Link
                           href="/deleteduser"
                           className={`${isActive("/deleteduser")
-                            ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                            ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                             : "border-l-2 border-transparent"
-                            } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                            } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                         >
                           Deleted Users
                           </Link>
@@ -606,12 +612,12 @@ const SideBar = () => {
               <button
                 onClick={() => toggleMenu("team")}
                 className={`${isMenuActive("team")
-                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"
-                  } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+                  } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
-                   <span className={`${isMenuActive("team") ?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
+                   <span className={`${isMenuActive("team") ?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
 
 
                   <AiOutlineTeam className="text-lg" />
@@ -638,9 +644,9 @@ const SideBar = () => {
                       <Link
                         href="/roles"
                         className={`${isActive("/roles")
-                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
                         Roles
                       </Link>
@@ -649,9 +655,9 @@ const SideBar = () => {
                       <Link
                         href="/teams/categories"
                         className={`${isActive("/teams/categories")
-                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
                         Teams Categories
                       </Link>
@@ -660,9 +666,9 @@ const SideBar = () => {
                       <Link
                         href="/teams"
                         className={`${(isActive("/teams") && !isActive("/teams/categories"))
-                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
                         Teams
                       </Link>
@@ -677,12 +683,12 @@ const SideBar = () => {
               <button
                 onClick={() => toggleMenu("sales")}
                 className={`${isMenuActive("sales")
-                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                  ? "bg-cyan-600/10 text-cyan-700 dark:text-cyan-300 border-l-2 border-cyan-600 dark:border-cyan-400"
                   : "border-l-2 border-transparent"
-                  } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+                  } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
-                   <span className={`${isMenuActive("sales") ?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
+                   <span className={`${isMenuActive("sales") ?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
                   <BsBarChart className="text-lg" />
                   </span>
                   Sales
@@ -707,9 +713,9 @@ const SideBar = () => {
                       <Link
                         href="/enquiry"
                         className={`${isActive("/enquiry")
-                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
                         Enquiry
                       </Link>
@@ -718,9 +724,9 @@ const SideBar = () => {
                       <Link
                         href="/leads"
                         className={`${isActive("/leads")
-                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
                         Leads
                       </Link>
@@ -729,9 +735,9 @@ const SideBar = () => {
                       <Link
                         href="/deals"
                         className={`${isActive("/deals")
-                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
                         Deals
                       </Link>
@@ -741,9 +747,9 @@ const SideBar = () => {
                       <Link
                         href="/quotations"
                         className={`${isActive("/quotations")
-                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
                         Quotations
                       </Link>
@@ -752,9 +758,9 @@ const SideBar = () => {
                       <Link
                         href="/invoice"
                         className={`${isActive("/invoice")
-                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
                         Invoice
                       </Link>
@@ -767,11 +773,11 @@ const SideBar = () => {
               <Link
                 href="/clients"
                 className={`${isActive("/clients")
-                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"
-                  } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+                  } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
-                       <span  className={`${isActive("/clients")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                       <span  className={`${isActive("/clients")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 <FiUserCheck className="text-lg" />
                 </span>
                 Clients
@@ -782,12 +788,12 @@ const SideBar = () => {
               <button
                 onClick={() => toggleMenu("communication")}
                 className={`${isMenuActive("communication")
-                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"
-                  } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+                  } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
-                   <span className={`${isMenuActive("communication") ?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
+                   <span className={`${isMenuActive("communication") ?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
                   <AiOutlineTeam className="text-lg" />
                   </span>
                   Communication
@@ -812,9 +818,9 @@ const SideBar = () => {
                       <Link
                         href="/telephone"
                         className={`${isActive("/telephone")
-                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
                         Telephones Numbers
                       </Link>
@@ -823,9 +829,9 @@ const SideBar = () => {
                       <Link
                         href="/message"
                         className={`${isActive("/message")
-                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
                         Messages
                       </Link>
@@ -840,12 +846,12 @@ const SideBar = () => {
               <button
                 onClick={() => toggleMenu("emailManagement")}
                 className={`${isMenuActive("emailManagement")
-                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"
-                  } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+                  } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
                 <span className="flex items-center gap-3">
-                   <span className={`${isMenuActive("emailManagement") ?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
+                   <span className={`${isMenuActive("emailManagement") ?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
                   <IoMailOutline className="text-lg" />
                   </span>
                   Email Management
@@ -870,9 +876,9 @@ const SideBar = () => {
                       <Link
                         href="/emailManagement/templates"
                         className={`${isActive("/emailManagement/templates")
-                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
                         Templates
                       </Link>
@@ -881,9 +887,9 @@ const SideBar = () => {
                       <Link
                         href="/emailManagement/outbox"
                         className={`${isActive("/emailManagement/outbox")
-                          ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
                         Outbox
                       </Link>
@@ -896,11 +902,11 @@ const SideBar = () => {
               <Link
                 href="/query"
                 className={`${isActive("/query")
-                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"
-                  } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all`}
+                  } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
-                       <span  className={`${isActive("/query")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                       <span  className={`${isActive("/query")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 <TbNotes className="text-lg" />
                 </span>
                 Query
@@ -913,13 +919,13 @@ const SideBar = () => {
                 <Link
                   href="/otp"
                   className={`${isActive("/otp")
-                    ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                    ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                     : "border-l-2 border-transparent"
-                    } block px-3 py-2 text-sm rounded-md hover:bg-blue-600/5 transition-all`}
+                    } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                 >
                   <span className="flex items-center gap-3">
 
-                         <span  className={`${isActive("/otp")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                         <span  className={`${isActive("/otp")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                   <IoKeyOutline className="text-lg" />
 
                     </span>
@@ -940,7 +946,7 @@ const SideBar = () => {
             <li>
               <button
                 onClick={() => handleLogout()}
-                className={`w-full flex items-center cursor-pointer gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all border-l-2 border-transparent`}
+                className={`w-full flex items-center cursor-pointer gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all border-l-2 border-transparent`}
               >
                 <MdOutlineLogout className="text-lg" />
                 Logout
@@ -950,11 +956,11 @@ const SideBar = () => {
               <Link
                 href={`/users/${auth?.user?.id}`}
                 className={`${isActive("/profile")
-                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"
-                  } w-full flex items-center cursor-pointer gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all capitalize`}
+                  } w-full flex items-center cursor-pointer gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all capitalize`}
               >
-                       <span  className={`${isActive("/profile")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                       <span  className={`${isActive("/profile")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 <FaRegUser className="text-lg" />
                 </span>
                 Profile
@@ -964,11 +970,11 @@ const SideBar = () => {
               <Link
                 href={"/reset-password"}
                 className={`${isActive("/reset-password")
-                  ? "dark:text-blue-300 text-blue-700 dark:text-blue-300  border-l-2 bg-linear-to-r from-blue-50 dark:from-slate-600 to-blue-200 dark:to-slate-800 border-blue-600 dark:border-blue-300"
+                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"
-                  } w-full flex items-center cursor-pointer gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-blue-600/10 transition-all capitalize`}
+                  } w-full flex items-center cursor-pointer gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all capitalize`}
               >
-                       <span  className={`${isActive("/reset-password")?'bg-blue-100 dark:bg-blue-200 dark:text-blue-400  w-8 border border-blue-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                       <span  className={`${isActive("/reset-password")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 <RiLockPasswordLine className="text-lg" />
                 </span>
                 Reset password

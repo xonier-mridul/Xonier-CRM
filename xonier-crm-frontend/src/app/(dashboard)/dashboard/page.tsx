@@ -291,7 +291,6 @@ const trendPath =
     border border-slate-200/80 hover:border-slate-200 dark:hover:border-slate-500 dark:border-slate-700/50
     bg-white dark:bg-slate-900
     p-6
-  
     hover:-translate-y-1
     transition-all duration-300
     group cursor-default
@@ -300,21 +299,21 @@ const trendPath =
 >
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
         style={{ background: `radial-gradient(circle at top right, ${color}12, transparent 70%)` }} />
-      <div className="absolute top-0 left-0 w-20 h-20  rounded-br-full opacity-5 group-hover:opacity-10 group-hover:w-25 group-hover:h-25 transition-opacity duration-500"
+      <div className="absolute top-0 left-0 md:w-20 w-15 h-15 md:h-20  rounded-br-full opacity-5 group-hover:opacity-10 group-hover:w-25 group-hover:h-25 transition-opacity duration-500"
         style={{ backgroundColor: color }} />
 
       <div className="relative z-10 flex gap-6 mb-4">
         <div>
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white flex-shrink-0"
+          <div className="md:w-12 md:h-12 h-9 w-9 rounded-xl flex items-center justify-center text-white flex-shrink-0"
            style={{ backgroundColor: color }}>
-            <Icon className="w-6 h-6" />
+            <Icon className="md:w-6 md:h-6 h-4 w-4" />
 
           </div>
 
         </div>
         <div>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</p>
-                   <p className="text-4xl font-black tracking-tight text-slate-800 dark:text-white mb-1">
+                   <p className="text-3xl md:text-4xl font-black tracking-tight text-slate-800 dark:text-white mb-1">
   {prefix}{v.toLocaleString()}{suffix}
 </p>
             {sub && <p className="text-xs text-slate-500 mt-1 leading-relaxed">{sub}</p>}
@@ -832,23 +831,33 @@ function SAPlansCard({ plans }: { plans: PlanStat[] }) {
 function SAChurnCard({ churn }: { churn: ChurnStats }) {
   return (
     <Card title="Churn Analysis" sub="Subscription health" icon={TrendingDown}>
-      <div className="grid gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
         {[
           { label: "Churn Rate", value: `${churn.churnRate.toFixed(1)}%`, color: "#6366f1", bg: "from-indigo-500/10 to-blue-500/5",border:'border border-indigo-200 hover:border-indigo-400' },
           { label: "Revenue Lost", value: fmtMoney(churn.revenueLost), color: "#ef4444", bg: "from-red-500/10 to-rose-500/5", border:'border border-red-200 hover:border-red-400'},
           { label: "Canceled", value: String(churn.canceledThisPeriod), color: "#f97316", bg: "from-orange-500/10 to-amber-500/5" ,border:'border border-orange-200 hover:border-orange-400'},
           { label: "New This Period", value: String(churn.newThisPeriod), color: "#10b981", bg: "from-emerald-500/10 to-green-500/5",border:'border border-green-200 hover:border-green-400' },
         ].map((i) => (
-          <div key={i.label} className={`rounded-xl grid grid-cols-3 gap-4 p-3 ${i.border} dark:border-slate-700/40  bg-gradient-to-br ${i.bg}`}>
-            <div className="font-mono text-lg font-bold flex justify-center " style={{ color: i.color }}>{i.value}</div>
+          <div
+              key={i.label}
+              className={`rounded-xl grid justify-center items-center  md:grid-cols-3 gap-2 md:gap-4 p-3 min-w-20 ${i.border} dark:border-slate-700/40 bg-gradient-to-br ${i.bg}`}
+            >
+              <div
+                className="font-mono text-lg font-bold flex justify-center  whitespace-nowrap"
+                style={{ color: i.color }}
+              >
+                {i.value}
+              </div>
 
-            <div className="text-[11px] text-slate-500 mt-0.5 whitespace-nowrap col-span-2 flex items-center">{i.label}</div>
-          </div>
-        ))}
-      </div>
-    </Card>
-  );
-}
+              <div className="md:col-span-2 min-w-0 text-[11px] text-slate-500 flex items-center">
+                {i.label}
+              </div>
+            </div>
+                    ))}
+                  </div>
+                </Card>
+              );
+            }
 
 function SALatestCompanies({ companies }: { companies: LatestCompany[] }) {
   return (
@@ -1015,7 +1024,7 @@ function SARevenueTrendChart({ trend }: { trend: { month: string; revenue: numbe
 
 function BreakdownsSection({ breakdowns }: { breakdowns: BreakdownStats }) {
   return (
-    <div className="grid grid-cols-3 gap-4">
+    <div className="grid md:grid-cols-3 gap-4">
       <Card title="By Industry" sub="Companies grouped" icon={Globe}>
         <div className="flex flex-col gap-2">
           {breakdowns.companiesByIndustry.map((i, idx) => {
@@ -1088,14 +1097,54 @@ function BreakdownsSection({ breakdowns }: { breakdowns: BreakdownStats }) {
 function UsersCard({ users }: { users: UserStats }) {
   return (
     <Card title="Team Overview" sub="User distribution" icon={Users}>
-      <div className="grid grid-cols-2 gap-2 mb-4">
+      <div className="grid grid-cols-4 gap-2 mb-4">
         {[
-          { label: "Total", value: users.total, color: "#6366f1" },
-          { label: "Active", value: users.active, color: "#10b981" },
-          { label: "Inactive", value: users.inactive, color: "#f59e0b" },
-          { label: "Not Verified", value: users.notVerified ?? 0, color: "#ef4444" },
+          { label: "Total", value: users.total, color: "#6366f1" ,style: `
+    bg-gradient-to-br
+    from-indigo-50 to-indigo-100
+    dark:from-indigo-950/40 dark:to-slate-900
+    border border-indigo-200
+    dark:border-indigo-800/50
+    hover:border-indigo-400
+    dark:hover:border-indigo-500
+    hover:-translate-y-1
+    transition-all duration-300
+  ` },
+          { label: "Active", value: users.active, color: "#10b981" ,style: `
+    bg-gradient-to-br
+    from-green-50 to-green-100
+    dark:from-green-950/40 dark:to-slate-900
+    border border-green-200
+    dark:border-green-800/50
+    hover:border-green-400
+    dark:hover:border-green-500
+    hover:-translate-y-1
+    transition-all duration-300
+  `},
+          { label: "Inactive", value: users.inactive, color: "#f59e0b",style: `
+    bg-gradient-to-br
+    from-amber-50 to-amber-100
+    dark:from-amber-950/40 dark:to-slate-900
+    border border-amber-200
+    dark:border-amber-800/50
+    hover:border-amber-400
+    dark:hover:border-amber-500
+    hover:-translate-y-1
+    transition-all duration-300
+  ` },
+          { label: "Not Verified", value: users.notVerified ?? 0, color: "#ef4444",style: `
+    bg-gradient-to-br
+    from-red-50 to-red-100
+    dark:from-red-950/40 dark:to-slate-900
+    border border-red-200
+    dark:border-red-800/50
+    hover:border-red-400
+    dark:hover:border-red-500
+    hover:-translate-y-1
+    transition-all duration-300
+  ` },
         ].map((i) => (
-          <div key={i.label} className="rounded-xl p-3 border border-slate-200/40 dark:border-slate-700/40"
+          <div key={i.label} className={`rounded-xl p-3 border flex flex-col justify-center ${i.style} items-center text-center`}
             style={{ background: `linear-gradient(135deg, ${i.color}12, ${i.color}05)` }}>
             <p className="font-mono text-xl font-bold" style={{ color: i.color }}><AnimNum value={i.value} /></p>
             <p className="text-[10px] text-slate-500 mt-0.5">{i.label}</p>
@@ -1183,7 +1232,7 @@ function TaskCard({ tasks }: { tasks: TaskStats }) {
         <div className="relative flex-shrink-0">
           <Ring pct={tasks.completionRate} color="#10b981" size={72} />
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-mono text-xs font-bold dark:text-white">{tasks.completionRate.toFixed(0)}%</span>
+            <span className="font-mono text-slate-500 text-xs font-bold dark:text-white">{tasks.completionRate.toFixed(0)}%</span>
           </div>
         </div>
         <div className="flex-1">
@@ -1515,7 +1564,7 @@ function LatestDealsCard({ deals }: { deals: any[] }) {
 function SuperAdminLayout({ d }: { d: DashboardData }) {
   return (
     <>
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4  gap-4">
         <StatCard label="Companies" value={d.companies!.total} sub={`${d.companies!.active} active · ${d.companies!.thisMonth ?? 0} this month`} icon={Building2} color="#f59e0b" />
         <StatCard label="Total Users" value={d.users!.total} sub={`${d.users!.active} active · ${d.users!.thisMonth ?? 0} this month`} icon={Users} color="#6366f1" />
         <StatCard label="MRR" value={Math.round(d.revenue!.mrr)} prefix="$" sub={`ARR: ${fmtMoney(d.revenue!.arr)}`} icon={DollarSign} color="#10b981" />
@@ -1523,22 +1572,22 @@ function SuperAdminLayout({ d }: { d: DashboardData }) {
       </div>
 
 
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid  md:grid-cols-5 gap-4">
         <SACompaniesCard companies={d.companies!} />
         <SARevenueCard subs={d.subscriptions!} revenue={d.revenue!} />
         <SAChurnCard churn={d.churn!} />
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-2 gap-4">
         <SAMonthlyTrendChart companies={d.trends!.monthlyCompanies} users={d.trends!.monthlyUsers} />
         <SARevenueTrendChart trend={d.revenue!.monthlyTrend} />
       </div>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid md:grid-cols-3 gap-4">
         <SAPlansCard plans={d.plans!} />
         <SALatestCompanies companies={d.latestCompanies!} />
         <SATopCompanies companies={d.topCompaniesByUsers!} />
       </div>
       {d.breakdowns && <BreakdownsSection breakdowns={d.breakdowns} />}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid md:grid-cols-3 gap-4">
         <div className="col-span-2"><SAActivityCard activity={d.activity!} /></div>
         <RecentActivitiesCard activities={d.recentActivities ?? []} />
       </div>
@@ -1875,7 +1924,7 @@ export default function UnifiedDashboardPage() {
 
   if (loading) {
     return (
-      <div className="mt-10 ml-72 min-h-screen dark:bg-slate-900 p-6">
+      <div className="mt-10 lg:ml-72 min-h-screen dark:bg-slate-900 p-6">
         <div className="flex items-center gap-3 mb-6">
           <Sk className="h-10 w-10" /><Sk className="h-8 w-48" /><Sk className="h-9 w-64 ml-auto" />
         </div>
@@ -1889,7 +1938,7 @@ export default function UnifiedDashboardPage() {
 
   if (error) {
     return (
-      <div className="mt-10 ml-72 min-h-screen dark:bg-slate-900 flex items-center justify-center">
+      <div className="mt-10 md:ml-72 min-h-screen dark:bg-slate-900 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
             <AlertCircle className="w-8 h-8 text-red-400" />
@@ -1910,13 +1959,13 @@ export default function UnifiedDashboardPage() {
   const RoleIcon = rc.icon;
 
   return (
-    <div className=" relative  mt-10 ml-72 min-h-screen">
+    <div className=" relative  mt-10 lg:ml-72 min-h-screen">
      
       <div className="p-6 flex flex-col gap-5">
 
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col  lg:flex-row items-center justify-center">
+          <div className="flex w-full items-center gap-3 mb-4">
             <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${rc.gradient} flex items-center justify-center shadow-lg`}>
               <RoleIcon className="w-5 h-5 text-white" />
             </div>
@@ -1931,7 +1980,7 @@ export default function UnifiedDashboardPage() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 w-full justify-end">
             <FilterBar current={filter} onChange={(f) => setFilter(f)} />
             <button onClick={() => load(true)} disabled={refreshing}
               className="w-9 h-9 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-indigo-400 hover:border-indigo-500/50 transition-all disabled:opacity-50 flex items-center justify-center">

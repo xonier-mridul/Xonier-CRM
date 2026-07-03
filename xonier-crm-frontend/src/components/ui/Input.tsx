@@ -28,7 +28,8 @@ const Input: React.FC<InputProps> = ({
     bg-white dark:bg-gray-700 text-black dark:text-white
     border-gray-300 dark:border-gray-300/30
     disabled:opacity-60 disabled:cursor-not-allowed
-    focus:outline-none focus:ring-2 focus:ring-violet-500
+     focus:ring-2 
+    focus:outline-none focus:border-cyan-400 dark:focus:border-cyan-500  focus:ring-teal-400/20
     ${error ? "border-red-500 focus:ring-red-500" : ""}
     ${className}
   `;

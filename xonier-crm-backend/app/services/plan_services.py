@@ -73,7 +73,7 @@ class PlanService:
                     raise AppException(500, f"Internal server error: {e}")
         
 
-    async def getAll(self, filters: Dict[str, Any], user: Dict[str, Any]):
+    async def getAll(self, filters: Dict[str, Any]):
         try:
             page: int = int(filters.get("page", 1) or 1)
             limit: int = int(filters.get("limit", 10) or 10)

@@ -87,7 +87,7 @@ app = FastAPI(lifespan=lifespan)
 
 origins = [
     
-    settings.CLIENT_URL,
+    settings.CLIENT_URL, "http://localhost:5173"
     # settings.CLIENT_URL_ALT
 ]
 

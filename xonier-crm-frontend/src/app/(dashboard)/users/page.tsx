@@ -230,7 +230,7 @@ const page = (): JSX.Element => {
   };
 
   return (
-    <div className="ml-72 mt-16 p-6">
+    <div className="lg:ml-72 mt-16 p-6">
       <UserMonitor />
       <UsersTable
         currentPage={Number(currentPage)}

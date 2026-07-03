@@ -259,7 +259,7 @@ const Page = (): JSX.Element => {
         onSuccess={handleUpdateSuccess}
       />
 
-      <div className="mt-14 ml-72 p-6 transition-all">
+      <div className="mt-14 lg:ml-72 p-1 md:p-6 transition-all">
         <AnimatePresence>
           {isLoading && (
             <motion.div
@@ -316,9 +316,10 @@ const Page = (): JSX.Element => {
           className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-xl p-6"
         >
           {/* Custom Toolbar */}
-          <div className="mb-6 flex items-center justify-between gap-4">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
             {/* Month Navigation */}
-            <div className="flex items-center gap-3">
+            <div className="grid grid-cols-4 md:grid-cols-5  items-center gap-3">
+              <div className='flex col-span-3 md:col-span-4'>
               <button
                 onClick={() => {
                   const api = calendarRef.current?.getApi();
@@ -343,6 +344,9 @@ const Page = (): JSX.Element => {
               >
                 <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-300" />
               </button>
+
+              
+              </div>
               <button
                 onClick={() => {
                   const api = calendarRef.current?.getApi();
@@ -352,10 +356,14 @@ const Page = (): JSX.Element => {
               >
                 Today
               </button>
+             
+              
             </div>
+            <div className='grid grid-cols-4 md:grid-cols-3 gap-4'>
+                 
 
-            {/* View Switcher */}
-            <div className="flex gap-2 bg-gray-100 dark:bg-gray-700 p-1 rounded-xl">
+               {/* View Switcher */}
+            <div className="flex gap-2 col-span-3 md:col-span-2 bg-gray-100 dark:bg-gray-700 p-1 rounded-xl">
               {viewButtons.map(({ id, label, icon: Icon }) => (
                 <button
                   key={id}
@@ -371,8 +379,6 @@ const Page = (): JSX.Element => {
                 </button>
               ))}
             </div>
-
-            {/* Quick Add Event Button */}
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -383,11 +389,18 @@ const Page = (): JSX.Element => {
                 }
                 openCreateEventModal(new Date().toISOString());
               }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-teal-400 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-teal-400 text-white transition-all shadow-lg hover:shadow-emerald-500/25"
+              className="flex items-center gap-2 pr-3 md:px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-teal-400 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-teal-400 text-white transition-all shadow-lg hover:shadow-emerald-500/25 whitespace-nowrap"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-4 h-4 " />
               Add Event
             </motion.button>
+
+              </div>
+
+           
+
+            {/* Quick Add Event Button */}
+            
           </div>
 
           {/* Calendar */}

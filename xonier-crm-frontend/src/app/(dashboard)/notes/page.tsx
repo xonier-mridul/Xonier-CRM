@@ -628,7 +628,7 @@ const Page = (): JSX.Element => {
   }, [currentPage, pageLimit, currentPrivatePage, privatePageLimit, active]);
 
   return (
-    <div className={`ml-72 mt-14 p-6 min-h-screen`}>
+    <div className={`lg:ml-72 mt-14 p-6 min-h-screen`}>
       <div className="flex w-full flex-col gap-6">
         <div>
           <h2 className="text-slate-900 dark:text-white font-bold text-4xl mb-2">

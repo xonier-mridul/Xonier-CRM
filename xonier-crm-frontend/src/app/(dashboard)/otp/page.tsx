@@ -255,7 +255,7 @@ const OtpListPage = (): JSX.Element => {
   const colCount = 7;
 
   return (
-    <div className="ml-72 mt-14">
+    <div className="lg:ml-72 mt-14">
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full">
 
         {/* ── Header ── */}
@@ -285,14 +285,14 @@ const OtpListPage = (): JSX.Element => {
         </div>
 
         {/* ── Stats Row ── */}
-        <div className="grid grid-cols-4 gap-4 mb-7">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-7">
           {[
             { label: "Total (Page)", value: otpData.length, icon: "🔑", bg: "bg-blue-50 border-blue-100" },
             { label: "Active", value: activeCount, icon: "🟢", bg: "bg-emerald-50 border-emerald-100" },
             { label: "Expired", value: expiredCount, icon: "⏰", bg: "bg-rose-50 border-rose-100" },
             { label: "Used", value: usedCount, icon: "✅", bg: "bg-gray-50 border-gray-200" },
           ].map(s => (
-            <div key={s.label} className={`flex items-center gap-3 p-4 rounded-2xl border ${s.bg}`}>
+            <div key={s.label} className={`flex md:grid-cols-4 items-center gap-3 p-4 rounded-2xl border ${s.bg}`}>
               <span className="text-xl">{s.icon}</span>
               <div>
                 <div className="text-xl font-extrabold text-gray-900 dark:text-black">{s.value}</div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { RoleTableProps } from "@/src/types/roles/roles.types";
-import React from "react";
+import React, { useState } from "react";
 import { MdOutlineEdit, MdDeleteOutline, MdAdminPanelSettings } from "react-icons/md";
 import { FaPlus, FaXmark, FaShieldHalved, FaEye, FaBolt } from "react-icons/fa6";
 import { HiOutlineSearch, HiOutlineUserGroup } from "react-icons/hi";
@@ -61,6 +61,7 @@ const UserRolesTable: React.FC<RoleTableProps> = ({
   isAdmin,
 }) => {
   const [searchTerm, setSearchTerm] = React.useState("");
+
   const [viewRoleModal, setViewRoleModal] = React.useState<UserRole | null>(null);
 
   const addPermission = (permissionId: string) => {
@@ -84,6 +85,31 @@ const UserRolesTable: React.FC<RoleTableProps> = ({
   const isSelected = (permissionId: string) =>
     formData.permissions.includes(permissionId);
 
+  const isModuleSelected = (perms: any[]) => {
+  return perms.every((perm) => isSelected(perm.id));
+};
+
+
+const handleModulePermission = (perms:any[],
+  checked:boolean)=>{
+    if(checked){
+      perms.forEach((perm)=>{
+        if(!isSelected(perm.id)){
+          addPermission(perm.id)
+        }
+      }
+    
+    )
+    }
+    else{
+        perms.forEach((perm)=>{
+          if(isSelected(perm.id)){
+            removePermission(perm.id)
+          }
+        })
+      }
+  }
+
   const groupedPermissions = React.useMemo(() => {
     if (!permissionData) return {};
     const filtered = permissionData.filter((p) =>
@@ -98,6 +124,31 @@ const UserRolesTable: React.FC<RoleTableProps> = ({
       return acc;
     }, {} as Record<string, typeof permissionData>);
   }, [permissionData, searchTerm]);
+
+const allPermissions = Object.values(groupedPermissions).flat();
+
+const isAllSelected = allPermissions.every((perm) =>
+  isSelected(perm.id)
+);
+
+
+
+const handleAllPermissions = (checked: boolean) => {
+  if (checked) {
+    allPermissions.forEach((perm) => {
+      if (!isSelected(perm.id)) {
+        addPermission(perm.id);
+      }
+    });
+  } else {
+    allPermissions.forEach((perm) => {
+      if (isSelected(perm.id)) {
+        removePermission(perm.id);
+      }
+    });
+  }
+};
+
 
   return (
     <>
@@ -301,11 +352,11 @@ const UserRolesTable: React.FC<RoleTableProps> = ({
       {isPopupShow && (
         <>
           <BlurryBackground onClick={() => setIsPopupShow(false)} />
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-2xl w-[720px] max-h-[90vh] z-[200] shadow-2xl flex flex-col">
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-2xl md:w-[720px] max-h-[90vh] z-[200] shadow-2xl flex flex-col">
             <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                  <FaShieldHalved className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                <div className="w-10 h-10 rounded-xl bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center">
+                  <FaShieldHalved className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-slate-900 dark:text-white">Create Role</h2>
@@ -350,7 +401,7 @@ const UserRolesTable: React.FC<RoleTableProps> = ({
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, power: Number(e.target.value) }))
                     }
-                    className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                    className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-cyan-600"
                   />
                   <div className="flex items-center justify-between text-xs text-slate-400 dark:text-slate-500">
                     <span>Viewer (1)</span>
@@ -410,9 +461,9 @@ const UserRolesTable: React.FC<RoleTableProps> = ({
               </div>
 
               {formData.permissions.length > 0 && (
-                <div className="bg-indigo-50 dark:bg-indigo-950/20 rounded-xl p-4 border border-indigo-100 dark:border-indigo-900/30">
+                <div className="bg-cyan-50 dark:bg-indigo-950/20 rounded-xl p-4 border border-cyan-100 dark:border-cyan-900/30">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-400">
+                    <span className="text-sm font-semibold text-cyan-700 dark:text-cyan-400">
                       Selected Permissions
                     </span>
                     <button
@@ -429,13 +480,13 @@ const UserRolesTable: React.FC<RoleTableProps> = ({
                       return (
                         <span
                           key={id}
-                          className="group bg-white dark:bg-gray-700 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 px-3 py-1.5 rounded-lg text-sm flex items-center gap-2 capitalize hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
+                          className="group bg-white dark:bg-gray-700 border border-cyan-200 dark:border-cyan-800 text-cyan-700 dark:text-cyan-300 px-3 py-1.5 rounded-lg  text-sm flex items-center gap-2 capitalize hover:bg-stone-50 dark:hover:bg-cyan-900/30 transition-colors"
                         >
-                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 flex-shrink-0" />
                           {perm.title}
                           <button
                             onClick={() => removePermission(id)}
-                            className="ml-1 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                            className="ml-1 hover:text-red-500 cursor-pointer dark:hover:text-red-400 transition-colors"
                           >
                             <FaXmark className="w-3 h-3" />
                           </button>
@@ -447,19 +498,59 @@ const UserRolesTable: React.FC<RoleTableProps> = ({
               )}
 
               <div>
-                <div className="flex items-center justify-between mb-3">
+                <div className="grid md:grid-cols-3 items-center justify-between mb-3">
                   <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                     Available Permissions
                   </span>
-                  <div className="relative">
+                  <div className="relative flex gap-2">
                     <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                       type="text"
                       placeholder="Search permissions..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-9 pr-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent w-56"
+                      className="pl-9 pr-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 focus:border-transparent w-56"
                     />
+                    <div className=" bg-white rounded-lg dark:bg-gray-800 border border-gray-200 dark:border-gray-600 px-4 py-3">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isAllSelected}
+                      onChange={(e) => handleAllPermissions(e.target.checked)}
+                      className="hidden"
+                    />
+
+                      <div
+                        className={`
+                          w-5 h-5 rounded border-2 flex items-center justify-center transition-all
+                          ${
+                            isAllSelected
+                              ? "bg-cyan-500 border-cyan-500"
+                              : "border-slate-300 bg-white"
+                          }
+                        `}
+                      >
+                        {isAllSelected && (
+                          <svg
+                            className="w-3 h-3 text-white"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={3}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        )}
+                      </div>
+                      <span className="font-semibold text-sm text-slate-700 dark:text-slate-200 whitespace-nowrap">
+                        {isAllSelected? 'Deselect All Permissions':'Select All Permissions'}
+                      </span>
+                    </label>
+                  </div>
                   </div>
                 </div>
                 <div className="max-h-72 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700/50">
@@ -468,8 +559,44 @@ const UserRolesTable: React.FC<RoleTableProps> = ({
                       key={module}
                       className="border-b border-gray-200 dark:border-gray-600 last:border-0"
                     >
-                      <div className="sticky top-0 bg-gray-100 dark:bg-gray-700 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400 z-10">
-                        {module}
+                      <div className="sticky top-0 bg-gray-100 dark:bg-gray-700 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400 z-10 flex justify-between items-center">
+                        <span>{module}</span>
+                        <label className="flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isModuleSelected(perms)}
+                        onChange={(e) =>
+                          handleModulePermission(perms, e.target.checked)
+                        }
+                        className="hidden"
+                      />
+
+                      <div
+                        className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                          isModuleSelected(perms)
+                            ? "bg-cyan-500 border-cyan-500"
+                            : "bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-500"
+                        }`}
+                      >
+                        {isModuleSelected(perms) && (
+                          <svg
+                            className="w-3 h-3 text-white"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={3}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        )}
+                      </div>
+                    </label>
+     
+
                       </div>
                       <div className="p-2">
                         {perms.map((permission) => {
@@ -485,7 +612,7 @@ const UserRolesTable: React.FC<RoleTableProps> = ({
                                 <div
                                   className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0 ${
                                     selected
-                                      ? "bg-indigo-500 border-indigo-500"
+                                      ? "bg-cyan-500 border-cyan-500"
                                       : "border-gray-300 dark:border-gray-500"
                                   }`}
                                 >
@@ -537,8 +664,8 @@ const UserRolesTable: React.FC<RoleTableProps> = ({
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-              <HiOutlineUserGroup className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            <div className="w-10 h-10 rounded-xl bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center">
+              <HiOutlineUserGroup className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">User Roles</h2>
@@ -549,7 +676,7 @@ const UserRolesTable: React.FC<RoleTableProps> = ({
           </div>
           <button
             onClick={() => setIsPopupShow(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 font-semibold disabled:cursor-not-allowed disabled:opacity-50 transition-all shadow-sm hover:shadow-md"
+            className="bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-600 text-white px-5 py-2.5 rounded-xl flex text-sm  md:text-lg  items-center gap-2 font-semibold disabled:cursor-not-allowed disabled:opacity-50 transition-all shadow-sm hover:shadow-md"
             disabled={!hasPermissions(PERMISSIONS.createRole)}
           >
             <FaPlus className="w-4 h-4" />
@@ -585,7 +712,7 @@ const UserRolesTable: React.FC<RoleTableProps> = ({
                             className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
                               role.isSystemRole
                                 ? "bg-gradient-to-br from-amber-400 to-orange-500"
-                                : "bg-gradient-to-br from-indigo-400 to-violet-500"
+                                : "bg-gradient-to-br from-cyan-400 to-teal-500"
                             }`}
                           >
                             {role.isSystemRole ? (
@@ -614,7 +741,7 @@ const UserRolesTable: React.FC<RoleTableProps> = ({
                       </td>
 
                       <td className="px-6 py-5">
-                        <div className="flex flex-wrap gap-2 max-w-xs">
+                        <div className="flex flex-wrap whitespace-nowrap gap-2 max-w-xs">
                           {role.code === SUPER_ADMIN_ROLE_CODE ? (
                             <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800 px-3 py-1.5 text-amber-700 dark:text-amber-400 rounded-lg text-xs font-semibold">
                               <IoShieldCheckmarkOutline className="w-3.5 h-3.5" />

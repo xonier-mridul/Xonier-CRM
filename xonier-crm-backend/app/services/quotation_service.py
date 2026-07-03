@@ -37,6 +37,7 @@ from app.repositories.activity_repository import ActivityRepository
 from app.utils.activity_payload import activity_payload
 from app.utils.jwt_token_generator import create_token, verify_token
 from app.core.config import get_setting
+from app.utils.validate_admin import validate_admin
 
 CURRENCY_SYMBOLS = {
     "USD": "$",
@@ -649,6 +650,19 @@ class QuotationService:
                         raise AppException(
                             400, "Quotation accepted, quotation updation failed"
                         )
+                        
+                    issueData = quotation.issueDate or None
+                    validTill = payload.get("valid", None)
+                    
+                        
+                    if not issueData or not validTill:
+                        raise AppException(422, "Issue data or valid date must be required")
+                    
+                   
+                    if issueData > validTill:
+                        raise AppException(400, "Valid date must be greater then issue date")
+                    
+
 
                     isAdmin = validate_admin(user["userRole"])
 

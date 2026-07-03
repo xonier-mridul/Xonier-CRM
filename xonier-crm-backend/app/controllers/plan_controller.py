@@ -31,12 +31,12 @@ class PlanController:
 
     async def getAll(self, request: Request):
         try:
-             user = request.state.user
+            #  user = request.state.user
 
              filters = dict(request.query_params)
 
-             result =await self.service.getAll(filters, user)
-             return successResponse(200, "Plan data fetched successfuly", result)
+             result =await self.service.getAll(filters)
+             return successResponse(200, "Plan data fetched successfully", result)
               
         except AppException as e:
             raise e
@@ -50,7 +50,7 @@ class PlanController:
              user = request.state.user
 
              result =await self.service.getById(id, user)
-             return successResponse(200, "Plan data fetched successfuly", result)
+             return successResponse(200, "Plan data fetched successfully", result)
               
         except AppException as e:
             raise e
