@@ -40,6 +40,7 @@ from app.db.models.query_model import QueryModel
 from app.db.models.notification_model import NotificationModel
 
 
+
 settings = get_setting()
 
 Client = AsyncIOMotorClient(settings.MONGO_URI) 

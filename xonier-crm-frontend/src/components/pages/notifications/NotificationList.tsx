@@ -5,6 +5,11 @@ import { useNotifications } from "@/src/hooks/useNotifications";
 import NotificationItem from "./NotificationItem";
 import { NotificationFilter, NotificationStatus } from "@/src/types/notification/notification.types";
 import { FiCheckCircle, FiTrash2, FiFilter } from "react-icons/fi";
+import DateFilterButton from "../../common/dateFilter";
+import { DateFilter } from "@/src/types/components/ui/dateFilter.types";
+import { IoSearchOutline } from "react-icons/io5";
+
+
 
 const NotificationList = () => {
   const {
@@ -21,6 +26,8 @@ const NotificationList = () => {
   } = useNotifications();
 
   const [filter, setFilter] = useState<NotificationFilter>({});
+  const [dateFilter, setDateFilter] = useState<DateFilter>({ fromDate: "", toDate: "" });
+  
 
   const handleFilterChange = (key: keyof NotificationFilter, value: any) => {
     const newFilter = { ...filter, [key]: value };
@@ -37,12 +44,15 @@ const NotificationList = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="w-full px-4">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
           Notifications
         </h1>
-        <div className="flex items-center gap-2">
+         <p className="text-gray-600 dark:text-gray-400">Stay updated with all your alert and system notification.</p>
+        </div>
+               <div className="flex items-center gap-2">
           <button
             onClick={markAllAsRead}
             className="flex items-center gap-2 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -58,20 +68,27 @@ const NotificationList = () => {
         </div>
       </div>
 
+
       <div className="flex items-center gap-4 mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-        <FiFilter className="text-gray-400" />
+        {/* <FiFilter className="text-gray-400" /> */}
+        <div>
+        <label className="flex flex-col gap-2 text-[14px] text-slate-500">
+          Status
         <select
           value={filter.status || ""}
           onChange={(e) =>
             handleFilterChange("status", e.target.value || undefined)
           }
-          className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm"
+          className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm outline-none"
         >
           <option value="">All Status</option>
           <option value={NotificationStatus.UNREAD}>Unread</option>
           <option value={NotificationStatus.READ}>Read</option>
         </select>
+        </label>
 
+       <label className="flex flex-col gap-2 text-[14px] text-slate-500">
+          Type
         <select
           value={filter.isRead !== undefined ? String(filter.isRead) : ""}
           onChange={(e) =>
@@ -80,12 +97,30 @@ const NotificationList = () => {
               e.target.value === "" ? undefined : e.target.value === "true"
             )
           }
-          className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm"
+          className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm outline-none"
         >
           <option value="">All</option>
           <option value="false">Unread Only</option>
           <option value="true">Read Only</option>
         </select>
+        </label>
+        <label className="flex flex-col gap-2 text-[14px] text-slate-500">
+          Date Range
+          <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter}  />
+          </label>
+
+          <label className="flex flex-col gap-2 text-[14px] text-slate-500   " >
+            Search
+            <div className='flex border border-slate-200 rounded-lg text-slate-500 px-4 py-2.5 items-center gap-2'>
+              <IoSearchOutline className='text-xl '/>
+            <input type='text' placeholder='Search..'  className='outline-none text-sm'/>
+            </div>
+
+          </label>
+          </div>
+          <button>
+             
+          </button>
       </div>
 
       {loading ? (

@@ -255,7 +255,7 @@ export default function DateFilterButton({ dateFilter, onChange }: Props) {
                 flex-[2] text-[13px] font-semibold py-2 rounded-lg
                 bg-cyan-500 hover:bg-cyan-600 text-white
                 transition-colors duration-150 cursor-pointer
-                shadow-[0_3px_12px_rgba(99,102,241,0.35)]
+               
               "
             >
               Apply filter

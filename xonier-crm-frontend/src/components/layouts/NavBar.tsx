@@ -41,6 +41,7 @@ import {FiHome,FiCalendar,
 } from "react-icons/fi";
 import { MdKeyboardArrowRight } from "react-icons/md";
 import NotificationBell from "../common/NotificationBell";
+import { FaArrowLeftLong, FaArrowRightLong } from "react-icons/fa6";
 
 
 const mockNotifications = [
