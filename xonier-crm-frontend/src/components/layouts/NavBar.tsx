@@ -40,7 +40,7 @@ import {FiHome,FiCalendar,
   FiBookOpen,
 } from "react-icons/fi";
 import { MdKeyboardArrowRight } from "react-icons/md";
-import { FaArrowLeftLong, FaArrowRightLong } from "react-icons/fa6";
+import NotificationBell from "../common/NotificationBell";
 
 
 const mockNotifications = [
@@ -163,7 +163,7 @@ console.log("UserDetails:",auth?.user)
 useEffect(()=>{
   const handleOutSideCLick =(e:MouseEvent)=>{
 
-    console.log("click Out SIde :",e.target)
+    
     if(searchRef.current && 
       !searchRef.current.contains(e.target as Node)){
       setSearchQuery('')
@@ -346,87 +346,7 @@ const results = searchableData.filter((item) =>
         <ThemeToggle />
 
         {/* Notification Bell */}
-        <div
-          className="relative"
-          onMouseEnter={() => setNotifOpen(true)}
-          onMouseLeave={() => setNotifOpen(false)}
-        >
-          <button className="relative h-10 w-10 flex items-center justify-center rounded-full bg-slate-100/60 dark:bg-gray-800/60 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 hover:text-cyan-600 transition-all group cursor-pointer">
-            <IoMdNotificationsOutline className="text-2xl group-hover:scale-110 transition-transform" />
-            {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 h-4 w-4 text-[10px] font-bold text-white bg-red-500 rounded-full flex items-center justify-center ring-2 ring-white dark:ring-gray-900 animate-pulse">
-                {unreadCount}
-              </span>
-            )}
-          </button>
-
-          <AnimatePresence>
-            {notifOpen && !calOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 8 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-                className="absolute -right-20 md:right-0 mt-2 w-96 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden"
-              >
-                {/* Header */}
-                <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-slate-900 dark:text-white">
-                      Notifications
-                    </h3>
-                    <span className="text-xs bg-cyan-100 dark:bg-cyan-900/40 text-cyan-600 dark:text-cyan-300 px-2 py-0.5 rounded-full font-medium">
-                      {unreadCount} new
-                    </span>
-                  </div>
-                  <button className="text-xs text-cyan-600 hover:text-cyan-700 font-medium flex items-center gap-1">
-                    <FiCheckCircle /> Mark all read
-                  </button>
-                </div>
-
-                {/* List */}
-                <div className="max-h-96 overflow-y-auto">
-                  {mockNotifications.map((n) => (
-                    <div
-                      key={n.id}
-                      className={`flex gap-3 px-5 py-3 hover:bg-slate-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors border-b border-gray-50 dark:border-gray-700/50 last:border-0 ${
-                        n.unread ? "bg-cyan-50/40 dark:bg-cyan-900/10" : ""
-                      }`}
-                    >
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-cyan-100 to-cyan-200 dark:from-cyan-900/40 dark:to-cyan-800/40 flex items-center justify-center text-lg flex-shrink-0">
-                        {getNotifIcon(n.type)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <h4 className="text-sm font-semibold text-slate-900 dark:text-white truncate">
-                            {n.title}
-                          </h4>
-                          {n.unread && (
-                            <span className="h-2 w-2 bg-cyan-500 rounded-full flex-shrink-0"></span>
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
-                          {n.message}
-                        </p>
-                        <span className="text-[11px] text-gray-400 dark:text-gray-500 mt-1 block">
-                          {n.time}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Footer */}
-                <Link
-                  href="/notifications"
-                  className="block text-center py-3 text-sm font-medium text-cyan-600 hover:bg-slate-50 dark:hover:bg-gray-700/50 border-t border-gray-100 dark:border-gray-700 transition-colors"
-                >
-                  View all notifications →
-                </Link>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+        <NotificationBell calOpen={calOpen} />
 
 
 

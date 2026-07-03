@@ -13,7 +13,7 @@ import { HiOutlineAdjustments } from "react-icons/hi";
 import { SlCalender } from "react-icons/sl";
 import { TbNotes, TbMoneybag } from "react-icons/tb";
 import { BsBarChart, BsBuildingGear } from "react-icons/bs";
-import { MdEmail, MdKeyboardDoubleArrowRight, MdOutlineHelpOutline, MdOutlineLogout } from "react-icons/md";
+import { MdEmail, MdKeyboardDoubleArrowRight, MdOutlineHelpOutline, MdOutlineLogout, MdOutlineNotificationsActive } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import ConfirmPopup from "../ui/ConfirmPopup";
 import { AuthService } from "@/src/services/auth.service";
@@ -326,6 +326,22 @@ const SideBar = () => {
                 <TbNotes className="text-lg" />
                 </span>
                 Notes
+              </Link>
+            </li>}
+              {
+             <li>
+              <Link
+                href="/notification"
+                className={`${isActive("/calender")
+                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                  : "border-l-2 border-transparent"
+                  } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
+              >
+              <span  className={`${isActive("/calender")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                
+                <MdOutlineNotificationsActive className="text-lg" />
+                </span>
+                Notification
               </Link>
             </li>}
             
