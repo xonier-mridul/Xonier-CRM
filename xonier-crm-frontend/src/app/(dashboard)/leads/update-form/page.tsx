@@ -98,16 +98,23 @@ const page = (): JSX.Element => {
   };
 
   const getCustomFormFields = async(): Promise<void>=>{
+     
     setCuFieldDataLoading(true)
     try {
       const result = await CustomFormService.getAllByCreator()
       if (result.status === 200){
         const data = result.data.data
+        console.log('form data :',data)
         setAllCustomFormField(data)
       }
+     
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) {
+        if (error.response?.status === 400) {
+        setAllCustomFormField([]);
+        return;
+      }
         const messages = extractErrorMessages(error);
         setErr(messages);
       } else {
@@ -362,16 +369,17 @@ const handleCreateCustomField = async (e: FormEvent) => {
 
   const handleFieldDelete = async(id:string)=>{
     try {
-
       const confirm = await ConfirmPopup({title: "Are you sure", text: "Are you sure to delete the field, It is going permanently deleted", btnTxt: "Yes, Delete"})
-      if(confirm){
-        const result = await CustomFormService.delete(id)
+
+      if (!confirm) return;
+      
+      const result = await CustomFormService.delete(id)
       if (result.status === 200){
         toast.success("Field deleted successfully")
         await getCustomFormFields()
       }
 
-      }
+      
       
     } catch (error) {
        process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
@@ -661,51 +669,51 @@ const handleCreateCustomField = async (e: FormEvent) => {
                 const checked = selectedFieldsIds.includes(item.id);
                 
                 return (
-                                <li key={item.id} className="flex items-center gap-3 group justify-between">
-  <label
-    htmlFor={item.key}
-    className="flex items-center gap-3 cursor-pointer group"
-  >
-    <input
-      type="checkbox"
-      id={item.key}
-      name={item.name}
-      value={item.id}
-      checked={checked}
-      onChange={handleChecked}
-      className="peer sr-only"
-    />
+                        <li key={item.id} className="flex items-center gap-3 group justify-between">
+                          <label
+                            htmlFor={item.key}
+                            className="flex items-center gap-3 cursor-pointer group"
+                          >
+                            <input
+                              type="checkbox"
+                              id={item.key}
+                              name={item.name}
+                              value={item.id}
+                              checked={checked}
+                              onChange={handleChecked}
+                              className="peer sr-only"
+                            />
 
-    <div
-      className="
-        w-5 h-5
-        rounded-md
-        border-2 border-slate-300 dark:border-slate-600
-        bg-white dark:bg-slate-700
-        flex items-center justify-center
-        transition-all duration-200
-        peer-checked:bg-cyan-600
-        peer-checked:border-cyan-600
-      "
-    >
-     {checked && <FaCheck className="text-white text-[10px]" />}
-    </div>
+                            <div
+                              className="
+                                w-5 h-5
+                                rounded-md
+                                border-2 border-slate-300 dark:border-slate-600
+                                bg-white dark:bg-slate-700
+                                flex items-center justify-center
+                                transition-all duration-200
+                                peer-checked:bg-cyan-600
+                                peer-checked:border-cyan-600
+                              "
+                            >
+                            {checked && <FaCheck className="text-white text-[10px]" />}
+                            </div>
 
-    <span
-      className="
-        capitalize
-        text-slate-700 dark:text-slate-300
-        transition-all duration-200
-        peer-checked:text-cyan-600
-        dark:peer-checked:text-cyan-300
-        group-hover:text-cyan-600
-      "
-    >
-      {item.name}
-    </span>
-  </label>
-   <button className="h-6 w-6 group-hover:flex rounded-full cursor-pointer bg-red-200/80 hidden items-center justify-center text-red-500 hover:bg-red-500 hover:text-white" onClick={()=>handleFieldDelete(item.id)}><MdDeleteOutline className="text-sm"/></button>
-</li>
+                            <span
+                              className="
+                                capitalize
+                                text-slate-700 dark:text-slate-300
+                                transition-all duration-200
+                                peer-checked:text-cyan-600
+                                dark:peer-checked:text-cyan-300
+                                group-hover:text-cyan-600
+                              "
+                            >
+                              {item.name}
+                            </span>
+                          </label>
+                          <button className="h-6 w-6 group-hover:flex rounded-full cursor-pointer bg-red-200/80 hidden items-center justify-center text-red-500 hover:bg-red-500 hover:text-white" onClick={()=>handleFieldDelete(item.id)}><MdDeleteOutline className="text-sm"/></button>
+                        </li>
                  
                 );
               })
