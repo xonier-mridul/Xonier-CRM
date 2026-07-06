@@ -1,6 +1,6 @@
 from beanie import Document, Link, before_event, Insert, Replace, Save
 from pydantic import Field, model_validator, field_validator, BaseModel
-from typing import Optional, List
+from typing import Optional, List, Any
 from datetime import datetime, timezone, date, timedelta
 from pymongo import IndexModel
 from app.core.enums import QuotationStatus, QuotationPaymentStatus, QuotationCurrency
@@ -10,6 +10,7 @@ from app.core.security import hash_value
 from app.db.models.user_model import UserModel
 from beanie import PydanticObjectId
 from app.db.models.base_model import BaseDocument
+from app.utils.custom_exception import AppException
 
 encryption = Encryption()
 
@@ -126,11 +127,16 @@ class QuotationModel(BaseDocument):
             IndexModel([("convertedToInvoice", 1)], name="invoice_idx"),
         ]
 
-    @model_validator(mode="after")
-    def validate_dates(self):
-        if self.valid and self.issueDate > self.valid:
-            raise ValueError("Valid date must be greater than issue date")
-        return self
+    # @model_validator(mode="before")
+    # @classmethod
+    # def validate_dates(cls, data:Any):
+    #     valid = data.get("valid")
+    #     issued = data.get("issueDate")
+    #     print("valid date: ", valid)
+    #     print("issued: ", issued)
+    #     if valid and issued and issued > valid:
+    #         raise AppException(400, "Valid date must be greater than issue date")
+    #     return data
 
     @before_event(Insert, Replace, Save)
     def secure_sensitive_fields(self):

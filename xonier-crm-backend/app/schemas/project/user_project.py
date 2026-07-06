@@ -32,10 +32,12 @@ USER_LOOKUP = [
                                                     "input": "$$permRefs",
                                                     "as": "ref",
                                                     "in": {
-                                                        "$toObjectId": {
-                                                            "$toString": "$$ref"
-                                                        }
-                                                    },
+                                        "$cond": {
+                                            "if": {"$eq": [{"$type": "$$ref"}, "objectId"]},
+                                            "then": "$$ref",           # plain ObjectId
+                                            "else": "$$ref.$id"        # DBRef object
+                                        }
+                                    }
                                                 }
                                             },
                                         ]

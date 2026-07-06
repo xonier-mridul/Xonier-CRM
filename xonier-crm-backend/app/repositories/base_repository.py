@@ -83,16 +83,18 @@ class BaseRepository:
 ):
         populate = populate or []
         lookups = lookups or []
-
+        print("one")
         if project or lookups:
             collection = self.model.get_pymongo_collection()
-
+            print("two")
             pipeline: List[Dict[str, Any]] = [{"$match": {"_id": id}}]
 
             for lookup in lookups:
                 unwind = lookup.get("unwind", False)
+                print("three")
                 lookup_def = lookup["lookup"]
                 pipeline.append({"$lookup": lookup_def})
+                print("four")
                 if unwind:
                     pipeline.append({
                         "$unwind": {
@@ -100,18 +102,21 @@ class BaseRepository:
                             "preserveNullAndEmptyArrays": True,
                         }
                     })
-
+            
             if project:
                 pipeline.append({"$project": project})
-
+            print("five: ", pipeline)
             cursor = collection.aggregate(pipeline)
+            print("six: ", cursor)
             results = await cursor.to_list(length=1)
+            print("seven: ", results)
+          
             if not results:
                 return None
             return serialize_mongo(results[0])
 
         doc = await self.model.get(id, session=session)
-
+       
         if not doc:
             return None
 
@@ -158,7 +163,7 @@ class BaseRepository:
 
         finally:
             bypass_scope.reset(token)
-
+        print("done")
         return doc
             
 

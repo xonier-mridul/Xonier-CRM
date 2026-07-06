@@ -78,18 +78,18 @@ class QuotationSchema(BaseModel):
             raise AppException(422, "Invalid email format")
         return v.strip().lower()
 
-    @field_validator("customerPhone")
-    @classmethod
-    def validate_phone(cls, v):
-        if not v:
-            return v
-        try:
-            phone_number = phonenumbers.parse(v, None)
-            if not phonenumbers.is_valid_number(phone_number):
-                raise ValueError()
-            return phonenumbers.format_number(phone_number, phonenumbers.PhoneNumberFormat.E164)
-        except Exception:
-            raise AppException(422, "Invalid phone number format. Use E.164 format e.g. +1234567890")
+    # @field_validator("customerPhone")
+    # @classmethod
+    # def validate_phone(cls, v):
+    #     if not v:
+    #         return v
+    #     try:
+    #         phone_number = phonenumbers.parse(v, None)
+    #         if not phonenumbers.is_valid_number(phone_number):
+    #             raise ValueError()
+    #         return phonenumbers.format_number(phone_number, phonenumbers.PhoneNumberFormat.E164)
+    #     except Exception:
+    #         raise AppException(422, "Invalid phone number format. Use E.164 format e.g. +1234567890")
 
     @model_validator(mode="after")
     def validate_dates_and_totals(self):
