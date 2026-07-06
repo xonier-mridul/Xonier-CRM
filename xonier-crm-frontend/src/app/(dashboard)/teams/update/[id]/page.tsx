@@ -9,7 +9,7 @@ import { TeamCategoryService } from '@/src/services/teamCategory.service';
 import { User } from '@/src/types';
 import { Team, TeamCategory, TeamCreatePayload, TeamUpdatePayload } from '@/src/types/team/team.types';
 import axios from 'axios';
-import React, { FormEvent, JSX, useEffect, useState } from 'react'
+import React, { FormEvent, JSX, useEffect, useMemo, useState } from 'react'
 import { toast } from 'react-toastify';
 import Input from '@/src/components/ui/Input';
 import FormButton from '@/src/components/ui/FormButton';
@@ -19,6 +19,7 @@ import ErrorComponent from '@/src/components/ui/ErrorComponent';
 import SuccessComponent from '@/src/components/ui/SuccessComponent';
 import { PERMISSIONS } from '@/src/constants/enum';
 import { FaXmark } from 'react-icons/fa6';
+import { FiChevronDown, FiSearch } from 'react-icons/fi';
 
 const page = ():JSX.Element => {
   const [isPopupShow, setIsPopupShow] = useState<boolean>(false);
@@ -28,7 +29,12 @@ const page = ():JSX.Element => {
     const [teamData, setTeamData] = useState<Team | null>(null);
     const [categoryData, setCategoryData] = useState<TeamCategory[]>([])
     const [userData, setUserData] = useState<User[]>([])
+    const [isCategoryOpen, setIsCategoryOpen] = useState<boolean>(false);
+    const [searchCategory,setSearchCategory]= useState<string>('');
    
+
+    const categoryDropdownRef = useRef<HTMLDivElement>(null);
+    
   
     const [formData, setFormData] = useState<TeamUpdatePayload>({
       name: "",
@@ -160,6 +166,12 @@ const page = ():JSX.Element => {
       manager: prev.manager.filter((id) => id !== userId),
     }));
   };
+
+    const filteredCategories = useMemo(() => {
+    return categoryData.filter((item) =>
+      item.name.toLowerCase().includes(searchCategory.toLowerCase())
+    );
+  }, [categoryData, searchCategory]);
   
   const handleRemoveMember = (userId: string) => {
     setFormData(prev => ({
@@ -219,7 +231,76 @@ const page = ():JSX.Element => {
  
   <div className="flex flex-col gap-1">
     <label className="text-sm font-medium dark:text-gray-200">Category</label>
-    <select
+
+           <div className="relative w-full" ref={categoryDropdownRef}>
+                      <button
+                        type="button"
+                        onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                        className="w-full flex items-center justify-between rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2.5 text-sm"
+                      >
+                        <span>
+                          {formData.category
+                            ? categoryData.find((c) => c.id === formData.category)?.name
+                            : "Select Category"}
+                        </span>
+    
+                        <FiChevronDown
+                          className={`transition-transform ${
+                            isCategoryOpen ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+    
+                      {isCategoryOpen && (
+                        <div className="absolute left-0 mt-2 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-xl z-50">
+                        
+                          <div className="relative p-2 border-b border-slate-300 dark:border-gray-700">
+                            <FiSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
+    
+                            <input
+                              type="text"
+                              placeholder="Search category..."
+                              value={searchCategory}
+                              onChange={(e) => setSearchCategory(e.target.value)}
+                              className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-transparent py-2 pl-10 pr-3 text-sm outline-none"
+                            />
+                          </div>
+    
+                        
+                          <div className="max-h-60 overflow-y-auto ">
+                            {filteredCategories.length > 0 ? (
+                              filteredCategories.map((category) => (
+                                <button
+                                  key={category.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setFormData((prev) => ({
+                                      ...prev,
+                                      category: category.id,
+                                    }));
+    
+                                    setIsCategoryOpen(false);
+                                    setSearchCategory("");
+                                  }}
+                                  className="flex w-full items-center my-2 justify-between capitalize px-4 py-2 text-left text-sm hover:bg-cyan-50 dark:hover:bg-gray-700"
+                                >
+                                  <span>{category.name}</span>
+    
+                                  {formData.category === category.id && (
+                                    <FiCheck className="text-cyan-600" />
+                                  )}
+                                </button>
+                              ))
+                            ) : (
+                              <div className="px-4 py-3 text-sm text-gray-500">
+                                No category found
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+    {/* <select
       name="category"
       value={formData.category}
       onChange={(e) =>
@@ -234,7 +315,7 @@ const page = ():JSX.Element => {
           {cat.name}
         </option>
       ))}
-    </select>
+    </select> */}
   </div>
 
    <div className="flex flex-col gap-2">
@@ -358,7 +439,7 @@ const page = ():JSX.Element => {
       name="description"
       value={formData.description}
       onChange={handleChange}
-      className="rounded-md border border-gray-300 dark:border-gray-300/30 px-3 py-2  "
+      className="rounded-md border border-gray-300 dark:border-gray-300/30 px-3 py-2 outline-none "
     />
   </div>
 

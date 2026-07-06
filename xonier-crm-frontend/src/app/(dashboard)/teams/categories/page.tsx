@@ -198,7 +198,7 @@ const page = (): JSX.Element => {
                     bg-white dark:bg-gray-700 text-black dark:text-white
                     border-gray-300 dark:border-gray-300/30
                     disabled:opacity-60 disabled:cursor-not-allowed
-                    focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   rows={5}
                   value={formData.description}
                   onChange={(e) => handleChange(e)}
@@ -224,7 +224,7 @@ const page = (): JSX.Element => {
             style={{ boxShadow: "0 25px 60px -12px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.05)" }}
           >
 
-            <div className="relative bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-600 px-6 pt-6 pb-10 overflow-hidden">
+            <div className="relative bg-gradient-to-br from-cyan-600 via-cyan-500 to-indigo-600 px-6 pt-6 pb-10 overflow-hidden">
 
               <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/10" />
               <div className="absolute -bottom-8 -left-4 w-24 h-24 rounded-full bg-white/10" />
@@ -249,7 +249,7 @@ const page = (): JSX.Element => {
                   <h2 className="text-white text-xl font-bold capitalize leading-tight">
                     {viewData.name}
                   </h2>
-                  <p className="text-blue-100 text-sm font-mono mt-0.5">
+                  <p className="text-cyan-100 text-sm font-mono mt-0.5">
                     /{viewData.slug}
                   </p>
                 </div>
@@ -308,8 +308,8 @@ const page = (): JSX.Element => {
 
 
             {viewData.description && (
-              <div className="mx-4 mt-3 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30">
-                <span className="text-[10px] uppercase tracking-widest text-blue-400 dark:text-blue-300 font-semibold block mb-2">Description</span>
+              <div className="mx-4 mt-3 p-4 rounded-xl bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-100 dark:border-cyan-800/30">
+                <span className="text-[10px] uppercase tracking-widest text-cyan-400 dark:text-cyan-300 font-semibold block mb-2">Description</span>
                 <p className="text-slate-600 dark:text-slate-200 text-sm leading-relaxed first-letter:uppercase">
                   {viewData.description}
                 </p>
@@ -328,8 +328,8 @@ const page = (): JSX.Element => {
               <Link
                 href={`/teams/categories/update/${viewData.id}`}
                 className="px-5 py-2.5 rounded-lg text-sm font-semibold
-                  bg-blue-600 hover:bg-blue-700 active:bg-blue-800
-                  text-white flex items-center gap-2 transition-all duration-150 shadow-sm shadow-blue-200 dark:shadow-blue-900/30"
+                  bg-cyan-600 hover:bg-cyan-700 active:bg-cyan-800
+                  text-white flex items-center gap-2 transition-all duration-150 shadow-sm shadow-cyan-200 dark:shadow-cyan-900/30"
               >
                 <MdOutlineEdit className="text-base" />
                 Edit Category
@@ -369,12 +369,12 @@ const page = (): JSX.Element => {
               {hasPermission(PERMISSIONS.createTeamCategory) ? (
                 <button
                   onClick={() => setIsPopupShow(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md flex items-center gap-2 cursor-pointer"
+                  className="bg-cyan-600 hover:bg-cyan-700 text-white px-5 py-2 rounded-md flex items-center gap-2 cursor-pointer"
                 >
                   <FiUserPlus /> Create Category
                 </button>
               ) : (
-                <span className="bg-blue-400 opacity-89 cursor-not-allowed text-white px-5 py-2 rounded-md flex items-center gap-2">
+                <span className="bg-cyan-400 opacity-89 cursor-not-allowed text-white px-5 py-2 rounded-md flex items-center gap-2">
                   <FiUserPlus /> Create Category
                 </span>
               )}
@@ -384,13 +384,13 @@ const page = (): JSX.Element => {
           {showSuccess && <SuccessComponent message={showSuccess} />}
           <table className="w-full rounded-xl overflow-hidden">
             <thead>
-              <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">S.No.</th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">Name</th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">Description</th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">Created At</th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">Status</th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">Actions</th>
+              <tr className="w-full border-b-2 border-zinc-300 dark:border-zinc-400  bg-slate-200 dark:bg-gray-800">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide">S.No.</th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide">Name</th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide">Description</th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide">Created At</th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide">Status</th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -408,13 +408,13 @@ const page = (): JSX.Element => {
                     return (
                       <tr
                         key={item.id}
-                        className={`${rr ? "bg-white dark:bg-transparent" : "bg-blue-100/50 dark:bg-slate-500"} w-full`}
+                        className={`${rr ? "bg-white dark:bg-transparent" : "bg-slate-100/50 dark:bg-slate-800"} w-full`}
                       >
                         <td className="p-4">{index + 1}</td>
                         <td className="p-4">
                           <Link
                             href={`/teams/categories/${item.id}`}
-                            className="cursor-pointer hover:text-blue-500 capitalize"
+                            className="cursor-pointer hover:text-cyan-500 capitalize"
                           >
                             {item.name}
                           </Link>

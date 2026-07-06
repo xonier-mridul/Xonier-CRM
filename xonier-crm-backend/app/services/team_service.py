@@ -62,6 +62,8 @@ class TeamService:
 
                 slug = generate_slug(payload["name"])
                 
+                print('slug: ', slug)
+                
                 is_exist = await self.repo.find_by_slug(slug, None, session)
 
                 if is_exist:
@@ -86,11 +88,11 @@ class TeamService:
                 return jsonable_encoder(team)
             
 
-            except AppException:
-                raise
+            except AppException as e:
+                raise e
 
             except Exception as e:
-                    raise AppException(status_code=500, message="internal server error")
+                    raise AppException(status_code=500, message=f"internal server error: {e}")
 
     
     async def get_by_id(self, id: PydanticObjectId):
