@@ -650,16 +650,21 @@ class QuotationService:
                         raise AppException(
                             400, "Quotation accepted, quotation updation failed"
                         )
-                        
-                    issueData = quotation.issueDate or None
-                    validTill = payload.get("valid", None)
+
+                    newIssueDate = payload.get("issueDate", None)
+                    newValidTill = payload.get("valid", None)
+
                     
                         
-                    if not issueData or not validTill:
-                        raise AppException(422, "Issue data or valid date must be required")
+                    issueData = newIssueDate if newIssueDate else quotation.issueDate 
+                    validTill = newValidTill if newValidTill else quotation.valid
+                    
+                        
+                    # if not issueData or not validTill:
+                    #     raise AppException(422, "Issue data or valid date must be required")
                     
                    
-                    if issueData > validTill:
+                    if validTill and issueData > validTill:
                         raise AppException(400, "Valid date must be greater then issue date")
                     
 

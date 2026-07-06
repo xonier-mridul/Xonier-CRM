@@ -871,13 +871,15 @@ class AuthServices:
         try:
             if not ObjectId.is_valid(userId):
                 raise AppException(400, "Invalid user object Id")
-            
+            print("one")
             with system_query():
                 user = await self.repo.find_by_id_with_project(
                     id=PydanticObjectId(userId),
                     lookups=USER_LOOKUP,
                     project=USER_GET_ME_PROJECT,
                 )
+
+            print("two")
 
                 
 
@@ -889,7 +891,7 @@ class AuthServices:
 
             if user.get("companyId"):
                 company_id = user["companyId"]
-                print("cc: ", company_id)
+                
                 if isinstance(company_id, dict):
                     company_id = company_id.get("id") or company_id.get("_id")
 
