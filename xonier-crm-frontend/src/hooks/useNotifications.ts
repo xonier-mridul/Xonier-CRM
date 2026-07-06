@@ -52,6 +52,9 @@ export const useNotifications = (autoFetch = true) => {
     [page]
   );
 
+
+ 
+
   const fetchUnreadCount = useCallback(async () => {
     try {
       const response = await NotificationService.getUnreadCount();
@@ -156,7 +159,7 @@ export const useNotifications = (autoFetch = true) => {
   }, []);
 
   useEffect(() => {
-    if (!autoFetch || !isAuthenticated) return;
+    if (!autoFetch || !isAuthenticated)return;
 
     fetchNotifications();
     fetchUnreadCount();

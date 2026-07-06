@@ -135,7 +135,7 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="w-full max-w-2xl rounded-xl bg-white dark:bg-gray-900 shadow-xl">
     
-        <div className="flex items-center justify-between px-6 py-4 border-b dark:border-gray-700">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-400 dark:border-gray-700">
           <div>
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               Create Event
@@ -147,14 +147,14 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
           <button
             onClick={onClose}
-            className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-text-500 cursor-pointer hover:rotate-90"
+            className="p-1 group rounded-md hover:bg-red-100 dark:hover:bg-text-500 cursor-pointer hover:rotate-90"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-5 h-5 text-gray-500 group-hover:text-red-500" />
           </button>
         </div>
 
 
-        <div className="px-6 py-5 grid grid-cols-2 gap-4 ">
+        <div className="px-6 py-5 grid grid-cols-2 gap-4  items-end justify-end">
           <Input
             label="Event title"
             name="title"
@@ -171,14 +171,14 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             onChange={handleSelectChange}
             options={[
               { label: "Meeting", value: "meeting" },
-              { label: "todo", value: "todo" },
-              { label: "note", value: "note" },
-              { label: "task", value: "task" },
-              { label: "reminder", value: "reminder"}
+              { label: "Todo", value: "todo" },
+              { label: "Note", value: "note" },
+              { label: "Task", value: "task" },
+              { label: "Reminder", value: "reminder"}
             ]}
           />
 
-          <div className="grid grid-cols-2 gap-4 col-span-2">
+          {/* <div className="grid grid-cols-2 gap-4 col-span-2"> */}
             <Input
               label="Start date & time"
               type="datetime-local"
@@ -187,6 +187,7 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
               onChange={handleInputChange}
               required
             />
+            
 
             {!form.isAllDay && (
               <Input
@@ -197,18 +198,9 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                 onChange={handleInputChange}
               />
             )}
-          </div>
+        
           
-          <label className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300 ">
-            <input
-              type="checkbox"
-              name="isAllDay"
-              checked={form.isAllDay}
-              onChange={handleCheckboxChange}
-              className="h-4 w-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
-            />
-            All day event
-          </label>
+         
 
           <Select
             label="Priority"
@@ -221,7 +213,8 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
               { label: "High", value: "high" },
             ]}
           />
-           {form.eventType === EventType.MEETING &&<div className="col-span-2">
+            {form.eventType === EventType.MEETING &&
+         
          <Input
           label="Meeting Link"
           name="meetingLink"
@@ -231,7 +224,19 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           placeholder="https://meet.google.com/abc-defg-hij"
           className="col-span-2"
           />
-          </div>}
+       }
+             <label className={`flex col-span-2 items-end justify-end   w-full h-full gap-3 text-sm text-gray-700 dark:text-gray-300 `}>
+            <input
+              type="checkbox"
+              name="isAllDay"
+              checked={form.isAllDay}
+              onChange={handleCheckboxChange}
+              className="h-4 w-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500"
+            />
+            All day event
+          </label>
+         
+         
           
           <div className="col-span-2">
           <Input
@@ -244,20 +249,21 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             onChange={handleInputChange}
           />
           </div>
+         
         </div>
         {err && <ErrorComponent error={err}/>}
 
-        <div className="flex justify-end gap-3 px-6 py-4 border-t dark:border-gray-700">
+        <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-400 dark:border-gray-700">
           <button
             onClick={onClose}
-            className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+            className="px-4 py-2 cursor-pointer text-slate-500 rounded-md text-sm font-medium bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={form.title === "" || form.start === "" }
-            className="px-5 py-2 rounded-md text-sm font-medium cursor-hover disabled:cursor-not-allowed bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300  text-white "
+            className="px-5 py-2 rounded-md text-sm font-medium cursor-hover disabled:cursor-not-allowed bg-cyan-600 hover:bg-cyan-600 disabled:bg-cyan-500  text-white "
           >
            {isLoading ? "Creating..." : "Create Event"} 
           </button>

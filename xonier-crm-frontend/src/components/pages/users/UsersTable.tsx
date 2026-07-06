@@ -23,6 +23,11 @@ import { countryCode } from "@/src/types";
 
 import { ChevronDown, Search } from "lucide-react";
 import { CompanySelectProps } from "@/src/types/company/company.types";
+import { IoCheckmarkCircle } from "react-icons/io5";
+import { FaRegCircle } from "react-icons/fa";
+
+
+
 
 export const UsersTable = ({
   currentPage,
@@ -53,6 +58,7 @@ export const UsersTable = ({
   selectedCompanyId,
   companyData,
   handleCompanyChange,
+  checks
 }: UserTableComponentProps): JSX.Element => {
   const [selectedcountryCode, setCountryCode] = useState("+91");
   const { hasPermission } = usePermissions();
@@ -60,6 +66,11 @@ export const UsersTable = ({
   const [search, setSearch] = useState<string>("");
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [company, setCompany] = useState("");
+
+
+
+
+const isPasswordValid = checks.every((check) => check.valid);
 
   console.log("is Admin :", isAdmin);
 
@@ -151,6 +162,8 @@ export const UsersTable = ({
     const selectedCompany = companyData.find(
       (item) => item.id === activeId || item.id === activeId,
     );
+
+   
 
     return (
       <div className="relative w-full max-w-xs " ref={dropdownRef}>
@@ -315,7 +328,7 @@ export const UsersTable = ({
       {isPopupShow && (
         <>
           <BlurryBackground onClick={() => setIsPopupShow(false)} />
-         <div className="fixed top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 p-6 rounded-xl  z-[200] flex flex-col gap-5 shadow-xl w-150 h-140 ">
+         <div className="fixed top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 p-6 rounded-xl  z-[200] flex flex-col gap-5 shadow-xl w-150 min-h-140 ">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold dark:text-white">Create User</h2>
               <button
@@ -357,7 +370,7 @@ export const UsersTable = ({
 
                 <select
                   onChange={handleUserRoleChange}
-                  className="w-full px-3 py-2 rounded-md border
+                  className="w-full px-3 py-2 rounded-md border text-[16px]
       bg-white dark:bg-gray-700 text-black dark:text-white
       border-gray-300 dark:border-gray-300/30 outline-none"
                 >
@@ -410,7 +423,7 @@ export const UsersTable = ({
                   <select
                     value={selectedcountryCode}
                     onChange={(e) => setCountryCode(e.target.value)}
-                    className="px-3 py-2 text-xs rounded-lg border outline-none border-gray-300 dark:border-gray-300/30 bg-white dark:bg-gray-800 text-black dark:text-white"
+                    className="px-3 py-2 text-sm w-30  rounded-lg border outline-none border-gray-300 dark:border-gray-300/30 bg-white dark:bg-gray-800 text-black dark:text-white"
                   >
                     {countryCodes.map((c: countryCode) => (
                       <option key={c.code} value={c.code}>
@@ -446,6 +459,26 @@ export const UsersTable = ({
                 value={formData.confirmPassword}
                 onChange={handleChange}
               />
+              <div className="space-y-2 ">
+                <span className="text-sm text-slate-500">Password Criteria:</span>
+                    {checks.map((check, index) => (
+                      <div
+                        key={index}
+                        className={`flex items-center gap-2 text-sm ${
+                          check.valid? "text-green-600" : "text-gray-400"
+                        }`}
+                      >
+                        {check.valid ? (
+                          <IoCheckmarkCircle className="text-lg" />
+                        ) : (
+                          <FaRegCircle className="text-sm" />
+                        )}
+
+                        <span>{check.label}</span>
+                      </div>
+                    ))}
+              </div>
+           
               {isAdmin && (
                 <div className="col-span-2 flex flex-col gap-1">
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
@@ -468,6 +501,7 @@ export const UsersTable = ({
                 </div>
               )}
 
+
               <FormButton
                 isLoading={loading}
                 disabled={
@@ -476,7 +510,8 @@ export const UsersTable = ({
                   formData.email === "" ||
                   formData.phone === "" ||
                   formData.password === "" ||
-                  formData.userRole.length <= 0
+                  formData.userRole.length <= 0||
+                  !isPasswordValid
                 }
                 className="col-span-2"
               >

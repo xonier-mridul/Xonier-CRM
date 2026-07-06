@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import Input from "../../ui/Input";
-import { USER_STATUS, UserUpdatePageProps } from "@/src/types";
+import { passwordCheck, USER_STATUS, UserUpdatePageProps } from "@/src/types";
 import { SUPER_ADMIN_ROLE_CODE } from "@/src/constants/constants";
 import { FaXmark } from "react-icons/fa6";
 import FormButton from "../../ui/FormButton";
@@ -8,6 +8,8 @@ import ErrorComponent from "../../ui/ErrorComponent";
 import Skeleton from "react-loading-skeleton";
 import Select, { SelectOption } from "../../ui/Select";
 import { Company } from "@/src/types/company/company.types";
+import { IoCheckmarkCircle } from "react-icons/io5";
+import { FaRegCircle } from "react-icons/fa";
 
 interface ExtendedUserUpdatePageProps extends UserUpdatePageProps {
   companyData: Company[];
@@ -17,6 +19,7 @@ interface ExtendedUserUpdatePageProps extends UserUpdatePageProps {
   isAdmin: boolean;
   formData: any;
   handleChange: any;
+  checks:passwordCheck[]
 }
 
 const  UserUpdate = ({
@@ -44,6 +47,7 @@ const  UserUpdate = ({
   companyLoading,
   onCompanyScrollEnd,
   companyHasMore,
+  checks
 }: ExtendedUserUpdatePageProps) => {
   const companyDropdownRef = useRef<HTMLDivElement>(null);
   const [companyOpen, setCompanyOpen] = useState(false);
@@ -95,6 +99,9 @@ const  UserUpdate = ({
       target: { name: "companyId", value: "" },
     } as React.ChangeEvent<HTMLInputElement>);
   };
+
+ const isPasswordValid = checks.every((check) => check.valid);
+
 
   return (
     <>
@@ -481,11 +488,11 @@ const  UserUpdate = ({
             Update user Password
           </h2>
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 flex flex-col gap-4 w-full">
-            <span className="text-slate-600 dark:text-slate-400 text-sm">
+            {/* <span className="text-slate-600 dark:text-slate-400 text-sm">
               <span className="text-red-500 text-lg">*</span> Password should
               have one uppercase, one lowercase, one special character and min
               length 8
-            </span>
+            </span> */}
             <form
               onSubmit={handlePasswordSubmit}
               className="grid grid-cols-1 gap-4"
@@ -506,6 +513,27 @@ const  UserUpdate = ({
                 value={passwordData.confirmPassword}
                 placeholder="Confirm Password"
               />
+                <div className="space-y-2 ">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200 capitalize">Password Criteria:</span>
+                    <div className="grid grid-cols-3">
+                        {checks.map((check, index) => (
+                          <div
+                            key={index}
+                            className={`flex items-center gap-2 text-sm ${
+                              check.valid? "text-green-600" : "text-gray-400"
+                            }`}
+                          >
+                            {check.valid ? (
+                              <IoCheckmarkCircle className="text-lg" />
+                            ) : (
+                              <FaRegCircle className="text-sm" />
+                            )}
+    
+                            <span>{check.label}</span>
+                          </div>
+                        ))}
+                        </div>
+                  </div>
               {passErr && (
                 <div className="flex w-full items-center justify-end">
                   <p className="text-red-500 text-sm">{passErr}</p>
@@ -513,10 +541,9 @@ const  UserUpdate = ({
               )}
               <FormButton
                 disabled={
-                  passwordData.password.length < 8 ||
-                  passwordData.confirmPassword.length < 8 ||
+                  !isPasswordValid ||
                   passwordData.confirmPassword.trim() !==
-                    passwordData.password.trim()
+                  passwordData.password.trim()
                 }
                 isLoading={isPassLoading}
               >

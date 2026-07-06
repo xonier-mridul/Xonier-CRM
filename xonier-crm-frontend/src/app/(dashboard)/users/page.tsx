@@ -1,7 +1,7 @@
 "use client";
 import UserMonitor from "@/src/components/pages/users/UserMonitor";
 import { UsersTable } from "@/src/components/pages/users/UsersTable";
-import { RegisterPayload, User, UserRole } from "@/src/types";
+import { passwordCheck, RegisterPayload, User, UserRole } from "@/src/types";
 import axios from "axios";
 import React, { JSX, useState, useEffect, ChangeEvent, FormEvent, useCallback } from "react";
 import extractErrorMessages from "../../utils/error.utils";
@@ -189,15 +189,45 @@ const page = (): JSX.Element => {
     fetchUsers();
   }, [currentPage, pageLimit, search, selectedCompanyId]);
 
+
+     const checks:passwordCheck[]=[
+        {label:'At least 8 characters',
+          valid: formData.password.length>=8,
+        },
+        {
+          label:'At least One uppercase letter',
+          valid: /[A-Z]/.test(formData.password),
+  
+        },
+         {
+          label:'At least One lowercase letter',
+          valid:/[a-z]/.test(formData.password),
+  
+        },
+         {
+          label:'At least One number',
+          valid:/[0-9]/.test(formData.password),
+  
+        },
+         {
+          label:'At least One special character',
+          valid: /[!@#$%^&*(),.?":{}|<>]/.test(formData.password),
+  
+        },
+      ]
+
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErr("");
     setLoading(true);
+   
     if (formData.password !== formData.confirmPassword) {
       setErr("Password not matching, please try again");
       setLoading(false);
       return;
     }
+
     try {
       const result = await AuthService.create(formData);
       if (result.status === 201) {
@@ -261,6 +291,8 @@ const page = (): JSX.Element => {
         handleCompanyFilter={handleCompanyFilter}
         onCompanyScrollEnd={handleCompanyScrollEnd}
         selectedCompanyId={selectedCompanyId}
+        checks={checks}
+
       />
     </div>
   );

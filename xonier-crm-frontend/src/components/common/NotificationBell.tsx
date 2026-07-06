@@ -38,13 +38,18 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ calOpen }) => {
     e.stopPropagation();
     await deleteNotification(notificationId);
   };
+  
+
+  
 
   return (
     <div
       className="relative"
+
       onMouseEnter={() => setNotifOpen(true)}
       onMouseLeave={() => setNotifOpen(false)}
     >
+
       <button className="relative h-10 w-10 flex items-center justify-center rounded-full bg-slate-100/60 dark:bg-gray-800/60 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 transition-all group cursor-pointer">
         <IoMdNotificationsOutline className="text-2xl group-hover:scale-110 transition-transform" />
         {unreadCount > 0 && (
@@ -53,6 +58,8 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ calOpen }) => {
           </span>
         )}
       </button>
+
+     
 
       <AnimatePresence>
         {notifOpen && !calOpen && (
@@ -89,14 +96,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ calOpen }) => {
                 <div className="flex items-center justify-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                 </div>
-              ) : notifications.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-                  <IoMdNotificationsOutline className="text-5xl text-gray-300 dark:text-gray-600 mb-3" />
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    No notifications yet
-                  </p>
-                </div>
-              ) : (
+              ) : notifications.length > 0 ?  (
                 notifications.slice(0, 5).map((notif) => (
                   <div
                     key={notif.id}
@@ -134,7 +134,14 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ calOpen }) => {
                     </div>
                   </div>
                 ))
-              )}
+              ):(
+                <div className="flex flex-col items-center justify-center py-12 text-center px-4">
+                  <IoMdNotificationsOutline className="text-5xl text-gray-300 dark:text-gray-600 mb-3" />
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    No notifications yet
+                  </p>
+                </div>
+              ) }
             </div>
 
             <Link
@@ -146,6 +153,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ calOpen }) => {
           </motion.div>
         )}
       </AnimatePresence>
+
     </div>
   );
 };

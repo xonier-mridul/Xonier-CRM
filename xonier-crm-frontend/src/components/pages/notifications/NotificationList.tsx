@@ -44,6 +44,8 @@ const NotificationList = () => {
     await deleteNotification(id);
   };
 
+  console.log("page notification data:",notifications)
+
   return (
     <div className="w-full px-4">
       <div className="flex items-center justify-between mb-6">

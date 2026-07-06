@@ -182,6 +182,13 @@ export interface UserRatingParams {
 
 // Props
 
+export interface passwordCheck{
+
+  label: string;
+  valid: boolean;
+
+}
+
 export interface UserTableComponentProps {
   currentPage: number;
   pageLimit: number;
@@ -213,8 +220,7 @@ export interface UserTableComponentProps {
 companyHasMore: boolean
 onCompanyScrollEnd: () => void
 selectedCompanyId: string
-
-
+checks:passwordCheck[]
 
 }
 

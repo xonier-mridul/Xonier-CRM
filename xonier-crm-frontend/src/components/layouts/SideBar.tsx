@@ -335,6 +335,7 @@ const SideBar = () => {
              <li>
               <Link
                 href="/notifications"
+           
                 className={`${isActive("/notifications")
                   ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"

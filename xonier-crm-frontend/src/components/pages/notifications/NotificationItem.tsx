@@ -32,12 +32,20 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
       onClick={handleClick}
       className={`flex gap-4 p-4 rounded-lg border transition-all hover:shadow-md ${
         !notification.isRead
-          ? "bg-blue-50/40 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800"
+          ? "bg-cyan-50/40 dark:bg-cyan-900/10 border-cyan-200 dark:border-cyan-800"
           : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
       }`}
     >
-      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/40 dark:to-blue-800/40 flex items-center justify-center text-2xl flex-shrink-0">
+      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-cyan-100 to-cyan-200 dark:from-cyan-900/40 dark:to-cyan-800/40 flex items-center justify-center text-2xl flex-shrink-0">
         {getNotificationIcon(notification.entityType)}
+        {/* <div className="w-8 h-5 bg-gray-400 relative">
+          <div className="w-1 h-1 z-2 absolute rounded-full bg-linear-to-br from-cyan-100 to-cyan-200 dark:from-cyan-900/40 dark:to-cyan-800/40 -top-[2px] left-[4px]"/>
+          <div className="w-1 h-1 z-2 absolute rounded-full bg-linear-to-br from-cyan-100 to-cyan-200 dark:from-cyan-900/40 dark:to-cyan-800/40 -top-[2px] right-[4px]"/>
+          <div className="h-[50%] relative  bg-red-900">
+            <span className="text-[2px] absolute left-1 top-1 text-white">{notification.createdAt}</span>
+          </div>
+
+        </div> */}
       </div>
 
       <div className="flex-1 min-w-0">
@@ -46,7 +54,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
             {notification.title}
           </h4>
           {!notification.isRead && (
-            <span className="h-2 w-2 bg-blue-500 rounded-full flex-shrink-0 mt-1"></span>
+            <span className="h-2 w-2 bg-cyan-500 rounded-full flex-shrink-0 mt-1"></span>
           )}
         </div>
 
@@ -63,7 +71,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
             {link && (
               <Link
                 href={link}
-                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 text-xs flex items-center gap-1"
+                className="text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 text-xs flex items-center gap-1"
               >
                 <FiExternalLink /> View
               </Link>

@@ -352,7 +352,7 @@ const Page = (): JSX.Element => {
                   const api = calendarRef.current?.getApi();
                   api?.today();
                 }}
-                className="px-4 py-2 text-sm font-medium bg-indigo-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-indigo-100 dark:hover:bg-blue-900/50 transition-colors"
+                className="px-4 py-2 text-sm font-medium bg-cyan-50 border border-cyan-300 dark:border-cyan-900 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 rounded-lg hover:bg-cyan-100 dark:hover:bg-cyan-900/50 transition-colors"
               >
                 Today
               </button>
@@ -370,7 +370,7 @@ const Page = (): JSX.Element => {
                   onClick={() => handleViewChange(id)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     activeView === id
-                      ? "bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm"
+                      ? "bg-white dark:bg-gray-600 text-cyan-600 dark:text-cyan-400 shadow-sm"
                       : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
                   }`}
                 >
