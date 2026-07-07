@@ -1,8 +1,8 @@
 "use client";
 import { MARGIN_TOP, SIDEBAR_WIDTH } from "@/src/constants/constants";
-import React, { JSX, useState, useEffect, FormEvent ,useRef} from "react";
+import React, { JSX, useState, useEffect, FormEvent ,useRef, useMemo} from "react";
 import { IoIosSearch } from "react-icons/io";
-import { FiUserPlus } from "react-icons/fi";
+import { FiCheck, FiChevronDown, FiSearch, FiUserPlus } from "react-icons/fi";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import {
   Team,
@@ -30,7 +30,7 @@ import FormButton from "@/src/components/ui/FormButton";
 import { TeamCategoryService } from "@/src/services/teamCategory.service";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import Skeleton from "react-loading-skeleton";
-import { tr } from "framer-motion/client";
+
 
 const page = (): JSX.Element => {
   const [isPopupShow, setIsPopupShow] = useState<boolean>(false);
@@ -44,6 +44,16 @@ const page = (): JSX.Element => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const [search, setSearch] = useState<string>("");
+ const [isCategoryOpen, setIsCategoryOpen] = useState<boolean>(false);
+ const [isUserOpen, setIsUserOpen] = useState<boolean>(false);
+ const [isManagerOpen, setIsManagerOpen] = useState<boolean>(false);
+const [searchCategory, setSearchCategory] = useState<string>("");
+const [searchUser, setSearchUser] = useState<string>("");
+const [searchManager, setSearchManager] = useState<string>("");
+
+const categoryDropdownRef = useRef<HTMLDivElement>(null);
+const userDropdownRef = useRef<HTMLDivElement>(null);
+const managerDropdownRef = useRef<HTMLDivElement>(null);
 
   const [formData, setFormData] = useState<TeamCreatePayload>({
     name: "",
@@ -120,6 +130,38 @@ const page = (): JSX.Element => {
       }
     }
   };
+
+
+ useEffect(() => {
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      categoryDropdownRef.current &&
+      !categoryDropdownRef.current.contains(event.target as Node)
+    ) {
+      setIsCategoryOpen(false);
+    }
+
+    if (
+      userDropdownRef.current &&
+      !userDropdownRef.current.contains(event.target as Node)
+    ) {
+      setIsUserOpen(false);
+    }
+    if(managerDropdownRef.current &&
+      !managerDropdownRef.current.contains(event.target as Node)
+    ) {
+      setIsManagerOpen(false);
+    }
+  };
+
+  document.addEventListener("mousedown", handleClickOutside);
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, []);
+
+
   useEffect(() => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
@@ -129,6 +171,33 @@ const page = (): JSX.Element => {
     }, 500);
     
   }, [search]);
+
+  const filteredCategories = useMemo(() => {
+  return categoryData.filter((item) =>
+    item.name.toLowerCase().includes(searchCategory.toLowerCase())
+  );
+}, [categoryData, searchCategory]);
+
+const filteredUsers = useMemo(() => {
+  return userData.filter((user) =>
+    `${user.firstName} ${user.lastName} ${user.userRole
+      .map((role) => role.name)
+      .join(" ")}`
+      .toLowerCase()
+      .includes(searchUser.toLowerCase())
+  );
+}, [userData, searchUser]);
+
+const filteredManager = useMemo(() => {
+  return userData.filter((user) =>
+    `${user.firstName} ${user.lastName} ${user.userRole
+      .map((role) => role.name)
+      .join(" ")}`
+      .toLowerCase()
+      .includes(searchUser.toLowerCase())
+  );
+}, [userData, searchManager]);
+
   useEffect(() => {
     
     getUserData();
@@ -139,8 +208,12 @@ const page = (): JSX.Element => {
     if(hasPermission(PERMISSIONS.createTeam)){
 getCategoryData();
     }
-    
+
   }, [])
+
+
+
+
   
 
   const handleChange = (
@@ -216,6 +289,7 @@ getCategoryData();
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    console.log(" form data is :",formData)
     try {
       const result = await TeamService.create(formData);
 
@@ -281,27 +355,77 @@ getCategoryData();
                   Category
                 </label>
 
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      category: e.target.value,
-                    }))
-                  }
-                  required
-                  className="bg-white dark:bg-gray-600 px-3 py-2.5 rounded-md border border-gray-300 dark:border-gray-300/30
-               text-sm"
-                >
-                  <option value="">Select category</option>
 
-                  {categoryData.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative w-full" ref={categoryDropdownRef}>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                    className="w-full flex items-center justify-between rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2.5 text-sm"
+                  >
+                    <span>
+                      {formData.category
+                        ? categoryData.find((c) => c.id === formData.category)?.name
+                        : "Select Category"}
+                    </span>
+
+                    <FiChevronDown
+                      className={`transition-transform ${
+                        isCategoryOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {isCategoryOpen && (
+                    <div className="absolute left-0 mt-2 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-xl z-50">
+                    
+                      <div className="relative p-2 border-b border-slate-300 dark:border-gray-700">
+                        <FiSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
+
+                        <input
+                          type="text"
+                          placeholder="Search category..."
+                          value={searchCategory}
+                          onChange={(e) => setSearchCategory(e.target.value)}
+                          className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-transparent py-2 pl-10 pr-3 text-sm outline-none"
+                        />
+                      </div>
+
+                    
+                      <div className="max-h-60 overflow-y-auto ">
+                        {filteredCategories.length > 0 ? (
+                          filteredCategories.map((category) => (
+                            <button
+                              key={category.id}
+                              type="button"
+                              onClick={() => {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  category: category.id,
+                                }));
+
+                                setIsCategoryOpen(false);
+                                setSearchCategory("");
+                              }}
+                              className="flex w-full items-center my-2 justify-between capitalize px-4 py-2 text-left text-sm hover:bg-cyan-50 dark:hover:bg-gray-700"
+                            >
+                              <span>{category.name}</span>
+
+                              {formData.category === category.id && (
+                                <FiCheck className="text-cyan-600" />
+                              )}
+                            </button>
+                          ))
+                        ) : (
+                          <div className="px-4 py-3 text-sm text-gray-500">
+                            No category found
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
               </div>
 
                <div className="flex flex-col gap-2">
@@ -309,7 +433,100 @@ getCategoryData();
                   Add Manager
                 </label>
 
-                <select
+                  <div className="relative w-full" ref={managerDropdownRef}>
+                    
+                      <button
+                        type="button"
+                        onClick={() => setIsManagerOpen(!isManagerOpen)}
+                        className="w-full flex items-center justify-between rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2.5 text-sm"
+                      >
+                        <span>Select Manager</span>
+
+                        <FiChevronDown
+                          className={`transition-transform ${
+                            isManagerOpen ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+
+                      {isManagerOpen && (
+                        <div className="absolute left-0 right-0 mt-2 rounded-lg border border-slate-200 bg-white dark:bg-gray-800 shadow-lg z-50">
+
+                        
+                          <div className="relative p-2 border-b border-slate-300 dark:border-gray-700">
+                            <FiSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
+
+                            <input
+                              value={searchManager}
+                              onChange={(e) => setSearchManager(e.target.value)}
+                              placeholder="Search user..."
+                              className="w-full border border-slate-200 rounded-md py-2 pl-10 pr-3 text-sm bg-transparent outline-none"
+                            />
+                          </div>
+
+                          {/* Users */}
+                          <div className="max-h-60 overflow-y-auto mt-2">
+                            {filteredManager.length ? (
+                              filteredManager.map((user) => (
+                                <button
+                                  key={user.id}
+                                  type="button"
+                                  onClick={() => {
+                                  
+                                    setSearchManager("");
+                                    setIsManagerOpen(false);
+                                    handleAddManager(user.id);
+                                  }}
+                                  className="w-full flex justify-between items-center px-4 py-3 text-left hover:bg-cyan-50 dark:hover:bg-gray-700"
+                                >
+                                  <div>
+                                    <p className="font-medium capitalize">
+                                      {user.firstName} {user.lastName}
+                                    </p>
+
+                                    <p className="text-xs text-gray-500">
+                                      {user.userRole.map((role) => role.name).join(", ")}
+                                    </p>
+                                  </div>
+
+                                  <FiCheck className="opacity-0 group-hover:opacity-100" />
+                                </button>
+                              ))
+                            ) : (
+                              <div className="p-4 text-slate-500 text-sm">
+                                No user found
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    {formData.manager.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {formData.manager.map((managerId) => {
+                          const user = userData.find((u) => u.id === managerId);
+                          if (!user) return null;
+
+                          return (
+                            <span
+                              key={managerId}
+                              className="flex items-center gap-2 bg-cyan-100 text-cyan-700 px-3 py-1 rounded-full text-sm"
+                            >
+                              {user.firstName} {user.lastName}
+
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveManager(managerId)}
+                              >
+                                <FaXmark />
+                              </button>
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                 {/* <select
                   onChange={(e) => {
                     if (e.target.value) {
                       handleAddManager(e.target.value);
@@ -324,42 +541,17 @@ getCategoryData();
                       {`${user.firstName} ${user.lastName} (${user.userRole.map((item) => item.name)})`}
                     </option>
                   ))}
-                </select>
+                </select> 
 
-                {formData.manager.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {formData.manager.map((memberId) => {
-                      const user = userData.find((u) => u.id === memberId);
-                      if (!user) return null;
-
-                      return (
-                        <span
-                          key={memberId}
-                          className="flex items-center gap-1 bg-blue-100 text-blue-600 
-                         px-3 py-1 rounded-full text-sm"
-                        >
-                          {user.firstName} {user.lastName} (
-                          {user.userRole.map((item) => item.name)})
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveManager(memberId)}
-                            className="hover:text-red-500 cursor-pointer hover:rotate-90 transition-all duration-300"
-                          >
-                            <FaXmark size={14} />
-                          </button>
-                        </span>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+            */}
+              </div> 
 
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
                   Add Members
                 </label>
 
-                <select
+                {/* <select
                   onChange={(e) => {
                     if (e.target.value) {
                       handleAddMember(e.target.value);
@@ -374,35 +566,100 @@ getCategoryData();
                       {`${user.firstName} ${user.lastName} (${user.userRole.map((item) => item.name)})`}
                     </option>
                   ))}
-                </select>
+                </select> */}
+                <div className="relative w-full" ref={userDropdownRef}>
+                    
+                      <button
+                        type="button"
+                        onClick={() => setIsUserOpen(!isUserOpen)}
+                        className="w-full flex items-center justify-between rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2.5 text-sm"
+                      >
+                        <span>Select User</span>
 
-                {formData.members.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {formData.members.map((memberId) => {
-                      const user = userData.find((u) => u.id === memberId);
-                      if (!user) return null;
+                        <FiChevronDown
+                          className={`transition-transform ${
+                            isUserOpen ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
 
-                      return (
-                        <span
-                          key={memberId}
-                          className="flex items-center gap-1 bg-blue-100 text-blue-600 
-                         px-3 py-1 rounded-full text-sm"
-                        >
-                          {user.firstName} {user.lastName} (
-                          {user.userRole.map((item) => item.name)})
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveMember(memberId)}
-                            className="hover:text-red-500 cursor-pointer hover:rotate-90 transition-all duration-300"
-                          >
-                            <FaXmark size={14} />
-                          </button>
-                        </span>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+                      {isUserOpen && (
+                        <div className="absolute left-0 right-0 mt-2 rounded-lg border border-slate-200 bg-white dark:bg-gray-800 shadow-lg z-50">
+
+                          {/* Search */}
+                          <div className="relative p-2 border-b border-slate-300 dark:border-gray-700">
+                            <FiSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
+
+                            <input
+                              value={searchUser}
+                              onChange={(e) => setSearchUser(e.target.value)}
+                              placeholder="Search user..."
+                              className="w-full border border-slate-200 rounded-md py-2 pl-10 pr-3 text-sm bg-transparent outline-none"
+                            />
+                          </div>
+
+                          {/* Users */}
+                          <div className="max-h-60 overflow-y-auto mt-2">
+                            {filteredUsers.length ? (
+                              filteredUsers.map((user) => (
+                                <button
+                                  key={user.id}
+                                  type="button"
+                                  onClick={() => {
+                                    handleAddMember(user.id);
+                                    setSearchUser("");
+                                    setIsUserOpen(false);
+                                  }}
+                                  className="w-full flex justify-between items-center px-4 py-3 text-left hover:bg-cyan-50 dark:hover:bg-gray-700"
+                                >
+                                  <div>
+                                    <p className="font-medium capitalize">
+                                      {user.firstName} {user.lastName}
+                                    </p>
+
+                                    <p className="text-xs text-gray-500">
+                                      {user.userRole.map((role) => role.name).join(", ")}
+                                    </p>
+                                  </div>
+
+                                  <FiCheck className="opacity-0 group-hover:opacity-100" />
+                                </button>
+                              ))
+                            ) : (
+                              <div className="p-4 text-sm text-gray-500">
+                                No user found
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    {formData.members.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {formData.members.map((memberId) => {
+                          const user = userData.find((u) => u.id === memberId);
+                          if (!user) return null;
+
+                          return (
+                            <span
+                              key={memberId}
+                              className="flex items-center gap-2 bg-cyan-100 text-cyan-700 px-3 py-1 rounded-full text-sm"
+                            >
+                              {user.firstName} {user.lastName}
+
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveMember(memberId)}
+                              >
+                                <FaXmark />
+                              </button>
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
+              
+              </div> 
 
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
@@ -414,7 +671,7 @@ getCategoryData();
                   onChange={handleChange}
                   placeholder="Team description..."
                   className="w-full rounded-md border px-3 py-2.5 border-gray-300 dark:border-gray-300/30 text-sm
-                 bg-white dark:bg-gray-600 dark:text-white"
+                 bg-white dark:bg-gray-600 dark:text-white outline-none"
                 />
               </div>
 
@@ -438,7 +695,7 @@ getCategoryData();
                 </FormButton>
               </div>
             </form>
-          </div>{" "}
+          </div>
         </>
       )}
 
@@ -457,21 +714,21 @@ getCategoryData();
               <select
                 name="limit"
                 id="limit"
-                className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10"
+                className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 outline-none text-slate-500"
               >
                 <option value="10">10</option>
                 <option value="20">20</option>
                 <option value="30">30</option>
                 <option value="40">50</option>
               </select>
-              <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 gap-1.5 rounded-lg border-[1px] border-slate-900/10 flex items-center">
+              <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 gap-1.5 rounded-lg border-[1px] text-slate-500 border-slate-900/10 flex items-center">
                 <IoIosSearch className="text-xl" />
-                <input type="text" placeholder="search by name..."  onChange={(e)=>{setSearch(e.target.value)}} className="border-none bg-transparent outline-none text-sm font-medium text-slate-900 dark:text-white w-full"/>
+                <input type="text" placeholder="Search by name..."  onChange={(e)=>{setSearch(e.target.value)}} className="border-none bg-transparent outline-none text-sm font-medium text-slate-900 dark:text-white w-full"/>
               </div>
               {hasPermission(PERMISSIONS.createTeam) ? (
                 <button
                   onClick={() => setIsPopupShow(true)}
-                  className="bg-blue-600 hover:bg-blue-700
+                  className="bg-cyan-600 hover:bg-cyan-700
                                     text-white px-5 py-2 rounded-md
                                     flex items-center gap-2 cursor-pointer"
                 >
@@ -479,7 +736,7 @@ getCategoryData();
                 </button>
               ) : (
                 <span
-                  className="bg-blue-400 opacity-89 cursor-not-allowed
+                  className="bg-cyan-400 opacity-89 cursor-not-allowed
                                     text-white px-5 py-2 rounded-md
                                     flex items-center gap-2"
                 >
@@ -492,25 +749,25 @@ getCategoryData();
           {showSuccess && <SuccessComponent message={showSuccess} />}
           <table className="w-full rounded-xl overflow-hidden">
             <thead>
-              <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+              <tr className="w-full  border-b-2 border-zinc-300 dark:border-zinc-400  bg-slate-200 dark:bg-gray-800">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold tracking-wide">
                   Manager
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300 font-semibold tracking-wide">
                   {" "}
                   Team
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold tracking-wide">
                   Members
                 </th>
-                {/* <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                {/* <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300 font-semibold tracking-wide">
                   Created By
                 </th> */}
-                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300 font-semibold tracking-wide">
                   Status
                 </th>
 
-                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300 font-semibold tracking-wide">
                   Actions
                 </th>
               </tr>
@@ -532,25 +789,24 @@ getCategoryData();
                     );
 
                     return (
-                      <tr
+                      <tr key={index}
                         className={`${
                           rr
-                            ? "bg-white dark:bg-transparent"
-                            : "bg-blue-100/50 dark:bg-slate-500"
+                            ? "bg-white dark:bg-transparent" : "bg-slate-100/50 dark:bg-slate-800"
                         } w-full`}
                       >
-                        <td className="p-4">{item?.manager?.map((item, index) => (
+                        <td className="p-4 flex max-w-50 overflow-scroll">{item?.manager?.map((item, index) => (
                               <Link
                                 href={`/users/${item.id}`}
                                 key={index}
-                                className="bg-blue-500 hover:bg-blue-600 hover:scale-105 dark:bg-blue-500   text-white border border-blue-200 text-[13px] px-4 py-1.5 rounded-full text-nowrap capitalize"
+                                className="bg-cyan-500 hover:bg-cyan-600 hover:scale-105 dark:bg-cyan-500   text-white border border-cyan-200 text-[13px] px-4 py-1.5 rounded-full text-nowrap capitalize"
                               >
                           
                                {item.firstName} {item.lastName}{" "}
                               </Link>
                             ))}</td>
                         <td className="p-4">
-                          <div className="flex gap-2 flex-wrap">
+                          <div className="flex gap-2 flex-wrap text-slate-400">
                             {item.name}
                           </div>
                         </td>
@@ -561,7 +817,7 @@ getCategoryData();
                                 <Link
                                 href={`/users/${item.id}`}
                                 key={index}
-                                className="bg-blue-100 hover:bg-blue-200 hover:scale-105 dark:bg-blue-200   text-blue-700 border border-blue-200 text-[13px] px-3 py-1 rounded-full transition-all capitalize duration"
+                                className="bg-cyan-100 hover:bg-cyan-200 hover:scale-105 dark:bg-cyan-200   text-cyan-700 border border-cyan-200 text-[13px] px-3 py-1 rounded-full transition-all capitalize duration"
                               >
                                 {" "}
                                 {item.firstName} {item.lastName}{" "}
@@ -571,7 +827,7 @@ getCategoryData();
                         </td>
                         {/* <td className="p-4">
                           {" "}
-                          <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-[14px]">
+                          <span className="bg-cyan-500 text-white px-3 py-1 rounded-full text-[14px]">
                             {" "}
                             {item.createdBy.firstName}{" "}
                             {item.createdBy.lastName}{" "}
@@ -631,7 +887,7 @@ getCategoryData();
                 )
               ) : (
                 Array.from({length: 8}).map((_, i)=>(
-                   <tr className="animate-pulse">
+                  <tr key={i} className="animate-pulse">
                   <td className="p-4">
                     <Skeleton height={30} width={50} className="w-full " />
                   </td>

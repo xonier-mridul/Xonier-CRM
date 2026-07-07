@@ -22,6 +22,7 @@ import { MdOutlineKeyboardArrowDown } from "react-icons/md";
 import { CiSearch } from "react-icons/ci";
 import { FaCheck } from "react-icons/fa";
 
+
 // ── Shared styles ──────────────────────────────────────────────────────────
 const selectClass = (hasErr?: boolean) => `
   w-full px-3 py-2 rounded-lg border transition-all duration-200
@@ -236,7 +237,7 @@ const page = (): JSX.Element => {
   const [usersData, setUsersData] = useState<User[]>([]);
   const [searchVal,setSearchVal]= useState<string>('')
   const [openDropDown,setOpenDropDown]=useState<boolean>(false)
-  const [selectedUser,setSelectedUser]= useState<string |null>(null)
+  const [selectedUser,setSelectedUser]= useState<User | null>(null)
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -268,7 +269,7 @@ const page = (): JSX.Element => {
     extra_fields: [] as { label: string; value: string }[],
   });
   
-const handleSearch = (e) => {
+const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
   setSearchVal(e.target.value);
 };
 
@@ -311,7 +312,7 @@ const handleSearch = (e) => {
 });
   
 
-  const searchRef = useRef(null)
+ const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
 

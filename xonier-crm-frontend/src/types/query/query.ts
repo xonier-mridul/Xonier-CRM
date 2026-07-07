@@ -25,8 +25,8 @@ export interface QueryTableProps {
         currentPage:number;
         pageLimit:number;
         setPageLimit:(val: number) => void;
-        search:string;
-        setCurrentPage: number;
+
+        setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
         isLoading:boolean
         onSelect:(val: string) => void
         selected:string[]

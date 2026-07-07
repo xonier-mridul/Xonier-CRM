@@ -79,6 +79,13 @@ const mockNotifications = [
   },
 ];
 
+interface SearchDetail {
+  link: string;
+  title: string;
+  icon: React.ReactNode; 
+  permission: string | null;
+}
+
 const NavBar = () => {
   const auth = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
@@ -90,11 +97,11 @@ const NavBar = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [calOpen,setCalOpen]= useState<boolean>(false)
-  const [searchDetail,setSearchDetail]= useState([])
+  const [searchDetail,setSearchDetail]= useState< SearchDetail[]>([])
   
   const USER_ID = auth.user?._id;
-  const  searchRef = useRef(null)
-  const  calRef = useRef(null)
+  const searchRef = useRef<HTMLDivElement>(null);
+  const  calRef = useRef<HTMLDivElement>(null)
 
 
 
@@ -261,7 +268,10 @@ const results = searchableData.filter((item) =>
     }
   };
   console.log("setQuery :",setSearchDetail)
-
+  
+   const companyId = typeof auth?.user?.companyId === 'object' 
+  ? auth?.user?.companyId?.id 
+  : auth?.user?.companyId;
 
   return (
     <div className="h-14 z-99 fixed top-0 left-0 lg:left-74 bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl right-0 px-4 flex justify-between items-center my-2 border border-gray-200/50 dark:border-gray-700/50 rounded-xl mx-2 shadow-sm">
@@ -461,9 +471,13 @@ const results = searchableData.filter((item) =>
                     {
                      !isAdmin &&
                     <li className="dark:hover:bg-slate-500 hover:bg-slate-100 group py-2 px-2 rounded-lg">
-                      <Link href={`/companies/${auth?.user?.companyId?.id}`}
-                        className="flex items-center gap-4 group"
-                      >
+                   
+
+                    <Link href={`/companies/${companyId}` }  
+                    className="flex items-center gap-4 group">
+                      {/* <Link href={`/companies/${auth?.user?.companyId?.id}`}
+                       
+                      > */}
                       <span className="h-8 w-8 rounded-md text-slate-500 dark:text-white/80  dark:bg-slate-500 flex items-center justify-center overflow-hidden">
                         <FaBuilding className="text-xl group-hover:scale-110 transition-all duration-300" />
                       </span>

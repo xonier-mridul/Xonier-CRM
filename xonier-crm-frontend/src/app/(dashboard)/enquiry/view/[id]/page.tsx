@@ -248,19 +248,19 @@ const EnquiryViewPage = (): JSX.Element => {
               </div>
 
               {/* Actions */}
-              <div className="flex flex-wrap items-center gap-2 print:hidden">
+              <div className="flex items-center gap-2 print:hidden">
                 {hasPermission(PERMISSIONS.updateEnquiry) &&
                 enquiryData!.status !== SALES_STATUS.DELETE ? (
                   <Link
                     href={`/enquiry/update//${enquiryData!.id}`}
                     className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors"
                   >
-                    <MdOutlineEdit className="w-4 h-4" />
+                    <MdOutlineEdit className="w-4 h-4 whitespace-nowrap" />
                     Update Enquiry
                   </Link>
                 ) : (
                   <span className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-400 opacity-60 text-white rounded-lg cursor-not-allowed">
-                    <MdOutlineEdit className="w-4 h-4" />
+                    <MdOutlineEdit className="w-4 h-4  whitespace-nowrap" />
                     Update Enquiry
                   </span>
                 )}
@@ -272,22 +272,28 @@ const EnquiryViewPage = (): JSX.Element => {
                   <IoPrintOutline className="w-4 h-4" />
                 </button> */}
 
-                <div className="relative group">
-                  <button className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-600 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded-lg transition-colors">
+                  
+                      
+  {/* <button className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-600 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded-lg transition-colors">
                     <IoEllipsisVertical className="w-5 h-5" />
-                  </button>
-                  <div className=" absolute border border-slate-200 py-2 hover:border-red-400  text-red-600 dark:text-red-400 hover:bg-red-50  rounded-xl mt-3 bg-white/60 right-0 top-full pt-2 w-30 opacity-0 invisible translate-y-2 group-hover:opacity-100  group-hover:visible group-hover:translate-y-0 transition-all  duration-300">
-                    {hasPermission(PERMISSIONS.deleteEnquiry) && (
-                      <button
+                  </button> */}
+ {hasPermission(PERMISSIONS.deleteEnquiry) && (
+
+                
+                         <div className=" border border-slate-200 py-2 hover:border-red-400  text-red-600 dark:text-red-400 hover:bg-red-50  rounded-xl bg-white/60 right-0 top-full pt-2 w-30   transition-all  duration-300">
+                  <button
                         onClick={() => handleDelete(enquiryData!.id)}
                         className="w-full flex items-center gap-2 px-4 py-2dark:hover:bg-red-900/20 transition-colors cursor-pointer"
                       >
                         <MdDeleteOutline className="w-4 h-4" />
                         Delete
                       </button>
-                    )}
+           
+                   
                   </div>
-                </div>
+             
+                    )}
+
               </div>
             </div>
           </div>
