@@ -1,13 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { MdKeyboardArrowDown } from "react-icons/md";
+import { Dispatch, SetStateAction, useState } from "react";
 
+interface LimitProps {
+  pageLimit: number;
+  setPageLimit: Dispatch<SetStateAction<number>>;
+}
 
-
-const Limit= ({pageLimit, setPageLimit})=>{
+const Limit= ({pageLimit, setPageLimit}: LimitProps)=>{
     const limits = [10, 20, 30, 40];
 
 const [openLimit, setOpenLimit] = useState(false);
-const searchRef = useRef(null)
+const searchRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
 

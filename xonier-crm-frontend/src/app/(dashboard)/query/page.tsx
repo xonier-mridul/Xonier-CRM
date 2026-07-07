@@ -94,7 +94,6 @@ const query = () => {
         </div>
         <QueryTable
         queryData={queryData}
-        setSearch={setSearch}
         totalPage={totalPage}
         handleChange={handleChange}
         currentPage={currentPage}

@@ -9,7 +9,7 @@ import { TeamCategoryService } from '@/src/services/teamCategory.service';
 import { User } from '@/src/types';
 import { Team, TeamCategory, TeamCreatePayload, TeamUpdatePayload } from '@/src/types/team/team.types';
 import axios from 'axios';
-import React, { FormEvent, JSX, useEffect, useMemo, useState } from 'react'
+import React, { FormEvent, JSX, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'react-toastify';
 import Input from '@/src/components/ui/Input';
 import FormButton from '@/src/components/ui/FormButton';
@@ -19,7 +19,7 @@ import ErrorComponent from '@/src/components/ui/ErrorComponent';
 import SuccessComponent from '@/src/components/ui/SuccessComponent';
 import { PERMISSIONS } from '@/src/constants/enum';
 import { FaXmark } from 'react-icons/fa6';
-import { FiChevronDown, FiSearch } from 'react-icons/fi';
+import { FiCheck, FiChevronDown, FiSearch } from 'react-icons/fi';
 
 const page = ():JSX.Element => {
   const [isPopupShow, setIsPopupShow] = useState<boolean>(false);
@@ -29,11 +29,17 @@ const page = ():JSX.Element => {
     const [teamData, setTeamData] = useState<Team | null>(null);
     const [categoryData, setCategoryData] = useState<TeamCategory[]>([])
     const [userData, setUserData] = useState<User[]>([])
-    const [isCategoryOpen, setIsCategoryOpen] = useState<boolean>(false);
-    const [searchCategory,setSearchCategory]= useState<string>('');
+ const [isCategoryOpen, setIsCategoryOpen] = useState<boolean>(false);
+ const [isUserOpen, setIsUserOpen] = useState<boolean>(false);
+ const [isManagerOpen, setIsManagerOpen] = useState<boolean>(false);
+const [searchCategory, setSearchCategory] = useState<string>("");
+const [searchUser, setSearchUser] = useState<string>("");
+const [searchManager, setSearchManager] = useState<string>("");
    
 
     const categoryDropdownRef = useRef<HTMLDivElement>(null);
+    const userDropdownRef = useRef<HTMLDivElement>(null);
+    const managerDropdownRef = useRef<HTMLDivElement>(null);
     
   
     const [formData, setFormData] = useState<TeamUpdatePayload>({
@@ -49,6 +55,7 @@ const page = ():JSX.Element => {
     const { hasPermission } = usePermissions();
 
     const {id} = useParams()
+
   
   
     const getTeamData = async(id:ParamValue)=>{
@@ -95,6 +102,35 @@ const page = ():JSX.Element => {
       }
   
     }
+
+     useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (
+          categoryDropdownRef.current &&
+          !categoryDropdownRef.current.contains(event.target as Node)
+        ) {
+          setIsCategoryOpen(false);
+        }
+    
+        if (
+          userDropdownRef.current &&
+          !userDropdownRef.current.contains(event.target as Node)
+        ) {
+          setIsUserOpen(false);
+        }
+        if(managerDropdownRef.current &&
+          !managerDropdownRef.current.contains(event.target as Node)
+        ) {
+          setIsManagerOpen(false);
+        }
+      };
+    
+      document.addEventListener("mousedown", handleClickOutside);
+    
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, []);
   
     const getCategoryData = async()=>{
       try{
@@ -114,6 +150,29 @@ const page = ():JSX.Element => {
         }
       }
     }
+
+
+
+    const filteredUsers = useMemo(() => {
+      return userData.filter((user) =>
+        `${user.firstName} ${user.lastName} ${user.userRole
+          .map((role) => role.name)
+          .join(" ")}`
+          .toLowerCase()
+          .includes(searchUser.toLowerCase())
+      );
+    }, [userData, searchUser]);
+
+    const filteredManager = useMemo(() => {
+      return userData.filter((user) =>
+        `${user.firstName} ${user.lastName} ${user.userRole
+          .map((role) => role.name)
+          .join(" ")}`
+          .toLowerCase()
+          .includes(searchUser.toLowerCase())
+      );
+    }, [userData, searchManager]);
+    
   
     useEffect(() => {
       getCategoryData()
@@ -323,7 +382,7 @@ const page = ():JSX.Element => {
                     Add Manager
                   </label>
   
-                  <select
+                  {/* <select
                     onChange={(e) => {
                       if (e.target.value) {
                         handleAddManager(e.target.value);
@@ -365,7 +424,100 @@ const page = ():JSX.Element => {
                         );
                       })}
                     </div>
-                  )}
+                  )} */}
+
+                                    <div className="relative w-full" ref={managerDropdownRef}>
+                                      
+                                        <button
+                                          type="button"
+                                          onClick={() => setIsManagerOpen(!isManagerOpen)}
+                                          className="w-full flex items-center justify-between rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2.5 text-sm"
+                                        >
+                                          <span>Select Manager</span>
+                  
+                                          <FiChevronDown
+                                            className={`transition-transform ${
+                                              isManagerOpen ? "rotate-180" : ""
+                                            }`}
+                                          />
+                                        </button>
+                  
+                                        {isManagerOpen && (
+                                          <div className="absolute left-0 right-0 mt-2 rounded-lg border border-slate-200 bg-white dark:bg-gray-800 shadow-lg z-50">
+                  
+                                          
+                                            <div className="relative p-2 border-b border-slate-300 dark:border-gray-700">
+                                              <FiSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
+                  
+                                              <input
+                                                value={searchManager}
+                                                onChange={(e) => setSearchManager(e.target.value)}
+                                                placeholder="Search user..."
+                                                className="w-full border border-slate-200 rounded-md py-2 pl-10 pr-3 text-sm bg-transparent outline-none"
+                                              />
+                                            </div>
+                  
+                                            {/* Users */}
+                                            <div className="max-h-60 overflow-y-auto mt-2">
+                                              {filteredManager.length ? (
+                                                filteredManager.map((user) => (
+                                                  <button
+                                                    key={user.id}
+                                                    type="button"
+                                                    onClick={() => {
+                                                    
+                                                      setSearchManager("");
+                                                      setIsManagerOpen(false);
+                                                      handleAddManager(user.id);
+                                                    }}
+                                                    className="w-full flex justify-between items-center px-4 py-3 text-left hover:bg-cyan-50 dark:hover:bg-gray-700"
+                                                  >
+                                                    <div>
+                                                      <p className="font-medium capitalize">
+                                                        {user.firstName} {user.lastName}
+                                                      </p>
+                  
+                                                      <p className="text-xs text-gray-500">
+                                                        {user.userRole.map((role) => role.name).join(", ")}
+                                                      </p>
+                                                    </div>
+                  
+                                                    <FiCheck className="opacity-0 group-hover:opacity-100" />
+                                                  </button>
+                                                ))
+                                              ) : (
+                                                <div className="p-4 text-slate-500 text-sm">
+                                                  No user found
+                                                </div>
+                                              )}
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                      {formData.manager.length > 0 && (
+                                        <div className="flex flex-wrap gap-2 mt-2">
+                                          {formData.manager.map((managerId) => {
+                                            const user = userData.find((u) => u.id === managerId);
+                                            if (!user) return null;
+                  
+                                            return (
+                                              <span
+                                                key={managerId}
+                                                className="flex items-center gap-2 bg-cyan-100 text-cyan-700 px-3 py-1 rounded-full text-sm"
+                                              >
+                                                {user.firstName} {user.lastName}
+                  
+                                                <button
+                                                  type="button"
+                                                  onClick={() => handleRemoveManager(managerId)}
+                                                >
+                                                  <FaXmark />
+                                                </button>
+                                              </span>
+                                            );
+                                          })}
+                                        </div>
+                                      )}
                 </div>
 
   {/* Members */}
@@ -374,7 +526,7 @@ const page = ():JSX.Element => {
       Team Members
     </label>
 
-    <select
+    {/* <select
       onChange={(e) => {
         if (e.target.value) {
           handleAddMember(e.target.value);
@@ -412,8 +564,104 @@ const page = ():JSX.Element => {
           </span>
         );
       })}
-    </div>
+    </div> */}
+    <div className="relative w-full" ref={userDropdownRef}>
+                      
+                        <button
+                          type="button"
+                          onClick={() => setIsUserOpen(!isUserOpen)}
+                          className="w-full flex items-center justify-between rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2.5 text-sm"
+                        >
+                          <span>Select User</span>
+  
+                          <FiChevronDown
+                            className={`transition-transform ${
+                              isUserOpen ? "rotate-180" : ""
+                            }`}
+                          />
+                        </button>
+  
+                        {isUserOpen && (
+                          <div className="absolute left-0 right-0 mt-2 rounded-lg border border-slate-200 bg-white dark:bg-gray-800 shadow-lg z-50">
+  
+                            {/* Search */}
+                            <div className="relative p-2 border-b border-slate-300 dark:border-gray-700">
+                              <FiSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
+  
+                              <input
+                                value={searchUser}
+                                onChange={(e) => setSearchUser(e.target.value)}
+                                placeholder="Search user..."
+                                className="w-full border border-slate-200 rounded-md py-2 pl-10 pr-3 text-sm bg-transparent outline-none"
+                              />
+                            </div>
+  
+                            {/* Users */}
+                            <div className="max-h-60 overflow-y-auto mt-2">
+                              {filteredUsers.length ? (
+                                filteredUsers.map((user) => (
+                                  <button
+                                    key={user.id}
+                                    type="button"
+                                    onClick={() => {
+                                      handleAddMember(user.id);
+                                      setSearchUser("");
+                                      setIsUserOpen(false);
+                                    }}
+                                    className="w-full flex justify-between items-center px-4 py-3 text-left hover:bg-cyan-50 dark:hover:bg-gray-700"
+                                  >
+                                    <div>
+                                      <p className="font-medium capitalize">
+                                        {user.firstName} {user.lastName}
+                                      </p>
+  
+                                      <p className="text-xs text-gray-500">
+                                        {user.userRole.map((role) => role.name).join(", ")}
+                                      </p>
+                                    </div>
+  
+                                    <FiCheck className="opacity-0 group-hover:opacity-100" />
+                                  </button>
+                                ))
+                              ) : (
+                                <div className="p-4 text-sm text-gray-500">
+                                  No user found
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      {formData.members.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {formData.members.map((memberId) => {
+                            const user = userData.find((u) => u.id === memberId);
+                            if (!user) return null;
+  
+                            return (
+                              <span
+                                key={memberId}
+                                className="flex items-center gap-2 bg-cyan-100 text-cyan-700 px-3 py-1 rounded-full text-sm"
+                              >
+                                {user.firstName} {user.lastName}
+  
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveMember(memberId)}
+                                >
+                                  <FaXmark />
+                                </button>
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
+
+
+
   </div>
+
+   
 
  
   

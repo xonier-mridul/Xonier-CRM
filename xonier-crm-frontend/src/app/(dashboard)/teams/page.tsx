@@ -30,8 +30,7 @@ import FormButton from "@/src/components/ui/FormButton";
 import { TeamCategoryService } from "@/src/services/teamCategory.service";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import Skeleton from "react-loading-skeleton";
-import { tr } from "framer-motion/client";
-import CustomDropdown from "@/src/components/common/CustomDropdown";
+
 
 const page = (): JSX.Element => {
   const [isPopupShow, setIsPopupShow] = useState<boolean>(false);
@@ -356,20 +355,6 @@ getCategoryData();
                   Category
                 </label>
 
-             {/* <CustomDropdown
-                  dropdownRef={categoryDropdownRef}
-                  formData={formData}
-                  setFormData={setFormData}
-                  data={categoryData}
-                  filteredData={filteredCategories}
-                  isOpen={isCategoryOpen}
-                  setIsOpen={setIsCategoryOpen}
-                  onSearch={searchCategory}
-                  setOnSearch={setSearchCategory}
-                  field="category"
-                  text="Category"
-                  getLabel={(item) => item.name}
-                /> */}
 
                 <div className="relative w-full" ref={categoryDropdownRef}>
 
@@ -441,55 +426,12 @@ getCategoryData();
                   )}
                 </div>
 
-
-                {/* <select
-                  name="category"
-                  value={formData.category}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      category: e.target.value,
-                    }))
-                  }
-                  required
-                  className="bg-white dark:bg-gray-600 px-3 py-2.5 rounded-md border border-gray-300 dark:border-gray-300/30
-               text-sm"
-                > */}
-                  {/* <option value="">Select category</option>
-
-                  {categoryData.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select> */}
               </div>
 
                <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
                   Add Manager
                 </label>
-
-            {/* <CustomDropdown
-                    dropdownRef={userDropdownRef}
-                    formData={formData}
-                    setFormData={setFormData}
-                    data={userData}
-                    filteredData={filteredUser}
-                    isOpen={isUserOpen}
-                    setIsOpen={setIsUserOpen}
-                    onSearch={searchUser}
-                    setOnSearch={setSearchUser}
-                    field="user"
-                    text="User"
-                    getLabel={(item) =>
-                      `${item.firstName} ${item.lastName} (${item.userRole
-                        .map((role: any) => role.name)
-                        .join(", ")})`
-                        
-                    }
-                    onSelect={(user) => handleAddManager(user.id)}
-                  /> */}
 
                   <div className="relative w-full" ref={managerDropdownRef}>
                     
@@ -853,7 +795,7 @@ getCategoryData();
                             ? "bg-white dark:bg-transparent" : "bg-slate-100/50 dark:bg-slate-800"
                         } w-full`}
                       >
-                        <td className="p-4">{item?.manager?.map((item, index) => (
+                        <td className="p-4 flex max-w-50 overflow-scroll">{item?.manager?.map((item, index) => (
                               <Link
                                 href={`/users/${item.id}`}
                                 key={index}
@@ -945,7 +887,7 @@ getCategoryData();
                 )
               ) : (
                 Array.from({length: 8}).map((_, i)=>(
-                   <tr key={i} className="animate-pulse">
+                  <tr key={i} className="animate-pulse">
                   <td className="p-4">
                     <Skeleton height={30} width={50} className="w-full " />
                   </td>
