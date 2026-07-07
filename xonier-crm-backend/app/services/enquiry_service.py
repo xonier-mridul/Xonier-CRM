@@ -324,7 +324,6 @@ class EnquiryService:
                     query.update({"createdAt": date_filter})
 
 
-            print("query: ", query)
 
             
             result = await self.repo.get_all(

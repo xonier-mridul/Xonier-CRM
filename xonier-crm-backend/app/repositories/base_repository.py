@@ -17,8 +17,6 @@ class BaseRepository:
         self.model = model
 
 
-
-
     async def create(
         self, data: dict, session: Optional[AsyncIOMotorClientSession] = None
     ):
@@ -83,18 +81,18 @@ class BaseRepository:
 ):
         populate = populate or []
         lookups = lookups or []
-        print("one")
+       
         if project or lookups:
             collection = self.model.get_pymongo_collection()
-            print("two")
+          
             pipeline: List[Dict[str, Any]] = [{"$match": {"_id": id}}]
 
             for lookup in lookups:
                 unwind = lookup.get("unwind", False)
-                print("three")
+           
                 lookup_def = lookup["lookup"]
                 pipeline.append({"$lookup": lookup_def})
-                print("four")
+            
                 if unwind:
                     pipeline.append({
                         "$unwind": {
@@ -105,11 +103,11 @@ class BaseRepository:
             
             if project:
                 pipeline.append({"$project": project})
-            print("five: ", pipeline)
+   
             cursor = collection.aggregate(pipeline)
-            print("six: ", cursor)
+
             results = await cursor.to_list(length=1)
-            print("seven: ", results)
+
           
             if not results:
                 return None
@@ -163,7 +161,7 @@ class BaseRepository:
 
         finally:
             bypass_scope.reset(token)
-        print("done")
+     
         return doc
             
 
@@ -799,7 +797,10 @@ class BaseRepository:
         lookups = lookups or []
         skip = (page - 1) * limit
 
-        pipeline: List[Dict[str, Any]] = [{"$match": filters}]
+        # ✅ Inject company scope before building pipeline
+        scoped_filters = self.model._inject_scope(filters)
+
+        pipeline: List[Dict[str, Any]] = [{"$match": scoped_filters}]
 
         for lookup in lookups:
             unwind = lookup.get("unwind", False)
@@ -825,7 +826,8 @@ class BaseRepository:
         if project:
             pipeline.append({"$project": project})
 
-        count_pipeline = [{"$match": filters}, {"$count": "total"}]
+        # ✅ Also scope the count pipeline
+        count_pipeline = [{"$match": scoped_filters}, {"$count": "total"}]
 
         collection = self.model.get_pymongo_collection()
 
@@ -836,7 +838,7 @@ class BaseRepository:
         pipeline.append({"$skip": skip})
         pipeline.append({"$limit": limit})
 
-        cursor = collection.aggregate(pipeline)        
+        cursor = collection.aggregate(pipeline)
         results = await cursor.to_list(length=limit)
 
         return {

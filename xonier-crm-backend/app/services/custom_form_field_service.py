@@ -55,6 +55,12 @@ class CustomFormFieldService:
         try:
 
             result = await self.repo.get_all_without_pagination(filters={"userId.$id": PydanticObjectId(user["_id"])}, populate=["userId"])
+        
+
+            if isinstance(result, list):
+                if len(result) ==0:
+                    return []
+                
 
             if not result:
                 raise AppException(400, "Field not found against current user")

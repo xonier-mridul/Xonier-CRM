@@ -14,7 +14,7 @@ class QueryController:
     
     async def create(self, request: Request, payload: Dict[str, Any]):
         try:
-            print("err")
+           
             result = await self.service.create(payload=payload)
 
             return successResponse(201, "Query submitted successfully", result)
@@ -68,7 +68,7 @@ class QueryController:
     # ─── Bulk Delete ──────────────────────────────────────────────────────────
     async def bulk_delete(self, request: Request, payload: Dict[str, Any]):
         try:
-            print("hii")
+      
             user   = request.state.user
             ids    = payload.get("ids", [])
             

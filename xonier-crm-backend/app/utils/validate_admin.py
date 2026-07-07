@@ -22,7 +22,6 @@ def validate_company_admin(userRole)->bool:
 
 def validate_admin_company_admin(userRole)->bool:
 
-    # print("rola: ", userRole)
 
     isA = False
     isC = False
