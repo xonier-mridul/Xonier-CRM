@@ -166,7 +166,7 @@ const data = [
   { link: "/sales-dashboard", title: "Sales Dashboard", icon: <FiBarChart2 />, permission: "dashboard:read" },
 ];
 
-console.log("UserDetails:",auth?.user)
+
 
 useEffect(()=>{
   const handleOutSideCLick =(e:MouseEvent)=>{
@@ -267,7 +267,7 @@ const results = searchableData.filter((item) =>
         return "🔔";
     }
   };
-  console.log("setQuery :",setSearchDetail)
+
   
    const companyId = typeof auth?.user?.companyId === 'object' 
   ? auth?.user?.companyId?.id 
