@@ -23,9 +23,9 @@ class QueryService:
                 "email":         payload.get("email"),
                 "phone":         payload.get("phone"),
                 "address":       payload.get("address"),
-                "industry_type": payload.get("industryType"),
-                "company_name":  payload.get("companyName"),
-                "team_size":     payload.get("teamSize"),
+                "industryType": payload.get("industryType"),
+                "companyName":  payload.get("companyName"),
+                "teamSize":     payload.get("teamSize"),
                 "message":       payload.get("message"),
             }
 
@@ -168,7 +168,7 @@ class QueryService:
         user: Dict[str, Any]
     ):
         try:
-            print("ccc")
+       
             if not PydanticObjectId.is_valid(query_id):
                 raise AppException(400, "Invalid query id")
 
@@ -202,7 +202,7 @@ class QueryService:
         user: Dict[str, Any]
     ):
         try:
-            print("ids: ", ids)
+
             invalid_ids = [
                 id for id in ids
                 if not PydanticObjectId.is_valid(id)

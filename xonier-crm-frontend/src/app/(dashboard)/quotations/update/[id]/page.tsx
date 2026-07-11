@@ -262,7 +262,7 @@ const Page = () => {
   const getStatusColor = (status: QuotationStatus) => {
     const colors: Record<QuotationStatus, string> = {
       [QuotationStatus.DRAFT]: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
-      [QuotationStatus.SENT]: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+      [QuotationStatus.SENT]: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400',
       [QuotationStatus.UPDATED]: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
       [QuotationStatus.RESEND]: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400',
       [QuotationStatus.VIEWED]: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
@@ -285,7 +285,7 @@ const Page = () => {
       <div className="ml-72 mt-14 p-6">
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="flex flex-col items-center gap-4">
-            <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            <div className="w-10 h-10 border-4 border-cyan-600 border-t-transparent rounded-full animate-spin" />
             <p className="text-sm text-gray-500 dark:text-gray-400">Loading quotation...</p>
           </div>
         </div>
@@ -305,7 +305,7 @@ const Page = () => {
             </p>
             <button
               onClick={() => router.back()}
-              className="inline-flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl transition-colors"
             >
               <IoArrowBack className="w-5 h-5" />
               Go Back
@@ -322,7 +322,7 @@ const Page = () => {
       <div className="mb-5 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <IoDocumentText className="w-6 h-6 text-blue-500" />
+            <IoDocumentText className="w-6 h-6 text-cyan-500" />
             Update Quotation
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -335,7 +335,7 @@ const Page = () => {
           onClick={() => setShowPreview(p => !p)}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
             showPreview
-              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              ? 'bg-cyan-600 text-white hover:bg-cyan-700'
               : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50'
           }`}
         >
@@ -367,7 +367,7 @@ const Page = () => {
       <div className={`grid gap-5 ${showPreview ? 'grid-cols-1 xl:grid-cols-3' : 'grid-cols-1'}`}>
         <div className={showPreview ? 'xl:col-span-2' : ''}>
 
-          <Section title="Basic Information" icon={<IoInformationCircleOutline className="w-4 h-4 text-blue-500" />}>
+          <Section title="Basic Information" icon={<IoInformationCircleOutline className="w-4 h-4 text-cyan-500" />}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
                 <Input
@@ -393,7 +393,7 @@ const Page = () => {
             </div>
           </Section>
 
-          <Section title="Customer Information" icon={<IoPersonOutline className="w-4 h-4 text-blue-500" />}>
+          <Section title="Customer Information" icon={<IoPersonOutline className="w-4 h-4 text-cyan-500" />}>
             <p className="text-xs text-gray-400 mb-4 -mt-1">Customer details are read-only and linked to the deal.</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input label="Customer Name" name="customerName" value={original.customerName} disabled className="w-full" />
@@ -403,7 +403,7 @@ const Page = () => {
             </div>
           </Section>
 
-          <Section title="Line Items" icon={<IoListOutline className="w-4 h-4 text-blue-500" />}>
+          <Section title="Line Items" icon={<IoListOutline className="w-4 h-4 text-cyan-500" />}>
             {(formData.lineItems ?? []).length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-6">No line items. Add items to auto-calculate subtotal.</p>
             ) : (
@@ -412,7 +412,7 @@ const Page = () => {
                   <div className="col-span-12 sm:col-span-4">
                     <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Description *</label>
                     <input
-                      className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
                       placeholder="Service or product"
                       value={item.description}
                       onChange={e => updateLineItem(index, 'description', e.target.value)}
@@ -421,7 +421,7 @@ const Page = () => {
                   <div className="col-span-4 sm:col-span-1">
                     <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Qty</label>
                     <input type="number" min="0" step="0.01"
-                      className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
                       value={item.quantity}
                       onChange={e => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)}
                     />
@@ -429,7 +429,7 @@ const Page = () => {
                   <div className="col-span-4 sm:col-span-1">
                     <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Unit</label>
                     <input
-                      className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
                       placeholder="pcs"
                       value={item.unit ?? ''}
                       onChange={e => updateLineItem(index, 'unit', e.target.value)}
@@ -440,7 +440,7 @@ const Page = () => {
                     <div className="relative">
                       <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">{symbol}</span>
                       <input type="number" min="0" step="0.01"
-                        className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 pl-6 pr-2 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 pl-6 pr-2 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
                         value={item.unitPrice}
                         onChange={e => updateLineItem(index, 'unitPrice', parseFloat(e.target.value) || 0)}
                       />
@@ -449,7 +449,7 @@ const Page = () => {
                   <div className="col-span-4 sm:col-span-1">
                     <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Disc %</label>
                     <input type="number" min="0" max="100" step="0.01" placeholder="0"
-                      className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
                       value={item.discount ?? ''}
                       onChange={e => updateLineItem(index, 'discount', e.target.value === '' ? null : parseFloat(e.target.value))}
                     />
@@ -457,7 +457,7 @@ const Page = () => {
                   <div className="col-span-4 sm:col-span-1">
                     <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Tax %</label>
                     <input type="number" min="0" max="100" step="0.01" placeholder="0"
-                      className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
                       value={item.taxRate ?? ''}
                       onChange={e => updateLineItem(index, 'taxRate', e.target.value === '' ? null : parseFloat(e.target.value))}
                     />
@@ -476,13 +476,13 @@ const Page = () => {
               ))
             )}
             <button type="button" onClick={addLineItem}
-              className="mt-2 flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 border border-blue-300 dark:border-blue-700 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+              className="mt-2 flex items-center gap-2 px-4 py-2 text-sm font-medium text-cyan-600 dark:text-cyan-400 border border-cyan-300 dark:border-cyan-700 rounded-xl hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-colors">
               <IoAddOutline className="w-4 h-4" />
               Add Line Item
             </button>
           </Section>
 
-          <Section title="Financial Details" icon={<IoCashOutline className="w-4 h-4 text-blue-500" />}>
+          <Section title="Financial Details" icon={<IoCashOutline className="w-4 h-4 text-cyan-500" />}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="md:col-span-2 lg:col-span-3">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -495,7 +495,7 @@ const Page = () => {
                     value={formData.subTotal ?? 0}
                     onChange={handleNullableNumber}
                     disabled={hasLineItems}
-                    className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 pl-8 pr-4 py-2 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 pl-8 pr-4 py-2 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   />
                 </div>
               </div>
@@ -511,27 +511,27 @@ const Page = () => {
                   <input type="number" name={name} min="0" step="0.01" placeholder="0"
                     value={val ?? ''}
                     onChange={handleNullableNumber}
-                    className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   />
                 </div>
               ))}
               <div className="md:col-span-2 lg:col-span-3">
-                <div className="flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl px-5 py-4">
+                <div className="flex items-center justify-between bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded-xl px-5 py-4">
                   <span className="font-semibold text-gray-900 dark:text-white">Grand Total</span>
-                  <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">{fmt(formData.total ?? 0)}</span>
+                  <span className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">{fmt(formData.total ?? 0)}</span>
                 </div>
               </div>
             </div>
           </Section>
 
-          <Section title="Validity Period" icon={<IoCalendarOutline className="w-4 h-4 text-blue-500" />}>
+          <Section title="Validity Period" icon={<IoCalendarOutline className="w-4 h-4 text-cyan-500" />}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input label="Issue Date *" name="issueDate" type="date" value={formData.issueDate ?? ''} onChange={handleInput} className="w-full" />
               <Input label="Valid Until" name="valid" type="date" value={formData.valid ?? ''} onChange={handleInput} min={formData.issueDate} className="w-full" />
               {validityDays !== null && validityDays > 0 && (
                 <div className="md:col-span-2">
                   <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700/50 rounded-xl px-4 py-3">
-                    <IoCalendarOutline className="w-4 h-4 text-blue-500" />
+                    <IoCalendarOutline className="w-4 h-4 text-cyan-500" />
                     Valid for <span className="font-semibold text-gray-900 dark:text-white">{validityDays} days</span>
                     &nbsp;— expires {formatDate(formData.valid ?? '')}
                   </div>
@@ -540,21 +540,21 @@ const Page = () => {
             </div>
           </Section>
 
-          <Section title="Payment Details" icon={<IoReceiptOutline className="w-4 h-4 text-blue-500" />} defaultOpen={false}>
+          <Section title="Payment Details" icon={<IoReceiptOutline className="w-4 h-4 text-cyan-500" />} defaultOpen={false}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input label="Payment Terms" name="paymentTerms" value={formData.paymentTerms ?? ''} onChange={handleInput} placeholder="e.g., Net 30" className="w-full" />
               <Input label="Payment Method" name="paymentMethod" value={formData.paymentMethod ?? ''} onChange={handleInput} placeholder="e.g., Bank transfer" className="w-full" />
             </div>
           </Section>
 
-          <Section title="Notes & Terms" icon={<IoDocumentTextOutline className="w-4 h-4 text-blue-500" />} defaultOpen={false}>
+          <Section title="Notes & Terms" icon={<IoDocumentTextOutline className="w-4 h-4 text-cyan-500" />} defaultOpen={false}>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Customer Notes</label>
                 <textarea name="notes" rows={3} value={formData.notes ?? ''}
                   onChange={handleInput}
                   placeholder="Notes visible to the customer..."
-                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
                 />
               </div>
               <div>
@@ -565,7 +565,7 @@ const Page = () => {
                 <textarea name="internalNotes" rows={3} value={formData.internalNotes ?? ''}
                   onChange={handleInput}
                   placeholder="Internal notes for your team..."
-                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
                 />
               </div>
               <div>
@@ -573,7 +573,7 @@ const Page = () => {
                 <textarea name="termsAndConditions" rows={4} value={formData.termsAndConditions ?? ''}
                   onChange={handleInput}
                   placeholder="Standard terms and conditions..."
-                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
                 />
               </div>
             </div>
@@ -587,7 +587,7 @@ const Page = () => {
               </button>
               <button type="button" onClick={handleUpdate}
                 disabled={!hasChanges || loading || original.quotationStatus === QuotationStatus.DELETE}
-                className="px-5 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                className="px-5 py-2.5 rounded-xl text-sm font-medium bg-cyan-600 hover:bg-cyan-700 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                 <IoSaveOutline className="w-4 h-4" />
                 {loading ? 'Updating...' : 'Update Quotation'}
               </button>
@@ -600,7 +600,7 @@ const Page = () => {
             <div className="sticky top-20 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <IoEyeOutline className="w-4 h-4 text-blue-500" />
+                  <IoEyeOutline className="w-4 h-4 text-cyan-500" />
                   Live Preview
                 </h2>
                 <button onClick={() => setShowPreview(false)}
@@ -683,18 +683,18 @@ const Page = () => {
                 )}
                 <div className="flex justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
                   <span className="text-sm font-bold text-gray-900 dark:text-white">Total</span>
-                  <span className="text-base font-bold text-blue-600 dark:text-blue-400">{fmt(formData.total ?? 0)}</span>
+                  <span className="text-base font-bold text-cyan-600 dark:text-cyan-400">{fmt(formData.total ?? 0)}</span>
                 </div>
               </div>
 
               {hasChanges && (
                 <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
-                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
+                  <div className="p-3 bg-cyan-50 dark:bg-cyan-900/20 rounded-xl border border-cyan-100 dark:border-cyan-800">
                     <div className="flex items-start gap-2">
-                      <IoCheckmarkCircle className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                      <IoCheckmarkCircle className="w-4 h-4 text-cyan-500 shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-xs font-semibold text-blue-900 dark:text-blue-100 mb-1">Modified:</p>
-                        <p className="text-xs text-blue-700 dark:text-blue-300">
+                        <p className="text-xs font-semibold text-cyan-900 dark:text-cyan-100 mb-1">Modified:</p>
+                        <p className="text-xs text-cyan-700 dark:text-cyan-300">
                           {Object.keys(diffPayload).map(k => k.charAt(0).toUpperCase() + k.slice(1)).join(', ')}
                         </p>
                       </div>

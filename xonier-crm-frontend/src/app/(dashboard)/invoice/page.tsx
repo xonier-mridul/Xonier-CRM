@@ -97,15 +97,15 @@ const page = (): JSX.Element => {
             <h2 className="text-xl font-bold  dark:text-white text-slate-900 capitalize">
               All Invoices
             </h2>
-            <p className="text-gray-500 dark:text-gray-400">
-              edit or remove invoices.
+            <p className="text-gray-500 dark:text-gray-400 ">
+              Edit or remove invoices.
             </p>
           </div>
           <div className="flex items-center gap-6">
             <select
               name="limit"
               id="limit"
-              className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10"
+              className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 outline-none text-slate-500 rounded-lg border-[1px] border-slate-900/10 dark:text-white/70"
               onChange={(e) => setPageLimit(Number(e.target.value))}
             >
               <option value="10">10</option>
@@ -113,7 +113,7 @@ const page = (): JSX.Element => {
               <option value="30">30</option>
               <option value="40">50</option>
             </select>
-            <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2">
+            <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 text-slate-500 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2 dark:text-white/70">
               <IoIosSearch className="text-xl" />
               <input type="text" className="outline-none" placeholder="Search..." onChange={(e) => handleSearch(e.target.value)} />
             </div>
@@ -126,34 +126,34 @@ const page = (): JSX.Element => {
 
           <table className="w-full rounded-xl overflow-x-scroll text-nowrap">
             <thead>
-              <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
+              <tr className="w-full border-b-2 border-zinc-300 dark:border-zinc-400  bg-slate-200 dark:bg-gray-800">
                 {/* <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
                   Invoice Id
                 </th> */}
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
                   Client Info
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
                   Issue date
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
                   {" "}
                   Due date
                 </th>
 
-                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
                   amount
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
                   Status
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
                   created date
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
                   created by
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
                   Actions
                 </th>
               </tr>
@@ -171,11 +171,11 @@ const page = (): JSX.Element => {
                       key={item.invoiceId}
                       className={`${rr
                         ? "bg-white dark:bg-transparent"
-                        : "bg-blue-100/50 dark:bg-slate-500"
+                        : "bg-slate-100/50 dark:bg-slate-800"
                         } w-full`}
                     >
                       {/* <td className="p-4">
-                      <Link href={`/invoice/view/${item.id}`} className="text-sm cursor-pointer hover:text-blue-500" > {item.invoiceId}</Link>
+                      <Link href={`/invoice/view/${item.id}`} className="text-sm cursor-pointer hover:text-cyan-500" > {item.invoiceId}</Link>
                     </td> */}
                       <td className="flex gap-1 flex-col p-4">
                         <h4>{item.customerName}</h4>{" "}
@@ -200,7 +200,7 @@ const page = (): JSX.Element => {
                           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${item.status.toUpperCase() === 'DRAFT'
                             ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-600'
                             : item.status.toUpperCase() === 'SENT'
-                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800'
+                              ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400 border-cyan-200 dark:border-cyan-800'
                               : item.status.toUpperCase() === 'PAID'
                                 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800'
                                 : item.status.toUpperCase() === 'PARTIALLY_PAID'
@@ -233,7 +233,7 @@ const page = (): JSX.Element => {
                         </div>
                       </td>
                       <td className="p-4">
-                        <span className="px-4 py-1.5">{item.createdBy?.firstName + " " + item.createdBy?.lastName}</span>
+                        <span className="px-4 text-[16px] text-slate-500 py-1.5">{item.createdBy?.firstName + " " + item.createdBy?.lastName}</span>
                       </td>
                       <td>
                         <div className="flex items-center gap-2">
@@ -274,7 +274,7 @@ const page = (): JSX.Element => {
                     </tr>
                   );
                 })
-              ) : <tr><td className="p-4 text-center" colSpan={6}>Data not found</td></tr>) : (
+              ) : <tr><td className="p-4 text-center text-slate-500 dark:text-white/70" colSpan={8}>Data not found</td></tr>) : (
                 <tr className="p-4">
                   <td className="text-center p-4">
                     <Skeleton height={30} borderRadius={14} />

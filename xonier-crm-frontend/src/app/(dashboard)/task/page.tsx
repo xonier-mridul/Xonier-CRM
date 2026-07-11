@@ -594,7 +594,7 @@ const fetchTasks = useCallback(
               <button
                 type="button"
                 onClick={() => router.push("/task/create")}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-sm font-bold shadow-md group cursor-pointer shadow-blue-200 dark:shadow-blue-900/40 transition-all"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 active:scale-[0.98] text-white text-sm font-bold shadow-md group cursor-pointer shadow-cyan-200 dark:shadow-cyan-900/40 transition-all"
               >
                 <span className="group-hover:rotate-90">＋</span> New Task
               </button>
@@ -603,7 +603,7 @@ const fetchTasks = useCallback(
 
           <div className="grid grid-cols-4 gap-4 mb-7">
             {[
-              { label: "Total Tasks", value: totalCount, icon: "📋", bg: "bg-blue-50 border-blue-100", priority: "" },
+              { label: "Total Tasks", value: totalCount, icon: "📋", bg: "bg-cyan-50 border-cyan-100", priority: "" },
               { label: "High", value: taskData.filter((t) => t.priority === TASK_PRIORITY.HIGH).length, icon: "🟠", bg: "bg-orange-50 border-orange-100", priority: TASK_PRIORITY.HIGH },
               { label: "Urgent", value: taskData.filter((t) => t.priority === TASK_PRIORITY.URGENT).length, icon: "🔴", bg: "bg-rose-50 border-rose-100", priority: TASK_PRIORITY.URGENT },
               { label: "This Page", value: taskData.length, icon: "📄", bg: "bg-emerald-50 border-emerald-100", priority: "" },
@@ -611,7 +611,7 @@ const fetchTasks = useCallback(
               <div
                 key={s.label}
                 onClick={() => { if (s.priority) { setFilterPriority(s.priority === filterPriority ? "" : s.priority); setCurrentPage(1); } }}
-                className={`flex items-center gap-3 p-4 rounded-2xl border transition-all ${s.bg} ${s.priority ? "cursor-pointer hover:shadow-md hover:scale-[1.02] active:scale-[0.98]" : "cursor-default"} ${s.priority && filterPriority === s.priority ? "ring-2 ring-offset-1 ring-blue-400 shadow-md" : ""}`}
+                className={`flex items-center gap-3 p-4 rounded-2xl border transition-all ${s.bg} ${s.priority ? "cursor-pointer hover:shadow-md hover:scale-[1.02] active:scale-[0.98]" : "cursor-default"} ${s.priority && filterPriority === s.priority ? "ring-2 ring-offset-1 ring-cyan-400 shadow-md" : ""}`}
               >
                 <span className="text-xl">{s.icon}</span>
                 <div>
@@ -619,7 +619,7 @@ const fetchTasks = useCallback(
                   <div className="text-xs text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1">
                     {s.label}
                     {s.priority && filterPriority === s.priority && (
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400">active</span>
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-900/40 text-cyan-600 dark:text-cyan-400">active</span>
                     )}
                   </div>
                 </div>
@@ -634,13 +634,13 @@ const fetchTasks = useCallback(
                 type="text"
                 onChange={(e) => handleSearch(e.target.value)}
                 placeholder="Search tasks…"
-                className="pl-8 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
+                className="pl-8 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition"
               />
             </div>
             <select
               value={filterPriority}
               onChange={(e) => { setFilterPriority(e.target.value); setCurrentPage(1); }}
-              className="px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
+              className="px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition"
             >
               <option value="">All Priorities</option>
               {Object.values(TASK_PRIORITY).map((p) => (
@@ -653,7 +653,7 @@ const fetchTasks = useCallback(
               value={filterAssigned}
               onChange={setFilterAssigned}
               placeholder="Search assignee…"
-              cls="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
+              cls="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition"
             />
             <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
             {hasFilters && (
@@ -731,7 +731,7 @@ const fetchTasks = useCallback(
                           <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">No tasks found</p>
                           {hasFilters && <p className="text-xs text-gray-400 mt-1">Try clearing your filters</p>}
                           {canCreate && !hasFilters && (
-                            <button type="button" onClick={() => router.push("/task/create")} className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-100 transition">
+                            <button type="button" onClick={() => router.push("/task/create")} className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-cyan-600 bg-cyan-50 hover:bg-cyan-100 border border-cyan-100 transition">
                               + Create first task
                             </button>
                           )}
@@ -775,7 +775,7 @@ const fetchTasks = useCallback(
                               ) : (
                                 <div className="flex -space-x-2">
                                   {task.assignedTo.slice(0, 2).map((u) => (
-                                    <div key={u.id} title={u.firstName} className="ps-1 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 border-2 border-white dark:border-gray-800 flex items-center px-2 py-1 capitalize justify-center text-white text-[12px] font-bold shrink-0">
+                                    <div key={u.id} title={u.firstName} className="ps-1 rounded-full bg-gradient-to-br from-cyan-400 to-indigo-600 border-2 border-white dark:border-gray-800 flex items-center px-2 py-1 capitalize justify-center text-white text-[12px] font-bold shrink-0">
                                       {u.firstName} {u?.lastName ?? ""}
                                     </div>
                                   ))}
@@ -814,7 +814,7 @@ const fetchTasks = useCallback(
                                     </button>
                                   )}
                                   {canEdit && (
-                                    <button type="button" onClick={() => router.push(`/task/update/${task.id}`)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 transition">
+                                    <button type="button" onClick={() => router.push(`/task/update/${task.id}`)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-cyan-600 bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-900/30 dark:text-cyan-400 transition">
                                       <MdEdit className="text-sm" />
                                     </button>
                                   )}

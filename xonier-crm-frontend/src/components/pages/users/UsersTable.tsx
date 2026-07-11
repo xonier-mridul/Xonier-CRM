@@ -23,6 +23,11 @@ import { countryCode } from "@/src/types";
 
 import { ChevronDown, Search } from "lucide-react";
 import { CompanySelectProps } from "@/src/types/company/company.types";
+import { IoCheckmarkCircle } from "react-icons/io5";
+import { FaRegCircle } from "react-icons/fa";
+
+
+
 
 export const UsersTable = ({
   currentPage,
@@ -53,6 +58,7 @@ export const UsersTable = ({
   selectedCompanyId,
   companyData,
   handleCompanyChange,
+  checks
 }: UserTableComponentProps): JSX.Element => {
   const [selectedcountryCode, setCountryCode] = useState("+91");
   const { hasPermission } = usePermissions();
@@ -60,6 +66,11 @@ export const UsersTable = ({
   const [search, setSearch] = useState<string>("");
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [company, setCompany] = useState("");
+
+
+
+
+const isPasswordValid = checks.every((check) => check.valid);
 
   console.log("is Admin :", isAdmin);
 
@@ -152,14 +163,16 @@ export const UsersTable = ({
       (item) => item.id === activeId || item.id === activeId,
     );
 
+   
+
     return (
-      <div className="relative w-full max-w-xs" ref={dropdownRef}>
+      <div className="relative w-full max-w-xs " ref={dropdownRef}>
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className={`w-full flex items-center justify-between rounded-xl border px-4 py-2.5 text-sm shadow-sm transition-all hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
+          className={`w-full flex items-center justify-between overflow-hidden rounded-xl border px-4 py-2.5 text-sm  transition-all hover:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-300 ${
             selectedCompany
-              ? "border-blue-400 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
+              ? "border-cyan-400 bg-cyan-50 dark:bg-blue-900/20 text-cyan-700 dark:text-cyan-300"
               : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-white"
           }`}
         >
@@ -203,7 +216,7 @@ export const UsersTable = ({
                   placeholder="Search company..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full rounded-lg border border-gray-200 dark:border-gray-600 py-1.5 pl-8 pr-3 text-sm outline-none focus:border-blue-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                  className="w-full rounded-lg border border-gray-200 dark:border-gray-600 py-1.5 pl-8 pr-3 text-sm outline-none focus:border-cyan-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
                 />
               </div>
             </div>
@@ -315,7 +328,7 @@ export const UsersTable = ({
       {isPopupShow && (
         <>
           <BlurryBackground onClick={() => setIsPopupShow(false)} />
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2  bg-white dark:bg-gray-700 p-6 rounded-xl w-[650px] z-[200] flex flex-col gap-5 shadow-xl">
+         <div className="fixed top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 p-6 rounded-xl  z-[200] flex flex-col gap-5 shadow-xl w-150 min-h-140 ">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold dark:text-white">Create User</h2>
               <button
@@ -325,7 +338,7 @@ export const UsersTable = ({
                 <FaXmark />
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="md:grid gap-4 text-xs md:text-lg">
               <Input
                 label="firstName"
                 type="text"
@@ -357,9 +370,9 @@ export const UsersTable = ({
 
                 <select
                   onChange={handleUserRoleChange}
-                  className="w-full px-3 py-2 rounded-md border
+                  className="w-full px-3 py-2 rounded-md border text-[16px]
       bg-white dark:bg-gray-700 text-black dark:text-white
-      border-gray-300 dark:border-gray-300/30"
+      border-gray-300 dark:border-gray-300/30 outline-none"
                 >
                   <option value="">Select user role</option>
                   {roleData.map((role) => (
@@ -410,7 +423,7 @@ export const UsersTable = ({
                   <select
                     value={selectedcountryCode}
                     onChange={(e) => setCountryCode(e.target.value)}
-                    className="px-3 py-2 text-xs rounded-lg border border-gray-300 dark:border-gray-300/30 bg-white dark:bg-gray-800 text-black dark:text-white"
+                    className="px-3 py-2 text-sm w-30  rounded-lg border outline-none border-gray-300 dark:border-gray-300/30 bg-white dark:bg-gray-800 text-black dark:text-white"
                   >
                     {countryCodes.map((c: countryCode) => (
                       <option key={c.code} value={c.code}>
@@ -446,6 +459,26 @@ export const UsersTable = ({
                 value={formData.confirmPassword}
                 onChange={handleChange}
               />
+              <div className="space-y-2 ">
+                <span className="text-sm text-slate-500">Password Criteria:</span>
+                    {checks.map((check, index) => (
+                      <div
+                        key={index}
+                        className={`flex items-center gap-2 text-sm ${
+                          check.valid? "text-green-600" : "text-gray-400"
+                        }`}
+                      >
+                        {check.valid ? (
+                          <IoCheckmarkCircle className="text-lg" />
+                        ) : (
+                          <FaRegCircle className="text-sm" />
+                        )}
+
+                        <span>{check.label}</span>
+                      </div>
+                    ))}
+              </div>
+           
               {isAdmin && (
                 <div className="col-span-2 flex flex-col gap-1">
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
@@ -468,6 +501,7 @@ export const UsersTable = ({
                 </div>
               )}
 
+
               <FormButton
                 isLoading={loading}
                 disabled={
@@ -476,7 +510,8 @@ export const UsersTable = ({
                   formData.email === "" ||
                   formData.phone === "" ||
                   formData.password === "" ||
-                  formData.userRole.length <= 0
+                  formData.userRole.length <= 0||
+                  !isPasswordValid
                 }
                 className="col-span-2"
               >
@@ -513,7 +548,7 @@ export const UsersTable = ({
                 onClear={() => handleCompanyFilter("")}
               />
               {selectedCompanyId && (
-                <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-full border border-blue-200 dark:border-blue-800 whitespace-nowrap">
+                <span className="hidden md:block text-xs font-semibold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/20 px-2.5 py-1 rounded-full border border-cyan-200 dark:border-cyan-800 whitespace-nowrap">
                   {companyData.find(
                     (c) =>
                       c.id === selectedCompanyId ||
@@ -551,37 +586,38 @@ export const UsersTable = ({
           <button
             onClick={() => setIsPopupShow(true)}
             disabled={!hasPermission(PERMISSIONS.createUser)}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed
+            className="bg-cyan-600 hover:bg-cyan-700 disabled:bg-cyan-300 disabled:cursor-not-allowed
                         text-white px-5 py-2 rounded-md
                         flex items-center gap-2 cursor-pointer"
           >
-            <FiUserPlus /> Create User
+            <FiUserPlus className="text-lg" /> Create User
           </button>
         </div>
       </div>
-      <table className="w-full rounded-xl overflow-hidden">
-        <thead>
+      <div className="overflow-x-auto rounded-xl">
+      <table className="w-full rounded-xl overflow-hidden text-slate-500 ">
+        <thead className="">
           <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
             <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
               S.No.
             </th>
-            <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+            <th className=" uppercase text-xs text-start text-slate-500  dark:text-slate-100">
               {" "}
               User
             </th>
-            <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+            <th className="md:px-0 px-3  uppercase text-xs text-start text-slate-500  dark:text-slate-100">
               Type
             </th>
-            <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+            <th className=" uppercase text-xs text-start text-slate-500  dark:text-slate-100 whitespace-nowrap">
               Created At
             </th>
-            <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+            <th className="md:px-0 px-3 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
               Status
             </th>
-            <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+            <th className=" uppercase text-xs text-start text-slate-500  dark:text-slate-100 whitespace-nowrap">
               Last Login
             </th>
-            <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+            <th className="md:px-0 px-3 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
               Actions
             </th>
           </tr>
@@ -590,9 +626,9 @@ export const UsersTable = ({
           {!isLoading ? (
             userData && userData?.length > 0 ? (
               userData?.map((item, index) => {
-                let rr = index % 2 == 0;
+                const rr = index % 2 == 0;
 
-                let date = new Date(item.createdAt).toLocaleDateString(
+                const date = new Date(item.createdAt).toLocaleDateString(
                   "en-IN",
                   {
                     day: "2-digit",
@@ -601,7 +637,7 @@ export const UsersTable = ({
                     timeZone: "Asia/Kolkata",
                   },
                 );
-                let lastLoginDate = item?.lastLogin
+                const lastLoginDate = item?.lastLogin
                   ? new Date(item?.lastLogin).toLocaleDateString("en-IN", {
                       timeZone: "Asia/Kolkata",
                       year: "numeric",
@@ -625,7 +661,7 @@ export const UsersTable = ({
                     <td>
                       <Link
                         href={`/users/${item.id}`}
-                        className="cursor-pointer hover:text-blue-500 capitalize"
+                        className="cursor-pointer hover:text-cyan-500 capitalize whitespace-nowrap"
                       >
                         {item.firstName} {item.lastName}
                       </Link>
@@ -634,13 +670,13 @@ export const UsersTable = ({
                       {item.userRole.map((item) => (
                         <span
                           key={item.id}
-                          className="bg-green-500 px-3.5 py-1.5 rounded-lg text-white text-xs tracking-wide"
+                          className="bg-green-500 px-3.5 py-1.5 rounded-lg text-white text-xs tracking-wide md:mx-0   mx-3 whitespace-nowrap "
                         >
                           {item.name}
                         </span>
                       ))}
                     </td>
-                    <td>{date}</td>
+                    <td className="whitespace-nowrap ">{date}</td>
                     <td>
                       <span
                         className={`${
@@ -653,15 +689,15 @@ export const UsersTable = ({
                                 : item.status === USER_STATUS.SUSPENDED
                                   ? "bg-orange-100 text-orange-500"
                                   : "bg-gray-100 text-gray-500"
-                        }  rounded-full text-sm font-medium py-1 px-3 flex items-center gap-1 w-fit  capitalize`}
+                        }  rounded-full text-sm font-medium py-1 px-3 flex items-center gap-1 w-fit mx-3 md:mx-0 capitalize`}
                       >
                         {" "}
                         <GoDotFill /> {item.status}
                       </span>
                     </td>
-                    <td>{lastLoginDate}</td>
+                    <td className='min-w-30'>{lastLoginDate}</td>
                     <td>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 mx-3 md:mx-0">
                         <Link
                           href={`/users/${item.id}`}
                           className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-green-100/80 dark:bg-green-50 hover:bg-green-200/70 dark:hover:bg-green-100 text-green-500 hover:scale-104"
@@ -743,6 +779,7 @@ export const UsersTable = ({
           )}
         </tbody>
       </table>
+      </div>
       <Pagination
         currentPage={currentPage}
         totalPages={totalPage}

@@ -3,7 +3,7 @@
 import React, { JSX, useState, useEffect, useCallback, WheelEvent } from "react";
 import { toast } from "react-toastify";
 import { TaskReportService } from "@/src/services/taskReport.service";
-import { useParams } from "next/navigation";
+
 import {
   TaskReport,
   TaskReportItem,
@@ -12,6 +12,9 @@ import {
 } from "@/src/types/task/taskReport";
 import axios, { AxiosError } from "axios";
 import extractErrorMessages from "@/src/app/utils/error.utils";
+import { useParams, useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
+import { RootState } from "@/src/store"; 
 
 
 
@@ -473,7 +476,11 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 const TaskReportCreatePage = (): JSX.Element => {
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toLocaleDateString("en-CA", {
+  timeZone: "Asia/Kolkata",
+});
+
+const router = useRouter();
   const params = useParams();
   const id = params?.id as string;
   const isNew = id === "new";
@@ -501,75 +508,118 @@ const TaskReportCreatePage = (): JSX.Element => {
   const completedItems = eveningItems.filter(i => COMPLETED_STATUSES.includes(i.status as TaskItemStatus));
   const pendingItems = eveningItems.filter(i => PENDING_STATUSES.includes(i.status as TaskItemStatus));
 
-  // ── Load report ────────────────────────────────────────────────────────────
-  const loadReport = useCallback(async () => {
-    if (isNew) {
-      setActiveTab("morning");
-      setIsLoading(false);
-      return;
+  const user = useSelector((state: RootState) => state.auth.user);
+
+  const loadReportData = useCallback((report: TaskReport) => {
+    console.log("🟢 Loading report data:", report);
+    console.log("🟢 Morning submitted:", report.morningAgenda?.isSubmitted);
+    console.log("🟢 Evening submitted:", report.eveningReport?.isSubmitted);
+
+    setExistingReport(report);
+
+    // Load morning agenda
+    if (report.morningAgenda?.items?.length) {
+      setMorningItems(report.morningAgenda.items.map(i => ({ ...i })));
+    }
+    if (report.morningAgenda?.goals) {
+      setMorningGoals(report.morningAgenda.goals);
     }
 
+    // Load evening items
+    const existingCompleted: TaskReportItem[] = report.eveningReport?.completedItems ?? [];
+    const existingPending: TaskReportItem[] = report.eveningReport?.pendingItems ?? [];
+    const allEvening = [...existingCompleted, ...existingPending];
+
+    if (allEvening.length > 0) {
+      const eveningTitles = new Set(
+        allEvening.map(i => i.title.toLowerCase().trim())
+      );
+      const missingFromMorning = (report.morningAgenda?.items ?? [])
+        .filter(i => !eveningTitles.has(i.title.toLowerCase().trim()))
+        .map(i => toEveningItem(i, { status: "pending" as TaskItemStatus }));
+      setEveningItems([...allEvening, ...missingFromMorning]);
+    } else if (report.morningAgenda?.isSubmitted) {
+      setEveningItems(
+        (report.morningAgenda.items ?? []).map(i =>
+          toEveningItem(i, { status: "pending" as TaskItemStatus })
+        )
+      );
+    }
+
+    // Load summary fields
+    if (report.eveningReport?.achievements) setAchievements(report.eveningReport.achievements);
+    if (report.eveningReport?.blockers) setBlockers(report.eveningReport.blockers);
+    if (report.eveningReport?.tomorrowPlan) setTomorrowPlan(report.eveningReport.tomorrowPlan);
+    if (report.eveningReport?.overallMood) setOverallMood(report.eveningReport.overallMood);
+
+    // ✅ Set correct tab
+    setActiveTab(report.morningAgenda?.isSubmitted ? "evening" : "morning");
+    setIsFinalSubmitted(report.eveningReport?.isSubmitted ?? false);
+
+    setIsLoading(false);
+  }, []);
+
+  // ── Load report ────────────────────────────────────────────────────────────
+const loadReport = useCallback(async () => {
     setIsLoading(true);
 
     try {
-      const res = await TaskReportService.getById(id);
-      if (res.status === 200) {
-        const reportsData = res.data?.data?.data;
-        const userReports = reportsData[0]?.reports ?? [];
-
-        const report: TaskReport | undefined = userReports.find(
-          (r: TaskReport) => r.reportDate === today
-        );
-
-        if (!report) {
+      if (isNew) {
+        // ✅ Check if today's report exists using user ID
+        if (!user?.id) {
+          setActiveTab("morning");
+          setIsLoading(false);
           return;
         }
 
-        setExistingReport(report);
+        const res = await TaskReportService.getById(user.id);
 
-        if (report.morningAgenda?.items?.length) {
-          setMorningItems(report.morningAgenda.items.map(i => ({ ...i })));
-        }
+        if (res.status === 200) {
+          const reportsData = res.data?.data?.data;
+          const userReports = reportsData?.[0]?.reports ?? [];
 
-        if (report.morningAgenda?.goals) {
-          setMorningGoals(report.morningAgenda.goals);
-        }
-
-        const existingCompleted: TaskReportItem[] = report.eveningReport?.completedItems ?? [];
-        const existingPending: TaskReportItem[] = report.eveningReport?.pendingItems ?? [];
-        const allEvening = [...existingCompleted, ...existingPending];
-
-        if (allEvening.length > 0) {
-          const eveningTitles = new Set(
-            allEvening.map(i => i.title.toLowerCase().trim())
+          const todayReport: TaskReport | undefined = userReports.find(
+            (r: TaskReport) => r.reportDate === today
           );
-          const missingFromMorning =
-            (report.morningAgenda?.items ?? [])
-              .filter(i => !eveningTitles.has(i.title.toLowerCase().trim()))
-              .map(i => toEveningItem(i, { status: "pending" as TaskItemStatus }));
-          setEveningItems([...allEvening, ...missingFromMorning]);
-        } else if (report.morningAgenda?.isSubmitted) {
-          setEveningItems(
-            (report.morningAgenda.items ?? []).map(i =>
-              toEveningItem(i, { status: "pending" as TaskItemStatus })
-            )
-          );
+
+          if (todayReport) {
+            loadReportData(todayReport);
+            return;
+          }
         }
 
-        if (report.eveningReport?.achievements) setAchievements(report.eveningReport.achievements);
-        if (report.eveningReport?.blockers) setBlockers(report.eveningReport.blockers);
-        if (report.eveningReport?.tomorrowPlan) setTomorrowPlan(report.eveningReport.tomorrowPlan);
-        if (report.eveningReport?.overallMood) setOverallMood(report.eveningReport.overallMood);
+        // No report for today — show empty morning form
+        setActiveTab("morning");
+        setIsLoading(false);
+        return;
 
-        setActiveTab(report.morningAgenda?.isSubmitted ? "evening" : "morning");
-        setIsFinalSubmitted(report.eveningReport?.isSubmitted ?? false);
+      } else {
+        // ✅ Real report ID — use getReportById
+        const res = await TaskReportService.getReportById(id);
+
+        console.log("🟢 getReportById response:", res.data);
+
+        if (res.status === 200) {
+          // ✅ This returns single report directly — not grouped
+          const report: TaskReport =
+            res.data?.data ||  // check your actual response structure
+            res.data;
+
+          console.log("🟢 Report:", report);
+
+          if (!report) {
+            setIsLoading(false);
+            return;
+          }
+
+          loadReportData(report);
+        }
       }
     } catch (error) {
-      console.error(error);
-    } finally {
+      console.error("🔴 Load report error:", error);
       setIsLoading(false);
     }
-  }, [id, isNew]);
+  }, [id, isNew, today, user?.id]);
 
   useEffect(() => { loadReport(); }, [loadReport]);
 
@@ -618,7 +668,7 @@ const TaskReportCreatePage = (): JSX.Element => {
   };
 
   // ── Submit Morning ─────────────────────────────────────────────────────────
-  const submitMorning = async () => {
+const submitMorning = async () => {
     if (morningItems.some(i => !i.title.trim())) {
       toast.error("Please fill in all task titles");
       return;
@@ -639,14 +689,35 @@ const TaskReportCreatePage = (): JSX.Element => {
           goals: morningGoals.trim() || undefined,
         },
       };
+
       const fn = existingReport?.id
         ? TaskReportService.updateMorningAgenda(existingReport.id, payload)
         : TaskReportService.createMorningAgenda(payload);
+
       const res = await fn;
+
+      console.log("🟢 Morning submit response:", res.data);
+
       if (res.status === 200 || res.status === 201) {
         toast.success("Morning agenda submitted! ✅");
-        setActiveTab("evening");
-        await loadReport();
+
+        // ✅ Get report ID from response
+        const reportId =
+          res.data?.data?.id   ||
+          res.data?.data?._id  ||
+          res.data?.id         ||
+          res.data?._id;
+
+        console.log("🟢 Report ID from response:", reportId);
+
+        if (reportId) {
+          // ✅ Redirect to real report ID URL
+          router.replace(`/report/create/${reportId}`);
+          // useEffect will trigger loadReport with real id automatically
+        } else {
+          // Fallback — no id in response
+          toast.error("Could not get report ID. Please refresh.");
+        }
       }
     } catch (error) {
       const err = error as AxiosError<{ message?: string }>;

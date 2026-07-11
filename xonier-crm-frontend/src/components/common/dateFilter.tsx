@@ -127,9 +127,9 @@ export default function DateFilterButton({ dateFilter, onChange }: Props) {
         onClick={() => setOpen((v) => !v)}
         className={`
           flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm font-medium
-          transition-all duration-150 cursor-pointer whitespace-nowrap
+          transition-all duration-150 cursor-pointer whitespace-nowrap dark:text-white/70
           ${isActive
-            ? "border-indigo-500 bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+            ? "border-cyan-500 bg-cyan-50 text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-400"
             : "border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100 dark:border-white/10 dark:bg-white/5 dark:text-gray-400 dark:hover:bg-white/10"
           }
         `}
@@ -141,7 +141,7 @@ export default function DateFilterButton({ dateFilter, onChange }: Props) {
         {triggerLabel}
 
         {isActive && (
-          <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 shrink-0" />
         )}
       </button>
 
@@ -168,7 +168,7 @@ export default function DateFilterButton({ dateFilter, onChange }: Props) {
                   text-[12px] font-medium px-3 py-1.5 rounded-full border
                   transition-all duration-150 cursor-pointer
                   ${activeRange === r.value
-                    ? "bg-indigo-500 border-transparent text-white"
+                    ? "bg-cyan-500 border-transparent text-white"
                     : "border-gray-200 bg-gray-100 text-gray-600 hover:bg-gray-200 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10"
                   }
                 `}
@@ -185,7 +185,7 @@ export default function DateFilterButton({ dateFilter, onChange }: Props) {
           </p>
 
           {from && to && (
-            <p className="text-[11px] text-indigo-500 dark:text-indigo-400 font-medium mb-3 -mt-1">
+            <p className="text-[11px] text-cyan-500 dark:text-cyan-400 font-medium mb-3 -mt-1">
               {dayCountLabel({ fromDate: from, toDate: to })} selected
             </p>
           )}
@@ -204,9 +204,9 @@ export default function DateFilterButton({ dateFilter, onChange }: Props) {
                   w-full text-[13px] px-3 py-2 pr-8 rounded-lg border outline-none
                   transition-colors duration-150
                   bg-gray-50 border-gray-200 text-gray-800
-                  focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20
+                  focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20
                   dark:bg-white/5 dark:border-white/10 dark:text-gray-100
-                  dark:focus:border-indigo-500
+                  dark:focus:border-cyan-500
                 "
               />
               <CalIcon />
@@ -228,9 +228,9 @@ export default function DateFilterButton({ dateFilter, onChange }: Props) {
                   w-full text-[13px] px-3 py-2 pr-8 rounded-lg border outline-none
                   transition-colors duration-150
                   bg-gray-50 border-gray-200 text-gray-800
-                  focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20
+                  focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20
                   dark:bg-white/5 dark:border-white/10 dark:text-gray-100
-                  dark:focus:border-indigo-500
+                  dark:focus:border-cyan-500
                 "
               />
               <CalIcon />
@@ -253,9 +253,9 @@ export default function DateFilterButton({ dateFilter, onChange }: Props) {
               onClick={handleApply}
               className="
                 flex-[2] text-[13px] font-semibold py-2 rounded-lg
-                bg-indigo-500 hover:bg-indigo-600 text-white
+                bg-cyan-500 hover:bg-cyan-600 text-white
                 transition-colors duration-150 cursor-pointer
-                shadow-[0_3px_12px_rgba(99,102,241,0.35)]
+               
               "
             >
               Apply filter

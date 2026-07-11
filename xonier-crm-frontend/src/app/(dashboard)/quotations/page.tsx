@@ -19,11 +19,12 @@ import { handleCopy } from "../../utils/clipboard.utils";
 import DateFilterButton from "@/src/components/common/dateFilter";
 import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 import StatusBadge from "@/src/components/common/Status";
+import Limit from "@/src/components/ui/Limit";
 
 
 const STATUS_CONFIG = {
   [QuotationStatus.DRAFT]: { label: "Draft", color: "bg-gray-600" },
-  [QuotationStatus.SENT]: { label: "Sent", color: "bg-blue-600" },
+  [QuotationStatus.SENT]: { label: "Sent", color: "bg-cyan-600" },
   [QuotationStatus.UPDATED]: { label: "Updated", color: "bg-amber-500" },
   [QuotationStatus.RESEND]: { label: "Resend", color: "bg-indigo-600" },
   [QuotationStatus.VIEWED]: { label: "Viewed", color: "bg-purple-600" },
@@ -337,16 +338,16 @@ const page = (): JSX.Element => {
             <select
               name="limit"
               id="limit"
-              className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10"
+              className="bg-slate-100 dark:bg-gray-600 px-3 py-2.5 border border-slate-900/10 outline-none text-slate-500 rounded-lg  dark:text-white/70"
               onChange={(e) => setPageLimit(Number(e.target.value))}
             >
               <option value="10">10</option>
               <option value="20">20</option>
               <option value="30">30</option>
-              <option value="40">50</option>
+              <option value="40">50</option>    
             </select>
-            <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2">
-              <IoIosSearch className="text-xl" />
+            <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2 dark:text-white/70">
+              <IoIosSearch className="text-xl text-slate-400" />
               <input type="text" className="outline-none bg-transparent" placeholder="Search..." value={searchVal} onChange={(e)=> handleSearch(e.target.value)}/>
             </div>
             <div>
@@ -355,7 +356,7 @@ const page = (): JSX.Element => {
             {(hasPermission(PERMISSIONS.readLead)) && 
             <Link
               href={"/leads"}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md flex items-center gap-2 group"
+              className="bg-cyan-600 hover:bg-cyan-700 text-white px-5 py-2 rounded-md flex items-center gap-2 group"
             >
               <MdOutlineLeaderboard className="group-hover:rotate-90 transition-all duration-300" />
               All Leads
@@ -374,7 +375,7 @@ const page = (): JSX.Element => {
           </li>
           <li>
             <TabsButton
-              btnTxt="Won Deals"
+              btnTxt="Won Quotations"
               dataLen={wonQuoteData.length}
               no={2}
               currentVal={currentTab}
@@ -383,7 +384,7 @@ const page = (): JSX.Element => {
           </li>
           <li>
             <TabsButton
-              btnTxt="Lost Deals"
+              btnTxt="Lost Quotations"
               dataLen={lostQuoteData.length}
               no={3}
               currentVal={currentTab}
@@ -392,28 +393,28 @@ const page = (): JSX.Element => {
           </li>
         </ul>
         {currentTab === 1 && (
-          <table className="w-full rounded-xl overflow-x-scroll">
-            <thead>
-              <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
+          <table className="w-full">
+            <thead className="w-full bg-slate-200">
+              <tr className="w-full border-b-2   border-zinc-300 dark:border-zinc-400 dark:bg-gray-800">
                 {/* <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
                   Quote Id
                 </th> */}
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 rounded-tl-xl ">
                   Quote Title
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
                   Client Name
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
                   Quotation Status
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
                   Created Date
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
                   Created By
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 rounded-tr-xl ">
                   Actions
                 </th>
               </tr>
@@ -433,19 +434,19 @@ const page = (): JSX.Element => {
                         className={`${
                           rr
                             ? "bg-white dark:bg-transparent"
-                            : "bg-blue-100/50 dark:bg-slate-500"
+                            : "bg-slate-100/50 dark:bg-slate-800"
                         } w-full`}
                       >
                         {/* <td className="p-4">
                           <Link
                             href={`/quotations/view/${item.id}`}
-                            className="text-sm cursor-pointer hover:scale-110 transition-all hover:text-blue-300"
+                            className="text-sm cursor-pointer hover:scale-110 transition-all hover:text-cyan-300"
                           >
                             {item.quoteId}
                           </Link>
                         </td> */}
                         <td className="flex gap-1 flex-col p-4">
-                          <h4 className="capitalize text-sm">{item.title}</h4>
+                          <h4 className="capitalize text-[16px] text-slate-500 dark:text-white/70">{item.title}</h4>
                         </td>
                         <td className="p-4"> <span className="text-[12px] px-2 py-1 bg-green-50 text-green-500 rounded-lg">{item.customerName}</span></td>
                         <td className="p-4">
@@ -458,11 +459,11 @@ const page = (): JSX.Element => {
                           }
                         </td>
                         <td className="p-4">
-                          <span className="px-4 py-1.5 rounded-md bg-blue-200 text-[12px] text-nowrap text-blue-600 font-medium ">
+                          <span className="px-4 py-1.5 rounded-md bg-cyan-200 text-[12px] text-nowrap text-cyan-600 font-medium ">
                             {date}
                           </span>
                         </td>
-                        <td className="p-4">{item.createdBy?.firstName + " " + item.createdBy?.lastName}</td>
+                        <td className="p-4 capitalize text-[16px] text-slate-500 dark:text-white/70 ">{item.createdBy?.firstName + " " + item.createdBy?.lastName}</td>
                         <td>
                           <div className="flex items-center gap-2">
                             {hasPermission(PERMISSIONS.readQuote) ? (
@@ -496,7 +497,7 @@ const page = (): JSX.Element => {
                   })
                 ) : (
                   <tr>
-                    <td className="p-4 text-center" colSpan={6}>
+                    <td className="p-4 text-center text-slate-500" colSpan={6}>
                       Data not found
                     </td>
                   </tr>
@@ -511,7 +512,7 @@ const page = (): JSX.Element => {
                       className={`${
                         rr
                           ? "bg-white dark:bg-transparent"
-                          : "bg-blue-100/50 dark:bg-slate-500"
+                          : "bg-slate-100/50 dark:bg-slate-800"
                       } w-full`}
                     >
                       <td className="text-center p-4">
@@ -546,25 +547,25 @@ const page = (): JSX.Element => {
           </table>
         )}
         {currentTab === 2 && (
-          <table className="w-full rounded-xl ">
+          <table className="w-full">
             <thead>
-              <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
+              <tr className="w-full border-b-2 rounded-2xl border-zinc-300 dark:border-zinc-400 bg-slate-200 dark:bg-gray-800">
                 {/* <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
                   Quote Id
                 </th> */}
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 rounded-tl-xl">
                   Quote Title
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
                   Client Name
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
                   Quotation Status
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
                   Created Date
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 rounded-tr-xl">
                   Actions
                 </th>
               </tr>
@@ -584,19 +585,19 @@ const page = (): JSX.Element => {
                         className={`${
                           rr
                             ? "bg-white dark:bg-transparent"
-                            : "bg-blue-100/50 dark:bg-slate-500"
+                            : "bg-slate-100/50 dark:bg-slate-800"
                         } w-full`}
                       >
                         {/* <td className="p-4">
                           <Link
                             href={`/deals/view/${item.id}`}
-                            className="text-sm cursor-pointer hover:scale-110 transition-all hover:text-blue-300"
+                            className="text-sm cursor-pointer hover:scale-110 transition-all hover:text-cyan-300"
                           >
                             {item.quoteId}
                           </Link>
                         </td> */}
                         <td className="flex gap-1 flex-col p-4">
-                          <h4 className="capitalize">{item.title}</h4>
+                          <h4 className="capitalize text-[16px] text-slate-500 dark:text-white/70">{item.title}</h4>
                         </td>
                         <td className="p-4">{item.customerName}</td>
                         {(hasPermission(PERMISSIONS.updateQuote)) ? <td className="p-4">
@@ -607,7 +608,7 @@ const page = (): JSX.Element => {
                           />
                         </td> : <td className="p-4"><StatusBadge status={item.quotationStatus} /></td>}
                         <td className="p-4">
-                          <span className="px-4 py-1.5 rounded-md bg-blue-200 text-sm text-blue-600 font-medium">
+                          <span className="px-4 py-1.5 rounded-md bg-cyan-200 text-sm text-cyan-600 font-medium">
                             {date}
                           </span>
                         </td>
@@ -644,7 +645,7 @@ const page = (): JSX.Element => {
                   })
                 ) : (
                   <tr>
-                    <td className="p-4 text-center" colSpan={6}>
+                    <td className="p-4 text-center text-slate-500" colSpan={6}>
                       Data not found
                     </td>
                   </tr>
@@ -659,7 +660,7 @@ const page = (): JSX.Element => {
                       className={`${
                         rr
                           ? "bg-white dark:bg-transparent"
-                          : "bg-blue-100/50 dark:bg-slate-500"
+                          : "bg-slate-100/50 dark:bg-slate-800"
                       } w-full`}
                     >
                       <td className="text-center p-4">
@@ -694,25 +695,25 @@ const page = (): JSX.Element => {
           </table>
         )}
         {currentTab === 3 && (
-          <table className="w-full rounded-xl ">
+          <table className="w-full">
             <thead>
-              <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
+              <tr className="w-full  border-b-2 border-zinc-300 dark:border-zinc-400 bg-slate-200 dark:bg-gray-800">
                 {/* <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
                   Quote Id
                 </th> */}
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 rounded-tl-xl">
                   Quote Title
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
                   Client Name
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
                   Quotation Status
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
                   Created Date
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 rounded-tr-xl">
                   Actions
                 </th>
               </tr>
@@ -732,19 +733,19 @@ const page = (): JSX.Element => {
                         className={`${
                           rr
                             ? "bg-white dark:bg-transparent"
-                            : "bg-blue-100/50 dark:bg-slate-500"
+                            : "bg-slate-100/50 dark:bg-slate-800"
                         } w-full`}
                       >
                         {/* <td className="p-4">
                           <Link
                             href={`/deals/view/${item.id}`}
-                            className="text-sm cursor-pointer hover:scale-110 transition-all hover:text-blue-300"
+                            className="text-sm cursor-pointer hover:scale-110 transition-all hover:text-cyan-300"
                           >
                             {item.quoteId}
                           </Link>
                         </td> */}
                         <td className="flex gap-1 flex-col p-4">
-                          <h4 className="capitalize">{item.title}</h4>
+                          <h4 className="capitalize text-[16px] text-slate-500 dark:text-white/70">{item.title}</h4>
                         </td>
                         <td className="p-4">{item.customerName}</td>
                         <td className="p-4">
@@ -755,7 +756,7 @@ const page = (): JSX.Element => {
                           />
                         </td>
                         <td className="p-4">
-                          <span className="px-4 py-1.5 rounded-md bg-blue-200 text-sm text-blue-600 font-medium">
+                          <span className="px-4 py-1.5 rounded-md bg-cyan-200 text-sm text-cyan-600 font-medium">
                             {date}
                           </span>
                         </td>
@@ -792,7 +793,7 @@ const page = (): JSX.Element => {
                   })
                 ) : (
                   <tr>
-                    <td className="p-4 text-center" colSpan={6}>
+                    <td className="p-4 text-center text-slate-500" colSpan={6}>
                       Data not found
                     </td>
                   </tr>
@@ -807,7 +808,7 @@ const page = (): JSX.Element => {
                       className={`${
                         rr
                           ? "bg-white dark:bg-transparent"
-                          : "bg-blue-100/50 dark:bg-slate-500"
+                          : "bg-slate-100/50 dark:bg-slate-800"
                       } w-full`}
                     >
                       <td className="text-center p-4">

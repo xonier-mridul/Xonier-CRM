@@ -204,7 +204,7 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
                 value={formData.title}
                 onChange={(e) => handleChange("title", e.target.value)}
                 placeholder="Enter event title"
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:bg-gray-700 dark:text-white ${
                   errors.title ? "border-red-500" : "border-gray-300 dark:border-gray-600"
                 }`}
               />
@@ -222,7 +222,7 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
                 id="eventType"
                 value={formData.eventType}
                 onChange={(e) => handleChange("eventType", e.target.value as EventType)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:bg-gray-700 dark:text-white"
               >
                 {Object.values(EventType).map((type) => (
                   <option key={type} value={type}>
@@ -244,7 +244,7 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
                   value={formData.meetingLink || ""}
                   onChange={(e) => handleChange("meetingLink", e.target.value)}
                   placeholder="https://meet.google.com/xxx-xxxx-xxx"
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:bg-gray-700 dark:text-white ${
                     errors.meetingLink ? "border-red-500" : "border-gray-300 dark:border-gray-600"
                   }`}
                 />
@@ -263,7 +263,7 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
                 id="priority"
                 value={formData.priority}
                 onChange={(e) => handleChange("priority", e.target.value as "low" | "medium" | "high")}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:bg-gray-700 dark:text-white"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -283,7 +283,7 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
                 type={formData.isAllDay ? "date" : "datetime-local"}
                 value={formData.isAllDay ? formData.start.split("T")[0] : formData.start}
                 onChange={(e) => handleChange("start", e.target.value)}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:bg-gray-700 dark:text-white ${
                   errors.start ? "border-red-500" : "border-gray-300 dark:border-gray-600"
                 }`}
               />
@@ -303,7 +303,7 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
                   type="datetime-local"
                   value={formData.end || ""}
                   onChange={(e) => handleChange("end", e.target.value || null)}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:bg-gray-700 dark:text-white ${
                     errors.end ? "border-red-500" : "border-gray-300 dark:border-gray-600"
                   }`}
                 />
@@ -325,7 +325,7 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
                 onChange={(e) => handleChange("description", e.target.value)}
                 placeholder="Enter event description (optional)"
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:bg-gray-700 dark:text-white"
               />
             </div>
 
@@ -335,7 +335,7 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
                 id="isAllDay"
                 checked={formData.isAllDay}
                 onChange={(e) => handleChange("isAllDay", e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="h-4 w-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500"
               />
               <label htmlFor="isAllDay" className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
                 All Day Event
@@ -348,14 +348,14 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
               type="button"
               onClick={handleClose}
               disabled={loading}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 flex items-center"
+              className="px-4 py-2 text-sm font-medium text-white bg-cyan-600 rounded-md hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 disabled:opacity-50 flex items-center"
             >
               {loading ? (
                 <>

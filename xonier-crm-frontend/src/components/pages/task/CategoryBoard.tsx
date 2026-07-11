@@ -125,7 +125,7 @@ function CategoryBoard({
     });
   };
 
-  const handleDragEnd =()=>{
+  const handleDragEnd =(e: React.DragEvent<HTMLDivElement>)=>{
     stopAutoScroll()
   }
 

@@ -175,7 +175,7 @@ const [companyLoading, setCompanyLoading] = useState(false);
   };
 
   return (
-    <div className={`ml-72 mt-14 p-6`}>
+    <div className={`lg:ml-72 mt-14 p-6`}>
       <UserDetail
         userData={userData}
         isLoading={isLoading}

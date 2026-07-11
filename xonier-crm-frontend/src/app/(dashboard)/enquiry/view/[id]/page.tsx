@@ -135,9 +135,9 @@ const EnquiryViewPage = (): JSX.Element => {
 
   const getStatusColor = (status: string) => {
     const map: Record<string, string> = {
-      new: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+      new: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400",
       open: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
-      in_progress: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
+      in_progress: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400",
       resolved: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
       closed: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300",
       won: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400",
@@ -180,7 +180,7 @@ const EnquiryViewPage = (): JSX.Element => {
             </p>
             <button
               onClick={() => router.back()}
-              className="inline-flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors"
             >
               <IoArrowBack className="w-5 h-5" />
               Go Back
@@ -236,7 +236,7 @@ const EnquiryViewPage = (): JSX.Element => {
                   )}
                 </div>
                 <p
-                  className="text-gray-500 dark:text-gray-400 cursor-pointer hover:text-blue-500 dark:hover:text-blue-400 transition-colors flex items-center gap-2"
+                  className="text-gray-500 dark:text-gray-400 cursor-pointer hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors flex items-center gap-2"
                   onClick={() =>
                     handleCopy(enquiryData ? enquiryData.enquiry_id : "")
                   }
@@ -248,19 +248,19 @@ const EnquiryViewPage = (): JSX.Element => {
               </div>
 
               {/* Actions */}
-              <div className="flex flex-wrap items-center gap-2 print:hidden">
+              <div className="flex items-center gap-2 print:hidden">
                 {hasPermission(PERMISSIONS.updateEnquiry) &&
                 enquiryData!.status !== SALES_STATUS.DELETE ? (
                   <Link
                     href={`/enquiry/update//${enquiryData!.id}`}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors"
                   >
-                    <MdOutlineEdit className="w-4 h-4" />
+                    <MdOutlineEdit className="w-4 h-4 whitespace-nowrap" />
                     Update Enquiry
                   </Link>
                 ) : (
-                  <span className="inline-flex items-center gap-2 px-4 py-2 bg-blue-400 opacity-60 text-white rounded-lg cursor-not-allowed">
-                    <MdOutlineEdit className="w-4 h-4" />
+                  <span className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-400 opacity-60 text-white rounded-lg cursor-not-allowed">
+                    <MdOutlineEdit className="w-4 h-4  whitespace-nowrap" />
                     Update Enquiry
                   </span>
                 )}
@@ -272,22 +272,28 @@ const EnquiryViewPage = (): JSX.Element => {
                   <IoPrintOutline className="w-4 h-4" />
                 </button> */}
 
-                <div className="relative group">
-                  <button className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-600 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded-lg transition-colors">
-                    <IoEllipsisVertical className="w-4 h-4" />
-                  </button>
-                  <div className="hidden group-hover:block absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10">
-                    {hasPermission(PERMISSIONS.deleteEnquiry) && (
-                      <button
+                  
+                      
+  {/* <button className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-600 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded-lg transition-colors">
+                    <IoEllipsisVertical className="w-5 h-5" />
+                  </button> */}
+ {hasPermission(PERMISSIONS.deleteEnquiry) && (
+
+                
+                         <div className=" border border-slate-200 py-2 hover:border-red-400  text-red-600 dark:text-red-400 hover:bg-red-50  rounded-xl bg-white/60 right-0 top-full pt-2 w-30   transition-all  duration-300">
+                  <button
                         onClick={() => handleDelete(enquiryData!.id)}
-                        className="w-full flex items-center gap-2 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
+                        className="w-full flex items-center gap-2 px-4 py-2dark:hover:bg-red-900/20 transition-colors cursor-pointer"
                       >
                         <MdDeleteOutline className="w-4 h-4" />
                         Delete
                       </button>
-                    )}
+           
+                   
                   </div>
-                </div>
+             
+                    )}
+
               </div>
             </div>
           </div>
@@ -306,7 +312,7 @@ const EnquiryViewPage = (): JSX.Element => {
             icon={<IoBusinessOutline className="w-6 h-6" />}
             label="Company"
             value={enquiryData!.companyName || "—"}
-            color="bg-blue-500"
+            color="bg-cyan-500"
           />
           <MetricCard
             icon={<IoBriefcaseOutline className="w-5 h-5" />}
@@ -318,7 +324,7 @@ const EnquiryViewPage = (): JSX.Element => {
             icon={<IoCodeOutline className="w-5 h-5" />}
             label="Project Type"
             value={enquiryData!.projectType?.replace(/_/g, " ") || "—"}
-            color="bg-indigo-500"
+            color="bg-cyan-500"
           />
           <MetricCard
             icon={<IoInformationCircleOutline className="w-5 h-5" />}
@@ -338,13 +344,13 @@ const EnquiryViewPage = (): JSX.Element => {
                   onClick={() => setActiveTab(tab)}
                   className={`pb-1.5 px-1 font-medium transition-colors cursor-pointer relative whitespace-nowrap ${
                     activeTab === tab
-                      ? "text-blue-600 dark:text-blue-400"
+                      ? "text-cyan-600 dark:text-cyan-400"
                       : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                   }`}
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
                   {activeTab === tab && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400" />
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-600 dark:bg-cyan-400" />
                   )}
                 </button>
               ))}
@@ -362,7 +368,7 @@ const EnquiryViewPage = (): JSX.Element => {
               <>
                 {/* Enquiry Information */}
                 <SectionCard
-                  icon={<IoInformationCircleOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
+                  icon={<IoInformationCircleOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />}
                   title="Enquiry Information"
                 >
                   <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-6">
@@ -404,7 +410,7 @@ const EnquiryViewPage = (): JSX.Element => {
                   (enquiryData!.technologies && enquiryData!.technologies.length > 0) ||
                   (enquiryData!.keywords && enquiryData!.keywords.length > 0)) && (
                   <SectionCard
-                    icon={<FaIndustry className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
+                    icon={<FaIndustry className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />}
                     title="Industry & Technologies"
                   >
                     <div className="flex flex-col gap-5">
@@ -415,7 +421,7 @@ const EnquiryViewPage = (): JSX.Element => {
                           </p>
                           <div className="flex flex-wrap gap-2">
                             {enquiryData!.industry.map((ind, i) => (
-                              <TagPill key={i} label={ind} color="blue" />
+                              <TagPill key={i} label={ind} color="cyan" />
                             ))}
                           </div>
                         </div>
@@ -451,7 +457,7 @@ const EnquiryViewPage = (): JSX.Element => {
                 {/* Assign Information */}
                 {enquiryData!.assignTo && (
                   <SectionCard
-                    icon={<MdOutlineLeaderboard className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
+                    icon={<MdOutlineLeaderboard className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />}
                     title="Assigned To"
                   >
                     <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-6">
@@ -474,7 +480,7 @@ const EnquiryViewPage = (): JSX.Element => {
                 {/* Extra Fields */}
                 {enquiryData!.extra_fields && enquiryData!.extra_fields.length > 0 && (
                   <SectionCard
-                    icon={<IoDocumentText className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
+                    icon={<IoDocumentText className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />}
                     title="Additional Fields"
                   >
                     <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-6">
@@ -493,7 +499,7 @@ const EnquiryViewPage = (): JSX.Element => {
                 {/* Message */}
                 {enquiryData!.message && (
                   <SectionCard
-                    icon={<IoChatbubbleOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
+                    icon={<IoChatbubbleOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />}
                     title="Client Message"
                   >
                     <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
@@ -509,7 +515,7 @@ const EnquiryViewPage = (): JSX.Element => {
             {/* ── CONTACT TAB ── */}
             {(activeTab === "contact" || isPrinting) && (
               <SectionCard
-                icon={<IoPersonOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
+                icon={<IoPersonOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />}
                 title="Contact Information"
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-6">
@@ -582,7 +588,7 @@ const EnquiryViewPage = (): JSX.Element => {
                   Object.values(enquiryData!.socialLinks).some(Boolean) && (
                     <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-600">
                       <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
-                        <IoLinkOutline className="w-4 h-4 text-blue-500" />
+                        <IoLinkOutline className="w-4 h-4 text-cyan-500" />
                         Social Links
                       </p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -594,7 +600,7 @@ const EnquiryViewPage = (): JSX.Element => {
                               href={url!}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline text-sm"
+                              className="flex items-center gap-2 text-cyan-600 dark:text-cyan-400 hover:underline text-sm"
                             >
                               <IoLinkOutline className="w-4 h-4" />
                               <span className="capitalize">{platform}</span>
@@ -610,7 +616,7 @@ const EnquiryViewPage = (): JSX.Element => {
             {activeTab === "details" && !isPrinting && (
               <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-2 mb-6">
-                  <MdTimeline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <MdTimeline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     Activity Timeline
                   </h3>
@@ -630,7 +636,7 @@ const EnquiryViewPage = (): JSX.Element => {
 
             {/* Creator Information */}
             {enquiryData!.createdBy && (
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl border border-blue-400 shadow-lg break-inside-avoid">
+              <div className="bg-gradient-to-br from-cyan-500 to-cyan-600 p-6 rounded-xl border border-cyan-400 shadow-lg break-inside-avoid">
                 <div className="flex items-center gap-2 mb-4">
                   <FaRegUser className="text-xl text-white" />
                   <h2 className="text-white font-semibold text-xl">
@@ -703,7 +709,7 @@ const EnquiryViewPage = (): JSX.Element => {
               Object.values(enquiryData!.location).some(Boolean) && (
                 <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700 break-inside-avoid">
                   <div className="flex items-center gap-2 mb-4">
-                    <IoLocationOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <IoLocationOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                       Location Details
                     </h3>
@@ -730,7 +736,7 @@ const EnquiryViewPage = (): JSX.Element => {
               Object.values(enquiryData!.socialLinks).some(Boolean) && (
                 <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700 break-inside-avoid">
                   <div className="flex items-center gap-2 mb-4">
-                    <IoLinkOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <IoLinkOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                       Social Links
                     </h3>
@@ -744,7 +750,7 @@ const EnquiryViewPage = (): JSX.Element => {
                           href={url!}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline text-sm py-1"
+                          className="flex items-center gap-2 text-cyan-600 dark:text-cyan-400 hover:underline text-sm py-1"
                         >
                           <IoLinkOutline className="w-4 h-4 flex-shrink-0" />
                           <span className="capitalize truncate">{platform}</span>
@@ -864,10 +870,10 @@ const TagPill = ({
   color,
 }: {
   label: string;
-  color: "blue" | "purple" | "gray";
+  color: "cyan" | "purple" | "gray";
 }) => {
   const styles = {
-    blue: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+    cyan: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300",
     purple: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
     gray: "bg-gray-100 text-gray-700 dark:bg-gray-600 dark:text-gray-200",
   };

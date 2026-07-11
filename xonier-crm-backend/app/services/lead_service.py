@@ -706,7 +706,6 @@ class LeadService:
                     raise AppException(status_code=500, message=f"Internal server error: {e}")
 
 
-
     async def get_all(self, filters: Dict[str, Any], user: Dict[str, Any]):
         try:
             is_admin = validate_admin_company_admin(user["userRole"])
@@ -761,7 +760,7 @@ class LeadService:
                 query.update({"connectStatus": filters["connectStatus"]})
 
             if "engagementStatus" in filters:
-                query.update({"connectStatus": {"$regex": filters["engagementStatus"], "$options": "i"}})
+                query.update({"connectStatus": filters["engagementStatus"]})
 
             if "leadid" in filters:
                 query.update({"lead_id": {"$regex": filters["leadid"], "$options": "i"}})
@@ -860,10 +859,8 @@ class LeadService:
             cache = await FastAPICache.get_backend().get(key)
 
             if cache:
-                return json.loads(cache)
+                return json.loads(cache)      
             
-            
-
             result = await self.repo.get_all(
                 page=int(page),
                 limit=int(limit),

@@ -23,7 +23,7 @@ import CustomFormService from "@/src/services/customForm.service";
 import BlurryBackground from "@/src/components/common/BlurryBackground";
 import { CreateUserCustomField, FORM_FIELD_MODULES } from "@/src/types/customForm.types";
 import { IoMdClose } from "react-icons/io";
-import { FaTrash } from "react-icons/fa";
+import { FaCheck, FaTrash } from "react-icons/fa";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 
 
@@ -98,16 +98,23 @@ const page = (): JSX.Element => {
   };
 
   const getCustomFormFields = async(): Promise<void>=>{
+     
     setCuFieldDataLoading(true)
     try {
       const result = await CustomFormService.getAllByCreator()
       if (result.status === 200){
         const data = result.data.data
+        console.log('form data :',data)
         setAllCustomFormField(data)
       }
+     
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) {
+        if (error.response?.status === 400) {
+        setAllCustomFormField([]);
+        return;
+      }
         const messages = extractErrorMessages(error);
         setErr(messages);
       } else {
@@ -362,16 +369,17 @@ const handleCreateCustomField = async (e: FormEvent) => {
 
   const handleFieldDelete = async(id:string)=>{
     try {
-
       const confirm = await ConfirmPopup({title: "Are you sure", text: "Are you sure to delete the field, It is going permanently deleted", btnTxt: "Yes, Delete"})
-      if(confirm){
-        const result = await CustomFormService.delete(id)
+
+      if (!confirm) return;
+      
+      const result = await CustomFormService.delete(id)
       if (result.status === 200){
         toast.success("Field deleted successfully")
         await getCustomFormFields()
       }
 
-      }
+      
       
     } catch (error) {
        process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
@@ -394,13 +402,13 @@ const handleCreateCustomField = async (e: FormEvent) => {
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.2 }}
-      className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2/3 max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-2xl z-1150"
+      className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2/3 max-h-[90vh] overflow-y-auto custom-scrollbar bg-white dark:bg-gray-800 rounded-lg shadow-2xl z-1150"
     >
 
       <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-            <FaPlus className="text-blue-600 dark:text-blue-400" />
+          <div className="h-10 w-10 rounded-full bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center">
+            <FaPlus className="text-cyan-600 dark:text-cyan-400" />
           </div>
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
             Create Custom Field
@@ -488,13 +496,13 @@ const handleCreateCustomField = async (e: FormEvent) => {
                 <button
                   type="button"
                   onClick={handleAddOption}
-                  className="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                  className="flex items-center gap-2 px-3 py-1.5 text-sm bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 rounded-md hover:bg-cyan-100 dark:hover:bg-cyan-900/30 transition-colors"
                 >
                   <FaPlus className="text-xs" /> Add Option
                 </button>
               </div>
 
-              <div className="space-y-3 max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+              <div className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                 {formData.options.map((option, index) => (
                   <div key={index} className="flex items-end gap-3">
                     <div className="flex-1">
@@ -549,7 +557,7 @@ const handleCreateCustomField = async (e: FormEvent) => {
           <button
             type="submit"
             disabled={createFieldLoading}
-            className="px-5 py-2.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center gap-2"
+            className="px-5 py-2.5 rounded-md bg-cyan-600 text-white hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center gap-2"
           >
             {createFieldLoading ? (
               <>
@@ -568,10 +576,10 @@ const handleCreateCustomField = async (e: FormEvent) => {
     </motion.div>
   </>
 )}
-    <div className="fixed min-h-screen overflow-y-scroll z-100 top-0 left-0 right-0 border-0 w-full h-full bg-stone-100 dark:bg-gray-800">
-      <div className="fixed z-100 left-0 top-0 w-88 border-r flex flex-col gap-6 border-slate-900/15 dark:border-gray-700 bg-slate-50 h-screen overflow-y-scroll dark:bg-gray-800/50 pt-12 px-6 pb-12">
+    <div className="fixed min-h-screen overflow-y-scroll custom-scrollbar z-100 top-0 left-0 right-0 border-0 w-full h-full bg-stone-100 dark:bg-gray-800">
+      <div className="fixed z-100 left-0 top-0 w-88 border-r flex flex-col gap-6 border-slate-900/15 dark:border-gray-700 bg-slate-50 h-screen overflow-y-scroll custom-scrollbar dark:bg-gray-800/50 pt-12 px-6 pb-12">
         <div className="flex items-center gap-4 w-full border-b border-slate-600 py-4">
-          <MdOutlineFormatIndentIncrease className="text-blue-500" />
+          <MdOutlineFormatIndentIncrease className="text-cyan-500" />
           <h2 className="text-slate-900 dark:text-white font-semibold text-lg tracking-wide">
             All Form Fields
           </h2>
@@ -588,22 +596,49 @@ const handleCreateCustomField = async (e: FormEvent) => {
                 
                 return (
                   <li key={item.id} className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      id={item.key}
-                      name={item.name}
-                      value={item.id}
-                      className="peer cursor-pointer"
-                      checked={checked}
-                      onChange={handleChecked}
-                    />
-                    <label
-                      htmlFor={item.key}
-                      className="capitalize checked:text-blue-200 hover:text-blue-700 dark:hover:text-blue-200 hover:scale-104 transition-all duration-200 cursor-pointer peer-checked:text-blue-600 dark:peer-checked:text-blue-300"
-                    >
-                      {item.name}
-                    </label>
-                  </li>
+  <label
+    htmlFor={item.key}
+    className="flex items-center gap-3 cursor-pointer group"
+  >
+    <input
+      type="checkbox"
+      id={item.key}
+      name={item.name}
+      value={item.id}
+      checked={checked}
+      onChange={handleChecked}
+      className="peer sr-only"
+    />
+
+    <div
+      className="
+        w-5 h-5
+        rounded-md
+        border-2 border-slate-300 dark:border-slate-600
+        bg-white dark:bg-slate-700
+        flex items-center justify-center
+        transition-all duration-200
+        peer-checked:bg-cyan-600
+        peer-checked:border-cyan-600
+      "
+    >
+     {checked && <FaCheck className="text-white text-[10px]" />}
+    </div>
+
+    <span
+      className="
+        capitalize
+        text-slate-700 dark:text-slate-300
+        transition-all duration-200
+        peer-checked:text-cyan-600
+        dark:peer-checked:text-cyan-300
+        group-hover:text-cyan-600
+      "
+    >
+      {item.name}
+    </span>
+  </label>
+</li>
                 );
               })
             : Array.from({ length: 18 }).map((item, i) => (
@@ -634,26 +669,52 @@ const handleCreateCustomField = async (e: FormEvent) => {
                 const checked = selectedFieldsIds.includes(item.id);
                 
                 return (
-                  <li key={item.id} className="flex items-center justify-between group gap-3">
-                    <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      id={`custom-${item.key}`}
-                      name={item.name}
-                      value={item.id}
-                      className="peer cursor-pointer"
-                      checked={checked}
-                      onChange={handleChecked}
-                    />
-                    <label
-                      htmlFor={`custom-${item.key}`}
-                      className="capitalize checked:text-blue-200 hover:text-blue-700 dark:hover:text-blue-200 hover:scale-104 transition-all duration-200 cursor-pointer peer-checked:text-blue-600 dark:peer-checked:text-blue-300"
-                    >
-                      {item.name}
-                    </label>
-                    </div>
-                    <button className="h-6 w-6 group-hover:flex rounded-full cursor-pointer bg-red-200/80 hidden items-center justify-center text-red-500 hover:bg-red-500 hover:text-white" onClick={()=>handleFieldDelete(item.id)}><MdDeleteOutline className="text-sm"/></button>
-                  </li>
+                        <li key={item.id} className="flex items-center gap-3 group justify-between">
+                          <label
+                            htmlFor={item.key}
+                            className="flex items-center gap-3 cursor-pointer group"
+                          >
+                            <input
+                              type="checkbox"
+                              id={item.key}
+                              name={item.name}
+                              value={item.id}
+                              checked={checked}
+                              onChange={handleChecked}
+                              className="peer sr-only"
+                            />
+
+                            <div
+                              className="
+                                w-5 h-5
+                                rounded-md
+                                border-2 border-slate-300 dark:border-slate-600
+                                bg-white dark:bg-slate-700
+                                flex items-center justify-center
+                                transition-all duration-200
+                                peer-checked:bg-cyan-600
+                                peer-checked:border-cyan-600
+                              "
+                            >
+                            {checked && <FaCheck className="text-white text-[10px]" />}
+                            </div>
+
+                            <span
+                              className="
+                                capitalize
+                                text-slate-700 dark:text-slate-300
+                                transition-all duration-200
+                                peer-checked:text-cyan-600
+                                dark:peer-checked:text-cyan-300
+                                group-hover:text-cyan-600
+                              "
+                            >
+                              {item.name}
+                            </span>
+                          </label>
+                          <button className="h-6 w-6 group-hover:flex rounded-full cursor-pointer bg-red-200/80 hidden items-center justify-center text-red-500 hover:bg-red-500 hover:text-white" onClick={()=>handleFieldDelete(item.id)}><MdDeleteOutline className="text-sm"/></button>
+                        </li>
+                 
                 );
               })
             : Array.from({ length: 4 }).map((item, i) => (
@@ -674,15 +735,15 @@ const handleCreateCustomField = async (e: FormEvent) => {
               ))}
         </ul>
         
-        <button className="flex items-center group hover:bg-blue-600 gap-3 capitalize border-2 border-gray-300 dark:border-gray-800 hover:border-blue-600 rounded-md px-4 py-2.5 bg-white dark:bg-slate-700 w-full hover:text-white cursor-pointer" onClick={handleUpdateFieldPopup}>
-          <FaPlus className="text-blue-500 group-hover:text-white group-hover:rotate-90 transition-all"/> 
+        <button className="flex items-center group hover:bg-cyan-600 gap-3 capitalize border-2 border-gray-300 dark:border-gray-800 hover:border-cyan-600 rounded-md px-4 py-2.5 bg-white dark:bg-slate-700 w-full hover:text-white cursor-pointer" onClick={handleUpdateFieldPopup}>
+          <FaPlus className="text-cyan-500 group-hover:text-white group-hover:rotate-90 transition-all"/> 
           Add Custom fields
         </button>
       </div>
 
       <div className="fixed top-4 z-50 left-96 w-[72vw] backdrop-blur-sm flex items-center justify-between gap-10 p-5">
         <div className="flex items-center gap-3 w-1/2">
-          <GrDocumentUpdate className="text-xl text-blue-500" />
+          <GrDocumentUpdate className="text-xl text-cyan-500" />
           <h2 className="text-slate-900 dark:text-white font-semibold text-2xl tracking-wide">
             Update Lead Form Field
           </h2>
@@ -690,13 +751,13 @@ const handleCreateCustomField = async (e: FormEvent) => {
         <div className="flex items-center justify-end gap-3 ml-6">
           <button 
             onClick={()=>router.back()} 
-            className="h-10 w-10 flex items-center justify-center text-xl border rounded-full dark:bg-[#1a2432] bg-slate-50 hover:text-blue-600 hover:border-blue-600/20 group border-[#ecf0f2] dark:border-gray-700 cursor-pointer hover:scale-103"
+            className="h-10 w-10 flex items-center justify-center text-xl border rounded-full dark:bg-[#1a2432] bg-slate-50 hover:text-cyan-600 hover:border-cyan-600/20 group border-[#ecf0f2] dark:border-gray-700 cursor-pointer hover:scale-103"
           >
             <FaArrowLeftLong className="group-hover:scale-105 transition-all"/>
           </button>
           <button 
             onClick={()=>router.forward()} 
-            className="h-10 w-10 flex items-center justify-center text-xl border rounded-full dark:bg-[#1a2432] bg-slate-50 hover:text-blue-600 hover:border-blue-600/20 group border-[#ecf0f2] dark:border-gray-700 cursor-pointer hover:scale-103"
+            className="h-10 w-10 flex items-center justify-center text-xl border rounded-full dark:bg-[#1a2432] bg-slate-50 hover:text-cyan-600 hover:border-cyan-600/20 group border-[#ecf0f2] dark:border-gray-700 cursor-pointer hover:scale-103"
           >
             <FaArrowRightLong className="group-hover:scale-105 transition-all"/>
           </button>
@@ -739,7 +800,7 @@ const handleCreateCustomField = async (e: FormEvent) => {
           <div className="flex items-center gap-5 justify-end col-span-2">
             <button 
               onClick={handleSubmit} 
-              className="w-fit flex items-center justify-center gap-2 rounded-md px-4 py-2 font-medium text-nowrap bg-blue-600 text-white hover:bg-blue-700 hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 capitalize" 
+              className="w-fit flex items-center justify-center gap-2 rounded-md px-4 py-2 font-medium text-nowrap bg-cyan-600 text-white hover:bg-cyan-700 hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 capitalize" 
               disabled={loading || (selectedFieldsIds.length <= 0)}
             >
               <MdOutlineCloudUpload className="text-lg" /> 
@@ -747,7 +808,7 @@ const handleCreateCustomField = async (e: FormEvent) => {
             </button>
 
             <button 
-              className="w-fit flex items-center justify-center gap-2 rounded-md px-4 py-2 font-medium bg-blue-200 text-blue-600 hover:text-blue-700 hover:bg-blue-300 hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200" 
+              className="w-fit flex items-center justify-center gap-2 rounded-md px-4 py-2 font-medium bg-cyan-200 text-cyan-600 hover:text-cyan-700 hover:bg-cyan-300 hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200" 
               onClick={()=>router.back()}
             >
               <IoChevronBack /> Back

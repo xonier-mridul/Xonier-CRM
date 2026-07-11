@@ -26,7 +26,7 @@ const selectClass = (hasErr?: boolean) => `
   bg-white dark:bg-gray-800 text-black dark:text-white
   border-gray-200 dark:border-gray-700
   disabled:opacity-60 disabled:cursor-not-allowed
-  focus:outline-none focus:border-violet-400 dark:focus:border-violet-500 focus:ring-2 focus:ring-violet-400/20
+  focus:outline-none focus:border-cyan-400 dark:focus:border-cyan-500 focus:ring-2 focus:ring-cyan-400/20
   ${hasErr ? "border-red-400 focus:border-red-400 focus:ring-red-400/20" : ""}
 `;
 
@@ -35,7 +35,7 @@ const textareaClass = (hasErr?: boolean) => `
   bg-white dark:bg-gray-800 text-black dark:text-white
   border-gray-200 dark:border-gray-700
   disabled:opacity-60 disabled:cursor-not-allowed
-  focus:outline-none focus:border-violet-400 dark:focus:border-violet-500 focus:ring-2 focus:ring-violet-400/20
+  focus:outline-none focus:border-cyan-400 dark:focus:border-cyan-500 focus:ring-2 focus:ring-cyan-400/20
   placeholder-gray-400 dark:placeholder-gray-500 resize-none
   ${hasErr ? "border-red-400 focus:border-red-400 focus:ring-red-400/20" : ""}
 `;
@@ -44,7 +44,7 @@ const inlineInputClass = `
   px-3 py-2 rounded-lg border transition-all duration-200
   bg-white dark:bg-gray-800 text-black dark:text-white text-sm
   border-gray-200 dark:border-gray-700
-  focus:outline-none focus:border-violet-400 dark:focus:border-violet-500 focus:ring-2 focus:ring-violet-400/20
+  focus:outline-none focus:border-cyan-400 dark:focus:border-cyan-500 focus:ring-2 focus:ring-cyan-400/20
   placeholder-gray-400
 `;
 
@@ -77,17 +77,17 @@ const TagInput = ({
     <div className="flex flex-col gap-1.5">
       <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-1">
         {label}
-        {required && <span className="text-violet-500">*</span>}
+        {required && <span className="text-cyan-500">*</span>}
       </label>
       <div
         className="flex flex-wrap gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700
-          bg-white dark:bg-gray-800 focus-within:border-violet-400 dark:focus-within:border-violet-500
-          focus-within:ring-2 focus-within:ring-violet-400/20 min-h-[44px] transition-all duration-200"
+          bg-white dark:bg-gray-800 focus-within:border-cyan-400 dark:focus-within:border-cyan-500
+          focus-within:ring-2 focus-within:ring-cyan-400/20 min-h-[44px] transition-all duration-200"
       >
         {values.map((v, i) => (
           <span
             key={i}
-            className="inline-flex items-center gap-1 bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-xs px-2.5 py-1 rounded-full font-medium border border-violet-200 dark:border-violet-700"
+            className="inline-flex items-center gap-1 bg-cyan-50 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 text-xs px-2.5 py-1 rounded-full font-medium border border-cyan-200 dark:border-cyan-700"
           >
             {v}
             <button
@@ -200,11 +200,11 @@ const SectionHeading = ({ title, icon }: { title: string; icon?: string }) => (
   <div className="col-span-1 md:col-span-2 mt-4">
     <div className="flex items-center gap-2 mb-1">
       {icon && <span className="text-base">{icon}</span>}
-      <h3 className="text-xs font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest">
+      <h3 className="text-xs font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-widest">
         {title}
       </h3>
     </div>
-    <div className="h-px bg-gradient-to-r from-violet-300 via-violet-100 to-transparent dark:from-violet-700 dark:via-violet-900 dark:to-transparent" />
+    <div className="h-px bg-gradient-to-r from-cyan-300 via-cyan-100 to-transparent dark:from-cyan-700 dark:via-cyan-900 dark:to-transparent" />
   </div>
 );
 
@@ -218,7 +218,7 @@ const FieldLabel = ({
 }) => (
   <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-1">
     {children}
-    {required && <span className="text-violet-500">*</span>}
+    {required && <span className="text-cyan-500">*</span>}
   </label>
 );
 
@@ -516,7 +516,7 @@ const page = (): JSX.Element => {
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
 
         {/* ── Card Header ── */}
-        <div className="bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-700 dark:to-indigo-700 px-8 py-5">
+        <div className="bg-gradient-to-br from-[#16c2cf] to-[#0fb8a5] dark:to-cyan-700   px-8 py-5">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-lg shadow-inner">
               ✏️
@@ -525,7 +525,7 @@ const page = (): JSX.Element => {
               <h2 className="text-xl font-bold text-white tracking-tight">
                 Update Enquiry
               </h2>
-              <p className="text-xs text-violet-200 mt-0.5">
+              <p className="text-xs text-cyan-200 mt-0.5">
                 Edit the details below to update this enquiry
               </p>
             </div>
@@ -534,8 +534,8 @@ const page = (): JSX.Element => {
 
         {/* ── Loading overlay ── */}
         {loading && (
-          <div className="px-8 py-4 bg-violet-50 dark:bg-violet-900/10 border-b border-violet-100 dark:border-violet-800/30">
-            <div className="flex items-center gap-2 text-sm text-violet-600 dark:text-violet-400">
+          <div className="px-8 py-4 bg-cyan-50 dark:bg-cyan-900/10 border-b border-cyan-100 dark:border-cyan-800/30">
+            <div className="flex items-center gap-2 text-sm text-cyan-600 dark:text-cyan-400">
               <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
@@ -837,7 +837,7 @@ const page = (): JSX.Element => {
                 <button
                   type="button"
                   onClick={addOtherSocial}
-                  className="text-xs font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-900/40 px-3 py-1 rounded-full border border-violet-200 dark:border-violet-800 transition-all"
+                  className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 bg-cyan-50 dark:bg-cyan-900/20 hover:bg-cyan-100 dark:hover:bg-cyan-900/40 px-3 py-1 rounded-full border border-cyan-200 dark:border-cyan-800 transition-all"
                 >
                   + Add
                 </button>
@@ -870,7 +870,7 @@ const page = (): JSX.Element => {
                 <button
                   type="button"
                   onClick={addExtraField}
-                  className="text-xs font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-900/40 px-3 py-1 rounded-full border border-violet-200 dark:border-violet-800 transition-all"
+                  className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 bg-cyan-50 dark:bg-cyan-900/20 hover:bg-cyan-100 dark:hover:bg-cyan-900/40 px-3 py-1 rounded-full border border-cyan-200 dark:border-cyan-800 transition-all"
                 >
                   + Add Field
                 </button>
@@ -918,7 +918,7 @@ const page = (): JSX.Element => {
             <div className="col-span-1 md:col-span-2 flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800 mt-2">
               <p className="text-xs text-gray-400 dark:text-gray-500">
                 Fields marked{" "}
-                <span className="text-violet-500 font-bold">*</span> are
+                <span className="text-cyan-500 font-bold">*</span> are
                 required
               </p>
               <FormButton isLoading={isLoading} type="submit">

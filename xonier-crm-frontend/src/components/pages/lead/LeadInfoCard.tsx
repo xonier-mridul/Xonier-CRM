@@ -47,7 +47,7 @@ const LeadInfoCard = ({ lead, loading = false }: LeadInfoCardProps) => {
           <h3 className="text-2xl font-semibold flex items-center gap-2 text-slate-900 dark:text-white">
            <IoInformationCircleOutline className="text-yellow-400"/>  Lead Information
           </h3>
-          <Link href={`/leads/view/${lead.id}`} className="text-sm text-slate-500 hover:text-blue-500 dark:text-gray-300 cursor-pointer">
+          <Link href={`/leads/view/${lead.id}`} className="text-sm text-slate-500 hover:text-cyan-500 dark:text-gray-300 cursor-pointer">
             {lead.lead_id}
           </Link>
         </div>
@@ -118,7 +118,7 @@ const InfoItem = ({
 }) => {
   return (
     <div className="flex items-start gap-3">
-      <span className="mt-0.5 text-blue-500 dark:text-blue-400">
+      <span className="mt-0.5 text-cyan-500 dark:text-cyan-400">
         {icon}
       </span>
       <div className="flex flex-col">

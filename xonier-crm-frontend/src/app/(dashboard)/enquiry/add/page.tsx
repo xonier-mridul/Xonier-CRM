@@ -1,6 +1,6 @@
 "use client";
 import { SIDEBAR_WIDTH } from "@/src/constants/constants";
-import React, { useState, useEffect, JSX, FormEvent } from "react";
+import React, { useState, useEffect, JSX, FormEvent, useRef } from "react";
 import {
   PRIORITY,
   PROJECT_TYPES,
@@ -18,6 +18,10 @@ import Input from "@/src/components/ui/Input";
 import FormButton from "@/src/components/ui/FormButton";
 import { EnquiryService } from "@/src/services/enquiry.service";
 import { useRouter } from "next/navigation";
+import { MdOutlineKeyboardArrowDown } from "react-icons/md";
+import { CiSearch } from "react-icons/ci";
+import { FaCheck } from "react-icons/fa";
+
 
 // ── Shared styles ──────────────────────────────────────────────────────────
 const selectClass = (hasErr?: boolean) => `
@@ -25,7 +29,7 @@ const selectClass = (hasErr?: boolean) => `
   bg-white dark:bg-gray-800 text-black dark:text-white
   border-gray-200 dark:border-gray-700
   disabled:opacity-60 disabled:cursor-not-allowed
-  focus:outline-none focus:border-violet-400 dark:focus:border-violet-500 focus:ring-2 focus:ring-violet-400/20
+focus:outline-none focus:border-cyan-400 dark:focus:border-cyan-500 focus:ring-2 focus:ring-teal-400/20
   ${hasErr ? "border-red-400 focus:border-red-400 focus:ring-red-400/20" : ""}
 `;
 
@@ -34,7 +38,7 @@ const textareaClass = (hasErr?: boolean) => `
   bg-white dark:bg-gray-800 text-black dark:text-white
   border-gray-200 dark:border-gray-700
   disabled:opacity-60 disabled:cursor-not-allowed
-  focus:outline-none focus:border-violet-400 dark:focus:border-violet-500 focus:ring-2 focus:ring-violet-400/20
+focus:outline-none focus:border-cyan-400 dark:focus:border-cyan-500 focus:ring-2 focus:ring-teal-400/20
   placeholder-gray-400 dark:placeholder-gray-500 resize-none
   ${hasErr ? "border-red-400 focus:border-red-400 focus:ring-red-400/20" : ""}
 `;
@@ -43,7 +47,7 @@ const inlineInputClass = `
   px-3 py-2 rounded-lg border transition-all duration-200
   bg-white dark:bg-gray-800 text-black dark:text-white text-sm
   border-gray-200 dark:border-gray-700
-  focus:outline-none focus:border-violet-400 dark:focus:border-violet-500 focus:ring-2 focus:ring-violet-400/20
+  focus:outline-none focus:border-cyan-400 dark:focus:border-cyan-500 focus:ring-2 focus:ring-cyan-400/20
   placeholder-gray-400
 `;
 
@@ -72,21 +76,26 @@ const TagInput = ({
   const removeTag = (idx: number) =>
     onChange(values.filter((_, i) => i !== idx));
 
+
+
+
+
   return (
     <div className="flex flex-col gap-1.5">
       <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-1">
         {label}
-        {required && <span className="text-violet-500">*</span>}
+        {required && <span className="text-cyan-500">*</span>}
       </label>
       <div
         className="flex flex-wrap gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700
-          bg-white dark:bg-gray-800 focus-within:border-violet-400 dark:focus-within:border-violet-500
-          focus-within:ring-2 focus-within:ring-violet-400/20 min-h-[44px] transition-all duration-200"
+          bg-white dark:bg-gray-800
+          focus-within:outline-none focus-within:border-cyan-400 dark:focus-within:border-cyan-500 focus-within:ring-2 focus-within:ring-teal-400/20
+           min-h-[44px] transition-all duration-200"
       >
         {values.map((v, i) => (
           <span
             key={i}
-            className="inline-flex items-center gap-1 bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-xs px-2.5 py-1 rounded-full font-medium border border-violet-200 dark:border-violet-700"
+            className="inline-flex items-center gap-1 bg-cyan-50 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 text-xs px-2.5 py-1 rounded-full font-medium border border-cyan-200 dark:border-cyan-700"
           >
             {v}
             <button
@@ -199,11 +208,11 @@ const SectionHeading = ({ title, icon }: { title: string; icon?: string }) => (
   <div className="col-span-1 md:col-span-2 mt-4">
     <div className="flex items-center gap-2 mb-1">
       {icon && <span className="text-base">{icon}</span>}
-      <h3 className="text-xs font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest">
+      <h3 className="text-xs font-bold bg-linear-to-br bg-clip-text text-transparent from-[#16c2cf] to-[#0fb8a5]    uppercase tracking-widest">
         {title}
       </h3>
     </div>
-    <div className="h-px bg-gradient-to-r from-violet-300 via-violet-100 to-transparent dark:from-violet-700 dark:via-violet-900 dark:to-transparent" />
+    <div className="h-px bg-gradient-to-r from-[#16c2cf] via-[#0fb8a5] to-transparent dark:from-cyan-400 dark:via-teal-900 dark:to-transparent" />
   </div>
 );
 
@@ -217,7 +226,7 @@ const FieldLabel = ({
 }) => (
   <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-1">
     {children}
-    {required && <span className="text-violet-500">*</span>}
+    {required && <span className="text-teal-600">*</span>}
   </label>
 );
 
@@ -226,8 +235,9 @@ const page = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [err, setErr] = useState<string[] | string | null>();
   const [usersData, setUsersData] = useState<User[]>([]);
-  const [userSearch, setUserSearch] = useState<string>("")
-  const [userCurrentPage, setUserCurrentPage] = useState<number>(1)
+  const [searchVal,setSearchVal]= useState<string>('')
+  const [openDropDown,setOpenDropDown]=useState<boolean>(false)
+  const [selectedUser,setSelectedUser]= useState<User | null>(null)
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -258,15 +268,79 @@ const page = (): JSX.Element => {
     },
     extra_fields: [] as { label: string; value: string }[],
   });
+  
+const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+  setSearchVal(e.target.value);
+};
+
+
+   
 
   const router = useRouter();
 
-  const getUsers = async () => {
-    try {
-      const result = await AuthService.getAllTeamUsers({search: userSearch, page: userCurrentPage});
-      if (result.status === 200) setUsersData(result.data.data);
-    } catch (error) {
-      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+  // const getUsers = async () => {
+  //   try {
+  //     const result = await AuthService.getAllActiveWithoutPagination();
+  //     if (result.status === 200) 
+  //       setUsersData(result.data.data);
+  //   } catch (error) {
+  //     process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+  //     if (axios.isAxiosError(error)) {
+  //       const messages = extractErrorMessages(error);
+  //       setErr(messages);
+  //       toast.error(`${messages}`);
+  //     } else {
+  //       setErr(["Something went wrong"]);
+  //     }
+  //   }
+      
+  // }
+
+  console.log("userData : ",usersData)
+ const filteredUsers = usersData?.filter((user) => {
+  const search = searchVal.trim().toLowerCase();
+
+  const firstName = user.firstName?.toLowerCase();
+  const lastName = user.lastName?.toLowerCase();
+  const fullName = `${firstName} ${lastName}`;
+
+  return (
+    firstName?.includes(search) ||
+    lastName?.includes(search) ||
+    fullName.includes(search)
+  );
+});
+  
+
+ const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+
+    const handleOutClick = (e:MouseEvent)=>{
+      if(searchRef.current && !searchRef.current.contains(e.target as Node)){
+        setOpenDropDown(false)
+      }
+    }
+
+    document.addEventListener("mousedown",handleOutClick)
+
+  return ()=>{
+    document.removeEventListener("mousedown",handleOutClick)
+  }
+
+
+
+  }, []);
+
+  const fetchUsers=async(search?: string)=>{
+    try{
+      const res =  await AuthService.getAllTeamUsers({search})
+      if(res.status == 200){
+        setUsersData(res.data.data)
+      }
+
+    }catch(error){
+       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) {
         const messages = extractErrorMessages(error);
         setErr(messages);
@@ -274,12 +348,19 @@ const page = (): JSX.Element => {
       } else {
         setErr(["Something went wrong"]);
       }
+
     }
-  };
+
+  }
 
   useEffect(() => {
-    getUsers();
-  }, []);
+    
+  const timer = setTimeout(() => {
+    fetchUsers(searchVal);
+  }, 300); 
+
+  return () => clearTimeout(timer);
+}, [searchVal]);
 
   const set = (key: string, value: unknown) =>
     setFormData((prev) => ({ ...prev, [key]: value }));
@@ -296,6 +377,8 @@ const page = (): JSX.Element => {
       socialLinks: { ...prev.socialLinks, [key]: value },
     }));
 
+ 
+
   const addOtherSocial = () =>
     setFormData((prev) => ({
       ...prev,
@@ -304,6 +387,12 @@ const page = (): JSX.Element => {
         other: [...prev.socialLinks.other, { platform: "", url: "" }],
       },
     }));
+
+    const setAssignTo = (key: string) =>
+  setFormData((prev) => ({
+    ...prev,
+    assignTo: key,
+  }));
 
   const updateOtherSocial = (
     idx: number,
@@ -420,6 +509,9 @@ const page = (): JSX.Element => {
       setIsLoading(false);
     }
   };
+  
+
+
 
   return (
     <div className="ml-72 mt-14 p-6">
@@ -427,16 +519,16 @@ const page = (): JSX.Element => {
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
 
         {/* ── Card Header ── */}
-        <div className="bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-700 dark:to-indigo-700 px-8 py-5">
+        <div className="bg-gradient-to-br from-[#16c2cf] to-[#0fb8a5] dark:to-cyan-700 px-8 py-5">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-lg shadow-inner">
+            <div className="w-9 h-9 rounded-xl bg-white/50 backdrop-blur-sm flex items-center justify-center text-lg shadow-inner">
               📋
             </div>
             <div>
               <h2 className="text-xl font-bold text-white tracking-tight">
                 Create Enquiry
               </h2>
-              <p className="text-xs text-violet-200 mt-0.5">
+              <p className="text-xs text-cyan-200 mt-0.5">
                 Fill in the details below to register a new enquiry
               </p>
             </div>
@@ -682,7 +774,7 @@ const page = (): JSX.Element => {
 
             <div className="flex flex-col gap-1.5">
               <FieldLabel>Assign To</FieldLabel>
-              <select
+              {/* <select 
                 className={selectClass(!!err)}
                 value={formData.assignTo}
                 onChange={(e) => set("assignTo", e.target.value)}
@@ -693,8 +785,97 @@ const page = (): JSX.Element => {
                     {user.firstName} {user.lastName}
                   </option>
                 ))}
-              </select>
-            </div>
+              </select> */}
+             <div ref={searchRef} className="relative w-full">
+                  <button
+                  
+                    onClick={(e) =>{
+                      e.preventDefault()
+                      setOpenDropDown(!openDropDown)
+                    }}
+                    className=" w-full px-3 py-2 capitalize rounded-lg border transition-all duration-200
+                          bg-white dark:bg-gray-800 text-black dark:text-white
+                          border-gray-200 dark:border-gray-700
+                          disabled:opacity-60 disabled:cursor-not-allowed
+                          focus:outline-none focus:border-cyan-400 dark:focus:border-cyan-500 focus:ring-2 focus:ring-teal-400/20 flex items-center justify-between text-[15px] "
+                  >
+                    <span>
+                    {selectedUser
+                      ? `${selectedUser.firstName} ${selectedUser.lastName}`
+                      : "Unassigned"}
+                      </span>
+                      
+                      <MdOutlineKeyboardArrowDown  className="text-gray-600 dark:text-white text-xl"/>
+
+                  </button>
+
+                  {openDropDown && (
+                    <div className="absolute p-2 top-full left-0 mt-1 dark:border-gray-700 dark:bg-gray-700  bg-stone-50 w-full border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
+                      <div className="flex gap-2 mb-2 border dark:bg-slate-600 border-slate-200 dark:border-slate-500 w-full items-center dark:text-white/60 bg-white rounded-lg px-2">
+                        <CiSearch  className="text-slate-400  text-2xl"/>
+
+                      <input placeholder="Search user..."
+                      value={searchVal} 
+                      onChange={handleSearch}
+                      className="outline-none p-2 w-full  text-slate-500 dark:text-white/60"/>
+                      </div>
+
+                      <div
+                        className="px-4 py-2 cursor-pointer text-slate-600 dark:hover:slate-400  rounded-lg hover:bg-stone-100 dark:hover:bg-slate-600 dark:text-white/60"
+                        onClick={() => {
+                          setAssignTo('');
+                          setSelectedUser(null);
+                          setOpenDropDown(false);
+                        }}
+                      >
+                        Unassigned
+                      </div>
+
+                      {/* {usersData?.map((i) => (
+                        <div
+                          key={i.id}
+                          className="px-4 py-2 rounded-lg cursor-pointer capitalize hover:bg-gray-100"
+                          onClick={() => {
+                            setAssignTo(i.id);
+                            setSelectedUser(i);
+                            setOpenDropDown(false);
+                          }}
+                        >
+                          {i.firstName} {i.lastName}
+                        </div>
+                      ))}  */}
+                      {
+                     filteredUsers?.length ? (
+                    filteredUsers.map((user) => (
+                        <div
+                          key={user.id}
+                          className="px-4 py-2 rounded-lg cursor-pointer text-slate-600 capitalize  dark:hover:bg-slate-600 hover:bg-stone-100 flex justify-between items-center"
+                          onClick={() => {
+                            setAssignTo(user.id);
+                            setSelectedUser(user);
+                            setOpenDropDown(false);
+                          }}
+                        >
+                          <span className="dark:text-white/60">
+                            {user.firstName} {user.lastName}
+                          </span>
+
+                          {selectedUser?.id === user.id && (
+                            <FaCheck className="text-green-500 text-sm" />
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="px-4 py-3 text-sm text-gray-500">
+                        No users found
+                      </div>
+                    )}
+                    </div>
+                  )}
+              </div>
+                  
+              </div>
+          
 
             <div className="col-span-1 md:col-span-2 flex flex-col gap-1.5">
               <FieldLabel>Message</FieldLabel>
@@ -739,7 +920,7 @@ const page = (): JSX.Element => {
                 <button
                   type="button"
                   onClick={addOtherSocial}
-                  className="text-xs font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-900/40 px-3 py-1 rounded-full border border-violet-200 dark:border-violet-800 transition-all"
+                  className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 bg-cyan-50 dark:bg-cyan-900/20 hover:bg-cyan-100 dark:hover:bg-cyan-900/40 px-3 py-1 rounded-full border border-cyan-200 dark:border-cyan-800 transition-all"
                 >
                   + Add
                 </button>
@@ -772,7 +953,7 @@ const page = (): JSX.Element => {
                 <button
                   type="button"
                   onClick={addExtraField}
-                  className="text-xs font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-900/40 px-3 py-1 rounded-full border border-violet-200 dark:border-violet-800 transition-all"
+                  className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 bg-cyan-50 dark:bg-cyan-900/20 hover:bg-cyan-100 dark:hover:bg-cyan-900/40 px-3 py-1 rounded-full border border-cyan-200 dark:border-cyan-800 transition-all"
                 >
                   + Add New Field
                 </button>
@@ -820,7 +1001,7 @@ const page = (): JSX.Element => {
             <div className="col-span-1 md:col-span-2 flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800 mt-2">
               <p className="text-xs text-gray-400 dark:text-gray-500">
                 Fields marked{" "}
-                <span className="text-violet-500 font-bold">*</span> are
+                <span className="text-cyan-500 font-bold">*</span> are
                 required
               </p>
               <FormButton isLoading={isLoading} type="submit">

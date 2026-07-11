@@ -55,7 +55,8 @@ class ActivityService:
 
             is_manager = False
 
-            if not is_admin:
+            if not is_admin: 
+                
                 members = await self.verifyManager.get_team_members(userId=current_user["_id"])
 
                 if ObjectId(user_id) in members:
@@ -185,6 +186,8 @@ class ActivityService:
 
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+
+        
 
     async def get_user_activity_summary(
         self,

@@ -17,6 +17,7 @@ from app.repositories.activity_repository import ActivityRepository
 
 from app.utils.activity_payload import activity_payload
 from bson import DBRef
+from app.core.constants import TIME_ZONE
 
 
 class TaskReportService:
@@ -115,7 +116,7 @@ class TaskReportService:
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
-                    today = date.today()
+                    today = datetime.now(TIME_ZONE).date()  # <-- changed
 
                     existing = await self.repo.find_one({
                         "user.$id": ObjectId(user["_id"]),

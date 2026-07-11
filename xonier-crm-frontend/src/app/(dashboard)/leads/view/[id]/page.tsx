@@ -160,7 +160,7 @@ const LeadViewPage = (): JSX.Element => {
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      new: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+      new: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400",
       contacted:
         "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
       qualified:
@@ -177,7 +177,7 @@ const LeadViewPage = (): JSX.Element => {
 
   if (isLoading) {
     return (
-      <div className="ml-72 mt-14 p-6 flex flex-col gap-6 animate-pulse">
+      <div className="lg:ml-72 mt-14 p-6 flex flex-col gap-6 animate-pulse">
         <Skeleton height={120} borderRadius={12} className="dark:bg-gray-700 w-full" />
         <Skeleton height={60} borderRadius={12} className="dark:bg-gray-700 w-full" />
         <div className="flex items-start gap-6">
@@ -207,7 +207,7 @@ const LeadViewPage = (): JSX.Element => {
             </p>
             <button
               onClick={() => router.back()}
-              className="inline-flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors"
             >
               <IoArrowBack className="w-5 h-5" />
               Go Back
@@ -219,7 +219,7 @@ const LeadViewPage = (): JSX.Element => {
   }
 
   return (
-  <div className="ml-72 mt-14 p-6 min-h-screen">
+  <div className="lg:ml-72 mt-14 p-6 min-h-screen">
     {/* Global print styles: fixes gap-based whitespace at page breaks */}
     <style>{`
       @media print {
@@ -262,7 +262,7 @@ const LeadViewPage = (): JSX.Element => {
                 </span>
               </div>
               <p
-                className="text-gray-500 dark:text-gray-400 cursor-pointer hover:text-blue-500 dark:hover:text-blue-400 transition-colors flex items-center gap-2"
+                className="text-gray-500 dark:text-gray-400 cursor-pointer hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors flex items-center gap-2"
                 onClick={() =>
                   handleCopy(leadData ? leadData.lead_id : "text not found")
                 }
@@ -273,24 +273,24 @@ const LeadViewPage = (): JSX.Element => {
             </div>
 
             {/* Hide action buttons when printing */}
-            <div className="flex flex-wrap items-center gap-2 print:hidden">
+            <div className="flex flex-wrap items-center justify-center gap-2 print:hidden">
               {hasPermission(PERMISSIONS.updateLead) &&
               leadData.status !== SALES_STATUS.DELETE ? (
                 <Link
                   href={`/leads/update/${leadData.id}`}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors"
                 >
                   <MdOutlineEdit className="w-4 h-4" />
                   Update Lead
                 </Link>
               ) : (
-                <span className="inline-flex items-center gap-2 px-4 py-2 bg-blue-400 opacity-60 text-white rounded-lg cursor-not-allowed">
+                <span className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 opacity-60 text-white rounded-lg cursor-not-allowed">
                   <MdOutlineEdit className="w-4 h-4" />
                   Update Lead
                 </span>
               )}
-
-              {/* <button
+{/* 
+              <button
                 onClick={handlePrint}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded-lg transition-colors cursor-pointer"
               >
@@ -298,22 +298,34 @@ const LeadViewPage = (): JSX.Element => {
               </button> */}
 
               {/* More Actions Dropdown */}
-              <div className="relative group">
+              {/* <div className="relative group">
                 <button className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-600 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded-lg transition-colors">
                   <IoEllipsisVertical className="w-4 h-4" />
                 </button>
-                <div className="hidden group-hover:block absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10">
+                <div className="absolute border border-slate-200 py-2 hover:border-red-400  text-red-600 dark:text-red-400 hover:bg-red-50  rounded-xl mt-3 bg-white/60 right-0 top-full pt-2 w-30 opacity-0 invisible translate-y-2 group-hover:opacity-100  group-hover:visible group-hover:translate-y-0 transition-all  duration-300">
                   {hasPermission(PERMISSIONS.deleteLead) && (
                     <button
                       onClick={() => handleDelete(leadData.id)}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
+                      className="w-full flex items-center gap-2 px-4  dark:hover:bg-red-900/20 transition-colors cursor-pointer"
                     >
                       <MdDeleteOutline className="w-4 h-4" />
                       Delete
                     </button>
                   )}
                 </div>
-              </div>
+              </div> */}
+              
+                <div className=" border border-slate-200 py-2 hover:border-red-400  text-red-600 dark:text-red-400 hover:bg-red-50  rounded-xl bg-white/60 right-0 top-full w-30  transition-all  duration-300">
+                  {hasPermission(PERMISSIONS.deleteLead) && (
+                    <button
+                      onClick={() => handleDelete(leadData.id)}
+                      className="w-full flex items-center gap-2 px-4  dark:hover:bg-red-900/20 transition-colors cursor-pointer"
+                    >
+                      <MdDeleteOutline className="w-4 h-4" />
+                      Delete
+                    </button>
+                  )}
+                </div>
             </div>
           </div>
         </div>
@@ -324,7 +336,7 @@ const LeadViewPage = (): JSX.Element => {
           icon={<IoBusinessOutline className="w-6 h-6" />}
           label="Company"
           value={leadData?.companyName || "—"}
-          color="bg-blue-500"
+          color="bg-cyan-500"
         />
         <MetricCard
           icon={<IoCodeOutline className="w-5 h-5" />}
@@ -356,13 +368,13 @@ const LeadViewPage = (): JSX.Element => {
                 onClick={() => setActiveTab(tab)}
                 className={`pb-1.5 px-1 font-medium transition-colors cursor-pointer relative whitespace-nowrap ${
                   activeTab === tab
-                    ? "text-blue-600 dark:text-blue-400"
+                    ? "text-cyan-600 dark:text-cyan-400"
                     : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 }`}
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
                 {activeTab === tab && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400"></div>
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-600 dark:bg-cyan-400"></div>
                 )}
               </button>
             ))}
@@ -378,7 +390,7 @@ const LeadViewPage = (): JSX.Element => {
              
               <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700 break-inside-avoid">
                 <div className="flex items-center gap-2 mb-6">
-                  <IoInformationCircleOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <IoInformationCircleOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     Lead Information
                   </h3>
@@ -433,7 +445,7 @@ const LeadViewPage = (): JSX.Element => {
               {/* Employee Details */}
               <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700 break-inside-avoid">
                 <div className="flex items-center gap-2 mb-6">
-                  <IoBriefcaseOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <IoBriefcaseOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     Employee Details
                   </h3>
@@ -456,7 +468,7 @@ const LeadViewPage = (): JSX.Element => {
               {hasPermission(PERMISSIONS.viewAssignLeadInformation) && (
                 <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700 break-inside-avoid">
                   <div className="flex items-center gap-2 mb-6">
-                    <MdOutlineLeaderboard className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <MdOutlineLeaderboard className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                       Lead Assign Information
                     </h3>
@@ -489,7 +501,7 @@ const LeadViewPage = (): JSX.Element => {
               {(leadData?.message || leadData?.membershipNotes) && (
                 <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700 break-inside-avoid">
                   <div className="flex items-center gap-2 mb-6">
-                    <IoChatbubbleOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <IoChatbubbleOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                       Notes & Messages
                     </h3>
@@ -532,7 +544,7 @@ const LeadViewPage = (): JSX.Element => {
           {(activeTab === "contact" || isPrinting) && (
             <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700 break-inside-avoid">
               <div className="flex items-center gap-2 mb-6">
-                <IoPersonOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <IoPersonOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Contact Information
                 </h3>
@@ -574,7 +586,7 @@ const LeadViewPage = (): JSX.Element => {
           {activeTab === "activity" && !isPrinting && (
             <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-2 mb-6">
-                <MdTimeline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <MdTimeline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Activity Timeline
                 </h3>
@@ -593,7 +605,7 @@ const LeadViewPage = (): JSX.Element => {
         <div className="w-1/3 print:w-full flex flex-col gap-6">
           {/* Creator Information */}
           {leadData.createdBy && (
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl border border-blue-400 shadow-lg break-inside-avoid">
+            <div className="bg-gradient-to-br from-cyan-500 to-cyan-600 p-6 rounded-xl border border-cyan-400 shadow-lg break-inside-avoid">
               <div className="flex items-center gap-2 mb-4">
                 <FaRegUser className="text-xl text-white" />
                 <h2 className="text-white font-semibold text-xl">
@@ -656,7 +668,7 @@ const LeadViewPage = (): JSX.Element => {
           {(leadData?.country || leadData?.postalCode) && (
             <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700 break-inside-avoid">
               <div className="flex items-center gap-2 mb-4">
-                <IoLocationOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <IoLocationOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Location Details
                 </h3>

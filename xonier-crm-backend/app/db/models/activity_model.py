@@ -29,7 +29,7 @@ class ActivityModel(BaseDocument):
     metadata: Optional[Dict] = None
 
     createdAt: datetime = Field(
-        default_factory=lambda: datetime.now(TIME_ZONE)
+        default_factory=lambda: datetime.now(TIME_ZONE).date()
     )
 
     class Settings:

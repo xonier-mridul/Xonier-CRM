@@ -22,8 +22,8 @@ const FormButton: React.FC<FormButtonProps> = ({
       className={`
         w-full flex items-center justify-center gap-2
         rounded-md px-4 py-2 font-medium
-        bg-blue-600 text-white
-        hover:bg-blue-700 hover:cursor-pointer
+        bg-cyan-600 text-white
+        hover:bg-cyan-700 hover:cursor-pointer
         disabled:opacity-50 disabled:cursor-not-allowed
         transition-colors duration-200
         ${className}

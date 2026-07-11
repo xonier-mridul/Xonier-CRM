@@ -134,7 +134,7 @@ const Page = (): JSX.Element => {
   const getStatusColor = (status: QuotationStatus) => {
     const colors: Record<QuotationStatus, string> = {
       [QuotationStatus.DRAFT]: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
-      [QuotationStatus.SENT]: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+      [QuotationStatus.SENT]: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400',
       [QuotationStatus.UPDATED]: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
       [QuotationStatus.RESEND]: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400',
       [QuotationStatus.VIEWED]: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
@@ -224,7 +224,7 @@ const Page = (): JSX.Element => {
             </p>
             <button
               onClick={() => router.back()}
-              className="inline-flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors"
             >
               <IoArrowBack className="w-5 h-5" />
               Go Back
@@ -295,21 +295,21 @@ const Page = (): JSX.Element => {
 
               <button
                 onClick={() => toast.info("Download coming soon")}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-sm font-medium transition-colors"
               >
                 <IoDownloadOutline className="w-4 h-4" />
                 Download
               </button>
 
               <div className="relative group">
-                <button className="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl transition-colors">
+                <button className="inline-flex items-center gap-2 px-3 py-2.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl transition-colors">
                   <IoEllipsisVertical className="w-4 h-4" />
                 </button>
-                <div className="hidden group-hover:block absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10">
+                <div className=" absolute border border-slate-200 bg-white rounded-xl right-0 top-10 py-2 w-40 opacity-0 invisible translate-y-2  group-hover:opacity-100  group-hover:visible  group-hover:translate-y-0 transition-all duration-300">
                   {hasPermission(PERMISSIONS.updateQuote) && quoteData.quotationStatus !== QuotationStatus.DELETE
                     ? <Link
                         href={`/quotations/update/${quoteData.id}`}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                       >
                         <IoCreateOutline className="w-4 h-4" />
                         Edit Quotation
@@ -334,7 +334,7 @@ const Page = (): JSX.Element => {
               onClick={() => setActiveTab(tab as any)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                 activeTab === tab
-                  ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                  ? 'bg-cyan-50 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400'
                   : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
               }`}
             >
@@ -351,14 +351,14 @@ const Page = (): JSX.Element => {
             <>
               <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
                 <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
-                  <IoCashOutline className="w-5 h-5 text-blue-500" />
+                  <IoCashOutline className="w-5 h-5 text-cyan-500" />
                   Financial Summary
                 </h2>
 
                 <div className="grid grid-cols-2 gap-3 mb-4">
-                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-100 dark:border-blue-800">
-                    <p className="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">Subtotal</p>
-                    <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{fmt(quoteData.subTotal)}</p>
+                  <div className="bg-cyan-50 dark:bg-cyan-900/20 rounded-xl p-4 border border-cyan-100 dark:border-cyan-800">
+                    <p className="text-xs font-medium text-cyan-600 dark:text-cyan-400 mb-1">Subtotal</p>
+                    <p className="text-2xl font-bold text-cyan-900 dark:text-cyan-100">{fmt(quoteData.subTotal)}</p>
                   </div>
                   <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-4 border border-emerald-100 dark:border-emerald-800">
                     <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 mb-1">Total</p>
@@ -399,7 +399,7 @@ const Page = (): JSX.Element => {
                   )}
                   <div className="flex justify-between text-sm pt-2 border-t border-gray-200 dark:border-gray-600">
                     <span className="font-bold text-gray-900 dark:text-white">Total</span>
-                    <span className="font-bold text-blue-600 dark:text-blue-400 text-base">{fmt(quoteData.total)}</span>
+                    <span className="font-bold text-cyan-600 dark:text-cyan-400 text-base">{fmt(quoteData.total)}</span>
                   </div>
                 </div>
 
@@ -423,12 +423,12 @@ const Page = (): JSX.Element => {
 
               <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
                 <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
-                  <IoPersonOutline className="w-5 h-5 text-blue-500" />
+                  <IoPersonOutline className="w-5 h-5 text-cyan-500" />
                   Customer Information
                 </h2>
 
                 <div className="flex items-start gap-4 mb-5">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-linear-to-br from-[#16c2cf] to-[#0fb8a5] flex items-center justify-center text-white font-bold text-lg shrink-0">
                     {quoteData.customerName.charAt(0).toUpperCase()}
                   </div>
                   <div>
@@ -463,7 +463,7 @@ const Page = (): JSX.Element => {
                     <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/40 rounded-xl md:col-span-2">
                       <IoGlobeOutline className="w-4 h-4 text-gray-400 shrink-0" />
                       <a href={quoteData.companyWebsite} target="_blank" rel="noopener noreferrer"
-                        className="text-sm text-blue-600 dark:text-blue-400 hover:underline truncate">
+                        className="text-sm text-cyan-600 dark:text-cyan-400 hover:underline truncate">
                         {quoteData.companyWebsite}
                       </a>
                     </div>
@@ -474,7 +474,7 @@ const Page = (): JSX.Element => {
               {(quoteData.notes || quoteData.termsAndConditions) && (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 space-y-4">
                   <h2 className="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                    <IoDocumentTextOutline className="w-5 h-5 text-blue-500" />
+                    <IoDocumentTextOutline className="w-5 h-5 text-cyan-500" />
                     Notes & Terms
                   </h2>
                   {quoteData.notes && (
@@ -499,7 +499,7 @@ const Page = (): JSX.Element => {
               {quoteData.description && (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
                   <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                    <IoDocumentText className="w-5 h-5 text-blue-500" />
+                    <IoDocumentText className="w-5 h-5 text-cyan-500" />
                     Description
                   </h2>
                   <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
@@ -513,7 +513,7 @@ const Page = (): JSX.Element => {
           {activeTab === 'items' && hasLineItems && (
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
               <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
-                <IoListOutline className="w-5 h-5 text-blue-500" />
+                <IoListOutline className="w-5 h-5 text-cyan-500" />
                 Line Items
               </h2>
 
@@ -554,7 +554,7 @@ const Page = (): JSX.Element => {
                   <tfoot>
                     <tr className="border-t-2 border-gray-200 dark:border-gray-600">
                       <td colSpan={6} className="px-4 py-3 text-right font-bold text-gray-900 dark:text-white">Subtotal</td>
-                      <td className="px-4 py-3 text-right font-bold text-blue-600 dark:text-blue-400">{fmt(quoteData.subTotal)}</td>
+                      <td className="px-4 py-3 text-right font-bold text-cyan-600 dark:text-cyan-400">{fmt(quoteData.subTotal)}</td>
                     </tr>
                   </tfoot>
                 </table>
@@ -565,7 +565,7 @@ const Page = (): JSX.Element => {
           {activeTab === 'deal' && (
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
               <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
-                <IoFunnelOutline className="w-5 h-5 text-blue-500" />
+                <IoFunnelOutline className="w-5 h-5 text-cyan-500" />
                 Associated Deal
               </h2>
 
@@ -578,7 +578,7 @@ const Page = (): JSX.Element => {
                     </div>
                     <Link
                       href={`/deals/view/${quoteData.deal.id}`}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-xl transition-colors"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm rounded-xl transition-colors"
                     >
                       View Deal
                       <IoArrowBack className="w-4 h-4 rotate-180" />
@@ -595,12 +595,12 @@ const Page = (): JSX.Element => {
                         ${quoteData.deal.amount.toLocaleString()}
                       </p>
                     </div>
-                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-100 dark:border-blue-800">
+                    <div className="bg-cyan-50 dark:bg-cyan-900/20 rounded-xl p-4 border border-cyan-100 dark:border-cyan-800">
                       <div className="flex items-center gap-2 mb-2">
-                        <IoTrendingUpOutline className="w-4 h-4 text-blue-500" />
-                        <span className="text-xs font-medium text-blue-600 dark:text-blue-400">Stage</span>
+                        <IoTrendingUpOutline className="w-4 h-4 text-cyan-500" />
+                        <span className="text-xs font-medium text-cyan-600 dark:text-cyan-400">Stage</span>
                       </div>
-                      <p className="text-base font-semibold text-blue-900 dark:text-blue-100">{quoteData.deal.dealStage}</p>
+                      <p className="text-base font-semibold text-cyan-900 dark:text-cyan-100">{quoteData.deal.dealStage}</p>
                     </div>
                     <div className="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-4 border border-orange-100 dark:border-orange-800">
                       <div className="flex items-center gap-2 mb-2">
@@ -641,8 +641,8 @@ const Page = (): JSX.Element => {
                     </div>
                   )}
                   {quoteData.deal.nextStep && (
-                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
-                      <p className="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">Next Step</p>
+                    <div className="p-4 bg-cyan-50 dark:bg-cyan-900/20 rounded-xl border border-cyan-100 dark:border-cyan-800">
+                      <p className="text-xs font-medium text-cyan-600 dark:text-cyan-400 mb-1">Next Step</p>
                       <p className="text-sm text-gray-900 dark:text-white">{quoteData.deal.nextStep}</p>
                     </div>
                   )}
@@ -659,7 +659,7 @@ const Page = (): JSX.Element => {
           {activeTab === 'timeline' && (
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
               <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
-                <MdTimeline className="w-5 h-5 text-blue-500" />
+                <MdTimeline className="w-5 h-5 text-cyan-500" />
                 Activity Timeline
               </h2>
 
@@ -672,7 +672,7 @@ const Page = (): JSX.Element => {
                       const t = eventType.toLowerCase();
                       if (t.includes(QUOTATION_EVENT_TYPE.ACCEPTED)) return { icon: <IoCheckmarkCircle className="w-5 h-5" />, bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-600 dark:text-green-400' };
                       if (t.includes(QUOTATION_EVENT_TYPE.REJECTED)) return { icon: <IoCloseCircle className="w-5 h-5" />, bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-600 dark:text-red-400' };
-                      if (t.includes(QUOTATION_EVENT_TYPE.UPDATED)) return { icon: <IoCreateOutline className="w-5 h-5" />, bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400' };
+                      if (t.includes(QUOTATION_EVENT_TYPE.UPDATED)) return { icon: <IoCreateOutline className="w-5 h-5" />, bg: 'bg-cyan-100 dark:bg-cyan-900/30', text: 'text-cyan-600 dark:text-cyan-400' };
                       if (t.includes(QUOTATION_EVENT_TYPE.EMAIL_SENT)) return { icon: <IoSendOutline className="w-5 h-5" />, bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-600 dark:text-indigo-400' };
                       if (t.includes(QUOTATION_EVENT_TYPE.VIEWED)) return { icon: <IoInformationCircleOutline className="w-5 h-5" />, bg: 'bg-cyan-100 dark:bg-cyan-900/30', text: 'text-cyan-600 dark:text-cyan-400' };
                       if (t.includes(QUOTATION_EVENT_TYPE.STATUS_CHANGED)) return { icon: <IoTimeOutline className="w-5 h-5" />, bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-600 dark:text-purple-400' };
@@ -723,8 +723,8 @@ const Page = (): JSX.Element => {
                           {history.delta && Object.keys(history.delta).length > 0 && (
                             <div className="mt-2 space-y-1.5">
                               {Object.entries(history.delta).map(([field, change]) => (
-                                <div key={field} className="p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
-                                  <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-1 capitalize">
+                                <div key={field} className="p-2.5 bg-cyan-50 dark:bg-cyan-900/20 rounded-lg border border-cyan-100 dark:border-cyan-800">
+                                  <p className="text-xs font-semibold text-cyan-700 dark:text-cyan-300 mb-1 capitalize">
                                     {field.replace(/([A-Z])/g, ' $1').trim()}
                                   </p>
                                   <div className="flex items-center gap-2 text-xs flex-wrap">
@@ -739,7 +739,7 @@ const Page = (): JSX.Element => {
 
                           {history.performedBy && (
                             <div className="flex items-center gap-2 mt-2">
-                              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+                              <div className="w-5 h-5 rounded-full bg-linear-to-br from-[#16c2cf] to-[#0fb8a5] flex items-center justify-center text-white text-xs font-bold">
                                 {getInitials(history.performedBy)}
                               </div>
                               <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -773,7 +773,7 @@ const Page = (): JSX.Element => {
                       <p className="font-semibold text-sm text-gray-900 dark:text-white mb-1">Quotation Created</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{formatDateTime(quoteData.createdAt)}</p>
                       <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+                        <div className="w-5 h-5 rounded-full bg-linear-to-br from-[#16c2cf] to-[#0fb8a5] flex items-center justify-center text-white text-xs font-bold">
                           {getInitials(quoteData.createdBy)}
                         </div>
                         <span className="text-xs text-gray-500 dark:text-gray-400">by {getFullName(quoteData.createdBy)}</span>
@@ -784,15 +784,15 @@ const Page = (): JSX.Element => {
                   {quoteData.updatedBy && quoteData.updatedAt !== quoteData.createdAt && (
                     <div className="flex gap-4">
                       <div className="flex flex-col items-center">
-                        <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                          <IoCreateOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        <div className="w-10 h-10 rounded-full bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center">
+                          <IoCreateOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                         </div>
                       </div>
                       <div className="flex-1">
                         <p className="font-semibold text-sm text-gray-900 dark:text-white mb-1">Last Updated</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{formatDateTime(quoteData.updatedAt)}</p>
                         <div className="flex items-center gap-2">
-                          <div className="w-5 h-5 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+                          <div className="w-5 h-5 rounded-full bg-linear-to-br from-[#16c2cf] to-[#0fb8a5] flex items-center justify-center text-white text-xs font-bold">
                             {getInitials(quoteData.updatedBy)}
                           </div>
                           <span className="text-xs text-gray-500 dark:text-gray-400">by {getFullName(quoteData.updatedBy)}</span>
@@ -809,7 +809,7 @@ const Page = (): JSX.Element => {
         <div className="space-y-5">
           <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <IoInformationCircleOutline className="w-4 h-4 text-blue-500" />
+              <IoInformationCircleOutline className="w-4 h-4 text-cyan-500" />
               Details
             </h3>
             <div className="space-y-3.5">
@@ -856,7 +856,7 @@ const Page = (): JSX.Element => {
           <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Created By</h3>
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shrink-0">
+              <div className="w-11 h-11 rounded-full bg-linear-to-br from-[#16c2cf] to-[#0fb8a5] flex items-center justify-center text-white font-bold shrink-0">
                 {getInitials(quoteData.createdBy)}
               </div>
               <div className="min-w-0">

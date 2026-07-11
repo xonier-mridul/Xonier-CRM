@@ -298,7 +298,7 @@ const BulkCreateEventModal: React.FC<BulkCreateEventModalProps> = ({
                                 if (checked) {
                                   handleFieldChange(index, "end", null);
                                 }}}
-                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="h-4 w-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500"
                     />
                     All day event
                   </label>
@@ -322,7 +322,7 @@ const BulkCreateEventModal: React.FC<BulkCreateEventModalProps> = ({
 
           <button
             onClick={handleAddRow}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 text-sm text-gray-500 dark:text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 text-sm text-gray-500 dark:text-gray-400 hover:border-cyan-400 hover:text-cyan-500 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Add Another Event
@@ -344,7 +344,7 @@ const BulkCreateEventModal: React.FC<BulkCreateEventModalProps> = ({
             <button
               onClick={handleSubmit}
               disabled={isLoading}
-              className="px-5 py-2 rounded-md text-sm font-medium cursor-pointer disabled:cursor-not-allowed bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white transition-colors"
+              className="px-5 py-2 rounded-md text-sm font-medium cursor-pointer disabled:cursor-not-allowed bg-cyan-500 hover:bg-cyan-600 disabled:bg-cyan-300 text-white transition-colors"
             >
               {isLoading ? "Creating..." : `Create ${events.length} Event(s)`}
             </button>

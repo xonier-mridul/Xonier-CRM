@@ -2,6 +2,7 @@
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import { AuthService } from "@/src/services/auth.service";
 import {
+  passwordCheck,
   User,
   UserPasswordUpdatedByAdminPayload,
   UserRole,
@@ -44,6 +45,7 @@ const page = (): JSX.Element => {
   const [statusData, setStatusData] = useState<UserStatusPayload>({
     status: "",
   });
+
   const [passwordData, setPasswordData] =
     useState<UserPasswordUpdatedByAdminPayload>({
       password: "",
@@ -113,6 +115,32 @@ const page = (): JSX.Element => {
       else setErr(["Something went wrong"]);
     }
   };
+
+   const checks:passwordCheck[]=[
+          {label:'At least 8 characters',
+            valid: passwordData.password.length>=8,
+          },
+          {
+            label:'At least One uppercase letter',
+            valid: /[A-Z]/.test(passwordData.password),
+    
+          },
+           {
+            label:'At least One lowercase letter',
+            valid:/[a-z]/.test(passwordData.password),
+    
+          },
+           {
+            label:'At least One number',
+            valid:/[0-9]/.test(passwordData.password),
+    
+          },
+           {
+            label:'At least One special character',
+            valid: /[!@#$%^&*(),.?":{}|<>]/.test(passwordData.password),
+    
+          },
+        ]
 
   const user = async (): Promise<void> => {
     setIsLoading(true);
@@ -299,6 +327,7 @@ const page = (): JSX.Element => {
         companyLoading={companyLoading}
         companyHasMore={companyHasMore}
         onCompanyScrollEnd={handleCompanyScrollEnd}
+        checks={checks}
       />
     </div>
   );

@@ -1,5 +1,5 @@
 
-import React, { JSX } from 'react'
+import React, { JSX, useState } from 'react'
 import Input from '../../ui/Input'
 import FormButton from '../../ui/FormButton'
 import { UpdateEnquiryCompProps } from '@/src/types/enquiry/enquiry.types'
@@ -8,6 +8,7 @@ import Skeleton from 'react-loading-skeleton'
 import { div } from 'framer-motion/client'
 
 const EnquiryUpdate = ({isLoading, formData, setFormData, handleSubmit,usersData, err, loading}:UpdateEnquiryCompProps):JSX.Element => {
+
   return (
     <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm flex flex-col gap-5 p-6 rounded-xl border-[1px] border-slate-900/10 w-full">
         <h2 className="text-xl font-bold  dark:text-white text-slate-900 capitalize">
@@ -67,7 +68,7 @@ const EnquiryUpdate = ({isLoading, formData, setFormData, handleSubmit,usersData
             bg-white dark:bg-gray-700  text-black dark:text-white
             border-gray-300 dark:border-gray-300/30
             disabled:opacity-60 disabled:cursor-not-allowed
-            focus:outline-none focus:ring-2 focus:ring-violet-500
+            focus:outline-none focus:ring-2 focus:ring-cyan-500
             ${err ? "border-red-500 focus:ring-red-500" : ""}
             
           `}
@@ -94,7 +95,7 @@ const EnquiryUpdate = ({isLoading, formData, setFormData, handleSubmit,usersData
             bg-white dark:bg-gray-700  text-black dark:text-white
             border-gray-300 dark:border-gray-300/30
             disabled:opacity-60 disabled:cursor-not-allowed
-            focus:outline-none focus:ring-2 focus:ring-violet-500
+            focus:outline-none focus:ring-2 focus:ring-cyan-500
             ${err ? "border-red-500 focus:ring-red-500" : ""}
             
           `}
@@ -121,7 +122,7 @@ const EnquiryUpdate = ({isLoading, formData, setFormData, handleSubmit,usersData
       bg-white dark:bg-gray-700 text-black dark:text-white
       border-gray-300 dark:border-gray-300/30
       disabled:opacity-60 disabled:cursor-not-allowed
-      focus:outline-none focus:ring-2 focus:ring-violet-500
+      focus:outline-none focus:ring-2 focus:ring-cyan-500
       ${err ? "border-red-500 focus:ring-red-500" : ""}
     `}
               value={formData.source}
@@ -138,15 +139,16 @@ const EnquiryUpdate = ({isLoading, formData, setFormData, handleSubmit,usersData
             </select>
           </div>}
 
-          {loading ? <div className='flex flex-col gap-1'> <Skeleton height={14} width={100}/> <Skeleton height={36} width={500} borderRadius={12}/> </div> :<div className="flex flex-col gap-1">
-            <label className="text-sm font-medium">Assign To</label>
-            <select
+          {loading ? <div className='flex flex-col gap-1'> <Skeleton height={14} width={100}/> <Skeleton height={36} width={500} borderRadius={12}/> </div> :
+          <div className="flex flex-col gap-1">
+           <label className="text-sm font-medium">Assign To</label>
+            <select 
               className={`
             w-full px-3 py-2 rounded-md border
             bg-white dark:bg-gray-700  text-black dark:text-white
             border-gray-300 dark:border-gray-300/30
             disabled:opacity-60 disabled:cursor-not-allowed
-            focus:outline-none focus:ring-2 focus:ring-violet-500
+            focus:outline-none focus:ring-2 focus:ring-cyan-500
             ${err ? "border-red-500 focus:ring-red-500" : ""}
             
           `}
@@ -161,7 +163,10 @@ const EnquiryUpdate = ({isLoading, formData, setFormData, handleSubmit,usersData
                   {user.firstName} {user.lastName}
                 </option>
               ))}
-            </select>
+            </select> 
+
+
+         
           </div>}
 
           { loading ? <div className='flex flex-col gap-1'> <Skeleton height={14} width={100}/> <Skeleton height={96} width={1000} borderRadius={12}/> </div> :<div className="col-span-1 md:col-span-2 flex flex-col gap-1">
@@ -174,7 +179,7 @@ const EnquiryUpdate = ({isLoading, formData, setFormData, handleSubmit,usersData
             bg-white dark:bg-gray-700  text-black dark:text-white
             border-gray-300 dark:border-gray-300/30
             disabled:opacity-60 disabled:cursor-not-allowed
-            focus:outline-none focus:ring-2 focus:ring-violet-500
+            focus:outline-none focus:ring-2 focus:ring-cyan-500
             ${err ? "border-red-500 focus:ring-red-500" : ""}
             
           `}

@@ -153,7 +153,7 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
 
-        <div className="relative bg-gradient-to-r from-blue-600 via-blue-500 to-teal-600 dark:from-blue-700 dark:via-blue-600 dark:to-purple-700 px-8 py-6">
+        <div className="relative bg-gradient-to-r from-cyan-600 via-cyan-500 to-teal-600 dark:from-cyan-700 dark:via-cyan-600 dark:to-purple-700 px-8 py-6">
           <div className="flex items-start justify-between">
             <div className="flex-1 pr-4">
               <div className="flex items-center gap-3 mb-2">
@@ -187,10 +187,10 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
         <div className="px-8 py-6 space-y-6 overflow-y-auto max-h-[calc(90vh-220px)]">
           
 
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl p-5 border border-blue-200 dark:border-blue-800">
+          <div className="bg-gradient-to-br from-cyan-50 to-indigo-50 dark:from-cyan-950/30 dark:to-indigo-950/30 rounded-xl p-5 border border-cyan-200 dark:border-cyan-800">
             <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
-                <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-cyan-100 dark:bg-cyan-900/50 flex items-center justify-center">
+                <svg className="w-6 h-6 text-cyan-600 dark:text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
@@ -216,7 +216,7 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
                       <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
                         {formatDate(event.start)}
                       </p>
-                      <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                      <p className="text-lg font-bold text-cyan-600 dark:text-cyan-400">
                         {formatTime(event.start)}
                       </p>
                     </div>
@@ -318,7 +318,7 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
               {onEdit && hasPermission(PERMISSIONS.updateEvent) && (
                 <button
                   onClick={onEdit}
-                  className="px-5 py-2.5 text-sm font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30  rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 focus:outline-none focus:ring-4 focus:ring-blue-200  transition-all duration-200 flex items-center gap-2  cursor-pointer"
+                  className="px-5 py-2.5 text-sm font-semibold text-cyan-700 dark:text-cyan-300 bg-cyan-50 dark:bg-cyan-900/30  rounded-lg hover:bg-cyan-100 dark:hover:bg-cyan-900/50 focus:outline-none focus:ring-4 focus:ring-cyan-200  transition-all duration-200 flex items-center gap-2  cursor-pointer"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />

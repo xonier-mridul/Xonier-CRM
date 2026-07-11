@@ -27,6 +27,8 @@ import StatusBadge from "@/src/components/common/Status";
 import DateFilterButton from "@/src/components/common/dateFilter";
 import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 import CreatedAt from "@/src/components/common/CreatedAt";
+import Limit from "@/src/components/ui/Limit";
+import { BsThreeDotsVertical } from "react-icons/bs";
 
 
 const page = (): JSX.Element => {
@@ -125,7 +127,7 @@ const page = (): JSX.Element => {
   };
 
   return (
-    <div className={`ml-72 mt-14 p-6`}>
+    <div className={`lg:ml-72 mt-14 p-6`}>
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm  gap-5 p-6 rounded-xl border-[1px] border-slate-900/10 w-full flex items-center justify-between">
         <div className="flex flex-col gap-2">
           <h2 className="text-2xl font-bold  dark:text-white text-slate-900 capitalize">
@@ -151,11 +153,18 @@ const page = (): JSX.Element => {
               Create, edit or remove enquiries.
             </p>
           </div>
-          <div className="flex items-center gap-6">
+          
+            <div className='block lg:hidden'>
+              <span className='w-10 h-10 cursor-pointer bg-slate-200 flex justify-center items-center rounded-xl '>
+              <BsThreeDotsVertical className='text-slate-400 text-xl' />
+
+              </span>
+            </div>
+          <div className=" items-center hidden lg:flex gap-6">
             <select
               name="limit"
               id="limit"
-              className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10"
+              className="bg-slate-50 outline-none text-slate-400 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 dark:text-white/70"
               onChange={(e) => setPageLimit(Number(e.target.value))}
             >
               <option value="10">10</option>
@@ -163,22 +172,24 @@ const page = (): JSX.Element => {
               <option value="30">30</option>
               <option value="40">50</option>
             </select>
-            <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2">
-              <IoIosSearch className="text-xl" />
-              <input type="text" className="outline-none" placeholder="Search..." onChange={(e) => handleSearch(e.target.value)} value={searchVal} />
+
+           {/* <Limit pageLimit={pageLimit} setPageLimit={setPageLimit}/> */}
+            <div className="bg-slate-50 text-slate-500 col-span-2 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2">
+              <IoIosSearch className="text-xl text-slate-500" />
+              <input type="text" className="outline-none dark:text-white/70" placeholder="Search..." onChange={(e) => handleSearch(e.target.value)} value={searchVal} />
             </div>
             <div>
               <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter}  />
             </div>
             {hasPermission(PERMISSIONS.createEnquiry) ? <Link
               href={"/enquiry/add"}
-              className="bg-blue-600 hover:bg-blue-700
+              className="bg-cyan-600 hover:bg-cyan-700
                           text-white px-5 py-2 rounded-md
-                          flex items-center gap-2 group"
+                          flex items-center gap-2 group "
             >
               <FaPlus className="group-hover:rotate-90 transition-all duration-300" />{" "}
               Create New Enquiry
-            </Link> : <span className="bg-blue-600 
+            </Link> : <span className="bg-cyan-600 
                           text-white px-5 py-2 rounded-md
                           flex items-center gap-2  opacity-80 cursor-not-allowed"><FaPlus className=" transition-all duration-300" />Create New Enquiry</span>}
           </div>
@@ -186,31 +197,31 @@ const page = (): JSX.Element => {
         <div className="w-full rounded-xl overflow-x-auto">
           <table className="w-full rounded-xl text-nowrap overflow-x-scroll">
             <thead>
-              <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
+              <tr className="w-full border-b-2 border-zinc-300 dark:border-zinc-400 bg-slate-200 dark:bg-gray-800">
                 {/* <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
                 Enquiry Id
               </th> */}
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
                   Client Info
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
                   {" "}
                   Project Type
                 </th>
 
-                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
                   Source
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
                   Status
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
                   Created At
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
                   Created By
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
+                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
                   Actions
                 </th>
               </tr>
@@ -225,15 +236,15 @@ const page = (): JSX.Element => {
                       key={item.enquiry_id}
                       className={`${rr
                           ? "bg-white dark:bg-transparent"
-                          : "bg-blue-100/50 dark:bg-slate-500"
+                          : "bg-slate-100/50 dark:bg-slate-800"
                         } w-full`}
                     >
                       {/* <td className="p-4">
                       <span className="text-sm cursor-copy" onClick={()=> handleCopy(item.enquiry_id)}> {item.enquiry_id}</span>
                     </td> */}
                       <td className="flex gap-1 flex-col p-4">
-                        <h4>{item.fullName}</h4>{" "}
-                        <Link href={`mailto:${item.email}`} className="text-xs">
+                        <h4 className='text-slate-600 text-[16px] capitalize dark:text-white/70'>{item.fullName}</h4>{" "}
+                        <Link href={`mailto:${item.email}`} className="text-xs text-slate-400">
                           {item.email}
                         </Link>{" "}
                       </td>
@@ -244,7 +255,7 @@ const page = (): JSX.Element => {
                       </td>
                       <td className="p-4 ">
                         <span
-                          className={`bg-yellow-400 text-slate-800 px-3 py-1.5 text-sm rounded-sm`}
+                          className={`bg-yellow-400 text-white px-3 py-1.5 text-sm rounded-sm`}
                         >
                           {" "}
                           {item.source}
@@ -252,7 +263,7 @@ const page = (): JSX.Element => {
                       </td>
                       <td className="p-4"> <StatusBadge status={item.status} /></td>
                       <td className="p-4"><CreatedAt timestamp={item.createdAt} /></td>
-                      <td className="p-4">{item.createdBy?.firstName} {item.createdBy?.lastName ?? ""}</td>
+                      <td className="p-4 text-slate-500 text-[16px]  capitalize dark:text-white/70">{item.createdBy?.firstName} {item.createdBy?.lastName ?? ""}</td>
                       <td>
                         <div className="flex items-center gap-2">
                           {hasPermission(PERMISSIONS.readEnquiry) ? <Link
@@ -303,7 +314,7 @@ const page = (): JSX.Element => {
                     </tr>
                   );
                 })
-              ) : <tr><td className="p-4 text-center" colSpan={6}>Data not found</td></tr>) : (
+              ) : <tr><td className="p-4 text-center text-slate-500 dark:text-white/70" colSpan={6}>Data not found</td></tr>) : (
                 <tr className="p-4">
                   <td className="text-center p-4">
                     <Skeleton width={120} height={30} borderRadius={14} />

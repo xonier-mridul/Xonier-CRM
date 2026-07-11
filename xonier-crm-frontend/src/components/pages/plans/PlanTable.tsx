@@ -110,7 +110,7 @@ const PlanTable: React.FC<ExtendedPlanTableProps> = ({
                       <td className="py-4 pr-4">
                         <div className="flex flex-col">
                           <span className="font-semibold text-sm text-slate-500 dark:text-white capitalize">{plan.name}</span>
-                          <span className="text-xs text-gray-400 mt-0.5 line-clamp-1 max-w-[160px]">{plan.description}</span>
+                          <span className="text-xs text-gray-400 mt-0.5 line-clamp-1 max-w-40">{plan.description}</span>
                         </div>
                       </td>
 
@@ -154,7 +154,7 @@ const PlanTable: React.FC<ExtendedPlanTableProps> = ({
                       </td>
 
                       <td className="py-4 pr-4">
-                        <Link href={`/users/${plan.createdBy.id}`} className="text-xs text-green-500 dark:text-gray-300 capitalize bg-green-50 px-3 py-1 border border-green-400 cursor-pointer rounded-full">{createdBy || "—"}</Link>
+                        <Link href={`/users/${plan.createdBy.id}`} className="text-xs text-green-500 dark:text-gray-300 capitalize bg-green-50 px-3 py-1 border border-green-400 cursor-pointer rounded-full whitespace-nowrap">{createdBy || "—"}</Link>
                       </td>
 
                       <td className="py-4">

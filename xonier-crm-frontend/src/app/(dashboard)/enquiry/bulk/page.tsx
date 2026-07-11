@@ -302,7 +302,7 @@ const page = (): JSX.Element => {
   };
 
   return (
-    <div className="ml-72 mt-14 p-6 space-y-6">
+    <div className="lg:ml-72 mt-14 p-6 space-y-6">
 
       {/* ── Designation Modal ── */}
       <DesignationModal
@@ -312,16 +312,16 @@ const page = (): JSX.Element => {
 
       {/* ── Header card ── */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
-        <div className="bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-700 dark:to-indigo-700 px-8 py-5">
+        <div className="bg-gradient-to-br from-[#16c2cf] to-[#0fb8a5] dark:to-cyan-700  px-8 py-5">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-lg">
+            <div className="w-9 h-9 rounded-xl bg-white/60 backdrop-blur-sm flex items-center justify-center text-lg">
               📊
             </div>
             <div>
               <h2 className="text-xl font-bold text-white tracking-tight">
                 Bulk Enquiries
               </h2>
-              <p className="text-xs text-violet-200 mt-0.5">
+              <p className="text-xs text-cyan-200 mt-0.5">
                 Upload a CSV or XLSX to create multiple enquiries at once
               </p>
             </div>
@@ -352,7 +352,7 @@ const page = (): JSX.Element => {
 
             <button
               onClick={downloadCSV}
-              className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap"
+              className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap"
             >
               <HiDownload className="text-base" /> Download Sample
             </button>
@@ -371,15 +371,15 @@ const page = (): JSX.Element => {
         }}
         className={`bg-white dark:bg-gray-900 rounded-2xl border-2 border-dashed transition-all duration-200 p-12
           ${isDragging
-            ? "border-violet-400 bg-violet-50 dark:bg-violet-900/10 scale-[1.01]"
-            : "border-gray-200 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-700"
+            ? "border-cyan-400 bg-violet-50 dark:bg-violet-900/10 scale-[1.01]"
+            : "border-gray-200 dark:border-gray-700 hover:border-cyan-300 dark:hover:border-cyan-700"
           }`}
       >
         <div className="flex flex-col items-center gap-4">
           <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-colors
             ${isDragging ? "bg-violet-100 dark:bg-violet-900/30" : "bg-gray-100 dark:bg-gray-800"}`}>
             <FaFileCsv className={`text-3xl transition-colors
-              ${isDragging ? "text-violet-500" : "text-gray-400 dark:text-gray-500"}`} />
+              ${isDragging ? "text-cyan-500" : "text-gray-400 dark:text-gray-500"}`} />
           </div>
 
           <div className="text-center">
@@ -404,18 +404,18 @@ const page = (): JSX.Element => {
 
           <label
             htmlFor="csvUpload"
-            className="cursor-pointer flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors shadow-sm"
+            className="cursor-pointer flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors shadow-sm"
           >
             <FaUpload /> Choose File
           </label>
 
           {selectedFile && (
             <div className="flex items-center gap-3 mt-1 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 px-4 py-2.5 rounded-xl">
-              <FaFileCsv className="text-violet-500 text-lg" />
+              <FaFileCsv className="text-cyan-500 text-lg" />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
                 {selectedFile.name}
               </span>
-              <span className="text-xs bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300 px-2 py-0.5 rounded-full font-medium">
+              <span className="text-xs bg-violet-100 dark:bg-violet-900/40 text-cyan-600 dark:text-cyan-300 px-2 py-0.5 rounded-full font-medium">
                 {data.length} rows
               </span>
               <button
@@ -585,7 +585,7 @@ const page = (): JSX.Element => {
                               <span key={idx} className={`inline-flex px-2 py-0.5 rounded-full text-xs border
                                 ${fieldHasError("industry")
                                   ? "bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border-red-200 dark:border-red-800"
-                                  : "bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-300 border-violet-100 dark:border-violet-800"
+                                  : "bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-300 border-violet-100 dark:border-cyan-800"
                                 }`}>
                                 {ind}
                               </span>
@@ -640,7 +640,7 @@ const page = (): JSX.Element => {
               {Array.from({ length: totalPages }).map((_, i) => (
                 <button key={i} onClick={() => setCurrentPage(i + 1)}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
-                    ${currentPage === i + 1 ? "bg-violet-600 text-white shadow-sm" : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"}`}>
+                    ${currentPage === i + 1 ? "bg-cyan-600 text-white shadow-sm" : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"}`}>
                   {i + 1}
                 </button>
               ))}
@@ -665,7 +665,7 @@ const page = (): JSX.Element => {
           <button
             type="submit"
             disabled={isLoading || invalidCount > 0}
-            className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold px-6 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-semibold px-6 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <FiUpload />
             {isLoading ? "Uploading..." : `Create ${data.length} Enquir${data.length > 1 ? "ies" : "y"}`}

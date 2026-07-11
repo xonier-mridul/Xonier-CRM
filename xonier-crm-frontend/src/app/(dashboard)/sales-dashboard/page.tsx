@@ -42,7 +42,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const STATUS_BADGE: Record<string, string> = {
-  new: "bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400",
+  new: "bg-cyan-50 text-cyan-600 dark:bg-cyan-950 dark:text-cyan-400",
   contacted: "bg-yellow-50 text-yellow-600 dark:bg-yellow-950 dark:text-yellow-400",
   qualified: "bg-violet-50 text-violet-600 dark:bg-violet-950 dark:text-violet-400",
   proposal: "bg-cyan-50 text-cyan-600 dark:bg-cyan-950 dark:text-cyan-400",
@@ -52,7 +52,7 @@ const STATUS_BADGE: Record<string, string> = {
 };
 
 const AVATAR_BG = [
-  "bg-indigo-500", "bg-violet-500", "bg-pink-500",
+  "bg-cyan-500", "bg-violet-500", "bg-pink-500",
   "bg-orange-500", "bg-green-500", "bg-cyan-500",
 ];
 
@@ -156,6 +156,12 @@ function UnauthorizedView() {
   );
 }
 
+type TrendData = {
+  month: string;
+  leads?: number;
+  deals?: number;
+};
+
 export default function SalesDashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -198,13 +204,17 @@ export default function SalesDashboardPage() {
   const users = data?.users;
   const enquiries = data?.enquiries;
   const teams = data?.teams;
-
-  const leadTrendData = data?.monthlyLeadTrend?.map((i) => ({
-    month: `${i.month} ${i.year}`, leads: i.count,
+  
+const leadTrendData: TrendData[] =
+  data?.monthlyLeadTrend?.map((i) => ({
+    month: `${i.month} ${i.year}`,
+    leads: i.count,
   })) ?? [];
 
-  const dealTrendData = data?.monthlyDealTrend?.map((i) => ({
-    month: `${i.month} ${i.year}`, deals: i.count,
+const dealTrendData: TrendData[] =
+  data?.monthlyDealTrend?.map((i) => ({
+    month: `${i.month} ${i.year}`,
+    deals: i.count,
   })) ?? [];
 
   const sourceChartData = data?.leadSourceBreakdown
@@ -254,7 +264,7 @@ export default function SalesDashboardPage() {
           <AlertCircle className="w-10 h-10 text-red-400" />
           <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{error}</p>
           <button onClick={() => load()}
-            className="mt-1 px-4 py-2 text-sm font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors">
+            className="mt-1 px-4 py-2 text-sm font-semibold rounded-lg bg-cyan-600 text-white hover:bg-cyan-700 transition-colors">
             Retry
           </button>
         </div>
@@ -278,7 +288,7 @@ if (!isAdminRole && (!leads || !deals || !enquiries)) return null;
     //   barPct: Math.min((leads.active / totalLeads) * 100, 100),
     //   color: "#6366f1",
     //   icon: <TrendingUp className="w-4 h-4" />,
-    //   iconBg: "bg-indigo-500",
+    //   iconBg: "bg-cyan-500",
     //   link: "/leads",
     //   show: hasPermission(PERMISSIONS.readLead),
     // },
@@ -333,7 +343,7 @@ if (!isAdminRole && (!leads || !deals || !enquiries)) return null;
         barPct: Math.min(((data.companies?.active ?? 0) / Math.max(data.companies?.total ?? 1, 1)) * 100, 100),
         color: "#6366f1",
         icon: <Users className="w-4 h-4" />,
-        iconBg: "bg-indigo-500",
+        iconBg: "bg-cyan-500",
         link: "/companies",
         show: true,
       },
@@ -370,7 +380,7 @@ if (!isAdminRole && (!leads || !deals || !enquiries)) return null;
         barPct: Math.min(((leads?.active ?? 0) / Math.max(leads?.total ?? 1, 1)) * 100, 100),
         color: "#6366f1",
         icon: <TrendingUp className="w-4 h-4" />,
-        iconBg: "bg-indigo-500",
+        iconBg: "bg-cyan-500",
         link: "/leads",
         show: hasPermission(PERMISSIONS.readLead),
       },
@@ -397,7 +407,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
               {new Date(data.period.start).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
               {" – "}
               {new Date(data.period.end).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-              <span className="px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-500 dark:text-indigo-400 text-[10px] font-semibold uppercase tracking-wide">
+              <span className="px-1.5 py-0.5 rounded bg-cyan-50 dark:bg-cyan-950 text-cyan-500 dark:text-cyan-400 text-[10px] font-semibold uppercase tracking-wide">
                 {data.period.filter.replace(/_/g, " ")}
               </span>
             </p>
@@ -410,7 +420,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
                   onClick={() => setFilter(f)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all duration-200 ${
                     filter === f
-                      ? "bg-indigo-600 text-white shadow-sm"
+                      ? "bg-cyan-600 text-white shadow-sm"
                       : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                   }`}
                 >
@@ -421,7 +431,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
             <button
               onClick={() => load(true)}
               disabled={refreshing}
-              className="p-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors disabled:opacity-50"
+              className="p-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
             </button>
@@ -466,7 +476,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <span className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950 px-3 py-1.5 rounded-lg">
+                <span className="flex items-center gap-1.5 text-xs font-semibold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950 px-3 py-1.5 rounded-lg">
                   <Activity className="w-3 h-3" />
                   {trendTab === "leads" ? fmt(leads.thisMonth) : deals.thisMonth} this month
                 </span>
@@ -475,7 +485,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
                     <button key={tab} onClick={() => setTrendTab(tab)}
                       className={`px-3 py-1 rounded-md text-xs font-semibold capitalize transition-all duration-200 ${
                         trendTab === tab
-                          ? "bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm"
+                          ? "bg-white dark:bg-gray-700 text-cyan-600 dark:text-cyan-400 shadow-sm"
                           : "text-gray-500 dark:text-gray-400"
                       }`}>
                       {tab}
@@ -601,7 +611,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
               </div>
               {hasPermission(PERMISSIONS.readLead) && (
                 <Link href="/leads">
-                  <button className="flex items-center gap-1 text-xs font-semibold text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
+                  <button className="flex items-center gap-1 text-xs font-semibold text-cyan-500 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors">
                     View all <ArrowUpRight className="w-3 h-3" />
                   </button>
                 </Link>
@@ -629,7 +639,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
                       </div>
                     </td>
                     <td className="py-3 pr-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400 capitalize">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-cyan-50 text-cyan-600 dark:bg-cyan-950 dark:text-cyan-400 capitalize">
                         {lead.source}
                       </span>
                     </td>
@@ -728,7 +738,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
             <SectionTitle title="Activity Snapshot" sub="Key metrics at a glance" />
             <div className="grid grid-cols-2 gap-3">
               {[
-                { label: "Leads this month", value: fmt(leads.thisMonth ?? 0), color: "bg-indigo-50 dark:bg-indigo-950", text: "text-indigo-600 dark:text-indigo-400", link: "/leads", show: hasPermission(PERMISSIONS.readLead) },
+                { label: "Leads this month", value: fmt(leads.thisMonth ?? 0), color: "bg-cyan-50 dark:bg-cyan-950", text: "text-cyan-600 dark:text-cyan-400", link: "/leads", show: hasPermission(PERMISSIONS.readLead) },
                 { label: "Deals opened", value: deals.thisMonth ?? 0, color: "bg-pink-50 dark:bg-pink-950", text: "text-pink-600 dark:text-pink-400", link: "/deals", show: hasPermission(PERMISSIONS.readDeal) },
                 { label: "New users", value: users?.thisMonth ?? 0, color: "bg-green-50 dark:bg-green-950", text: "text-green-600 dark:text-green-400", link: "/users", show: hasPermission(PERMISSIONS.readUser) },
                 { label: "Enquiries received", value: enquiries.thisMonth ?? 0, color: "bg-orange-50 dark:bg-orange-950", text: "text-orange-600 dark:text-orange-400", link: "/enquiry", show: hasPermission(PERMISSIONS.readEnquiry) },
@@ -752,7 +762,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
         ) : isAdmin ? (
   // Super admin sees a placeholder where lead/deal sections would be
   <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-8 flex flex-col items-center justify-center gap-2">
-    <ShieldCheck className="w-8 h-8 text-indigo-400" />
+    <ShieldCheck className="w-8 h-8 text-cyan-400" />
     <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Admin Overview</p>
     <p className="text-xs text-gray-400 dark:text-gray-500 text-center max-w-sm">
       Lead and deal analytics are available at the company level. Select a company to drill down.
@@ -764,16 +774,16 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
           <div className="flex justify-between items-center mb-4">
             <SectionTitle title="Top Performers" sub="Sales team leaderboard this month" />
             <MdOutlineLeaderboard
-              className="w-4 h-4 text-indigo-600 dark:text-indigo-400 cursor-pointer"
+              className="w-4 h-4 text-cyan-600 dark:text-cyan-400 cursor-pointer"
               onClick={() => setLeaderboard(true)}
             />
           </div>
           <div className="grid grid-cols-4 gap-4">
             {topPerformers.slice(0, 4).map((p, i) => (
               <div key={p.name}
-                className="flex flex-col items-center text-center p-4 rounded-xl bg-slate-50 dark:bg-gray-700 hover:bg-indigo-50 dark:hover:bg-gray-600 transition-colors duration-200">
+                className="flex flex-col items-center text-center p-4 rounded-xl bg-slate-50 dark:bg-gray-700 hover:bg-cyan-50 dark:hover:bg-gray-600 transition-colors duration-200">
                 <div className="relative mb-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-400 to-violet-600 flex items-center justify-center text-white text-sm font-bold shadow-md">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 to-violet-600 flex items-center justify-center text-white text-sm font-bold shadow-md">
                     {p.avatar}
                   </div>
                   {i === 0 && <span className="absolute -top-1.5 -right-1.5 text-base">🥇</span>}
@@ -782,9 +792,9 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
                 </div>
                 <p className="text-sm font-semibold text-slate-800 dark:text-white mb-0.5">{p.name}</p>
                 <p className="text-xs text-slate-400 mb-2">{p.deals} deals closed</p>
-                <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400">${p.revenue.toLocaleString()}</p>
+                <p className="text-sm font-bold text-cyan-600 dark:text-cyan-400">${p.revenue.toLocaleString()}</p>
                 <div className="w-full mt-3 bg-slate-200 dark:bg-gray-600 rounded-full h-1">
-                  <div className="h-1 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all"
+                  <div className="h-1 rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 transition-all"
                     style={{ width: `${(p.revenue / topPerformers[0].revenue) * 100}%` }} />
                 </div>
               </div>
@@ -806,10 +816,10 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
             <div className="p-6 space-y-3 max-h-[400px] overflow-y-auto">
               {topPerformers.map((p, i) => (
                 <div key={p.name}
-                  className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-indigo-50 dark:hover:bg-gray-700 transition-all">
+                  className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-cyan-50 dark:hover:bg-gray-700 transition-all">
                   <div className="flex items-center gap-3">
                     <span className="text-sm font-bold text-gray-400 w-6">#{i + 1}</span>
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-violet-600 flex items-center justify-center text-white text-xs font-bold">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-violet-600 flex items-center justify-center text-white text-xs font-bold">
                       {p.avatar}
                     </div>
                     <div>
@@ -818,7 +828,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400">${p.revenue.toLocaleString()}</p>
+                    <p className="text-sm font-bold text-cyan-600 dark:text-cyan-400">${p.revenue.toLocaleString()}</p>
                     <p className="text-xs text-gray-400">Revenue</p>
                   </div>
                 </div>
@@ -826,7 +836,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
             </div>
             <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800 flex justify-end">
               <button onClick={() => setLeaderboard(false)}
-                className="px-4 py-2 text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">
+                className="px-4 py-2 text-sm font-semibold bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors">
                 Close
               </button>
             </div>

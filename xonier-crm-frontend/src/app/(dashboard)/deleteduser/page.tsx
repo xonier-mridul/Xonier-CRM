@@ -309,7 +309,7 @@ const DeletedUsersPage = (): JSX.Element => {
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="ml-72 mt-16 p-6 min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 rounded-2xl">
+    <div className="lg:ml-72 mt-16 p-6 min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 rounded-2xl">
 
       {/* ── Page header ── */}
       <div className="mb-6 bg-rose-50 dark:bg-rose-900/20 rounded-xl border border-rose-200 dark:border-rose-800 p-6">
@@ -340,7 +340,7 @@ const DeletedUsersPage = (): JSX.Element => {
       )}
 
       {/* ── Toolbar ── */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-4 flex  items-center lg:justify-between gap-3">
         {/* Search */}
         <div className="relative w-full max-w-xs">
           <span className="absolute inset-y-0 left-3 flex items-center text-gray-400 dark:text-gray-500 pointer-events-none">
@@ -351,7 +351,7 @@ const DeletedUsersPage = (): JSX.Element => {
             placeholder="Search by name or email…"
             value={search}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 pl-9 pr-4 py-2 text-sm text-gray-800 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-rose-400 dark:focus:ring-rose-600 transition-shadow"
+            className=" w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 pl-9 pr-4 py-2 text-sm text-gray-800 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-rose-400 dark:focus:ring-rose-600 transition-shadow"
           />
         </div>
 

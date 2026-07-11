@@ -351,14 +351,14 @@ class AuthServices:
           ex_user = jsonable_encoder(exist_user, exclude={"password", "refreshToken"})
 
 
-          is_admin = validate_admin_company_admin(user["userRole"])
+          is_admin = validate_admin(user["userRole"])
 
           sums = None
 
           if not is_admin:
             task_data = await self.taskRepo.find_with_project(filter={"assignedTo.$id": {"$in":[PydanticObjectId(id)]},"completedAt": {"$ne": None}}, project={"rating": 1})
 
-            
+          
 
 
             sums = [(item.get("rating") or None) for item in task_data]
@@ -871,13 +871,15 @@ class AuthServices:
         try:
             if not ObjectId.is_valid(userId):
                 raise AppException(400, "Invalid user object Id")
-            
+       
             with system_query():
                 user = await self.repo.find_by_id_with_project(
                     id=PydanticObjectId(userId),
                     lookups=USER_LOOKUP,
                     project=USER_GET_ME_PROJECT,
                 )
+
+
 
                 
 
@@ -889,7 +891,7 @@ class AuthServices:
 
             if user.get("companyId"):
                 company_id = user["companyId"]
-                print("cc: ", company_id)
+                
                 if isinstance(company_id, dict):
                     company_id = company_id.get("id") or company_id.get("_id")
 

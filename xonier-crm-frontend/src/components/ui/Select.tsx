@@ -28,24 +28,25 @@ const Select: React.FC<SelectProps> = ({
     <div className="flex flex-col gap-1 w-full">
       {label && (
         <label className="text-sm font-medium text-gray-700 dark:text-gray-200 capitalize">
-          {required && <span className="text-red-500 text-xl">*</span>}{" "} {label}
+          {label} {" "}{required && <span className="text-red-500 text-xl">*</span>}
         </label>
       )}
 
       <select
         className={`
           w-full px-3 py-2.5 rounded-md border
-          bg-white dark:bg-gray-700 text-black dark:text-white
+          text-[14px] bg-white dark:bg-gray-700 text-black dark:text-white
           border-gray-300 dark:border-gray-300/30
           disabled:opacity-60 disabled:cursor-not-allowed
-          focus:outline-none focus:ring-2 focus:ring-violet-500
+          focus:outline-none focus:ring-2 focus:ring-cyan-500
           ${error ? "border-red-500 focus:ring-red-500" : ""}
           ${className}
         `}
         {...props}
       >
         {placeholder && (
-          <option value="" disabled>
+          <option
+           value="" disabled>
             {placeholder}
           </option>
         )}

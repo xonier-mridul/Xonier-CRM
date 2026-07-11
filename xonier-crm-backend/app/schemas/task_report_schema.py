@@ -10,8 +10,8 @@ from app.utils.custom_exception import AppException
 class TaskReportItemCreateSchema(BaseModel):
     title: str = Field(..., min_length=1, max_length=500)
     description: Optional[str] = Field(None, max_length=2000)
-    estimatedHours: Optional[float] = Field(None, gt=0, le=24)
-    actualHours: Optional[float] = Field(None, gt=0, le=24)
+    estimatedHours: Optional[float] 
+    actualHours: Optional[float] = None
     status: TASK_ITEM_STATUS = TASK_ITEM_STATUS.PENDING
     priority: Optional[str] = Field(None, pattern="^(low|medium|high|critical)$")
     linkedTaskId: Optional[str] = None
@@ -33,6 +33,20 @@ class TaskReportItemCreateSchema(BaseModel):
         ]:
             raise AppException(422, "actualHours should only be set for in_progress or completed items")
         return self
+
+
+    @model_validator(mode="after")
+    def validate_hours_range(self) -> "TaskReportItemCreateSchema":
+       
+        if self.estimatedHours is not None and (self.estimatedHours < 0 or self.estimatedHours > 24):
+            raise AppException(422, "estimatedHours must be between 0 and 24")
+        
+        if self.actualHours is not None and (self.actualHours < 0 or self.actualHours > 24):
+            raise AppException(422, "actualHours must be between 0 and 24")
+        
+        return self
+    
+
 
 
 class TaskReportItemUpdateSchema(BaseModel):
