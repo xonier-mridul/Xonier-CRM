@@ -625,7 +625,7 @@ const CreateTaskPage = (): JSX.Element => {
                 <button
                   type="button"
                   onClick={() => {
-                    const myId = auth.user?._id;
+                    const myId = auth.user?._id || auth.user?.id;
                     if (!myId) return;
                     if (!form.assignedTo.includes(myId))
                       set("assignedTo", [...form.assignedTo, myId]);

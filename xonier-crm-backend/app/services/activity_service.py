@@ -2,7 +2,7 @@ from typing import Dict, Any
 from datetime import datetime, timezone
 from beanie import PydanticObjectId
 from app.utils.custom_exception import AppException
-from app.utils.validate_admin import validate_admin
+from app.utils.validate_admin import validate_admin, validate_admin_company_admin
 from app.repositories.activity_repository import ActivityRepository
 from app.core.enums import ACTIVITY_ENTITY_TYPE, ACTIVITY_ACTION
 from app.repositories.lead_repository import LeadRepository
@@ -51,7 +51,7 @@ class ActivityService:
             target_user_id = PydanticObjectId(user_id)
             requester_user_id = PydanticObjectId(current_user["_id"])
 
-            is_admin = validate_admin(current_user["userRole"])
+            is_admin = validate_admin_company_admin(current_user["userRole"])
 
             is_manager = False
 
@@ -203,7 +203,7 @@ class ActivityService:
             target_user_id = PydanticObjectId(user_id)
             requester_user_id = PydanticObjectId(current_user["_id"])
 
-            is_admin = validate_admin(current_user["userRole"])
+            is_admin = validate_admin_company_admin(current_user["userRole"])
 
             if not is_admin and requester_user_id != target_user_id:
                 raise AppException(403, "Access denied")
