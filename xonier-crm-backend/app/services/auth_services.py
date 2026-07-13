@@ -363,7 +363,10 @@ class AuthServices:
 
             sums = [(item.get("rating") or None) for item in task_data]
 
+
             filtered_sums = [x for x in sums if isinstance(x, (int, float))]
+
+
             
             if sums:
                 overall_rating = round((sum(filtered_sums)/len(filtered_sums)),1) or None

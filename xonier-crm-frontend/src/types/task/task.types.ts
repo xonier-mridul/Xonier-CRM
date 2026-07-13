@@ -7,6 +7,8 @@ import { TASK_ACTIVITY_ACTION } from "@/src/constants/enum";
 import { TaskTimerEntry } from "./taskTimer.types";
 
 
+export type DateLike = string | Date | Timestamp | null;
+
 export enum TASK_PRIORITY {
   LOW = "low",
   MEDIUM = "medium",
@@ -40,12 +42,12 @@ export interface CreateTaskPayload {
   entityId?: string;
   entityName?: string;
   assignedTo: string[];
-  dueDate?: Date | Timestamp | null;
-  startDate?: Date | Timestamp | null;
+  dueDate?: DateLike;
+  startDate?: DateLike;
   estimatedHours?: number;
   isRecurring: boolean;
   recurrenceType?: RECURRENCE_TYPE;
-  recurrenceEndsAt?: Date | Timestamp | null;
+  recurrenceEndsAt?: DateLike;
   tags: string[];
   attachments: string[];
   parentTask?: string | null;
@@ -56,13 +58,13 @@ export interface UpdateTaskPayload {
   title: string;
   description?: string;
   priority?: TASK_PRIORITY;
-  dueDate?: Date | Timestamp | null;
-  startDate?: Date | Timestamp | null;
+  dueDate?: DateLike;
+  startDate?: DateLike;
   estimatedHours?: number;
   actualHours?: number;
   isRecurring?: boolean;
   recurrenceType?: RECURRENCE_TYPE;
-  recurrenceEndsAt?: Date | Timestamp | null;
+  recurrenceEndsAt?: DateLike;
   tags?: string[];
   attachments?: string[];
   entityType?: TASK_ENTITY_TYPE;

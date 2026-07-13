@@ -70,12 +70,24 @@ const selectCls =
 
 const toDateInputValue = (date?: string | Date | null): string => {
   if (!date) return "";
-  const d = new Date(date as string | Date);
+
+  // If it's a string coming from the API, just grab the "YYYY-MM-DD"
+  // portion directly. Do NOT run it through `new Date()` — depending
+  // on whether the string has a timezone suffix or not, browsers parse
+  // it as UTC or local time, which causes off-by-one-day bugs.
+  if (typeof date === "string") {
+    const match = date.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (match) return `${match[1]}-${match[2]}-${match[3]}`;
+  }
+
+  // Fallback for real Date objects (e.g. freshly created in this session)
+  const d = date as Date;
   if (isNaN(d.getTime())) return "";
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
     d.getDate()
   ).padStart(2, "0")}`;
 };
+
 
 const parseDateInput = (value: string): Date | undefined => {
   if (!value) return undefined;
@@ -233,13 +245,13 @@ const UpdateTaskPage = (): JSX.Element => {
             description: t.description ?? "",
             priority: t.priority ?? TASK_PRIORITY.MEDIUM,
             category: categoryId,
-            dueDate: t.dueDate ? new Date(t.dueDate) : undefined,
-            startDate: t.startDate ? new Date(t.startDate) : undefined,
+            dueDate: t.dueDate ?? undefined,
+            startDate: t.startDate ?? undefined,
             estimatedHours: t.estimatedHours ?? undefined,
             actualHours: t.actualHours ?? undefined,
             isRecurring: t.isRecurring ?? false,
             recurrenceType: t.recurrenceType ?? undefined,
-            recurrenceEndsAt: t.recurrenceEndsAt ? new Date(t.recurrenceEndsAt) : undefined,
+            recurrenceEndsAt: t.recurrenceEndsAt ?? undefined,
             tags: t.tags ?? [],
             attachments: t.attachments ?? [],
             entityType: t.entityType ?? undefined,

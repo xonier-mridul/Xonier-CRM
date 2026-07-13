@@ -49,10 +49,12 @@ class Dependencies:
             user_permissions = set(user_permissions)
             required_permissions = set(permissions)
 
+            print("req permissions: ", required_permissions)
+
             if not user_permissions.intersection(required_permissions):
                 raise AppException(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    message="You do not have permission to perform this action"
+                    message=f"You do not have permission to perform this action: {required_permissions}"
                 )
 
         return checking

@@ -10,7 +10,7 @@ from app.utils.custom_exception import AppException
 class TaskReportItemCreateSchema(BaseModel):
     title: str = Field(..., min_length=1, max_length=500)
     description: Optional[str] = Field(None, max_length=2000)
-    estimatedHours: Optional[float] 
+    estimatedHours: Optional[float] = None
     actualHours: Optional[float] = None
     status: TASK_ITEM_STATUS = TASK_ITEM_STATUS.PENDING
     priority: Optional[str] = Field(None, pattern="^(low|medium|high|critical)$")
