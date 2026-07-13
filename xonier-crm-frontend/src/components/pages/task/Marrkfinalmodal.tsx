@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -71,6 +72,7 @@ export function MarkFinalModal({
   onConfirm,
   onCancel,
 }: MarkFinalModalProps) {
+  const { t } = useTranslation();
   const [remark, setRemark] = useState("");
   const [feedbackStars, setFeedback] = useState(0);
   const [actualHours, setActualHours] = useState<string>("");
@@ -134,7 +136,7 @@ export function MarkFinalModal({
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-gray-900 dark:text-white">
-              Mark as <span>{statusName}</span>
+              {t("mark_as")} <span>{statusName}</span>
             </p>
             <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
               {taskTitle}
@@ -156,22 +158,21 @@ export function MarkFinalModal({
           <div className="flex items-start gap-2.5 px-3.5 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800">
             <span className="text-amber-500 mt-0.5 flex-shrink-0">⚠️</span>
             <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
-              Marking this task as <strong>{statusName}</strong> is a final action.
-              Please fill in the completion details below before confirming.
+              {t("marking_this_task_as")} <strong>{statusName}</strong> {t("is_a_final_action_please_fill_in_the_completion_details")}
             </p>
           </div>
 
           {/* Remark */}
           <div className="space-y-1.5">
             <label className="flex items-center gap-1 text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Completion Remark
+              {t("completion_remark")}
               <span className="text-rose-500 text-xs">*</span>
             </label>
             <textarea
               value={remark}
               onChange={(e) => setRemark(e.target.value)}
               rows={3}
-              placeholder="Describe what was done, any blockers, outcomes…"
+              placeholder={t("describe_what_was_done_any_blockers")}
               className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition resize-none"
             />
           </div>
@@ -179,19 +180,19 @@ export function MarkFinalModal({
           {/* Feedback stars */}
           <div className="space-y-1.5">
             <label className="flex items-center gap-1 text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Task quality rating
+              {t("task_quality_rating")}
               <span className="text-rose-500 text-xs">*</span>
             </label>
             <StarRating value={feedbackStars} onChange={setFeedback} />
             <p className="text-[11px] text-gray-400 dark:text-gray-500">
-              Rate the overall quality of this task's completion
+              {t("rate_the_overall_quality_of_this")}
             </p>
           </div>
 
           {/* Actual hours */}
           <div className="space-y-1.5">
             <label className="flex items-center gap-1 text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Actual hours spent
+              {t("actual_hours_spent")}
             </label>
             <div className="relative">
               <input
@@ -200,15 +201,15 @@ export function MarkFinalModal({
                 step={0.5}
                 value={actualHours}
                 onChange={(e) => setActualHours(e.target.value)}
-                placeholder="e.g. 3.5"
+                placeholder={t("e_g_3_5")}
                 className="w-full pl-3.5 pr-14 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
               />
               <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-gray-500 font-semibold pointer-events-none">
-                hrs
+                {t("hrs")}
               </span>
             </div>
              <label className="flex items-center gap-1 text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Actual Days spent
+              {t("actual_days_spent")}
             </label>
             <div className="relative">
               <input
@@ -217,11 +218,11 @@ export function MarkFinalModal({
                 step={0.5}
                 value={actualDays}
                 onChange={(e) => setActualDays(e.target.value)}
-                placeholder="e.g. 0.5"
+                placeholder={t("e_g_0_5")}
                 className="w-full pl-3.5 pr-14 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
               />
               <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-gray-500 font-semibold pointer-events-none">
-                days
+                {t("days")}
               </span>
             </div>
           </div>
@@ -245,7 +246,7 @@ export function MarkFinalModal({
             disabled={submitting}
             className="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50"
           >
-            Cancel
+            {t("cancel")}
           </button>
           <button
             type="button"

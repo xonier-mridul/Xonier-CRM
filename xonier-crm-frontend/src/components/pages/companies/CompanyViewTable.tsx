@@ -19,6 +19,7 @@ import {
   NUMBER_OF_EMPLOYEES,
 } from "@/src/constants/enum";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 
 interface CompanyViewTableProps {
   companyData: Company[];
@@ -78,16 +79,17 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
   filters,
   onFilterChange,
 }) => {
+  const { t } = useTranslation();
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-900/10 dark:border-gray-700 w-full flex flex-col gap-6 overflow-hidden">
       {/* Header */}
       <div className="flex flex-wrap items-center gap-4 justify-between p-6 border-b border-slate-900/10 dark:border-gray-700">
         <div className="flex flex-col gap-1">
           <h2 className="text-xl font-bold dark:text-white text-slate-900">
-            Companies
+            {t("companies")}
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Manage registered companies
+            {t("manage_registered_companies")}
           </p>
         </div>
 
@@ -102,7 +104,7 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
             }
             className="bg-slate-50 dark:bg-gray-700 px-3 py-2 rounded-lg border border-slate-900/10 dark:border-gray-600 text-sm dark:text-white"
           >
-            <option value="">All Status</option>
+            <option value="">{t("all_status")}</option>
             {Object.values(COMPANY_STATUS).map((s) => (
               <option key={s} value={s}>
                 {s.replace(/_/g, " ")}
@@ -119,10 +121,10 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
             }
             className="bg-slate-50 dark:bg-gray-700 px-3 py-2 rounded-lg border border-slate-900/10 dark:border-gray-600 text-sm dark:text-white"
           >
-            <option value="">All Sizes</option>
+            <option value="">{t("all_sizes")}</option>
             {Object.entries(sizeLabel).map(([val, label]) => (
               <option key={val} value={val}>
-                {label} employees
+                {label} {t("employees_2")}
               </option>
             ))}
           </select>
@@ -134,7 +136,7 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
           >
             {[10, 20, 30, 50].map((n) => (
               <option key={n} value={n}>
-                {n} / page
+                {n} {t("page_2")}
               </option>
             ))}
           </select>
@@ -145,7 +147,7 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
             <input
               type="text"
               className="outline-none bg-transparent text-sm dark:text-white placeholder:text-gray-400 w-44"
-              placeholder="Search companies..."
+              placeholder={t("search_companies")}
               value={searchVal}
               onChange={(e) => onSearch(e.target.value)}
             />
@@ -246,7 +248,7 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
                           href={`/subscriptions/${company.id}`}
                           className="text-xs text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-md"
                         >
-                          {company.subscriptionCount} active
+                          {company.subscriptionCount} {t("active_3")}
                         </Link>
                       ) : (
                         <span className="text-xs text-gray-400">—</span>
@@ -303,7 +305,7 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
                     colSpan={9}
                     className="py-16 text-center text-gray-400 text-sm"
                   >
-                    No companies found
+                    {t("no_companies_found")}
                   </td>
                 </tr>
               )

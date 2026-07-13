@@ -53,8 +53,10 @@ import Skeleton from "react-loading-skeleton";
 import RichEditor from "@/src/components/pages/prospect/RichEditor";
 import prospectService from "@/src/services/prospect.service";
 import CallModal from "@/src/components/pages/prospect/CallModal";
+import { useTranslation } from "react-i18next";
 
 const ProspectViewPage = (): JSX.Element => {
+  const { t } = useTranslation();
     const [err, setErr] = useState<string | string[]>("");
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [ProspectData, setProspectData] = useState<Prospect | null>(null);
@@ -189,17 +191,17 @@ const ProspectViewPage = (): JSX.Element => {
                     <div className="text-center">
                         <IoPersonOutline className="w-20 h-20 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                            Prospect Not Found
+                            {t("prospect_not_found")}
                         </h2>
                         <p className="text-gray-600 dark:text-gray-400 mb-6">
-                            The Prospect you're looking for doesn't exist or has been removed.
+                            {t("the_prospect_you're_looking_for_doesn't")}
                         </p>
                         <button
                             onClick={() => router.back()}
                             className="inline-flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                         >
                             <IoArrowBack className="w-5 h-5" />
-                            Go Back
+                            {t("go_back")}
                         </button>
                     </div>
                 </div>
@@ -292,7 +294,7 @@ const ProspectViewPage = (): JSX.Element => {
                                     }
                                 >
                                     <IoDocumentText className="w-4 h-4" />
-                                    Prospect ID: <span className="font-mono">{ProspectData?.id}</span>
+                                    {t("prospect_id")} <span className="font-mono">{ProspectData?.id}</span>
                                 </p>
 
                             </div>
@@ -349,25 +351,25 @@ const ProspectViewPage = (): JSX.Element => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     <MetricCard
                         icon={<IoBusinessOutline className="w-6 h-6" />}
-                        label="Company"
+                        label={t("company")}
                         value={ProspectData?.companyName || "—"}
                         color="bg-blue-500"
                     />
                     <MetricCard
                         icon={<IoCodeOutline className="w-5 h-5" />}
-                        label="Project Type"
+                        label={t("project_type")}
                         value={ProspectData?.projectType?.replace("_", " ") || "—"}
                         color="bg-purple-500"
                     />
                     <MetricCard
                         icon={<IoLocationOutline className="w-5 h-5" />}
-                        label="Location"
+                        label={t("location")}
                         value={ProspectData?.location?.city || "—"}
                         color="bg-green-500"
                     />
                     <MetricCard
                         icon={<IoCheckmarkCircle className="w-5 h-5" />}
-                        label="Is Assigned"
+                        label={t("is_assigned")}
                         value={ProspectData?.assignTo?.id ? "Yes" : "No"}
                         color={ProspectData?.assignTo?.id ? "bg-emerald-500" : "bg-gray-500"}
                     />
@@ -401,39 +403,39 @@ const ProspectViewPage = (): JSX.Element => {
                                     <div className="flex items-center gap-2 mb-6">
                                         <IoInformationCircleOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                            Prospect Information
+                                            {t("prospect_information")}
                                         </h3>
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                         <InfoItem
                                             icon={<IoInformationCircleOutline className="w-4 h-4" />}
-                                            label="Source"
+                                            label={t("source")}
                                             value={ProspectData?.source}
                                         />
                                         <InfoItem
                                             icon={<IoCodeOutline className="w-4 h-4" />}
-                                            label="Project Type"
+                                            label={t("project_type")}
                                             value={ProspectData?.projectType?.replace("_", " ")}
                                         />
                                         <InfoItem
                                             icon={<FaIndustry className="w-4 h-4" />}
-                                            label="Industry"
+                                            label={t("industry_2")}
                                             value={(ProspectData?.industry).join(", ") || "—"}
                                         />
                                         <InfoItem
                                             icon={<IoLanguageOutline className="w-4 h-4" />}
-                                            label="Language"
+                                            label={t("language")}
                                             value={ProspectData?.location?.country || "—"}
                                         />
                                         <InfoItem
                                             icon={<IoFlagOutline className="w-4 h-4" />}
-                                            label="Priority"
+                                            label={t("priority")}
                                             value={ProspectData?.priority}
                                         />
                                         <InfoItem
                                             icon={<IoStatsChartOutline className="w-4 h-4" />}
-                                            label="Status"
+                                            label={t("status")}
                                             value={ProspectData?.status}
                                         />
                                     </div>
@@ -471,12 +473,13 @@ const ProspectViewPage = (): JSX.Element => {
                                     <div className="flex items-center gap-2 mb-6">
                                         <MdOutlineLeaderboard className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                            Prospect Assign Information
+                                            {t("prospect_assign_information")}
                                         </h3>
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         {ProspectData?.assignTo ? (() => {
+  const { t } = useTranslation();
                                             const isAssigned = ProspectData.assignedAt
                                                 ? formatDate(ProspectData.assignedAt)
                                                 : "-";
@@ -485,13 +488,13 @@ const ProspectViewPage = (): JSX.Element => {
                                                 <>
                                                     <InfoItem
                                                         icon={<IoBriefcaseOutline className="w-4 h-4" />}
-                                                        label="Assign to"
+                                                        label={t("assign_to")}
                                                         value={`${ProspectData.assignTo.firstName} ${ProspectData.assignTo.lastName}` || "—"}
                                                     />
 
                                                     <InfoItem
                                                         icon={<IoStatsChartOutline className="w-4 h-4" />}
-                                                        label="Assign at"
+                                                        label={t("assign_at")}
                                                         value={isAssigned || "—"}
                                                     />
                                                 </>
@@ -548,36 +551,36 @@ const ProspectViewPage = (): JSX.Element => {
                                 <div className="flex items-center gap-2 mb-6">
                                     <IoPersonOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                        Contact Information
+                                        {t("contact_information")}
                                     </h3>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <InfoItem
                                         icon={<IoPersonOutline className="w-4 h-4" />}
-                                        label="Full Name"
+                                        label={t("full_name")}
                                         value={ProspectData?.fullName}
                                     />
-                                    <MaskEmailField label="Email" value={ProspectData?.email} />
-                                    <MaskPhoneField label="Phone" value={ProspectData?.phone} />
+                                    <MaskEmailField label={t("email")} value={ProspectData?.email} />
+                                    <MaskPhoneField label={t("phone")} value={ProspectData?.phone} />
                                     <InfoItem
                                         icon={<IoBusinessOutline className="w-4 h-4" />}
-                                        label="Company"
+                                        label={t("company")}
                                         value={ProspectData?.companyName || "—"}
                                     />
                                     <InfoItem
                                         icon={<IoLocationOutline className="w-4 h-4" />}
-                                        label="City"
+                                        label={t("city")}
                                         value={ProspectData?.location?.city || "—"}
                                     />
                                     <InfoItem
                                         icon={<IoGlobeOutline className="w-4 h-4" />}
-                                        label="Country"
+                                        label={t("country")}
                                         value={ProspectData?.location?.country || "—"}
                                     />
                                     <InfoItem
                                         icon={<IoLocationOutline className="w-4 h-4" />}
-                                        label="Postal Code"
+                                        label={t("postal_code")}
                                         value={ProspectData?.location.zipcode || "—"}
                                     />
                                 </div>
@@ -590,13 +593,13 @@ const ProspectViewPage = (): JSX.Element => {
                                 <div className="flex items-center gap-2 mb-6">
                                     <MdTimeline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                        Activity Timeline
+                                        {t("activity_timeline")}
                                     </h3>
                                 </div>
                                 <div className="text-center py-12">
                                     <IoInformationCircleOutline className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
                                     <p className="text-gray-500 dark:text-gray-400">
-                                        Activity timeline coming soon
+                                        {t("activity_timeline_coming_soon")}
                                     </p>
                                 </div>
                             </div>
@@ -611,30 +614,30 @@ const ProspectViewPage = (): JSX.Element => {
                                 <div className="flex items-center gap-2 mb-4">
                                     <FaRegUser className="text-xl text-white" />
                                     <h2 className="text-white font-semibold text-xl">
-                                        Creator Information
+                                        {t("creator_information")}
                                     </h2>
                                 </div>
                                 <div className="border-b border-white/30 w-full mb-4"></div>
                                 <div className="space-y-4">
                                     <ProfileField
                                         icon={<IoPersonOutline className="w-4 h-4" />}
-                                        label="Name"
+                                        label={t("name_2")}
                                         value={`${ProspectData.createdBy?.firstName} ${ProspectData.createdBy?.lastName ?? ""
                                             }`}
                                     />
                                     <ProfileField
                                         icon={<IoMailOutline className="w-4 h-4" />}
-                                        label="Email"
+                                        label={t("email")}
                                         value={ProspectData.createdBy?.email}
                                     />
                                     <ProfileField
                                         icon={<IoCallOutline className="w-4 h-4" />}
-                                        label="Phone"
+                                        label={t("phone")}
                                         value={ProspectData.createdBy?.phone}
                                     />
                                     <ProfileField
                                         icon={<IoBusinessOutline className="w-4 h-4" />}
-                                        label="Company"
+                                        label={t("company")}
                                         value={ProspectData.createdBy?.company || "—"}
                                     />
                                 </div>
@@ -644,11 +647,11 @@ const ProspectViewPage = (): JSX.Element => {
                         {/* Quick Stats */}
                         <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                Quick Stats
+                                {t("quick_stats")}
                             </h3>
                             <div className="space-y-3">
                                 <StatItem
-                                    label="In Deal"
+                                    label={t("in_deal")}
                                     value={ProspectData.assignTo?.id ? "Yes" : "No"}
                                     color={
                                         ProspectData.assignTo?.id
@@ -657,12 +660,12 @@ const ProspectViewPage = (): JSX.Element => {
                                     }
                                 />
                                 <StatItem
-                                    label="Created"
+                                    label={t("created")}
                                     value={formatDate(ProspectData.createdAt)}
                                     color="text-gray-600 dark:text-gray-400"
                                 />
                                 <StatItem
-                                    label="Last Updated"
+                                    label={t("last_updated")}
                                     value={formatDate(ProspectData.updatedAt)}
                                     color="text-gray-600 dark:text-gray-400"
                                 />
@@ -675,17 +678,17 @@ const ProspectViewPage = (): JSX.Element => {
                                 <div className="flex items-center gap-2 mb-4">
                                     <IoLocationOutline className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                        Location Details
+                                        {t("location_details")}
                                     </h3>
                                 </div>
                                 <div className="space-y-3">
                                     <StatItem
-                                        label="Country"
+                                        label={t("country")}
                                         value={ProspectData?.location?.country ? ProspectData?.location?.country : "-"}
                                         color="text-gray-600 dark:text-gray-400"
                                     />
                                     <StatItem
-                                        label="Postal Code"
+                                        label={t("postal_code")}
                                         value={ProspectData?.location?.zipcode ? ProspectData?.location?.zipcode : null}
                                         color="text-gray-600 dark:text-gray-400"
                                     />
@@ -717,7 +720,7 @@ const ProspectViewPage = (): JSX.Element => {
                                         {!ongoingCall && !isCalling && "Start Call"}
                                     </h3>
                                     {
-                                        (!ongoingCall && !isCalling) && <p className="text-sm text-blue-100">Call this phone number</p>
+                                        (!ongoingCall && !isCalling) && <p className="text-sm text-blue-100">{t("call_this_phone_number")}</p>
 
                                     }
                                 </div>
@@ -738,7 +741,7 @@ const ProspectViewPage = (): JSX.Element => {
                                     <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-5 border border-blue-100 dark:border-blue-800 text-center">
 
                                         <p className="text-xs font-semibold text-gray-500 uppercase mb-2">
-                                            Phone Number
+                                            {t("phone_number")}
                                         </p>
 
                                         <p className="text-2xl font-bold text-gray-900 dark:text-white font-mono">
@@ -758,7 +761,7 @@ const ProspectViewPage = (): JSX.Element => {
                                             className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold shadow-lg cursor-not-allowed"
                                         >
                                             <MdCall className="w-5 h-5 animate-pulse" />
-                                            Calling...
+                                            {t("calling")}
                                         </button>
                                     </div>
 
@@ -776,7 +779,7 @@ const ProspectViewPage = (): JSX.Element => {
                                             className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-lg"
                                         >
                                             <MdCall className="w-5 h-5" />
-                                            Start Call
+                                            {t("start_call")}
                                         </button>
                                     </div>
 
@@ -805,8 +808,8 @@ const ProspectViewPage = (): JSX.Element => {
                                 </div>
 
                                 <div>
-                                    <h3 className="text-lg font-bold text-white">Send Message</h3>
-                                    <p className="text-sm text-yellow-100">Send SMS to this number</p>
+                                    <h3 className="text-lg font-bold text-white">{t("send_message")}</h3>
+                                    <p className="text-sm text-yellow-100">{t("send_sms_to_this_number")}</p>
                                 </div>
                             </div>
 
@@ -825,7 +828,7 @@ const ProspectViewPage = (): JSX.Element => {
                             <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4 border border-yellow-100 dark:border-yellow-800 text-center">
 
                                 <p className="text-xs font-semibold text-gray-500 uppercase mb-2">
-                                    Phone Number
+                                    {t("phone_number")}
                                 </p>
 
                                 <p className="text-xl font-bold text-gray-900 dark:text-white font-mono">
@@ -837,14 +840,14 @@ const ProspectViewPage = (): JSX.Element => {
                             {/* MESSAGE INPUT */}
                             <div>
                                 <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">
-                                    Message
+                                    {t("message")}
                                 </label>
 
                                 <textarea
                                     rows={4}
                                     value={messageText}
                                     onChange={(e) => setMessageText(e.target.value)}
-                                    placeholder="Type your message..."
+                                    placeholder={t("type_your_message")}
                                     className="w-full mt-2 p-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-yellow-500 focus:outline-none dark:bg-gray-700"
                                 />
                             </div>
@@ -882,8 +885,8 @@ const ProspectViewPage = (): JSX.Element => {
                                 </div>
 
                                 <div>
-                                    <h3 className="text-lg font-bold text-white">Send Email</h3>
-                                    <p className="text-sm text-green-100">Compose and send an email</p>
+                                    <h3 className="text-lg font-bold text-white">{t("send_email")}</h3>
+                                    <p className="text-sm text-green-100">{t("compose_and_send_an_email")}</p>
                                 </div>
                             </div>
 
@@ -901,14 +904,14 @@ const ProspectViewPage = (): JSX.Element => {
                             {/* EMAIL INPUT */}
                             <div>
                                 <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">
-                                    Email Address
+                                    {t("email_address")}
                                 </label>
 
                                 <input
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="example@email.com"
+                                    placeholder={t("example_email_com")}
                                     className="w-full mt-2 p-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 focus:outline-none dark:bg-gray-700"
                                 />
                             </div>
@@ -916,14 +919,14 @@ const ProspectViewPage = (): JSX.Element => {
                             {/* SUBJECT */}
                             <div>
                                 <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">
-                                    Subject
+                                    {t("subject")}
                                 </label>
 
                                 <input
                                     type="text"
                                     value={subject}
                                     onChange={(e) => setSubject(e.target.value)}
-                                    placeholder="Email subject"
+                                    placeholder={t("email_subject")}
                                     className="w-full mt-2 p-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 focus:outline-none dark:bg-gray-700"
                                 />
                             </div>
@@ -931,7 +934,7 @@ const ProspectViewPage = (): JSX.Element => {
                             {/* MESSAGE */}
                             <div>
                                 <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">
-                                    Message
+                                    {t("message")}
                                 </label>
 
                                 <div className="mt-2">
@@ -943,7 +946,7 @@ const ProspectViewPage = (): JSX.Element => {
                             <div className="flex justify-center">
                                 <button className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold shadow-lg">
                                     <MdEmail className="w-5 h-5" />
-                                    Send Email
+                                    {t("send_email")}
                                 </button>
                             </div>
 

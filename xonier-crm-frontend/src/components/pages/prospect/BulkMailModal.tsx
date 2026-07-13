@@ -17,6 +17,7 @@ import { toast } from "react-toastify";
 import RichEditor from "@/src/components/pages/prospect/RichEditor";
 import MailService from "@/src/services/communication/mail.service";
 import { Template } from "@/src/types/communication/mail.types";
+import { useTranslation } from "react-i18next";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -106,6 +107,7 @@ const selectCls =
 // ── Component ──────────────────────────────────────────────────────────────
 
 const BulkMailModal = ({ leads, onClose }: { leads: Prospect[]; onClose: () => void }) => {
+  const { t } = useTranslation();
   const [subject, setSubject] = useState("");
   const [mailText, setMailText] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -249,10 +251,10 @@ const BulkMailModal = ({ leads, onClose }: { leads: Prospect[]; onClose: () => v
             </div>
             <div>
               <h3 className="text-base font-bold text-gray-900 dark:text-white tracking-tight">
-                Bulk Email Campaign
+                {t("bulk_email_campaign")}
               </h3>
               <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-0.5">
-                {leads.length} recipient{leads.length !== 1 ? "s" : ""}
+                {leads.length} {t("recipient")}{leads.length !== 1 ? "s" : ""}
                 {extractedVariables.length > 0 &&
                   ` · ${extractedVariables.length} variable${extractedVariables.length !== 1 ? "s" : ""}`}
               </p>
@@ -302,7 +304,7 @@ const BulkMailModal = ({ leads, onClose }: { leads: Prospect[]; onClose: () => v
             <div className="p-6 space-y-5">
               <div>
                 <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider block mb-2">
-                  Email Template
+                  {t("email_template")}
                 </label>
                 <select
                   value={selectedTemplate?.id || ""}
@@ -317,7 +319,7 @@ const BulkMailModal = ({ leads, onClose }: { leads: Prospect[]; onClose: () => v
                     <option key={t.id} value={t.id}>{t.name}</option>
                   ))}
                   {!isLoadingTemplates && templates.length === 0 && (
-                    <option disabled>No templates available</option>
+                    <option disabled>{t("no_templates_available")}</option>
                   )}
                 </select>
               </div>
@@ -328,32 +330,32 @@ const BulkMailModal = ({ leads, onClose }: { leads: Prospect[]; onClose: () => v
                     <div className="flex items-start gap-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 rounded-xl p-4">
                       <MdCheckCircle className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
                       <p className="text-sm text-emerald-800 dark:text-emerald-300">
-                        No variables found in this template. You can send directly to all leads.
+                        {t("no_variables_found_in_this_template")}
                       </p>
                     </div>
                   )}
 
                   <div>
                     <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider flex items-center gap-1.5 mb-2">
-                      <MdEmail className="w-3.5 h-3.5" /> Subject
+                      <MdEmail className="w-3.5 h-3.5" /> {t("subject")}
                     </label>
                     <input
                       type="text"
                       value={subject}
                       disabled
                       className={`${inputCls} cursor-not-allowed opacity-70`}
-                      placeholder="Email subject…"
+                      placeholder={t("email_subject_2")}
                     />
                     {extractedVariables.length > 0 && (
                       <p className="text-[11px] text-emerald-600 dark:text-emerald-500 mt-1.5 font-medium">
-                        Variables: {extractedVariables.map((v) => `{{${v}}}`).join(", ")}
+                        {t("variables_2")} {extractedVariables.map((v) => `{{${v}}}`).join(", ")}
                       </p>
                     )}
                   </div>
 
                   <div>
                     <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider flex items-center gap-1.5 mb-2">
-                      <MdEdit className="w-3.5 h-3.5" /> Message Content
+                      <MdEdit className="w-3.5 h-3.5" /> {t("message_content")}
                     </label>
                     <div className="rounded-xl overflow-hidden border border-emerald-100 dark:border-slate-600 bg-white dark:bg-slate-800">
                       <RichEditor value={mailText} onChange={setMailText} />
@@ -370,12 +372,13 @@ const BulkMailModal = ({ leads, onClose }: { leads: Prospect[]; onClose: () => v
               <div className="flex items-start gap-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 rounded-xl p-4">
                 <MdSettings className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
                 <p className="text-sm text-emerald-800 dark:text-emerald-300">
-                  Configure how each template variable gets populated for every lead.
+                  {t("configure_how_each_template_variable_gets")}
                 </p>
               </div>
 
               <div className="space-y-4">
                 {extractedVariables.map((varName) => {
+  const { t } = useTranslation();
                   const config = variableConfig[varName] || { mode: "common" };
                   const isDone =
                     (config.mode === "common" && !!config.commonValue?.trim()) ||
@@ -394,7 +397,7 @@ const BulkMailModal = ({ leads, onClose }: { leads: Prospect[]; onClose: () => v
                         </code>
                         {isDone && (
                           <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                            <MdCheckCircle className="w-3.5 h-3.5" /> Configured
+                            <MdCheckCircle className="w-3.5 h-3.5" /> {t("configured")}
                           </span>
                         )}
                       </div>
@@ -412,8 +415,8 @@ const BulkMailModal = ({ leads, onClose }: { leads: Prospect[]; onClose: () => v
                                 : "border-gray-100 dark:border-slate-600 bg-white dark:bg-slate-700 hover:border-emerald-200 dark:hover:border-slate-500"
                             }`}
                           >
-                            <p className="text-xs font-bold text-gray-800 dark:text-white">🔵 Common</p>
-                            <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">Same for all</p>
+                            <p className="text-xs font-bold text-gray-800 dark:text-white">{t("common")}</p>
+                            <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">{t("same_for_all")}</p>
                           </button>
                           {/* Different */}
                           <button
@@ -425,8 +428,8 @@ const BulkMailModal = ({ leads, onClose }: { leads: Prospect[]; onClose: () => v
                                 : "border-gray-100 dark:border-slate-600 bg-white dark:bg-slate-700 hover:border-emerald-200 dark:hover:border-slate-500"
                             }`}
                           >
-                            <p className="text-xs font-bold text-gray-800 dark:text-white">👥 Different</p>
-                            <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">Per lead</p>
+                            <p className="text-xs font-bold text-gray-800 dark:text-white">{t("different")}</p>
+                            <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">{t("per_lead")}</p>
                           </button>
                           {/* Predefined */}
                           <button
@@ -438,8 +441,8 @@ const BulkMailModal = ({ leads, onClose }: { leads: Prospect[]; onClose: () => v
                                 : "border-gray-100 dark:border-slate-600 bg-white dark:bg-slate-700 hover:border-emerald-200 dark:hover:border-slate-500"
                             }`}
                           >
-                            <p className="text-xs font-bold text-gray-800 dark:text-white">📋 Predefined</p>
-                            <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">From lead data</p>
+                            <p className="text-xs font-bold text-gray-800 dark:text-white">{t("predefined")}</p>
+                            <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">{t("from_lead_data")}</p>
                           </button>
                         </div>
 
@@ -482,7 +485,7 @@ const BulkMailModal = ({ leads, onClose }: { leads: Prospect[]; onClose: () => v
                               onChange={(e) => handleFieldMappingChange(varName, e.target.value)}
                               className={`${selectCls} focus:ring-amber-300 dark:focus:ring-amber-500`}
                             >
-                              <option value="">Select a field…</option>
+                              <option value="">{t("select_a_field")}</option>
                               {leadFields.map((field) => {
                                 const sample = getLeadFieldValue(leads[0], field.value);
                                 return (
@@ -496,7 +499,7 @@ const BulkMailModal = ({ leads, onClose }: { leads: Prospect[]; onClose: () => v
                             {config.fieldMapping && (
                               <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/50 rounded-lg p-3">
                                 <p className="text-xs font-semibold text-amber-700 dark:text-amber-300 mb-2">
-                                  Sample values
+                                  {t("sample_values")}
                                 </p>
                                 <div className="flex flex-wrap gap-1.5">
                                   {getUniqueFieldValues(config.fieldMapping).map((val, i) => (
@@ -523,12 +526,13 @@ const BulkMailModal = ({ leads, onClose }: { leads: Prospect[]; onClose: () => v
               <div className="flex items-start gap-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 rounded-xl p-4">
                 <MdVisibility className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
                 <p className="text-sm text-emerald-800 dark:text-emerald-300">
-                  Preview how the email renders per lead with all variables resolved.
+                  {t("preview_how_the_email_renders_per")}
                 </p>
               </div>
 
               <div className="space-y-4">
                 {leads.map((lead) => {
+  const { t } = useTranslation();
                   const variables: Record<string, string> = { ...CONSTANT_VARS };
                   extractedVariables.forEach((varName) => {
                     const c = variableConfig[varName];
@@ -551,13 +555,13 @@ const BulkMailModal = ({ leads, onClose }: { leads: Prospect[]; onClose: () => v
 
                       <div className="p-4 space-y-3">
                         <div>
-                          <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5">Subject</p>
+                          <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5">{t("subject")}</p>
                           <p className="text-sm bg-gray-50 dark:bg-slate-700 border border-gray-100 dark:border-slate-600 rounded-lg px-3 py-2 text-gray-800 dark:text-white">
                             {replaceVariables(subject, variables) || "(empty)"}
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5">Message</p>
+                          <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5">{t("message")}</p>
                           <div
                             className="text-sm bg-gray-50 dark:bg-slate-700 border border-gray-100 dark:border-slate-600 rounded-lg px-3 py-3 text-gray-800 dark:text-gray-200 prose dark:prose-invert max-w-none"
                             dangerouslySetInnerHTML={{ __html: replaceVariables(mailText, variables) || "(empty)" }}
@@ -575,7 +579,7 @@ const BulkMailModal = ({ leads, onClose }: { leads: Prospect[]; onClose: () => v
         {/* ── Footer ── */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-900 shrink-0">
           <p className="text-xs text-gray-400 dark:text-gray-500">
-            {leads.length} recipient{leads.length !== 1 ? "s" : ""} selected
+            {leads.length} {t("recipient")}{leads.length !== 1 ? "s" : ""} {t("selected_2")}
           </p>
 
           <div className="flex gap-2">
@@ -584,7 +588,7 @@ const BulkMailModal = ({ leads, onClose }: { leads: Prospect[]; onClose: () => v
               disabled={isSending || sent}
               className="px-4 py-2 rounded-lg border border-gray-200 dark:border-slate-600 text-sm font-medium text-gray-600 dark:text-gray-300 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Cancel
+              {t("cancel")}
             </button>
 
             {/* Direct send when no variables */}
@@ -607,7 +611,7 @@ const BulkMailModal = ({ leads, onClose }: { leads: Prospect[]; onClose: () => v
                     disabled={!isVariablesComplete() || isSending || sent}
                     className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white text-sm font-medium flex items-center gap-1.5 transition disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    Preview <MdArrowForward className="w-4 h-4" />
+                    {t("preview_2")} <MdArrowForward className="w-4 h-4" />
                   </button>
                 )}
                 {activeTab === "preview" && (
@@ -642,20 +646,25 @@ const SendButton = ({
   isSending: boolean;
   sent: boolean;
   count: number;
-}) => (
+}) => {
+  const { t } = useTranslation();
+  return (
+    (
   <button
     onClick={onClick}
     disabled={disabled}
     className="px-5 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white text-sm font-medium flex items-center gap-1.5 transition shadow-sm shadow-emerald-200 dark:shadow-none disabled:opacity-40 disabled:cursor-not-allowed"
   >
     {isSending ? (
-      <><AiOutlineLoading3Quarters className="w-4 h-4 animate-spin" /> Sending…</>
+      <><AiOutlineLoading3Quarters className="w-4 h-4 animate-spin" /> {t("sending")}</>
     ) : sent ? (
-      <><MdCheckCircle className="w-4 h-4" /> Sent!</>
+      <><MdCheckCircle className="w-4 h-4" /> {t("sent_2")}</>
     ) : (
       `Send to ${count} lead${count !== 1 ? "s" : ""}`
     )}
   </button>
-);
+)
+  );
+};
 
 export default BulkMailModal;

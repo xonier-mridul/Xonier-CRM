@@ -1,16 +1,18 @@
 import ThemeToggle from "@/src/components/common/ThemeToggle";
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 
 export default function Home() {
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       
       <header className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2">
           <span className="text-xl font-bold tracking-tight text-violet-600 dark:text-violet-400">
-            <Image width={200} height={200} src={"/images/trakeroo-light.png"} alt="logo" className="hidden dark:block"/>
-            <Image width={200} height={200} src={"/images/trakeroo.png"} alt="logo" className="dark:hidden "/>
+            <Image width={200} height={200} src={"/images/trakeroo-light.png"} alt={t("logo")} className="hidden dark:block"/>
+            <Image width={200} height={200} src={"/images/trakeroo.png"} alt={t("logo")} className="dark:hidden "/>
           </span>
           
         </div>
@@ -22,30 +24,29 @@ export default function Home() {
       <main className="flex flex-col items-center justify-center px-6 py-20 text-center">
        
         <span className="mb-4 inline-flex items-center rounded-full bg-teal-100 dark:bg-teal-900/40 px-4 py-1 text-sm font-medium text-teal-700 dark:text-teal-300">
-          🚀 Smart CRM for modern teams
+          {t("smart_crm_for_modern_teams")}
         </span>
 
         <h1 className="max-w-4xl text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
-          Welcome to{" "}
+          {t("welcome_to")}{" "}
           <span className="bg-gradient-to-r from-teal-500 to-blue-500 bg-clip-text text-transparent">
-            Trakeroo CRM
+            {t("trakeroo_crm")}
           </span>
         </h1>
 
 
         <p className="mt-6 max-w-2xl text-lg text-gray-600 dark:text-gray-400">
-          Manage leads, roles, users, and permissions with clarity and control.
-          Built for performance, security, and scalability.
+          {t("manage_leads_roles_users_and_permissions_with_clarity_and")}
         </p>
 
 
         <div className="mt-10 flex flex-wrap justify-center gap-4">
           <Link href={"/dashboard"} className="rounded-xl bg-teal-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-violet-700 transition">
-            Go to Dashboard
+            {t("go_to_dashboard")}
           </Link>
 
           <button className="rounded-xl border border-gray-300 dark:border-gray-600 px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-            Learn More
+            {t("learn_more")}
           </button>
         </div>
 
@@ -82,7 +83,7 @@ export default function Home() {
 
      
       <footer className="border-t border-gray-200 dark:border-gray-700 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
-        © {new Date().getFullYear()} Trakeroo CRM. Developed by <Link className="text-teal-700 dark:text-teal-200 hover:text-teal-800 dark:hover:text-teal-300" href={"https://xoniertechnologies.com"} target="_blank">Xonier Technologies</Link>
+        © {new Date().getFullYear()} {t("trakeroo_crm_developed_by")} <Link className="text-teal-700 dark:text-teal-200 hover:text-teal-800 dark:hover:text-teal-300" href={"https://xoniertechnologies.com"} target="_blank">{t("xonier_technologies")}</Link>
       </footer>
     </div>
   );

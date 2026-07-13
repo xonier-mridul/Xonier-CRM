@@ -11,8 +11,10 @@ import { PlanService } from "@/src/services/plan.service";
 import CompanyService from "@/src/services/company.service";
 import { useRouter } from "next/navigation";
 import { BsBuildings } from "react-icons/bs";
+import { useTranslation } from "react-i18next";
 
 const CreateCompanyPage = () => {
+  const { t } = useTranslation();
   const [planData, setPlanData] = useState<Plan[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -85,10 +87,10 @@ const CreateCompanyPage = () => {
           <div className="h-9 w-9 rounded-xl bg-blue-600 flex items-center justify-center">
             <BsBuildings className="text-white text-base" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Register Company</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t("register_company")}</h1>
         </div>
         <p className="text-sm text-gray-500 dark:text-gray-400 ml-12">
-          Create a new company and its primary admin account
+          {t("create_a_new_company_and_its")}
         </p>
       </div>
 

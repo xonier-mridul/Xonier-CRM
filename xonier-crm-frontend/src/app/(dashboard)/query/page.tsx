@@ -4,9 +4,11 @@ import { QueryService } from '@/src/services/query.service'
 import { QueryData } from '@/src/types/query/query'
 import axios from 'axios'
 import  { useEffect, useState } from 'react'
+import { useTranslation } from "react-i18next";
 
 
 const query = () => {
+  const { t } = useTranslation();
     const [queryData,setQueryData] = useState<QueryData[]>([])
     const [currentPage,setCurrentPage]= useState<number>(1)
     const [pageLimit,setPageLimit]= useState<number>(10)
@@ -90,7 +92,7 @@ const query = () => {
   return (
     <div className="lg:ml-72 mt-14 p-6 flex flex-col gap-6">
         <div className=''>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Query</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t("query")}</h1>
         </div>
         <QueryTable
         queryData={queryData}

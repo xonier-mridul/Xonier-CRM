@@ -13,6 +13,7 @@ import {
 import axios from "axios";
 import { useParams, useRouter } from "next/navigation";
 import React, { JSX, useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const STATUS_META: Record<
   string,
@@ -175,6 +176,7 @@ function TaskItemCard({
   item: TaskReportItem;
   index: number;
 }) {
+  const { t } = useTranslation();
   const statusMeta =
     ITEM_STATUS_META[item.status] ?? ITEM_STATUS_META["pending"];
   const priorityClass =
@@ -229,7 +231,7 @@ function TaskItemCard({
               d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          Est:{" "}
+          {t("est_2")}{" "}
           <span className="font-semibold text-gray-700 dark:text-gray-300">
             {item.estimatedHours ?? "—"}h
           </span>
@@ -249,7 +251,7 @@ function TaskItemCard({
                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            Actual:{" "}
+            {t("actual_2")}{" "}
             <span className="font-semibold text-gray-700 dark:text-gray-300">
               {item.actualHours}h
             </span>
@@ -280,6 +282,7 @@ function SectionCard({
   isSubmitted: boolean;
   children: React.ReactNode;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
       <div
@@ -294,11 +297,11 @@ function SectionCard({
         <div className="flex items-center gap-2">
           {isSubmitted ? (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-              ✓ Submitted
+              {t("submitted_2")}
             </span>
           ) : (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
-              Not Submitted
+              {t("not_submitted")}
             </span>
           )}
           {submittedAt && (
@@ -378,6 +381,7 @@ function ReviewPanel({
   report: TaskReport;
   onReviewed: () => void;
 }) {
+  const { t } = useTranslation();
   const [comment, setComment] = useState(report.managerComment ?? "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [err, setErr] = useState<string | string[]>("");
@@ -447,7 +451,7 @@ function ReviewPanel({
             </h2>
             {isAlreadyReviewed && report.managerReviewedAt && (
               <p className="text-xs text-purple-600 dark:text-purple-400 mt-0.5">
-                Reviewed on{" "}
+                {t("reviewed_on")}{" "}
                 {new Date(report.managerReviewedAt).toLocaleString("en-IN", {
                   day: "2-digit",
                   month: "short",
@@ -463,7 +467,7 @@ function ReviewPanel({
         {isAlreadyReviewed && (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border border-purple-200 dark:border-purple-700">
             <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-            Reviewed
+            {t("reviewed")}
           </span>
         )}
       </div>
@@ -479,7 +483,7 @@ function ReviewPanel({
             </div>
             <div className="min-w-0">
               <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                Reviewed by
+                {t("reviewed_by")}
               </p>
               <p className="text-sm font-bold text-gray-900 dark:text-white truncate">
                 {report.reviewedBy.firstName} {report.reviewedBy.lastName}
@@ -512,7 +516,7 @@ function ReviewPanel({
             <div className="p-4 rounded-xl bg-white dark:bg-gray-800 border border-purple-100 dark:border-purple-800/50 min-h-[80px]">
               <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
                 {report.managerComment ?? (
-                  <span className="text-gray-400 italic">No comment provided</span>
+                  <span className="text-gray-400 italic">{t("no_comment_provided")}</span>
                 )}
               </p>
             </div>
@@ -522,7 +526,7 @@ function ReviewPanel({
                 ref={textareaRef}
                 value={comment}
                 onChange={handleCommentChange}
-                placeholder="Write a detailed review for this task report. Include feedback on productivity, task completion, blockers, and suggestions for improvement..."
+                placeholder={t("write_a_detailed_review_for_this")}
                 rows={5}
                 className={`w-full px-4 py-3 rounded-xl border text-sm resize-none transition-all duration-200 focus:outline-none focus:ring-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 ${
                   err
@@ -583,7 +587,7 @@ function ReviewPanel({
                       d="M4 12a8 8 0 018-8v8z"
                     />
                   </svg>
-                  Submitting...
+                  {t("submitting")}
                 </>
               ) : (
                 <>
@@ -600,7 +604,7 @@ function ReviewPanel({
                       d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  Submit Review
+                  {t("submit_review")}
                 </>
               )}
             </button>
@@ -614,7 +618,7 @@ function ReviewPanel({
                 }}
                 className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
               >
-                Reset
+                {t("reset")}
               </button>
             )}
           </div>
@@ -635,8 +639,7 @@ function ReviewPanel({
                 d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            Once submitted, the review will be visible to the team member and
-            the report will be marked as reviewed.
+            {t("once_submitted_the_review_will_be_visible_to_the_team")}
           </p>
         )}
       </div>
@@ -645,6 +648,7 @@ function ReviewPanel({
 }
 
 const TaskReportDetailPage = (): JSX.Element => {
+  const { t } = useTranslation();
   const [report, setReport] = useState<TaskReport | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [err, setErr] = useState<string | string[]>("");
@@ -704,7 +708,7 @@ const TaskReportDetailPage = (): JSX.Element => {
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-6 text-center">
           <div className="text-4xl mb-3">⚠️</div>
           <h3 className="text-base font-bold text-red-700 dark:text-red-400 mb-2">
-            Failed to load report
+            {t("failed_to_load_report")}
           </h3>
           {messages.map((m, i) => (
             <p key={i} className="text-sm text-red-600 dark:text-red-400">
@@ -716,7 +720,7 @@ const TaskReportDetailPage = (): JSX.Element => {
             onClick={getTaskReport}
             className="mt-4 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition active:scale-95"
           >
-            Retry
+            {t("retry")}
           </button>
         </div>
       </div>
@@ -732,7 +736,7 @@ const TaskReportDetailPage = (): JSX.Element => {
               <div className="flex items-center gap-2.5">
                 <span className="text-2xl">📋</span>
                 <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-                  Task Report Detail
+                  {t("task_report_detail")}
                 </h1>
               </div>
               {!isLoading && report && (
@@ -783,7 +787,7 @@ const TaskReportDetailPage = (): JSX.Element => {
                   strokeLinejoin="round"
                 />
               </svg>
-              Refresh
+              {t("refresh")}
             </button>
           </div>
         </div>
@@ -841,7 +845,7 @@ const TaskReportDetailPage = (): JSX.Element => {
             </div>
 
             <SectionCard
-              title="Morning Agenda"
+              title={t("morning_agenda")}
               icon="🌅"
               accentClass="bg-amber-50/50 dark:bg-amber-900/10"
               submittedAt={morning?.submittedAt}
@@ -850,7 +854,7 @@ const TaskReportDetailPage = (): JSX.Element => {
               {morning?.goals && (
                 <div className="mb-4 p-3.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800">
                   <p className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wide mb-1">
-                    Daily Goals
+                    {t("daily_goals")}
                   </p>
                   <p className="text-sm text-gray-700 dark:text-gray-200">
                     {morning.goals}
@@ -867,14 +871,14 @@ const TaskReportDetailPage = (): JSX.Element => {
                 <div className="text-center py-10">
                   <div className="text-4xl mb-2">📭</div>
                   <p className="text-sm text-gray-400 dark:text-gray-500 font-medium">
-                    No morning agenda items
+                    {t("no_morning_agenda_items")}
                   </p>
                 </div>
               )}
             </SectionCard>
 
             <SectionCard
-              title="Evening Report"
+              title={t("evening_report")}
               icon="🌆"
               accentClass="bg-indigo-50/50 dark:bg-indigo-900/10"
               submittedAt={evening?.submittedAt}
@@ -885,7 +889,7 @@ const TaskReportDetailPage = (): JSX.Element => {
                   <span className="text-2xl">{mood.emoji}</span>
                   <div>
                     <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide">
-                      Overall Mood
+                      {t("overall_mood")}
                     </p>
                     <p className={`text-sm font-semibold ${mood.color}`}>
                       {mood.label}
@@ -897,7 +901,7 @@ const TaskReportDetailPage = (): JSX.Element => {
               {evening?.completedItems.length ? (
                 <div className="mb-5">
                   <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
-                    ✅ Completed Tasks ({evening.completedItems.length})
+                    {t("completed_tasks_2")}{evening.completedItems.length})
                   </p>
                   <div className="space-y-3">
                     {evening.completedItems.map((item, idx) => (
@@ -910,7 +914,7 @@ const TaskReportDetailPage = (): JSX.Element => {
               {evening?.pendingItems.length ? (
                 <div className="mb-5">
                   <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
-                    ⏳ Pending Tasks ({evening.pendingItems.length})
+                    {t("pending_tasks")}{evening.pendingItems.length})
                   </p>
                   <div className="space-y-3">
                     {evening.pendingItems.map((item, idx) => (
@@ -925,7 +929,7 @@ const TaskReportDetailPage = (): JSX.Element => {
                   <div className="text-center py-10">
                     <div className="text-4xl mb-2">📭</div>
                     <p className="text-sm text-gray-400 dark:text-gray-500 font-medium">
-                      No evening report items
+                      {t("no_evening_report_items")}
                     </p>
                   </div>
                 )}
@@ -934,7 +938,7 @@ const TaskReportDetailPage = (): JSX.Element => {
                 {evening?.achievements && (
                   <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 hover:shadow-sm transition-shadow duration-200">
                     <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide mb-1">
-                      🏆 Achievements
+                      {t("achievements")}
                     </p>
                     <p className="text-sm text-gray-700 dark:text-gray-200">
                       {evening.achievements}
@@ -944,7 +948,7 @@ const TaskReportDetailPage = (): JSX.Element => {
                 {evening?.blockers && (
                   <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 hover:shadow-sm transition-shadow duration-200">
                     <p className="text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wide mb-1">
-                      🚫 Blockers
+                      {t("blockers")}
                     </p>
                     <p className="text-sm text-gray-700 dark:text-gray-200">
                       {evening.blockers}
@@ -954,7 +958,7 @@ const TaskReportDetailPage = (): JSX.Element => {
                 {evening?.tomorrowPlan && (
                   <div className="p-3.5 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 hover:shadow-sm transition-shadow duration-200">
                     <p className="text-xs font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wide mb-1">
-                      📅 Tomorrow's Plan
+                      {t("tomorrow_s_plan")}
                     </p>
                     <p className="text-sm text-gray-700 dark:text-gray-200">
                       {evening.tomorrowPlan}
@@ -969,7 +973,7 @@ const TaskReportDetailPage = (): JSX.Element => {
                   {evening.totalCompletedHours != null && (
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">
-                        Completed Hours:
+                        {t("completed_hours")}
                       </span>
                       <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
                         {evening.totalCompletedHours}h
@@ -979,7 +983,7 @@ const TaskReportDetailPage = (): JSX.Element => {
                   {evening.totalPendingHours != null && (
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">
-                        Pending Hours:
+                        {t("pending_hours")}
                       </span>
                       <span className="text-sm font-bold text-amber-600 dark:text-amber-400">
                         {evening.totalPendingHours}h
@@ -996,17 +1000,17 @@ const TaskReportDetailPage = (): JSX.Element => {
               <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2.5">
                 <span className="text-xl">ℹ️</span>
                 <h2 className="text-base font-extrabold text-gray-900 dark:text-white tracking-tight">
-                  Report Info
+                  {t("report_info")}
                 </h2>
               </div>
               <div className="p-5 grid grid-cols-2 gap-x-10">
                 <div>
                   <InfoRow
-                    label="Status"
+                    label={t("status")}
                     value={<StatusBadge status={report.status} />}
                   />
                   <InfoRow
-                    label="Report Date"
+                    label={t("report_date")}
                     value={new Date(report.reportDate).toLocaleDateString(
                       "en-IN",
                       {
@@ -1018,29 +1022,29 @@ const TaskReportDetailPage = (): JSX.Element => {
                     )}
                   />
                   <InfoRow
-                    label="Reviewed"
+                    label={t("reviewed")}
                     value={
                       report.isReviewed ? (
                         <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
-                          ✓ Yes
+                          {t("yes_2")}
                         </span>
                       ) : (
                         <span className="text-gray-400 dark:text-gray-500">
-                          Not yet
+                          {t("not_yet")}
                         </span>
                       )
                     }
                   />
                   {report.managerComment && (
                     <InfoRow
-                      label="Manager Comment"
+                      label={t("manager_comment")}
                       value={report.managerComment}
                     />
                   )}
                 </div>
                 <div>
                   <InfoRow
-                    label="Created At"
+                    label={t("created_at")}
                     value={new Date(report.createdAt).toLocaleString("en-IN", {
                       day: "2-digit",
                       month: "short",
@@ -1050,7 +1054,7 @@ const TaskReportDetailPage = (): JSX.Element => {
                     })}
                   />
                   <InfoRow
-                    label="Updated At"
+                    label={t("updated_at")}
                     value={new Date(report.updatedAt).toLocaleString("en-IN", {
                       day: "2-digit",
                       month: "short",
@@ -1061,7 +1065,7 @@ const TaskReportDetailPage = (): JSX.Element => {
                   />
                   {report.managerReviewedAt && (
                     <InfoRow
-                      label="Reviewed At"
+                      label={t("reviewed_at")}
                       value={new Date(
                         report.managerReviewedAt
                       ).toLocaleString("en-IN", {

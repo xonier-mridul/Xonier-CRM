@@ -9,6 +9,7 @@ import { Message } from "@/src/types/communication/message.types";
 import MessageService from "@/src/services/communication/message.servicie";
 import CreatedAt from "@/src/components/common/CreatedAt";
 import Skeleton from "react-loading-skeleton";
+import { useTranslation } from "react-i18next";
 
 type StatusType = Message["status"] | "";
 
@@ -40,6 +41,7 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 export default function Page() {
+  const { t } = useTranslation();
   const [logs, setLogs] = useState<Message[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [search, setSearch] = useState("");
@@ -121,8 +123,8 @@ export default function Page() {
       {/* HEADER */}
       <div className="bg-white mb-10 dark:bg-gray-700 flex gap-5 p-6 rounded-xl border border-slate-900/10 w-full items-center justify-between">
         <div className="flex flex-col gap-2">
-          <h2 className="text-2xl font-bold dark:text-white text-slate-900">Message Logs</h2>
-          <p className="text-gray-500 dark:text-gray-400">Monitor inbound and outbound SMS activity</p>
+          <h2 className="text-2xl font-bold dark:text-white text-slate-900">{t("message_logs")}</h2>
+          <p className="text-gray-500 dark:text-gray-400">{t("monitor_inbound_and_outbound_sms_activity")}</p>
         </div>
         <button
           onClick={() => fetchMessages(debouncedSearch, debouncedFilters)}
@@ -130,7 +132,7 @@ export default function Page() {
           className="flex items-center gap-2 px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white"
         >
           <FiRefreshCw className={isLoading ? "animate-spin" : ""} />
-          Refresh
+          {t("refresh")}
         </button>
       </div>
 
@@ -140,12 +142,12 @@ export default function Page() {
         {/* Top bar */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
-            <h3 className="text-xl font-bold dark:text-white">Message Logs</h3>
+            <h3 className="text-xl font-bold dark:text-white">{t("message_logs")}</h3>
             <p className="text-gray-500 dark:text-gray-400 text-sm">
-              SMS delivery status and history
+              {t("sms_delivery_status_and_history")}
               {(hasActiveFilters || search) && !isLoading && (
                 <span className="ml-2 text-blue-500 font-medium">
-                  · {totalCount} result{totalCount !== 1 ? "s" : ""}
+                  · {totalCount} {t("result")}{totalCount !== 1 ? "s" : ""}
                 </span>
               )}
             </p>
@@ -156,7 +158,7 @@ export default function Page() {
               <IoIosSearch className="text-xl text-gray-400" />
               <input
                 type="text"
-                placeholder="Search to / from number"
+                placeholder={t("search_to_from_number")}
                 className="outline-none bg-transparent w-52 text-sm"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -171,7 +173,7 @@ export default function Page() {
                 }`}
             >
               <MdFilterAlt className="text-lg" />
-              Filters
+              {t("filters")}
               {activeFilterCount > 0 && (
                 <span className="bg-white text-blue-600 text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
                   {activeFilterCount}
@@ -185,7 +187,7 @@ export default function Page() {
                 className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 text-sm font-medium transition-colors"
               >
                 <MdFilterAltOff className="text-lg" />
-                Clear
+                {t("clear")}
               </button>
             )}
           </div>
@@ -195,7 +197,7 @@ export default function Page() {
         {showFilters && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-slate-50 dark:bg-gray-800 rounded-xl border border-slate-900/10">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">From Number</label>
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t("from_number")}</label>
               <div className="bg-white dark:bg-gray-700 px-3 py-2 rounded-lg border border-slate-900/10 flex items-center gap-2">
                 <IoIosSearch className="text-gray-400 shrink-0" />
                 <input type="number" placeholder="+1234567890" className="outline-none bg-transparent text-sm w-full"
@@ -204,7 +206,7 @@ export default function Page() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">To Number</label>
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t("to_number")}</label>
               <div className="bg-white dark:bg-gray-700 px-3 py-2 rounded-lg border border-slate-900/10 flex items-center gap-2">
                 <IoIosSearch className="text-gray-400 shrink-0" />
                 <input type="number" placeholder="+1234567890" className="outline-none bg-transparent text-sm w-full"
@@ -213,38 +215,38 @@ export default function Page() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status</label>
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t("status")}</label>
               <select className="bg-white dark:bg-gray-700 px-3 py-2 rounded-lg border border-slate-900/10 text-sm outline-none w-full"
                 value={filters.status} onChange={(e) => setFilters((p) => ({ ...p, status: e.target.value as StatusType }))}>
-                <option value="">All statuses</option>
-                <option value="sent">Sent</option>
-                <option value="delivered">Delivered</option>
-                <option value="queued">Queued</option>
-                <option value="failed">Failed</option>
+                <option value="">{t("all_statuses_2")}</option>
+                <option value="sent">{t("sent")}</option>
+                <option value="delivered">{t("delivered")}</option>
+                <option value="queued">{t("queued")}</option>
+                <option value="failed">{t("failed")}</option>
               </select>
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Conversion ID</label>
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t("conversion_id")}</label>
               <div className="bg-white dark:bg-gray-700 px-3 py-2 rounded-lg border border-slate-900/10 flex items-center gap-2">
                 <IoIosSearch className="text-gray-400 shrink-0" />
-                <input type="text" placeholder="e.g. CNV-001" className="outline-none bg-transparent text-sm w-full"
+                <input type="text" placeholder={t("e_g_cnv_001")} className="outline-none bg-transparent text-sm w-full"
                   value={filters.conversionId} onChange={(e) => setFilters((p) => ({ ...p, conversionId: e.target.value }))} />
               </div>
             </div>
 
             <div className="sm:col-span-2 lg:col-span-4 flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Date Range</label>
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t("date_range")}</label>
               <div className="flex items-center gap-3 flex-wrap">
                 <div className="flex items-center gap-2 bg-white dark:bg-gray-700 px-3 py-2 rounded-lg border border-slate-900/10 flex-1 min-w-40">
-                  <span className="text-xs text-gray-400 shrink-0">From</span>
+                  <span className="text-xs text-gray-400 shrink-0">{t("from")}</span>
                   <input type="date" className="outline-none bg-transparent text-sm w-full dark:text-white"
                     value={filters.dateFrom} max={filters.dateTo || undefined}
                     onChange={(e) => setFilters((p) => ({ ...p, dateFrom: e.target.value }))} />
                 </div>
                 <span className="text-gray-400 text-sm shrink-0">→</span>
                 <div className="flex items-center gap-2 bg-white dark:bg-gray-700 px-3 py-2 rounded-lg border border-slate-900/10 flex-1 min-w-40">
-                  <span className="text-xs text-gray-400 shrink-0">To</span>
+                  <span className="text-xs text-gray-400 shrink-0">{t("to_2")}</span>
                   <input type="date" className="outline-none bg-transparent text-sm w-full dark:text-white"
                     value={filters.dateTo} min={filters.dateFrom || undefined}
                     onChange={(e) => setFilters((p) => ({ ...p, dateTo: e.target.value }))} />
@@ -252,7 +254,7 @@ export default function Page() {
                 {(filters.dateFrom || filters.dateTo) && (
                   <button onClick={() => setFilters((p) => ({ ...p, dateFrom: "", dateTo: "" }))}
                     className="text-xs text-red-400 hover:text-red-600 shrink-0 underline">
-                    Clear dates
+                    {t("clear_dates")}
                   </button>
                 )}
               </div>

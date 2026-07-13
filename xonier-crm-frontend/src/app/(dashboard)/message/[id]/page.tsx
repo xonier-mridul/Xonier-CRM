@@ -20,6 +20,7 @@ import {
   Building2,
 } from "lucide-react";
 import { MessageSquareX } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 // ─── Status config ─────────────────────────────────────────────────────────
 const STATUS_STYLE: Record<string, { bg: string; text: string; dot: string }> = {
@@ -45,6 +46,7 @@ const fmt = (val: string | null | undefined) => {
 
 // ─── Page ──────────────────────────────────────────────────────────────────
 export default function Page() {
+  const { t } = useTranslation();
   const params = useParams();
   const id = params.id;
 
@@ -91,16 +93,16 @@ export default function Page() {
             <MessageSquareX size={26} className="text-red-500" />
           </div>
           <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
-            Message Not Found
+            {t("message_not_found")}
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-            This SMS log doesn't exist or may have been removed.
+            {t("this_sms_log_doesn't_exist_or")}
           </p>
           <a
             href="/emailManagement/sms"
             className="inline-block px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition"
           >
-            Go Back
+            {t("go_back")}
           </a>
         </div>
       </div>
@@ -116,9 +118,9 @@ export default function Page() {
       <div className="bg-white dark:bg-gray-700 rounded-xl border border-gray-100 dark:border-gray-600 p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">SMS Details</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t("sms_details")}</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-              Full information about this message
+              {t("full_information_about_this_message")}
             </p>
           </div>
           <span
@@ -133,58 +135,58 @@ export default function Page() {
         <div className="mt-5 pt-5 border-t border-gray-100 dark:border-gray-600 grid grid-cols-2 sm:grid-cols-4 gap-4">
           <StatPill
             icon={data!.direction === "outbound" ? <ArrowUpRight size={14} /> : <ArrowDownLeft size={14} />}
-            label="Direction"
+            label={t("direction")}
             value={data!.direction ?? "—"}
           />
-          <StatPill icon={<RefreshCw size={14} />} label="Channel" value={data!.channel ?? "—"} />
+          <StatPill icon={<RefreshCw size={14} />} label={t("channel")} value={data!.channel ?? "—"} />
           <StatPill
             icon={<DollarSign size={14} />}
-            label="Cost"
+            label={t("cost")}
             value={data!.cost ? `${data!.cost} ${data!.cost_currency}` : `— ${data!.cost_currency ?? ""}`}
           />
           <StatPill
             icon={<Hash size={14} />}
-            label="Conversation"
+            label={t("conversation")}
             value={data!.conversation_id ?? "—"}
           />
         </div>
       </div>
 
       {/* ── Delivery Info ── */}
-      <Section title="Delivery Information" icon={<Send size={16} />}>
+      <Section title={t("delivery_information")} icon={<Send size={16} />}>
         <div className="grid md:grid-cols-2 gap-4">
-          <InfoCard icon={<Phone size={16} />} label="To Number" value={data!.sent_to_number} />
-          <InfoCard icon={<Phone size={16} />} label="From Number" value={data!.sent_from_number} />
-          <InfoCard icon={<MessageSquare size={16} />} label="Direction" value={data!.direction} />
-          <InfoCard icon={<CheckCircle size={16} />} label="Channel" value={data!.channel} />
-          <InfoCard icon={<Hash size={16} />} label="Provider SID" value={data!.provider_message_sid} />
+          <InfoCard icon={<Phone size={16} />} label={t("to_number")} value={data!.sent_to_number} />
+          <InfoCard icon={<Phone size={16} />} label={t("from_number")} value={data!.sent_from_number} />
+          <InfoCard icon={<MessageSquare size={16} />} label={t("direction")} value={data!.direction} />
+          <InfoCard icon={<CheckCircle size={16} />} label={t("channel")} value={data!.channel} />
+          <InfoCard icon={<Hash size={16} />} label={t("provider_sid")} value={data!.provider_message_sid} />
           {data!.conversation_id && (
-            <InfoCard icon={<Hash size={16} />} label="Conversation ID" value={data!.conversation_id} />
+            <InfoCard icon={<Hash size={16} />} label={t("conversation_id")} value={data!.conversation_id} />
           )}
         </div>
       </Section>
 
       {/* ── Timeline ── */}
-      <Section title="Timeline" icon={<Clock size={16} />}>
+      <Section title={t("timeline")} icon={<Clock size={16} />}>
         <div className="grid md:grid-cols-2 gap-4">
-          <InfoCard icon={<Clock size={16} />} label="Created At" value={fmt(data!.createdAt)} />
-          <InfoCard icon={<Send size={16} />} label="Sent At" value={fmt(data!.sent_at)} />
-          <InfoCard icon={<CheckCircle size={16} />} label="Delivered At" value={fmt(data!.delivered_at)} />
-          <InfoCard icon={<MessageSquare size={16} />} label="Read At" value={fmt(data!.read_at)} />
+          <InfoCard icon={<Clock size={16} />} label={t("created_at")} value={fmt(data!.createdAt)} />
+          <InfoCard icon={<Send size={16} />} label={t("sent_at")} value={fmt(data!.sent_at)} />
+          <InfoCard icon={<CheckCircle size={16} />} label={t("delivered_at")} value={fmt(data!.delivered_at)} />
+          <InfoCard icon={<MessageSquare size={16} />} label={t("read_at")} value={fmt(data!.read_at)} />
           {data!.status === "failed" && (
-            <InfoCard icon={<AlertCircle size={16} />} label="Failed At" value={fmt(data!.failed_at)} />
+            <InfoCard icon={<AlertCircle size={16} />} label={t("failed_at")} value={fmt(data!.failed_at)} />
           )}
-          <InfoCard icon={<Clock size={16} />} label="Last Updated" value={fmt(data!.updatedAt)} />
+          <InfoCard icon={<Clock size={16} />} label={t("last_updated")} value={fmt(data!.updatedAt)} />
         </div>
       </Section>
 
       {/* ── Sent By ── */}
       {data!.sent_by && (
-        <Section title="Sent By" icon={<User size={16} />}>
+        <Section title={t("sent_by")} icon={<User size={16} />}>
           <div className="grid md:grid-cols-2 gap-4">
             <InfoCard
               icon={<User size={16} />}
-              label="Name"
+              label={t("name_2")}
               value={`${data!.sent_by.firstName} ${data!.sent_by.lastName}`}
             />
             
@@ -193,7 +195,7 @@ export default function Page() {
       )}
 
       {/* ── Message Bubble ── */}
-      <Section title="Message" icon={<MessageSquare size={16} />}>
+      <Section title={t("message")} icon={<MessageSquare size={16} />}>
         <div className="flex">
           <div
             className={`text-sm p-4 rounded-2xl max-w-xl leading-relaxed whitespace-pre-line shadow-sm ${
@@ -215,11 +217,11 @@ export default function Page() {
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/40 rounded-xl p-5">
           <div className="flex items-center gap-2 mb-2">
             <AlertCircle size={16} className="text-red-500" />
-            <h3 className="text-sm font-semibold text-red-700 dark:text-red-400">Error Details</h3>
+            <h3 className="text-sm font-semibold text-red-700 dark:text-red-400">{t("error_details")}</h3>
           </div>
           {data!.error_code && (
             <p className="text-xs text-red-500 dark:text-red-400 mb-1">
-              Code: <code className="font-mono">{data!.error_code}</code>
+              {t("code")} <code className="font-mono">{data!.error_code}</code>
             </p>
           )}
           {data!.error_message && (

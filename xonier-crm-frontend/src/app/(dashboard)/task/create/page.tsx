@@ -22,6 +22,7 @@ import { AuthService } from "@/src/services/auth.service";
 import { RootState } from "@/src/store";
 import { PERMISSIONS } from "@/src/constants/enum";
 import UserSelect from "@/src/components/common/userselect";
+import { useTranslation } from "react-i18next";
 
 const PRIORITY_CFG: Record<
   TASK_PRIORITY,
@@ -112,6 +113,7 @@ function Field({
 }
 
 const CreateTaskPage = (): JSX.Element => {
+  const { t } = useTranslation();
   const router = useRouter();
   const { hasPermission } = usePermissions();
 
@@ -355,11 +357,11 @@ const CreateTaskPage = (): JSX.Element => {
                 <span className="text-white text-sm">✏️</span>
               </div>
               <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-                Create Task
+                {t("create_task")}
               </h1>
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 ml-12">
-              Fill in the details to add a new task
+              {t("fill_in_the_details_to_add")}
             </p>
           </div>
         </div>
@@ -369,36 +371,36 @@ const CreateTaskPage = (): JSX.Element => {
           {/* ── Left column (2/3) ── */}
           <div className="col-span-2 space-y-5">
 
-            <SectionCard icon="📝" title="Basic Information">
-              <Field label="Title" required>
+            <SectionCard icon="📝" title={t("basic_information")}>
+              <Field label={t("title")} required>
                 <input
                   type="text"
                   value={form.title}
                   onChange={(e) => set("title", e.target.value)}
-                  placeholder="Enter a clear, descriptive title…"
+                  placeholder={t("enter_a_clear_descriptive_title")}
                   className={inputCls}
                   autoFocus
                 />
               </Field>
 
-              <Field label="Description">
+              <Field label={t("description_2")}>
                 <textarea
                   value={form.description ?? ""}
                   onChange={(e) => set("description", e.target.value)}
-                  placeholder="Describe the task, acceptance criteria, context…"
+                  placeholder={t("describe_the_task_acceptance_criteria_context")}
                   rows={4}
                   className={`${inputCls} resize-none`}
                 />
               </Field>
 
               <div className="grid grid-cols-2 gap-4">
-                <Field label="Category" required>
+                <Field label={t("category")} required>
                   <select
                     value={form.category}
                     onChange={(e) => set("category", e.target.value)}
                     className={selectCls}
                   >
-                    <option value="">Select category…</option>
+                    <option value="">{t("select_category_2")}</option>
                     {categories.map((c) => (
                       <option key={c.id} value={c.id}>
                         {c.icon} {c.name}
@@ -407,14 +409,14 @@ const CreateTaskPage = (): JSX.Element => {
                   </select>
                 </Field>
 
-                <Field label="Status" hint={!form.category ? "Select a category first" : undefined}>
+                <Field label={t("status")} hint={!form.category ? "Select a category first" : undefined}>
                   <select
                     value={form.status ?? ""}
                     onChange={(e) => set("status", e.target.value)}
                     disabled={!form.category || statuses.length === 0}
                     className={`${selectCls} disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
-                    <option value="">Auto (default status)</option>
+                    <option value="">{t("auto_default_status")}</option>
                     {statuses.map((s) => (
                       <option key={s._id || s.id} value={s._id || s.id}>
                         {s.icon} {s.name}
@@ -425,16 +427,16 @@ const CreateTaskPage = (): JSX.Element => {
               </div>
             </SectionCard>
 
-            <SectionCard icon="📅" title="Scheduling">
+            <SectionCard icon="📅" title={t("scheduling")}>
               <div className="grid grid-cols-2 gap-4">
-                <Field label="Start Date">
+                <Field label={t("start_date")}>
                   <input
                     type="date"
                     onChange={(e) => set("startDate", new Date(e.target.value))}
                     className={inputCls}
                   />
                 </Field>
-                <Field label="Due Date">
+                <Field label={t("due_date")}>
                   <input
                     type="date"
                     onChange={(e) => set("dueDate", new Date(e.target.value))}
@@ -443,7 +445,7 @@ const CreateTaskPage = (): JSX.Element => {
                 </Field>
               </div>
 
-              <Field label="Estimated Hours" hint="Decimal values allowed, e.g. 2.5">
+              <Field label={t("estimated_hours")} hint="Decimal values allowed, e.g. 2.5">
                 <input
                   type="number"
                   min={0}
@@ -475,14 +477,14 @@ const CreateTaskPage = (): JSX.Element => {
                   )}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-800 dark:text-white">Recurring Task</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">This task repeats on a schedule</p>
+                  <p className="text-sm font-semibold text-gray-800 dark:text-white">{t("recurring_task")}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{t("this_task_repeats_on_a_schedule")}</p>
                 </div>
               </div>
 
               {form.isRecurring && (
                 <div className="grid grid-cols-2 gap-4 pl-4 ml-1 border-l-2 border-blue-300 dark:border-blue-600">
-                  <Field label="Recurrence Type" required>
+                  <Field label={t("recurrence_type")} required>
                     <select
                       value={form.recurrenceType ?? ""}
                       onChange={(e) =>
@@ -490,7 +492,7 @@ const CreateTaskPage = (): JSX.Element => {
                       }
                       className={selectCls}
                     >
-                      <option value="">Select…</option>
+                      <option value="">{t("select")}</option>
                       {Object.values(RECURRENCE_TYPE).map((r) => (
                         <option key={r} value={r}>
                           {r.charAt(0).toUpperCase() + r.slice(1)}
@@ -498,7 +500,7 @@ const CreateTaskPage = (): JSX.Element => {
                       ))}
                     </select>
                   </Field>
-                  <Field label="Ends At">
+                  <Field label={t("ends_at")}>
                     <input
                       type="date"
                       onChange={(e) => set("recurrenceEndsAt", new Date(e.target.value))}
@@ -509,9 +511,9 @@ const CreateTaskPage = (): JSX.Element => {
               )}
             </SectionCard>
 
-            <SectionCard icon="🔗" title="Link to CRM Entity">
+            <SectionCard icon="🔗" title={t("link_to_crm_entity")}>
               <div className="grid grid-cols-3 gap-4">
-                <Field label="Entity Type">
+                <Field label={t("entity_type")}>
                   <select
                     value={form.entityType ?? ""}
                     onChange={(e) =>
@@ -519,7 +521,7 @@ const CreateTaskPage = (): JSX.Element => {
                     }
                     className={selectCls}
                   >
-                    <option value="">None</option>
+                    <option value="">{t("none")}</option>
                     {Object.values(TASK_ENTITY_TYPE).map((et) => (
                       <option key={et} value={et}>
                         {et.charAt(0).toUpperCase() + et.slice(1)}
@@ -527,22 +529,22 @@ const CreateTaskPage = (): JSX.Element => {
                     ))}
                   </select>
                 </Field>
-                <Field label="Entity ID">
+                <Field label={t("entity_id")}>
                   <input
                     type="text"
                     value={form.entityId ?? ""}
                     onChange={(e) => set("entityId", e.target.value)}
-                    placeholder="ObjectId…"
+                    placeholder={t("objectid")}
                     className={inputCls}
                     disabled={!form.entityType}
                   />
                 </Field>
-                <Field label="Entity Name">
+                <Field label={t("entity_name")}>
                   <input
                     type="text"
                     value={form.entityName ?? ""}
                     onChange={(e) => set("entityName", e.target.value)}
-                    placeholder="Display name…"
+                    placeholder={t("display_name")}
                     className={inputCls}
                     disabled={!form.entityType}
                   />
@@ -554,7 +556,7 @@ const CreateTaskPage = (): JSX.Element => {
           {/* ── Right column (1/3) ── */}
           <div className="space-y-5">
 
-            <SectionCard icon="🎯" title="Priority">
+            <SectionCard icon="🎯" title={t("priority")}>
               <div className="grid grid-cols-2 gap-2">
                 {Object.values(TASK_PRIORITY).map((p) => {
                   const cfg = PRIORITY_CFG[p];
@@ -575,7 +577,7 @@ const CreateTaskPage = (): JSX.Element => {
               </div>
             </SectionCard>
 
-            <SectionCard icon="🏷️" title="Tags">
+            <SectionCard icon="🏷️" title={t("tags")}>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -584,7 +586,7 @@ const CreateTaskPage = (): JSX.Element => {
                   onKeyDown={(e) => {
                     if (e.key === "Enter") { e.preventDefault(); addTag(); }
                   }}
-                  placeholder="Add tag and press Enter…"
+                  placeholder={t("add_tag_and_press_enter")}
                   className={`${inputCls} flex-1`}
                 />
                 <button
@@ -592,7 +594,7 @@ const CreateTaskPage = (): JSX.Element => {
                   onClick={addTag}
                   className="px-3.5 py-2.5 rounded-xl text-sm font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-400 border border-blue-200 dark:border-blue-700 transition whitespace-nowrap"
                 >
-                  + Add
+                  {t("add")}
                 </button>
               </div>
               {form.tags.length > 0 && (
@@ -616,7 +618,7 @@ const CreateTaskPage = (): JSX.Element => {
               )}
             </SectionCard>
 
-            <SectionCard icon="👥" title="Assign Users">
+            <SectionCard icon="👥" title={t("assign_users")}>
               <div className="space-y-3">
 
                 {/* Assign to me */}
@@ -630,7 +632,7 @@ const CreateTaskPage = (): JSX.Element => {
                   }}
                   className="w-full px-3 py-2 text-sm font-semibold rounded-xl border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-400 transition"
                 >
-                  ⚡ Assign to Me
+                  {t("assign_to_me")}
                 </button>
 
                 {/* Selected users */}
@@ -668,7 +670,7 @@ const CreateTaskPage = (): JSX.Element => {
                     onChange={(ids) => set("assignedTo", ids)}
                     showList={true}
                     currentUserId={auth.user?._id}
-                    placeholder="Search users…"
+                    placeholder={t("search_users_2")}
                   />
                 )}
               </div>
@@ -693,7 +695,7 @@ const CreateTaskPage = (): JSX.Element => {
             onClick={() => router.back()}
             className="px-6 py-3 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
           >
-            Cancel
+            {t("cancel")}
           </button>
           {canCreate ? (
             <button
@@ -708,15 +710,15 @@ const CreateTaskPage = (): JSX.Element => {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                   </svg>
-                  Creating…
+                  {t("creating")}
                 </>
               ) : (
-                <>✓ Create Task</>
+                <>{t("create_task_2")}</>
               )}
             </button>
           ) : (
             <div className="px-6 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 text-center text-xs text-gray-400 font-medium">
-              No permission to create tasks
+              {t("no_permission_to_create_tasks")}
             </div>
           )}
         </div>

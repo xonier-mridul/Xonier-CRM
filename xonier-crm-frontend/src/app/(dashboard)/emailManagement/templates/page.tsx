@@ -11,6 +11,7 @@ import Pagination from "@/src/components/common/pagination";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSIONS } from "@/src/constants/enum";
 import { MailService } from "@/src/services/communication/mail.service";
+import { useTranslation } from "react-i18next";
 
 type Template = {
   id: string;
@@ -22,6 +23,7 @@ type Template = {
 };
 
 const Page = (): JSX.Element => {
+  const { t } = useTranslation();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -104,11 +106,11 @@ const Page = (): JSX.Element => {
 
         <div className="flex flex-col gap-2">
           <h2 className="text-2xl font-bold dark:text-white text-slate-900">
-            Email Templates
+            {t("email_templates")}
           </h2>
 
           <p className="text-gray-500 dark:text-gray-400">
-            Create and manage AI email templates
+            {t("create_and_manage_ai_email_templates")}
           </p>
         </div>
 
@@ -118,7 +120,7 @@ const Page = (): JSX.Element => {
             }`}
         >
           <FaPlus className="group-hover:rotate-90 transition-all duration-300" />
-          Create Template
+          {t("create_template")}
         </Link>
 
       </div>
@@ -132,11 +134,11 @@ const Page = (): JSX.Element => {
 
             <div>
               <h2 className="text-xl font-bold dark:text-white">
-                All Email Templates
+                {t("all_email_templates")}
               </h2>
 
               <p className="text-gray-500 dark:text-gray-400">
-                Create, edit or remove templates
+                {t("create_edit_or_remove_templates")}
               </p>
             </div>
 
@@ -157,7 +159,7 @@ const Page = (): JSX.Element => {
 
                 <input
                   type="text"
-                  placeholder="Search..."
+                  placeholder={t("search_2")}
                   className="outline-none bg-transparent"
                   onChange={(e) => handleSearch(e.target.value)}
                 />
@@ -174,12 +176,12 @@ const Page = (): JSX.Element => {
               <thead>
                 <tr className="border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
 
-                  <th className="p-4 text-xs text-start uppercase">Name</th>
-                  <th className="p-4 text-xs text-start uppercase">Subject</th>
-                  <th className="p-4 text-xs text-start uppercase">Status</th>
-                  <th className="p-4 text-xs text-start uppercase">Template</th>
-                  <th className="p-4 text-xs text-start uppercase">Tags</th>
-                  <th className="p-4 text-xs text-start uppercase">Actions</th>
+                  <th className="p-4 text-xs text-start uppercase">{t("name_2")}</th>
+                  <th className="p-4 text-xs text-start uppercase">{t("subject")}</th>
+                  <th className="p-4 text-xs text-start uppercase">{t("status")}</th>
+                  <th className="p-4 text-xs text-start uppercase">{t("template")}</th>
+                  <th className="p-4 text-xs text-start uppercase">{t("tags")}</th>
+                  <th className="p-4 text-xs text-start uppercase">{t("actions")}</th>
 
                 </tr>
               </thead>
@@ -283,7 +285,7 @@ const Page = (): JSX.Element => {
                   ) : (
                     <tr>
                       <td colSpan={6} className="text-center p-4">
-                        Data not found
+                        {t("data_not_found")}
                       </td>
                     </tr>
                   )
@@ -326,11 +328,11 @@ const Page = (): JSX.Element => {
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-[400px]">
 
             <h2 className="text-lg font-semibold text-red-600">
-              Delete Template
+              {t("delete_template")}
             </h2>
 
             <p className="mt-2 text-sm text-gray-500">
-              Are you sure you want to delete this template?
+              {t("are_you_sure_you_want_to_delete_this_template")}
             </p>
 
             <div className="flex justify-end gap-3 mt-6">
@@ -339,7 +341,7 @@ const Page = (): JSX.Element => {
                 onClick={() => setShowDeleteModal(false)}
                 className="px-4 py-2 border rounded-md"
               >
-                Cancel
+                {t("cancel")}
               </button>
 
               <button

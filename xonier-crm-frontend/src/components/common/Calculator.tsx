@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef, useContext } from 'react'
 import { AiOutlineClockCircle } from 'react-icons/ai'
 import { RxCross2, RxCrossCircled } from "react-icons/rx"
+import { useTranslation } from "react-i18next";
 
 type HistoryItem = {
   expression: string
@@ -11,6 +12,7 @@ type HistoryItem = {
 }
 
 export default function Calculator({ setCalOpen }: { setCalOpen: (v: boolean) => void }) {
+  const { t } = useTranslation();
   const [expression, setExpression] = useState('')
   const [displayResult, setDisplayResult] = useState<string | null>(null)
   const [justEvaluated, setJustEvaluated] = useState(false)
@@ -192,7 +194,7 @@ export default function Calculator({ setCalOpen }: { setCalOpen: (v: boolean) =>
         <button
           onClick={() => setShowHistory(!showHistory)}
           className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400"
-          title="History"
+          title={t("history")}
         >
           <span>
             <AiOutlineClockCircle />
@@ -222,14 +224,14 @@ export default function Calculator({ setCalOpen }: { setCalOpen: (v: boolean) =>
       {showHistory && (
         <div className="absolute inset-x-0 w-80 max-h-90 overflow-y-scroll top-0 -left-85 bg-white dark:bg-slate-900  z-20 flex flex-col border rounded-xl border-slate-100 dark:border-slate-800">
           <div className="flex items-center justify-between  px-4 py-3 border-b border-slate-100 dark:border-slate-800">
-            <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Recent Calculations</span>
+            <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{t("recent_calculations")}</span>
             <div className='flex items-center gap-4'>
             {history.length > 0 && (
               <button
                 onClick={() => setHistory([])}
                 className="text-xs text-red-500  hover:text-red-600 font-medium px-2 py-1 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
               >
-                Clear
+                {t("clear")}
               </button>
             )}
 
@@ -238,7 +240,7 @@ export default function Calculator({ setCalOpen }: { setCalOpen: (v: boolean) =>
           </div>
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
             {history.length === 0 ? (
-              <div className="text-center text-slate-400 dark:text-slate-500 text-sm py-10">No calculations yet</div>
+              <div className="text-center text-slate-400 dark:text-slate-500 text-sm py-10">{t("no_calculations_yet")}</div>
             ) : (
               [...history].reverse().map((item, i) => (
                 <button

@@ -40,8 +40,10 @@ import LeadService from "@/src/services/lead.service";
 import { Lead } from "@/src/types/leads/leads.types";
 import LeadInfoCard from "@/src/components/pages/lead/LeadInfoCard";
 import { FaCheck } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
 
 const page = (): JSX.Element => {
+  const { t } = useTranslation();
   const [err, setErr] = useState<string | string[]>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [fieldDataLoading, setFieldDataLoading] = useState<boolean>(false);
@@ -240,7 +242,7 @@ const page = (): JSX.Element => {
           <MdOutlineFormatIndentIncrease className="text-cyan-500" />
 
           <h2 className="text-slate-900 dark:text-white font-semibold text-lg tracking-wide ">
-            All Form Fields
+            {t("all_form_fields")}
           </h2>
         </div>
         <ul className="flex flex-col gap-3 px-4 py-2.5 min-h-[70vh] overflow-y-scroll custom-scrollbar">
@@ -328,7 +330,7 @@ const page = (): JSX.Element => {
           <GrDocumentUpdate className="text-xl text-cyan-500" />{" "}
           <h2 className="text-slate-900 dark:text-white font-semibold text-2xl tracking-wide ">
             {" "}
-            Create new Deal
+            {t("create_new_deal")}
           </h2>
         </div>
         <div className="flex items-center justify-end gap-3 ml-6">
@@ -361,12 +363,12 @@ const page = (): JSX.Element => {
               <div className="flex items-center flex-col justify-center col-span-2 py-5">
                 <Image
                   src={"/images/Cry.gif"}
-                  alt="cry img"
+                  alt={t("cry_img")}
                   height={200}
                   width={200}
                 />
                 <p className="">
-                  No form fields found, please select fields first
+                  {t("no_form_fields_found_please_select")}
                 </p>
               </div>
             ) : (
@@ -510,7 +512,7 @@ const page = (): JSX.Element => {
               transition-colors duration-200"
               onClick={() => router.back()}
             >
-              <IoChevronBack /> Back
+              <IoChevronBack /> {t("back")}
             </button>
           </div>
         </div>

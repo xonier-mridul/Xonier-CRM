@@ -3,6 +3,7 @@ import React from "react";
 import { IoCheckmarkCircle, IoCloseCircle, IoInfiniteOutline, IoListOutline } from "react-icons/io5";
 import PlanViewBadge from "./PlanViewBadge";
 import PlanViewCard from "./PlanViewCard";
+import { useTranslation } from "react-i18next";
 
 interface PlanFeaturesListProps {
   features: PlanFeature[];
@@ -26,15 +27,17 @@ const getFeature = (feature: string | Feature) => {
 };
 
 const PlanFeaturesList = ({ features, formatLabel }: PlanFeaturesListProps) => {
+  const { t } = useTranslation();
   return (
     <PlanViewCard
-      title="Features"
+      title={t("features")}
       description={`${features.length} feature${features.length === 1 ? "" : "s"} configured for this plan`}
       icon={<IoListOutline className="text-xl" />}
     >
       {features.length ? (
         <div className="grid gap-4">
           {features.map((item, index) => {
+  const { t } = useTranslation();
             const feature = getFeature(item.feature);
             const limitText = item.is_unlimited
               ? "Unlimited"
@@ -50,7 +53,7 @@ const PlanFeaturesList = ({ features, formatLabel }: PlanFeaturesListProps) => {
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="font-semibold capitalize text-slate-900 dark:text-white">{feature.name}</h3>
                       {feature.status ? <PlanViewBadge variant={feature.status}>{feature.status}</PlanViewBadge> : null}
-                      {feature.system ? <PlanViewBadge variant="neutral">System</PlanViewBadge> : null}
+                      {feature.system ? <PlanViewBadge variant="neutral">{t("system")}</PlanViewBadge> : null}
                     </div>
                     {feature.feature_key ? (
                       <p className="mt-1 text-xs font-medium text-blue-600 dark:text-blue-400">{feature.feature_key}</p>
@@ -80,7 +83,7 @@ const PlanFeaturesList = ({ features, formatLabel }: PlanFeaturesListProps) => {
         </div>
       ) : (
         <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-slate-500 dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-400">
-          No features added to this plan
+          {t("no_features_added_to_this_plan")}
         </div>
       )}
     </PlanViewCard>

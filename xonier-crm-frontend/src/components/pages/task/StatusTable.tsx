@@ -7,6 +7,7 @@ import { StatusModal, StatusBadge } from "@/src/components/pages/task/createStat
 import { MdDeleteOutline, MdOutlineEdit } from "react-icons/md";
 import { CategoryItem } from "@/src/types/task/category.types";
 import { CategoryService } from "@/src/services/category.service";
+import { useTranslation } from "react-i18next";
 function getColorOption(hex: string | null): ColorOption {
   return COLOR_OPTIONS.find(c => c.hex === hex) ?? COLOR_OPTIONS[0];
 }
@@ -47,6 +48,7 @@ const StatusTable = ({
   handleCategory,
   err,
 }: StatusTableProps) => {
+  const { t } = useTranslation();
   const [search, setSearch] = React.useState<string>("");
   const [category, setCategory] = React.useState<string>("");
   const [categories, setCategories] = React.useState<CategoryItem[]>([]);
@@ -95,11 +97,11 @@ const StatusTable = ({
           <div className="flex items-center gap-2 mb-1">
             <span className="text-2xl">⚡</span>
             <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight dark:text-white">
-              Task Statuses
+              {t("task_statuses")}
             </h1>
           </div>
           <p className="text-sm text-gray-500">
-            Define and manage task lifecycle statuses for your project.
+            {t("define_and_manage_task_lifecycle_statuses")}
           </p>
         </div>
 
@@ -107,9 +109,9 @@ const StatusTable = ({
           <button
             type="button"
             onClick={() => setIsPopupShow(true)}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-sm font-bold shadow-md shadow-blue-200 transition-all"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 active:scale-95 text-white text-sm font-bold shadow-md shadow-cyan-200 transition-all"
           >
-            <span className="text-base">＋</span> New Status
+            <span className="text-base">＋</span> {t("new_status")}
           </button>
         )}
       </div>
@@ -117,7 +119,7 @@ const StatusTable = ({
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 mb-7">
         {[
-          { label: "Total Statuses", value: statusData.length, icon: "📋", color: "bg-blue-50 border-blue-100" },
+          { label: "Total Statuses", value: statusData.length, icon: "📋", color: "bg-cyan-50 border-cyan-100" },
           { label: "Active", value: statusData.length, icon: "🟢", color: "bg-emerald-50 border-emerald-100" },
           //   { label: "Your Role",      value: isAdmin ? "Admin" : "Member", icon: "🔑", color: "bg-violet-50 border-violet-100" },
         ].map(s => (
@@ -138,14 +140,14 @@ const StatusTable = ({
         <input
           type="text"
           onChange={e => handleSearch(e.target.value)}
-          placeholder="Search statuses…"
-          className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition bg-white"
+          placeholder={t("search_statuses")}
+          className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition bg-white"
         />
         <select
           onChange={(e) => { handleCategory(e.target.value); }}
-          className="px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
+          className="px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition"
         >
-          <option value="">All Categories</option>
+          <option value="">{t("all_categories")}</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
               {c.icon} {c.name}
@@ -166,23 +168,23 @@ const StatusTable = ({
               </th>
 
               <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Status
+                {t("status")}
               </th>
 
               <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Category
+                {t("category")}
               </th>
               <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Order
+                {t("order")}
               </th>
 
               <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Color
+                {t("color")}
               </th>
 
               {(canEdit || canDelete) && (
                 <th className="text-right px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Actions
+                  {t("actions")}
                 </th>
               )}
             </tr>
@@ -198,7 +200,7 @@ const StatusTable = ({
               <tr>
                 <td colSpan={5} className="text-center py-16 text-gray-400 dark:text-gray-500">
                   <div className="text-4xl mb-2">🔍</div>
-                  <div className="text-sm font-medium">No statuses found.</div>
+                  <div className="text-sm font-medium">{t("no_statuses_found")}</div>
                 </td>
               </tr>
             ) : (
@@ -260,9 +262,9 @@ const StatusTable = ({
                             <button
                               type="button"
                               onClick={() => handleEdit(s)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition"
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/30 hover:bg-cyan-100 dark:hover:bg-cyan-900/50 transition"
                             >
-                              <span className="items-center justify-center rounded-md bg-blue-100/80 text-blue-500 border-blue-100">
+                              <span className="items-center justify-center rounded-md bg-cyan-100/80 text-cyan-500 border-cyan-100">
                                 <MdOutlineEdit className="text-sm" />
                               </span>
                             </button>
@@ -294,11 +296,11 @@ const StatusTable = ({
         {/* Footer */}
         <div className="px-5 py-3.5 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
           <span className="text-xs text-gray-400 dark:text-gray-500">
-            Showing{" page "}
+            {t("showing")}{" page "}
             <span className="font-semibold text-gray-600 dark:text-gray-300">
               {currentPage}
             </span>{" "}
-            of{" "}
+            {t("of")}{" "}
             <span className="font-semibold text-gray-600 dark:text-gray-300">{totalPages}</span>
           </span>
 
@@ -309,7 +311,7 @@ const StatusTable = ({
               onClick={() => handlepagechange(-1)}
               className="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
             >
-              ← Prev
+              {t("prev")}
             </button>
             <span className="text-xs text-gray-500 dark:text-gray-400 font-medium px-1">
               {currentPage}
@@ -320,7 +322,7 @@ const StatusTable = ({
               onClick={() => handlepagechange(1)}
               className="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
             >
-              Next →
+              {t("next")}
             </button>
           </div>
         </div>

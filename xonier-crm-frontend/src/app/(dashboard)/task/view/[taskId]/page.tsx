@@ -16,6 +16,7 @@ import { useSelector } from "react-redux";
 import UserSelect from "@/src/components/common/userselect";
 import { FaXmark } from "react-icons/fa6";
 import MarkFinalModal, { MarkFinalPayload } from "@/src/components/pages/task/Marrkfinalmodal";
+import { useTranslation } from "react-i18next";
 
 type Raw = Record<string, unknown>;
 
@@ -274,6 +275,7 @@ function TaskCard({
   onDragEnd: (e: React.DragEvent) => void;
   canStatusChange: boolean;
 }) {
+  const { t } = useTranslation();
   const isOverdue =
     task.isOverdue ||
     (task.dueDate && !task.completedAt && new Date(task.dueDate) < new Date());
@@ -349,7 +351,7 @@ function TaskCard({
         <div className="flex -space-x-1.5">
           {task.assignedTo.length === 0 ? (
             <span className="text-[10px] text-gray-300 dark:text-gray-600 italic">
-              Unassigned
+              {t("unassigned")}
             </span>
           ) : (
             <>
@@ -371,12 +373,12 @@ function TaskCard({
         <div className="flex items-center gap-1.5">
           {task.completedAt && (
             <span className="text-[10px] font-bold text-emerald-500">
-              ✓ Done
+              {t("done_3")}
             </span>
           )}
           {isOverdue && !task.completedAt && (
             <span className="text-[9px] font-bold text-rose-500 bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800/50 px-1.5 py-0.5 rounded">
-              ⚠ Late
+              {t("late")}
             </span>
           )}
           {task.dueDate && !isOverdue && !task.completedAt && (
@@ -419,11 +421,11 @@ function TaskCard({
                       {task.activities.newValue}
                     </span>
                   )}
-                  <span>by {task.activities.performedBy?.firstName}</span>
+                  <span>{t("by")} {task.activities.performedBy?.firstName}</span>
                 </div>
               ) : (
                 <span>
-                  {task.activities.action.replace(/_/g, " ")} by {task.activities.performedBy?.firstName}
+                  {task.activities.action.replace(/_/g, " ")} {t("by")} {task.activities.performedBy?.firstName}
                 </span>
               )}
             </span>
@@ -458,6 +460,7 @@ function KanbanColumn({
   onDragLeave: (e: React.DragEvent) => void;
   canStatusChange: boolean;
 }) {
+  const { t } = useTranslation();
   const { status, tasks } = column;
   const isOver = dragOverColId === status.id;
 
@@ -488,7 +491,7 @@ function KanbanColumn({
           </span>
           {status.isFinal && (
             <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-100 dark:border-emerald-800/50 px-1.5 py-0.5 rounded-full shrink-0">
-              FINAL
+              {t("final_2")}
             </span>
           )}
         </div>
@@ -537,7 +540,7 @@ function KanbanColumn({
               draggingTask.status?.id !== status.id && (
                 <div className="flex items-center justify-center py-3 rounded-xl border-2 border-dashed border-indigo-300 dark:border-indigo-600 bg-indigo-50/60 dark:bg-indigo-900/20">
                   <p className="text-xs font-bold text-indigo-400 dark:text-indigo-500">
-                    Drop here
+                    {t("drop_here")}
                   </p>
                 </div>
               )}
@@ -581,6 +584,7 @@ function BoardSkeleton() {
 }
 
 export default function TaskViewPage() {
+  const { t } = useTranslation();
   const params = useParams();
   const taskId = (params?.taskId ?? params?.id ?? "") as string;
   const router = useRouter();
@@ -942,7 +946,7 @@ export default function TaskViewPage() {
 
               {createdByName && (
                 <span className="text-xs text-gray-400 dark:text-gray-500">
-                  by{" "}
+                  {t("by")}{" "}
                   <strong className="text-gray-600 dark:text-gray-300">
                     {createdByName}
                   </strong>
@@ -993,7 +997,7 @@ export default function TaskViewPage() {
               </span>
             </div>
             <span className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold">
-              Done
+              {t("done")}
             </span>
           </div>
         </div>
@@ -1048,14 +1052,14 @@ export default function TaskViewPage() {
             {displayCategory?.icon && (
               <span className="mr-1">{displayCategory.icon}</span>
             )}
-            {displayCategory?.name} — Kanban Board
+            {displayCategory?.name} {t("kanban_board")}
           </h2>
           <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/50">
-            ★ &nbsp;current task
+            {t("nbsp_current_task")}
           </span>
 
           <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-50 dark:bg-gray-700 text-gray-400 dark:text-gray-500 border border-gray-100 dark:border-gray-600">
-            ↔️ Drag to move
+            {t("drag_to_move")}
           </span>
 
           {movingTaskId && (
@@ -1079,7 +1083,7 @@ export default function TaskViewPage() {
                   d="M4 12a8 8 0 018-8v8H4z"
                 />
               </svg>
-              Moving…
+              {t("moving")}
             </span>
           )}
         </div>
@@ -1088,13 +1092,13 @@ export default function TaskViewPage() {
           className="flex gap-2">
           <p className="text-sm my-auto text-gray-500">
 
-            Search By User :
+            {t("search_by_user")}
           </p>
           <UserSelect
             mode="single"
             value={selectedUser}
             onChange={setselectedUser}
-            placeholder="select user..."
+            placeholder={t("select_user_3")}
           />
           {
             selectedUser !== "" && (
@@ -1137,7 +1141,7 @@ export default function TaskViewPage() {
             ) : (
               <span>↻</span>
             )}
-            Refresh
+            {t("refresh")}
           </button>
         </div>
       </div>
@@ -1148,10 +1152,10 @@ export default function TaskViewPage() {
         <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700">
           <span className="text-5xl mb-4 opacity-30">📭</span>
           <p className="text-sm font-bold text-gray-500 dark:text-gray-400">
-            No statuses found for this category
+            {t("no_statuses_found_for_this_category")}
           </p>
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-            Create statuses for this category first
+            {t("create_statuses_for_this_category_first")}
           </p>
         </div>
       ) : (

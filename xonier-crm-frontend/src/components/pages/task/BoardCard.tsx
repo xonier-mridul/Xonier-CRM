@@ -6,6 +6,7 @@ import { getColorOption } from "./createStatusModal";
 import { MdDelete, MdEdit, MdOutlineMessage } from "react-icons/md";
 import { Star } from "lucide-react";
 import CategoryBadge from "./CategoryBadge";
+import { useTranslation } from "react-i18next";
 
 function BoardCard({
   task,
@@ -29,6 +30,7 @@ function BoardCard({
   onTimer,
   onStop,
 }: BoardCardProps) {
+  const { t } = useTranslation();
   const pri = PRIORITY_STYLE[task.priority];
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
   const router = useRouter();
@@ -158,7 +160,7 @@ function BoardCard({
       <div className="flex items-center justify-between pt-2.5 border-t border-gray-50 dark:border-gray-700 mt-1">
         <div className="flex -space-x-1.5">
           {task.assignedTo.length === 0 ? (
-            <span className="text-[10px] italic text-gray-300 dark:text-gray-600">Unassigned </span>
+            <span className="text-[10px] italic text-gray-300 dark:text-gray-600">{t("unassigned")} </span>
           ) : (
             <>
               {task.assignedTo.slice(0, 2).map((u) => (
@@ -191,7 +193,7 @@ function BoardCard({
         {task.rating && (
           <div className="flex items-center gap-0.5 text-yellow-500 text-xs font-bold">
             <Star size={12} fill="currentColor" />
-            &nbsp;
+            {t("nbsp")}
             <span>{task.rating.toFixed(1)}</span>
           </div>
         )}
@@ -206,7 +208,7 @@ function BoardCard({
                 {formatSeconds(displaySeconds)}
               </span>
               <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
-                TOTAL
+                {t("total")}
               </span>
             </div>
           ) : null
@@ -217,7 +219,7 @@ function BoardCard({
               {formatSeconds(displaySeconds)}
             </span>
             <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
-              LOGGED ✓
+              {t("logged")}
             </span>
           </div>
         ) : hasTimer ? (
@@ -240,40 +242,40 @@ function BoardCard({
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); onTimer(task); }}
-                  title="Pause timer"
+                  title={t("pause_timer")}
                   className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-600 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/40 transition-colors"
                 >
                   <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
                     <rect x="1.5" y="1" width="2.5" height="8" rx="0.5" />
                     <rect x="6" y="1" width="2.5" height="8" rx="0.5" />
                   </svg>
-                  Pause
+                  {t("pause")}
                 </button>
               )}
               {isPaused && canResumeTimer && (
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); onTimer(task); }}
-                  title="Resume timer"
+                  title={t("resume_timer")}
                   className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/40 transition-colors"
                 >
                   <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
                     <path d="M2 1.5l7 3.5-7 3.5V1.5z" />
                   </svg>
-                  Resume
+                  {t("resume")}
                 </button>
               )}
               {canStopTimer && (
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); onStop(task); }}
-                  title="Stop timer"
+                  title={t("stop_timer")}
                   className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-400 dark:hover:bg-rose-900/40 transition-colors"
                 >
                   <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
                     <rect x="1" y="1" width="8" height="8" rx="1" />
                   </svg>
-                  Stop
+                  {t("stop")}
                 </button>
               )}
             </div>
@@ -283,13 +285,13 @@ function BoardCard({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onTimer(task); }}
-              title="Start timer"
+              title={t("start_timer_2")}
               className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-bold text-gray-400 dark:text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:text-emerald-400 dark:hover:bg-emerald-900/20 border border-dashed border-gray-200 dark:border-gray-600 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all"
             >
               <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
                 <path d="M2 1.5l7 3.5-7 3.5V1.5z" />
               </svg>
-              Start Timer 
+              {t("start_timer")} 
             </button>
           )
         )}

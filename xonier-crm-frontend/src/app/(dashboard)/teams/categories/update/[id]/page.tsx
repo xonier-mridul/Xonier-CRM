@@ -13,6 +13,7 @@ import Skeleton from "react-loading-skeleton";
 import { MdOutlineInfo } from "react-icons/md";
 import { IoArrowBack } from "react-icons/io5";
 import { GoDotFill } from "react-icons/go";
+import { useTranslation } from "react-i18next";
 
 type FormElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
@@ -22,6 +23,7 @@ const EMPTY_FORM: TeamCategoryUpdatePayload = {
 };
 
 const page = (): JSX.Element => {
+  const { t } = useTranslation();
   const { id } = useParams();
   const router = useRouter();
 
@@ -125,7 +127,7 @@ const page = (): JSX.Element => {
             
             <div>
               <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
-                Update Category
+                {t("update_category")}
               </h1>
               <p className="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
                 {categoryData?.name ? `Editing — ${categoryData.name}` : "Modify category details"}
@@ -162,10 +164,10 @@ const page = (): JSX.Element => {
               </div>
               <div>
                 <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                  Category Details
+                  {t("category_details")}
                 </p>
                 <p className="text-xs text-slate-400 dark:text-slate-500">
-                  Update the name and description
+                  {t("update_the_name_and_description")}
                 </p>
               </div>
 
@@ -182,9 +184,9 @@ const page = (): JSX.Element => {
 
             <div className="p-6 flex flex-col gap-5">
               <Input
-                label="Category Name"
+                label={t("category_name_2")}
                 name="name"
-                placeholder="e.g. Development Team"
+                placeholder={t("e_g_development_team_2")}
                 value={formData.name}
                 onChange={handleChange}
                 required
@@ -193,15 +195,15 @@ const page = (): JSX.Element => {
               {/* Description textarea */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                  Description
-                  <span className="ml-1 text-xs text-slate-400 font-normal">(optional)</span>
+                  {t("description_2")}
+                  <span className="ml-1 text-xs text-slate-400 font-normal">{t("optional_2")}</span>
                 </label>
                 <textarea
                   name="description"
                   rows={4}
                   value={formData.description ?? ""}
                   onChange={handleChange}
-                  placeholder="Describe what this category is for..."
+                  placeholder={t("describe_what_this_category_is_for")}
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600
                     bg-white dark:bg-gray-600 text-slate-700 dark:text-white
                     placeholder:text-slate-400 dark:placeholder:text-slate-500
@@ -215,7 +217,7 @@ const page = (): JSX.Element => {
                 <div className="grid grid-cols-2 gap-3 pt-1">
                   <div className="flex flex-col gap-1 p-3 rounded-xl bg-slate-50 dark:bg-gray-600/40 border border-slate-100 dark:border-slate-600/30">
                     <span className="text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500 font-semibold">
-                      Created At
+                      {t("created_at")}
                     </span>
                     <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">
                       {new Date(categoryData.createdAt).toLocaleDateString("en-IN", {
@@ -228,7 +230,7 @@ const page = (): JSX.Element => {
                   </div>
                   <div className="flex flex-col gap-1 p-3 rounded-xl bg-slate-50 dark:bg-gray-600/40 border border-slate-100 dark:border-slate-600/30">
                     <span className="text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500 font-semibold">
-                      Last Updated
+                      {t("last_updated")}
                     </span>
                     <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">
                       {categoryData.updatedAt
@@ -257,14 +259,14 @@ const page = (): JSX.Element => {
                 hover:bg-slate-100 dark:hover:bg-slate-700
                 transition-all duration-150"
             >
-              Cancel
+              {t("cancel")}
             </button>
 
             <FormButton
               isLoading={isSaving}
               disabled={!isFormValid || isSaving}
             >
-              Save Changes
+              {t("save_changes")}
             </FormButton>
           </div>
 

@@ -59,8 +59,10 @@ import Link from "next/link";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { DEAL_STATUS, PERMISSIONS } from "@/src/constants/enum";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
+import { useTranslation } from "react-i18next";
 
 const DealViewPage = (): JSX.Element => {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [dealData, setDealData] = useState<Deal | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
@@ -223,17 +225,17 @@ const DealViewPage = (): JSX.Element => {
           <div className="text-center">
             <IoDocumentText className="w-20 h-20 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              Deal Not Found
+              {t("deal_not_found")}
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              The deal you're looking for doesn't exist or has been removed.
+              {t("the_deal_you're_looking_for_doesn't")}
             </p>
             <button
               onClick={() => router.back()}
               className="inline-flex items-center gap-2 px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors"
             >
               <IoArrowBack className="w-5 h-5" />
-              Go Back
+              {t("go_back")}
             </button>
           </div>
         </div>
@@ -305,7 +307,7 @@ const DealViewPage = (): JSX.Element => {
                   onClick={() => handleCopy(dealData ? dealData.deal_id : "")}
                 >
                   <IoDocumentText className="w-4 h-4" />
-                  Deal ID: <span className="font-mono">{dealData?.deal_id}</span>
+                  {t("deal_id")} <span className="font-mono">{dealData?.deal_id}</span>
                 </p>
               </div>
 
@@ -319,7 +321,7 @@ const DealViewPage = (): JSX.Element => {
                       className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors group"
                     >
                       <FaRegPaperPlane className="w-4 h-4 group-hover:rotate-12 transition-transform" />
-                      Send Quotation
+                      {t("send_quotation")}
                     </Link>
                   )}
 
@@ -343,12 +345,12 @@ const DealViewPage = (): JSX.Element => {
                         className="w-full flex items-center gap-2  px-4 py-2 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-colors"
                       >
                         <MdOutlineSettings className="w-4 h-4" />
-                        Update Deal
+                        {t("update_deal")}
                       </Link>
                     ) : (
                       <span className="inline-flex items-center gap-2 px-4 py-2 opacity-60 rounded-lg cursor-not-allowed">
                         <MdOutlineSettings className="w-4 h-4" />
-                        Update Deal
+                        {t("update_deal")}
                       </span>
                     )}
 
@@ -359,7 +361,7 @@ const DealViewPage = (): JSX.Element => {
                           className="w-full flex items-center gap-2 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                         >
                           <MdDeleteOutline className="w-4 h-4" />
-                          Delete
+                          {t("delete")}
                         </button>
                       )}
                   </div>
@@ -374,26 +376,26 @@ const DealViewPage = (): JSX.Element => {
         <div className="metric-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <MetricCard
             icon={<IoCashOutline className="w-6 h-6" />}
-            label="Deal Amount"
+            label={t("deal_amount")}
             value={`$ ${dealData?.amount?.toLocaleString("en-IN")}`}
             color="bg-green-500"
           />
           <MetricCard
             icon={<FaPercent className="w-5 h-5" />}
-            label="Deal Probability"
+            label={t("deal_probability")}
             value={`${dealData?.dealProbability ?? 0}%`}
             color="bg-cyan-500"
           />
           <MetricCard
             icon={<FaChartLine className="w-5 h-5" />}
-            label="Forecast Probability"
+            label={t("forecast_probability")}
             value={`${dealData?.forecastProbability ?? 0}%`}
             color="bg-purple-500"
           />
           {date && (
             <MetricCard
               icon={<IoCalendarOutline className="w-5 h-5" />}
-              label="Created"
+              label={t("created")}
               value={date}
               color="bg-amber-500"
             />
@@ -433,84 +435,84 @@ const DealViewPage = (): JSX.Element => {
                 <div className="flex items-center gap-2 mb-6">
                   <IoStatsChartOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Deal Information
+                    {t("deal_information")}
                   </h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 print:grid-cols-3 gap-6">
                   <InfoItem
                     icon={<IoFunnelOutline className="w-4 h-4" />}
-                    label="Pipeline"
+                    label={t("pipeline")}
                     value={dealData?.dealPipeline}
                   />
                   <InfoItem
                     icon={<MdTimeline className="w-4 h-4" />}
-                    label="Stage"
+                    label={t("stage")}
                     value={dealData?.dealStage}
                   />
                   <InfoItem
                     icon={<MdCategory className="w-4 h-4" />}
-                    label="Type"
+                    label={t("type")}
                     value={dealData?.dealType}
                   />
                   <InfoItem
                     icon={<IoCashOutline className="w-4 h-4" />}
-                    label="Amount"
+                    label={t("amount")}
                     value={`$ ${dealData?.amount?.toLocaleString("en-IN")}`}
                   />
                   <InfoItem
                     icon={<FaPercent className="w-4 h-4" />}
-                    label="Deal Probability"
+                    label={t("deal_probability")}
                     value={`${dealData?.dealProbability ?? 0}%`}
                   />
                   <InfoItem
                     icon={<IoTrendingUpOutline className="w-4 h-4" />}
-                    label="Forecast Category"
+                    label={t("forecast_category")}
                     value={dealData?.forecastCategory ?? "—"}
                   />
                   <InfoItem
                     icon={<IoCalendarOutline className="w-4 h-4" />}
-                    label="Create Date"
+                    label={t("create_date")}
                     value={date}
                   />
                   <InfoItem
                     icon={<IoCalendarOutline className="w-4 h-4" />}
-                    label="Close Date"
+                    label={t("close_date")}
                     value={dealData?.closeDate ?? "—"}
                   />
                   <InfoItem
                     icon={<IoPersonOutline className="w-4 h-4" />}
-                    label="Deal Owner"
+                    label={t("deal_owner")}
                     value={dealData?.dealOwner ?? "—"}
                   />
                   <InfoItem
                     icon={<FaHandshake className="w-4 h-4" />}
-                    label="Deal Collaborator"
+                    label={t("deal_collaborator")}
                     value={dealData?.dealCollaborator ?? "—"}
                   />
                   <InfoItem
                     icon={<IoFlagOutline className="w-4 h-4" />}
-                    label="Next Step"
+                    label={t("next_step")}
                     value={dealData?.nextStep ?? "—"}
                   />
                   <InfoItem
                     icon={<IoCheckmarkCircle className="w-4 h-4" />}
-                    label="Closed Won Reason"
+                    label={t("closed_won_reason")}
                     value={dealData?.closedWonReason ?? "—"}
                   />
                   <InfoItem
                     icon={<IoCloseCircle className="w-4 h-4" />}
-                    label="Closed Lost Reason"
+                    label={t("closed_lost_reason")}
                     value={dealData?.closedLostReason ?? "—"}
                   />
                   <InfoItem
                     icon={<IoInformationCircleOutline className="w-4 h-4" />}
-                    label="Original Traffic Source"
+                    label={t("original_traffic_source")}
                     value={dealData?.originalTrafficSource ?? "—"}
                   />
                   <InfoItem
                     icon={<FaChartLine className="w-4 h-4" />}
-                    label="Forecast Probability"
+                    label={t("forecast_probability")}
                     value={`${dealData?.forecastProbability ?? 0}%`}
                   />
                 </div>
@@ -520,7 +522,7 @@ const DealViewPage = (): JSX.Element => {
                     <div className="flex items-center gap-2 mb-2">
                       <IoDocumentText className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                       <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Description
+                        {t("description_2")}
                       </p>
                     </div>
                     <p className="text-gray-900 dark:text-white">
@@ -537,51 +539,51 @@ const DealViewPage = (): JSX.Element => {
                 <div className="flex items-center gap-2 mb-6">
                   <IoPersonOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Lead Information
+                    {t("lead_information")}
                   </h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 print:grid-cols-3 gap-6">
                   <InfoItem
                     icon={<IoPersonOutline className="w-4 h-4" />}
-                    label="Full Name"
+                    label={t("full_name")}
                     value={lead.fullName}
                   />
-                  <MaskEmailField label="Email" value={lead.email} />
-                  <MaskPhoneField label="Phone" value={lead.phone} />
+                  <MaskEmailField label={t("email")} value={lead.email} />
+                  <MaskPhoneField label={t("phone")} value={lead.phone} />
                   <InfoItem
                     icon={<IoBusinessOutline className="w-4 h-4" />}
-                    label="Company"
+                    label={t("company")}
                     value={lead.companyName ?? "—"}
                   />
                   <InfoItem
                     icon={<IoFlagOutline className="w-4 h-4" />}
-                    label="Priority"
+                    label={t("priority")}
                     value={lead.priority}
                   />
                   <InfoItem
                     icon={<IoStatsChartOutline className="w-4 h-4" />}
-                    label="Status"
+                    label={t("status")}
                     value={lead.status}
                   />
                   <InfoItem
                     icon={<IoInformationCircleOutline className="w-4 h-4" />}
-                    label="Source"
+                    label={t("source")}
                     value={lead.source}
                   />
                   <InfoItem
                     icon={<IoBriefcaseOutline className="w-4 h-4" />}
-                    label="Project Type"
+                    label={t("project_type")}
                     value={lead.projectType}
                   />
                   <InfoItem
                     icon={<IoLocationOutline className="w-4 h-4" />}
-                    label="City"
+                    label={t("city")}
                     value={lead.city ?? "—"}
                   />
                   <InfoItem
                     icon={<IoGlobeOutline className="w-4 h-4" />}
-                    label="Country"
+                    label={t("country")}
                     value={lead.country ?? "—"}
                   />
                 </div>
@@ -591,7 +593,7 @@ const DealViewPage = (): JSX.Element => {
                     <div className="flex items-center gap-2 mb-2">
                       <IoDocumentText className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                       <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Lead Message
+                        {t("lead_message")}
                       </p>
                     </div>
                     <p className="text-gray-900 dark:text-white">
@@ -608,13 +610,13 @@ const DealViewPage = (): JSX.Element => {
                 <div className="flex items-center gap-2 mb-6">
                   <MdTimeline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Activity Timeline
+                    {t("activity_timeline")}
                   </h3>
                 </div>
                 <div className="text-center py-12">
                   <IoInformationCircleOutline className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
                   <p className="text-gray-500 dark:text-gray-400">
-                    Activity timeline coming soon
+                    {t("activity_timeline_coming_soon")}
                   </p>
                 </div>
               </div>
@@ -628,7 +630,7 @@ const DealViewPage = (): JSX.Element => {
               <div className="flex items-center gap-2 mb-4">
                 <FaRegUser className="text-xl text-white" />
                 <h2 className="text-white font-semibold text-xl">
-                  Creator Information
+                  {t("creator_information")}
                 </h2>
               </div>
               <div className="border-b border-white/30 w-full mb-4"></div>
@@ -636,26 +638,26 @@ const DealViewPage = (): JSX.Element => {
                 <div className="space-y-4">
                   <ProfileField
                     icon={<IoPersonOutline className="w-4 h-4" />}
-                    label="Name"
+                    label={t("name_2")}
                     value={`${dealData.createdBy?.firstName} ${
                       dealData.createdBy?.lastName ?? ""
                     }`}
                   />
                   <ProfileField
                     icon={<IoMailOutline className="w-4 h-4" />}
-                    label="Email"
+                    label={t("email")}
                     value={dealData.createdBy?.email}
                   />
                   <ProfileField
                     icon={<IoCallOutline className="w-4 h-4" />}
-                    label="Phone"
+                    label={t("phone")}
                     value={dealData.createdBy?.phone}
                   />
                   
                 </div>
               ) : (
                 <p className="text-white text-center py-4">
-                  Creator data not found
+                  {t("creator_data_not_found")}
                 </p>
               )}
             </div>
@@ -663,11 +665,11 @@ const DealViewPage = (): JSX.Element => {
             {/* Quick Stats */}
             <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700 break-inside-avoid">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Quick Stats
+                {t("quick_stats")}
               </h3>
               <div className="space-y-3">
                 <StatItem
-                  label="In Quotation"
+                  label={t("in_quotation")}
                   value={dealData.inQuotation ? "Yes" : "No"}
                   color={
                     dealData.inQuotation
@@ -676,12 +678,12 @@ const DealViewPage = (): JSX.Element => {
                   }
                 />
                 <StatItem
-                  label="Created"
+                  label={t("created")}
                   value={formatDate(dealData.createdAt)}
                   color="text-gray-600 dark:text-gray-400"
                 />
                 <StatItem
-                  label="Last Updated"
+                  label={t("last_updated")}
                   value={formatDate(dealData.updatedAt)}
                   color="text-gray-600 dark:text-gray-400"
                 />

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 const stats = [
   {
@@ -50,15 +51,16 @@ const stats = [
 ];
 
 const Monitor = () => {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
       <div>
         <span className="text-gray-500 dark:text-gray-400 text-lg">
-          Welcome Admin
+          {t("welcome_admin")}
         </span>
         <h1 className="text-slate-900 dark:text-white font-medium text-4xl">
-          Admin Dashboard
+          {t("admin_dashboard")}
         </h1>
       </div>
 
@@ -73,7 +75,7 @@ const Monitor = () => {
             <div className="flex items-center gap-4">
               {/* Icon placeholder */}
               <div className="w-18 h-18 rounded-lg flex items-center justify-center">
-                <Image src={card.img} height={20} width={20} alt="icon" className="w-full h-full rounded-sm"/>
+                <Image src={card.img} height={20} width={20} alt={t("icon_2")} className="w-full h-full rounded-sm"/>
               </div>
 
               <div>

@@ -12,6 +12,7 @@ import axios from "axios";
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import { MdDeleteOutline } from "react-icons/md";
 import ConfirmPopup from "../../ui/ConfirmPopup";
+import { useTranslation } from "react-i18next";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -130,6 +131,7 @@ interface AddRemarkPanelProps {
 }
 
 function AddRemarkPanel({ onSend, onClose }: AddRemarkPanelProps) {
+  const { t } = useTranslation();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -151,7 +153,7 @@ function AddRemarkPanel({ onSend, onClose }: AddRemarkPanelProps) {
     <div className="border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 px-5 py-4 space-y-3">
       <div className="flex items-center justify-between mb-1">
         <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-          New remark
+          {t("new_remark")}
         </p>
         <button
           type="button"
@@ -168,7 +170,7 @@ function AddRemarkPanel({ onSend, onClose }: AddRemarkPanelProps) {
         onKeyDown={(e) => {
           if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSend();
         }}
-        placeholder="Write your remark… (Ctrl+Enter to submit)"
+        placeholder={t("write_your_remark_ctrl_enter_to_submit")}
         rows={3}
         className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition resize-none"
       />
@@ -178,7 +180,7 @@ function AddRemarkPanel({ onSend, onClose }: AddRemarkPanelProps) {
           onClick={onClose}
           className="px-4 py-2 text-sm font-semibold rounded-xl text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
         >
-          Cancel
+          {t("cancel")}
         </button>
         <button
           type="button"
@@ -207,7 +209,7 @@ function AddRemarkPanel({ onSend, onClose }: AddRemarkPanelProps) {
                   d="M4 12a8 8 0 018-8v8H4z"
                 />
               </svg>
-              Posting…
+              {t("posting")}
             </>
           ) : (
             <>
@@ -220,7 +222,7 @@ function AddRemarkPanel({ onSend, onClose }: AddRemarkPanelProps) {
                   strokeLinejoin="round"
                 />
               </svg>
-              Post remark
+              {t("post_remark")}
             </>
           )}
         </button>
@@ -336,6 +338,7 @@ function RemarkRow({
   index,
   reload
 }: RemarkRowProps) {
+  const { t } = useTranslation();
   const { hasPermission } = usePermissions();
   const [ackLoading, setAckLoading] = useState(false);
   const palette = getPalette(remark.createdBy.id);
@@ -416,7 +419,7 @@ function RemarkRow({
           </span>
           {isAuthor && (
             <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-500 dark:text-blue-400 border border-blue-100 dark:border-blue-800">
-              You
+              {t("you")}
             </span>
           )}
           <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-auto flex-shrink-0">
@@ -440,7 +443,7 @@ function RemarkRow({
         {ackCount !== 0 && (
           <div className="flex items-center gap-1.5 mt-2 ms-auto flot-right justify-end">
             <span className="text-[10px] text-gray-400 dark:text-gray-500">
-              Acknowledged by
+              {t("acknowledged_by")}
             </span>
             <div className="flex -space-x-1.5">
               {
@@ -467,6 +470,7 @@ function RemarkRow({
 // ─── Main Modal ───────────────────────────────────────────────────────────────
 
 export default function RemarkModal({ taskId, onClose }: Props) {
+  const { t } = useTranslation();
   const [remarks, setRemarks] = useState<Remark[]>([]);
   const [loading, setLoading] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
@@ -565,10 +569,10 @@ export default function RemarkModal({ taskId, onClose }: Props) {
             </div>
             <div>
               <h3 className="text-sm font-bold text-gray-900 dark:text-white">
-                Remarks
+                {t("remarks")}
               </h3>
               <p className="text-[10px] text-gray-400 dark:text-gray-500">
-                {remarks.length} total · {pendingCount} pending acknowledgement
+                {remarks.length} {t("total_6")} {pendingCount} {t("pending_acknowledgement")}
               </p>
             </div>
           </div>
@@ -592,7 +596,7 @@ export default function RemarkModal({ taskId, onClose }: Props) {
                     strokeLinecap="round"
                   />
                 </svg>
-                Add remark
+                {t("add_remark_2")}
               </button>
             )}
           </div>
@@ -685,7 +689,7 @@ export default function RemarkModal({ taskId, onClose }: Props) {
                   onClick={() => setShowAdd(true)}
                   className="mt-3 text-xs font-semibold text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition"
                 >
-                  + Add the first remark
+                  {t("add_the_first_remark")}
                 </button>
               )}
             </div>
@@ -707,13 +711,13 @@ export default function RemarkModal({ taskId, onClose }: Props) {
           <div className="flex items-center gap-3 text-[10px] text-gray-400 dark:text-gray-500">
             <span className="flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
-              Acknowledged
+              {t("acknowledged")}
             </span>
             <span className="flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600 flex-shrink-0" />
-              Pending
+              {t("pending")}
             </span>
-            <span>· Writers cannot acknowledge own remarks</span>
+            <span>{t("writers_cannot_acknowledge_own_remarks")}</span>
           </div>
         </div>
       </div>

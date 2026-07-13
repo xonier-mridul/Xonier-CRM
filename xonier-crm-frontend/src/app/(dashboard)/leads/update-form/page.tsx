@@ -25,10 +25,12 @@ import { CreateUserCustomField, FORM_FIELD_MODULES } from "@/src/types/customFor
 import { IoMdClose } from "react-icons/io";
 import { FaCheck, FaTrash } from "react-icons/fa";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
+import { useTranslation } from "react-i18next";
 
 
 
 const page = (): JSX.Element => {
+  const { t } = useTranslation();
   const [err, setErr] = useState<string | string[]>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [fieldDataLoading, setFieldDataLoading] = useState<boolean>(false);
@@ -411,7 +413,7 @@ const handleCreateCustomField = async (e: FormEvent) => {
             <FaPlus className="text-cyan-600 dark:text-cyan-400" />
           </div>
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-            Create Custom Field
+            {t("create_custom_field")}
           </h2>
         </div>
         <button
@@ -428,10 +430,10 @@ const handleCreateCustomField = async (e: FormEvent) => {
 
           <div className="col-span-2">
             <Input
-              label="Field Name"
+              label={t("field_name_2")}
               name="name"
               type="text"
-              placeholder="Enter field name"
+              placeholder={t("enter_field_name")}
               value={formData.name}
               onChange={handleChange}
               required
@@ -441,7 +443,7 @@ const handleCreateCustomField = async (e: FormEvent) => {
 
           <div>
             <Select
-              label="Field Type"
+              label={t("field_type")}
               name="type"
               value={formData.type}
               onChange={handleChange}
@@ -462,7 +464,7 @@ const handleCreateCustomField = async (e: FormEvent) => {
  
           <div>
             <Input
-              label="Display Order"
+              label={t("display_order")}
               name="order"
               type="number"
               placeholder="0"
@@ -476,10 +478,10 @@ const handleCreateCustomField = async (e: FormEvent) => {
           {formData.type !== CUSTOM_FIELD_TYPE.CHECKBOX && (
             <div className="col-span-2">
               <Input
-                label="Placeholder"
+                label={t("placeholder")}
                 name="placeholder"
                 type="text"
-                placeholder="Enter placeholder text"
+                placeholder={t("enter_placeholder_text")}
                 value={formData.placeholder}
                 onChange={handleChange}
               />
@@ -491,14 +493,14 @@ const handleCreateCustomField = async (e: FormEvent) => {
             <div className="col-span-2">
               <div className="flex items-center justify-between mb-3">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                  <span className="text-red-500 text-xl">*</span> Options
+                  <span className="text-red-500 text-xl">*</span> {t("options")}
                 </label>
                 <button
                   type="button"
                   onClick={handleAddOption}
                   className="flex items-center gap-2 px-3 py-1.5 text-sm bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 rounded-md hover:bg-cyan-100 dark:hover:bg-cyan-900/30 transition-colors"
                 >
-                  <FaPlus className="text-xs" /> Add Option
+                  <FaPlus className="text-xs" /> {t("add_option")}
                 </button>
               </div>
 
@@ -509,7 +511,7 @@ const handleCreateCustomField = async (e: FormEvent) => {
                       <Input
                         label={`Option ${index + 1} Label`}
                         type="text"
-                        placeholder="Display text"
+                        placeholder={t("display_text")}
                         value={option.label}
                         onChange={(e) =>
                           handleOptionChange(index, "label", e.target.value)
@@ -519,9 +521,9 @@ const handleCreateCustomField = async (e: FormEvent) => {
                     </div>
                     <div className="flex-1">
                       <Input
-                        label="Value"
+                        label={t("value")}
                         type="text"
-                        placeholder="Internal value"
+                        placeholder={t("internal_value")}
                         value={option.value}
                         onChange={(e) =>
                           handleOptionChange(index, "value", e.target.value)
@@ -552,7 +554,7 @@ const handleCreateCustomField = async (e: FormEvent) => {
             onClick={() => setCreateFieldPopup(false)}
             className="px-5 py-2.5 rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
           >
-            Cancel
+            {t("cancel")}
           </button>
           <button
             type="submit"
@@ -562,12 +564,12 @@ const handleCreateCustomField = async (e: FormEvent) => {
             {createFieldLoading ? (
               <>
                 <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Creating...
+                {t("creating_2")}
               </>
             ) : (
               <>
                 <FaPlus className="text-sm" />
-                Create Field
+                {t("create_field")}
               </>
             )}
           </button>
@@ -581,12 +583,12 @@ const handleCreateCustomField = async (e: FormEvent) => {
         <div className="flex items-center gap-4 w-full border-b border-slate-600 py-4">
           <MdOutlineFormatIndentIncrease className="text-cyan-500" />
           <h2 className="text-slate-900 dark:text-white font-semibold text-lg tracking-wide">
-            All Form Fields
+            {t("all_form_fields")}
           </h2>
         </div>
         
         {/* System Form Fields */}
-        <h3 className="text-lg font-medium text-slate-900 dark:text-white">System Fields</h3>
+        <h3 className="text-lg font-medium text-slate-900 dark:text-white">{t("system_fields")}</h3>
         <ul className="flex flex-col gap-3 px-4 py-2.5">
           {!fieldDataLoading
             ? allFormFiled &&
@@ -660,7 +662,7 @@ const handleCreateCustomField = async (e: FormEvent) => {
         </ul>
 
 
-        <h3 className="text-lg font-medium text-slate-900 dark:text-white">Custom Fields</h3>
+        <h3 className="text-lg font-medium text-slate-900 dark:text-white">{t("custom_fields")}</h3>
         <ul className="flex flex-col gap-3 px-4 py-2.5">
           {!cuFieldDataLoading
             ? allCustomFormFiled &&
@@ -737,7 +739,7 @@ const handleCreateCustomField = async (e: FormEvent) => {
         
         <button className="flex items-center group hover:bg-cyan-600 gap-3 capitalize border-2 border-gray-300 dark:border-gray-800 hover:border-cyan-600 rounded-md px-4 py-2.5 bg-white dark:bg-slate-700 w-full hover:text-white cursor-pointer" onClick={handleUpdateFieldPopup}>
           <FaPlus className="text-cyan-500 group-hover:text-white group-hover:rotate-90 transition-all"/> 
-          Add Custom fields
+          {t("add_custom_fields")}
         </button>
       </div>
 
@@ -745,7 +747,7 @@ const handleCreateCustomField = async (e: FormEvent) => {
         <div className="flex items-center gap-3 w-1/2">
           <GrDocumentUpdate className="text-xl text-cyan-500" />
           <h2 className="text-slate-900 dark:text-white font-semibold text-2xl tracking-wide">
-            Update Lead Form Field
+            {t("update_lead_form_field")}
           </h2>
         </div>
         <div className="flex items-center justify-end gap-3 ml-6">
@@ -770,8 +772,8 @@ const handleCreateCustomField = async (e: FormEvent) => {
           {!isLoading ? (
             selectedFieldsIds.length === 0 ? (
               <div className="flex items-center flex-col justify-center col-span-2 py-5">
-                <Image src={"/images/Cry.gif"} alt="cry img" height={200} width={200} />
-                <p>No form fields found, please select fields first</p>
+                <Image src={"/images/Cry.gif"} alt={t("cry_img")} height={200} width={200} />
+                <p>{t("no_form_fields_found_please_select")}</p>
               </div>
             ) : (
               getSelectedFields().map((item, index) => renderFormField(item, index))
@@ -811,7 +813,7 @@ const handleCreateCustomField = async (e: FormEvent) => {
               className="w-fit flex items-center justify-center gap-2 rounded-md px-4 py-2 font-medium bg-cyan-200 text-cyan-600 hover:text-cyan-700 hover:bg-cyan-300 hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200" 
               onClick={()=>router.back()}
             >
-              <IoChevronBack /> Back
+              <IoChevronBack /> {t("back")}
             </button>
           </div>
         </div>

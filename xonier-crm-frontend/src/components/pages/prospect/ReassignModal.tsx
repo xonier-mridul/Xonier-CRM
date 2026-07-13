@@ -8,6 +8,7 @@ import { MdOutlinePersonAdd } from "react-icons/md";
 import { Prospect } from "@/src/types/prospect/prospect.type";
 import { User } from "@/src/types/auth/auth.types";
 import UserSelect from "@/src/components/common/userselect";
+import { useTranslation } from "react-i18next";
 
 interface ReassignModalProps {
   leads: Prospect[];
@@ -29,6 +30,7 @@ const ReassignModal = ({
   onClose,
   onReassign,
 }: ReassignModalProps): JSX.Element => {
+  const { t } = useTranslation();
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [isReassigning, setIsReassigning] = useState<boolean>(false);
 
@@ -55,9 +57,9 @@ const ReassignModal = ({
               <MdOutlinePersonAdd className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">Reassign Leads</h3>
+              <h3 className="text-base font-bold text-white">{t("reassign_leads")}</h3>
               <p className="text-xs text-yellow-100">
-                {leads.length} lead{leads.length > 1 ? "s" : ""} selected for reassignment
+                {leads.length} {t("lead_2")}{leads.length > 1 ? "s" : ""} {t("selected_for_reassignment")}
               </p>
             </div>
           </div>
@@ -78,10 +80,10 @@ const ReassignModal = ({
             </div>
             <div className="flex-1">
               <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">
-                Reassigning Leads
+                {t("reassigning_leads")}
               </p>
               <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
-                These leads will be reassigned to a new user. The previous assignment will be replaced.
+                {t("these_leads_will_be_reassigned_to")}
               </p>
             </div>
           </div>
@@ -89,7 +91,7 @@ const ReassignModal = ({
           {/* User Selection */}
           <div className="space-y-3">
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
-              Select New User <span className="text-red-500">*</span>
+              {t("select_new_user")} <span className="text-red-500">*</span>
             </label>
             {/* <UserSelect
               users={assignableUsers}
@@ -101,14 +103,14 @@ const ReassignModal = ({
               mode="single"
               value={selectedUserId}
               onChange={setSelectedUserId}
-              placeholder="Search & select user..."
+              placeholder={t("search_select_user")}
             />
           </div>
 
           {/* Selected Leads List */}
           <div className="space-y-3">
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
-              Leads to Reassign ({leads.length})
+              {t("leads_to_reassign")}{leads.length})
             </label>
             <div className="bg-amber-50/50 dark:bg-gray-700/50 rounded-xl border border-amber-100 dark:border-gray-600 max-h-64 overflow-y-auto">
               {leads.map((lead, idx) => (
@@ -133,7 +135,7 @@ const ReassignModal = ({
                     <div className="shrink-0">
                       <div className="bg-amber-100 dark:bg-amber-900/30 px-2 py-1 rounded-md">
                         <p className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">
-                          Currently: {lead.assignTo.firstName || "Assigned"}
+                          {t("currently")} {lead.assignTo.firstName || "Assigned"}
                         </p>
                       </div>
                     </div>
@@ -147,7 +149,7 @@ const ReassignModal = ({
           {!selectedUserId && (
             <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg px-3 py-2">
               <p className="text-xs text-yellow-700 dark:text-yellow-300 text-center">
-                ⚠️ Please select a user to reassign the leads
+                {t("please_select_a_user_to_reassign_the_leads")}
               </p>
             </div>
           )}
@@ -159,7 +161,7 @@ const ReassignModal = ({
             onClick={onClose}
             className="flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-gray-700 hover:bg-slate-100 dark:hover:bg-gray-600 text-slate-600 dark:text-slate-300 rounded-xl font-semibold text-sm border border-slate-200 dark:border-gray-600 transition-colors shadow-sm"
           >
-            <FaXmark className="w-3.5 h-3.5" /> Cancel
+            <FaXmark className="w-3.5 h-3.5" /> {t("cancel")}
           </button>
 
           <button
@@ -169,11 +171,11 @@ const ReassignModal = ({
           >
             {isReassigning ? (
               <>
-                <Spinner color="text-white" /> Reassigning...
+                <Spinner color="text-white" /> {t("reassigning")}
               </>
             ) : (
               <>
-                <MdOutlinePersonAdd className="w-4 h-4" /> Reassign Leads
+                <MdOutlinePersonAdd className="w-4 h-4" /> {t("reassign_leads")}
               </>
             )}
           </button>

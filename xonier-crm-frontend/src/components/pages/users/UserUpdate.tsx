@@ -10,6 +10,7 @@ import Select, { SelectOption } from "../../ui/Select";
 import { Company } from "@/src/types/company/company.types";
 import { IoCheckmarkCircle } from "react-icons/io5";
 import { FaRegCircle } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
 
 interface ExtendedUserUpdatePageProps extends UserUpdatePageProps {
   companyData: Company[];
@@ -49,6 +50,7 @@ const  UserUpdate = ({
   companyHasMore,
   checks
 }: ExtendedUserUpdatePageProps) => {
+  const { t } = useTranslation();
   const companyDropdownRef = useRef<HTMLDivElement>(null);
   const [companyOpen, setCompanyOpen] = useState(false);
   const [companySearch, setCompanySearch] = useState("");
@@ -108,7 +110,7 @@ const  UserUpdate = ({
       <div className="flex flex-col gap-12">
         <div className="flex flex-col gap-5">
           <h2 className="text-slate-900 dark:text-white font-medium text-3xl capitalize">
-            Update user information
+            {t("update_user_information")}
           </h2>
 
           {err && <ErrorComponent error={err} />}
@@ -117,12 +119,12 @@ const  UserUpdate = ({
             <form className="grid grid-cols-2 gap-4" onSubmit={handleSubmit}>
               {!isLoading ? (
                 <Input
-                  label="First Name"
+                  label={t("first_name")}
                   type="text"
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleChange}
-                  placeholder="First Name"
+                  placeholder={t("first_name")}
                 />
               ) : (
                 <div className="flex flex-col gap-1">
@@ -133,12 +135,12 @@ const  UserUpdate = ({
 
               {!isLoading ? (
                 <Input
-                  label="Last Name"
+                  label={t("last_name")}
                   type="text"
                   name="lastName"
                   value={formData.lastName}
                   onChange={handleChange}
-                  placeholder="Last Name"
+                  placeholder={t("last_name")}
                 />
               ) : (
                 <div className="flex flex-col gap-1">
@@ -149,12 +151,12 @@ const  UserUpdate = ({
 
               {!isLoading ? (
                 <Input
-                  label="Email"
+                  label={t("email")}
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="Email"
+                  placeholder={t("email")}
                 />
               ) : (
                 <div className="flex flex-col gap-1">
@@ -165,12 +167,12 @@ const  UserUpdate = ({
 
               {!isLoading ? (
                 <Input
-                  label="Phone"
+                  label={t("phone")}
                   type="text"
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  placeholder="Phone"
+                  placeholder={t("phone")}
                 />
               ) : (
                 <div className="flex flex-col gap-1">
@@ -183,13 +185,13 @@ const  UserUpdate = ({
                 (!isLoading ? (
                   <div className="flex flex-col gap-1 w-full">
                     <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                      User Role
+                      {t("user_role")}
                     </label>
                     <select
                       onChange={handleUserRoleChange}
                       className="w-full px-3 py-2 rounded-md border bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-violet-500"
                     >
-                      <option value="">Select user role</option>
+                      <option value="">{t("select_user_role")}</option>
                       {roleData.map((role: any) => (
                         <option
                           key={role.id}
@@ -237,7 +239,7 @@ const  UserUpdate = ({
               {isAdmin && (!isLoading ? (
                 <div className="flex flex-col gap-1 w-full" ref={companyDropdownRef}>
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-200 capitalize">
-                    Company
+                    {t("company")}
                   </label>
 
                   <div className="relative">
@@ -290,7 +292,7 @@ const  UserUpdate = ({
                             type="text"
                             value={companySearch}
                             onChange={(e) => setCompanySearch(e.target.value)}
-                            placeholder="Search company..."
+                            placeholder={t("search_company")}
                             className="w-full px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
                           />
                         </div>
@@ -306,7 +308,7 @@ const  UserUpdate = ({
                               onClick={() => handleCompanySelect("")}
                               className="w-full text-left px-4 py-2.5 text-sm text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                             >
-                              No company
+                              {t("no_company")}
                             </button>
                           </li>
 
@@ -354,7 +356,7 @@ const  UserUpdate = ({
                             })
                           ) : (
                             <li className="px-4 py-6 text-center text-sm text-gray-400">
-                              No companies found
+                              {t("no_companies_found")}
                             </li>
                           )}
 
@@ -379,13 +381,13 @@ const  UserUpdate = ({
                                   d="M4 12a8 8 0 018-8v8z"
                                 />
                               </svg>
-                              Loading more...
+                              {t("loading_more")}
                             </li>
                           )}
 
                           {!companyHasMore && companyData.length > 0 && (
                             <li className="px-4 py-2 text-center text-xs text-gray-400 dark:text-gray-500 border-t border-gray-100 dark:border-gray-700">
-                              All companies loaded
+                              {t("all_companies_loaded")}
                             </li>
                           )}
                         </ul>
@@ -417,7 +419,7 @@ const  UserUpdate = ({
                   formData.userRole.length <= 0
                 }
               >
-                Update User Info
+                {t("update_user_info")}
               </FormButton>
             </form>
           </div>
@@ -426,7 +428,7 @@ const  UserUpdate = ({
         {isAdmin && (
           <div className="flex flex-col gap-5">
             <h2 className="text-slate-900 dark:text-white font-medium text-3xl capitalize">
-              Update user status
+              {t("update_user_status")}
             </h2>
             <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 flex flex-col gap-4 w-full">
               <form
@@ -441,7 +443,7 @@ const  UserUpdate = ({
                 ) : (
                   <div className="flex flex-col gap-1 w-full">
                     <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                      User Status
+                      {t("user_status")}
                     </label>
                     <select
                       onChange={handleStatusChange}
@@ -450,7 +452,7 @@ const  UserUpdate = ({
                       className="w-full px-3 py-2 rounded-md border capitalize bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-violet-500"
                     >
                       <option value="" hidden>
-                        Select user status
+                        {t("select_user_status")}
                       </option>
                       <option value={USER_STATUS.ACTIVE}>
                         {USER_STATUS.ACTIVE}
@@ -476,7 +478,7 @@ const  UserUpdate = ({
                   isLoading={statusLoading}
                   disabled={statusData.status === ""}
                 >
-                  Update Status
+                  {t("update_status")}
                 </FormButton>
               </form>
             </div>
@@ -485,7 +487,7 @@ const  UserUpdate = ({
 
         <div className="flex flex-col gap-5">
           <h2 className="text-slate-900 dark:text-white font-medium text-3xl capitalize">
-            Update user Password
+            {t("update_user_password")}
           </h2>
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 flex flex-col gap-4 w-full">
             {/* <span className="text-slate-600 dark:text-slate-400 text-sm">
@@ -500,21 +502,21 @@ const  UserUpdate = ({
               <Input
                 name="password"
                 type="password"
-                label="New Password"
+                label={t("new_password")}
                 onChange={handlePassChange}
                 value={passwordData.password}
-                placeholder="Password"
+                placeholder={t("password_2")}
               />
               <Input
                 name="confirmPassword"
                 type="password"
-                label="Confirm Password"
+                label={t("confirm_password")}
                 onChange={handlePassChange}
                 value={passwordData.confirmPassword}
-                placeholder="Confirm Password"
+                placeholder={t("confirm_password")}
               />
                 <div className="space-y-2 ">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200 capitalize">Password Criteria:</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200 capitalize">{t("password_criteria")}</span>
                     <div className="grid grid-cols-3">
                         {checks.map((check, index) => (
                           <div
@@ -547,7 +549,7 @@ const  UserUpdate = ({
                 }
                 isLoading={isPassLoading}
               >
-                Update Password
+                {t("update_password")}
               </FormButton>
             </form>
           </div>

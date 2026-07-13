@@ -9,6 +9,7 @@ import { GoDotFill } from "react-icons/go";
 import { CURRENCY } from "@/src/constants/enum";
 import { SubscriptionTableProps } from "@/src/types/subscription/subscription.types";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 
 
 // ─── Extended Props ────────────────────────────────────────────────────────────
@@ -57,14 +58,15 @@ const SubscriptionTable: React.FC<ExtendedSubscriptionTableProps> = ({
   searchVal,
   onSearch,
 }) => {
+  const { t } = useTranslation();
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-900/10 dark:border-gray-700 w-full flex flex-col gap-6 overflow-hidden">
       
       {/* ── Header ── */}
       <div className="flex flex-wrap items-center gap-4 justify-between p-6 border-b border-slate-900/10 dark:border-gray-700">
         <div className="flex flex-col gap-1">
-          <h2 className="text-xl font-bold dark:text-white text-slate-900">Subscriptions</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Manage user subscriptions</p>
+          <h2 className="text-xl font-bold dark:text-white text-slate-900">{t("subscriptions")}</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{t("manage_user_subscriptions")}</p>
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
@@ -77,7 +79,7 @@ const SubscriptionTable: React.FC<ExtendedSubscriptionTableProps> = ({
           >
             {[10, 20, 30, 50].map((n) => (
               <option key={n} value={n}>
-                {n} / page
+                {n} {t("page_2")}
               </option>
             ))}
           </select>
@@ -87,7 +89,7 @@ const SubscriptionTable: React.FC<ExtendedSubscriptionTableProps> = ({
             <input
               type="text"
               className="outline-none bg-transparent text-sm dark:text-white placeholder:text-gray-400 w-44"
-              placeholder="Search subscriptions..."
+              placeholder={t("search_subscriptions")}
               value={searchVal}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 onSearch(e.target.value)
@@ -197,7 +199,7 @@ const SubscriptionTable: React.FC<ExtendedSubscriptionTableProps> = ({
                     colSpan={COLUMNS.length}
                     className="py-16 text-center text-gray-400 text-sm"
                   >
-                    No subscriptions found
+                    {t("no_subscriptions_found")}
                   </td>
                 </tr>
               )

@@ -42,6 +42,7 @@ import {
 import { MdDeleteOutline, MdPayment, MdCategory } from "react-icons/md";
 import { FaRegPaperPlane, FaPercent } from "react-icons/fa";
 import { handleCopy } from "@/src/app/utils/clipboard.utils";
+import { useTranslation } from "react-i18next";
 
 const getFullName = (user: User) =>
   `${user.firstName}${user.lastName ? " " + user.lastName : ""}`;
@@ -110,6 +111,7 @@ const getStatusConfig = (status: INVOICE_STATUS) => {
 type ActiveTab = "invoice" | "deal" | "payment";
 
 const InvoiceViewPage = (): JSX.Element => {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [invoiceData, setInvoiceData] = useState<Invoice | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>("invoice");
@@ -198,15 +200,15 @@ const InvoiceViewPage = (): JSX.Element => {
       <div className="ml-72 mt-14 p-6 flex items-center justify-center min-h-[70vh]">
         <div className="text-center">
           <IoReceiptOutline className="w-20 h-20 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Invoice Not Found</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t("invoice_not_found")}</h2>
           <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm">
-            The invoice you're looking for doesn't exist or has been removed.
+            {t("the_invoice_you're_looking_for_doesn't")}
           </p>
           <button
             onClick={() => router.back()}
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition-colors"
           >
-            <IoArrowBack className="w-4 h-4" /> Go Back
+            <IoArrowBack className="w-4 h-4" /> {t("go_back")}
           </button>
         </div>
       </div>
@@ -240,7 +242,7 @@ const InvoiceViewPage = (): JSX.Element => {
                 <h1
                   className="text-xl font-bold text-gray-900 dark:text-white font-mono cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                   onClick={() => handleCopy(invoiceData.invoiceId)}
-                  title="Click to copy"
+                  title={t("click_to_copy")}
                 >
                   {invoiceData.invoiceId}
                 </h1>
@@ -251,7 +253,7 @@ const InvoiceViewPage = (): JSX.Element => {
                 {isOverdue && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-700">
                     <IoAlertCircleOutline className="w-3.5 h-3.5" />
-                    {daysOverdue}d Overdue
+                    {daysOverdue}{t("d_overdue")}
                   </span>
                 )}
               </div>
@@ -271,7 +273,7 @@ const InvoiceViewPage = (): JSX.Element => {
                   className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <IoCheckmarkCircle className="w-4 h-4" />
-                  Mark as Paid
+                  {t("mark_as_paid")}
                 </button>
               )}
               {invoiceData.status === INVOICE_STATUS.DRAFT && (
@@ -280,7 +282,7 @@ const InvoiceViewPage = (): JSX.Element => {
                   className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition-colors"
                 >
                   <FaRegPaperPlane className="w-3.5 h-3.5" />
-                  Send Invoice
+                  {t("send_invoice")}
                 </button>
               )}
               <button
@@ -288,7 +290,7 @@ const InvoiceViewPage = (): JSX.Element => {
                 className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-gray-700 hover:bg-gray-800 dark:hover:bg-gray-600 text-white rounded-xl text-sm font-medium transition-colors"
               >
                 <IoDownloadOutline className="w-4 h-4" />
-                Download PDF
+                {t("download_pdf")}
               </button>
               <div className="relative">
                 <button
@@ -300,7 +302,7 @@ const InvoiceViewPage = (): JSX.Element => {
                 </button>
                 {menuOpen && (
                   <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-20">
-                    <span className="px-4 py-2.5 text-sm">Not found</span>
+                    <span className="px-4 py-2.5 text-sm">{t("not_found")}</span>
                     {/* {hasPermission(PERMISSIONS.deleteInvoice) && (
                       <button
                         onClick={handleDelete}
@@ -341,7 +343,7 @@ const InvoiceViewPage = (): JSX.Element => {
         {(invoiceData.status === INVOICE_STATUS.PARTIALLY_PAID || paymentPct > 0) && (
           <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Payment Progress</span>
+              <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{t("payment_progress")}</span>
               <span className="text-sm font-bold text-gray-900 dark:text-white">{paymentPct.toFixed(1)}%</span>
             </div>
             <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2.5">
@@ -351,8 +353,8 @@ const InvoiceViewPage = (): JSX.Element => {
               />
             </div>
             <div className="flex justify-between mt-1.5">
-              <span className="text-[11px] text-gray-400">Paid: {fmt(invoiceData.paidAmount || 0, invoiceData.currency)}</span>
-              <span className="text-[11px] text-gray-400">Total: {fmt(invoiceData.total, invoiceData.currency)}</span>
+              <span className="text-[11px] text-gray-400">{t("paid_2")} {fmt(invoiceData.paidAmount || 0, invoiceData.currency)}</span>
+              <span className="text-[11px] text-gray-400">{t("total_4")} {fmt(invoiceData.total, invoiceData.currency)}</span>
             </div>
           </div>
         )}
@@ -391,25 +393,25 @@ const InvoiceViewPage = (): JSX.Element => {
                 <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
                   <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2 uppercase tracking-wider">
                     <IoPersonOutline className="w-4 h-4 text-blue-500" />
-                    Customer Information
+                    {t("customer_information")}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <InfoBlock icon={<IoPersonOutline className="w-4 h-4" />} label="Name" value={invoiceData.customerName} />
-                    <InfoBlock icon={<IoMailOutline className="w-4 h-4" />} label="Email" value={invoiceData.customerEmail} />
+                    <InfoBlock icon={<IoPersonOutline className="w-4 h-4" />} label={t("name_2")} value={invoiceData.customerName} />
+                    <InfoBlock icon={<IoMailOutline className="w-4 h-4" />} label={t("email")} value={invoiceData.customerEmail} />
                     {invoiceData.customerPhone && (
-                      <InfoBlock icon={<IoCallOutline className="w-4 h-4" />} label="Phone" value={invoiceData.customerPhone} />
+                      <InfoBlock icon={<IoCallOutline className="w-4 h-4" />} label={t("phone")} value={invoiceData.customerPhone} />
                     )}
                     {invoiceData.companyName && (
-                      <InfoBlock icon={<IoBusinessOutline className="w-4 h-4" />} label="Company" value={invoiceData.companyName} />
+                      <InfoBlock icon={<IoBusinessOutline className="w-4 h-4" />} label={t("company")} value={invoiceData.companyName} />
                     )}
                     {invoiceData.companyAddress && (
-                      <InfoBlock icon={<IoLocationOutline className="w-4 h-4" />} label="Company Address" value={invoiceData.companyAddress} />
+                      <InfoBlock icon={<IoLocationOutline className="w-4 h-4" />} label={t("company_address")} value={invoiceData.companyAddress} />
                     )}
                     {invoiceData.billingAddress && (
-                      <InfoBlock icon={<IoLocationOutline className="w-4 h-4" />} label="Billing Address" value={invoiceData.billingAddress} />
+                      <InfoBlock icon={<IoLocationOutline className="w-4 h-4" />} label={t("billing_address")} value={invoiceData.billingAddress} />
                     )}
                     {invoiceData.companyWebsite && (
-                      <InfoBlock icon={<IoGlobeOutline className="w-4 h-4" />} label="Website" value={invoiceData.companyWebsite} />
+                      <InfoBlock icon={<IoGlobeOutline className="w-4 h-4" />} label={t("website")} value={invoiceData.companyWebsite} />
                     )}
                   </div>
                 </div>
@@ -420,7 +422,7 @@ const InvoiceViewPage = (): JSX.Element => {
                     <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
                       <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2 uppercase tracking-wider">
                         <IoReceiptOutline className="w-4 h-4 text-blue-500" />
-                        Line Items
+                        {t("line_items")}
                       </h3>
                     </div>
                     <div className="overflow-x-auto">
@@ -477,13 +479,13 @@ const InvoiceViewPage = (): JSX.Element => {
                       <div className="flex justify-end">
                         <div className="w-64 space-y-2">
                           <div className="flex justify-between text-sm">
-                            <span className="text-gray-500 dark:text-gray-400">Subtotal</span>
+                            <span className="text-gray-500 dark:text-gray-400">{t("subtotal")}</span>
                             <span className="font-semibold text-gray-800 dark:text-white">{fmt(invoiceData.subTotal, invoiceData.currency)}</span>
                           </div>
                           {invoiceData.discountAmount != null && invoiceData.discountAmount > 0 && (
                             <div className="flex justify-between text-sm">
                               <span className="text-emerald-600 dark:text-emerald-400">
-                                Discount{invoiceData.discountPercent ? ` (${invoiceData.discountPercent}%)` : ""}
+                                {t("discount")}{invoiceData.discountPercent ? ` (${invoiceData.discountPercent}%)` : ""}
                               </span>
                               <span className="font-semibold text-emerald-600 dark:text-emerald-400">
                                 -{fmt(invoiceData.discountAmount, invoiceData.currency)}
@@ -493,27 +495,27 @@ const InvoiceViewPage = (): JSX.Element => {
                           {invoiceData.taxAmount != null && invoiceData.taxAmount > 0 && (
                             <div className="flex justify-between text-sm">
                               <span className="text-gray-500 dark:text-gray-400">
-                                Tax{invoiceData.taxPercent ? ` (${invoiceData.taxPercent}%)` : ""}
+                                {t("tax_2")}{invoiceData.taxPercent ? ` (${invoiceData.taxPercent}%)` : ""}
                               </span>
                               <span className="font-semibold text-gray-800 dark:text-white">+{fmt(invoiceData.taxAmount, invoiceData.currency)}</span>
                             </div>
                           )}
                           {invoiceData.shippingAmount != null && invoiceData.shippingAmount > 0 && (
                             <div className="flex justify-between text-sm">
-                              <span className="text-gray-500 dark:text-gray-400">Shipping</span>
+                              <span className="text-gray-500 dark:text-gray-400">{t("shipping")}</span>
                               <span className="font-semibold text-gray-800 dark:text-white">+{fmt(invoiceData.shippingAmount, invoiceData.currency)}</span>
                             </div>
                           )}
                           <div className="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-600">
-                            <span className="font-bold text-gray-900 dark:text-white">Total</span>
+                            <span className="font-bold text-gray-900 dark:text-white">{t("total_2")}</span>
                             <span className="font-extrabold text-blue-600 dark:text-blue-400 text-lg">{fmt(invoiceData.total, invoiceData.currency)}</span>
                           </div>
                           <div className="flex justify-between text-sm">
-                            <span className="text-gray-500 dark:text-gray-400">Paid</span>
+                            <span className="text-gray-500 dark:text-gray-400">{t("paid")}</span>
                             <span className="font-semibold text-emerald-600 dark:text-emerald-400">{fmt(invoiceData.paidAmount || 0, invoiceData.currency)}</span>
                           </div>
                           <div className="flex justify-between pt-1 border-t border-gray-200 dark:border-gray-600">
-                            <span className="font-bold text-gray-900 dark:text-white">Balance Due</span>
+                            <span className="font-bold text-gray-900 dark:text-white">{t("balance_due")}</span>
                             <span className={`font-extrabold text-base ${balance > 0 ? "text-red-500" : "text-emerald-500"}`}>
                               {fmt(balance, invoiceData.currency)}
                             </span>
@@ -529,19 +531,19 @@ const InvoiceViewPage = (): JSX.Element => {
                   <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 space-y-4">
                     {invoiceData.paymentTerms && (
                       <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-blue-500 mb-1.5">Payment Terms</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-blue-500 mb-1.5">{t("payment_terms")}</p>
                         <p className="text-sm text-blue-800 dark:text-blue-200">{invoiceData.paymentTerms}</p>
                       </div>
                     )}
                     {invoiceData.notes && (
                       <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-100 dark:border-amber-800">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-amber-500 mb-1.5">Notes</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-amber-500 mb-1.5">{t("notes")}</p>
                         <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed">{invoiceData.notes}</p>
                       </div>
                     )}
                     {invoiceData.termsAndConditions && (
                       <div className="p-4 bg-gray-50 dark:bg-gray-700/40 rounded-xl border border-gray-100 dark:border-gray-700">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Terms & Conditions</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">{t("terms_conditions")}</p>
                         <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{invoiceData.termsAndConditions}</p>
                       </div>
                     )}
@@ -552,20 +554,20 @@ const InvoiceViewPage = (): JSX.Element => {
                 <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
                   <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2 uppercase tracking-wider">
                     <IoDocumentText className="w-4 h-4 text-blue-500" />
-                    Invoice Details
+                    {t("invoice_details")}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <InfoBlock icon={<IoDocumentText className="w-4 h-4" />} label="Invoice ID" value={invoiceData.invoiceId} mono />
+                    <InfoBlock icon={<IoDocumentText className="w-4 h-4" />} label={t("invoice_id_2")} value={invoiceData.invoiceId} mono />
                     {invoiceData.sourceQuoteId && (
-                      <InfoBlock icon={<IoDocumentText className="w-4 h-4" />} label="Source Quote ID" value={invoiceData.sourceQuoteId} mono />
+                      <InfoBlock icon={<IoDocumentText className="w-4 h-4" />} label={t("source_quote_id")} value={invoiceData.sourceQuoteId} mono />
                     )}
                     {invoiceData.issueDate && (
-                      <InfoBlock icon={<IoCalendarOutline className="w-4 h-4" />} label="Issue Date" value={formatDate(invoiceData.issueDate)} />
+                      <InfoBlock icon={<IoCalendarOutline className="w-4 h-4" />} label={t("issue_date_2")} value={formatDate(invoiceData.issueDate)} />
                     )}
-                    <InfoBlock icon={<IoCalendarOutline className="w-4 h-4" />} label="Due Date" value={formatDate(invoiceData.dueDate)} />
-                    <InfoBlock icon={<IoCashOutline className="w-4 h-4" />} label="Currency" value={invoiceData.currency} />
+                    <InfoBlock icon={<IoCalendarOutline className="w-4 h-4" />} label={t("due_date")} value={formatDate(invoiceData.dueDate)} />
+                    <InfoBlock icon={<IoCashOutline className="w-4 h-4" />} label={t("currency")} value={invoiceData.currency} />
                     {invoiceData.lastPaymentDate && (
-                      <InfoBlock icon={<IoTimeOutline className="w-4 h-4" />} label="Last Payment" value={formatDate(invoiceData.lastPaymentDate)} />
+                      <InfoBlock icon={<IoTimeOutline className="w-4 h-4" />} label={t("last_payment")} value={formatDate(invoiceData.lastPaymentDate)} />
                     )}
                   </div>
                 </div>
@@ -580,13 +582,13 @@ const InvoiceViewPage = (): JSX.Element => {
                     <div className="flex items-center justify-between mb-5">
                       <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2 uppercase tracking-wider">
                         <IoFunnelOutline className="w-4 h-4 text-blue-500" />
-                        Associated Deal
+                        {t("associated_deal")}
                       </h3>
                       <Link
                         href={`/deals/view/${invoiceData.deal.id}`}
                         className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 font-medium"
                       >
-                        View Deal <IoArrowBack className="w-3 h-3 rotate-180" />
+                        {t("view_deal")} <IoArrowBack className="w-3 h-3 rotate-180" />
                       </Link>
                     </div>
 
@@ -611,9 +613,9 @@ const InvoiceViewPage = (): JSX.Element => {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                      <InfoBlock label="Pipeline" value={invoiceData.deal.dealPipeline} />
+                      <InfoBlock label={t("pipeline")} value={invoiceData.deal.dealPipeline} />
                       {invoiceData.deal.dealProbability != null && (
-                        <InfoBlock label="Win Probability" value={`${invoiceData.deal.dealProbability}%`} />
+                        <InfoBlock label={t("win_probability")} value={`${invoiceData.deal.dealProbability}%`} />
                       )}
                     </div>
                   </div>
@@ -624,32 +626,32 @@ const InvoiceViewPage = (): JSX.Element => {
                     <div className="flex items-center justify-between mb-5">
                       <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2 uppercase tracking-wider">
                         <IoDocumentText className="w-4 h-4 text-blue-500" />
-                        Source Quotation
+                        {t("source_quotation")}
                       </h3>
                       <Link
                         href={`/quotations/view/${invoiceData.quotation.id}`}
                         className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 font-medium"
                       >
-                        View Quotation <IoArrowBack className="w-3 h-3 rotate-180" />
+                        {t("view_quotation")} <IoArrowBack className="w-3 h-3 rotate-180" />
                       </Link>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <InfoBlock icon={<IoDocumentText className="w-4 h-4" />} label="Quote ID" value={invoiceData.quotation.quoteId} mono />
-                      <InfoBlock icon={<IoInformationCircleOutline className="w-4 h-4" />} label="Title" value={invoiceData.quotation.title || "—"} />
-                      <InfoBlock icon={<IoCheckmarkCircle className="w-4 h-4" />} label="Status" value={invoiceData.quotation.quotationStatus} />
-                      <InfoBlock icon={<IoCashOutline className="w-4 h-4" />} label="Quote Total" value={fmt(invoiceData.quotation.total, invoiceData.currency)} />
-                      <InfoBlock icon={<IoCalendarOutline className="w-4 h-4" />} label="Issue Date" value={invoiceData.quotation.issueDate ? formatDate(invoiceData.quotation.issueDate) : "—"} />
-                      <InfoBlock icon={<IoCalendarOutline className="w-4 h-4" />} label="Valid Until" value={invoiceData.quotation.valid ? formatDate(invoiceData.quotation.valid) : "—"} />
+                      <InfoBlock icon={<IoDocumentText className="w-4 h-4" />} label={t("quote_id_2")} value={invoiceData.quotation.quoteId} mono />
+                      <InfoBlock icon={<IoInformationCircleOutline className="w-4 h-4" />} label={t("title")} value={invoiceData.quotation.title || "—"} />
+                      <InfoBlock icon={<IoCheckmarkCircle className="w-4 h-4" />} label={t("status")} value={invoiceData.quotation.quotationStatus} />
+                      <InfoBlock icon={<IoCashOutline className="w-4 h-4" />} label={t("quote_total")} value={fmt(invoiceData.quotation.total, invoiceData.currency)} />
+                      <InfoBlock icon={<IoCalendarOutline className="w-4 h-4" />} label={t("issue_date_2")} value={invoiceData.quotation.issueDate ? formatDate(invoiceData.quotation.issueDate) : "—"} />
+                      <InfoBlock icon={<IoCalendarOutline className="w-4 h-4" />} label={t("valid_until")} value={invoiceData.quotation.valid ? formatDate(invoiceData.quotation.valid) : "—"} />
                       {invoiceData.quotation.confirmedAt && (
-                        <InfoBlock icon={<IoCheckmarkCircle className="w-4 h-4" />} label="Confirmed At" value={formatDate(invoiceData.quotation.confirmedAt)} />
+                        <InfoBlock icon={<IoCheckmarkCircle className="w-4 h-4" />} label={t("confirmed_at")} value={formatDate(invoiceData.quotation.confirmedAt)} />
                       )}
                       {invoiceData.quotation.paymentTerms && (
-                        <InfoBlock icon={<IoCashOutline className="w-4 h-4" />} label="Payment Terms" value={invoiceData.quotation.paymentTerms} />
+                        <InfoBlock icon={<IoCashOutline className="w-4 h-4" />} label={t("payment_terms")} value={invoiceData.quotation.paymentTerms} />
                       )}
                     </div>
                     {invoiceData.quotation.description && (
                       <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700/40 rounded-xl">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Description</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">{t("description_2")}</p>
                         <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{invoiceData.quotation.description}</p>
                       </div>
                     )}
@@ -663,7 +665,7 @@ const InvoiceViewPage = (): JSX.Element => {
               <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
                 <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-5 flex items-center gap-2 uppercase tracking-wider">
                   <MdPayment className="w-4 h-4 text-blue-500" />
-                  Payment Information
+                  {t("payment_information")}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   {[
@@ -687,10 +689,10 @@ const InvoiceViewPage = (): JSX.Element => {
                 </div>
 
                 <div className="border-t border-gray-100 dark:border-gray-700 pt-5">
-                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Payment History</h4>
+                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">{t("payment_history")}</h4>
                   <div className="text-center py-10 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700">
                     <IoInformationCircleOutline className="w-10 h-10 mx-auto text-gray-300 dark:text-gray-600 mb-2" />
-                    <p className="text-sm text-gray-400 dark:text-gray-500">Payment history coming soon</p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500">{t("payment_history_coming_soon")}</p>
                   </div>
                 </div>
               </div>
@@ -701,7 +703,7 @@ const InvoiceViewPage = (): JSX.Element => {
           <div className="space-y-5">
             {invoiceData.createdBy && (
               <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
-                <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Created By</h3>
+                <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">{t("created_by")}</h3>
                 <div className="flex items-center gap-3">
                   <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
                     {getInitials(invoiceData.createdBy)}
@@ -718,16 +720,16 @@ const InvoiceViewPage = (): JSX.Element => {
             )}
 
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
-              <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Invoice Summary</h3>
+              <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">{t("invoice_summary")}</h3>
               <div className="space-y-3">
-                <SidebarRow label="Status" value={statusCfg.label} highlight={invoiceData.status === INVOICE_STATUS.OVERDUE} />
-                {invoiceData.issueDate && <SidebarRow label="Issue Date" value={formatDate(invoiceData.issueDate)} />}
-                <SidebarRow label="Due Date" value={formatDate(invoiceData.dueDate)} highlight={!!isOverdue} />
-                <SidebarRow label="Currency" value={invoiceData.currency} />
-                <SidebarRow label="Created" value={formatDate(invoiceData.createdAt)} />
-                <SidebarRow label="Updated" value={formatDate(invoiceData.updatedAt)} />
-                {isOverdue && <SidebarRow label="Days Overdue" value={`${daysOverdue} days`} highlight />}
-                {invoiceData.lastPaymentDate && <SidebarRow label="Last Payment" value={formatDate(invoiceData.lastPaymentDate)} />}
+                <SidebarRow label={t("status")} value={statusCfg.label} highlight={invoiceData.status === INVOICE_STATUS.OVERDUE} />
+                {invoiceData.issueDate && <SidebarRow label={t("issue_date_2")} value={formatDate(invoiceData.issueDate)} />}
+                <SidebarRow label={t("due_date")} value={formatDate(invoiceData.dueDate)} highlight={!!isOverdue} />
+                <SidebarRow label={t("currency")} value={invoiceData.currency} />
+                <SidebarRow label={t("created")} value={formatDate(invoiceData.createdAt)} />
+                <SidebarRow label={t("updated")} value={formatDate(invoiceData.updatedAt)} />
+                {isOverdue && <SidebarRow label={t("days_overdue")} value={`${daysOverdue} days`} highlight />}
+                {invoiceData.lastPaymentDate && <SidebarRow label={t("last_payment")} value={formatDate(invoiceData.lastPaymentDate)} />}
               </div>
             </div>
 
@@ -742,20 +744,20 @@ const InvoiceViewPage = (): JSX.Element => {
                 {invoiceData.status === INVOICE_STATUS.PAID
                   ? <IoCheckmarkCircle className="w-4 h-4 text-emerald-600" />
                   : <IoAlertCircleOutline className="w-4 h-4 text-red-500" />}
-                <h4 className="text-sm font-bold text-gray-900 dark:text-white">Payment Status</h4>
+                <h4 className="text-sm font-bold text-gray-900 dark:text-white">{t("payment_status")}</h4>
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">Status</span>
+                  <span className="text-gray-500 dark:text-gray-400">{t("status")}</span>
                   <span className="font-semibold text-xs uppercase text-gray-900 dark:text-white">{statusCfg.label}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">Progress</span>
+                  <span className="text-gray-500 dark:text-gray-400">{t("progress")}</span>
                   <span className="font-semibold text-gray-900 dark:text-white">{paymentPct.toFixed(0)}%</span>
                 </div>
                 {balance > 0 && (
                   <div className="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-600">
-                    <span className="text-gray-500 dark:text-gray-400">Remaining</span>
+                    <span className="text-gray-500 dark:text-gray-400">{t("remaining")}</span>
                     <span className="font-extrabold text-gray-900 dark:text-white">{fmt(balance, invoiceData.currency)}</span>
                   </div>
                 )}
@@ -764,7 +766,7 @@ const InvoiceViewPage = (): JSX.Element => {
 
             {invoiceData.updatedBy && (
               <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
-                <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Last Updated By</h3>
+                <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">{t("last_updated_by")}</h3>
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center text-white font-bold text-xs shrink-0">
                     {getInitials(invoiceData.updatedBy)}

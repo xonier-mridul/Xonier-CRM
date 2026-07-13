@@ -9,6 +9,7 @@ import {
     ColorOption,
 } from "@/src/types/task/category.types";
 import { COLOR_OPTIONS, TASK_VISIBILITY } from "@/src/constants/enum";
+import { useTranslation } from "react-i18next";
 
 const ICON_OPTIONS: string[] = [
     "📁", "🗂️", "🏷️", "📦", "🔖", "🧩", "⚙️", "🎨",
@@ -57,6 +58,7 @@ function CategoryModal({
     handleClosePopup,
     err,
 }: ModalProps) {
+  const { t } = useTranslation();
     const isEdit = !!editTarget;
     const selectedColor = getColorOption(formData.color ||COLOR_OPTIONS[0].hex);
     const selectedIcon = formData.icon || ICON_OPTIONS[0];
@@ -72,11 +74,10 @@ function CategoryModal({
     if (typeof window === "undefined") return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-50 grid place-items-center px-4 py-6 overflow-y-auto">
-
+      <div className="fixed inset-0 z-150 flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
                 onClick={handleClosePopup}
             />
 
@@ -107,7 +108,7 @@ function CategoryModal({
 
                     {/* Preview */}
                     <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700">
-                        <span className="text-sm text-gray-500 dark:text-gray-400">Preview:</span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">{t("preview")}</span>
                         <CategoryBadge
                             color={selectedColor}
                             icon={selectedIcon}
@@ -125,12 +126,12 @@ function CategoryModal({
                     {/* Name */}
                     <div>
                         <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">
-                            Category Name *
+                            {t("category_name_3")}
                         </label>
                         <input
                             type="text"
                             value={formData.name}
-                            placeholder="Category Name"
+                            placeholder={t("category_name_2")}
                             onChange={(e) =>
                                 setFormData((prev) => ({ ...prev, name: e.target.value }))
                             }
@@ -141,7 +142,7 @@ function CategoryModal({
                     {/* Description */}
                     <div>
                         <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">
-                            Description
+                            {t("description_2")}
                         </label>
                         <textarea
                             value={formData.description}
@@ -149,7 +150,7 @@ function CategoryModal({
                                 setFormData((prev) => ({ ...prev, description: e.target.value }))
                             }
                             rows={2}
-                            placeholder="Description"
+                            placeholder={t("description_2")}
                             className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-600 text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-700"
                         />
                     </div>
@@ -157,7 +158,7 @@ function CategoryModal({
                     {/* Visibility */}
                     <div>
                         <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">
-                            Visibility
+                            {t("visibility")}
                         </label>
                         <select
                             value={formData.visibility}
@@ -177,7 +178,7 @@ function CategoryModal({
                     {/* Icon */}
                     <div>
                         <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">
-                            Icon
+                            {t("icon")}
                         </label>
                         <div className="flex flex-wrap gap-2">
                             {ICON_OPTIONS.map((ic) => (
@@ -199,7 +200,7 @@ function CategoryModal({
                     {/* Color */}
                     <div>
                         <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">
-                            Color
+                            {t("color")}
                         </label>
                         <div className="flex gap-2 flex-wrap">
                             {COLOR_OPTIONS.map((c) => (
@@ -226,7 +227,7 @@ function CategoryModal({
                         onClick={handleClosePopup}
                         className="px-4 py-2 rounded-xl text-sm border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700"
                     >
-                        Cancel
+                        {t("cancel")}
                     </button>
 
                     <button

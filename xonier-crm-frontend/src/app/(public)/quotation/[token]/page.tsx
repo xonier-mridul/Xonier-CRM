@@ -6,6 +6,7 @@ import axios from "axios";
 import { Quotation } from "@/src/types/quotations/quote.types";
 import { QuotationStatus } from "@/src/constants/enum";
 import { QuoteService } from "@/src/services/quote.service";
+import { useTranslation } from "react-i18next";
 
 type PageStatus = "loading" | "idle" | "confirming" | "confirmed" | "expired" | "error";
 
@@ -18,6 +19,7 @@ const fmtDate = (d: string) =>
 const checkExpired = (d: string) => new Date(d) < new Date();
 
 export default function QuotationConfirmPage() {
+  const { t } = useTranslation();
   const params = useParams();
   const token = params?.token as string;
 
@@ -108,17 +110,17 @@ export default function QuotationConfirmPage() {
               ⏰
             </div>
             <div>
-              <h2 className="text-xl font-extrabold text-gray-900 dark:text-white mb-2">Quotation Expired</h2>
+              <h2 className="text-xl font-extrabold text-gray-900 dark:text-white mb-2">{t("quotation_expired")}</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                This quotation link is no longer valid.
+                {t("this_quotation_link_is_no_longer_valid")}
                 {quotation?.valid && (
-                  <span> It expired on <strong className="text-gray-600 dark:text-gray-300">{fmtDate(quotation.valid)}</strong>.</span>
+                  <span> {t("it_expired_on")} <strong className="text-gray-600 dark:text-gray-300">{fmtDate(quotation.valid)}</strong>.</span>
                 )}
-                {" "}Please contact us to receive an updated quotation.
+                {" "}{t("please_contact_us_to_receive_an_updated_quotation")}
               </p>
             </div>
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-800/50">
-              ⚠ This link has expired
+              {t("this_link_has_expired")}
             </span>
           </div>
         </div>
@@ -132,9 +134,9 @@ export default function QuotationConfirmPage() {
               ⚡
             </div>
             <div>
-              <h2 className="text-xl font-extrabold text-gray-900 dark:text-white mb-2">Something Went Wrong</h2>
+              <h2 className="text-xl font-extrabold text-gray-900 dark:text-white mb-2">{t("something_went_wrong_2")}</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                We couldn't load your quotation. The link may be invalid or this quotation may no longer exist.
+                {t("we_couldn't_load_your_quotation_the")}
               </p>
             </div>
           </div>
@@ -150,21 +152,21 @@ export default function QuotationConfirmPage() {
             </div>
             <div>
               <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-2">
-                Quotation Confirmed!
+                {t("quotation_confirmed")}
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                Thank you <strong className="text-gray-700 dark:text-gray-300">{quotation.customerName}</strong>. Your confirmation for{" "}
-                <strong className="text-gray-700 dark:text-gray-300">{quotation.quoteId}</strong> has been received.
+                {t("thank_you")} <strong className="text-gray-700 dark:text-gray-300">{quotation.customerName}</strong>{t("your_confirmation_for")}{" "}
+                <strong className="text-gray-700 dark:text-gray-300">{quotation.quoteId}</strong> {t("has_been_received")}
               </p>
             </div>
             <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-100 dark:border-gray-700 p-4">
-              <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Confirmed Amount</p>
+              <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{t("confirmed_amount")}</p>
               <p className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">
                 {fmt(quotation.total)}
               </p>
             </div>
             <p className="text-xs text-gray-400 dark:text-gray-500">
-              Our team will be in touch with you shortly regarding next steps.
+              {t("our_team_will_be_in_touch")}
             </p>
           </div>
         </div>
@@ -180,13 +182,13 @@ export default function QuotationConfirmPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-3 flex-wrap">
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800/50">
-                    📄 Quotation
+                    {t("quotation_2")}
                   </span>
                   <span className="text-[10px] font-mono text-gray-300 dark:text-gray-600">
                     {quotation.quoteId}
                   </span>
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-800/50">
-                    ⏳ Awaiting Confirmation
+                    {t("awaiting_confirmation")}
                   </span>
                 </div>
 
@@ -201,7 +203,7 @@ export default function QuotationConfirmPage() {
                 )}
 
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                  Prepared for{" "}
+                  {t("prepared_for")}{" "}
                   <strong className="text-gray-700 dark:text-gray-300">{quotation.customerName}</strong>
                   {quotation.companyName && (
                     <span className="text-gray-400 dark:text-gray-500"> · {quotation.companyName}</span>
@@ -210,13 +212,13 @@ export default function QuotationConfirmPage() {
               </div>
 
               <div className="text-right shrink-0">
-                <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Total Amount</p>
+                <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{t("total_amount")}</p>
                 <p className="text-2xl font-extrabold text-gray-900 dark:text-white">
                   {fmt(quotation.total)}
                 </p>
                 {quotation.subTotal !== quotation.total && (
                   <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                    Subtotal: {fmt(quotation.subTotal)}
+                    {t("subtotal_3")} {fmt(quotation.subTotal)}
                   </p>
                 )}
               </div>
@@ -244,15 +246,15 @@ export default function QuotationConfirmPage() {
           {/* Pricing summary */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-50 dark:border-gray-700/50">
-              <h2 className="text-sm font-extrabold text-gray-700 dark:text-gray-300">💰 Pricing Summary</h2>
+              <h2 className="text-sm font-extrabold text-gray-700 dark:text-gray-300">{t("pricing_summary")}</h2>
             </div>
             <div className="px-6 py-5 space-y-3">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-500 dark:text-gray-400 font-medium">Subtotal</span>
+                <span className="text-gray-500 dark:text-gray-400 font-medium">{t("subtotal")}</span>
                 <span className="font-semibold text-gray-700 dark:text-gray-300">{fmt(quotation.subTotal)}</span>
               </div>
               <div className="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-gray-700">
-                <span className="text-base font-extrabold text-gray-800 dark:text-white">Total</span>
+                <span className="text-base font-extrabold text-gray-800 dark:text-white">{t("total_2")}</span>
                 <span className="text-xl font-extrabold text-gray-900 dark:text-white">{fmt(quotation.total)}</span>
               </div>
             </div>
@@ -261,7 +263,7 @@ export default function QuotationConfirmPage() {
           {/* Deal info */}
           {quotation.deal && (
             <div className="bg-indigo-50 dark:bg-indigo-900/10 rounded-2xl border border-indigo-100 dark:border-indigo-800/30 px-5 py-4">
-              <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-1">🤝 Related Deal</p>
+              <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-1">{t("related_deal")}</p>
               <p className="text-sm text-indigo-700 dark:text-indigo-300 font-semibold">
                 {(quotation.deal as any)?.title ?? (quotation.deal as any)?.name ?? String(quotation.deal)}
               </p>
@@ -271,9 +273,9 @@ export default function QuotationConfirmPage() {
           {/* Confirm card */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6 space-y-4">
             <div>
-              <h2 className="text-sm font-extrabold text-gray-700 dark:text-gray-300 mb-1">✍️ Confirm Your Quotation</h2>
+              <h2 className="text-sm font-extrabold text-gray-700 dark:text-gray-300 mb-1">{t("confirm_your_quotation")}</h2>
               <p className="text-xs text-gray-400 dark:text-gray-500">
-                Please read and agree to the terms before confirming.
+                {t("please_read_and_agree_to_the")}
               </p>
             </div>
 
@@ -302,11 +304,11 @@ export default function QuotationConfirmPage() {
               </span>
               <div>
                 <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
-                  I agree to the terms of this quotation
+                  {t("i_agree_to_the_terms_of")}
                 </p>
                 <p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed font-light">
-                  By confirming, I acknowledge that I have reviewed the pricing and terms outlined in quotation{" "}
-                  <strong className="text-gray-500 dark:text-gray-400">{quotation.quoteId}</strong> and agree to proceed with a total of{" "}
+                  {t("by_confirming_i_acknowledge_that_i_have_reviewed_the")}{" "}
+                  <strong className="text-gray-500 dark:text-gray-400">{quotation.quoteId}</strong> {t("and_agree_to_proceed_with_a_total_of")}{" "}
                   <strong className="text-gray-500 dark:text-gray-400">{fmt(quotation.total)}</strong>.
                 </p>
               </div>
@@ -337,18 +339,18 @@ export default function QuotationConfirmPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                   </svg>
-                  Confirming…
+                  {t("confirming")}
                 </>
               ) : (
                 <>
                   <span>✓</span>
-                  Confirm Quotation — {fmt(quotation.total)}
+                  {t("confirm_quotation")} {fmt(quotation.total)}
                 </>
               )}
             </button>
 
             <p className="text-center text-[11px] text-gray-300 dark:text-gray-600">
-              🔒 Secured · Your confirmation is encrypted and time-stamped
+              {t("secured_your_confirmation_is_encrypted_and_time_stamped")}
             </p>
           </div>
         </div>

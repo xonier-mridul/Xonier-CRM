@@ -62,6 +62,7 @@ import { ACTIVITY_ACTION, ACTIVITY_ENTITY_TYPE } from "@/src/constants/enum";
 import Link from "next/link";
 import ActivityDetailPopup from "./UserActivityPopup";
 import { Company } from "@/src/types/company/company.types";
+import { useTranslation } from "react-i18next";
 
 export interface DateRangeFilter {
   from: string; // "2026-01-01"
@@ -100,7 +101,7 @@ const ENTITY_CONFIG: Record<
   [ACTIVITY_ENTITY_TYPE.LEAD]: {
     label: "Lead",
     color: "#6366f1",
-    bg: "bg-indigo-50 dark:bg-indigo-900/30",
+    bg: "bg-cyan-50 dark:bg-cyan-900/30",
     icon: <HiOutlineUserGroup className="w-4 h-4" />,
   },
   [ACTIVITY_ENTITY_TYPE.DEAL]: {
@@ -425,6 +426,7 @@ const DateFilterPanel = ({
   onApply: (r: DateRangeFilter) => void;
   onClear: () => void;
 }) => {
+  const { t } = useTranslation();
   const [from, setFrom] = useState(value?.from ?? "");
   const [to, setTo] = useState(value?.to ?? "");
   const [err, setErr] = useState("");
@@ -452,7 +454,7 @@ const DateFilterPanel = ({
   return (
     <div className="bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-2xl shadow-2xl p-5 w-80">
       <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-        Quick ranges
+        {t("quick_ranges")}
       </p>
       <div className="flex flex-wrap gap-1.5 mb-5">
         {PRESETS.map((p) => {
@@ -464,8 +466,8 @@ const DateFilterPanel = ({
               onClick={() => pickPreset(r)}
               className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all ${
                 active
-                  ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
-                  : "border-slate-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+                  ? "bg-cyan-600 text-white border-cyan-600 shadow-sm"
+                  : "border-slate-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-400"
               }`}
             >
               {p.label}
@@ -476,13 +478,13 @@ const DateFilterPanel = ({
 
       <div className="h-px bg-slate-100 dark:bg-gray-700 mb-4" />
       <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-        Custom range
+        {t("custom_range")}
       </p>
 
       <div className="space-y-3">
         <div>
           <label className="block text-xs font-medium text-gray-500 mb-1.5">
-            From date
+            {t("from_date")}
           </label>
           <input
             type="date"
@@ -492,12 +494,12 @@ const DateFilterPanel = ({
               setFrom(e.target.value);
               setErr("");
             }}
-            className="w-full text-sm rounded-xl border border-slate-200 dark:border-gray-600 bg-slate-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400"
+            className="w-full text-sm rounded-xl border border-slate-200 dark:border-gray-600 bg-slate-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-400"
           />
         </div>
         <div>
           <label className="block text-xs font-medium text-gray-500 mb-1.5">
-            To date
+            {t("to_date")}
           </label>
           <input
             type="date"
@@ -507,7 +509,7 @@ const DateFilterPanel = ({
               setTo(e.target.value);
               setErr("");
             }}
-            className="w-full text-sm rounded-xl border border-slate-200 dark:border-gray-600 bg-slate-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400"
+            className="w-full text-sm rounded-xl border border-slate-200 dark:border-gray-600 bg-slate-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-400"
           />
         </div>
       </div>
@@ -522,9 +524,9 @@ const DateFilterPanel = ({
       <div className="flex gap-2 mt-4">
         <button
           onClick={apply}
-          className="flex-1 text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-2.5 transition-colors shadow-sm shadow-indigo-200 dark:shadow-indigo-900/30"
+          className="flex-1 text-sm font-semibold bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl py-2.5 transition-colors shadow-sm shadow-cyan-200 dark:shadow-cyan-900/30"
         >
-          Apply filter
+          {t("apply_filter")}
         </button>
         {value && (
           <button
@@ -536,7 +538,7 @@ const DateFilterPanel = ({
             }}
             className="px-4 text-sm font-medium text-gray-500 dark:text-gray-400 border border-slate-200 dark:border-gray-600 rounded-xl hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors"
           >
-            Clear
+            {t("clear")}
           </button>
         )}
       </div>
@@ -562,6 +564,7 @@ const UserDetail = ({
   companyData = null,
   companyLoading = false,
 }: ExtendedUserDetailProps): JSX.Element => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<
     "overview" | "activity" | "summary" | "roles" | "company"
   >("overview");
@@ -627,7 +630,7 @@ const UserDetail = ({
     return (
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-12 text-center border border-slate-100 dark:border-gray-700">
         <IoPersonCircle className="w-16 h-16 text-gray-200 dark:text-gray-600 mx-auto mb-4" />
-        <p className="text-lg font-semibold text-gray-500">User not found</p>
+        <p className="text-lg font-semibold text-gray-500">{t("user_not_found")}</p>
       </div>
     );
 
@@ -691,7 +694,7 @@ const UserDetail = ({
   return (
     <div className="flex flex-col gap-6 font-sans">
       <div className="relative bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden">
-        <div className="h-28 bg-linear-to-r from-slate-700 via-slate-800 to-slate-900 relative">
+        <div className="h-28 bg-linear-to-r from-[#16c2cf] to-[#0fb8a5] relative">
           <div
             className="absolute inset-0 opacity-20"
             style={{
@@ -708,7 +711,7 @@ const UserDetail = ({
                   src="/images/dummy-user.png"
                   width={80}
                   height={80}
-                  alt="User"
+                  alt={t("user")}
                   className="object-cover"
                 />
               </div>
@@ -734,7 +737,7 @@ const UserDetail = ({
               {userData.isEmailVerified && (
                 <MdVerified
                   className="w-5 h-5 text-blue-500 shrink-0"
-                  title="Email Verified"
+                  title={t("email_verified")}
                 />
               )}
               <span
@@ -904,15 +907,15 @@ const UserDetail = ({
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          label="Total Activities"
+          label={t("total_activities")}
           value={totalActivities}
           sub={`${uniqueEntities} entity types`}
           icon={<FiActivity />}
-          accent="bg-indigo-500"
+          accent="bg-cyan-500"
           link={`/leads?userid=${userData._id}`}
         />
         <StatCard
-          label="Last Login"
+          label={t("last_login")}
           link={``}
           value={
             userData.lastLogin
@@ -936,14 +939,14 @@ const UserDetail = ({
         />
         <StatCard
           link={`/roles`}
-          label="Assigned Roles"
+          label={t("assigned_roles")}
           value={userData.userRole?.length ?? 0}
           sub="access roles"
           icon={<IoShieldCheckmark />}
           accent="bg-violet-500"
         />
         <StatCard
-          label="Member Since"
+          label={t("member_since")}
           link={``}
           value={new Date(userData.createdAt).toLocaleDateString("en-IN", {
             day: "2-digit",
@@ -964,7 +967,7 @@ const UserDetail = ({
                 onClick={() => setActiveTab(tab.key)}
                 className={`flex items-center gap-2 px-4 py-4 cursor-pointer text-sm font-medium border-b-2 transition-colors ${
                   activeTab === tab.key
-                    ? "border-indigo-500 text-indigo-600 dark:text-indigo-400"
+                    ? "border-cyan-500 text-cyan-600 dark:text-cyan-400"
                     : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 }`}
               >
@@ -974,7 +977,7 @@ const UserDetail = ({
                   <span
                     className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${
                       activeTab === tab.key
-                        ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300"
+                        ? "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/50 dark:text-cyan-300"
                         : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400"
                     }`}
                   >
@@ -990,7 +993,7 @@ const UserDetail = ({
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
-                Basic Information
+                {t("basic_information")}
               </h3>
               <div className="space-y-4">
                 {[
@@ -1021,7 +1024,7 @@ const UserDetail = ({
             </div>
             <div>
               <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
-                Account Information
+                {t("account_information")}
               </h3>
               <div className="space-y-4">
                 {[
@@ -1065,7 +1068,7 @@ const UserDetail = ({
             {userData.createdBy && (
               <div className="md:col-span-2">
                 <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
-                  Created By
+                  {t("created_by")}
                 </h3>
                 <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-gray-700/50 rounded-xl">
                   <div className="w-10 h-10 rounded-full bg-linear-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white font-bold text-sm">
@@ -1094,8 +1097,8 @@ const UserDetail = ({
           <div className="p-6 space-y-6">
             {activityLoading ? (
               <div className="flex flex-col items-center justify-center py-16 gap-3">
-                <div className="w-9 h-9 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                <p className="text-sm text-gray-400">Loading activity…</p>
+                <div className="w-9 h-9 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+                <p className="text-sm text-gray-400">{t("loading_activity")}</p>
               </div>
             ) : (
               <>
@@ -1105,8 +1108,8 @@ const UserDetail = ({
                       onClick={() => setShowDatePanel((v) => !v)}
                       className={`flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl border transition-all ${
                         dateRange
-                          ? "bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-200 dark:shadow-indigo-900/30"
-                          : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-slate-200 dark:border-gray-600 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+                          ? "bg-cyan-600 text-white border-cyan-600  shadow-cyan-200 dark:shadow-cyan-900/30"
+                          : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-slate-200 dark:border-gray-600 hover:border-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-400"
                       }`}
                     >
                       <LuCalendarRange className="w-4 h-4" />
@@ -1156,7 +1159,7 @@ const UserDetail = ({
                   </div>
 
                   {dateRange && (
-                    <div className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-full border border-indigo-200 dark:border-indigo-800">
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/20 px-3 py-1.5 rounded-full border border-cyan-200 dark:border-cyan-800">
                       <FiCalendar className="w-3 h-3" />
                       {displayDate(dateRange.from)} —{" "}
                       {displayDate(dateRange.to)}
@@ -1172,9 +1175,9 @@ const UserDetail = ({
                     <select
                       value={entityFilter}
                       onChange={(e) => setEntityFilter(e.target.value)}
-                      className="text-xs rounded-lg border border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                      className="text-xs rounded-lg border border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
                     >
-                      <option value="all">All Entities</option>
+                      <option value="all">{t("all_entities")}</option>
                       {Object.values(ACTIVITY_ENTITY_TYPE).map((v) => (
                         <option key={v} value={v}>
                           {ENTITY_CONFIG[v]?.label ?? v}
@@ -1184,9 +1187,9 @@ const UserDetail = ({
                     <select
                       value={actionFilter}
                       onChange={(e) => setActionFilter(e.target.value)}
-                      className="text-xs rounded-lg border border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                      className="text-xs rounded-lg border border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
                     >
-                      <option value="all">All Actions</option>
+                      <option value="all">{t("all_actions")}</option>
                       {Object.values(ACTIVITY_ACTION).map((v) => (
                         <option key={v} value={v}>
                           {ACTION_CONFIG[v]?.label ?? v}
@@ -1202,11 +1205,11 @@ const UserDetail = ({
                         className="text-xs text-red-500 hover:text-red-600 font-medium flex items-center gap-1"
                       >
                         <FiX className="w-3 h-3" />
-                        Clear
+                        {t("clear")}
                       </button>
                     )}
                     <span className="text-xs text-gray-400 tabular-nums">
-                      {filteredActivities.length} results
+                      {filteredActivities.length} {t("results")}
                     </span>
                   </div>
                 </div>
@@ -1215,14 +1218,14 @@ const UserDetail = ({
                   <div className="text-center py-16 space-y-3">
                     <FiActivity className="w-12 h-12 text-gray-200 dark:text-gray-600 mx-auto" />
                     <p className="text-gray-400 font-medium">
-                      No activity recorded for this period
+                      {t("no_activity_recorded_for_this_period")}
                     </p>
                     {dateRange && (
                       <button
                         onClick={() => onDateFilter?.(null)}
-                        className="text-sm text-indigo-500 hover:text-indigo-600 font-medium"
+                        className="text-sm text-cyan-500 hover:text-cyan-600 font-medium"
                       >
-                        Clear date filter
+                        {t("clear_date_filter")}
                       </button>
                     )}
                   </div>
@@ -1232,15 +1235,15 @@ const UserDetail = ({
                       <div className="lg:col-span-2 bg-slate-50 dark:bg-gray-700/40 rounded-2xl p-5 border border-slate-100 dark:border-gray-700">
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 bg-indigo-100 dark:bg-indigo-900/40 rounded-lg flex items-center justify-center">
-                              <IoTrendingUp className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                            <div className="w-7 h-7 bg-cyan-100 dark:bg-cyan-900/40 rounded-lg flex items-center justify-center">
+                              <IoTrendingUp className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                             </div>
                             <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                              Activity Over Time
+                              {t("activity_over_time")}
                             </p>
                           </div>
                           <span className="text-xs font-medium text-gray-400 bg-white dark:bg-gray-800 px-2.5 py-1 rounded-full border border-slate-200 dark:border-gray-600">
-                            {totalActivities} total
+                            {totalActivities} {t("total_3")}
                           </span>
                         </div>
                         <ResponsiveContainer width="100%" height={190}>
@@ -1316,7 +1319,7 @@ const UserDetail = ({
                             <BsCircleFill className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                           </div>
                           <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                            By Entity
+                            {t("by_entity")}
                           </p>
                         </div>
                         <ResponsiveContainer width="100%" height={145}>
@@ -1378,11 +1381,11 @@ const UserDetail = ({
                             <FiActivity className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                           </div>
                           <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                            Actions Breakdown
+                            {t("actions_breakdown")}
                           </p>
                         </div>
                         <span className="text-xs text-gray-400">
-                          {actionBarData.length} action types
+                          {actionBarData.length} {t("action_types")}
                         </span>
                       </div>
                       <ResponsiveContainer width="100%" height={150}>
@@ -1430,7 +1433,7 @@ const UserDetail = ({
                     <div className="pt-2">
                       {filteredActivities.length === 0 ? (
                         <p className="text-sm text-gray-400 text-center py-8">
-                          No activities match the selected filters.
+                          {t("no_activities_match_the_selected_filters")}
                         </p>
                       ) : (
                         filteredActivities.map((activity) => (
@@ -1443,7 +1446,7 @@ const UserDetail = ({
                     {totalPages > 1 && onPageChange && (
                       <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-gray-700">
                         <p className="text-xs text-gray-400">
-                          Page {currentPage} of {totalPages}
+                          {t("page")} {currentPage} {t("of")} {totalPages}
                         </p>
                         <div className="flex items-center gap-2">
                           <button
@@ -1474,14 +1477,14 @@ const UserDetail = ({
           <div className="p-6 space-y-6">
             {summaryLoading ? (
               <div className="flex flex-col items-center justify-center py-16 gap-3">
-                <div className="w-9 h-9 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                <p className="text-sm text-gray-400">Loading summary…</p>
+                <div className="w-9 h-9 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+                <p className="text-sm text-gray-400">{t("loading_summary")}</p>
               </div>
             ) : !activitySummary ? (
               <div className="text-center py-16">
                 <IoBarChart className="w-12 h-12 text-gray-200 dark:text-gray-600 mx-auto mb-3" />
                 <p className="text-gray-400 font-medium">
-                  No summary data available
+                  {t("no_summary_data_available")}
                 </p>
               </div>
             ) : (
@@ -1492,8 +1495,8 @@ const UserDetail = ({
                       onClick={() => setShowSummaryDatePanel((v) => !v)}
                       className={`flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl border transition-all ${
                         summaryFilter?.from || summaryFilter?.to
-                          ? "bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-200 dark:shadow-indigo-900/30"
-                          : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-slate-200 dark:border-gray-600 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+                          ? "bg-cyan-600 text-white border-cyan-600 shadow-md shadow-cyan-200 dark:shadow-cyan-900/30"
+                          : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-slate-200 dark:border-gray-600 hover:border-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-400"
                       }`}
                     >
                       <LuCalendarRange className="w-4 h-4" />
@@ -1567,8 +1570,8 @@ const UserDetail = ({
                         }
                         className={`text-xs font-semibold px-3 py-1.5 rounded-lg capitalize transition-all ${
                           (summaryFilter?.groupBy ?? "month") === g
-                            ? "bg-indigo-600 text-white shadow-sm"
-                            : "text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+                            ? "bg-cyan-600 text-white shadow-sm"
+                            : "text-gray-500 dark:text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400"
                         }`}
                       >
                         {g}
@@ -1578,7 +1581,7 @@ const UserDetail = ({
 
                   <div className="flex items-center gap-3">
                     {summaryFilter?.from && summaryFilter?.to && (
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-full border border-indigo-200 dark:border-indigo-800">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/20 px-3 py-1.5 rounded-full border border-cyan-200 dark:border-cyan-800">
                         <FiCalendar className="w-3 h-3" />
                         {displayDate(summaryFilter.from)} —{" "}
                         {displayDate(summaryFilter.to)}
@@ -1592,7 +1595,7 @@ const UserDetail = ({
                         onClick={() => onSummaryFilter?.({})}
                         className="text-xs text-red-500 hover:text-white bg-red-50 hover:bg-red-500 px-2.5 py-1 rounded-full cursor-pointer group font-medium flex items-center gap-1 ml-auto"
                       >
-                        <FiX className="w-3 h-3 group-hover:rotate-90" /> Reset
+                        <FiX className="w-3 h-3 group-hover:rotate-90" /> {t("reset")}
                       </button>
                     )}
                   </div>
@@ -1612,15 +1615,15 @@ const UserDetail = ({
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   <Link
                     href={`/leads?userid=${userData._id}`}
-                    className="relative overflow-hidden hover:scale-105 cursor-point hover:shadow-[0_0_8px_10px_#00000014] bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5"
+                    className="relative overflow-hidden hover:scale-105 cursor-point  bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5"
                   >
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center shrink-0">
+                      <div className="w-10 h-10 rounded-xl bg-cyan-500 flex items-center justify-center shrink-0">
                         <HiOutlineUserGroup className="w-5 h-5 text-white" />
                       </div>
                       <div>
                         <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
-                          Leads Created
+                          {t("leads_created")}
                         </p>
                         <p className="text-2xl font-bold text-gray-900 dark:text-white mt-0.5">
                           {activitySummary.leads.created.reduce(
@@ -1629,16 +1632,16 @@ const UserDetail = ({
                           )}
                         </p>
                         <p className="text-xs text-rose-500 mt-0.5">
-                          {activitySummary.leads.lost} lost
+                          {activitySummary.leads.lost} {t("lost_2")}
                         </p>
                       </div>
                     </div>
-                    <div className="absolute -right-3 -bottom-3 w-16 h-16 rounded-full bg-indigo-500 opacity-[0.07]" />
+                    <div className="absolute -right-3 -bottom-3 w-16 h-16 rounded-full bg-cyan-500 opacity-[0.07]" />
                   </Link>
 
                   <Link
                     href={`/deals?userid=${userData._id}`}
-                    className="relative overflow-hidden hover:scale-105 cursor-point hover:shadow-[0_0_8px_10px_#00000014] bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5"
+                    className="relative overflow-hidden hover:scale-105 cursor-point  bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5"
                   >
                     <div className="flex items-start gap-3">
                       <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shrink-0">
@@ -1646,7 +1649,7 @@ const UserDetail = ({
                       </div>
                       <div>
                         <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
-                          Deals Created
+                          {t("deals_created")}
                         </p>
                         <p className="text-2xl font-bold text-gray-900 dark:text-white mt-0.5">
                           {activitySummary.deals.created.reduce(
@@ -1656,11 +1659,11 @@ const UserDetail = ({
                         </p>
                         <p className="text-xs text-gray-400 mt-0.5">
                           <span className="text-emerald-500">
-                            {activitySummary.deals.won} won
+                            {activitySummary.deals.won} {t("won_2")}
                           </span>
                           {" · "}
                           <span className="text-rose-500">
-                            {activitySummary.deals.lost} lost
+                            {activitySummary.deals.lost} {t("lost_2")}
                           </span>
                         </p>
                       </div>
@@ -1671,12 +1674,12 @@ const UserDetail = ({
                   {/* Quotations */}
                   <div className="relative overflow-hidden bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center shrink-0">
+                      <div className="w-10 h-10 rounded-xl hover:scale-105 bg-amber-500 flex items-center justify-center shrink-0">
                         <HiOutlineDocumentText className="w-5 h-5 text-white" />
                       </div>
                       <div>
                         <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
-                          Quotations
+                          {t("quotations")}
                         </p>
                         <p className="text-2xl font-bold text-gray-900 dark:text-white mt-0.5">
                           {activitySummary.quotations.sent +
@@ -1684,11 +1687,11 @@ const UserDetail = ({
                         </p>
                         <p className="text-xs text-gray-400 mt-0.5">
                           <span className="text-violet-500">
-                            {activitySummary.quotations.sent} sent
+                            {activitySummary.quotations.sent} {t("sent_3")}
                           </span>
                           {" · "}
                           <span className="text-emerald-500">
-                            {activitySummary.quotations.accepted} accepted
+                            {activitySummary.quotations.accepted} {t("accepted_2")}
                           </span>
                         </p>
                       </div>
@@ -1703,12 +1706,12 @@ const UserDetail = ({
                       </div>
                       <div>
                         <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
-                          Invoices
+                          {t("invoices")}
                         </p>
                         <p className="text-2xl font-bold text-gray-900 dark:text-white mt-0.5">
                           {activitySummary.invoices.created}
                         </p>
-                        <p className="text-xs text-gray-400 mt-0.5">created</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{t("created_2")}</p>
                       </div>
                     </div>
                     <div className="absolute -right-3 -bottom-3 w-16 h-16 rounded-full bg-blue-500 opacity-[0.07]" />
@@ -1719,18 +1722,18 @@ const UserDetail = ({
                   {/* Leads over time */}
                   <div className="bg-slate-50 dark:bg-gray-700/40 rounded-2xl p-5 border border-slate-100 dark:border-gray-700">
                     <div className="flex items-center gap-2 mb-4">
-                      <div className="w-7 h-7 bg-indigo-100 dark:bg-indigo-900/40 rounded-lg flex items-center justify-center">
-                        <HiOutlineUserGroup className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                      <div className="w-7 h-7 bg-cyan-100 dark:bg-cyan-900/40 rounded-lg flex items-center justify-center">
+                        <HiOutlineUserGroup className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                       </div>
                       <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                        Leads Created
+                        {t("leads_created")}
                       </p>
-                      <span className="ml-auto text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                      <span className="ml-auto text-xs font-bold text-cyan-600 dark:text-cyan-400">
                         {activitySummary.leads.created.reduce(
                           (s, b) => s + b.count,
                           0,
                         )}{" "}
-                        total
+                        {t("total_3")}
                       </span>
                     </div>
                     {activitySummary.leads.created.length > 0 ? (
@@ -1804,7 +1807,7 @@ const UserDetail = ({
                       </ResponsiveContainer>
                     ) : (
                       <div className="flex items-center justify-center h-40 text-sm text-gray-400">
-                        No data for this period
+                        {t("no_data_for_this_period")}
                       </div>
                     )}
                   </div>
@@ -1816,14 +1819,14 @@ const UserDetail = ({
                         <HiOutlineBriefcase className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                       </div>
                       <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                        Deals Created
+                        {t("deals_created")}
                       </p>
                       <span className="ml-auto text-xs font-bold text-emerald-600 dark:text-emerald-400">
                         {activitySummary.deals.created.reduce(
                           (s, b) => s + b.count,
                           0,
                         )}{" "}
-                        total
+                        {t("total_3")}
                       </span>
                     </div>
                     {activitySummary.deals.created.length > 0 ? (
@@ -1897,7 +1900,7 @@ const UserDetail = ({
                       </ResponsiveContainer>
                     ) : (
                       <div className="flex items-center justify-center h-40 text-sm text-gray-400">
-                        No data for this period
+                        {t("no_data_for_this_period")}
                       </div>
                     )}
                   </div>
@@ -1912,7 +1915,7 @@ const UserDetail = ({
                         <HiOutlineDocumentText className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                       </div>
                       <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                        Quotations Breakdown
+                        {t("quotations_breakdown")}
                       </p>
                     </div>
                     <ResponsiveContainer width="100%" height={140}>
@@ -1968,7 +1971,7 @@ const UserDetail = ({
                         <HiOutlineBriefcase className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                       </div>
                       <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                        Deals Outcome
+                        {t("deals_outcome")}
                       </p>
                     </div>
                     <ResponsiveContainer width="100%" height={140}>
@@ -2024,7 +2027,7 @@ const UserDetail = ({
                 <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden">
                   <div className="px-5 py-4 border-b border-slate-100 dark:border-gray-700">
                     <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                      Entity Performance
+                      {t("entity_performance")}
                     </p>
                   </div>
                   <div className="divide-y divide-slate-50 dark:divide-gray-700">
@@ -2032,8 +2035,8 @@ const UserDetail = ({
                       {
                         icon: <HiOutlineUserGroup className="w-4 h-4" />,
                         label: "Leads",
-                        color: "text-indigo-600",
-                        bg: "bg-indigo-50 dark:bg-indigo-900/30",
+                        color: "text-cyan-600",
+                        bg: "bg-cyan-50 dark:bg-cyan-900/30",
                         stats: [
                           {
                             label: "Created/Assigned",
@@ -2145,7 +2148,7 @@ const UserDetail = ({
             {!userData.userRole?.length ? (
               <div className="text-center py-12">
                 <IoShieldCheckmark className="w-10 h-10 text-gray-200 dark:text-gray-600 mx-auto mb-3" />
-                <p className="text-gray-400 font-medium">No roles assigned</p>
+                <p className="text-gray-400 font-medium">{t("no_roles_assigned")}</p>
               </div>
             ) : (
               userData.userRole.map((role) => (
@@ -2158,7 +2161,7 @@ const UserDetail = ({
                       href={`/roles`}
                       className="flex items-center gap-2 group"
                     >
-                      <div className="w-8 h-8 bg-linear-to-br from-violet-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                      <div className="w-8 h-8 bg-linear-to-br from-violet-500 to-cyan-600 rounded-lg flex items-center justify-center">
                         <IoShieldCheckmark className="w-4 h-4 text-white group-hover:scale-112" />
                       </div>
                       <div>
@@ -2173,7 +2176,7 @@ const UserDetail = ({
                     <div className="flex items-center gap-2">
                       {role.isSystemRole && (
                         <span className="text-xs px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full font-medium">
-                          System Role
+                          {t("system_role")}
                         </span>
                       )}
                       <span
@@ -2185,14 +2188,14 @@ const UserDetail = ({
                   </div>
                   <div className="flex items-center gap-2 text-xs text-gray-400">
                     <FiCalendar className="w-3 h-3" />
-                    <span>Created {formatDate(role.createdAt)}</span>
+                    <span>{t("created")} {formatDate(role.createdAt)}</span>
                     {role.permissions?.length > 0 && (
                       <>
                         <span className="text-slate-300 dark:text-gray-600">
                           •
                         </span>
                         <IoShieldCheckmark className="w-3 h-3" />
-                        <span>{role.permissions.length} permissions</span>
+                        <span>{role.permissions.length} {t("permissions_2")}</span>
                       </>
                     )}
                   </div>
@@ -2206,53 +2209,50 @@ const UserDetail = ({
           <div className="p-6">
             {companyLoading ? (
               <div className="flex flex-col items-center justify-center py-16 gap-3">
-                <div className="w-9 h-9 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                <p className="text-sm text-gray-400">Loading company…</p>
+                <div className="w-9 h-9 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+                <p className="text-sm text-gray-400">{t("loading_company")}</p>
               </div>
             ) : !companyData ? (
               <div className="text-center py-16 space-y-3">
                 <MdBusiness className="w-12 h-12 text-gray-200 dark:text-gray-600 mx-auto" />
                 <p className="text-base font-semibold text-gray-400">
-                  No company assigned
+                  {t("no_company_assigned")}
                 </p>
                 <p className="text-sm text-gray-400 dark:text-gray-500">
-                  This user is not linked to any company yet.
+                  {t("this_user_is_not_linked_to")}
                 </p>
                 <Link
                   href={`/users/update/${userData.id ?? userData._id}`}
-                  className="inline-flex items-center gap-2 mt-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                  className="inline-flex items-center gap-2 mt-2 text-sm font-semibold text-cyan-600 dark:text-cyan-400 hover:underline"
                 >
-                  <MdOutlineEdit className="w-4 h-4" /> Assign a company
+                  <MdOutlineEdit className="w-4 h-4" /> {t("assign_a_company")}
                 </Link>
               </div>
             ) : (
               <div className="space-y-5">
                 <div className="relative bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden">
                   <div
-                    className="h-20 relative"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, #4f46e5 0%, #7c3aed 60%, #a21caf 100%)",
-                    }}
+                    className="h-20 relative bg-gradient-to-r from-[#16c2cf] to-[#0fb8a5] "
+                    
                   >
-                    <div
+                    {/* <div
                       className="absolute inset-0 opacity-30"
                       style={{
                         backgroundImage:
                           "radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 60%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%)",
                       }}
-                    />
+                    /> */}
                   </div>
                   <div className="px-6 pb-5 relative">
                     <div className="flex items-end justify-between -mt-6 mb-4 flex-wrap gap-3">
-                      <div className="w-14 h-14 rounded-2xl border-4 border-white dark:border-gray-800 bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center shadow-xl">
-                        <MdBusiness className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
+                      <div className="w-14 h-14 rounded-2xl border-4 border-white dark:border-gray-800 bg-cyan-100 dark:bg-cyan-900/50 flex items-center justify-center shadow-xl">
+                        <MdBusiness className="w-7 h-7 text-cyan-600 dark:text-cyan-400" />
                       </div>
                       <Link
                         href={`/companies/${companyData.id ?? (companyData as any).id}`}
-                        className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                        className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-cyan-600 dark:text-cyan-400 hover:underline"
                       >
-                        <IoEyeOutline className="w-4 h-4" /> View Full Profile
+                        <IoEyeOutline className="w-4 h-4" /> {t("view_full_profile")}
                       </Link>
                     </div>
                     <div className="flex flex-col gap-1.5">
@@ -2357,7 +2357,7 @@ const UserDetail = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
                     <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
-                      Company Details
+                      {t("company_details")}
                     </h3>
                     <div className="space-y-0">
                       {[
@@ -2405,7 +2405,7 @@ const UserDetail = ({
 
                   <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
                     <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
-                      Contact Info
+                      {t("contact_info")}
                     </h3>
                     <div className="space-y-0">
                       {[
@@ -2432,10 +2432,10 @@ const UserDetail = ({
                       (companyData as any).primary_admin.firstName && (
                         <div className="mt-5">
                           <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
-                            Company Admin
+                            {t("company_admin")}
                           </h3>
                           <div className="flex items-center gap-3 p-3.5 bg-slate-50 dark:bg-gray-700/50 rounded-xl border border-slate-100 dark:border-gray-700">
-                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                            <div className="w-9 h-9 rounded-full bg-gradient-to-r from-[#16c2cf] to-[#0fb8a5]  flex items-center justify-center text-white font-bold text-sm shrink-0">
                               {
                                 (companyData as any).primary_admin
                                   .firstName?.[0]
@@ -2476,9 +2476,9 @@ const UserDetail = ({
                             </div>
                             <Link
                               href={`/users/${(companyData as any).primary_admin.id ?? (companyData as any).primary_admin._id}`}
-                              className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 shrink-0"
+                              className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-1 shrink-0"
                             >
-                              <IoEyeOutline className="w-3.5 h-3.5" /> View
+                              <IoEyeOutline className="w-3.5 h-3.5" /> {t("view")}
                             </Link>
                           </div>
                         </div>
@@ -2493,7 +2493,7 @@ const UserDetail = ({
                     <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                          Subscription
+                          {t("subscription")}
                         </h3>
                         <span
                           className={`text-xs font-bold px-2.5 py-1 rounded-full capitalize ${
@@ -2532,7 +2532,7 @@ const UserDetail = ({
                             label: "Final Price",
                             value: `$${(companyData as any).subscription.finalPrice}`,
                             sub: `/${(companyData as any).subscription.billingCycle}`,
-                            color: "text-indigo-600 dark:text-indigo-400",
+                            color: "text-cyan-600 dark:text-cyan-400",
                           },
                         ].map((s) => (
                           <div
@@ -2631,7 +2631,7 @@ const UserDetail = ({
 
                       <div className="mt-3 flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-gray-700">
                         <span className="text-xs text-gray-400 font-mono truncate flex-1">
-                          ID: {(companyData as any).subscription.subscriptionId}
+                          {t("id_2")} {(companyData as any).subscription.subscriptionId}
                         </span>
                         <button
                           onClick={() =>
@@ -2639,7 +2639,7 @@ const UserDetail = ({
                               (companyData as any).subscription.subscriptionId,
                             )
                           }
-                          className="text-gray-400 hover:text-indigo-500 transition-colors"
+                          className="text-gray-400 hover:text-cyan-500 transition-colors"
                         >
                           <MdOutlineContentCopy className="w-3.5 h-3.5" />
                         </button>
@@ -2650,7 +2650,7 @@ const UserDetail = ({
                 {/* ── Timestamps ──────────────────────────────────────────── */}
                 <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
                   <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
-                    Timeline
+                    {t("timeline")}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {[
@@ -2670,8 +2670,8 @@ const UserDetail = ({
                             )
                           : "—",
                         icon: "📌",
-                        color: "text-indigo-600 dark:text-indigo-400",
-                        bg: "bg-indigo-50 dark:bg-indigo-900/20",
+                        color: "text-cyan-600 dark:text-cyan-400",
+                        bg: "bg-cyan-50 dark:bg-cyan-900/20",
                       },
                       {
                         label: "Updated At",

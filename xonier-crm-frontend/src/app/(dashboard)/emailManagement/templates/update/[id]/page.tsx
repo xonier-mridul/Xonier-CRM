@@ -7,6 +7,7 @@ import { TemplateCategory } from "@/src/constants/enum";
 import { MailService } from "@/src/services/communication/mail.service";
 import { Template, Variable, CustomVarForm } from "@/src/types/communication/mail.types";
 import RichTextEditor, { RichTextEditorHandle } from "@/src/components/pages/prospect/RichEditor";
+import { useTranslation } from "react-i18next";
 
 // ─── Default Variables ────────────────────────────────────────────────────────
 const DEFAULT_VARIABLES: Variable[] = [
@@ -78,6 +79,7 @@ const CustomVariableModal = ({
   onClose: () => void;
   onAdd: (v: Variable) => void;
 }) => {
+  const { t } = useTranslation();
   const [form, setForm] = useState<CustomVarForm>({
     key: "", label: "", description: "", default_value: "", is_required: false,
   });
@@ -111,8 +113,8 @@ const CustomVariableModal = ({
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-white font-bold text-lg">✦</div>
             <div>
-              <p className="font-extrabold text-white text-base">Create Custom Variable</p>
-              <p className="text-yellow-100 text-xs mt-0.5">Define a reusable dynamic placeholder</p>
+              <p className="font-extrabold text-white text-base">{t("create_custom_variable")}</p>
+              <p className="text-yellow-100 text-xs mt-0.5">{t("define_a_reusable_dynamic_placeholder")}</p>
             </div>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-xl bg-white/20 hover:bg-white/35 flex items-center justify-center text-white font-bold text-xl cursor-pointer transition-colors">×</button>
@@ -121,29 +123,29 @@ const CustomVariableModal = ({
         {/* Body */}
         <div className="px-6 py-5 flex flex-col gap-4">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-yellow-800 mb-1.5">Key <span className="text-red-500">*</span></label>
-            <input type="text" placeholder="e.g. order_id" value={form.key} onChange={(e) => setForm({ ...form, key: slugify(e.target.value) })} className={`${mf} ${errors.key ? "border-red-400 bg-red-50" : "border-yellow-300 bg-yellow-50 hover:border-yellow-400"}`} />
+            <label className="block text-xs font-bold uppercase tracking-widest text-yellow-800 mb-1.5">{t("key")} <span className="text-red-500">*</span></label>
+            <input type="text" placeholder={t("e_g_order_id")} value={form.key} onChange={(e) => setForm({ ...form, key: slugify(e.target.value) })} className={`${mf} ${errors.key ? "border-red-400 bg-red-50" : "border-yellow-300 bg-yellow-50 hover:border-yellow-400"}`} />
             {errors.key && <p className="text-red-500 text-xs mt-1">{errors.key}</p>}
             {form.key && (
               <p className="text-yellow-700 text-xs mt-1.5 flex items-center gap-1.5">
-                <span className="opacity-60">Inserts as:</span>
+                <span className="opacity-60">{t("inserts_as")}</span>
                 <code className="font-mono bg-yellow-100 border border-yellow-200 px-1.5 py-0.5 rounded-md text-yellow-900 font-semibold">{`{{${form.key}}}`}</code>
               </p>
             )}
           </div>
           <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-yellow-800 mb-1.5">Label <span className="text-red-500">*</span></label>
-            <input type="text" placeholder="e.g. Order ID" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} className={`${mf} ${errors.label ? "border-red-400 bg-red-50" : "border-yellow-300 bg-yellow-50 hover:border-yellow-400"}`} />
+            <label className="block text-xs font-bold uppercase tracking-widest text-yellow-800 mb-1.5">{t("label")} <span className="text-red-500">*</span></label>
+            <input type="text" placeholder={t("e_g_order_id_2")} value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} className={`${mf} ${errors.label ? "border-red-400 bg-red-50" : "border-yellow-300 bg-yellow-50 hover:border-yellow-400"}`} />
             {errors.label && <p className="text-red-500 text-xs mt-1">{errors.label}</p>}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-widest text-yellow-800 mb-1.5">Description</label>
-              <input type="text" placeholder="Optional" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={`${mf} border-yellow-300 bg-yellow-50 hover:border-yellow-400`} />
+              <label className="block text-xs font-bold uppercase tracking-widest text-yellow-800 mb-1.5">{t("description_2")}</label>
+              <input type="text" placeholder={t("optional")} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={`${mf} border-yellow-300 bg-yellow-50 hover:border-yellow-400`} />
             </div>
             <div>
-              <label className="block text-xs font-bold uppercase tracking-widest text-yellow-800 mb-1.5">Default Value</label>
-              <input type="text" placeholder="Fallback" value={form.default_value} onChange={(e) => setForm({ ...form, default_value: e.target.value })} className={`${mf} border-yellow-300 bg-yellow-50 hover:border-yellow-400`} />
+              <label className="block text-xs font-bold uppercase tracking-widest text-yellow-800 mb-1.5">{t("default_value")}</label>
+              <input type="text" placeholder={t("fallback")} value={form.default_value} onChange={(e) => setForm({ ...form, default_value: e.target.value })} className={`${mf} border-yellow-300 bg-yellow-50 hover:border-yellow-400`} />
             </div>
           </div>
           <label className="flex items-center gap-3 cursor-pointer select-none group">
@@ -153,13 +155,13 @@ const CustomVariableModal = ({
               <div className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-200" style={{ transform: form.is_required ? "translateX(20px)" : "none" }} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-yellow-900 group-hover:text-yellow-700 transition-colors">Required field</p>
-              <p className="text-xs text-yellow-600">Must have a value when email is sent</p>
+              <p className="text-sm font-semibold text-yellow-900 group-hover:text-yellow-700 transition-colors">{t("required_field")}</p>
+              <p className="text-xs text-yellow-600">{t("must_have_a_value_when_email")}</p>
             </div>
           </label>
           <div className="flex gap-3 pt-1">
-            <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border-2 text-sm font-semibold hover:bg-yellow-50 cursor-pointer transition-all" style={{ borderColor: "#FDE047", color: "#92400E" }}>Cancel</button>
-            <button onClick={handleAdd} className="flex-1 py-2.5 rounded-xl text-sm font-bold hover:shadow-lg hover:scale-[1.02] active:scale-100 cursor-pointer transition-all" style={{ background: "linear-gradient(135deg,#EAB308,#CA8A04)", color: "#fff" }}>Add Variable</button>
+            <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border-2 text-sm font-semibold hover:bg-yellow-50 cursor-pointer transition-all" style={{ borderColor: "#FDE047", color: "#92400E" }}>{t("cancel")}</button>
+            <button onClick={handleAdd} className="flex-1 py-2.5 rounded-xl text-sm font-bold hover:shadow-lg hover:scale-[1.02] active:scale-100 cursor-pointer transition-all" style={{ background: "linear-gradient(135deg,#EAB308,#CA8A04)", color: "#fff" }}>{t("add_variable")}</button>
           </div>
         </div>
       </div>
@@ -228,6 +230,7 @@ const SectionDivider = ({ label }: { label: string }) => (
 // MAIN PAGE
 // ═══════════════════════════════════════════════════════════════════════════════
 const Page = (): JSX.Element => {
+  const { t } = useTranslation();
   const router   = useRouter();
   const params   = useParams();
   const id       = params?.id as string;
@@ -369,16 +372,16 @@ const Page = (): JSX.Element => {
                 onClick={() => router.push("/emailManagement/templates")}
                 className="hover:text-violet-600 transition-colors cursor-pointer"
               >
-                Templates
+                {t("templates")}
               </button>
               <span>/</span>
-              <span className="text-slate-500 dark:text-slate-400">Edit</span>
+              <span className="text-slate-500 dark:text-slate-400">{t("edit")}</span>
             </div>
             <h1 className="text-[22px] font-extrabold text-slate-900 dark:text-white tracking-tight">
-              Update Email Template
+              {t("update_email_template")}
             </h1>
             <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
-              Editing <span className="font-semibold text-violet-600 dark:text-violet-400">"{form.name}"</span>
+              {t("editing_2")} <span className="font-semibold text-violet-600 dark:text-violet-400">"{form.name}"</span>
             </p>
           </div>
 
@@ -388,7 +391,7 @@ const Page = (): JSX.Element => {
             style={{ background: "#FEF9C3", color: "#92400E", border: "1px solid #FDE047" }}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
-            Editing
+            {t("editing_2")}
           </span>
         </div>
 
@@ -404,10 +407,10 @@ const Page = (): JSX.Element => {
 
             {/* Template Name */}
             <div className="flex flex-col gap-1.5">
-              <label className={labelBase}>Template Name <span className="text-red-400 normal-case tracking-normal font-bold">*</span></label>
+              <label className={labelBase}>{t("template_name")} <span className="text-red-400 normal-case tracking-normal font-bold">*</span></label>
               <input
                 type="text" required
-                placeholder="e.g. Welcome Onboarding Email"
+                placeholder={t("e_g_welcome_onboarding_email")}
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 className={fieldBase}
@@ -416,10 +419,10 @@ const Page = (): JSX.Element => {
 
             {/* Subject */}
             <div className="flex flex-col gap-1.5">
-              <label className={labelBase}>Subject <span className="text-red-400 normal-case tracking-normal font-bold">*</span></label>
+              <label className={labelBase}>{t("subject")} <span className="text-red-400 normal-case tracking-normal font-bold">*</span></label>
               <input
                 type="text" required
-                placeholder="e.g. Welcome to {{company}}, {{customer_name}}!"
+                placeholder={t("e_g_welcome_to_company_customer_name")}
                 value={form.subject}
                 onChange={(e) => setForm({ ...form, subject: e.target.value })}
                 className={fieldBase}
@@ -428,28 +431,28 @@ const Page = (): JSX.Element => {
 
             {/* Tags */}
             <div className="flex flex-col gap-1.5">
-              <label className={labelBase}>Tags</label>
+              <label className={labelBase}>{t("tags")}</label>
               <TagInput tags={form.tags} onChange={(tags) => setForm({ ...form, tags })} />
               <p className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1.5 mt-0.5">
-                Press
-                <kbd className="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-gray-700 text-slate-500 text-[10px] font-mono border border-slate-200 dark:border-gray-600">Enter</kbd>
-                or
+                {t("press")}
+                <kbd className="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-gray-700 text-slate-500 text-[10px] font-mono border border-slate-200 dark:border-gray-600">{t("enter")}</kbd>
+                {t("or")}
                 <kbd className="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-gray-700 text-slate-500 text-[10px] font-mono border border-slate-200 dark:border-gray-600">,</kbd>
-                to add a tag
+                {t("to_add_a_tag")}
               </p>
             </div>
 
             {/* Category + Privacy */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div className="flex flex-col gap-1.5">
-                <label className={labelBase}>Category</label>
+                <label className={labelBase}>{t("category")}</label>
                 <div className="relative">
                   <select
                     value={form.category}
                     onChange={(e) => setForm({ ...form, category: e.target.value as TemplateCategory })}
                     className={`${fieldBase} appearance-none pr-9 cursor-pointer`}
                   >
-                    <option value="">Select a category…</option>
+                    <option value="">{t("select_a_category")}</option>
                     {Object.values(TemplateCategory).map((cat) => (
                       <option key={cat} value={cat}>
                         {cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase().replace(/_/g, " ")}
@@ -463,15 +466,15 @@ const Page = (): JSX.Element => {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className={labelBase}>Privacy</label>
+                <label className={labelBase}>{t("privacy")}</label>
                 <div className="relative">
                   <select
                     value={form.privacy}
                     onChange={(e) => setForm({ ...form, privacy: e.target.value })}
                     className={`${fieldBase} appearance-none pr-9 cursor-pointer`}
                   >
-                    <option value="PUBLIC">🌐  Public</option>
-                    <option value="PRIVATE">🔒  Private</option>
+                    <option value="PUBLIC">{t("public_2")}</option>
+                    <option value="PRIVATE">{t("private_2")}</option>
                   </select>
                   <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
@@ -480,11 +483,11 @@ const Page = (): JSX.Element => {
               </div>
             </div>
 
-            <SectionDivider label="AI Generation" />
+            <SectionDivider label={t("ai_generation")} />
 
             {/* AI Prompt */}
             <div className="flex flex-col gap-2">
-              <label className={labelBase}>AI Prompt</label>
+              <label className={labelBase}>{t("ai_prompt")}</label>
               <textarea
                 rows={3}
                 // placeholder="Describe changes you'd like to regenerate the body…"
@@ -502,13 +505,13 @@ const Page = (): JSX.Element => {
                 style={{ background: "linear-gradient(135deg,#7C3AED,#6D28D9)", color: "#fff" }}
               >
                 {isGenerating
-                  ? (<><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Generating…</>)
-                  : <>🤖 Regenerate With AI</>
+                  ? (<><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {t("generating")}</>)
+                  : <>{t("regenerate_with_ai")}</>
                 }
               </button>
             </div>
 
-            <SectionDivider label="Template Body" />
+            <SectionDivider label={t("template_body")} />
 
             {/* Variable Panel */}
             <div className="rounded-2xl border overflow-hidden" style={{ borderColor: "#DDD6FE", background: "linear-gradient(135deg,#FAF5FF 0%,#F5F3FF 100%)" }}>
@@ -516,8 +519,8 @@ const Page = (): JSX.Element => {
                 <div className="flex items-center gap-2.5">
                   <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm flex-shrink-0" style={{ background: "#EDE9FE", color: "#7C3AED" }}>⚡</div>
                   <div>
-                    <p className="text-sm font-bold text-violet-900">Available Variables</p>
-                    <p className="text-[11px] text-violet-500 mt-0.5">Click any chip to insert at your cursor position in the editor</p>
+                    <p className="text-sm font-bold text-violet-900">{t("available_variables")}</p>
+                    <p className="text-[11px] text-violet-500 mt-0.5">{t("click_any_chip_to_insert_at")}</p>
                   </div>
                 </div>
                 <button
@@ -526,7 +529,7 @@ const Page = (): JSX.Element => {
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border-2 transition-all duration-150 hover:shadow-md hover:scale-[1.04] active:scale-100 cursor-pointer"
                   style={{ borderColor: "#EAB308", background: "#FEFCE8", color: "#92400E" }}
                 >
-                  <span>✦</span> Create Custom
+                  <span>✦</span> {t("create_custom")}
                 </button>
               </div>
               <div className="px-4 py-3 flex flex-wrap gap-2">
@@ -537,7 +540,7 @@ const Page = (): JSX.Element => {
               {customVars.length > 0 && (
                 <div className="px-4 pb-3">
                   <p className="text-xs font-medium px-3 py-2 rounded-xl border" style={{ background: "#FEFCE8", borderColor: "#FDE047", color: "#92400E" }}>
-                    ✦ <strong>{customVars.length}</strong> custom variable{customVars.length > 1 ? "s" : ""} will be saved with this template
+                    ✦ <strong>{customVars.length}</strong> {t("custom_variable")}{customVars.length > 1 ? "s" : ""} {t("will_be_saved_with_this_template")}
                   </p>
                 </div>
               )}
@@ -546,13 +549,13 @@ const Page = (): JSX.Element => {
             {/* Rich Editor */}
             <div className="flex flex-col gap-1.5">
               <label className={labelBase}>
-                Email Body <span className="text-red-400 normal-case tracking-normal font-bold">*</span>
+                {t("email_body")} <span className="text-red-400 normal-case tracking-normal font-bold">*</span>
               </label>
               <RichTextEditor
                 ref={editorRef}
                 value={form.body}
                 onChange={(html) => setForm((p) => ({ ...p, body: html }))}
-                placeholder="Your template body will appear here…"
+                placeholder={t("your_template_body_will_appear_here")}
                 hasError={!!err}
                 minHeight={300}
               />
@@ -580,7 +583,7 @@ const Page = (): JSX.Element => {
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                 </svg>
-                Reset Changes
+                {t("reset_changes")}
               </button>
 
               {/* Right: cancel + save */}
@@ -590,7 +593,7 @@ const Page = (): JSX.Element => {
                   onClick={() => router.push("/emailManagement/templates")}
                   className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-gray-600 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-gray-700 hover:text-slate-700 hover:border-slate-300 transition-all duration-150 cursor-pointer"
                 >
-                  Cancel
+                  {t("cancel")}
                 </button>
                 <button
                   type="submit"
@@ -599,13 +602,13 @@ const Page = (): JSX.Element => {
                   style={{ background: "linear-gradient(135deg,#EAB308,#CA8A04)" }}
                 >
                   {isLoading
-                    ? (<><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Saving…</>)
+                    ? (<><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {t("saving")}</>)
                     : (
                       <>
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/>
                         </svg>
-                        Save Changes
+                        {t("save_changes")}
                       </>
                     )
                   }

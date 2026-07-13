@@ -20,6 +20,7 @@ import DateFilterButton from "@/src/components/common/dateFilter";
 import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 import StatusBadge from "@/src/components/common/Status";
 import Limit from "@/src/components/ui/Limit";
+import { useTranslation } from "react-i18next";
 
 
 const STATUS_CONFIG = {
@@ -149,6 +150,7 @@ const StatusDropdown = ({
 };
 
 const page = (): JSX.Element => {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [quoteData, setQuoteData] = useState<Quotation[]>([]);
   const [wonQuoteData, setWonQuoteData] = useState<Quotation[]>([]);
@@ -328,10 +330,10 @@ const page = (): JSX.Element => {
         <div className="flex w-full items-center gap-12 justify-between">
           <div className="flex flex-col gap-1.5">
             <h2 className="text-xl font-bold dark:text-white text-slate-900 capitalize">
-              All Sales Quotations
+              {t("all_sales_quotations")}
             </h2>
             <p className="text-gray-500 dark:text-gray-400">
-              View and edit quotations
+              {t("view_and_edit_quotations")}
             </p>
           </div>
           <div className="flex items-center gap-6">
@@ -348,7 +350,7 @@ const page = (): JSX.Element => {
             </select>
             <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2 dark:text-white/70">
               <IoIosSearch className="text-xl text-slate-400" />
-              <input type="text" className="outline-none bg-transparent" placeholder="Search..." value={searchVal} onChange={(e)=> handleSearch(e.target.value)}/>
+              <input type="text" className="outline-none bg-transparent" placeholder={t("search_2")} value={searchVal} onChange={(e)=> handleSearch(e.target.value)}/>
             </div>
             <div>
               <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
@@ -359,7 +361,7 @@ const page = (): JSX.Element => {
               className="bg-cyan-600 hover:bg-cyan-700 text-white px-5 py-2 rounded-md flex items-center gap-2 group"
             >
               <MdOutlineLeaderboard className="group-hover:rotate-90 transition-all duration-300" />
-              All Leads
+              {t("all_leads")}
             </Link>}
           </div>
         </div>
@@ -400,22 +402,22 @@ const page = (): JSX.Element => {
                   Quote Id
                 </th> */}
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 rounded-tl-xl ">
-                  Quote Title
+                  {t("quote_title")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  Client Name
+                  {t("client_name")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  Quotation Status
+                  {t("quotation_status")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  Created Date
+                  {t("created_date")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  Created By
+                  {t("created_by")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 rounded-tr-xl ">
-                  Actions
+                  {t("actions")}
                 </th>
               </tr>
             </thead>
@@ -498,7 +500,7 @@ const page = (): JSX.Element => {
                 ) : (
                   <tr>
                     <td className="p-4 text-center text-slate-500" colSpan={6}>
-                      Data not found
+                      {t("data_not_found")}
                     </td>
                   </tr>
                 )
@@ -554,19 +556,19 @@ const page = (): JSX.Element => {
                   Quote Id
                 </th> */}
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 rounded-tl-xl">
-                  Quote Title
+                  {t("quote_title")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  Client Name
+                  {t("client_name")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  Quotation Status
+                  {t("quotation_status")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  Created Date
+                  {t("created_date")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 rounded-tr-xl">
-                  Actions
+                  {t("actions")}
                 </th>
               </tr>
             </thead>
@@ -646,7 +648,7 @@ const page = (): JSX.Element => {
                 ) : (
                   <tr>
                     <td className="p-4 text-center text-slate-500" colSpan={6}>
-                      Data not found
+                      {t("data_not_found")}
                     </td>
                   </tr>
                 )
@@ -702,19 +704,19 @@ const page = (): JSX.Element => {
                   Quote Id
                 </th> */}
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 rounded-tl-xl">
-                  Quote Title
+                  {t("quote_title")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  Client Name
+                  {t("client_name")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  Quotation Status
+                  {t("quotation_status")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  Created Date
+                  {t("created_date")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 rounded-tr-xl">
-                  Actions
+                  {t("actions")}
                 </th>
               </tr>
             </thead>
@@ -794,7 +796,7 @@ const page = (): JSX.Element => {
                 ) : (
                   <tr>
                     <td className="p-4 text-center text-slate-500" colSpan={6}>
-                      Data not found
+                      {t("data_not_found")}
                     </td>
                   </tr>
                 )

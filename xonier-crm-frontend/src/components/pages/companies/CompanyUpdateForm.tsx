@@ -10,6 +10,7 @@ import { FiMail, FiCheck, FiX, FiShield, FiAlertTriangle } from "react-icons/fi"
 import { BsBuildings } from "react-icons/bs";
 import { AnimatePresence, motion } from "framer-motion";
 import { sizeOptions } from "@/src/constants/constants";
+import { useTranslation } from "react-i18next";
 
 
 
@@ -45,6 +46,7 @@ const OtpOverlay: React.FC<{
   onResend: (userId: string) => Promise<void>;
   loading:boolean
 }> = ({ adminEmail, adminId, isVerifying, onVerify, onResend, loading }) => {
+  const { t } = useTranslation();
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const [otpError, setOtpError] = useState("");
   const [cooldown, setCooldown] = useState(RESEND_COOLDOWN);
@@ -127,12 +129,12 @@ const OtpOverlay: React.FC<{
           </div>
 
           <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-1">
-            Email Not Verified
+            {t("email_not_verified")}
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-            Verify the admin email before editing this company.
+            {t("verify_the_admin_email_before_editing")}
           </p>
-          <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-6">
+          <p className="text-sm font-semibold text-cyan-600 dark:text-cyan-400 mb-6">
             {adminEmail}
           </p>
 
@@ -151,8 +153,8 @@ const OtpOverlay: React.FC<{
                   otpError
                     ? "border-red-400 dark:border-red-500"
                     : otp[i]
-                    ? "border-blue-500 dark:border-blue-400"
-                    : "border-slate-200 dark:border-gray-600 focus:border-blue-400"
+                    ? "border-cyan-500 dark:border-cyan-400"
+                    : "border-slate-200 dark:border-gray-600 focus:border-cyan-400"
                 }`}
               />
             ))}
@@ -166,24 +168,24 @@ const OtpOverlay: React.FC<{
             onClick={handleVerify}
             isLoading={isVerifying}
             disabled={isVerifying || otp.join("").length < OTP_LENGTH}
-            className="mt-2 bg-blue-600 hover:bg-blue-700"
+            className="mt-2 bg-cyan-600 hover:bg-cyan-700"
           >
-            <FiCheck className="text-base" /> Verify & Continue
+            <FiCheck className="text-base" /> {t("verify_continue")}
           </FormButton>
 
           <div className="mt-4 flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
-            <span>Didn't receive it?</span>
+            <span>{t("didn't_receive_it")}</span>
             {cooldown > 0 ? (
-              <span className="text-blue-500 font-medium tabular-nums">Resend in {cooldown}s</span>
+              <span className="text-cyan-500 font-medium tabular-nums">{t("resend_in")} {cooldown}s</span>
             ) : (
-              <button onClick={handleResend} disabled={loading} className="text-blue-600 disabled:text-blue-300 dark:text-blue-400 font-semibold hover:underline">
+              <button onClick={handleResend} disabled={loading} className="text-cyan-600 disabled:text-cyan-300 dark:text-cyan-400 font-semibold hover:underline">
                 {loading ? "resending..." : "Resend OTP"}
               </button>
             )}
           </div>
 
           <p className="text-xs text-gray-400 mt-5 bg-slate-50 dark:bg-gray-800 rounded-lg px-4 py-3 w-full text-left">
-            A verification code was sent when the company was created. Check the admin's inbox or resend above.
+            {t("a_verification_code_was_sent_when")}
           </p>
         </div>
       </motion.div>
@@ -201,6 +203,7 @@ const CompanyUpdateForm: React.FC<CompanyUpdateFormProps> = ({
   onResendOtp,
   loading
 }) => {
+  const { t } = useTranslation();
   const isUnverified = company.status === COMPANY_STATUS.PENDING_VERIFICATION;
   
   const [form, setForm] = useState<CompanyUpdatePayload>({
@@ -270,55 +273,55 @@ const CompanyUpdateForm: React.FC<CompanyUpdateFormProps> = ({
 
         <section className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-900/10 dark:border-gray-700 p-6">
           <div className="flex items-center gap-2 mb-5 pb-4 border-b border-slate-100 dark:border-gray-700">
-            <BsBuildings className="text-blue-500 text-lg" />
+            <BsBuildings className="text-cyan-500 text-lg" />
             <h3 className="font-semibold text-slate-800 dark:text-white text-base">
-              Company Information
+              {t("company_information")}
             </h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <Input
-              label="Company Name"
+              label={t("company_name")}
               required
               value={form.companyName ?? ""}
               onChange={(e) => set("companyName", (e.target as HTMLInputElement).value)}
               error={formErrors.companyName}
             />
             <Input
-              label="Industry"
+              label={t("industry_2")}
               required
               value={form.industry ?? ""}
               onChange={(e) => set("industry", (e.target as HTMLInputElement).value)}
               error={formErrors.industry}
             />
             <Input
-              label="Phone Number"
+              label={t("phone_number")}
               required
               value={form.number ?? ""}
               onChange={(e) => set("number", (e.target as HTMLInputElement).value)}
               error={formErrors.number}
             />
             <Input
-              label="Website"
+              label={t("website")}
               value={form.website ?? ""}
               onChange={(e) => set("website", (e.target as HTMLInputElement).value)}
             />
             <Input
-              label="Sub Domain"
+              label={t("sub_domain")}
               value={form.subDomain ?? ""}
-              placeholder="test.xoniertech"
+              placeholder={t("test_xoniertech")}
               onChange={(e) => set("subDomain", (e.target as HTMLInputElement).value)}
             />
             <Input
-              label="Timezone"
+              label={t("timezone")}
               placeholder="Asia/Kolkata"
               value={form.timezone ?? ""}
               onChange={(e) => set("timezone", (e.target as HTMLInputElement).value)}
             />
             <Input
-              label="User Limit"
+              label={t("user_limit")}
               type="number"
-              placeholder="eg: 90"
+              placeholder={t("eg_90")}
               value={form.userLimit ?? ""}
               onChange={(e) =>
                 set("userLimit", (e.target as HTMLInputElement).value
@@ -330,16 +333,16 @@ const CompanyUpdateForm: React.FC<CompanyUpdateFormProps> = ({
 
             <div className="flex flex-col gap-1 w-full">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                Company Size
+                {t("company_size")}
               </label>
               <select
                 value={form.companySize ?? ""}
                 onChange={(e) =>
                   set("companySize", (e.target.value as NUMBER_OF_EMPLOYEES) || undefined)
                 }
-                className="w-full px-3 py-2 rounded-md border bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="w-full px-3 py-2 rounded-md border bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
               >
-                <option value="">Select size</option>
+                <option value="">{t("select_size")}</option>
                 {sizeOptions.map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
@@ -348,16 +351,16 @@ const CompanyUpdateForm: React.FC<CompanyUpdateFormProps> = ({
 
             <div className="flex flex-col gap-1 w-full">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                Country
+                {t("country")}
               </label>
               <select
                 value={form.country ?? ""}
                 onChange={(e) =>
                   set("country", (e.target.value as COUNTRY_CODE) || undefined)
                 }
-                className="w-full px-3 py-2 rounded-md border bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="w-full px-3 py-2 rounded-md border bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
               >
-                <option value="">Select country</option>
+                <option value="">{t("select_country")}</option>
                 {Object.values(COUNTRY_CODE).map((c,i) => (
                   <option key={i} value={c}>{c}</option>
                 ))}
@@ -368,20 +371,20 @@ const CompanyUpdateForm: React.FC<CompanyUpdateFormProps> = ({
 
         <section className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-900/10 dark:border-gray-700 p-6">
           <div className="flex items-center gap-2 mb-5 pb-4 border-b border-slate-100 dark:border-gray-700">
-            <FiShield className="text-blue-500 text-lg" />
+            <FiShield className="text-cyan-500 text-lg" />
             <h3 className="font-semibold text-slate-800 dark:text-white text-base">
-              Status
+              {t("status")}
             </h3>
           </div>
 
           <div className="flex flex-col gap-1 w-full max-w-xs">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Company Status
+              {t("company_status")}
             </label>
             <select
               value={form.status ?? ""}
               onChange={(e) => set("status", e.target.value as COMPANY_STATUS)}
-              className="w-full px-3 py-2 rounded-md border bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className="w-full px-3 py-2 rounded-md border bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
             >
               {statusOptions.map((s) => (
                 <option key={s} value={s}>{s.replace(/_/g, " ")}</option>
@@ -395,9 +398,9 @@ const CompanyUpdateForm: React.FC<CompanyUpdateFormProps> = ({
             type="submit"
             isLoading={isSubmitting}
             disabled={isSubmitting}
-            className="max-w-[180px] bg-blue-600 hover:bg-blue-700"
+            className="max-w-[180px] bg-cyan-600 hover:bg-cyan-700"
           >
-            <FiCheck className="text-base" /> Save Changes
+            <FiCheck className="text-base" /> {t("save_changes")}
           </FormButton>
         </div>
       </form>

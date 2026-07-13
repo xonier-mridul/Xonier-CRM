@@ -30,8 +30,10 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const Page = (): JSX.Element => {
+  const { t } = useTranslation();
   const [openModal, setOpenModal] = useState(false);
   const [openBulkModal, setOpenBulkModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -268,7 +270,7 @@ const Page = (): JSX.Element => {
               exit={{ opacity: 0, y: -20 }}
               className="fixed top-4 right-4 z-50 bg-indigo-500 text-white px-6 py-3 rounded-lg shadow-lg"
             >
-              Loading events...
+              {t("loading_events")}
             </motion.div>
           )}
         </AnimatePresence>
@@ -282,10 +284,10 @@ const Page = (): JSX.Element => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-slate-900 dark:text-white font-bold text-4xl mb-2">
-                Calendar
+                {t("calendar")}
               </h1>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Manage meetings, events and schedules
+                {t("manage_meetings_events_and_schedules")}
               </p>
             </div>
 
@@ -296,7 +298,7 @@ const Page = (): JSX.Element => {
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-teal-400 via-teal-500 to-cyan-500   text-white transition-all shadow-[10px] hover:shadow-[#16c2cf]"
             >
               <ListPlus className="w-4 h-4" />
-              Bulk Create Events
+              {t("bulk_create_events")}
             </motion.button>
           </div>
         </motion.div>
@@ -354,7 +356,7 @@ const Page = (): JSX.Element => {
                 }}
                 className="px-4 py-2 text-sm font-medium bg-cyan-50 border border-cyan-300 dark:border-cyan-900 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 rounded-lg hover:bg-cyan-100 dark:hover:bg-cyan-900/50 transition-colors"
               >
-                Today
+                {t("today")}
               </button>
              
               
@@ -392,7 +394,7 @@ const Page = (): JSX.Element => {
               className="flex items-center gap-2 pr-3 md:px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-teal-400 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-teal-400 text-white transition-all shadow-lg hover:shadow-emerald-500/25 whitespace-nowrap"
             >
               <Plus className="w-4 h-4 " />
-              Add Event
+              {t("add_event")}
             </motion.button>
 
               </div>

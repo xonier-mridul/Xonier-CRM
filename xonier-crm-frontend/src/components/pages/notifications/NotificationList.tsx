@@ -9,10 +9,12 @@ import DateFilterButton from "../../common/dateFilter";
 import { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 import { IoSearchOutline } from "react-icons/io5";
 import { TbRefresh } from "react-icons/tb";
+import { useTranslation } from "react-i18next";
 
 
 
 const NotificationList = () => {
+  const { t } = useTranslation();
   const {
     notifications,
     loading,
@@ -51,22 +53,22 @@ const NotificationList = () => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-          Notifications
+          {t("notifications")}
         </h1>
-         <p className="text-gray-600 dark:text-gray-400">Stay updated with all your alert and system notification.</p>
+         <p className="text-gray-600 dark:text-gray-400">{t("stay_updated_with_all_your_alert")}</p>
         </div>
                <div className="flex items-center gap-2">
           <button
             onClick={markAllAsRead}
             className="flex items-center gap-2 px-4 py-2 text-sm bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
           >
-            <FiCheckCircle /> Mark all as read
+            <FiCheckCircle /> {t("mark_all_as_read")}
           </button>
           <button
             onClick={clearAll}
             className="flex items-center gap-2 px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
           >
-            <FiTrash2 /> Clear all
+            <FiTrash2 /> {t("clear_all")}
           </button>
         </div>
       </div>
@@ -76,7 +78,7 @@ const NotificationList = () => {
         {/* <FiFilter className="text-gray-400" /> */}
         <div className="flex gap-10">
         <label className="flex flex-col gap-2 text-[14px] text-slate-500 dark:text-white/70">
-          Status
+          {t("status")}
         <select
           value={filter.status || ""}
           onChange={(e) =>
@@ -84,14 +86,14 @@ const NotificationList = () => {
           }
           className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm outline-none"
         >
-          <option value="">All Status</option>
-          <option value={NotificationStatus.UNREAD}>Unread</option>
-          <option value={NotificationStatus.READ}>Read</option>
+          <option value="">{t("all_status")}</option>
+          <option value={NotificationStatus.UNREAD}>{t("unread")}</option>
+          <option value={NotificationStatus.READ}>{t("read")}</option>
         </select>
         </label>
 
        <label className="flex flex-col gap-2 text-[14px] text-slate-500 dark:text-white/70">
-          Type
+          {t("type")}
         <select
           value={filter.isRead !== undefined ? String(filter.isRead) : ""}
           onChange={(e) =>
@@ -102,28 +104,28 @@ const NotificationList = () => {
           }
           className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm outline-none"
         >
-          <option value="">All</option>
-          <option value="false">Unread Only</option>
-          <option value="true">Read Only</option>
+          <option value="">{t("all")}</option>
+          <option value="false">{t("unread_only")}</option>
+          <option value="true">{t("read_only_2")}</option>
         </select>
         </label>
         <label className="flex flex-col gap-2 text-[14px] text-slate-500 dark:text-white/70">
-          Date Range
+          {t("date_range")}
           <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter}  />
           </label>
 
           <label className="flex flex-col gap-2 text-[14px] text-slate-500 dark:text-white/70  " >
-            Search
+            {t("search")}
             <div className='flex border border-slate-200 rounded-lg text-slate-500 px-4 py-2.5 items-center dark:text-white/70 gap-2 dark:border-gray-600' >
               <IoSearchOutline className='text-xl '/>
-            <input type='text' placeholder='Search..'  className='outline-none text-sm'/>
+            <input type='text' placeholder={t("search_3")}  className='outline-none text-sm'/>
             </div>
 
           </label>
           </div>
           <button className=" group flex gap-2 px-4 py-2.5 rounded-lg border border-slate-200 text-[14px] dark:text-white/70 items-center text-slate-500 dark:border-gray-600">
             <TbRefresh  className="group-hover:rotate-180 transition-all duration-200" />
-            Clear Filter 
+            {t("clear_filter")} 
           </button>
       </div>
 
@@ -134,7 +136,7 @@ const NotificationList = () => {
       ) : notifications.length === 0 ? (
         <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
           <p className="text-gray-500 dark:text-gray-400">
-            No notifications found
+            {t("no_notifications_found")}
           </p>
         </div>
       ) : (
@@ -158,17 +160,17 @@ const NotificationList = () => {
                 disabled={page === 1}
                 className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Previous
+                {t("previous")}
               </button>
               <span className="text-sm text-gray-600 dark:text-gray-400">
-                Page {page} of {totalPages}
+                {t("page")} {page} {t("of")} {totalPages}
               </span>
               <button
                 onClick={() => setPage(page + 1)}
                 disabled={page === totalPages}
                 className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Next
+                {t("next_2")}
               </button>
             </div>
           )}

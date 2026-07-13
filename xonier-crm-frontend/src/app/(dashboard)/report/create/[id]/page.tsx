@@ -12,6 +12,7 @@ import {
 } from "@/src/types/task/taskReport";
 import axios, { AxiosError } from "axios";
 import extractErrorMessages from "@/src/app/utils/error.utils";
+import { useTranslation } from "react-i18next";
 
 
 
@@ -106,7 +107,7 @@ function TextInput({
       onChange={e => onChange?.(e.target.value)}
       placeholder={placeholder}
       disabled={disabled}
-      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-800/50"
+      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-800/50"
     />
   );
 }
@@ -123,7 +124,7 @@ function TextArea({
       placeholder={placeholder}
       rows={rows}
       disabled={disabled}
-      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition resize-none disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-800/50"
+      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition resize-none disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-800/50"
     />
   );
 }
@@ -145,7 +146,7 @@ function NumberInput({
       step={step}
       disabled={disabled}
       onWheel={(e: WheelEvent<HTMLInputElement>) => e.currentTarget.blur()}
-      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-800/50"
+      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-800/50"
     />
   );
 }
@@ -190,10 +191,11 @@ function PrioritySelector({
 function MorningReadonlyCard({ item, index }: {
   item: TaskReportItem | ReturnType<typeof EMPTY_MORNING_ITEM>; index: number;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="bg-gradient-to-r from-slate-50 to-white dark:from-gray-800/60 dark:to-gray-800/40 rounded-2xl border border-gray-100 dark:border-gray-700 p-4">
       <div className="flex items-start gap-3">
-        <div className="w-7 h-7 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xs font-extrabold shrink-0 mt-0.5">
+        <div className="w-7 h-7 rounded-xl bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 flex items-center justify-center text-xs font-extrabold shrink-0 mt-0.5">
           {index + 1}
         </div>
         <div className="flex-1 min-w-0">
@@ -201,7 +203,7 @@ function MorningReadonlyCard({ item, index }: {
             <span className="text-sm font-bold text-gray-900 dark:text-white">{item.title}</span>
             {item.priority && <PriorityBadge value={item.priority} />}
             {item.linkedTaskId && (
-              <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800">
+              <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-cyan-50 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400 border border-cyan-100 dark:border-cyan-800">
                 {item.linkedTaskId}
               </span>
             )}
@@ -211,7 +213,7 @@ function MorningReadonlyCard({ item, index }: {
           )}
           {item.estimatedHours && (
             <span className="text-[11px] text-gray-400 font-medium flex items-center gap-1">
-              <span>⏱</span> Estimated: <b className="text-gray-600 dark:text-gray-300">{item.estimatedHours}h</b>
+              <span>⏱</span> {t("estimated_2")} <b className="text-gray-600 dark:text-gray-300">{item.estimatedHours}h</b>
             </span>
           )}
         </div>
@@ -226,14 +228,15 @@ function MorningEditCard({ item, index, onChange, onRemove }: {
   onChange: (field: string, value: unknown) => void;
   onRemove: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700 p-4 shadow-sm relative group">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xs font-extrabold">
+          <div className="w-6 h-6 rounded-lg bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 flex items-center justify-center text-xs font-extrabold">
             {index + 1}
           </div>
-          <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Task</span>
+          <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{t("task")}</span>
         </div>
         <button
           type="button"
@@ -247,25 +250,25 @@ function MorningEditCard({ item, index, onChange, onRemove }: {
       </div>
       <div className="space-y-3">
         <div>
-          <FieldLabel required>Task Title</FieldLabel>
-          <TextInput value={item.title} onChange={v => onChange("title", v)} placeholder="What are you going to work on?" />
+          <FieldLabel required>{t("task_title_2")}</FieldLabel>
+          <TextInput value={item.title} onChange={v => onChange("title", v)} placeholder={t("what_are_you_going_to_work")} />
         </div>
         <div>
-          <FieldLabel>Description</FieldLabel>
-          <TextArea value={item.description ?? ""} onChange={v => onChange("description", v)} placeholder="Brief details about this task…" />
+          <FieldLabel>{t("description_2")}</FieldLabel>
+          <TextArea value={item.description ?? ""} onChange={v => onChange("description", v)} placeholder={t("brief_details_about_this_task")} />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <FieldLabel>Estimated Hours</FieldLabel>
-            <NumberInput value={item.estimatedHours} onChange={v => onChange("estimatedHours", v)} placeholder="e.g. 2.5" min={0.5} max={24} />
+            <FieldLabel>{t("estimated_hours")}</FieldLabel>
+            <NumberInput value={item.estimatedHours} onChange={v => onChange("estimatedHours", v)} placeholder={t("e_g_2_5")} min={0.5} max={24} />
           </div>
           <div>
-            <FieldLabel>Linked Task ID</FieldLabel>
-            <TextInput value={item.linkedTaskId ?? ""} onChange={v => onChange("linkedTaskId", v)} placeholder="TASK-101" />
+            <FieldLabel>{t("linked_task_id")}</FieldLabel>
+            <TextInput value={item.linkedTaskId ?? ""} onChange={v => onChange("linkedTaskId", v)} placeholder={t("task_101")} />
           </div>
         </div>
         <div>
-          <FieldLabel>Priority</FieldLabel>
+          <FieldLabel>{t("priority")}</FieldLabel>
           <PrioritySelector value={item.priority ?? "medium"} onChange={v => onChange("priority", v)} />
         </div>
       </div>
@@ -281,6 +284,7 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
   bucket: "completed" | "pending";
   readOnly?: boolean;
 }) {
+  const { t } = useTranslation();
   const isCompleted = bucket === "completed";
 
   return (
@@ -322,7 +326,7 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
 
       <div className="space-y-3">
         <div>
-          <FieldLabel required>Task Title</FieldLabel>
+          <FieldLabel required>{t("task_title_2")}</FieldLabel>
           <TextInput
             value={item.title}
             onChange={v => onChange("title", v)}
@@ -331,11 +335,11 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
           />
         </div>
         <div>
-          <FieldLabel>Description</FieldLabel>
+          <FieldLabel>{t("description_2")}</FieldLabel>
           <TextArea
             value={item.description ?? ""}
             onChange={v => onChange("description", v)}
-            placeholder="Details about what was done / what's remaining…"
+            placeholder={t("details_about_what_was_done_what's")}
             disabled={readOnly}
           />
         </div>
@@ -343,9 +347,9 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
         {!readOnly ? (
           <div>
             <FieldLabel>
-              Status{" "}
-              <span className="normal-case text-indigo-500 dark:text-indigo-400 font-semibold text-[10px] ml-1">
-                ← changing this moves the task between sections
+              {t("status")}{" "}
+              <span className="normal-case text-cyan-500 dark:text-cyan-400 font-semibold text-[10px] ml-1">
+                {t("changing_this_moves_the_task_between_sections")}
               </span>
             </FieldLabel>
             <div className="flex flex-wrap gap-1.5 mt-1">
@@ -369,7 +373,7 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
           </div>
         ) : (
           <div>
-            <FieldLabel>Status</FieldLabel>
+            <FieldLabel>{t("status")}</FieldLabel>
             <div className="mt-1">
               {(() => {
                 const opt = STATUS_OPTIONS.find(o => o.value === item.status);
@@ -391,33 +395,33 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <FieldLabel>Est. Hours</FieldLabel>
+            <FieldLabel>{t("est_hours")}</FieldLabel>
             <NumberInput
               value={item.estimatedHours}
               onChange={v => onChange("estimatedHours", v)}
-              placeholder="eg 2"
+              placeholder={t("eg_2_2")}
               min={0.5}
               max={24}
               disabled={readOnly}
             />
           </div>
           <div>
-            <FieldLabel>Actual Hours</FieldLabel>
+            <FieldLabel>{t("actual_hours")}</FieldLabel>
             <NumberInput
               value={item.actualHours}
               onChange={v => onChange("actualHours", v)}
-              placeholder="eg 2"
+              placeholder={t("eg_2_2")}
               min={0.5}
               max={24}
               disabled={readOnly}
             />
           </div>
           <div>
-            <FieldLabel>Linked Task ID</FieldLabel>
+            <FieldLabel>{t("linked_task_id")}</FieldLabel>
             <TextInput
               value={item.linkedTaskId ?? ""}
               onChange={v => onChange("linkedTaskId", v)}
-              placeholder="TASK-101"
+              placeholder={t("task_101")}
               disabled={readOnly}
             />
           </div>
@@ -425,7 +429,7 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
 
         <div>
           <FieldLabel>
-            Completion:{" "}
+            {t("completion")}{" "}
             <span className={`font-extrabold ${isCompleted ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
               {item.completionPercentage}%
             </span>
@@ -447,18 +451,18 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
 
         {item.status === "blocked" && (
           <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800">
-            <FieldLabel>🚧 Blocker Reason</FieldLabel>
+            <FieldLabel>{t("blocker_reason")}</FieldLabel>
             <TextArea
               value={item.blockerReason ?? ""}
               onChange={v => onChange("blockerReason", v)}
-              placeholder="What is blocking this task?"
+              placeholder={t("what_is_blocking_this_task")}
               disabled={readOnly}
             />
           </div>
         )}
 
         <div>
-          <FieldLabel>Priority</FieldLabel>
+          <FieldLabel>{t("priority")}</FieldLabel>
           <PrioritySelector
             value={item.priority ?? "medium"}
             onChange={v => onChange("priority", v)}
@@ -473,6 +477,7 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 const TaskReportCreatePage = (): JSX.Element => {
+  const { t } = useTranslation();
   const today = new Date().toISOString().split("T")[0];
   const params = useParams();
   const id = params?.id as string;
@@ -758,8 +763,8 @@ const TaskReportCreatePage = (): JSX.Element => {
     return (
       <div className="ml-72 mt-14 flex items-center justify-center h-80">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-full border-4 border-indigo-200 border-t-indigo-600 animate-spin" />
-          <p className="text-sm text-gray-500 dark:text-gray-400 font-semibold">Loading report…</p>
+          <div className="w-12 h-12 rounded-full border-4 border-cyan-200 border-t-cyan-600 animate-spin" />
+          <p className="text-sm text-gray-500 dark:text-gray-400 font-semibold">{t("loading_report")}</p>
         </div>
       </div>
     );
@@ -776,7 +781,7 @@ const TaskReportCreatePage = (): JSX.Element => {
             <div className="flex items-center gap-2.5 mb-1">
               <span className="text-2xl">📝</span>
               <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-                Daily Task Report
+                {t("daily_task_report")}
               </h1>
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -792,7 +797,7 @@ const TaskReportCreatePage = (): JSX.Element => {
           <div className="flex items-center gap-4 mb-6 p-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm">
             <div className="flex items-center gap-2">
               <span className={`w-2.5 h-2.5 rounded-full ${morningSubmitted ? "bg-emerald-500" : "bg-amber-400 animate-pulse"}`} />
-              <span className="text-xs font-bold text-gray-500 dark:text-gray-400">Morning:</span>
+              <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{t("morning")}</span>
               <span className={`text-xs font-extrabold ${morningSubmitted ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
                 {morningSubmitted ? "Submitted ✓" : "Not Submitted"}
               </span>
@@ -800,7 +805,7 @@ const TaskReportCreatePage = (): JSX.Element => {
             <div className="w-px h-4 bg-gray-200 dark:bg-gray-600" />
             <div className="flex items-center gap-2">
               <span className={`w-2.5 h-2.5 rounded-full ${eveningSubmitted ? "bg-emerald-500" : morningSubmitted ? "bg-amber-400 animate-pulse" : "bg-gray-200"}`} />
-              <span className="text-xs font-bold text-gray-500 dark:text-gray-400">Evening:</span>
+              <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{t("evening")}</span>
               <span className={`text-xs font-extrabold ${eveningSubmitted ? "text-emerald-600 dark:text-emerald-400" : morningSubmitted ? "text-amber-600 dark:text-amber-400" : "text-gray-400"}`}>
                 {eveningSubmitted ? "Submitted ✓" : morningSubmitted ? "Not Submitted" : "🔒 Locked"}
               </span>
@@ -809,8 +814,8 @@ const TaskReportCreatePage = (): JSX.Element => {
               <>
                 <div className="w-px h-4 bg-gray-200 dark:bg-gray-600" />
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-purple-500" />
-                  <span className="text-xs font-extrabold text-purple-600 dark:text-purple-400">Manager Reviewed ✓</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-cyan-500" />
+                  <span className="text-xs font-extrabold text-cyan-600 dark:text-cyan-400">{t("manager_reviewed")}</span>
                 </div>
               </>
             )}
@@ -862,7 +867,7 @@ const TaskReportCreatePage = (): JSX.Element => {
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center text-white text-sm shrink-0">✓</div>
                   <div>
-                    <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">Morning Agenda Submitted</p>
+                    <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">{t("morning_agenda_submitted")}</p>
                     <p className="text-xs text-emerald-600/80 dark:text-emerald-500/80">
                       {existingReport?.morningAgenda?.submittedAt
                         ? `Submitted at ${new Date(existingReport.morningAgenda.submittedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`
@@ -876,9 +881,9 @@ const TaskReportCreatePage = (): JSX.Element => {
                   <button
                     type="button"
                     onClick={() => setIsEditingMorning(true)}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-xs font-bold transition-all shrink-0"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-cyan-200 dark:border-cyan-700 bg-white dark:bg-gray-800 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/30 text-xs font-bold transition-all shrink-0"
                   >
-                    ✏️ Edit Plan
+                    {t("edit_plan")}
                   </button>
                 )}
               </div>
@@ -889,9 +894,9 @@ const TaskReportCreatePage = (): JSX.Element => {
               <div className="flex items-center gap-3 mb-6 p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
                 <div className="w-8 h-8 rounded-xl bg-amber-500 flex items-center justify-center text-white text-sm shrink-0">✏️</div>
                 <div>
-                  <p className="text-sm font-bold text-amber-700 dark:text-amber-400">Editing Morning Agenda</p>
+                  <p className="text-sm font-bold text-amber-700 dark:text-amber-400">{t("editing_morning_agenda")}</p>
                   <p className="text-xs text-amber-600/80 dark:text-amber-500/80">
-                    Changes will update your existing plan. Click Cancel to discard.
+                    {t("changes_will_update_your_existing_plan")}
                   </p>
                 </div>
               </div>
@@ -901,7 +906,7 @@ const TaskReportCreatePage = (): JSX.Element => {
             <div className="flex items-center gap-3 mb-5">
               <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-lg shadow-md">🌅</div>
               <div>
-                <h2 className="text-lg font-extrabold text-gray-900 dark:text-white">Morning Agenda</h2>
+                <h2 className="text-lg font-extrabold text-gray-900 dark:text-white">{t("morning_agenda")}</h2>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   {morningReadOnly
                     ? "Your plan for today (read-only)"
@@ -914,17 +919,17 @@ const TaskReportCreatePage = (): JSX.Element => {
             </div>
 
             {/* Goal */}
-            <div className={`mb-6 p-4 rounded-2xl border ${morningReadOnly ? "bg-amber-50/50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30" : "bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-800"}`}>
-              <FieldLabel>🎯 Today&apos;s Goal / Focus</FieldLabel>
+            <div className={`mb-6 p-4 rounded-2xl border ${morningReadOnly ? "bg-amber-50/50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30" : "bg-cyan-50 dark:bg-cyan-900/20 border-cyan-100 dark:border-cyan-800"}`}>
+              <FieldLabel>{t("Today's Goal / Focus")}</FieldLabel>
               {morningReadOnly ? (
                 <p className="text-sm text-gray-700 dark:text-gray-300 font-medium italic min-h-[20px]">
-                  {morningGoals || <span className="text-gray-400 not-italic">No goal set</span>}
+                  {morningGoals || <span className="text-gray-400 not-italic">{t("no_goal_set")}</span>}
                 </p>
               ) : (
                 <TextArea
                   value={morningGoals}
                   onChange={setMorningGoals}
-                  placeholder="What is your main focus today?"
+                  placeholder={t("what_is_your_main_focus_today")}
                   rows={2}
                 />
               )}
@@ -954,12 +959,12 @@ const TaskReportCreatePage = (): JSX.Element => {
               <button
                 type="button"
                 onClick={() => setMorningItems(items => [...items, EMPTY_MORNING_ITEM()])}
-                className="w-full py-3 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500 hover:border-indigo-400 dark:hover:border-indigo-600 hover:text-indigo-600 dark:hover:text-indigo-400 text-sm font-bold transition-all flex items-center justify-center gap-2 mb-6"
+                className="w-full py-3 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500 hover:border-cyan-400 dark:hover:border-cyan-600 hover:text-cyan-600 dark:hover:text-cyan-400 text-sm font-bold transition-all flex items-center justify-center gap-2 mb-6"
               >
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                   <path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                 </svg>
-                Add Another Task
+                {t("add_another_task")}
               </button>
             )}
 
@@ -968,13 +973,13 @@ const TaskReportCreatePage = (): JSX.Element => {
               <div className="flex items-center gap-5">
                 <div className="text-center">
                   <div className="text-2xl font-extrabold text-gray-900 dark:text-white">{morningItems.length}</div>
-                  <div className="text-[11px] text-gray-500 font-medium">Tasks Planned</div>
+                  <div className="text-[11px] text-gray-500 font-medium">{t("tasks_planned")}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-extrabold text-amber-500">
                     {morningItems.reduce((s, i) => s + (i.estimatedHours ?? 0), 0).toFixed(1)}h
                   </div>
-                  <div className="text-[11px] text-gray-500 font-medium">Est. Hours</div>
+                  <div className="text-[11px] text-gray-500 font-medium">{t("est_hours")}</div>
                 </div>
               </div>
 
@@ -984,9 +989,9 @@ const TaskReportCreatePage = (): JSX.Element => {
                 <button
                   type="button"
                   onClick={() => setActiveTab("evening")}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm transition-all active:scale-95 shadow-sm"
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-sm transition-all active:scale-95 shadow-sm"
                 >
-                  Go to Evening Report →
+                  {t("go_to_evening_report")}
                 </button>
               ) : isEditingMorning ? (
                 // State 2: editing existing submission → cancel / update
@@ -997,17 +1002,17 @@ const TaskReportCreatePage = (): JSX.Element => {
                     disabled={isSubmitting}
                     className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 font-bold text-sm transition-all"
                   >
-                    Cancel
+                    {t("cancel")}
                   </button>
                   <button
                     type="button"
                     onClick={updateMorning}
                     disabled={isSubmitting || morningItems.every(i => !i.title.trim())}
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-all active:scale-95 shadow-sm"
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-all active:scale-95 shadow-sm"
                   >
                     {isSubmitting
-                      ? <><div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> Updating…</>
-                      : <><span>✏️</span> Update Morning Agenda</>
+                      ? <><div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> {t("updating")}</>
+                      : <><span>✏️</span> {t("update_morning_agenda")}</>
                     }
                   </button>
                 </div>
@@ -1017,11 +1022,11 @@ const TaskReportCreatePage = (): JSX.Element => {
                   type="button"
                   onClick={submitMorning}
                   disabled={isSubmitting || morningItems.every(i => !i.title.trim())}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-all active:scale-95 shadow-sm"
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-all active:scale-95 shadow-sm"
                 >
                   {isSubmitting
-                    ? <><div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> Submitting…</>
-                    : <><span>🌅</span> Submit Morning Agenda</>
+                    ? <><div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> {t("submitting_2")}</>
+                    : <><span>🌅</span> {t("submit_morning_agenda")}</>
                   }
                 </button>
               )}
@@ -1039,21 +1044,21 @@ const TaskReportCreatePage = (): JSX.Element => {
               <div className="flex items-center gap-3 mb-6 p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
                 <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center text-white text-sm shrink-0">🔒</div>
                 <div>
-                  <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">Evening Report Locked — Final Submission Complete</p>
+                  <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">{t("evening_report_locked_final_submission_complete")}</p>
                   <p className="text-xs text-emerald-600/80 dark:text-emerald-500/80">
                     {existingReport?.eveningReport?.submittedAt
                       ? `Submitted at ${new Date(existingReport.eveningReport.submittedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`
                       : "Already submitted"
-                    } · This report is read-only and cannot be edited.
+                    } {t("this_report_is_read_only_and_cannot_be_edited")}
                   </p>
                 </div>
               </div>
             )}
 
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-lg shadow-md">🌆</div>
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-600 flex items-center justify-center text-lg shadow-md">🌆</div>
               <div>
-                <h2 className="text-lg font-extrabold text-gray-900 dark:text-white">Evening Report</h2>
+                <h2 className="text-lg font-extrabold text-gray-900 dark:text-white">{t("evening_report")}</h2>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   {eveningSubmitted
                     ? "This report has been finally submitted and is now read-only."
@@ -1067,8 +1072,7 @@ const TaskReportCreatePage = (): JSX.Element => {
               <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 mb-6">
                 <span className="text-base shrink-0 mt-0.5">💡</span>
                 <p className="text-xs text-blue-700 dark:text-blue-400 font-medium leading-relaxed">
-                  Changing a task&apos;s <b>Status</b> to <b>Completed</b> automatically moves it to the green section.
-                  Setting it to <b>In Progress / Pending / Blocked / Carried Forward</b> moves it to the amber section.
+                  {t("changing_a_task_apos_s")} <b>{t("status")}</b> {t("to_3")} <b>{t("completed")}</b> {t("automatically_moves_it_to_the_green_section_setting_it_to")} <b>{t("in_progress_pending_blocked_carried_forward")}</b> {t("moves_it_to_the_amber_section")}
                 </p>
               </div>
             )}
@@ -1077,7 +1081,7 @@ const TaskReportCreatePage = (): JSX.Element => {
             <div className="mb-8">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-6 h-6 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-xs">✅</div>
-                <h3 className="text-sm font-extrabold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Completed Tasks</h3>
+                <h3 className="text-sm font-extrabold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">{t("completed_tasks")}</h3>
                 <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
                   {completedItems.length}
                 </span>
@@ -1085,8 +1089,8 @@ const TaskReportCreatePage = (): JSX.Element => {
 
               {completedItems.length === 0 ? (
                 <div className="py-8 rounded-2xl border-2 border-dashed border-emerald-100 dark:border-emerald-900/30 text-center mb-3">
-                  <p className="text-sm text-emerald-400 dark:text-emerald-600 font-semibold">No completed tasks yet</p>
-                  <p className="text-xs text-gray-400 mt-0.5">Change a task's status to "Completed" to move it here</p>
+                  <p className="text-sm text-emerald-400 dark:text-emerald-600 font-semibold">{t("no_completed_tasks_yet")}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{t("change_a_task's_status_to_completed")}</p>
                 </div>
               ) : (
                 <div className="space-y-4 mb-3">
@@ -1112,7 +1116,7 @@ const TaskReportCreatePage = (): JSX.Element => {
                   onClick={() => addEveningItem("completed" as TaskItemStatus)}
                   className="w-full py-3 rounded-2xl border-2 border-dashed border-emerald-200 dark:border-emerald-800/60 text-emerald-500 dark:text-emerald-600 hover:border-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-400 text-sm font-bold transition-all flex items-center justify-center gap-2"
                 >
-                  + Add Completed Task
+                  {t("add_completed_task")}
                 </button>
               )}
             </div>
@@ -1121,7 +1125,7 @@ const TaskReportCreatePage = (): JSX.Element => {
             <div className="mb-8">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-6 h-6 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-xs">⏳</div>
-                <h3 className="text-sm font-extrabold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Pending / In Progress / Blocked</h3>
+                <h3 className="text-sm font-extrabold text-amber-700 dark:text-amber-400 uppercase tracking-wider">{t("pending_in_progress_blocked")}</h3>
                 <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
                   {pendingItems.length}
                 </span>
@@ -1129,8 +1133,8 @@ const TaskReportCreatePage = (): JSX.Element => {
 
               {pendingItems.length === 0 ? (
                 <div className="py-8 rounded-2xl border-2 border-dashed border-amber-100 dark:border-amber-900/30 text-center mb-3">
-                  <p className="text-sm text-amber-400 dark:text-amber-600 font-semibold">All tasks completed! 🎉</p>
-                  <p className="text-xs text-gray-400 mt-0.5">Amazing work today</p>
+                  <p className="text-sm text-amber-400 dark:text-amber-600 font-semibold">{t("all_tasks_completed")}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{t("amazing_work_today")}</p>
                 </div>
               ) : (
                 <div className="space-y-4 mb-3">
@@ -1156,7 +1160,7 @@ const TaskReportCreatePage = (): JSX.Element => {
                   onClick={() => addEveningItem("carried_forward" as TaskItemStatus)}
                   className="w-full py-3 rounded-2xl border-2 border-dashed border-amber-200 dark:border-amber-800/60 text-amber-500 dark:text-amber-600 hover:border-amber-400 hover:text-amber-600 dark:hover:text-amber-400 text-sm font-bold transition-all flex items-center justify-center gap-2"
                 >
-                  + Add Pending Task
+                  {t("add_pending_task")}
                 </button>
               )}
             </div>
@@ -1164,37 +1168,37 @@ const TaskReportCreatePage = (): JSX.Element => {
             {/* ── Summary fields ── */}
             <div className="space-y-4 mb-8 pt-6 border-t border-gray-100 dark:border-gray-700">
               <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800">
-                <FieldLabel>🏆 Achievements / Highlights</FieldLabel>
+                <FieldLabel>{t("achievements_highlights")}</FieldLabel>
                 <TextArea
                   value={achievements}
                   onChange={setAchievements}
-                  placeholder="What are you proud of today? Any wins, improvements, or learnings?"
+                  placeholder={t("what_are_you_proud_of_today")}
                   rows={3}
                   disabled={eveningSubmitted}
                 />
               </div>
               <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800">
-                <FieldLabel>🚧 Blockers / Challenges</FieldLabel>
+                <FieldLabel>{t("blockers_challenges")}</FieldLabel>
                 <TextArea
                   value={blockers}
                   onChange={setBlockers}
-                  placeholder="Any blockers, issues, or challenges faced today?"
+                  placeholder={t("any_blockers_issues_or_challenges_faced")}
                   rows={2}
                   disabled={eveningSubmitted}
                 />
               </div>
               <div className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
-                <FieldLabel>📅 Tomorrow&apos;s Plan</FieldLabel>
+                <FieldLabel>{t("tomorrow_apos_s_plan")}</FieldLabel>
                 <TextArea
                   value={tomorrowPlan}
                   onChange={setTomorrowPlan}
-                  placeholder="What do you plan to work on tomorrow?"
+                  placeholder={t("what_do_you_plan_to_work")}
                   rows={2}
                   disabled={eveningSubmitted}
                 />
               </div>
               <div className="p-4 rounded-2xl bg-violet-50 dark:bg-violet-900/20 border border-violet-100 dark:border-violet-800">
-                <FieldLabel>Overall Mood Today</FieldLabel>
+                <FieldLabel>{t("overall_mood_today")}</FieldLabel>
                 <div className="flex gap-2.5 mt-2 flex-wrap">
                   {MOODS.map(m => (
                     <button
@@ -1217,7 +1221,7 @@ const TaskReportCreatePage = (): JSX.Element => {
 
               {!eveningSubmitted && (
                 <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-900/20 border border-gray-100 dark:border-gray-700 items-center gap-3">
-                  <FieldLabel>Final Submission</FieldLabel>
+                  <FieldLabel>{t("final_submission")}</FieldLabel>
                   <input
                     type="checkbox"
                     name="isFinalSubmitted"
@@ -1225,7 +1229,7 @@ const TaskReportCreatePage = (): JSX.Element => {
                     onChange={(e) => setIsFinalSubmitted(e.target.checked)}
                   />
                   <span className="text-sm text-orange-500 ml-2">
-                    Final submission locks this report from further changes — only submitted reports will be considered.
+                    {t("final_submission_locks_this_report_from")}
                   </span>
                 </div>
               )}
@@ -1236,20 +1240,20 @@ const TaskReportCreatePage = (): JSX.Element => {
               <div className="flex items-center gap-5">
                 <div className="text-center">
                   <div className="text-2xl font-extrabold text-emerald-600">{completedItems.length}</div>
-                  <div className="text-[11px] text-gray-500 font-medium">Completed</div>
+                  <div className="text-[11px] text-gray-500 font-medium">{t("completed")}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-extrabold text-amber-500">{pendingItems.length}</div>
-                  <div className="text-[11px] text-gray-500 font-medium">Pending</div>
+                  <div className="text-[11px] text-gray-500 font-medium">{t("pending")}</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-extrabold text-indigo-600">{actualHour}h</div>
-                  <div className="text-[11px] text-gray-500 font-medium">Actual Hours</div>
+                  <div className="text-2xl font-extrabold text-cyan-600">{actualHour}h</div>
+                  <div className="text-[11px] text-gray-500 font-medium">{t("actual_hours")}</div>
                 </div>
                 {overallMood && (
                   <div className="text-center">
                     <div className="text-2xl">{MOODS.find(m => m.value === overallMood)?.emoji ?? ""}</div>
-                    <div className="text-[11px] text-gray-500 font-medium">Mood</div>
+                    <div className="text-[11px] text-gray-500 font-medium">{t("mood")}</div>
                   </div>
                 )}
               </div>
@@ -1264,7 +1268,7 @@ const TaskReportCreatePage = (): JSX.Element => {
                     className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-all active:scale-95 shadow-sm"
                   >
                     {isSubmitting
-                      ? <><div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> Submitting…</>
+                      ? <><div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> {t("submitting_2")}</>
                       : <><span>🌆</span> {!isFinalSubmitted ? "Save Evening Report" : "Submit Evening Report"}</>
                     }
                   </button>
@@ -1272,7 +1276,7 @@ const TaskReportCreatePage = (): JSX.Element => {
                   <div className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
                     <span className="text-emerald-600 dark:text-emerald-400 text-lg">🔒</span>
                     <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
-                      Report locked — final submission complete
+                      {t("report_locked_final_submission_complete")}
                     </span>
                   </div>
                 )}

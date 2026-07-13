@@ -192,7 +192,7 @@ const [companyLoading, setCompanyLoading] = useState(false);
         onDateFilter={handleDateFilter}
         onSummaryFilter={handleSummaryFilter}
         companyData={companyData}
-  companyLoading={companyLoading}
+        companyLoading={companyLoading}
       />
     </div>
   );

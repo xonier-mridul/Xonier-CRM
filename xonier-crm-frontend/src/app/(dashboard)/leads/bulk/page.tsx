@@ -21,6 +21,7 @@ import { HiDownload } from "react-icons/hi";
 import { FiUpload } from "react-icons/fi";
 import { Tag, AlertCircle, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 
 interface ParsedLead {
   [key: string]: string | number;
@@ -37,6 +38,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_REGEX = /^\+?[0-9\s\-().]{7,20}$/;
 
 const BulkLeadUpload = (): JSX.Element => {
+  const { t } = useTranslation();
   const [userFormData, setUserFormData] = useState<UserForm | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [file, setFile] = useState<File | null>(null);
@@ -318,9 +320,9 @@ const BulkLeadUpload = (): JSX.Element => {
               🚀
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white tracking-tight">Bulk Leads</h2>
+              <h2 className="text-xl font-bold text-white tracking-tight">{t("bulk_leads")}</h2>
               <p className="text-xs text-cyan-200 mt-0.5">
-                Upload a CSV or XLSX to create multiple leads at once
+                {t("upload_a_csv_or_xlsx_to")}
               </p>
             </div>
           </div>
@@ -328,12 +330,12 @@ const BulkLeadUpload = (): JSX.Element => {
 
         <div className="px-8 py-4 flex items-center justify-between border-b border-gray-100 dark:border-gray-800">
           <div className="text-sm text-gray-500 dark:text-gray-400 space-y-0.5">
-            <p>Download the sample sheet, fill it in, then upload it below.</p>
+            <p>{t("download_the_sample_sheet_fill_it")}</p>
             <p className="text-xs text-gray-400 dark:text-gray-500">
-              Supported formats:{" "}
-              <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">.csv</code>{" · "}
-              <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">.xlsx</code>{" · "}
-              <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">.xls</code>
+              {t("supported_formats")}{" "}
+              <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">{t("csv")}</code>{" · "}
+              <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">{t("xlsx")}</code>{" · "}
+              <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">{t("xls")}</code>
             </p>
           </div>
           <button
@@ -341,7 +343,7 @@ const BulkLeadUpload = (): JSX.Element => {
             disabled={isLoading || !userFormData}
             className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap ml-6 flex-shrink-0"
           >
-            <HiDownload className="text-base" /> Download Sample
+            <HiDownload className="text-base" /> {t("download_sample")}
           </button>
         </div>
       </div>
@@ -368,7 +370,7 @@ const BulkLeadUpload = (): JSX.Element => {
               {isDragging ? "Drop your file here" : "Drag & drop your CSV or XLSX file"}
             </p>
             <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-              or click the button below to browse
+              {t("or_click_the_button_below_to_browse")}
             </p>
           </div>
 
@@ -382,7 +384,7 @@ const BulkLeadUpload = (): JSX.Element => {
             htmlFor="leadFileUpload"
             className="cursor-pointer flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors shadow-sm"
           >
-            <FaUpload /> Choose File
+            <FaUpload /> {t("choose_file")}
           </label>
 
           {file && (
@@ -390,7 +392,7 @@ const BulkLeadUpload = (): JSX.Element => {
               <FaFileCsv className="text-cyan-500 text-lg" />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{file.name}</span>
               <span className="text-xs bg-cyan-100 dark:bg-cyan-900/40 text-cyan-600 dark:text-cyan-300 px-2 py-0.5 rounded-full font-medium">
-                {parsedData.length} rows
+                {parsedData.length} {t("rows")}
               </span>
               <button
                 onClick={resetUpload}
@@ -410,9 +412,9 @@ const BulkLeadUpload = (): JSX.Element => {
               <Tag size={17} className="text-cyan-600 dark:text-cyan-400" />
             </div>
             <div className="shrink-0">
-              <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Data Tag</p>
+              <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{t("data_tag")}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Optional — group this batch for easy filtering later
+                {t("optional_group_this_batch_for_easy")}
               </p>
             </div>
             <div className="flex-1 ml-2 relative">
@@ -420,7 +422,7 @@ const BulkLeadUpload = (): JSX.Element => {
                 type="text"
                 value={dataTag}
                 onChange={(e) => setDataTag(e.target.value)}
-                placeholder="e.g. Q2-Campaign, Mumbai-Expo-2025"
+                placeholder={t("e_g_q2_campaign_mumbai_expo")}
                 maxLength={60}
                 className="w-full px-3 py-2 pr-8 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-colors"
               />
@@ -444,18 +446,18 @@ const BulkLeadUpload = (): JSX.Element => {
             <AlertCircle className="text-red-500 shrink-0 mt-0.5" size={18} />
             <div className="flex-1">
               <h3 className="font-semibold text-red-700 dark:text-red-400 text-sm mb-1.5">
-                {validationErrors.length} Validation Error{validationErrors.length > 1 ? "s" : ""}
+                {validationErrors.length} {t("validation_error")}{validationErrors.length > 1 ? "s" : ""}
               </h3>
               <div className="max-h-36 overflow-y-auto space-y-0.5">
                 {validationErrors.slice(0, 10).map((error, i) => (
                   <p key={i} className="text-xs text-red-600 dark:text-red-400">
-                    Row {error.row},{" "}
+                    {t("row")} {error.row},{" "}
                     <span className="font-semibold">{error.field}</span>: {error.message}
                   </p>
                 ))}
                 {validationErrors.length > 10 && (
                   <p className="text-xs text-red-600 dark:text-red-400 font-semibold mt-1">
-                    … and {validationErrors.length - 10} more errors
+                    {t("and")} {validationErrors.length - 10} {t("more_errors")}
                   </p>
                 )}
               </div>
@@ -469,19 +471,19 @@ const BulkLeadUpload = (): JSX.Element => {
 
           <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3 flex-wrap">
-              <h3 className="font-semibold text-gray-800 dark:text-gray-100 text-sm">Preview</h3>
+              <h3 className="font-semibold text-gray-800 dark:text-gray-100 text-sm">{t("preview_2")}</h3>
 
               <span className="text-xs text-gray-400 bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-full">
-                {parsedData.length} records
+                {parsedData.length} {t("records")}
               </span>
 
               {invalidCount > 0 ? (
                 <span className="text-xs bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 px-2.5 py-1 rounded-full font-medium">
-                  ⚠ {invalidCount} invalid
+                  ⚠ {invalidCount} {t("invalid")}
                 </span>
               ) : (
                 <span className="text-xs bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-800 px-2.5 py-1 rounded-full font-medium">
-                  ✓ All rows valid
+                  {t("all_rows_valid")}
                 </span>
               )}
 
@@ -499,7 +501,7 @@ const BulkLeadUpload = (): JSX.Element => {
                 className="flex items-center gap-2 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 border border-red-200 dark:border-red-800 px-3 py-1.5 rounded-lg transition-all"
               >
                 <FaTrash className="text-xs" />
-                Delete {invalidCount} Invalid Row{invalidCount > 1 ? "s" : ""}
+                {t("delete")} {invalidCount} {t("invalid_row")}{invalidCount > 1 ? "s" : ""}
               </button>
             )}
           </div>
@@ -522,6 +524,7 @@ const BulkLeadUpload = (): JSX.Element => {
 
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {paginatedData.map((lead, pageIdx) => {
+  const { t } = useTranslation();
                   const globalIdx = (currentPage - 1) * ITEMS_PER_PAGE + pageIdx;
                   const rowErrs = getErrorsForRow(globalIdx);
                   const isInvalid = rowErrs.length > 0;
@@ -549,7 +552,7 @@ const BulkLeadUpload = (): JSX.Element => {
                                 space-y-1.5 pointer-events-none opacity-0 group-hover:opacity-100
                                 transition-opacity border border-red-800">
                                 <p className="font-bold text-red-400 mb-1.5">
-                                  ⚠ {rowErrs.length} error{rowErrs.length > 1 ? "s" : ""}
+                                  ⚠ {rowErrs.length} {t("error")}{rowErrs.length > 1 ? "s" : ""}
                                 </p>
                                 {rowErrs.map((e, i) => (
                                   <div key={i} className="flex items-start gap-1.5">
@@ -570,6 +573,7 @@ const BulkLeadUpload = (): JSX.Element => {
                       </td>
 
                       {csvHeaders.map((header) => {
+  const { t } = useTranslation();
                         const value = lead[header];
                         const hasErr = fieldHasError(header);
                         const errMsg = rowErrs.find((e) => e.field === header)?.message;
@@ -595,7 +599,7 @@ const BulkLeadUpload = (): JSX.Element => {
                                 </span>
                               )
                               : hasErr
-                                ? <span className="italic text-red-400 text-xs">missing</span>
+                                ? <span className="italic text-red-400 text-xs">{t("missing")}</span>
                                 : <span className="text-gray-300 dark:text-gray-600">—</span>
                             }
                           </td>
@@ -606,7 +610,7 @@ const BulkLeadUpload = (): JSX.Element => {
                         <button
                           type="button"
                           onClick={() => deleteRow(globalIdx)}
-                          title="Delete row"
+                          title={t("delete_row")}
                           className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all
                             ${isInvalid
                               ? "bg-red-100 dark:bg-red-900/30 text-red-500 hover:bg-red-200 dark:hover:bg-red-900/60"
@@ -624,7 +628,7 @@ const BulkLeadUpload = (): JSX.Element => {
 
           <div className="flex justify-between items-center px-6 py-4 border-t border-gray-100 dark:border-gray-800">
             <span className="text-sm text-gray-500 dark:text-gray-400">
-              Showing{" "}
+              {t("showing")}{" "}
               <span className="font-medium text-gray-700 dark:text-gray-200">
                 {(currentPage - 1) * ITEMS_PER_PAGE + 1}
               </span>
@@ -632,7 +636,7 @@ const BulkLeadUpload = (): JSX.Element => {
               <span className="font-medium text-gray-700 dark:text-gray-200">
                 {Math.min(currentPage * ITEMS_PER_PAGE, parsedData.length)}
               </span>{" "}
-              of{" "}
+              {t("of")}{" "}
               <span className="font-medium text-gray-700 dark:text-gray-200">{parsedData.length}</span>
             </span>
 
@@ -681,7 +685,7 @@ const BulkLeadUpload = (): JSX.Element => {
         <div className="flex justify-end items-center gap-3">
           {invalidCount > 0 && (
             <p className="text-sm text-red-500 dark:text-red-400">
-              {invalidCount} invalid row{invalidCount > 1 ? "s" : ""} must be fixed or removed before submitting
+              {invalidCount} {t("invalid_row_2")}{invalidCount > 1 ? "s" : ""} {t("must_be_fixed_or_removed_before_submitting")}
             </p>
           )}
           <button

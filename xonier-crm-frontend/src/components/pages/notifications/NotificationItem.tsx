@@ -5,6 +5,7 @@ import { Notification } from "@/src/types/notification/notification.types";
 import { FiTrash2, FiArchive, FiExternalLink } from "react-icons/fi";
 import { getNotificationIcon, formatTimeAgo, getNotificationLink } from "@/src/app/utils/notification.utils";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 
 interface NotificationItemProps {
   notification: Notification;
@@ -19,6 +20,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
   onDelete,
   onArchive,
 }) => {
+  const { t } = useTranslation();
   const link = getNotificationLink(notification);
 
   const handleClick = () => {
@@ -73,7 +75,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
                 href={link}
                 className="text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 text-xs flex items-center gap-1"
               >
-                <FiExternalLink /> View
+                <FiExternalLink /> {t("view")}
               </Link>
             )}
             <button
@@ -82,7 +84,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
                 onArchive(notification.id);
               }}
               className="text-gray-400 hover:text-orange-500 transition-colors"
-              title="Archive"
+              title={t("archive")}
             >
               <FiArchive className="text-sm" />
             </button>
@@ -92,7 +94,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
                 onDelete(notification.id);
               }}
               className="text-gray-400 hover:text-red-500 transition-colors"
-              title="Delete"
+              title={t("delete")}
             >
               <FiTrash2 className="text-sm" />
             </button>

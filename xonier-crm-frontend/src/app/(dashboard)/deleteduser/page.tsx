@@ -22,6 +22,7 @@ import {
   FiArchive,
 } from "react-icons/fi";
 import { MdOutlineDeleteForever } from "react-icons/md";
+import { useTranslation } from "react-i18next";
 
 // ─── Avatar helper ───────────────────────────────────────────────────────────
 
@@ -85,6 +86,7 @@ const StatCard = ({
 // ─── Main page ───────────────────────────────────────────────────────────────
 
 const DeletedUsersPage = (): JSX.Element => {
+  const { t } = useTranslation();
   const [userData, setUserData] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [err, setErr] = useState<string[] | string>("");
@@ -316,19 +318,19 @@ const DeletedUsersPage = (): JSX.Element => {
         <div className="flex items-center gap-2 mb-1">
           <MdOutlineDeleteForever className="w-5 h-5 text-rose-500" />
           <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
-            Deleted Users
+            {t("deleted_users")}
           </h1>
         </div>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Manage soft-deleted accounts — restore or permanently remove them.
+          {t("manage_soft_deleted_accounts_restore_or")}
         </p>
       </div>
 
       {/* ── Stat strip ── */}
       <div className="flex flex-wrap gap-3 mb-6">
-        <StatCard label="Total Deleted" value={totalCount} accent="text-rose-500 dark:text-rose-400" />
-        <StatCard label="This Page" value={userData.length} accent="text-amber-500 dark:text-amber-400" />
-        <StatCard label="Selected" value={selected.size} accent="text-violet-500 dark:text-violet-400" />
+        <StatCard label={t("total_deleted")} value={totalCount} accent="text-rose-500 dark:text-rose-400" />
+        <StatCard label={t("this_page")} value={userData.length} accent="text-amber-500 dark:text-amber-400" />
+        <StatCard label={t("selected")} value={selected.size} accent="text-violet-500 dark:text-violet-400" />
       </div>
 
       {/* ── Error banner ── */}
@@ -348,7 +350,7 @@ const DeletedUsersPage = (): JSX.Element => {
           </span>
           <input
             type="text"
-            placeholder="Search by name or email…"
+            placeholder={t("search_by_name_or_email_2")}
             value={search}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
             className=" w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 pl-9 pr-4 py-2 text-sm text-gray-800 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-rose-400 dark:focus:ring-rose-600 transition-shadow"
@@ -365,14 +367,14 @@ const DeletedUsersPage = (): JSX.Element => {
                 className="flex items-center gap-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white px-4 py-2 text-sm font-semibold shadow-sm transition-colors duration-150"
               >
                 <MdOutlineDeleteForever />
-                Delete {selected.size} selected
+                {t("delete")} {selected.size} {t("selected_2")}
               </button>
               <button
                 onClick={handleBulkRestore}
                 className="flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-4 py-2 text-sm font-semibold shadow-sm transition-colors duration-150"
               >
                 <FiRotateCcw />
-                Restore {selected.size} selected
+                {t("restore")} {selected.size} {t("selected_2")}
               </button>
             </>
           )}
@@ -386,7 +388,7 @@ const DeletedUsersPage = (): JSX.Element => {
             className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-rose-400 dark:focus:ring-rose-600 transition-shadow"
           >
             {[5, 10, 20, 50].map((n) => (
-              <option key={n} value={n}>{n} / page</option>
+              <option key={n} value={n}>{n} {t("page_2")}</option>
             ))}
           </select>
 
@@ -410,22 +412,22 @@ const DeletedUsersPage = (): JSX.Element => {
                   />
                 </th>
                 <th className="px-4 py-3 text-left font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-xs">
-                  User
+                  {t("user")}
                 </th>
                 <th className="px-4 py-3 text-left font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-xs">
-                  Phone
+                  {t("phone")}
                 </th>
                 <th className="px-4 py-3 text-left font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-xs">
-                  Role
+                  {t("role")}
                 </th>
                 {/* <th className="px-4 py-3 text-left font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-xs">
                   Company
                 </th> */}
                 <th className="px-4 py-3 text-left font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-xs">
-                  Deleted On
+                  {t("deleted_on")}
                 </th>
                 <th className="px-4 py-3 text-left font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-xs">
-                  Actions
+                  {t("actions")}
                 </th>
               </tr>
             </thead>
@@ -444,7 +446,7 @@ const DeletedUsersPage = (): JSX.Element => {
                           <span className="text-gray-300 dark:text-gray-700">
                             <FiArchive />
                           </span>
-                          <p className="font-medium text-gray-500 dark:text-gray-400">No deleted users found</p>
+                          <p className="font-medium text-gray-500 dark:text-gray-400">{t("no_deleted_users_found")}</p>
                           <p className="text-xs text-gray-400 dark:text-gray-600">
                             {debouncedSearch ? "Try a different search term." : "Soft-deleted users will appear here."}
                           </p>
@@ -453,6 +455,7 @@ const DeletedUsersPage = (): JSX.Element => {
                     </tr>
                   )
                   : userData.map((u) => {
+  const { t } = useTranslation();
                     const id = u.id as string;
                     const name = `${u.firstName} ${u.lastName}`;
                     const isChecked = selected.has(id);
@@ -493,7 +496,7 @@ const DeletedUsersPage = (): JSX.Element => {
                             >
                               {getInitials(u.firstName, u?.lastName)}
                               {/* Deleted badge overlay */}
-                              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-rose-500 ring-1 ring-white dark:ring-gray-900" title="Deleted" />
+                              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-rose-500 ring-1 ring-white dark:ring-gray-900" title={t("deleted")} />
                             </div>
                             <div>
                               <p className="font-semibold text-gray-800 dark:text-gray-100 leading-tight">
@@ -530,21 +533,21 @@ const DeletedUsersPage = (): JSX.Element => {
                             {/* Restore */}
                             <button
                               onClick={() => handleRestore(id, name)}
-                              title="Restore user"
+                              title={t("restore_user")}
                               className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900 px-2.5 py-1.5 text-xs font-semibold transition-colors duration-150 whitespace-nowrap"
                             >
                               <FiRotateCcw />
-                              Restore
+                              {t("restore")}
                             </button>
 
                             {/* Permanent delete */}
                             <button
                               onClick={() => handlePermanentDelete(id, name)}
-                              title="Permanently delete"
+                              title={t("permanently_delete")}
                               className="inline-flex items-center gap-1.5 rounded-md border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900 px-2.5 py-1.5 text-xs font-semibold transition-colors duration-150 whitespace-nowrap"
                             >
                               <FiTrash2 />
-                              Delete
+                              {t("delete")}
                             </button>
                           </div>
                         </td>
@@ -560,8 +563,8 @@ const DeletedUsersPage = (): JSX.Element => {
           <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5 border-t border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/20">
             {/* Entry count */}
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Showing <span className="font-semibold text-gray-700 dark:text-gray-300">{startEntry}–{endEntry}</span> of{" "}
-              <span className="font-semibold text-gray-700 dark:text-gray-300">{totalCount}</span> deleted users
+              {t("showing")} <span className="font-semibold text-gray-700 dark:text-gray-300">{startEntry}–{endEntry}</span> {t("of")}{" "}
+              <span className="font-semibold text-gray-700 dark:text-gray-300">{totalCount}</span> {t("deleted_users_2")}
             </p>
 
             {/* Page buttons */}

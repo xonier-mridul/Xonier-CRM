@@ -26,8 +26,10 @@ import { FaRegPaperPlane } from "react-icons/fa";
 import Pagination from "@/src/components/common/pagination";
 import { useSearchParams } from "next/navigation";
 import { FaRegUser } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
 
 const DealContent = (): JSX.Element => {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [dealData, setDealData] = useState<Deal[]>([]);
   const [wonDealData, setWonDealData] = useState<Deal[]>([]);
@@ -215,10 +217,10 @@ const DealContent = (): JSX.Element => {
         <div className="flex w-full items-center gap-12 justify-between">
           <div className="flex flex-col gap-1.5">
             <h2 className="text-xl font-bold  dark:text-white text-slate-900 capitalize">
-              All Sales Deals
+              {t("all_sales_deals")}
             </h2>
             <p className="text-gray-500 dark:text-gray-400">
-              Create, edit or remove Deals
+              {t("create_edit_or_remove_deals")}
             </p>
           </div>
           <div className="flex items-center gap-6">
@@ -235,7 +237,7 @@ const DealContent = (): JSX.Element => {
             </select>
             <div className="bg-slate-50 dark:bg-gray-600 text-slate-500 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2 dark:text-white/70">
               <IoIosSearch className="text-xl" />
-              <input type="text" className="outline-none " placeholder="Search..." value={searchVal} onChange={(e) => handleSearch(e.target.value)} />
+              <input type="text" className="outline-none " placeholder={t("search_2")} value={searchVal} onChange={(e) => handleSearch(e.target.value)} />
             </div>
             <div>
               <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
@@ -248,7 +250,7 @@ const DealContent = (): JSX.Element => {
                                     flex items-center gap-2 group"
               >
                 <MdOutlineLeaderboard className="group-hover:rotate-90 transition-all duration-300" />{" "}
-                All Leads
+                {t("all_leads")}
               </Link>
             )}
           </div>
@@ -266,25 +268,25 @@ const DealContent = (): JSX.Element => {
                   deal Id
                 </th> */}
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  deal name
+                  {t("deal_name")}
                 </th>
 
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
                   {" "}
-                  Deal stage
+                  {t("deal_stage")}
                 </th>
 
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
-                  against
+                  {t("against")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
-                  created date
+                  {t("created_date_2")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  created by
+                  {t("created_by_2")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
-                  Actions
+                  {t("actions")}
                 </th>
               </tr>
             </thead>
@@ -397,7 +399,7 @@ const DealContent = (): JSX.Element => {
                     </tr>
                   );
                 })
-              ) : <tr><td className="p-4 text-center text-slate-500 dark:text-white/70" colSpan={6}>Data not found</td></tr>) : (
+              ) : <tr><td className="p-4 text-center text-slate-500 dark:text-white/70" colSpan={6}>{t("data_not_found")}</td></tr>) : (
                 Array.from({ length: 10 }).map((item, i) => {
                   let rr = i % 2 == 0;
 
@@ -448,27 +450,27 @@ const DealContent = (): JSX.Element => {
                   deal Id
                 </th> */}
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
-                  deal name
+                  {t("deal_name")}
                 </th>
                 {/* <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
                   Pipeline
                 </th> */}
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
                   {" "}
-                  Deal stage
+                  {t("deal_stage")}
                 </th>
 
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
-                  against
+                  {t("against")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
-                  created date
+                  {t("created_date_2")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
-                  created by
+                  {t("created_by_2")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
-                  Actions
+                  {t("actions")}
                 </th>
               </tr>
             </thead>
@@ -560,7 +562,7 @@ const DealContent = (): JSX.Element => {
                     </tr>
                   );
                 })
-              ) : <tr> <td className="p-4 text-center text-slate-500 dark:text-white/70" colSpan={7}>Data not found</td></tr>) : (
+              ) : <tr> <td className="p-4 text-center text-slate-500 dark:text-white/70" colSpan={7}>{t("data_not_found")}</td></tr>) : (
                 Array.from({ length: 10 }).map((item, i) => {
                   let rr = i % 2 == 0;
 
@@ -613,27 +615,27 @@ const DealContent = (): JSX.Element => {
                   deal Id
                 </th> */}
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
-                  deal name
+                  {t("deal_name")}
                 </th>
                 {/* <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
                   Pipeline
                 </th> */}
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
                   {" "}
-                  Deal stage
+                  {t("deal_stage")}
                 </th>
 
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
-                  against
+                  {t("against")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
-                  created date
+                  {t("created_date_2")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
-                  created by
+                  {t("created_by_2")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
-                  Actions
+                  {t("actions")}
                 </th>
               </tr>
             </thead>
@@ -725,7 +727,7 @@ const DealContent = (): JSX.Element => {
                     </tr>
                   );
                 })
-              ) : <tr> <td className="p-4 text-center text-slate-500 dark:text-white/70" colSpan={7}>Data not found</td></tr>) : (
+              ) : <tr> <td className="p-4 text-center text-slate-500 dark:text-white/70" colSpan={7}>{t("data_not_found")}</td></tr>) : (
                 Array.from({ length: 10 }).map((item, i) => {
                   let rr = i % 2 == 0;
 

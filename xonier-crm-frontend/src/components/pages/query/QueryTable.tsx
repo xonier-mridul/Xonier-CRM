@@ -5,6 +5,7 @@ import Skeleton from 'react-loading-skeleton';
 import { FaEye } from 'react-icons/fa';
 import Link from 'next/link';
 import { MdDelete } from 'react-icons/md';
+import { useTranslation } from "react-i18next";
 
 const QueryTable :React.FC<QueryTableProps>= ({queryData,
         totalPage,
@@ -15,13 +16,14 @@ const QueryTable :React.FC<QueryTableProps>= ({queryData,
         isLoading,
         currentPage,setCurrentPage,
         pageLimit,setPageLimit}) => {
+  const { t } = useTranslation();
 
   return (
    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-900/10 dark:border-gray-700 w-full flex flex-col gap-6 overflow-hidden">
       <div className="flex flex-wrap items-center gap-4 justify-between p-6 border-b border-slate-900/10 dark:border-gray-700">
         <div className="flex flex-col gap-1">
-          <h2 className="text-xl font-bold dark:text-white text-slate-900">Query</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Manage Queries</p>
+          <h2 className="text-xl font-bold dark:text-white text-slate-900">{t("query")}</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{t("manage_queries")}</p>
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
@@ -31,14 +33,14 @@ const QueryTable :React.FC<QueryTableProps>= ({queryData,
             onChange={(e) => setPageLimit(Number(e.target.value))}
           >
             {[10, 20, 30, 50].map((n) => (
-              <option key={n} value={n}>{n} / page</option>
+              <option key={n} value={n}>{n} {t("page_2")}</option>
             ))}
           </select>
           { selected.length>=2 &&
              <div>
             <button onClick={onBulkDelete} className="  px-3 py-2 rounded-xl border hover:borderx-red-400  border-slate-200 text-sm flex gap-2 bg-slate-100 justify-center items-center text-gray-500 hover:border-red-400 dark:text-gray-400 hover:bg-red-100 hover:text-red-400">
                            <MdDelete />
-                          Delete All
+                          {t("delete_all")}
             </button>
           </div>
 
@@ -146,7 +148,7 @@ const QueryTable :React.FC<QueryTableProps>= ({queryData,
               ) : (
                 <tr>
                   <td colSpan={8} className="py-16 text-center text-gray-400 text-sm">
-                    No plans found
+                    {t("no_plans_found")}
                   </td>
                 </tr>
               )

@@ -26,6 +26,7 @@ import {
 } from "react-icons/fi";
 import { BsBuildings } from "react-icons/bs";
 import { sizeOptions } from "@/src/constants/constants";
+import { useTranslation } from "react-i18next";
 
 interface CreateCompanyFormProps {
   planData: Plan[];
@@ -105,6 +106,7 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
   onVerifyOtp,
   onResendOtp,
 }) => {
+  const { t } = useTranslation();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<CompanyCreatePayload>(initialForm);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -277,52 +279,52 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
             <div className="flex items-center gap-2 mb-5 pb-4 border-b border-slate-100 dark:border-gray-700">
               <BsBuildings className="text-violet-500 text-lg" />
               <h3 className="font-semibold text-slate-800 dark:text-white text-base">
-                Company Information
+                {t("company_information")}
               </h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <Input label="Company Name" required placeholder="Xonier Technologies" value={form.companyName} onChange={(e) => set("companyName", (e.target as HTMLInputElement).value)} error={errors.companyName} />
-              <Input label="Industry" required placeholder="Technology" value={form.industry} onChange={(e) => set("industry", (e.target as HTMLInputElement).value)} error={errors.industry} />
-              <Input label="Company Phone" required placeholder="+913001234567" value={form.number} onChange={(e) => set("number", (e.target as HTMLInputElement).value)} error={errors.number} />
-              <Input label="Website" placeholder="https://company.io" value={form.website ?? ""} onChange={(e) => set("website", (e.target as HTMLInputElement).value)} />
+              <Input label={t("company_name")} required placeholder={t("xonier_technologies")} value={form.companyName} onChange={(e) => set("companyName", (e.target as HTMLInputElement).value)} error={errors.companyName} />
+              <Input label={t("industry_2")} required placeholder={t("technology")} value={form.industry} onChange={(e) => set("industry", (e.target as HTMLInputElement).value)} error={errors.industry} />
+              <Input label={t("company_phone")} required placeholder="+913001234567" value={form.number} onChange={(e) => set("number", (e.target as HTMLInputElement).value)} error={errors.number} />
+              <Input label={t("website")} placeholder="https://company.io" value={form.website ?? ""} onChange={(e) => set("website", (e.target as HTMLInputElement).value)} />
               <div className="flex flex-col gap-1 w-full">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Company Size</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">{t("company_size")}</label>
                 <select value={form.companySize ?? ""} onChange={(e) => set("companySize", (e.target.value as NUMBER_OF_EMPLOYEES) || undefined)} className="w-full px-3 py-2 rounded-md border bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm">
-                  <option value="">Select size</option>
+                  <option value="">{t("select_size")}</option>
                   {sizeOptions.map((o) => (<option key={o.value} value={o.value}>{o.label}</option>))}
                 </select>
               </div>
               <div className="flex flex-col gap-1 w-full">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Country</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">{t("country")}</label>
                 <select value={form.country ?? ""} onChange={(e) => set("country", (e.target.value as COUNTRY_CODE) || undefined)} className="w-full px-3 py-2 rounded-md border bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm">
-                  <option value="">Select country</option>
+                  <option value="">{t("select_country")}</option>
                   {countryOptions.map((o) => (<option key={o.value} value={o.value}>{o.label}</option>))}
                 </select>
               </div>
-              <Input label="Timezone" placeholder="Asia/Kolkata" value={form.timezone ?? ""} onChange={(e) => set("timezone", (e.target as HTMLInputElement).value)} />
-              <Input label="User Limit" type="number" placeholder="50" value={form.userLimit ?? ""} onChange={(e) => set("userLimit", (e.target as HTMLInputElement).value ? Number((e.target as HTMLInputElement).value) : undefined)} />
+              <Input label={t("timezone")} placeholder="Asia/Kolkata" value={form.timezone ?? ""} onChange={(e) => set("timezone", (e.target as HTMLInputElement).value)} />
+              <Input label={t("user_limit")} type="number" placeholder="50" value={form.userLimit ?? ""} onChange={(e) => set("userLimit", (e.target as HTMLInputElement).value ? Number((e.target as HTMLInputElement).value) : undefined)} />
             </div>
           </section>
 
           <section className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-900/10 dark:border-gray-700 p-6">
             <div className="flex items-center gap-2 mb-5 pb-4 border-b border-slate-100 dark:border-gray-700">
               <FiShield className="text-violet-500 text-lg" />
-              <h3 className="font-semibold text-slate-800 dark:text-white text-base">Admin Account</h3>
+              <h3 className="font-semibold text-slate-800 dark:text-white text-base">{t("admin_account")}</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <Input label="First Name" required placeholder="First Name" value={form.adminFirstName} onChange={(e) => set("adminFirstName", (e.target as HTMLInputElement).value)} error={errors.adminFirstName} />
-              <Input label="Last Name" placeholder="Last Name" value={form.adminLastName ?? ""} onChange={(e) => set("adminLastName", (e.target as HTMLInputElement).value)} />
-              <Input label="Admin Email" type="email" required placeholder="admin@company.io" value={form.adminEmail} onChange={(e) => set("adminEmail", (e.target as HTMLInputElement).value)} error={errors.adminEmail} />
-              <Input label="Admin Phone" required placeholder="+913009876543" value={form.adminPhone} onChange={(e) => set("adminPhone", (e.target as HTMLInputElement).value)} error={errors.adminPhone} />
+              <Input label={t("first_name")} required placeholder={t("first_name")} value={form.adminFirstName} onChange={(e) => set("adminFirstName", (e.target as HTMLInputElement).value)} error={errors.adminFirstName} />
+              <Input label={t("last_name")} placeholder={t("last_name")} value={form.adminLastName ?? ""} onChange={(e) => set("adminLastName", (e.target as HTMLInputElement).value)} />
+              <Input label={t("admin_email")} type="email" required placeholder={t("admin_company_io")} value={form.adminEmail} onChange={(e) => set("adminEmail", (e.target as HTMLInputElement).value)} error={errors.adminEmail} />
+              <Input label={t("admin_phone")} required placeholder="+913009876543" value={form.adminPhone} onChange={(e) => set("adminPhone", (e.target as HTMLInputElement).value)} error={errors.adminPhone} />
               <div className="md:col-span-2">
-                <Input label="Password" type="password" required placeholder="Min 8 chars, upper, lower, digit, special" value={form.password} onChange={(e) => set("password", (e.target as HTMLInputElement).value)} error={errors.password} />
+                <Input label={t("password_2")} type="password" required placeholder={t("min_8_chars_upper_lower_digit")} value={form.password} onChange={(e) => set("password", (e.target as HTMLInputElement).value)} error={errors.password} />
               </div>
             </div>
           </section>
 
           <div className="flex justify-end">
             <button onClick={handleNext} className="flex items-center gap-2 px-6 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-medium text-sm transition-colors">
-              Next: Select Plan <FiArrowRight />
+              {t("next_select_plan")} <FiArrowRight />
             </button>
           </div>
         </div>
@@ -333,8 +335,8 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-semibold text-slate-800 dark:text-white">Choose a Subscription Plan</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Optional — you can assign a plan later</p>
+              <h3 className="font-semibold text-slate-800 dark:text-white">{t("choose_a_subscription_plan")}</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{t("optional_you_can_assign_a_plan")}</p>
             </div>
             <div className="flex items-center gap-1 bg-slate-100 dark:bg-gray-700 p-1 rounded-xl">
               {[BILLING_CYCLE.MONTHLY, BILLING_CYCLE.YEARLY].map((cycle) => (
@@ -349,8 +351,8 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
           <button onClick={() => set("planId", undefined)} className={`w-full text-left px-5 py-4 rounded-2xl border-2 transition-all ${!form.planId ? "border-violet-500 bg-violet-50 dark:bg-violet-900/10" : "border-slate-200 dark:border-gray-700 hover:border-slate-300 dark:hover:border-gray-600"}`}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-semibold text-slate-800 dark:text-white text-sm">No Plan — Assign Later</p>
-                <p className="text-xs text-gray-400 mt-0.5">Create the company first, add subscription later</p>
+                <p className="font-semibold text-slate-800 dark:text-white text-sm">{t("no_plan_assign_later")}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{t("create_the_company_first_add_subscription")}</p>
               </div>
               <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${!form.planId ? "border-violet-500 bg-violet-500" : "border-slate-300 dark:border-gray-600"}`}>
                 {!form.planId && <FiCheck className="text-white text-xs" />}
@@ -359,17 +361,18 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
           </button>
 
           {planData.length === 0 ? (
-            <div className="py-12 text-center text-gray-400 text-sm">No active plans available</div>
+            <div className="py-12 text-center text-gray-400 text-sm">{t("no_active_plans_available")}</div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {planData.map((plan) => {
+  const { t } = useTranslation();
                 const sym = currencySymbol[plan.currency] ?? "$";
                 const { final, saved } = getDiscountedPrice(plan, form.billingCycle ?? BILLING_CYCLE.MONTHLY);
                 const isSelected = form.planId === plan.id;
                 const isFeatured = plan.trial_days > 0;
                 return (
                   <button key={plan.id} onClick={() => set("planId", plan.id)} className={`relative text-left rounded-2xl border-2 p-5 transition-all duration-200 ${isSelected ? "border-violet-500 bg-violet-50 dark:bg-violet-900/10 shadow-lg shadow-violet-100 dark:shadow-violet-900/20" : "border-slate-200 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-700 bg-white dark:bg-gray-800"}`}>
-                    {isFeatured && (<div className="absolute -top-2.5 left-4"><span className="flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 bg-amber-400 text-amber-900 rounded-full"><FiStar className="text-[10px]" /> {plan.trial_days}d FREE TRIAL</span></div>)}
+                    {isFeatured && (<div className="absolute -top-2.5 left-4"><span className="flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 bg-amber-400 text-amber-900 rounded-full"><FiStar className="text-[10px]" /> {plan.trial_days}{t("d_free_trial")}</span></div>)}
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <p className="font-bold text-slate-900 dark:text-white capitalize text-base">{plan.name}</p>
@@ -384,7 +387,7 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
                         <span className="text-2xl font-black text-slate-900 dark:text-white">{sym}{final}</span>
                         <span className="text-xs text-gray-400 mb-1">/{form.billingCycle === BILLING_CYCLE.MONTHLY ? "mo" : "yr"}</span>
                       </div>
-                      {saved > 0 && (<span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">You save {sym}{saved} ({plan.discount}{plan.discountType === DISCOUNT_TYPE.PERCENTAGE ? "%" : " off"})</span>)}
+                      {saved > 0 && (<span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">{t("you_save")} {sym}{saved} ({plan.discount}{plan.discountType === DISCOUNT_TYPE.PERCENTAGE ? "%" : " off"})</span>)}
                     </div>
                     {plan.features && plan.features.length > 0 && (
                       <ul className="space-y-1.5 border-t border-slate-100 dark:border-gray-700 pt-3">
@@ -394,7 +397,7 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
                             <span className="Capitalize">{typeof f.feature === "object" && f.feature !== null && "name" in f.feature ? (f.feature as { name: string }).name : "Feature"}{f.is_unlimited ? " — Unlimited" : f.limit ? ` — up to ${f.limit}` : ""}</span>
                           </li>
                         ))}
-                        {plan.features.length > 4 && (<li className="text-xs text-gray-400 pl-4">+{plan.features.length - 4} more</li>)}
+                        {plan.features.length > 4 && (<li className="text-xs text-gray-400 pl-4">+{plan.features.length - 4} {t("more")}</li>)}
                       </ul>
                     )}
                   </button>
@@ -423,13 +426,13 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
 
           <div className="flex items-center justify-between pt-2">
             <button onClick={() => setStep(0)} className="flex items-center gap-2 px-5 py-2.5 border border-slate-200 dark:border-gray-700 text-slate-600 dark:text-gray-300 rounded-xl font-medium text-sm hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">
-              <FiArrowLeft /> Back
+              <FiArrowLeft /> {t("back")}
             </button>
             <button onClick={handleSubmit} disabled={isSubmitting} className="flex items-center gap-2 px-7 py-2.5 bg-violet-600 hover:bg-violet-700 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-xl font-medium text-sm transition-colors">
               {isSubmitting ? (
-                <><svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" /><path fill="currentColor" className="opacity-75" d="M4 12a8 8 0 018-8v8z" /></svg>Creating...</>
+                <><svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" /><path fill="currentColor" className="opacity-75" d="M4 12a8 8 0 018-8v8z" /></svg>{t("creating_2")}</>
               ) : (
-                <>Create Company <FiArrowRight /></>
+                <>{t("create_company")} <FiArrowRight /></>
               )}
             </button>
           </div>
@@ -449,10 +452,10 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
               </div>
 
               <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                Verify Admin Email
+                {t("verify_admin_email")}
               </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                We sent a 6-digit code to
+                {t("we_sent_a_6_digit_code")}
               </p>
               <p className="text-sm font-semibold text-violet-600 dark:text-violet-400 mb-8">
                 {form.adminEmail}
@@ -492,32 +495,32 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
                 className="w-full flex items-center justify-center gap-2 py-3 bg-violet-600 hover:bg-violet-700 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-xl font-semibold text-sm transition-colors mt-4"
               >
                 {isVerifying ? (
-                  <><svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" /><path fill="currentColor" className="opacity-75" d="M4 12a8 8 0 018-8v8z" /></svg>Verifying...</>
+                  <><svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" /><path fill="currentColor" className="opacity-75" d="M4 12a8 8 0 018-8v8z" /></svg>{t("verifying")}</>
                 ) : (
-                  <><FiCheck /> Verify & Activate</>
+                  <><FiCheck /> {t("verify_activate")}</>
                 )}
               </button>
 
               {/* Resend */}
               <div className="mt-5 flex items-center justify-center gap-1 text-sm text-gray-500 dark:text-gray-400">
-                <span>Didn't receive it?</span>
+                <span>{t("didn't_receive_it")}</span>
                 {cooldown > 0 ? (
                   <span className="text-violet-500 dark:text-violet-400 font-medium tabular-nums">
-                    Resend in {cooldown}s
+                    {t("resend_in")} {cooldown}s
                   </span>
                 ) : (
                   <button
                     onClick={handleResend}
                     className="text-violet-600 dark:text-violet-400 font-semibold hover:underline"
                   >
-                    Resend OTP
+                    {t("resend_otp")}
                   </button>
                 )}
               </div>
 
               {/* Info note */}
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-6 bg-slate-50 dark:bg-gray-700/50 rounded-lg px-4 py-3">
-                The company and admin account are created. Verify the email to activate the account and set status to Active.
+                {t("the_company_and_admin_account_are")}
               </p>
             </div>
           </div>

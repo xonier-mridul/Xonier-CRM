@@ -7,12 +7,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNotifications } from "@/src/hooks/useNotifications";
 import { getNotificationIcon, formatTimeAgo } from "@/src/app/utils/notification.utils";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 
 interface NotificationBellProps {
   calOpen: boolean;
 }
 
 const NotificationBell: React.FC<NotificationBellProps> = ({ calOpen }) => {
+  const { t } = useTranslation();
   const [notifOpen, setNotifOpen] = useState(false);
   const {
     notifications,
@@ -73,11 +75,11 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ calOpen }) => {
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700">
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-slate-900 dark:text-white">
-                  Notifications
+                  {t("notifications")}
                 </h3>
                 {unreadCount > 0 && (
                   <span className="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 px-2 py-0.5 rounded-full font-medium">
-                    {unreadCount} new
+                    {unreadCount} {t("new")}
                   </span>
                 )}
               </div>
@@ -86,7 +88,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ calOpen }) => {
                   onClick={handleMarkAllAsRead}
                   className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
                 >
-                  <FiCheckCircle /> Mark all read
+                  <FiCheckCircle /> {t("mark_all_read")}
                 </button>
               )}
             </div>
@@ -138,7 +140,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ calOpen }) => {
                 <div className="flex flex-col items-center justify-center py-12 text-center px-4">
                   <IoMdNotificationsOutline className="text-5xl text-gray-300 dark:text-gray-600 mb-3" />
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    No notifications yet
+                    {t("no_notifications_yet")}
                   </p>
                 </div>
               ) }
@@ -148,7 +150,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ calOpen }) => {
               href="/notifications"
               className="block text-center py-3 text-sm font-medium text-blue-600 hover:bg-slate-50 dark:hover:bg-gray-700/50 border-t border-gray-100 dark:border-gray-700 transition-colors"
             >
-              View all notifications →
+              {t("view_all_notifications")}
             </Link>
           </motion.div>
         )}

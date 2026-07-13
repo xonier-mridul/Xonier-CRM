@@ -26,8 +26,10 @@ import { FaCalendarAlt, FaSearch } from 'react-icons/fa'
 import ConfirmPopup from '@/src/components/ui/ConfirmPopup'
 import { usePermissions } from '@/src/hooks/usePermissions'
 import Link from 'next/link'
+import { useTranslation } from "react-i18next";
 
 const Page = (): JSX.Element => {
+  const { t } = useTranslation();
   const [teamData, setTeamData] = useState<Team | null>(null)
   const [err, setErr] = useState<string | string[]>("")
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -146,14 +148,14 @@ const Page = (): JSX.Element => {
           <div className="flex justify-center mb-4">
             <FaSearch className="text-6xl text-gray-300 dark:text-gray-600" />
           </div>
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Team Not Found</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">The team you're looking for doesn't exist or has been removed.</p>
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">{t("team_not_found")}</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">{t("the_team_you're_looking_for_doesn't")}</p>
           <button
             onClick={() => router.back()}
             className="inline-flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
           >
             <IoArrowBack />
-            Go Back
+            {t("go_back")}
           </button>
         </div>
       </div>
@@ -174,7 +176,7 @@ const Page = (): JSX.Element => {
                 {teamData.isDefault && (
                   <span className="px-3 py-1 text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 rounded-full flex items-center gap-1">
                     <IoShieldCheckmark className="w-3 h-3" />
-                    Default Team
+                    {t("default_team")}
                   </span>
                 )}
                 <span className={`px-3 py-1 text-xs font-medium rounded-full flex items-center gap-1 ${
@@ -185,12 +187,12 @@ const Page = (): JSX.Element => {
                   {teamData.isActive ? (
                     <>
                       <IoCheckmarkCircle className="w-3 h-3" />
-                      Active
+                      {t("active")}
                     </>
                   ) : (
                     <>
                       <IoCloseCircle className="w-3 h-3" />
-                      Inactive
+                      {t("inactive")}
                     </>
                   )}
                 </span>
@@ -200,7 +202,7 @@ const Page = (): JSX.Element => {
           </div>
           <Link href={`/teams/update/${teamData.id}`} className="px-5 group py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium flex items-center  gap-2">
             <IoSettings className="w-4 h-4 group-hover:rotate-90" />
-            Edit Team
+            {t("edit_team")}
           </Link>
         </div>
       </div>
@@ -233,7 +235,7 @@ const Page = (): JSX.Element => {
           <div className="lg:col-span-2 space-y-6">
             
             <div className="bg-white dark:bg-gray-700 rounded-xl border border-slate-200 dark:border-gray-700 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">About</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t("about")}</h2>
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 {teamData.description || 'No description available for this team.'}
               </p>
@@ -244,7 +246,7 @@ const Page = (): JSX.Element => {
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl border border-blue-200 dark:border-blue-800 p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-1">Total Members</p>
+                    <p className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-1">{t("total_members")}</p>
                     <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">{teamData.members.length}</p>
                   </div>
                   <div className="w-12 h-12 bg-blue-600 dark:bg-blue-500 rounded-lg flex items-center justify-center">
@@ -256,7 +258,7 @@ const Page = (): JSX.Element => {
               <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-xl border border-purple-200 dark:border-purple-800 p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-1">Managers</p>
+                    <p className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-1">{t("managers")}</p>
                     <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">{teamData.manager.length}</p>
                   </div>
                   <div className="w-12 h-12 bg-purple-600 dark:bg-purple-500 rounded-lg flex items-center justify-center">
@@ -268,7 +270,7 @@ const Page = (): JSX.Element => {
 
             {/* Managers Section */}
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Team Managers</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t("team_managers")}</h2>
               <div className="space-y-3">
                 {teamData.manager.length > 0 ? (
                   teamData.manager.map((manager) => (
@@ -282,12 +284,12 @@ const Page = (): JSX.Element => {
                       </div>
                       <span className="px-3 py-1 text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 rounded-full flex items-center gap-1">
                         <IoShieldCheckmark className="w-3 h-3" />
-                        Manager
+                        {t("manager")}
                       </span>
                     </Link>
                   ))
                 ) : (
-                  <p className="text-gray-500 dark:text-gray-400 text-sm text-center py-4">No managers assigned</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm text-center py-4">{t("no_managers_assigned")}</p>
                 )}
               </div>
             </div>
@@ -297,19 +299,19 @@ const Page = (): JSX.Element => {
           <div className="space-y-6">
             {/* Details Card */}
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Details</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t("details")}</h2>
               <div className="space-y-4">
                 <div>
                   <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-2">
                     <MdCategory className="w-4 h-4" />
-                    Category
+                    {t("category")}
                   </p>
                   {/* <p className="text-gray-900 dark:text-white font-medium pl-6">{teamData?.category?.name}</p> */}
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-2">
                     <FaCalendarAlt className="w-4 h-4" />
-                    Created
+                    {t("created")}
                   </p>
                   <p className="text-gray-900 dark:text-white pl-6">{formatDate(teamData.createdAt)}</p>
                 </div>
@@ -317,13 +319,13 @@ const Page = (): JSX.Element => {
                   <div>
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-2">
                       <FaCalendarAlt className="w-4 h-4" />
-                      Last Updated
+                      {t("last_updated")}
                     </p>
                     <p className="text-gray-900 dark:text-white pl-6">{formatDate(teamData.updatedAt)}</p>
                   </div>
                 )}
                 <div>
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Created By</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">{t("created_by")}</p>
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white text-xs font-semibold">
                       {getInitials(teamData.createdBy)}
@@ -339,20 +341,20 @@ const Page = (): JSX.Element => {
 
             {/* Quick Actions */}
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t("quick_actions")}</h2>
               <div className="space-y-2">
                 <Link href={`/teams/update/${teamData.id}`} className="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-lg transition-colors flex items-center gap-2">
                   <IoPersonAdd className="w-4 h-4" />
-                  Add Members
+                  {t("add_members")}
                 </Link>
                 
                 <button className="w-full px-4 py-2 text-left text-sm font-medium cursor-not-allowed text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors flex items-center gap-2">
                   <IoBarChart className="w-4 h-4" />
-                  View Analytics
+                  {t("view_analytics")}
                 </button>
                 <button className="w-full px-4 py-2 text-left text-sm font-medium text-red-600 disabled:text-red-400 disabled:cursor-not-allowed dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors cursor-pointer flex items-center gap-2" onClick={()=>handleDelete(teamData.id, teamData.name)} disabled={!hasPermission("team:delete")}>
                   <IoTrash className="w-4 h-4" />
-                  Delete Team
+                  {t("delete_team")}
                 </button>
               </div>
             </div>
@@ -364,10 +366,10 @@ const Page = (): JSX.Element => {
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">All Members ({teamData.members.length})</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t("all_members")}{teamData.members.length})</h2>
               <Link href={`/teams/update/${teamData.id}`} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors font-medium flex items-center gap-2">
                 <IoPersonAdd className="w-4 h-4" />
-                Add Member
+                {t("add_member_2")}
               </Link>
             </div>
           </div>
@@ -392,7 +394,7 @@ const Page = (): JSX.Element => {
                       {teamData.manager.some(m => m.id === member.id) && (
                         <span className="px-3 py-1 text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 rounded-full flex items-center gap-1">
                           <IoShieldCheckmark className="w-3 h-3" />
-                          Manager
+                          {t("manager")}
                         </span>
                       )}
                       <span className={`px-3 py-1 text-xs font-medium rounded-full ${
@@ -412,7 +414,7 @@ const Page = (): JSX.Element => {
             ) : (
               <div className="p-12 text-center">
                 <IoPeople className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-500 dark:text-gray-400">No members in this team yet</p>
+                <p className="text-gray-500 dark:text-gray-400">{t("no_members_in_this_team_yet")}</p>
               </div>
             )}
           </div>
@@ -424,8 +426,8 @@ const Page = (): JSX.Element => {
           <div className="flex justify-center mb-4">
             <IoBarChart className="text-6xl text-gray-300 dark:text-gray-600" />
           </div>
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Activity Timeline</h3>
-          <p className="text-gray-600 dark:text-gray-400">Activity tracking coming soon. This will show team events, changes, and updates.</p>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t("activity_timeline")}</h3>
+          <p className="text-gray-600 dark:text-gray-400">{t("activity_tracking_coming_soon_this_will")}</p>
         </div>
       )}
     </div>

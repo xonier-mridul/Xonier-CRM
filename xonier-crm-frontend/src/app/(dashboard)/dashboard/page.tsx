@@ -17,6 +17,7 @@ import {
   ArrowUpRight, ArrowDownRight, Shield, UserCheck,
   Briefcase, FileText, Phone, ChevronRight,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -269,6 +270,7 @@ function StatCard({ label, value, sub, icon: Icon, color, trend, prefix = "", su
   label: string; value: number; sub?: string; icon: any; color: string;
   trend?: { val: number; up: boolean }; prefix?: string; suffix?: string;
 }) {
+  const { t } = useTranslation();
   const v = useCountUp(value);
 const gradientId = `gradient-${label.replace(/\s+/g, '-')}`;
 const trendPaths = [
@@ -320,19 +322,11 @@ const trendPath =
         {trend && (
           <div className={`flex items-center gap-1 mt-3 text-xs font-semibold ${trend.up ? "text-emerald-400" : "text-red-400"}`}>
             {trend.up ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
-            {trend.val}% vs last period
+            {trend.val}{t("vs_last_period")}
           </div>
 
         )}
-  
-
         </div>
-
-        
-        
-     
-       
-      
       </div>
        <div className="absolute bottom-0 left-0 w-full h-14 pointer-events-none overflow-hidden">
   <svg
@@ -426,7 +420,7 @@ function FilterBar({ current, onChange }: { current: DashboardFilter; onChange: 
     <div className="flex items-center gap-0.5 bg-slate-50 border-slate-200 dark:bg-slate-800/60 border dark:border-slate-700/50 rounded-xl p-1">
       {FILTER_OPTIONS.map((o) => (
         <button key={o.value} onClick={() => onChange(o.value as DashboardFilter)}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${current === o.value ? "bg-indigo-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"}`}>
+          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${current === o.value ? "bg-cyan-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"}`}>
           {o.label}
         </button>
       ))}
@@ -437,22 +431,23 @@ function FilterBar({ current, onChange }: { current: DashboardFilter; onChange: 
 // ── Shared Cards ───────────────────────────────────────────────────────────────
 
 function LeadsCard({ leads }: { leads: LeadStats }) {
+  const { t } = useTranslation();
   const wonPct = leads.total > 0 ? (leads.won / leads.total) * 100 : 0;
   return (
-    <Card title="Lead Pipeline" sub="Status and conversion" icon={Target}>
+    <Card title={t("lead_pipeline")} sub={t("Status and conversion")} icon={Target}>
       <div className="flex items-center gap-4 mb-4">
         <div className="relative flex-shrink-0">
           <Ring pct={wonPct} color="#10b981" size={72} />
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="font-mono text-slate-500 text-xs font-bold dark:text-white">{wonPct.toFixed(0)}%</span>
-            <span className="text-[9px] text-slate-400">won</span>
+            <span className="text-[9px] text-slate-400">{t("won_2")}</span>
           </div>
         </div>
         <div className="flex-1 flex flex-col gap-1.5">
-          <MetricRow label="Won" value={leads.won} total={leads.total} color="#10b981" />
-          <MetricRow label="Active" value={leads.active} total={leads.total} color="#6366f1" />
-          {leads.lost !== undefined && <MetricRow label="Lost" value={leads.lost} total={leads.total} color="#ef4444" />}
-          {leads.inDeal > 0 && <MetricRow label="In Deal" value={leads.inDeal} total={leads.total} color="#f59e0b" />}
+          <MetricRow label={t("won")} value={leads.won} total={leads.total} color="#10b981" />
+          <MetricRow label={t("active")} value={leads.active} total={leads.total} color="#6366f1" />
+          {leads.lost !== undefined && <MetricRow label={t("lost")} value={leads.lost} total={leads.total} color="#ef4444" />}
+          {leads.inDeal > 0 && <MetricRow label={t("in_deal")} value={leads.inDeal} total={leads.total} color="#f59e0b" />}
         </div>
       </div>
       <div className="grid grid-cols-3 gap-2 pt-3 border-t border-slate-200 dark:border-slate-700/40">
@@ -517,14 +512,15 @@ function LeadsCard({ leads }: { leads: LeadStats }) {
 }
 
 function DealsCard({ deals }: { deals: DealStats }) {
+  const { t } = useTranslation();
   const closedPct = deals.total > 0 ? (deals.closed / deals.total) * 100 : 0;
   const periodRevenue = deals.periodRevenue ?? deals.rangeRevenue ?? 0;
   return (
-    <Card title="Deal Revenue" sub="Financial performance" icon={DollarSign}>
+    <Card title={t("deal_revenue")} sub={t("Financial performance")} icon={DollarSign}>
       <div className="mb-4">
-        <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Total Revenue</p>
+        <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">{t("total_revenue")}</p>
         <p className="font-mono text-4xl font-bold text-emerald-400">{fmtMoney(deals.totalRevenue ?? 0)}</p>
-        <p className="text-xs text-slate-500 mt-1">Period: <span className="text-emerald-400 font-semibold">{fmtMoney(periodRevenue)}</span></p>
+        <p className="text-xs text-slate-500 mt-1">{t("period")} <span className="text-emerald-400 font-semibold">{fmtMoney(periodRevenue)}</span></p>
       </div>
       <div className="grid grid-cols-4 rounded-xl py-2  border border-slate-200 mb-3 dark:border-slate-700">
         {[
@@ -541,7 +537,7 @@ function DealsCard({ deals }: { deals: DealStats }) {
       </div>
       <div className="pt-3 border-t border-slate-200/40 dark:border-slate-700/40">
         <div className="flex justify-between text-xs mb-1.5">
-          <span className="text-slate-500">Close Rate</span>
+          <span className="text-slate-500">{t("close_rate")}</span>
           <span className="font-mono text-emerald-400">{closedPct.toFixed(1)}%</span>
         </div>
         <div className="h-1.5 rounded-full bg-white dark:bg-slate-700/60">
@@ -553,9 +549,10 @@ function DealsCard({ deals }: { deals: DealStats }) {
 }
 
 function PipelineChart({ pipeline }: { pipeline: PipelineStage[] }) {
+  const { t } = useTranslation();
   const hasData = pipeline.some((s) => s.count > 0);
   return (
-    <Card title="Deal Pipeline" sub="Stage distribution" icon={Layers}>
+    <Card title={t("deal_pipeline")} sub={t("Stage distribution")} icon={Layers}>
       <div className="flex flex-col gap-2.5 mb-4">
         {pipeline.map((s) => {
           const color = PIPELINE_COLORS[s.pipeline] ?? "#6366f1";
@@ -594,7 +591,7 @@ function PipelineChart({ pipeline }: { pipeline: PipelineStage[] }) {
         </ResponsiveContainer>
       ) : (
         <div className="h-24 flex items-center justify-center">
-          <p className="text-xs text-slate-600">No deal data yet</p>
+          <p className="text-xs text-slate-600">{t("no_deal_data_yet")}</p>
         </div>
       )}
     </Card>
@@ -602,6 +599,7 @@ function PipelineChart({ pipeline }: { pipeline: PipelineStage[] }) {
 }
 
 function MonthlyTrendChart({ leads, deals }: { leads?: MonthlyTrend[]; deals?: MonthlyTrend[] }) {
+  const { t } = useTranslation();
   const allMonths = Array.from(new Set([...(leads ?? []), ...(deals ?? [])].map((d) => d.month)));
   const merged = allMonths.map((month) => ({
     month,
@@ -610,7 +608,7 @@ function MonthlyTrendChart({ leads, deals }: { leads?: MonthlyTrend[]; deals?: M
   }));
   const hasData = merged.some((m) => m.leads > 0 || m.deals > 0);
   return (
-    <Card title="Monthly Growth" sub="Leads vs deals per month" icon={BarChart3}>
+    <Card title={t("monthly_growth")} sub="Leads vs deals per month" icon={BarChart3}>
       {hasData ? (
         <ResponsiveContainer width="100%" height={200}>
           <AreaChart data={merged} margin={{ top: 5, right: 5, bottom: 0, left: 0 }}>
@@ -643,8 +641,9 @@ function MonthlyTrendChart({ leads, deals }: { leads?: MonthlyTrend[]; deals?: M
 }
 
 function RecentActivitiesCard({ activities }: { activities: RecentActivity[] }) {
+  const { t } = useTranslation();
   return (
-    <Card title="Recent Activities" sub="Latest system events" icon={Clock}>
+    <Card title={t("recent_activities")} sub="Latest system events" icon={Clock}>
       {activities.length === 0 ? (
         <EmptyState icon={Activity} message="No recent activities" />
       ) : (
@@ -681,10 +680,11 @@ function RecentActivitiesCard({ activities }: { activities: RecentActivity[] }) 
 // ── Super Admin Cards ──────────────────────────────────────────────────────────
 
 function SACompaniesCard({ companies }: { companies: CompanyStats }) {
+  const { t } = useTranslation();
   return (
     <div className='col-span-2  h-full'>
 
-    <Card title="Companies" sub="Platform company status" icon={Building2}>
+    <Card title={t("companies")} sub="Platform company status" icon={Building2}>
       <div className="grid grid-cols-2 gap-2 mb-4 text-center justify-center mt-5">
         {[
           { label: "Total", value: companies.total, color: "#6366f1" ,border:'border border-indigo-200 hover:border-indigo-400'},
@@ -700,9 +700,9 @@ function SACompaniesCard({ companies }: { companies: CompanyStats }) {
         ))}
       </div>
       <div className="flex flex-col gap-2 mt-5">
-        <MetricRow label="Active" value={companies.active} total={companies.total + companies.deleted} color="#10b981" />
-        <MetricRow label="Pending" value={companies.pending} total={companies.total + companies.deleted} color="#f59e0b" />
-        <MetricRow label="Deleted" value={companies.deleted} total={companies.total + companies.deleted} color="#6b7280" />
+        <MetricRow label={t("active")} value={companies.active} total={companies.total + companies.deleted} color="#10b981" />
+        <MetricRow label={t("pending")} value={companies.pending} total={companies.total + companies.deleted} color="#f59e0b" />
+        <MetricRow label={t("deleted")} value={companies.deleted} total={companies.total + companies.deleted} color="#6b7280" />
       </div>
     </Card>
     </div>
@@ -711,6 +711,7 @@ function SACompaniesCard({ companies }: { companies: CompanyStats }) {
 }
 
 function SARevenueCard({ subs, revenue }: { subs: SubscriptionStats; revenue: RevenueStats }) {
+  const { t } = useTranslation();
   const data = [
   { name: "Enterprise", value: 45 },
   { name: "Pro", value: 30 },
@@ -721,12 +722,12 @@ function SARevenueCard({ subs, revenue }: { subs: SubscriptionStats; revenue: Re
 const COLORS = ["#8b5cf6", "#3b82f6", "#10b981", "#f59e0b"];
   return (
     <div className='col-span-2'>
-    <Card title="Revenue" sub="Subscription financials" icon={DollarSign}>
+    <Card title={t("revenue")} sub="Subscription financials" icon={DollarSign}>
       <div className="mb-4 grid grid-cols-2   ">
            <div className="flex flex-col justify-center">
         <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">MRR</p>
         <p className="font-mono text-4xl font-bold text-emerald-400">{fmtMoney(revenue.mrr)}</p>
-        <p className="text-xs text-slate-500 mt-1">ARR: <span className="text-emerald-400 font-semibold">{fmtMoney(revenue.arr)}</span></p>
+        <p className="text-xs text-slate-500 mt-1">{t("arr")} <span className="text-emerald-400 font-semibold">{fmtMoney(revenue.arr)}</span></p>
         </div>
         <div>
           <div className="relative h-[100px]">
@@ -760,7 +761,7 @@ const COLORS = ["#8b5cf6", "#3b82f6", "#10b981", "#f59e0b"];
             {fmtMoney(subs.totalRevenue)}
           </span>
           <span className="text-[10px] text-slate-500">
-            Total Revenue
+            {t("total_revenue")}
           </span>
         </div>
       </div>
@@ -784,11 +785,11 @@ const COLORS = ["#8b5cf6", "#3b82f6", "#10b981", "#f59e0b"];
       </div>
       <div className="flex flex-col gap-1.5 pt-3 border-t border-slate-300 dark:border-slate-700/40">
         <div className="flex justify-between text-xs">
-          <span className="text-slate-500">Trial</span>
+          <span className="text-slate-500">{t("trial")}</span>
           <span className="font-mono font-bold text-amber-400">{subs.trial}</span>
         </div>
         <div className="flex justify-between text-xs">
-          <span className="text-slate-500">Canceled</span>
+          <span className="text-slate-500">{t("canceled")}</span>
           <span className="font-mono font-bold text-red-400">{subs.canceled}</span>
         </div>
       </div>
@@ -798,10 +799,12 @@ const COLORS = ["#8b5cf6", "#3b82f6", "#10b981", "#f59e0b"];
 }
 
 function SAPlansCard({ plans }: { plans: PlanStat[] }) {
+  const { t } = useTranslation();
   return (
-    <Card title="Plans" sub="Subscription plan distribution" icon={Package}>
+    <Card title={t("plans")} sub="Subscription plan distribution" icon={Package}>
       <div className="flex flex-col gap-2">
         {plans.slice(0, 5).map((plan, i) => {
+  const { t } = useTranslation();
           const color = CHART_COLORS[i % CHART_COLORS.length];
           return (
             <div key={plan.planId} className="flex items-center gap-3 p-2.5 rounded-xl dark:bg-slate-700/30 border border-slate-200 hover:border-slate-300 dark:border-slate-700/40 dark:hover:border-slate-600 transition-all group">
@@ -811,11 +814,11 @@ function SAPlansCard({ plans }: { plans: PlanStat[] }) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-slate-400 dark:text-slate-300 truncate">{plan.name}</p>
-                <p className="text-[10px] text-slate-600">${plan.monthlyPrice}/mo · ${plan.yearlyPrice}/yr</p>
+                <p className="text-[10px] text-slate-600">${plan.monthlyPrice}{t("mo")}{plan.yearlyPrice}/yr</p>
               </div>
               <div className="text-right">
                 <p className="text-xs font-mono font-bold" style={{ color }}>{plan.activeSubscriptions}</p>
-                <p className="text-[10px] text-slate-600">subs</p>
+                <p className="text-[10px] text-slate-600">{t("subs")}</p>
               </div>
               <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${plan.status === "active" ? "bg-emerald-500/15 text-emerald-400" : "bg-red-500/15 text-red-400"}`}>
                 {plan.status}
@@ -829,8 +832,9 @@ function SAPlansCard({ plans }: { plans: PlanStat[] }) {
 }
 
 function SAChurnCard({ churn }: { churn: ChurnStats }) {
+  const { t } = useTranslation();
   return (
-    <Card title="Churn Analysis" sub="Subscription health" icon={TrendingDown}>
+    <Card title={t("churn_analysis")} sub="Subscription health" icon={TrendingDown}>
       <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
         {[
           { label: "Churn Rate", value: `${churn.churnRate.toFixed(1)}%`, color: "#6366f1", bg: "from-indigo-500/10 to-blue-500/5",border:'border border-indigo-200 hover:border-indigo-400' },
@@ -860,8 +864,9 @@ function SAChurnCard({ churn }: { churn: ChurnStats }) {
             }
 
 function SALatestCompanies({ companies }: { companies: LatestCompany[] }) {
+  const { t } = useTranslation();
   return (
-    <Card title="Latest Companies" sub="5 most recently registered" icon={Building2}>
+    <Card title={t("latest_companies")} sub="5 most recently registered" icon={Building2}>
       <div className="flex flex-col gap-2">
         {companies.map((c, i) => {
           const color = STATUS_COLORS[c.status] ?? "#6b7280";
@@ -886,9 +891,10 @@ function SALatestCompanies({ companies }: { companies: LatestCompany[] }) {
 }
 
 function SATopCompanies({ companies }: { companies: TopCompany[] }) {
+  const { t } = useTranslation();
   const max = Math.max(...companies.map((c) => c.userCount), 1);
   return (
-    <Card title="Top Companies by Users" sub="Most active tenants" icon={Award}>
+    <Card title={t("top_companies_by_users")} sub="Most active tenants" icon={Award}>
       <div className="flex flex-col gap-3">
         {companies.map((c, i) => {
           const color = CHART_COLORS[i % CHART_COLORS.length];
@@ -915,12 +921,13 @@ function SATopCompanies({ companies }: { companies: TopCompany[] }) {
 }
 
 function SAActivityCard({ activity }: { activity: ActivityStats }) {
+  const { t } = useTranslation();
   return (
-    <Card title="Platform Activity" sub="System-wide action breakdown" icon={Activity}>
+    <Card title={t("platform_activity")} sub="System-wide action breakdown" icon={Activity}>
       <div className="grid grid-cols-2 gap-4">
         {activity.byAction && (
           <div>
-            <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-3">By Action</p>
+            <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-3">{t("by_action")}</p>
             <div className="flex flex-col gap-2">
               {activity.byAction.map((a, i) => {
                 const color = ACTION_COLORS[a.action] ?? CHART_COLORS[i % CHART_COLORS.length];
@@ -942,7 +949,7 @@ function SAActivityCard({ activity }: { activity: ActivityStats }) {
           </div>
         )}
         <div>
-          <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-3">By Entity</p>
+          <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-3">{t("by_entity")}</p>
           <div className="flex flex-col gap-2">
             {activity.byEntity.map((e, i) => {
               const color = CHART_COLORS[i % CHART_COLORS.length];
@@ -964,7 +971,7 @@ function SAActivityCard({ activity }: { activity: ActivityStats }) {
         </div>
       </div>
       <div className="mt-4 pt-4 border-t border-slate-300 dark:border-slate-700/40 flex items-center justify-between">
-        <span className="text-xs text-slate-500">Total actions</span>
+        <span className="text-xs text-slate-500">{t("total_actions")}</span>
         <span className="text-sm font-mono font-bold text-indigo-400">{activity.total.toLocaleString()}</span>
       </div>
     </Card>
@@ -972,6 +979,7 @@ function SAActivityCard({ activity }: { activity: ActivityStats }) {
 }
 
 function SAMonthlyTrendChart({ companies, users }: { companies: MonthlyTrend[]; users: MonthlyTrend[] }) {
+  const { t } = useTranslation();
   const allMonths = Array.from(new Set([...companies, ...users].map((d) => d.month)));
   const merged = allMonths.map((m) => ({
     month: m,
@@ -979,7 +987,7 @@ function SAMonthlyTrendChart({ companies, users }: { companies: MonthlyTrend[]; 
     users: users.find((u) => u.month === m)?.count ?? 0,
   }));
   return (
-    <Card title="Platform Growth" sub="Companies and users per month" icon={BarChart3}>
+    <Card title={t("platform_growth")} sub="Companies and users per month" icon={BarChart3}>
       <ResponsiveContainer width="100%" height={200}>
         <AreaChart data={merged} margin={{ top: 5, right: 5, bottom: 0, left: 0 }}>
           <defs>
@@ -1006,8 +1014,9 @@ function SAMonthlyTrendChart({ companies, users }: { companies: MonthlyTrend[]; 
 }
 
 function SARevenueTrendChart({ trend }: { trend: { month: string; revenue: number; subscriptions: number }[] }) {
+  const { t } = useTranslation();
   return (
-    <Card title="Revenue Trend" sub="Monthly revenue and subscriptions" icon={DollarSign}>
+    <Card title={t("revenue_trend")} sub="Monthly revenue and subscriptions" icon={DollarSign}>
       <ResponsiveContainer width="100%" height={200}>
         <BarChart data={trend} margin={{ top: 5, right: 5, bottom: 0, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
@@ -1023,9 +1032,10 @@ function SARevenueTrendChart({ trend }: { trend: { month: string; revenue: numbe
 }
 
 function BreakdownsSection({ breakdowns }: { breakdowns: BreakdownStats }) {
+  const { t } = useTranslation();
   return (
     <div className="grid md:grid-cols-3 gap-4">
-      <Card title="By Industry" sub="Companies grouped" icon={Globe}>
+      <Card title={t("by_industry")} sub="Companies grouped" icon={Globe}>
         <div className="flex flex-col gap-2">
           {breakdowns.companiesByIndustry.map((i, idx) => {
             const color = CHART_COLORS[idx % CHART_COLORS.length];
@@ -1044,7 +1054,7 @@ function BreakdownsSection({ breakdowns }: { breakdowns: BreakdownStats }) {
           })}
         </div>
       </Card>
-      <Card title="Billing Cycles" sub="Active subscription cycles" icon={PieIcon}>
+      <Card title={t("billing_cycles")} sub="Active subscription cycles" icon={PieIcon}>
         <div className="flex flex-col gap-3">
           {breakdowns.subscriptionsByBillingCycle.map((c, i) => {
             const color = i === 0 ? "#6366f1" : "#10b981";
@@ -1069,7 +1079,7 @@ function BreakdownsSection({ breakdowns }: { breakdowns: BreakdownStats }) {
           })}
         </div>
       </Card>
-      <Card title="By Country" sub="Geographic distribution" icon={Globe}>
+      <Card title={t("by_country")} sub="Geographic distribution" icon={Globe}>
         <div className="flex flex-col gap-2">
           {breakdowns.companiesByCountry.map((c, i) => {
             const color = CHART_COLORS[i % CHART_COLORS.length];
@@ -1095,8 +1105,9 @@ function BreakdownsSection({ breakdowns }: { breakdowns: BreakdownStats }) {
 // ── Company Admin Cards ────────────────────────────────────────────────────────
 
 function UsersCard({ users }: { users: UserStats }) {
+  const { t } = useTranslation();
   return (
-    <Card title="Team Overview" sub="User distribution" icon={Users}>
+    <Card title={t("team_overview")} sub="User distribution" icon={Users}>
       <div className="grid grid-cols-4 gap-2 mb-4">
         {[
           { label: "Total", value: users.total, color: "#6366f1" ,style: `
@@ -1152,27 +1163,28 @@ function UsersCard({ users }: { users: UserStats }) {
         ))}
       </div>
       <div className="flex flex-col gap-2">
-        <MetricRow label="Active" value={users.active} total={users.total} color="#10b981" />
-        <MetricRow label="Inactive" value={users.inactive} total={users.total} color="#f59e0b" />
-        <MetricRow label="Suspended" value={users.suspended ?? 0} total={users.total} color="#ef4444" />
+        <MetricRow label={t("active")} value={users.active} total={users.total} color="#10b981" />
+        <MetricRow label={t("inactive")} value={users.inactive} total={users.total} color="#f59e0b" />
+        <MetricRow label={t("suspended")} value={users.suspended ?? 0} total={users.total} color="#ef4444" />
       </div>
       <div className="mt-3 pt-3 border-t border-slate-700/40 flex justify-between text-xs">
-        <span className="text-slate-500">This month</span>
-        <span className="font-bold text-indigo-400">+{users.thisMonth ?? 0} new</span>
+        <span className="text-slate-500">{t("this_month_2")}</span>
+        <span className="font-bold text-indigo-400">+{users.thisMonth ?? 0} {t("new")}</span>
       </div>
     </Card>
   );
 }
 
 function ConversionCard({ conv }: { conv: ConversionRate }) {
+  const { t } = useTranslation();
   return (
-    <Card title="Conversion Funnel" sub="Lead-to-won rate" icon={TrendingUp}>
+    <Card title={t("conversion_funnel")} sub="Lead-to-won rate" icon={TrendingUp}>
       <div className="flex items-center justify-center mb-5">
         <div className="relative">
           <Ring pct={conv.conversionRate} color="#6366f1" size={110} />
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="font-mono text-slate-400 text-2xl font-bold dark:text-white">{conv.conversionRate.toFixed(1)}%</span>
-            <span className="text-[10px] text-slate-500">conversion</span>
+            <span className="text-[10px] text-slate-500">{t("conversion_2")}</span>
           </div>
         </div>
       </div>
@@ -1194,11 +1206,12 @@ function ConversionCard({ conv }: { conv: ConversionRate }) {
 }
 
 function TopPerformers({ performers }: { performers: TopPerformer[] }) {
+  const { t } = useTranslation();
   const max = Math.max(...performers.map((p) => p.wonLeads), 1);
   const medals = ["🥇", "🥈", "🥉", "4th", "5th"];
   const colors = ["#f59e0b", "#94a3b8", "#cd7c4c", "#6366f1", "#8b5cf6"];
   return (
-    <Card title="Top Performers" sub="Ranked by won leads" icon={Award}>
+    <Card title={t("top_performers")} sub="Ranked by won leads" icon={Award}>
       {performers.length === 0 ? (
         <EmptyState icon={Award} message="No performance data yet" />
       ) : (
@@ -1226,8 +1239,9 @@ function TopPerformers({ performers }: { performers: TopPerformer[] }) {
 }
 
 function TaskCard({ tasks }: { tasks: TaskStats }) {
+  const { t } = useTranslation();
   return (
-    <Card title="Task Pulse" sub="Completion metrics" icon={CheckCircle2}>
+    <Card title={t("task_pulse")} sub="Completion metrics" icon={CheckCircle2}>
       <div className="flex items-center gap-4 mb-4">
         <div className="relative flex-shrink-0">
           <Ring pct={tasks.completionRate} color="#10b981" size={72} />
@@ -1236,9 +1250,9 @@ function TaskCard({ tasks }: { tasks: TaskStats }) {
           </div>
         </div>
         <div className="flex-1">
-          <p className="text-xs text-slate-500 mb-1">Completion Rate</p>
+          <p className="text-xs text-slate-500 mb-1">{t("completion_rate_2")}</p>
           <p className="text-sm font-bold text-emerald-400">{tasks.completionRate.toFixed(1)}%</p>
-          <p className="text-xs text-slate-600 mt-1">{tasks.completed} of {tasks.total}</p>
+          <p className="text-xs text-slate-600 mt-1">{tasks.completed} {t("of")} {tasks.total}</p>
         </div>
       </div>
       <div className="grid grid-cols-3 gap-2">
@@ -1260,8 +1274,9 @@ function TaskCard({ tasks }: { tasks: TaskStats }) {
 // ── Manager-Specific Cards ─────────────────────────────────────────────────────
 
 function TeamsCard({ teams }: { teams: TeamsStats }) {
+  const { t } = useTranslation();
   return (
-    <Card title="My Teams" sub="Team overview" icon={Users}>
+    <Card title={t("my_teams")} sub="Team overview" icon={Users}>
       <div className="grid grid-cols-3 gap-3">
         {[
           { label: "Total Teams", value: teams.totalTeams, color: "#6366f1" },
@@ -1280,9 +1295,10 @@ function TeamsCard({ teams }: { teams: TeamsStats }) {
 }
 
 function MemberPerformanceCard({ members }: { members: MemberPerformance[] }) {
+  const { t } = useTranslation();
   const maxRevenue = Math.max(...members.map((m) => m.totalRevenue), 1);
   return (
-    <Card title="Member Performance" sub="Team member metrics" icon={UserCheck} className="col-span-2">
+    <Card title={t("member_performance")} sub="Team member metrics" icon={UserCheck} className="col-span-2">
       {members.length === 0 ? (
         <EmptyState icon={Users} message="No member performance data yet" />
       ) : (
@@ -1290,13 +1306,13 @@ function MemberPerformanceCard({ members }: { members: MemberPerformance[] }) {
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-700/40">
-                <th className="text-left py-2 pr-4 text-slate-500 font-semibold">Member</th>
-                <th className="text-right py-2 px-3 text-slate-500 font-semibold">Leads</th>
-                <th className="text-right py-2 px-3 text-slate-500 font-semibold">Won</th>
-                <th className="text-right py-2 px-3 text-slate-500 font-semibold">Conv%</th>
-                <th className="text-right py-2 px-3 text-slate-500 font-semibold">Deals</th>
-                <th className="text-right py-2 px-3 text-slate-500 font-semibold">Closed</th>
-                <th className="text-left py-2 pl-3 text-slate-500 font-semibold">Revenue</th>
+                <th className="text-left py-2 pr-4 text-slate-500 font-semibold">{t("member")}</th>
+                <th className="text-right py-2 px-3 text-slate-500 font-semibold">{t("leads")}</th>
+                <th className="text-right py-2 px-3 text-slate-500 font-semibold">{t("won")}</th>
+                <th className="text-right py-2 px-3 text-slate-500 font-semibold">{t("conv")}</th>
+                <th className="text-right py-2 px-3 text-slate-500 font-semibold">{t("deals")}</th>
+                <th className="text-right py-2 px-3 text-slate-500 font-semibold">{t("closed")}</th>
+                <th className="text-left py-2 pl-3 text-slate-500 font-semibold">{t("revenue")}</th>
               </tr>
             </thead>
             <tbody>
@@ -1341,15 +1357,16 @@ function MemberPerformanceCard({ members }: { members: MemberPerformance[] }) {
 }
 
 function TopPerformerCard({ performer }: { performer: MemberPerformance }) {
+  const { t } = useTranslation();
   return (
-    <Card title="Top Performer" sub="Best team member this period" icon={Award}>
+    <Card title={t("top_performer_2")} sub="Best team member this period" icon={Award}>
       <div className="flex flex-col items-center text-center py-2">
         <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold text-white mb-3"
           style={{ background: "linear-gradient(135deg, #f59e0b, #f97316)" }}>
           {(performer.firstName || "?")[0]}
         </div>
         <p className="text-sm font-bold text-slate-700 dark:text-white">{performer.firstName} {performer.lastName}</p>
-        <p className="text-[10px] text-slate-500 mb-4">Top performer</p>
+        <p className="text-[10px] text-slate-500 mb-4">{t("top_performer")}</p>
         <div className="grid grid-cols-2 gap-2 w-full">
           {[
             { label: "Won Leads", value: performer.wonLeads, color: "#10b981" },
@@ -1370,24 +1387,25 @@ function TopPerformerCard({ performer }: { performer: MemberPerformance }) {
 }
 
 function EnquiriesCard({ enquiries }: { enquiries: EnquiryStats }) {
+  const { t } = useTranslation();
   const assignedPct = enquiries.total > 0 ? (enquiries.assigned / enquiries.total) * 100 : 0;
   return (
-    <Card title="Enquiries" sub="Assignment overview" icon={Phone}>
+    <Card title={t("enquiries")} sub="Assignment overview" icon={Phone}>
       <div className="flex items-center gap-4 mb-4">
         <div className="relative flex-shrink-0">
           <Ring pct={assignedPct} color="#8b5cf6" size={72} />
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="font-mono text-xs text-slate-500 font-bold dark:text-white">{assignedPct.toFixed(0)}%</span>
-            <span className="text-[9px] text-slate-400">assigned</span>
+            <span className="text-[9px] text-slate-400">{t("assigned_2")}</span>
           </div>
         </div>
         <div className="flex-1 flex flex-col gap-1.5">
-          <MetricRow label="Assigned" value={enquiries.assigned} total={enquiries.total} color="#8b5cf6" />
+          <MetricRow label={t("assigned")} value={enquiries.assigned} total={enquiries.total} color="#8b5cf6" />
           {enquiries.unassigned !== undefined && (
-            <MetricRow label="Unassigned" value={enquiries.unassigned} total={enquiries.total} color="#f59e0b" />
+            <MetricRow label={t("unassigned")} value={enquiries.unassigned} total={enquiries.total} color="#f59e0b" />
           )}
           {enquiries.active !== undefined && (
-            <MetricRow label="Active" value={enquiries.active} total={enquiries.total} color="#10b981" />
+            <MetricRow label={t("active")} value={enquiries.active} total={enquiries.total} color="#10b981" />
           )}
         </div>
       </div>
@@ -1402,7 +1420,7 @@ function EnquiriesCard({ enquiries }: { enquiries: EnquiryStats }) {
     hover:-translate-y-1
     transition-all duration-300 flex flex-col justify-center items-center  py-2 rounded-xl">
           <p className="font-mono text-base font-bold text-indigo-400"><AnimNum value={enquiries.total} /></p>
-          <p className="text-[10px] text-slate-500 mt-0.5">Total</p>
+          <p className="text-[10px] text-slate-500 mt-0.5">{t("total_2")}</p>
         </div>
         <div className="bg-gradient-to-br
     from-cyan-50 to-cyan-100
@@ -1415,7 +1433,7 @@ function EnquiriesCard({ enquiries }: { enquiries: EnquiryStats }) {
     hover:-translate-y-1
     transition-all duration-300 flex flex-col justify-center items-center  py-2 rounded-xl">
           <p className="font-mono text-base font-bold text-cyan-400"><AnimNum value={enquiries.inRange} /></p>
-          <p className="text-[10px] text-slate-500 mt-0.5">This Period</p>
+          <p className="text-[10px] text-slate-500 mt-0.5">{t("this_period")}</p>
         </div>
       </div>
     </Card>
@@ -1425,12 +1443,13 @@ function EnquiriesCard({ enquiries }: { enquiries: EnquiryStats }) {
 // ── User-Specific Cards ────────────────────────────────────────────────────────
 
 function QuotationsCard({ quotations }: { quotations: QuotationStats }) {
+  const { t } = useTranslation();
   return (
-    <Card title="Quotations" sub="Value overview" icon={FileText}>
+    <Card title={t("quotations")} sub="Value overview" icon={FileText}>
       <div className="mb-4">
-        <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Total Value</p>
+        <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">{t("total_value")}</p>
         <p className="font-mono text-3xl font-bold text-indigo-400">{fmtMoney(quotations.totalValue)}</p>
-        <p className="text-xs text-slate-500 mt-1">Period: <span className="text-indigo-400 font-semibold">{fmtMoney(quotations.rangeValue)}</span></p>
+        <p className="text-xs text-slate-500 mt-1">{t("period")} <span className="text-indigo-400 font-semibold">{fmtMoney(quotations.rangeValue)}</span></p>
       </div>
       <div className="grid grid-cols-2 gap-2 pt-3 border-t border-slate-200 dark:border-slate-700/40">
         <div className="  bg-gradient-to-br
@@ -1443,7 +1462,7 @@ function QuotationsCard({ quotations }: { quotations: QuotationStats }) {
     hover:-translate-y-1
     transition-all duration-300 flex flex-col justify-center items-center  py-2 rounded-xl">
           <p className="font-mono text-xl font-bold text-indigo-400"><AnimNum value={quotations.total} /></p>
-          <p className="text-[10px] text-slate-500 mt-0.5">Total</p>
+          <p className="text-[10px] text-slate-500 mt-0.5">{t("total_2")}</p>
         </div>
         <div className="bg-gradient-to-br
     from-cyan-50 to-cyan-100
@@ -1456,7 +1475,7 @@ function QuotationsCard({ quotations }: { quotations: QuotationStats }) {
     hover:-translate-y-1
     transition-all duration-300 flex flex-col justify-center items-center  py-2 rounded-xl">
           <p className="font-mono text-xl font-bold text-cyan-400"><AnimNum value={quotations.inRange} /></p>
-          <p className="text-[10px] text-slate-500 mt-0.5">This Period</p>
+          <p className="text-[10px] text-slate-500 mt-0.5">{t("this_period")}</p>
         </div>
       </div>
     </Card>
@@ -1464,18 +1483,19 @@ function QuotationsCard({ quotations }: { quotations: QuotationStats }) {
 }
 
 function UserActivitiesCard({ activities }: { activities: ActivityStats }) {
+  const { t } = useTranslation();
   const total = activities.byEntity.reduce((s, e) => s + e.count, 0);
   return (
-    <Card title="My Activity" sub="Action breakdown by entity" icon={Activity}>
+    <Card title={t("my_activity")} sub="Action breakdown by entity" icon={Activity}>
       <div className="mb-4">
-        <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Total Actions</p>
+        <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">{t("total_actions_2")}</p>
         <p className="font-mono text-3xl font-bold text-emerald-400"><AnimNum value={activities.total} /></p>
-        <p className="text-xs text-slate-500 mt-1">This period: <span className="text-emerald-400 font-semibold">{activities.inRange}</span></p>
+        <p className="text-xs text-slate-500 mt-1">{t("this_period_2")} <span className="text-emerald-400 font-semibold">{activities.inRange}</span></p>
       </div>
       <div className="flex flex-col gap-2 pt-3 border-t border-slate-200 dark:border-slate-700/40">
-        <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">By Entity</p>
+        <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">{t("by_entity")}</p>
         {activities.byEntity.length === 0 ? (
-          <p className="text-xs text-slate-600 py-2">No activity recorded</p>
+          <p className="text-xs text-slate-600 py-2">{t("no_activity_recorded")}</p>
         ) : (
           activities.byEntity.map((e, i) => {
             const color = CHART_COLORS[i % CHART_COLORS.length];
@@ -1502,8 +1522,9 @@ function UserActivitiesCard({ activities }: { activities: ActivityStats }) {
 }
 
 function LatestLeadsCard({ leads }: { leads: any[] }) {
+  const { t } = useTranslation();
   return (
-    <Card title="Latest Leads" sub="Most recent leads assigned to you" icon={Target}>
+    <Card title={t("latest_leads")} sub="Most recent leads assigned to you" icon={Target}>
       {leads.length === 0 ? (
         <EmptyState icon={Target} message="No leads assigned yet" />
       ) : (
@@ -1531,8 +1552,9 @@ function LatestLeadsCard({ leads }: { leads: any[] }) {
 }
 
 function LatestDealsCard({ deals }: { deals: any[] }) {
+  const { t } = useTranslation();
   return (
-    <Card title="Latest Deals" sub="Most recent deals assigned to you" icon={Briefcase}>
+    <Card title={t("latest_deals")} sub="Most recent deals assigned to you" icon={Briefcase}>
       {deals.length === 0 ? (
         <EmptyState icon={Briefcase} message="No deals assigned yet" />
       ) : (
@@ -1562,13 +1584,14 @@ function LatestDealsCard({ deals }: { deals: any[] }) {
 // ── Role Layouts ───────────────────────────────────────────────────────────────
 
 function SuperAdminLayout({ d }: { d: DashboardData }) {
+  const { t } = useTranslation();
   return (
     <>
       <div className="grid grid-cols-2 md:grid-cols-4  gap-4">
-        <StatCard label="Companies" value={d.companies!.total} sub={`${d.companies!.active} active · ${d.companies!.thisMonth ?? 0} this month`} icon={Building2} color="#f59e0b" />
-        <StatCard label="Total Users" value={d.users!.total} sub={`${d.users!.active} active · ${d.users!.thisMonth ?? 0} this month`} icon={Users} color="#6366f1" />
+        <StatCard label={t("companies")} value={d.companies!.total} sub={`${d.companies!.active} active · ${d.companies!.thisMonth ?? 0} this month`} icon={Building2} color="#f59e0b" />
+        <StatCard label={t("total_users")} value={d.users!.total} sub={`${d.users!.active} active · ${d.users!.thisMonth ?? 0} this month`} icon={Users} color="#6366f1" />
         <StatCard label="MRR" value={Math.round(d.revenue!.mrr)} prefix="$" sub={`ARR: ${fmtMoney(d.revenue!.arr)}`} icon={DollarSign} color="#10b981" />
-        <StatCard label="Active Subs" value={d.subscriptions!.active} sub={`${d.subscriptions!.trial} trial · ${d.subscriptions!.canceled} canceled`} icon={Star} color="#8b5cf6" />
+        <StatCard label={t("active_subs")} value={d.subscriptions!.active} sub={`${d.subscriptions!.trial} trial · ${d.subscriptions!.canceled} canceled`} icon={Star} color="#8b5cf6" />
       </div>
 
 
@@ -1596,13 +1619,14 @@ function SuperAdminLayout({ d }: { d: DashboardData }) {
 }
 
 function CompanyAdminLayout({ d }: { d: DashboardData }) {
+  const { t } = useTranslation();
   return (
     <>
       <div className="grid grid-cols-4 gap-4">
-        <StatCard label="Total Users" value={d.users!.total} sub={`${d.users!.active} active · +${d.users!.thisMonth ?? 0} this month`} icon={Users} color="#6366f1" />
-        {d.leads && <StatCard label="Total Leads" value={d.leads.total} sub={`${d.leads.won} won · ${d.leads.inRange} this period`} icon={Target} color="#10b981" />}
-        {d.deals && <StatCard label="Revenue" value={Math.round(d.deals.totalRevenue)} prefix="$" sub={`${d.deals.closed} closed`} icon={DollarSign} color="#f59e0b" />}
-        {d.conversionRate && <StatCard label="Conversion" value={Math.round(d.conversionRate.conversionRate)} suffix="%" sub={`${d.conversionRate.won} won of ${d.conversionRate.total}`} icon={TrendingUp} color="#8b5cf6" />}
+        <StatCard label={t("total_users")} value={d.users!.total} sub={`${d.users!.active} active · +${d.users!.thisMonth ?? 0} this month`} icon={Users} color="#6366f1" />
+        {d.leads && <StatCard label={t("total_leads")} value={d.leads.total} sub={`${d.leads.won} won · ${d.leads.inRange} this period`} icon={Target} color="#10b981" />}
+        {d.deals && <StatCard label={t("revenue")} value={Math.round(d.deals.totalRevenue)} prefix="$" sub={`${d.deals.closed} closed`} icon={DollarSign} color="#f59e0b" />}
+        {d.conversionRate && <StatCard label={t("conversion")} value={Math.round(d.conversionRate.conversionRate)} suffix="%" sub={`${d.conversionRate.won} won of ${d.conversionRate.total}`} icon={TrendingUp} color="#8b5cf6" />}
       </div>
       <div className="grid grid-cols-3 gap-4">
         <UsersCard users={d.users!} />
@@ -1619,7 +1643,7 @@ function CompanyAdminLayout({ d }: { d: DashboardData }) {
         <div className="grid grid-cols-3 gap-4">
           <PipelineChart pipeline={d.dealPipelineBreakdown} />
           {d.leadSourceBreakdown && (
-            <Card title="Lead Sources" sub="Where leads come from" icon={PieIcon}>
+            <Card title={t("lead_sources")} sub="Where leads come from" icon={PieIcon}>
               <div className="flex items-center gap-3">
                 <ResponsiveContainer width={100} height={100}>
                   <PieChart>
@@ -1651,7 +1675,7 @@ function CompanyAdminLayout({ d }: { d: DashboardData }) {
       {(d.enquiries || d.tasks) && (
         <div className="grid grid-cols-3 gap-4">
           {d.enquiries && (
-            <Card title="Enquiries" sub="Assignment status" icon={Activity}>
+            <Card title={t("enquiries")} sub="Assignment status" icon={Activity}>
               <div className="grid grid-cols-2 gap-2 mb-3">
                 {[
                   { label: "Total", value: d.enquiries.total, color: "#6366f1" },
@@ -1665,12 +1689,12 @@ function CompanyAdminLayout({ d }: { d: DashboardData }) {
                   </div>
                 ))}
               </div>
-              <MetricRow label="Assigned" value={d.enquiries.assigned} total={d.enquiries.total} color="#8b5cf6" />
+              <MetricRow label={t("assigned")} value={d.enquiries.assigned} total={d.enquiries.total} color="#8b5cf6" />
             </Card>
           )}
           {d.tasks && <TaskCard tasks={d.tasks} />}
           {d.taskPriorityBreakdown && (
-            <Card title="Task Priority" sub="Distribution by urgency" icon={Zap}>
+            <Card title={t("task_priority")} sub="Distribution by urgency" icon={Zap}>
               <div className="flex flex-col gap-3">
                 {d.taskPriorityBreakdown.map((p) => {
                   const color = PRIORITY_COLORS[p.priority] ?? "#94a3b8";
@@ -1704,27 +1728,28 @@ function CompanyAdminLayout({ d }: { d: DashboardData }) {
 }
 
 function ManagerLayout({ d }: { d: DashboardData }) {
+  const { t } = useTranslation();
   return (
     <>
       {/* Stat row */}
       <div className="grid grid-cols-4 gap-4">
         {d.teams && (
-          <StatCard label="Team Members" value={d.teams.totalMembers}
+          <StatCard label={t("team_members")} value={d.teams.totalMembers}
             sub={`${d.teams.activeTeams} active team${d.teams.activeTeams !== 1 ? "s" : ""}`}
             icon={Users} color="#6366f1" />
         )}
         {d.leads && (
-          <StatCard label="Total Leads" value={d.leads.total}
+          <StatCard label={t("total_leads")} value={d.leads.total}
             sub={`${d.leads.won} won · ${d.leads.active} active`}
             icon={Target} color="#10b981" />
         )}
         {d.deals && (
-          <StatCard label="Revenue" value={Math.round(d.deals.totalRevenue)}
+          <StatCard label={t("revenue")} value={Math.round(d.deals.totalRevenue)}
             prefix="$" sub={`${d.deals.closed} deals closed`}
             icon={DollarSign} color="#f59e0b" />
         )}
         {d.enquiries && (
-          <StatCard label="Enquiries" value={d.enquiries.total}
+          <StatCard label={t("enquiries")} value={d.enquiries.total}
             sub={`${d.enquiries.assigned} assigned · ${d.enquiries.inRange} this period`}
             icon={Phone} color="#8b5cf6" />
         )}
@@ -1759,7 +1784,7 @@ function ManagerLayout({ d }: { d: DashboardData }) {
       <div className="grid grid-cols-3 gap-4">
         {d.topPerformer && <TopPerformerCard performer={d.topPerformer} />}
         {d.leadSourceBreakdown && d.leadSourceBreakdown.length > 0 && (
-          <Card title="Lead Sources" sub="Where leads originate" icon={PieIcon}>
+          <Card title={t("lead_sources")} sub="Where leads originate" icon={PieIcon}>
             <div className="flex items-center gap-3">
               <ResponsiveContainer width={100} height={100}>
                 <PieChart>
@@ -1779,14 +1804,14 @@ function ManagerLayout({ d }: { d: DashboardData }) {
                   </div>
                 ))}
                 {d.leadSourceBreakdown.length === 0 && (
-                  <p className="text-xs text-slate-600">No source data</p>
+                  <p className="text-xs text-slate-600">{t("no_source_data")}</p>
                 )}
               </div>
             </div>
           </Card>
         )}
         {d.leadStatusBreakdown && d.leadStatusBreakdown.length > 0 && (
-          <Card title="Lead Status" sub="Status distribution" icon={Layers}>
+          <Card title={t("lead_status")} sub="Status distribution" icon={Layers}>
             <div className="flex flex-col gap-2.5">
               {d.leadStatusBreakdown.map((s, i) => {
                 const color = CHART_COLORS[i % CHART_COLORS.length];
@@ -1816,27 +1841,28 @@ function ManagerLayout({ d }: { d: DashboardData }) {
 }
 
 function UserLayout({ d }: { d: DashboardData }) {
+  const { t } = useTranslation();
   return (
     <>
       {/* Stat row */}
       <div className="grid grid-cols-4 gap-4">
         {d.leads && (
-          <StatCard label="My Leads" value={d.leads.total}
+          <StatCard label={t("my_leads")} value={d.leads.total}
             sub={`${d.leads.won} won · ${d.leads.active} active`}
             icon={Target} color="#10b981" />
         )}
         {d.deals && (
-          <StatCard label="My Deals" value={d.deals.total}
+          <StatCard label={t("my_deals")} value={d.deals.total}
             sub={`${d.deals.closed} closed · ${fmtMoney(d.deals.totalRevenue)} revenue`}
             icon={Briefcase} color="#6366f1" />
         )}
         {d.quotations && (
-          <StatCard label="Quotations" value={d.quotations.total}
+          <StatCard label={t("quotations")} value={d.quotations.total}
             sub={`Value: ${fmtMoney(d.quotations.totalValue)}`}
             icon={FileText} color="#f59e0b" />
         )}
         {d.activities && (
-          <StatCard label="Activities" value={d.activities.total}
+          <StatCard label={t("activities")} value={d.activities.total}
             sub={`${d.activities.inRange} this period`}
             icon={Activity} color="#8b5cf6" />
         )}
@@ -1895,6 +1921,7 @@ function UserLayout({ d }: { d: DashboardData }) {
 // ── Main Dashboard ─────────────────────────────────────────────────────────────
 
 export default function UnifiedDashboardPage() {
+  const { t } = useTranslation();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -1945,7 +1972,7 @@ export default function UnifiedDashboardPage() {
           </div>
           <p className="text-sm text-slate-400">{error}</p>
           <button onClick={() => load()} className="px-5 py-2 rounded-xl bg-indigo-600 dark:text-white text-sm font-semibold hover:bg-indigo-500 transition-colors">
-            Retry
+            {t("retry")}
           </button>
         </div>
       </div>
@@ -1970,13 +1997,13 @@ export default function UnifiedDashboardPage() {
               <RoleIcon className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold dark:text-white tracking-tight">Dashboard</h1>
+              <h1 className="text-xl font-bold dark:text-white tracking-tight">{t("dashboard")}</h1>
               <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-2">
                 <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-widest ${rc.badge}`}>
                   <RoleIcon className="w-3 h-3" />{rc.label}
                 </span>
                 <span>·</span>
-                <span>Generated {new Date(data.period.generatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                <span>{t("generated")} {new Date(data.period.generatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
               </p>
             </div>
           </div>
@@ -1992,7 +2019,7 @@ export default function UnifiedDashboardPage() {
         {/* Enabled features badge */}
         {data.enabledFeatures && data.enabledFeatures.length > 0 && (
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[10px] text-slate-600 uppercase tracking-widest">Modules:</span>
+            <span className="text-[10px] text-slate-600 uppercase tracking-widest">{t("modules")}</span>
             {data.enabledFeatures.map((f) => (
               <span key={f} className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-400 capitalize">
                 {f.replace(":feature", "")}

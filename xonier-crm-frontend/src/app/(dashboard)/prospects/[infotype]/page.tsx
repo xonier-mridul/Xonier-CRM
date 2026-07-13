@@ -34,6 +34,7 @@ import TagBadge from "@/src/components/common/tagBadge";
 import { MdSwapHoriz } from "react-icons/md"; // For reassign icon
 import ReassignModal from "@/src/components/pages/prospect/ReassignModal";
 import  UserSelect from "@/src/components/common/userselect";
+import { useTranslation } from "react-i18next";
 const PAGE_LIMIT = 10;
 
 type CallStatus = "queued" | "in_progress" | "completed" | "failed";
@@ -46,6 +47,7 @@ const BulkCallModal = ({
   leads: Prospect[];
   onClose: () => void;
 }) => {
+  const { t } = useTranslation();
   // "idle" = not started yet, "running" = call all in progress, "done" = all done
   const [phase, setPhase] = useState<"idle" | "running" | "done">("idle");
   const [statuses, setStatuses] = useState<Record<string, CallStatus>>(
@@ -100,8 +102,8 @@ const BulkCallModal = ({
               <MdCall className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">Bulk Call</h3>
-              <p className="text-xs text-blue-100">{leads.length} lead{leads.length > 1 ? "s" : ""} queued</p>
+              <h3 className="text-base font-bold text-white">{t("bulk_call")}</h3>
+              <p className="text-xs text-blue-100">{leads.length} {t("lead_2")}{leads.length > 1 ? "s" : ""} {t("queued_2")}</p>
             </div>
           </div>
           <button onClick={onClose} className="w-9 h-9 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center text-white">
@@ -160,27 +162,27 @@ const BulkCallModal = ({
         <div className="px-5 py-4 border-t border-slate-100 dark:border-gray-700 flex items-center justify-between gap-3 shrink-0">
           {phase === "idle" && (
             <>
-              <p className="text-xs text-slate-400">Calls will be placed one by one automatically</p>
+              <p className="text-xs text-slate-400">{t("calls_will_be_placed_one_by")}</p>
               <button onClick={handleCallAll} className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-sm shadow-md transition-colors">
-                <MdCall className="w-4 h-4" /> Call All
+                <MdCall className="w-4 h-4" /> {t("call_all")}
               </button>
             </>
           )}
           {phase === "running" && (
             <>
               <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" /> Calling {completedCount + 1} of {leads.length}...
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" /> {t("calling_2")} {completedCount + 1} {t("of")} {leads.length}...
               </div>
               <button onClick={handleCancel} className="flex items-center gap-2 px-5 py-2.5 bg-slate-100 dark:bg-gray-700 hover:bg-red-50 hover:text-red-600 text-slate-600 dark:text-slate-300 rounded-xl font-semibold text-sm transition-colors">
-                <IoClose className="w-4 h-4" /> Stop
+                <IoClose className="w-4 h-4" /> {t("stop")}
               </button>
             </>
           )}
           {phase === "done" && (
             <>
-              <p className="text-xs text-slate-500 dark:text-slate-400">{completedCount} completed{failedCount > 0 ? `, ${failedCount} failed` : ""}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{completedCount} {t("completed_2")}{failedCount > 0 ? `, ${failedCount} failed` : ""}</p>
               <button onClick={onClose} className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold text-sm shadow-md transition-colors">
-                <FaCheck className="w-3.5 h-3.5" /> Done
+                <FaCheck className="w-3.5 h-3.5" /> {t("done")}
               </button>
             </>
           )}
@@ -192,6 +194,7 @@ const BulkCallModal = ({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 const LeadContent = (): JSX.Element => {
+  const { t } = useTranslation();
   const params = useParams();
   const info = params?.infotype as string;
 
@@ -432,10 +435,11 @@ const LeadContent = (): JSX.Element => {
 
   // ── Sub-components ────────────────────────────────────────────────────────
   const RowActions = ({ item }: { item: Prospect }) => {
+  const { t } = useTranslation();
     const isCommChecked = commSelectedIds.has(item.id);
     return (
       <span className="flex items-center gap-1.5 p-2">
-        {(hasPermission(PERMISSIONS.callProspects) || hasPermission(PERMISSIONS.smsProspects) || hasPermission(PERMISSIONS.emailProspects) || hasPermission(PERMISSIONS.assignEnquiry)) && <label className="relative inline-flex items-center cursor-pointer mr-1" title="Select for bulk communication">
+        {(hasPermission(PERMISSIONS.callProspects) || hasPermission(PERMISSIONS.smsProspects) || hasPermission(PERMISSIONS.emailProspects) || hasPermission(PERMISSIONS.assignEnquiry)) && <label className="relative inline-flex items-center cursor-pointer mr-1" title={t("select_for_bulk_communication")}>
           <input type="checkbox" className="sr-only" checked={isCommChecked} onChange={() => toggleCommSelect(item.id)} />
           <div className={`w-4 h-4 rounded-sm border-2 flex items-center justify-center transition-all duration-150 ${isCommChecked ? "bg-slate-600 border-slate-600" : "bg-white dark:bg-gray-700 border-slate-300 dark:border-slate-500 hover:border-slate-500"}`}>
             {isCommChecked && <FaCheck className="text-white text-[8px]" />}
@@ -443,7 +447,7 @@ const LeadContent = (): JSX.Element => {
         </label>}
 
         {hasPermission(PERMISSIONS.readProspects) ? (
-          <Link href={`/prospects/view/${item.id}`} className="h-8 w-8 flex items-center justify-center rounded-md bg-green-100/80 dark:bg-green-900/30 hover:bg-green-200 text-green-600 hover:scale-105 transition-transform" title="View">
+          <Link href={`/prospects/view/${item.id}`} className="h-8 w-8 flex items-center justify-center rounded-md bg-green-100/80 dark:bg-green-900/30 hover:bg-green-200 text-green-600 hover:scale-105 transition-transform" title={t("view")}>
             <FaRegEye className="text-sm" />
           </Link>
         ) : (
@@ -453,17 +457,17 @@ const LeadContent = (): JSX.Element => {
         )}
 
         {hasPermission(PERMISSIONS.callProspects) && (
-          <button onClick={() => { setSingleActionLead(item); setSingleActionType("call"); }} className="h-8 w-8 flex items-center justify-center rounded-md bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 text-blue-600 hover:scale-105 transition-transform" title="Call">
+          <button onClick={() => { setSingleActionLead(item); setSingleActionType("call"); }} className="h-8 w-8 flex items-center justify-center rounded-md bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 text-blue-600 hover:scale-105 transition-transform" title={t("call")}>
             <MdPhoneEnabled className="text-sm" />
           </button>
         )}
         {hasPermission(PERMISSIONS.smsProspects) && (
-          <button onClick={() => { setSingleActionLead(item); setSingleActionType("sms"); }} className="h-8 w-8 flex items-center justify-center rounded-md bg-yellow-100 dark:bg-yellow-900/30 hover:bg-yellow-200 text-yellow-600 hover:scale-105 transition-transform" title="Send SMS">
+          <button onClick={() => { setSingleActionLead(item); setSingleActionType("sms"); }} className="h-8 w-8 flex items-center justify-center rounded-md bg-yellow-100 dark:bg-yellow-900/30 hover:bg-yellow-200 text-yellow-600 hover:scale-105 transition-transform" title={t("send_sms")}>
             <MdSms className="text-sm" />
           </button>
         )}
         {hasPermission(PERMISSIONS.emailProspects) && (
-          <button onClick={() => { setSingleActionLead(item); setSingleActionType("mail"); }} className="h-8 w-8 flex items-center justify-center rounded-md bg-emerald-100 dark:bg-emerald-900/30 hover:bg-emerald-200 text-emerald-600 hover:scale-105 transition-transform" title="Send Email">
+          <button onClick={() => { setSingleActionLead(item); setSingleActionType("mail"); }} className="h-8 w-8 flex items-center justify-center rounded-md bg-emerald-100 dark:bg-emerald-900/30 hover:bg-emerald-200 text-emerald-600 hover:scale-105 transition-transform" title={t("send_email")}>
             <MdMailOutline className="text-sm" />
           </button>
         )}
@@ -471,7 +475,7 @@ const LeadContent = (): JSX.Element => {
           <button
             onClick={() => setSingleReassignLead(item)}
             className="h-8 w-8 flex items-center justify-center rounded-md bg-amber-100 dark:bg-amber-900/30 hover:bg-amber-200 text-amber-600 hover:scale-105 transition-transform"
-            title="Reassign Lead"
+            title={t("reassign_lead")}
           >
             <MdSwapHoriz className="text-sm" />
           </button>
@@ -514,7 +518,7 @@ const LeadContent = (): JSX.Element => {
 
           {/* Header */}
           <div className="flex w-full items-center gap-12 justify-between">
-            <h2 className="text-2xl font-bold dark:text-white text-slate-900">Prospect</h2>
+            <h2 className="text-2xl font-bold dark:text-white text-slate-900">{t("prospect")}</h2>
 
             <div className="flex items-center gap-6 flex-wrap">
               {/* Search */}
@@ -525,7 +529,7 @@ const LeadContent = (): JSX.Element => {
                   className="outline-none bg-transparent"
                   value={searchVal}
                   onChange={(e) => handleSearch(e.target.value)}
-                  placeholder="Search by name"
+                  placeholder={t("search_by_name")}
                 />
               </div>
 
@@ -536,14 +540,14 @@ const LeadContent = (): JSX.Element => {
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-900/10 text-sm font-semibold transition-all duration-200 cursor-pointer ${showColumnPicker ? "bg-blue-600 text-white border-blue-600" : "bg-slate-50 dark:bg-gray-600 text-slate-700 dark:text-white"}`}
                 >
                   <FiColumns className="text-base" />
-                  Columns
+                  {t("columns")}
                   <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${showColumnPicker ? "bg-white/20 text-white" : "bg-blue-100 text-blue-600"}`}>{activeCount}</span>
                 </button>
 
                 {showColumnPicker && (
                   <div className="absolute top-[calc(100%+8px)] left-0 z-50 bg-white dark:bg-gray-800 border border-slate-900/10 rounded-xl shadow-xl min-w-55 py-2 max-h-80 overflow-y-scroll">
                     <p className="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-gray-700 mb-1">
-                      Select Columns
+                      {t("select_columns")}
                     </p>
                     {ALL_COLUMNS.map((col) => (
                       <div
@@ -555,18 +559,18 @@ const LeadContent = (): JSX.Element => {
                           {activeColumns[col.key] && <span className="text-white text-[10px] leading-none">✓</span>}
                         </div>
                         <span className="text-slate-700 dark:text-slate-200 font-medium">{col.label}</span>
-                        {col.required && <span className="ml-auto text-[10px] bg-slate-100 dark:bg-gray-600 text-slate-400 rounded px-1.5 py-0.5">locked</span>}
+                        {col.required && <span className="ml-auto text-[10px] bg-slate-100 dark:bg-gray-600 text-slate-400 rounded px-1.5 py-0.5">{t("locked")}</span>}
                       </div>
                     ))}
                     <div className="flex gap-2 px-3 pt-2 mt-1 border-t border-slate-100 dark:border-gray-700">
                       <button
                         onClick={() => { const all = {} as ActiveColumns; ALL_COLUMNS.forEach((c) => (all[c.key] = true)); setActiveColumns(all); }}
                         className="flex-1 py-1.5 rounded-md text-xs font-semibold bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
-                      >All</button>
+                      >{t("all")}</button>
                       <button
                         onClick={() => setActiveColumns(DEF_ACTIVE[infoType])}
                         className="flex-1 py-1.5 rounded-md text-xs font-semibold bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
-                      >Reset</button>
+                      >{t("reset")}</button>
                     </div>
                   </div>
                 )}
@@ -595,16 +599,16 @@ const LeadContent = (): JSX.Element => {
                 <div className="bg-white/20 rounded-lg px-3 py-1.5 flex items-center gap-2">
                   <HiOutlineUserGroup className="text-white text-lg" />
                   <span className="text-white text-sm font-semibold">
-                    {selectedLeadIds.size} lead{selectedLeadIds.size > 1 ? "s" : ""} selected for assignment
+                    {selectedLeadIds.size} {t("lead_2")}{selectedLeadIds.size > 1 ? "s" : ""} {t("selected_for_assignment")}
                   </span>
                 </div>
                 <button onClick={clearAssignSelection} className="text-blue-200 group cursor-pointer hover:text-white text-xs underline underline-offset-2 flex items-center gap-1 transition-colors">
-                  <FaXmark className="text-xs group-hover:rotate-90" /> Clear
+                  <FaXmark className="text-xs group-hover:rotate-90" /> {t("clear")}
                 </button>
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex flex-col gap-0.5">
-                  {!selectedUserId && <span className="text-blue-200 text-[11px] ml-1">← Select a user first</span>}
+                  {!selectedUserId && <span className="text-blue-200 text-[11px] ml-1">{t("select_a_user_first")}</span>}
                   {/* <UserSelect
                     users={assignableUsers}
                     selectedUserId={selectedUserId}
@@ -615,7 +619,7 @@ const LeadContent = (): JSX.Element => {
                     mode="single"
                     value={selectedUserId}
                     onChange={setSelectedUserId}
-                    placeholder="Search & select user..."
+                    placeholder={t("search_select_user")}
                   />
 
                 </div>
@@ -625,8 +629,8 @@ const LeadContent = (): JSX.Element => {
                   className="bg-white text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed px-5 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all shadow-sm"
                 >
                   {isAssigning
-                    ? <><Spinner color="text-blue-600" /> Assigning...</>
-                    : <><MdOutlinePersonAdd className="text-lg" /> Assign Leads</>}
+                    ? <><Spinner color="text-blue-600" /> {t("assigning")}</>
+                    : <><MdOutlinePersonAdd className="text-lg" /> {t("assign_leads")}</>}
                 </button>
               </div>
             </div>
@@ -653,7 +657,7 @@ const LeadContent = (): JSX.Element => {
                       <th key={col.key} className={`p-4 uppercase text-xs text-slate-500 dark:text-slate-100 whitespace-nowrap ${col.key === "actions" ? "text-center" : "text-start"}`}>
                         {(hasPermission(PERMISSIONS.callProspects) || hasPermission(PERMISSIONS.smsProspects) || hasPermission(PERMISSIONS.emailProspects)) && col.key === "actions" ? (
                           <div className="flex items-center gap-4 px-2">
-                            <label className="relative inline-flex items-center cursor-pointer" title="Select all for communication">
+                            <label className="relative inline-flex items-center cursor-pointer" title={t("select_all_for_communication")}>
                               <input ref={commSelectAllRef} type="checkbox" className="sr-only" checked={isAllCommSelected} onChange={handleSelectAllComm} />
                               <div className={`w-4 h-4 rounded-sm border-2 flex items-center justify-center transition-all duration-150 ${isAllCommSelected || isCommIndeterminate ? "bg-slate-600 border-slate-600" : "bg-white dark:bg-gray-700 border-slate-300 hover:border-slate-500"}`}>
                                 {isAllCommSelected && <FaCheck className="text-white text-[8px]" />}
@@ -694,7 +698,7 @@ const LeadContent = (): JSX.Element => {
                                     </div>
                                   </label>
                                 ) : (
-                                  <span className="inline-flex items-center justify-center w-4.5 h-4.5 rounded-full bg-green-100 dark:bg-green-900/30" title="Already assigned">
+                                  <span className="inline-flex items-center justify-center w-4.5 h-4.5 rounded-full bg-green-100 dark:bg-green-900/30" title={t("already_assigned")}>
                                     <FaCheck className="text-green-500 text-[8px]" />
                                   </span>
                                 )}
@@ -739,7 +743,7 @@ const LeadContent = (): JSX.Element => {
                     </>
                   ) : (
                     <tr>
-                      <td className="p-4 text-center" colSpan={visibleCols.length + 1}>Data not found</td>
+                      <td className="p-4 text-center" colSpan={visibleCols.length + 1}>{t("data_not_found")}</td>
                     </tr>
                   )}
 
@@ -753,7 +757,7 @@ const LeadContent = (): JSX.Element => {
 
             {!hasMore && !isLoading && leadData.length > 0 && (
               <p className="p-4 text-center text-xs text-slate-400">
-                — All leads loaded ({leadData.length} total) —
+                {t("all_leads_loaded")}{leadData.length} {t("total_5")}
               </p>
             )}
           </div>
@@ -814,9 +818,9 @@ const LeadContent = (): JSX.Element => {
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-slate-800 dark:text-white leading-tight">
-                  {commSelectedIds.size} lead{commSelectedIds.size > 1 ? "s" : ""} selected
+                  {commSelectedIds.size} {t("lead_2")}{commSelectedIds.size > 1 ? "s" : ""} {t("selected_2")}
                 </p>
-                <p className="text-xs text-slate-400 dark:text-slate-500 leading-tight">Ready to call, SMS, email, or reassign</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 leading-tight">{t("ready_to_call_sms_email_or")}</p>
               </div>
               <div className="hidden sm:flex items-center -space-x-2 ml-1">
                 {commSelectedLeads.slice(0, 5).map((lead, i) => (
@@ -838,22 +842,22 @@ const LeadContent = (): JSX.Element => {
             <div className="flex items-center gap-2">
               {hasPermission(PERMISSIONS.callProspects) && (
                 <button onClick={() => setShowBulkCallModal(true)} className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-600 text-blue-600 dark:text-blue-400 hover:text-white border border-blue-200 dark:border-blue-700 hover:border-blue-600 text-sm font-semibold transition-all duration-150 shadow-sm hover:shadow-md">
-                  <MdPhoneEnabled className="text-base group-hover:scale-110 transition-transform" /> <span>Call All</span>
+                  <MdPhoneEnabled className="text-base group-hover:scale-110 transition-transform" /> <span>{t("call_all")}</span>
                 </button>
               )}
               {hasPermission(PERMISSIONS.smsProspects) && (
                 <button onClick={() => setShowBulkSmsModal(true)} className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-500 text-amber-600 dark:text-amber-400 hover:text-white border border-amber-200 dark:border-amber-700 hover:border-amber-500 text-sm font-semibold transition-all duration-150 shadow-sm hover:shadow-md">
-                  <MdSms className="text-base group-hover:scale-110 transition-transform" /> <span>SMS All</span>
+                  <MdSms className="text-base group-hover:scale-110 transition-transform" /> <span>{t("sms_all")}</span>
                 </button>
               )}
               {hasPermission(PERMISSIONS.emailProspects) && (
                 <button onClick={() => setShowBulkMailModal(true)} className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-600 text-emerald-600 dark:text-emerald-400 hover:text-white border border-emerald-200 dark:border-emerald-700 hover:border-emerald-600 text-sm font-semibold transition-all duration-150 shadow-sm hover:shadow-md">
-                  <MdMailOutline className="text-base group-hover:scale-110 transition-transform" /> <span>Mail All</span>
+                  <MdMailOutline className="text-base group-hover:scale-110 transition-transform" /> <span>{t("mail_all")}</span>
                 </button>
               )}
               {hasPermission(PERMISSIONS.assignEnquiry) && (
                 <button onClick={() => setShowReassignModal(true)} className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-600 text-amber-600 dark:text-amber-400 hover:text-white border border-amber-200 dark:border-amber-700 hover:border-amber-600 text-sm font-semibold transition-all duration-150 shadow-sm hover:shadow-md">
-                  <MdSwapHoriz className="text-base group-hover:scale-110 transition-transform" /> <span>Reassign</span>
+                  <MdSwapHoriz className="text-base group-hover:scale-110 transition-transform" /> <span>{t("reassign")}</span>
                 </button>
               )}
             </div>
@@ -864,10 +868,10 @@ const LeadContent = (): JSX.Element => {
             <button
               onClick={() => setCommSelectedIds(new Set())}
               className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-gray-700 text-sm font-medium transition-colors"
-              title="Clear selection"
+              title={t("clear_selection")}
             >
               <IoClose className="text-base" />
-              <span className="hidden sm:inline">Clear</span>
+              <span className="hidden sm:inline">{t("clear")}</span>
             </button>
           </div>
         </div>

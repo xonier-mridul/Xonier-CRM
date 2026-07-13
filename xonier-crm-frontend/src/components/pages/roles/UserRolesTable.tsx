@@ -14,6 +14,7 @@ import { SUPER_ADMIN_ROLE_CODE } from "@/src/constants/constants";
 import Skeleton from "react-loading-skeleton";
 import Link from "next/link";
 import { UserRole } from "@/src/types";
+import { useTranslation } from "react-i18next";
 
 const POWER_LEVELS = [
   { value: 10, label: "Viewer", color: "bg-slate-400" },
@@ -60,6 +61,7 @@ const UserRolesTable: React.FC<RoleTableProps> = ({
   hasPermissions,
   isAdmin,
 }) => {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = React.useState("");
 
   const [viewRoleModal, setViewRoleModal] = React.useState<UserRole | null>(null);
@@ -176,7 +178,7 @@ const handleAllPermissions = (checked: boolean) => {
                     {viewRoleModal.name}
                     {viewRoleModal.isSystemRole && (
                       <span className="text-xs font-bold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full">
-                        SYSTEM
+                        {t("system_2")}
                       </span>
                     )}
                   </h2>
@@ -201,7 +203,7 @@ const handleAllPermissions = (checked: boolean) => {
                 <div className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-4 border border-slate-200 dark:border-gray-600">
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500 mb-2 flex items-center gap-1.5">
                     <FaBolt className="w-3 h-3" />
-                    Power Level
+                    {t("power_level")}
                   </p>
                   <div className="flex items-center gap-3">
                     <span className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
@@ -218,21 +220,21 @@ const handleAllPermissions = (checked: boolean) => {
 
                 <div className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-4 border border-slate-200 dark:border-gray-600">
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500 mb-2">
-                    Can Manage Below
+                    {t("can_manage_below")}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
                     {viewRoleModal.canManageBelow ? (
                       <>
                         <IoCheckmarkCircle className="text-emerald-500 text-xl" />
                         <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
-                          Yes — can manage lower power roles
+                          {t("yes_can_manage_lower_power_roles")}
                         </span>
                       </>
                     ) : (
                       <>
                         <IoCloseCircle className="text-slate-400 text-xl" />
                         <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-                          No management access
+                          {t("no_management_access")}
                         </span>
                       </>
                     )}
@@ -246,17 +248,17 @@ const handleAllPermissions = (checked: boolean) => {
                     <IoShieldCheckmarkOutline className="w-8 h-8 text-white" />
                   </div>
                   <h3 className="text-lg font-bold text-amber-900 dark:text-amber-200 mb-2">
-                    Full System Access
+                    {t("full_system_access")}
                   </h3>
                   <p className="text-sm text-amber-700 dark:text-amber-400">
-                    This role has unrestricted access to all features and permissions in the system.
+                    {t("this_role_has_unrestricted_access_to")}
                   </p>
                 </div>
               ) : (
                 <>
                   <div className="flex items-center justify-between mb-1">
                     <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                      Permissions ({viewRoleModal.permissions.length})
+                      {t("permissions")}{viewRoleModal.permissions.length})
                     </h3>
                   </div>
                   {(() => {
@@ -319,7 +321,7 @@ const handleAllPermissions = (checked: boolean) => {
 
             <div className="flex items-center justify-between p-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
               <div className="text-xs text-slate-500 dark:text-slate-400">
-                Created{" "}
+                {t("created")}{" "}
                 {new Date(viewRoleModal.createdAt).toLocaleDateString("en-US", {
                   year: "numeric",
                   month: "short",
@@ -331,7 +333,7 @@ const handleAllPermissions = (checked: boolean) => {
                   onClick={() => setViewRoleModal(null)}
                   className="px-5 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 text-slate-700 dark:text-slate-200 font-medium transition-colors"
                 >
-                  Close
+                  {t("close")}
                 </button>
                 {hasPermissions(PERMISSIONS.updateRole) &&
                   viewRoleModal.code !== SUPER_ADMIN_ROLE_CODE && (
@@ -340,7 +342,7 @@ const handleAllPermissions = (checked: boolean) => {
                       className="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-semibold transition-all shadow-sm hover:shadow-md flex items-center gap-2"
                     >
                       <MdOutlineEdit className="w-4 h-4" />
-                      Edit Role
+                      {t("edit_role")}
                     </Link>
                   )}
               </div>
@@ -359,9 +361,9 @@ const handleAllPermissions = (checked: boolean) => {
                   <FaShieldHalved className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">Create Role</h2>
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">{t("create_role")}</h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Define a new role with custom permissions and power level
+                    {t("define_a_new_role_with_custom")}
                   </p>
                 </div>
               </div>
@@ -375,9 +377,9 @@ const handleAllPermissions = (checked: boolean) => {
 
             <div className="flex-1 overflow-y-auto p-6 space-y-5">
               <Input
-                label="Role name"
+                label={t("role_name")}
                 name="name"
-                placeholder="e.g. Sales Manager, Team Lead, Developer"
+                placeholder={t("e_g_sales_manager_team_lead")}
                 value={formData.name}
                 onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                 required
@@ -387,7 +389,7 @@ const handleAllPermissions = (checked: boolean) => {
                 <div className="flex flex-col gap-2">
                   <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                     <FaBolt className="w-3.5 h-3.5 text-amber-500" />
-                    Power Level
+                    {t("power_level")}
                     <span className="ml-auto text-xs font-bold text-slate-500 dark:text-slate-400 tabular-nums">
                       {formData.power}
                     </span>
@@ -404,13 +406,13 @@ const handleAllPermissions = (checked: boolean) => {
                     className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-cyan-600"
                   />
                   <div className="flex items-center justify-between text-xs text-slate-400 dark:text-slate-500">
-                    <span>Viewer (1)</span>
+                    <span>{t("viewer_1")}</span>
                     <span
                       className={`font-semibold ${getPowerConfig(formData.power).color.replace("bg-", "text-")}`}
                     >
                       {getPowerConfig(formData.power).label}
                     </span>
-                    <span>Owner (100)</span>
+                    <span>{t("owner_100")}</span>
                   </div>
                   <div className="w-full h-1.5 bg-slate-100 dark:bg-gray-700 rounded-full overflow-hidden mt-1">
                     <div
@@ -422,7 +424,7 @@ const handleAllPermissions = (checked: boolean) => {
 
                 <div className="flex flex-col gap-2">
                   <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    Management Access
+                    {t("management_access")}
                   </label>
                   <button
                     type="button"
@@ -448,7 +450,7 @@ const handleAllPermissions = (checked: boolean) => {
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-slate-800 dark:text-white">
-                        Can Manage Below
+                        {t("can_manage_below")}
                       </p>
                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                         {formData.canManageBelow
@@ -464,13 +466,13 @@ const handleAllPermissions = (checked: boolean) => {
                 <div className="bg-cyan-50 dark:bg-indigo-950/20 rounded-xl p-4 border border-cyan-100 dark:border-cyan-900/30">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm font-semibold text-cyan-700 dark:text-cyan-400">
-                      Selected Permissions
+                      {t("selected_permissions")}
                     </span>
                     <button
                       onClick={() => setFormData((prev) => ({ ...prev, permissions: [] }))}
                       className="text-xs font-medium text-red-500 hover:text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2.5 py-1 rounded-lg transition-colors"
                     >
-                      Remove All ({formData.permissions.length})
+                      {t("remove_all")}{formData.permissions.length})
                     </button>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -500,13 +502,13 @@ const handleAllPermissions = (checked: boolean) => {
               <div>
                 <div className="grid md:grid-cols-3 items-center justify-between mb-3">
                   <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    Available Permissions
+                    {t("available_permissions")}
                   </span>
                   <div className="relative flex gap-2">
                     <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                       type="text"
-                      placeholder="Search permissions..."
+                      placeholder={t("search_permissions")}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-9 pr-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 focus:border-transparent w-56"
@@ -646,7 +648,7 @@ const handleAllPermissions = (checked: boolean) => {
                 onClick={() => setIsPopupShow(false)}
                 className="px-5 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 text-slate-700 dark:text-slate-200 font-medium transition-colors"
               >
-                Cancel
+                {t("cancel")}
               </button>
               <FormButton
                 isLoading={isLoading}
@@ -654,7 +656,7 @@ const handleAllPermissions = (checked: boolean) => {
                 disabled={formData.name === "" || formData.permissions.length <= 0}
               >
                 <FaPlus className="w-4 h-4" />
-                Create Role
+                {t("create_role")}
               </FormButton>
             </div>
           </div>
@@ -668,9 +670,9 @@ const handleAllPermissions = (checked: boolean) => {
               <HiOutlineUserGroup className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">User Roles</h2>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">{t("user_roles")}</h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Manage roles, permissions and power hierarchy
+                {t("manage_roles_permissions_and_power_hierarchy")}
               </p>
             </div>
           </div>
@@ -680,7 +682,7 @@ const handleAllPermissions = (checked: boolean) => {
             disabled={!hasPermissions(PERMISSIONS.createRole)}
           >
             <FaPlus className="w-4 h-4" />
-            Create Role
+            {t("create_role")}
           </button>
         </div>
 
@@ -726,7 +728,7 @@ const handleAllPermissions = (checked: boolean) => {
                               {role.name}
                               {role.isSystemRole && (
                                 <span className="text-xs font-bold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full">
-                                  SYSTEM
+                                  {t("system_2")}
                                 </span>
                               )}
                             </h3>
@@ -745,7 +747,7 @@ const handleAllPermissions = (checked: boolean) => {
                           {role.code === SUPER_ADMIN_ROLE_CODE ? (
                             <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800 px-3 py-1.5 text-amber-700 dark:text-amber-400 rounded-lg text-xs font-semibold">
                               <IoShieldCheckmarkOutline className="w-3.5 h-3.5" />
-                              Full Access
+                              {t("full_access")}
                             </span>
                           ) : (
                             <>
@@ -760,7 +762,7 @@ const handleAllPermissions = (checked: boolean) => {
                               ))}
                               {role.permissions.length > 3 && (
                                 <span className="inline-flex items-center bg-slate-100 dark:bg-slate-700 px-2.5 py-1 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-medium">
-                                  +{role.permissions.length - 3} more
+                                  +{role.permissions.length - 3} {t("more")}
                                 </span>
                               )}
                             </>
@@ -785,12 +787,12 @@ const handleAllPermissions = (checked: boolean) => {
                         {role.canManageBelow ? (
                           <span className="inline-flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 px-3 py-1.5 rounded-lg text-xs font-semibold">
                             <IoCheckmarkCircle className="w-3.5 h-3.5" />
-                            Yes
+                            {t("yes")}
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 bg-slate-100 dark:bg-gray-700 border border-slate-200 dark:border-gray-600 text-slate-500 dark:text-slate-400 px-3 py-1.5 rounded-lg text-xs font-semibold">
                             <IoCloseCircle className="w-3.5 h-3.5" />
-                            No
+                            {t("no")}
                           </span>
                         )}
                       </td>
@@ -800,7 +802,7 @@ const handleAllPermissions = (checked: boolean) => {
                           <button
                             onClick={() => setViewRoleModal(role)}
                             className="w-9 h-9 flex items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-all hover:scale-105 active:scale-95"
-                            title="View role details"
+                            title={t("view_role_details")}
                           >
                             <FaEye className="w-4 h-4" />
                           </button>
@@ -809,7 +811,7 @@ const handleAllPermissions = (checked: boolean) => {
                             <Link
                               href={`/roles/update/${role.id}`}
                               className="w-9 h-9 flex items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-all hover:scale-105 active:scale-95"
-                              title="Edit role"
+                              title={t("edit_role_2")}
                             >
                               <MdOutlineEdit className="w-4 h-4" />
                             </Link>
@@ -824,7 +826,7 @@ const handleAllPermissions = (checked: boolean) => {
                               onClick={() => handleDelete(role.id)}
                               disabled={!hasPermissions(PERMISSIONS.deleteRole)}
                               className="w-9 h-9 flex items-center justify-center rounded-lg bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 hover:bg-rose-200 dark:hover:bg-rose-900/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-rose-100 dark:disabled:hover:bg-rose-900/30 transition-all hover:scale-105 active:scale-95"
-                              title="Delete role"
+                              title={t("delete_role")}
                             >
                               <MdDeleteOutline className="w-4 h-4" />
                             </button>
@@ -844,9 +846,9 @@ const handleAllPermissions = (checked: boolean) => {
                         <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-3">
                           <HiOutlineUserGroup className="w-8 h-8 text-gray-400" />
                         </div>
-                        <p className="text-slate-600 dark:text-slate-400 font-medium">No roles found</p>
+                        <p className="text-slate-600 dark:text-slate-400 font-medium">{t("no_roles_found")}</p>
                         <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">
-                          Create your first role to get started
+                          {t("create_your_first_role_to_get")}
                         </p>
                       </div>
                     </td>

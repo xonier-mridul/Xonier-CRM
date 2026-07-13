@@ -25,6 +25,7 @@ import {
 import { GoDotFill } from "react-icons/go";
 import Skeleton from "react-loading-skeleton";
 import { LucideXCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const fmt = (d?: string | null) =>
   d
@@ -162,8 +163,9 @@ const SubscriptionViewComponent = ({
   subScriptionData,
   isLoading,
 }: subScriptionView) => {
+  const { t } = useTranslation();
   if (isLoading) return <ViewSkeleton />;
-  if (!subScriptionData) return <DataNotFound title="Subscription data not found" />;
+  if (!subScriptionData) return <DataNotFound title={t("subscription_data_not_found")} />;
 
   const s = subScriptionData;
   const plan = typeof s.planId === "object" ? (s.planId as Plan) : null;
@@ -241,32 +243,31 @@ const SubscriptionViewComponent = ({
       {/* ── Hero banner ───────────────────────────────────────────── */}
       <div className="relative bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden shadow-sm">
         <div
-          className="h-24 relative"
-          style={{
-            background:
-              "linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4f46e5 75%, #7c3aed 100%)",
-          }}
+          className="h-24 relative bg-gradient-to-r from-[#16c2cf] to-[#0fb8a5] "
+          // 
         >
           <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage:
-                "radial-gradient(ellipse at 15% 50%, rgba(167,139,250,0.25) 0%, transparent 55%), radial-gradient(ellipse at 85% 20%, rgba(99,102,241,0.3) 0%, transparent 50%)",
-            }}
+            className="absolute inset-0 "
+            // style={{
+            //   backgroundImage:
+            //     "radial-gradient(ellipse at 15% 50%, rgba(167,139,250,0.25) 0%, transparent 55%), radial-gradient(ellipse at 85% 20%, rgba(99,102,241,0.3) 0%, transparent 50%)",
+            // }}
           />
-          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.03) 20px, rgba(255,255,255,0.03) 40px)" }} />
+          <div className="absolute inset-0 opacity-10 " 
+          // style={{ backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.03) 20px, rgba(255,255,255,0.03) 40px)" }} 
+          />
         </div>
 
         <div className="px-6 pb-5 relative">
           <div className="flex items-end justify-between -mt-7 mb-4 flex-wrap gap-3">
-            <div className="w-14 h-14 rounded-2xl border-4 border-white dark:border-gray-800 bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-xl">
+            <div className="w-14 h-14 rounded-2xl border-4 border-white dark:border-gray-800 bg-gradient-to-r from-[#16c2cf] to-[#0fb8a5] flex items-center justify-center shadow-xl">
               <LuCrown className="w-7 h-7 text-white" />
             </div>
             <div className={`mb-1 flex items-center gap-2 px-3 py-1.5 rounded-full ring-1 text-xs font-bold ${status.bg} ${status.text} ${status.ring}`}>
               <GoDotFill className={`text-sm ${status.dot.replace("bg-", "text-")}`} />
               {status.label}
               {daysRemaining !== null && s.status === "active" && (
-                <span className="opacity-70 font-normal">· {daysRemaining}d left</span>
+                <span className="opacity-70 font-normal">· {daysRemaining}{t("d_left")}</span>
               )}
             </div>
           </div>
@@ -276,14 +277,14 @@ const SubscriptionViewComponent = ({
               <h1 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">
                 {plan ? (typeof plan === "object" && (plan as any).name ? (plan as any).name : "Subscription") : "Subscription"}
               </h1>
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 capitalize border border-indigo-100 dark:border-indigo-800">
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 capitalize border border-cyan-100 dark:border-cyan-800">
                 {s.billingCycle}
               </span>
             </div>
             <div className="flex items-center gap-3 flex-wrap text-xs text-gray-400">
               <span className="font-mono">{s.subscriptionId}</span>
               <span className="text-slate-300 dark:text-gray-600">·</span>
-              <span>ID: {s.id}</span>
+              <span>{t("id_2")} {s.id}</span>
             </div>
           </div>
         </div>
@@ -297,9 +298,9 @@ const SubscriptionViewComponent = ({
             value: `$${s.finalPrice.toFixed(2)}`,
             sub: `/${s.billingCycle}`,
             icon: <LuCircleDollarSign className="w-5 h-5" />,
-            accent: "bg-indigo-500",
-            text: "text-indigo-600 dark:text-indigo-400",
-            bg: "bg-indigo-50 dark:bg-indigo-900/20",
+            accent: "bg-cyan-500",
+            text: "text-cyan-600 dark:text-cyan-400",
+            bg: "bg-cyan-50 dark:bg-cyan-900/20",
           },
           {
             label: "Base Price",
@@ -358,14 +359,14 @@ const SubscriptionViewComponent = ({
         <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
           <SectionHeader
             icon={<LuCircleDollarSign className="w-4 h-4 text-blue-500" />}
-            title="Billing & Pricing"
+            title={t("billing_pricing")}
             accent="bg-blue-50/60 dark:bg-blue-900/10"
           />
           <div className="p-5 space-y-0">
-            <InfoRow label="Billing Cycle" value={<span className="capitalize">{s.billingCycle}</span>} />
-            <InfoRow label="Base Price" value={`$${s.basePrice.toFixed(2)}`} />
+            <InfoRow label={t("billing_cycle")} value={<span className="capitalize">{s.billingCycle}</span>} />
+            <InfoRow label={t("base_price")} value={`$${s.basePrice.toFixed(2)}`} />
             <InfoRow
-              label="Discount"
+              label={t("discount")}
               value={
                 <span className={s.discountAmount > 0 ? "text-emerald-600 dark:text-emerald-400" : ""}>
                   ${s.discountAmount.toFixed(2)}
@@ -373,14 +374,14 @@ const SubscriptionViewComponent = ({
               }
             />
             <InfoRow
-              label="Final Price"
+              label={t("final_price")}
               value={
-                <span className="text-indigo-600 dark:text-indigo-400 font-black text-base">
+                <span className="text-cyan-600 dark:text-cyan-400 font-black text-base">
                   ${s.finalPrice.toFixed(2)}
                 </span>
               }
             />
-            <InfoRow label="Status" value={
+            <InfoRow label={t("status")} value={
               <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold ${status.bg} ${status.text}`}>
                 <GoDotFill />
                 {status.label}
@@ -388,28 +389,28 @@ const SubscriptionViewComponent = ({
             } />
             {plan && typeof plan === "object" && (
               <>
-                {(plan as any).name && <InfoRow label="Plan Name" value={(plan as any).name} />}
+                {(plan as any).name && <InfoRow label={t("plan_name")} value={(plan as any).name} />}
                 {(plan as any).id && (
                   <InfoRow
-                    label="Plan ID"
+                    label={t("plan_id")}
                     value={
-                      <Link href={`/plans/${(plan as any).id}`} className="text-indigo-500 hover:underline flex items-center gap-1 justify-end">
+                      <Link href={`/plans/${(plan as any).id}`} className="text-cyan-500 hover:underline flex items-center gap-1 justify-end">
                         {String((plan as any).id).slice(0, 16)}…
                         <LuArrowUpRight className="w-3 h-3" />
                       </Link>
                     }
                   />
                 )}
-                {(plan as any).currency && <InfoRow label="Currency" value={(plan as any).currency?.toUpperCase()} />}
+                {(plan as any).currency && <InfoRow label={t("currency")} value={(plan as any).currency?.toUpperCase()} />}
                 {(plan as any).price?.monthlyPrice != null && (
-                  <InfoRow label="Monthly Rate" value={`$${(plan as any).price.monthlyPrice}`} />
+                  <InfoRow label={t("monthly_rate")} value={`$${(plan as any).price.monthlyPrice}`} />
                 )}
                 {(plan as any).price?.yearlyPrice != null && (
-                  <InfoRow label="Yearly Rate" value={`$${(plan as any).price.yearlyPrice}`} />
+                  <InfoRow label={t("yearly_rate")} value={`$${(plan as any).price.yearlyPrice}`} />
                 )}
                 {(plan as any).visibility && (
                   <InfoRow
-                    label="Plan Visibility"
+                    label={t("plan_visibility")}
                     value={
                       <span className="flex items-center gap-1 capitalize">
                         <LuGlobe className="w-3 h-3" />
@@ -419,7 +420,7 @@ const SubscriptionViewComponent = ({
                   />
                 )}
                 {(plan as any).trial_days != null && (
-                  <InfoRow label="Trial Days" value={`${(plan as any).trial_days} days`} />
+                  <InfoRow label={t("trial_days")} value={`${(plan as any).trial_days} days`} />
                 )}
               </>
             )}
@@ -430,7 +431,7 @@ const SubscriptionViewComponent = ({
         <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
           <SectionHeader
             icon={<LuCalendarDays className="w-4 h-4 text-emerald-500" />}
-            title="Subscription Timeline"
+            title={t("subscription_timeline")}
             accent="bg-emerald-50/60 dark:bg-emerald-900/10"
           />
           <div className="p-5">
@@ -452,7 +453,7 @@ const SubscriptionViewComponent = ({
                     </p>
                     {ev.sub && (
                       <p className="text-xs text-red-500 dark:text-red-400 mt-0.5">
-                        Reason: {ev.sub}
+                        {t("reason")} {ev.sub}
                       </p>
                     )}
                   </div>
@@ -467,15 +468,15 @@ const SubscriptionViewComponent = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
           <SectionHeader
-            icon={<LuBuilding2 className="w-4 h-4 text-purple-500" />}
-            title="Company"
-            accent="bg-purple-50/60 dark:bg-purple-900/10"
+            icon={<LuBuilding2 className="w-4 h-4 text-cyan-500" />}
+            title={t("company")}
+            accent="bg-cyan-50/60 dark:bg-cyan-900/10"
           />
           <div className="p-5">
             {companyName ? (
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center shrink-0">
-                  <LuBuilding2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                <div className="w-10 h-10 rounded-xl bg-cyan-100 dark:bg-cyan-900/40 flex items-center justify-center shrink-0">
+                  <LuBuilding2 className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-bold text-gray-800 dark:text-gray-100 capitalize truncate">
@@ -493,17 +494,17 @@ const SubscriptionViewComponent = ({
                 </div>
                 <Link
                   href={`/companies/${companyId}`}
-                  className="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-1 shrink-0"
+                  className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-1 shrink-0"
                 >
-                  View <LuArrowUpRight className="w-3.5 h-3.5" />
+                  {t("view")} <LuArrowUpRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
             ) : null}
             <div className="space-y-0">
-              <InfoRow label="Company ID" value={String(companyId ?? "—")} mono />
-              {company?.industry && <InfoRow label="Industry" value={company.industry} />}
-              {company?.country && <InfoRow label="Country" value={company.country} />}
-              {company?.companyId && <InfoRow label="Ref ID" value={company.companyId} mono />}
+              <InfoRow label={t("company_id")} value={String(companyId ?? "—")} mono />
+              {company?.industry && <InfoRow label={t("industry_2")} value={company.industry} />}
+              {company?.country && <InfoRow label={t("country")} value={company.country} />}
+              {company?.companyId && <InfoRow label={t("ref_id")} value={company.companyId} mono />}
             </div>
           </div>
         </div>
@@ -511,12 +512,12 @@ const SubscriptionViewComponent = ({
         <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
           <SectionHeader
             icon={<LuUser className="w-4 h-4 text-amber-500" />}
-            title="Created By"
+            title={t("created_by")}
             accent="bg-amber-50/60 dark:bg-amber-900/10"
           />
           <div className="p-5 space-y-0">
-            <InfoRow label="User ID" value={String(createdById ?? "—")} mono />
-            <InfoRow label="Collection" value="users" />
+            <InfoRow label={t("user_id")} value={String(createdById ?? "—")} mono />
+            <InfoRow label={t("collection")} value="users" />
             {createdById && (
               <div className="pt-3">
                 <Link
@@ -524,7 +525,7 @@ const SubscriptionViewComponent = ({
                   className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 text-sm font-semibold hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
                 >
                   <LuUser className="w-4 h-4" />
-                  View Creator Profile
+                  {t("view_creator_profile")}
                   <LuArrowUpRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
@@ -537,7 +538,7 @@ const SubscriptionViewComponent = ({
       <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden shadow-sm">
         <SectionHeader
           icon={<LuClock className="w-4 h-4 text-gray-500" />}
-          title="Record Timestamps"
+          title={t("record_timestamps")}
           accent="bg-slate-50/60 dark:bg-gray-700/30"
         />
         <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -546,8 +547,8 @@ const SubscriptionViewComponent = ({
               label: "Created At",
               value: fmtFull(s.createdAt),
               icon: <LuCalendarDays className="w-4 h-4" />,
-              color: "text-indigo-600 dark:text-indigo-400",
-              bg: "bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-800",
+              color: "text-cyan-600 dark:text-cyan-400",
+              bg: "bg-cyan-50 dark:bg-cyan-900/20 border-cyan-100 dark:border-cyan-800",
             },
             {
               label: "Updated At",

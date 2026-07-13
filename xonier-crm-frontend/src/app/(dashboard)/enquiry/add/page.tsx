@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 import { MdOutlineKeyboardArrowDown } from "react-icons/md";
 import { CiSearch } from "react-icons/ci";
 import { FaCheck } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
 
 
 // ── Shared styles ──────────────────────────────────────────────────────────
@@ -140,17 +141,20 @@ const ExtraFieldRow = ({
   onLabelChange: (v: string) => void;
   onValueChange: (v: string) => void;
   onRemove: () => void;
-}) => (
+}) => {
+  const { t } = useTranslation();
+  return (
+    (
   <div className="flex gap-2 items-center">
     <input
-      placeholder="Label"
+      placeholder={t("label")}
       maxLength={100}
       value={label}
       onChange={(e) => onLabelChange(e.target.value)}
       className={`flex-1 ${inlineInputClass}`}
     />
     <input
-      placeholder="Value"
+      placeholder={t("value")}
       value={value}
       onChange={(e) => onValueChange(e.target.value)}
       className={`flex-1 ${inlineInputClass}`}
@@ -163,7 +167,9 @@ const ExtraFieldRow = ({
       ×
     </button>
   </div>
-);
+)
+  );
+};
 
 // ── Other Social Row ───────────────────────────────────────────────────────
 const OtherSocialRow = ({
@@ -178,10 +184,13 @@ const OtherSocialRow = ({
   onPlatformChange: (v: string) => void;
   onUrlChange: (v: string) => void;
   onRemove: () => void;
-}) => (
+}) => {
+  const { t } = useTranslation();
+  return (
+    (
   <div className="flex gap-2 items-center">
     <input
-      placeholder="Platform"
+      placeholder={t("platform")}
       value={platform}
       onChange={(e) => onPlatformChange(e.target.value)}
       className={`w-1/3 ${inlineInputClass}`}
@@ -201,7 +210,9 @@ const OtherSocialRow = ({
       ×
     </button>
   </div>
-);
+)
+  );
+};
 
 // ── Section Heading ────────────────────────────────────────────────────────
 const SectionHeading = ({ title, icon }: { title: string; icon?: string }) => (
@@ -232,6 +243,7 @@ const FieldLabel = ({
 
 // ── Page ───────────────────────────────────────────────────────────────────
 const page = (): JSX.Element => {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [err, setErr] = useState<string[] | string | null>();
   const [usersData, setUsersData] = useState<User[]>([]);
@@ -526,10 +538,10 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
             </div>
             <div>
               <h2 className="text-xl font-bold text-white tracking-tight">
-                Create Enquiry
+                {t("create_enquiry")}
               </h2>
               <p className="text-xs text-cyan-200 mt-0.5">
-                Fill in the details below to register a new enquiry
+                {t("fill_in_the_details_below_to")}
               </p>
             </div>
           </div>
@@ -542,12 +554,12 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
             className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5"
           >
             {/* ── BASIC INFO ───────────────────────────────────────────── */}
-            <SectionHeading title="Basic Information" icon="👤" />
+            <SectionHeading title={t("basic_information")} icon="👤" />
 
             <div className="flex flex-col gap-1.5">
-              <FieldLabel required>Full Name</FieldLabel>
+              <FieldLabel required>{t("full_name")}</FieldLabel>
               <Input
-                placeholder="Enter full name"
+                placeholder={t("enter_full_name")}
                 required
                 value={formData.fullName}
                 onChange={(e) => set("fullName", e.target.value)}
@@ -555,10 +567,10 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <FieldLabel required>Email</FieldLabel>
+              <FieldLabel required>{t("email")}</FieldLabel>
               <Input
                 type="email"
-                placeholder="Enter email address"
+                placeholder={t("enter_email_address")}
                 required
                 value={formData.email}
                 onChange={(e) => set("email", e.target.value)}
@@ -566,7 +578,7 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <FieldLabel required>Phone</FieldLabel>
+              <FieldLabel required>{t("phone")}</FieldLabel>
               <Input
                 placeholder="+919876543210"
                 required
@@ -577,9 +589,9 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
 
             {/* Company Name — mandatory */}
             <div className="flex flex-col gap-1.5">
-              <FieldLabel required>Company Name</FieldLabel>
+              <FieldLabel required>{t("company_name")}</FieldLabel>
               <Input
-                placeholder="Enter company name"
+                placeholder={t("enter_company_name")}
                 required
                 value={formData.companyName}
                 onChange={(e) => set("companyName", e.target.value)}
@@ -588,7 +600,7 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
 
             {/* Info Type — after company name */}
             <div className="flex flex-col gap-1.5">
-              <FieldLabel required>Info Type</FieldLabel>
+              <FieldLabel required>{t("info_type")}</FieldLabel>
               <select
                 required
                 className={selectClass(!!err)}
@@ -605,7 +617,7 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
 
             {/* Designation — after info type */}
             <div className="flex flex-col gap-1.5">
-              <FieldLabel required>Designation</FieldLabel>
+              <FieldLabel required>{t("designation")}</FieldLabel>
               <select
                 required
                 className={selectClass(!!err)}
@@ -623,49 +635,49 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
             </div>
 
             {/* ── LOCATION ─────────────────────────────────────────────── */}
-            <SectionHeading title="Location" icon="📍" />
+            <SectionHeading title={t("location")} icon="📍" />
 
             <div className="flex flex-col gap-1.5">
-              <FieldLabel>Country</FieldLabel>
+              <FieldLabel>{t("country")}</FieldLabel>
               <Input
-                placeholder="e.g. India"
+                placeholder={t("e_g_india")}
                 value={formData.location.country}
                 onChange={(e) => setLocation("country", e.target.value)}
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <FieldLabel>State</FieldLabel>
+              <FieldLabel>{t("state")}</FieldLabel>
               <Input
-                placeholder="e.g. Delhi"
+                placeholder={t("e_g_delhi")}
                 value={formData.location.state}
                 onChange={(e) => setLocation("state", e.target.value)}
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <FieldLabel>City</FieldLabel>
+              <FieldLabel>{t("city")}</FieldLabel>
               <Input
-                placeholder="e.g. New Delhi"
+                placeholder={t("e_g_new_delhi")}
                 value={formData.location.city}
                 onChange={(e) => setLocation("city", e.target.value)}
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <FieldLabel>Zipcode</FieldLabel>
+              <FieldLabel>{t("zipcode")}</FieldLabel>
               <Input
-                placeholder="e.g. 110001"
+                placeholder={t("e_g_110001")}
                 value={formData.location.zipcode}
                 onChange={(e) => setLocation("zipcode", e.target.value)}
               />
             </div>
 
             {/* ── COMPANY INFO ─────────────────────────────────────────── */}
-            <SectionHeading title="Company Information" icon="🏢" />
+            <SectionHeading title={t("company_information")} icon="🏢" />
 
             <div className="flex flex-col gap-1.5">
-              <FieldLabel>Number of Employees</FieldLabel>
+              <FieldLabel>{t("number_of_employees")}</FieldLabel>
               <select
                 className={selectClass(!!err)}
                 value={formData.numberOfEmployees}
@@ -676,7 +688,7 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
                   )
                 }
               >
-                <option value="">Select range</option>
+                <option value="">{t("select_range")}</option>
                 {[...new Set(Object.values(NUMBER_OF_EMPLOYEES))].map((n, i) => (
                   <option key={`${n}-${i}`} value={n}>
                     {n}
@@ -691,43 +703,43 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
 
             <div className="col-span-1 md:col-span-2">
               <TagInput
-                label="Industry"
+                label={t("industry_2")}
                 values={formData.industry}
                 onChange={(vals) => set("industry", vals)}
-                placeholder="Type industry and press Enter"
+                placeholder={t("type_industry_and_press_enter")}
               />
             </div>
 
             <div className="col-span-1 md:col-span-2">
               <TagInput
-                label="Technologies"
+                label={t("technologies")}
                 values={formData.technologies}
                 onChange={(vals) => set("technologies", vals)}
-                placeholder="e.g. React, Node.js — press Enter to add"
+                placeholder={t("e_g_react_node_js_press")}
               />
             </div>
 
             <div className="col-span-1 md:col-span-2">
               <TagInput
-                label="Keywords"
+                label={t("keywords")}
                 values={formData.keywords}
                 onChange={(vals) => set("keywords", vals)}
-                placeholder="Add keywords and press Enter"
+                placeholder={t("add_keywords_and_press_enter")}
               />
             </div>
 
             {/* ── ENQUIRY DETAILS ──────────────────────────────────────── */}
-            <SectionHeading title="Enquiry Details" icon="📝" />
+            <SectionHeading title={t("enquiry_details")} icon="📝" />
 
             <div className="flex flex-col gap-1.5">
-              <FieldLabel required>Priority</FieldLabel>
+              <FieldLabel required>{t("priority")}</FieldLabel>
               <select
                 required
                 className={selectClass(!!err)}
                 value={formData.priority}
                 onChange={(e) => set("priority", e.target.value as PRIORITY)}
               >
-                <option value="">Select priority</option>
+                <option value="">{t("select_priority")}</option>
                 {Object.values(PRIORITY).map((p) => (
                   <option key={p} value={p}>
                     {p.toUpperCase()}
@@ -737,7 +749,7 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <FieldLabel required>Project Type</FieldLabel>
+              <FieldLabel required>{t("project_type")}</FieldLabel>
               <select
                 required
                 className={selectClass(!!err)}
@@ -746,7 +758,7 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
                   set("projectType", e.target.value as PROJECT_TYPES)
                 }
               >
-                <option value="">Select project type</option>
+                <option value="">{t("select_project_type")}</option>
                 {Object.values(PROJECT_TYPES).map((type) => (
                   <option key={type} value={type}>
                     {type.replace(/_/g, " ").toUpperCase()}
@@ -756,14 +768,14 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <FieldLabel required>Source</FieldLabel>
+              <FieldLabel required>{t("source")}</FieldLabel>
               <select
                 required
                 className={selectClass(!!err)}
                 value={formData.source}
                 onChange={(e) => set("source", e.target.value as SOURCE)}
               >
-                <option value="">Select source</option>
+                <option value="">{t("select_source")}</option>
                 {Object.values(SOURCE).map((src) => (
                   <option key={src} value={src}>
                     {src.replace(/_/g, " ").toUpperCase()}
@@ -773,7 +785,7 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <FieldLabel>Assign To</FieldLabel>
+              <FieldLabel>{t("assign_to_2")}</FieldLabel>
               {/* <select 
                 className={selectClass(!!err)}
                 value={formData.assignTo}
@@ -814,7 +826,7 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
                       <div className="flex gap-2 mb-2 border dark:bg-slate-600 border-slate-200 dark:border-slate-500 w-full items-center dark:text-white/60 bg-white rounded-lg px-2">
                         <CiSearch  className="text-slate-400  text-2xl"/>
 
-                      <input placeholder="Search user..."
+                      <input placeholder={t("search_user")}
                       value={searchVal} 
                       onChange={handleSearch}
                       className="outline-none p-2 w-full  text-slate-500 dark:text-white/60"/>
@@ -828,7 +840,7 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
                           setOpenDropDown(false);
                         }}
                       >
-                        Unassigned
+                        {t("unassigned")}
                       </div>
 
                       {/* {usersData?.map((i) => (
@@ -867,7 +879,7 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
                       ))
                     ) : (
                       <div className="px-4 py-3 text-sm text-gray-500">
-                        No users found
+                        {t("no_users_found")}
                       </div>
                     )}
                     </div>
@@ -878,10 +890,10 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
           
 
             <div className="col-span-1 md:col-span-2 flex flex-col gap-1.5">
-              <FieldLabel>Message</FieldLabel>
+              <FieldLabel>{t("message")}</FieldLabel>
               <textarea
                 rows={4}
-                placeholder="Describe the enquiry..."
+                placeholder={t("describe_the_enquiry")}
                 className={textareaClass(!!err)}
                 value={formData.message}
                 onChange={(e) => set("message", e.target.value)}
@@ -889,7 +901,7 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
             </div>
 
             {/* ── SOCIAL LINKS ─────────────────────────────────────────── */}
-            <SectionHeading title="Social Links" icon="🔗" />
+            <SectionHeading title={t("social_links")} icon="🔗" />
 
             {(
               [
@@ -916,13 +928,13 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
             {/* Other social links */}
             <div className="col-span-1 md:col-span-2 flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <FieldLabel>Other Social Links</FieldLabel>
+                <FieldLabel>{t("other_social_links")}</FieldLabel>
                 <button
                   type="button"
                   onClick={addOtherSocial}
                   className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 bg-cyan-50 dark:bg-cyan-900/20 hover:bg-cyan-100 dark:hover:bg-cyan-900/40 px-3 py-1 rounded-full border border-cyan-200 dark:border-cyan-800 transition-all"
                 >
-                  + Add
+                  {t("add")}
                 </button>
               </div>
               <div className="flex flex-col gap-2">
@@ -938,24 +950,24 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
                 ))}
                 {!formData.socialLinks.other.length && (
                   <p className="text-xs text-gray-400 dark:text-gray-500 italic">
-                    No additional social links added.
+                    {t("no_additional_social_links_added")}
                   </p>
                 )}
               </div>
             </div>
 
             {/* ── EXTRA FIELDS ─────────────────────────────────────────── */}
-            <SectionHeading title="Extra Fields" icon="✨" />
+            <SectionHeading title={t("extra_fields")} icon="✨" />
 
             <div className="col-span-1 md:col-span-2 flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <FieldLabel>Custom Fields</FieldLabel>
+                <FieldLabel>{t("custom_fields")}</FieldLabel>
                 <button
                   type="button"
                   onClick={addExtraField}
                   className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 bg-cyan-50 dark:bg-cyan-900/20 hover:bg-cyan-100 dark:hover:bg-cyan-900/40 px-3 py-1 rounded-full border border-cyan-200 dark:border-cyan-800 transition-all"
                 >
-                  + Add New Field
+                  {t("add_new_field")}
                 </button>
               </div>
               <div className="flex flex-col gap-2">
@@ -971,7 +983,7 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
                 ))}
                 {!formData.extra_fields.length && (
                   <p className="text-xs text-gray-400 dark:text-gray-500 italic">
-                    No custom fields added.
+                    {t("no_custom_fields_added")}
                   </p>
                 )}
               </div>
@@ -1000,12 +1012,11 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
             {/* ── FOOTER ───────────────────────────────────────────────── */}
             <div className="col-span-1 md:col-span-2 flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800 mt-2">
               <p className="text-xs text-gray-400 dark:text-gray-500">
-                Fields marked{" "}
-                <span className="text-cyan-500 font-bold">*</span> are
-                required
+                {t("fields_marked")}{" "}
+                <span className="text-cyan-500 font-bold">*</span> {t("are_required")}
               </p>
               <FormButton isLoading={isLoading} type="submit">
-                Create Enquiry
+                {t("create_enquiry")}
               </FormButton>
             </div>
           </form>

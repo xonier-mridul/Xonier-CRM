@@ -12,6 +12,7 @@ import { IoClose, IoAdd, IoTrash, IoChevronDown, IoSearch } from "react-icons/io
 import { ImSpinner2 } from "react-icons/im";
 import { FeatureService } from "@/src/services/feature.service";
 import { CURRENCY_SYMBOL } from "@/src/constants/constants";
+import { useTranslation } from "react-i18next";
 
 interface PlanFormModalProps {
   isOpen: boolean;
@@ -50,6 +51,7 @@ interface FeatureDropdownProps {
 }
 
 const FeatureDropdown: React.FC<FeatureDropdownProps> = ({ selectedId, onChange }) => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [features, setFeatures] = useState<Feature[]>([]);
   const [page, setPage] = useState(1);
@@ -125,7 +127,7 @@ const FeatureDropdown: React.FC<FeatureDropdownProps> = ({ selectedId, onChange 
 
   return (
     <div className="relative w-full" ref={dropdownRef}>
-      <label className="text-sm font-medium text-gray-700 dark:text-gray-200 block mb-1">Feature</label>
+      <label className="text-sm font-medium text-gray-700 dark:text-gray-200 block mb-1">{t("feature")}</label>
       <button
         type="button"
         onClick={() => setOpen((p) => !p)}
@@ -146,14 +148,14 @@ const FeatureDropdown: React.FC<FeatureDropdownProps> = ({ selectedId, onChange 
               type="text"
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
-              placeholder="Search features..."
+              placeholder={t("search_features")}
               className="w-full text-sm outline-none bg-transparent text-gray-900 dark:text-white placeholder:text-gray-400"
             />
           </div>
 
           <div ref={listRef} onScroll={handleScroll} className="max-h-52 overflow-y-auto">
             {features.length === 0 && !fetchLoading && (
-              <div className="py-6 text-center text-sm text-gray-400">No features found</div>
+              <div className="py-6 text-center text-sm text-gray-400">{t("no_features_found")}</div>
             )}
 
             {features.map((f) => (
@@ -173,7 +175,7 @@ const FeatureDropdown: React.FC<FeatureDropdownProps> = ({ selectedId, onChange 
                 </div>
                 {selectedId === f.id && (
                   <span className="text-xs bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 px-2 py-0.5 rounded-full shrink-0">
-                    Selected
+                    {t("selected")}
                   </span>
                 )}
               </button>
@@ -198,6 +200,7 @@ const PlanFormModal: React.FC<PlanFormModalProps> = ({
   isLoading,
   editData,
 }) => {
+  const { t } = useTranslation();
   const [form, setForm] = useState<CreatePlanPayload>(defaultForm());
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -288,29 +291,29 @@ const PlanFormModal: React.FC<PlanFormModalProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <Input
-                label="Plan Name"
+                label={t("plan_name")}
                 required
                 value={form.name}
                 onChange={(e) => setForm((p) => ({ ...p, name: (e.target as HTMLInputElement).value }))}
                 error={errors.name}
-                placeholder="e.g. Professional"
+                placeholder={t("e_g_professional")}
               />
             </div>
 
             <div className="md:col-span-2">
               <Input
-                label="Description"
+                label={t("description_2")}
                 required
                 type="textarea"
                 value={form.description}
                 onChange={(e) => setForm((p) => ({ ...p, description: (e.target as HTMLTextAreaElement).value }))}
                 error={errors.description}
-                placeholder="Describe this plan..."
+                placeholder={t("describe_this_plan")}
               />
             </div>
 
             <div className="md:col-span-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-200 block mb-1">Currency</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-200 block mb-1">{t("currency")}</label>
               <select
                 value={form.currency}
                 onChange={(e) => setForm((p) => ({ ...p, currency: e.target.value as CURRENCY }))}
@@ -326,7 +329,7 @@ const PlanFormModal: React.FC<PlanFormModalProps> = ({
 
             <div className="flex flex-col gap-1 w-full">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                Monthly Price
+                {t("monthly_price")}
                 <span className="ml-1.5 text-xs font-normal text-violet-500 dark:text-violet-400">
                   ({CURRENCY_SYMBOL[form.currency ?? CURRENCY.USD]} {form.currency})
                 </span>
@@ -352,7 +355,7 @@ const PlanFormModal: React.FC<PlanFormModalProps> = ({
 
             <div className="flex flex-col gap-1 w-full">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                Yearly Price
+                {t("yearly_price")}
                 <span className="ml-1.5 text-xs font-normal text-violet-500 dark:text-violet-400">
                   ({CURRENCY_SYMBOL[form.currency ?? CURRENCY.USD]} {form.currency})
                 </span>
@@ -377,7 +380,7 @@ const PlanFormModal: React.FC<PlanFormModalProps> = ({
             </div>
 
             <div className="flex flex-col gap-1 w-full">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Status</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-200">{t("status")}</label>
               <select
                 value={form.status}
                 onChange={(e) => setForm((p) => ({ ...p, status: e.target.value as PLAN_STATUS }))}
@@ -390,7 +393,7 @@ const PlanFormModal: React.FC<PlanFormModalProps> = ({
             </div>
 
             <div className="flex flex-col gap-1 w-full">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Visibility</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-200">{t("visibility")}</label>
               <select
                 value={form.visibility}
                 onChange={(e) => setForm((p) => ({ ...p, visibility: e.target.value as PLAN_VISIBILITY }))}
@@ -403,7 +406,7 @@ const PlanFormModal: React.FC<PlanFormModalProps> = ({
             </div>
 
             <Input
-              label="Discount"
+              label={t("discount")}
               type="number"
               min={0}
               step="any"
@@ -413,11 +416,11 @@ const PlanFormModal: React.FC<PlanFormModalProps> = ({
                 setForm((p) => ({ ...p, discount: val === "" ? null : parseFloat(val) }));
               }}
               error={errors.discount}
-              placeholder="e.g. 10"
+              placeholder={t("e_g_10")}
             />
 
             <div className="flex flex-col gap-1 w-full">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Discount Type</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-200">{t("discount_type")}</label>
               <select
                 value={form.discountType}
                 onChange={(e) => setForm((p) => ({ ...p, discountType: e.target.value as DISCOUNT_TYPE }))}
@@ -430,7 +433,7 @@ const PlanFormModal: React.FC<PlanFormModalProps> = ({
             </div>
 
             <div className="flex flex-col gap-1 w-full">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Discount Apply</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-200">{t("discount_apply")}</label>
               <select
                 value={form.discountApply ?? ""}
                 onChange={(e) =>
@@ -441,15 +444,15 @@ const PlanFormModal: React.FC<PlanFormModalProps> = ({
                 }
                 className="w-full px-3 py-2 rounded-md border bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-violet-500"
               >
-                <option value="">None</option>
-                <option value="monthly">Monthly</option>
-                <option value="yearly">Yearly</option>
-                <option value="both">Both</option>
+                <option value="">{t("none")}</option>
+                <option value="monthly">{t("monthly")}</option>
+                <option value="yearly">{t("yearly")}</option>
+                <option value="both">{t("both")}</option>
               </select>
             </div>
 
             <Input
-              label="Discount Till"
+              label={t("discount_till")}
               type="date"
               value={form.discountTill?.split("T")[0] ?? ""}
               onChange={(e) => {
@@ -459,7 +462,7 @@ const PlanFormModal: React.FC<PlanFormModalProps> = ({
             />
 
             <Input
-              label="Trial Days"
+              label={t("trial_days")}
               type="number"
               min={0}
               value={form.trial_days ?? 0}
@@ -471,7 +474,7 @@ const PlanFormModal: React.FC<PlanFormModalProps> = ({
 
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Features</h3>
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t("features")}</h3>
               <button
                 type="button"
                 onClick={() =>
@@ -479,7 +482,7 @@ const PlanFormModal: React.FC<PlanFormModalProps> = ({
                 }
                 className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-green-600 group font-medium"
               >
-                <IoAdd className="text-lg " /> Add Feature
+                <IoAdd className="text-lg " /> {t("add_feature")}
               </button>
             </div>
 
@@ -487,7 +490,7 @@ const PlanFormModal: React.FC<PlanFormModalProps> = ({
 
             {(form.features || []).length === 0 && (
               <p className="text-sm text-gray-400 text-center py-4 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
-                No features added yet
+                {t("no_features_added_yet")}
               </p>
             )}
 
@@ -498,7 +501,7 @@ const PlanFormModal: React.FC<PlanFormModalProps> = ({
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                    Feature {i + 1}
+                    {t("feature")} {i + 1}
                   </span>
                   <button
                     type="button"
@@ -522,7 +525,7 @@ const PlanFormModal: React.FC<PlanFormModalProps> = ({
                       onChange={(e) => updateFeature(i, "is_unlimited", e.target.checked)}
                       className="accent-blue-600"
                     />
-                    Unlimited
+                    {t("unlimited")}
                   </label>
 
                   <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 cursor-pointer">
@@ -532,14 +535,14 @@ const PlanFormModal: React.FC<PlanFormModalProps> = ({
                       onChange={(e) => updateFeature(i, "is_enabled", e.target.checked)}
                       className="accent-blue-600"
                     />
-                    Enabled
+                    {t("enabled")}
                   </label>
                 </div>
 
                 {!feat.is_unlimited && (
                   <div className="grid grid-cols-2 gap-3">
                     <Input
-                      label="Limit"
+                      label={t("limit")}
                       type="number"
                       min={0}
                       value={feat.limit ?? ""}
@@ -548,7 +551,7 @@ const PlanFormModal: React.FC<PlanFormModalProps> = ({
                       }
                     />
                     <Input
-                      label="Limit Override"
+                      label={t("limit_override")}
                       type="number"
                       min={0}
                       value={feat.limit_override ?? ""}
@@ -568,7 +571,7 @@ const PlanFormModal: React.FC<PlanFormModalProps> = ({
               onClick={onClose}
               className="flex-1 px-4 py-2 rounded-md border hover:text-red-500 cursor-pointer hover:border-red-300  border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-gray-700 font-medium transition-colors"
             >
-              Cancel
+              {t("cancel")}
             </button>
             <FormButton isLoading={isLoading} className="flex-1">
               {editData ? "Update Plan" : "Create Plan"}

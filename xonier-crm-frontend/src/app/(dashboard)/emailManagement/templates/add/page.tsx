@@ -7,6 +7,7 @@ import { MailService } from "@/src/services/communication/mail.service";
 import { Template, Variable, CustomVarForm } from "@/src/types/communication/mail.types";
 import RichTextEditor, { RichTextEditorHandle } from "@/src/components/pages/prospect/RichEditor";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 
 // ─── Default Variables ────────────────────────────────────────────────────────
 const DEFAULT_VARIABLES: Variable[] = [];
@@ -125,6 +126,7 @@ const CustomVariableModal = ({
   initial?: Variable;
   isEdit?: boolean;
 }) => {
+  const { t } = useTranslation();
   const [form, setForm] = useState<CustomVarForm>(
     initial
       ? {
@@ -178,7 +180,7 @@ const CustomVariableModal = ({
               <p className="font-bold text-white text-base">
                 {isEdit ? "Edit Variable" : "Create Custom Variable"}
               </p>
-              <p className="text-yellow-100 text-xs mt-0.5">Define a reusable dynamic placeholder</p>
+              <p className="text-yellow-100 text-xs mt-0.5">{t("define_a_reusable_dynamic_placeholder")}</p>
             </div>
           </div>
           <button
@@ -196,11 +198,11 @@ const CustomVariableModal = ({
           {/* Key */}
           <div className="flex flex-col gap-1">
             <label className="text-xs font-bold uppercase tracking-widest text-yellow-800 dark:text-yellow-300">
-              Key <span className="text-red-500">*</span>
+              {t("key")} <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
-              placeholder="e.g. order_id"
+              placeholder={t("e_g_order_id")}
               value={form.key}
               disabled={isEdit}
               onChange={(e) => setForm({ ...form, key: slugify(e.target.value) })}
@@ -209,7 +211,7 @@ const CustomVariableModal = ({
             {errors.key && <p className="text-red-500 text-xs">{errors.key}</p>}
             {form.key && (
               <p className="text-yellow-700 dark:text-yellow-400 text-xs flex items-center gap-1.5 mt-0.5">
-                <span className="opacity-60">Inserts as:</span>
+                <span className="opacity-60">{t("inserts_as")}</span>
                 <code className="font-mono bg-yellow-100 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 px-1.5 py-0.5 rounded text-yellow-900 dark:text-yellow-200 font-semibold">
                   {`{{${form.key}}}`}
                 </code>
@@ -220,11 +222,11 @@ const CustomVariableModal = ({
           {/* Label */}
           <div className="flex flex-col gap-1">
             <label className="text-xs font-bold uppercase tracking-widest text-yellow-800 dark:text-yellow-300">
-              Label <span className="text-red-500">*</span>
+              {t("label")} <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
-              placeholder="e.g. Order ID"
+              placeholder={t("e_g_order_id_2")}
               value={form.label}
               onChange={(e) => setForm({ ...form, label: e.target.value })}
               className={mf(!!errors.label)}
@@ -235,12 +237,12 @@ const CustomVariableModal = ({
           {/* Description + Default */}
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-bold uppercase tracking-widest text-yellow-800 dark:text-yellow-300">Description</label>
-              <input type="text" placeholder="Optional" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={mf()} />
+              <label className="text-xs font-bold uppercase tracking-widest text-yellow-800 dark:text-yellow-300">{t("description_2")}</label>
+              <input type="text" placeholder={t("optional")} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={mf()} />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-bold uppercase tracking-widest text-yellow-800 dark:text-yellow-300">Default Value</label>
-              <input type="text" placeholder="Fallback" value={form.default_value} onChange={(e) => setForm({ ...form, default_value: e.target.value })} className={mf()} />
+              <label className="text-xs font-bold uppercase tracking-widest text-yellow-800 dark:text-yellow-300">{t("default_value")}</label>
+              <input type="text" placeholder={t("fallback")} value={form.default_value} onChange={(e) => setForm({ ...form, default_value: e.target.value })} className={mf()} />
             </div>
           </div>
 
@@ -256,9 +258,9 @@ const CustomVariableModal = ({
             </div>
             <div>
               <p className="text-sm font-semibold text-yellow-900 dark:text-yellow-200 group-hover:text-yellow-700 dark:group-hover:text-yellow-300 transition-colors">
-                Required field
+                {t("required_field")}
               </p>
-              <p className="text-xs text-yellow-600 dark:text-yellow-400">Must be filled when email is sent</p>
+              <p className="text-xs text-yellow-600 dark:text-yellow-400">{t("must_be_filled_when_email_is")}</p>
             </div>
           </label>
 
@@ -269,7 +271,7 @@ const CustomVariableModal = ({
               onClick={onClose}
               className="flex-1 py-2 rounded-lg border border-yellow-300 dark:border-yellow-700 text-sm font-semibold text-yellow-900 dark:text-yellow-200 hover:bg-yellow-100 dark:hover:bg-yellow-900 cursor-pointer transition-all"
             >
-              Cancel
+              {t("cancel")}
             </button>
             <button
               type="button"
@@ -294,23 +296,26 @@ const DeleteConfirmModal = ({
   variable: Variable;
   onClose: () => void;
   onConfirm: () => void;
-}) => (
+}) => {
+  const { t } = useTranslation();
+  return (
+    (
   <div
     className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm"
     onClick={(ev) => { if (ev.target === ev.currentTarget) onClose(); }}
   >
     <div className="w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden bg-white dark:bg-gray-900 border border-red-200 dark:border-red-800">
       <div className="px-6 py-4 bg-gradient-to-r from-red-500 to-red-600 dark:from-red-700 dark:to-red-800">
-        <p className="font-bold text-white text-base">Delete Variable</p>
-        <p className="text-red-100 text-xs mt-0.5">This action cannot be undone</p>
+        <p className="font-bold text-white text-base">{t("delete_variable")}</p>
+        <p className="text-red-100 text-xs mt-0.5">{t("this_action_cannot_be_undone")}</p>
       </div>
       <div className="px-6 py-5 flex flex-col gap-5">
         <p className="text-sm text-gray-700 dark:text-gray-300">
-          Are you sure you want to delete{" "}
+          {t("are_you_sure_you_want_to_delete")}{" "}
           <code className="font-mono bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-1.5 py-0.5 rounded text-gray-900 dark:text-gray-200 font-semibold">
             {`{{${variable.key}}}`}
           </code>
-          ? Any uses in the email body will become unresolved.
+          {t("any_uses_in_the_email_body_will_become_unresolved")}
         </p>
         <div className="flex gap-3">
           <button
@@ -318,20 +323,22 @@ const DeleteConfirmModal = ({
             onClick={onClose}
             className="flex-1 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-all"
           >
-            Cancel
+            {t("cancel")}
           </button>
           <button
             type="button"
             onClick={() => { onConfirm(); onClose(); }}
             className="flex-1 py-2 rounded-lg bg-red-500 hover:bg-red-600 dark:bg-red-700 dark:hover:bg-red-600 text-white text-sm font-bold cursor-pointer transition-all"
           >
-            Delete
+            {t("delete")}
           </button>
         </div>
       </div>
     </div>
   </div>
-);
+)
+  );
+};
 
 // ─── Variable Chip ────────────────────────────────────────────────────────────
 const VarChip = ({
@@ -344,7 +351,10 @@ const VarChip = ({
   onInsert: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
-}) => (
+}) => {
+  const { t } = useTranslation();
+  return (
+    (
   <div
     className={`group inline-flex items-center rounded-full border text-xs font-medium transition-all duration-150 overflow-hidden
       ${variable.isCustom
@@ -374,7 +384,7 @@ const VarChip = ({
         <button
           type="button"
           onClick={onEdit}
-          title="Edit variable"
+          title={t("edit_variable")}
           className="w-5 h-5 flex items-center justify-center rounded text-yellow-600 dark:text-yellow-400 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition-colors cursor-pointer"
         >
           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -384,7 +394,7 @@ const VarChip = ({
         <button
           type="button"
           onClick={onDelete}
-          title="Delete variable"
+          title={t("delete_variable_2")}
           className="w-5 h-5 flex items-center justify-center rounded text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 hover:text-red-600 transition-colors cursor-pointer"
         >
           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -394,12 +404,15 @@ const VarChip = ({
       </div>
     )}
   </div>
-);
+)
+  );
+};
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN PAGE
 // ═══════════════════════════════════════════════════════════════════════════════
 const Page = (): JSX.Element => {
+  const { t } = useTranslation();
   const router = useRouter();
 
   const [isLoading,    setIsLoading]    = useState(false);
@@ -529,10 +542,10 @@ const Page = (): JSX.Element => {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-white tracking-tight">
-                  Create Email Template
+                  {t("create_email_template")}
                 </h2>
                 <p className="text-xs text-cyan-200 mt-0.5">
-                  Build reusable, dynamic email templates with variable placeholders
+                  {t("build_reusable_dynamic_email_templates_with")}
                 </p>
               </div>
             </div>
@@ -546,14 +559,14 @@ const Page = (): JSX.Element => {
             >
 
               {/* ── BASIC INFORMATION ──────────────────────────────── */}
-              <SectionHeading title="Basic Information" icon="📋" />
+              <SectionHeading title={t("basic_information")} icon="📋" />
 
               <div className="flex flex-col gap-1.5">
-                <FieldLabel required>Template Name</FieldLabel>
+                <FieldLabel required>{t("template_name")}</FieldLabel>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Welcome Onboarding Email"
+                  placeholder={t("e_g_welcome_onboarding_email")}
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   className={inputClass(!!err)}
@@ -561,11 +574,11 @@ const Page = (): JSX.Element => {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <FieldLabel required>Subject</FieldLabel>
+                <FieldLabel required>{t("subject")}</FieldLabel>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Welcome to {{company}}, {{customer_name}}!"
+                  placeholder={t("e_g_welcome_to_company_customer_name")}
                   value={form.subject}
                   onChange={(e) => setForm({ ...form, subject: e.target.value })}
                   className={inputClass(!!err)}
@@ -573,13 +586,13 @@ const Page = (): JSX.Element => {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <FieldLabel>Category</FieldLabel>
+                <FieldLabel>{t("category")}</FieldLabel>
                 <select
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value as TemplateCategory })}
                   className={selectClass(!!err)}
                 >
-                  <option value="">Select a category…</option>
+                  <option value="">{t("select_a_category")}</option>
                   {Object.values(TemplateCategory).map((cat) => (
                     <option key={cat} value={cat}>
                       {cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase().replace(/_/g, " ")}
@@ -589,34 +602,34 @@ const Page = (): JSX.Element => {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <FieldLabel>Privacy</FieldLabel>
+                <FieldLabel>{t("privacy")}</FieldLabel>
                 <select
                   value={form.privacy}
                   onChange={(e) => setForm({ ...form, privacy: e.target.value })}
                   className={selectClass(!!err)}
                 >
-                  <option value="PUBLIC">🌐  Public</option>
-                  <option value="PRIVATE">🔒  Private</option>
+                  <option value="PUBLIC">{t("public_2")}</option>
+                  <option value="PRIVATE">{t("private_2")}</option>
                 </select>
               </div>
 
               <div className="col-span-1 md:col-span-2 flex flex-col gap-1.5">
-                <FieldLabel>Tags</FieldLabel>
+                <FieldLabel>{t("tags")}</FieldLabel>
                 <TagInput tags={form.tags} onChange={(tags) => setForm({ ...form, tags })} />
                 <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1.5 mt-0.5">
-                  Press
-                  <kbd className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-mono border border-gray-200 dark:border-gray-700">Enter</kbd>
-                  or
+                  {t("press")}
+                  <kbd className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-mono border border-gray-200 dark:border-gray-700">{t("enter")}</kbd>
+                  {t("or")}
                   <kbd className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-mono border border-gray-200 dark:border-gray-700">,</kbd>
-                  to add a tag
+                  {t("to_add_a_tag")}
                 </p>
               </div>
 
               {/* ── AI GENERATION ──────────────────────────────────── */}
-              <SectionHeading title="AI Generation" icon="🤖" />
+              <SectionHeading title={t("ai_generation")} icon="🤖" />
 
               <div className="col-span-1 md:col-span-2 flex flex-col gap-2">
-                <FieldLabel>AI Prompt</FieldLabel>
+                <FieldLabel>{t("ai_prompt")}</FieldLabel>
                 <textarea
                   rows={3}
                   // placeholder="Describe the email you'd like to generate…"
@@ -636,17 +649,17 @@ const Page = (): JSX.Element => {
                     {isGenerating ? (
                       <>
                         <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Generating…
+                        {t("generating")}
                       </>
                     ) : (
-                      <>🤖 Generate With AI</>
+                      <>{t("generate_with_ai")}</>
                     )}
                   </button>
                 </div>
               </div>
 
               {/* ── TEMPLATE BODY ──────────────────────────────────── */}
-              <SectionHeading title="Template Body" icon="✍️" />
+              <SectionHeading title={t("template_body")} icon="✍️" />
 
               {/* Variable Panel */}
               <div className="col-span-1 md:col-span-2 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -658,9 +671,9 @@ const Page = (): JSX.Element => {
                       ⚡
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-gray-900 dark:text-white">Available Variables</p>
+                      <p className="text-sm font-bold text-gray-900 dark:text-white">{t("available_variables")}</p>
                       <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
-                        Click to insert at cursor · Hover custom vars for edit / delete
+                        {t("click_to_insert_at_cursor_hover")}
                       </p>
                     </div>
                   </div>
@@ -669,7 +682,7 @@ const Page = (): JSX.Element => {
                     onClick={() => setShowCreateModal(true)}
                     className="text-xs font-semibold text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/40 px-3 py-1.5 rounded-full border border-yellow-200 dark:border-yellow-800 transition-all"
                   >
-                    + Create Custom
+                    {t("create_custom_2")}
                   </button>
                 </div>
 
@@ -677,7 +690,7 @@ const Page = (): JSX.Element => {
                 <div className="px-4 py-3 flex flex-wrap gap-2 bg-white dark:bg-gray-900/50">
                   {allVariables.length === 0 && (
                     <p className="text-xs text-gray-400 dark:text-gray-500 italic">
-                      No variables yet. Create a custom one to get started.
+                      {t("no_variables_yet_create_a_custom")}
                     </p>
                   )}
                   {allVariables.map((v) => (
@@ -695,7 +708,7 @@ const Page = (): JSX.Element => {
                 {customVars.length > 0 && (
                   <div className="px-4 py-2.5 bg-yellow-50 dark:bg-yellow-950 border-t border-yellow-100 dark:border-yellow-900">
                     <p className="text-xs font-medium text-yellow-800 dark:text-yellow-300">
-                      ✦ <strong>{customVars.length}</strong> custom variable{customVars.length > 1 ? "s" : ""} will be attached to this template
+                      ✦ <strong>{customVars.length}</strong> {t("custom_variable")}{customVars.length > 1 ? "s" : ""} {t("will_be_attached_to_this_template")}
                     </p>
                   </div>
                 )}
@@ -703,12 +716,12 @@ const Page = (): JSX.Element => {
 
               {/* Rich Text Editor */}
               <div className="col-span-1 md:col-span-2 flex flex-col gap-1.5">
-                <FieldLabel required>Email Body</FieldLabel>
+                <FieldLabel required>{t("email_body")}</FieldLabel>
                 <RichTextEditor
                   ref={editorRef}
                   value={form.body}
                   onChange={(html) => setForm((p) => ({ ...p, body: html }))}
-                  placeholder="Write your email body here. Click a variable chip above to insert it at cursor…"
+                  placeholder={t("write_your_email_body_here_click")}
                   hasError={!!err}
                   minHeight={300}
                 />
@@ -734,7 +747,7 @@ const Page = (): JSX.Element => {
               {success && (
                 <div className="col-span-1 md:col-span-2">
                   <div className="rounded-xl border border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/20 px-4 py-3 text-sm text-green-700 dark:text-green-400 font-semibold flex items-center gap-2">
-                    <span>✅</span> Template created successfully!
+                    <span>✅</span> {t("template_created_successfully")}
                   </div>
                 </div>
               )}
@@ -742,7 +755,7 @@ const Page = (): JSX.Element => {
               {/* ── FOOTER ──────────────────────────────────────────── */}
               <div className="col-span-1 md:col-span-2 flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800 mt-2">
                 <p className="text-xs text-gray-400 dark:text-gray-500">
-                  Fields marked <span className="text-cyan-500 font-bold">*</span> are required
+                  {t("fields_marked")} <span className="text-cyan-500 font-bold">*</span> {t("are_required")}
                 </p>
                 <div className="flex items-center gap-3">
                   <button
@@ -750,7 +763,7 @@ const Page = (): JSX.Element => {
                     onClick={handleClear}
                     className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-800 dark:hover:text-gray-200 transition-all duration-150 cursor-pointer"
                   >
-                    Clear Form
+                    {t("clear_form")}
                   </button>
                   <button
                     type="submit"
@@ -760,10 +773,10 @@ const Page = (): JSX.Element => {
                     {isLoading ? (
                       <>
                         <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Saving…
+                        {t("saving")}
                       </>
                     ) : (
-                      <>💾 Create Template</>
+                      <>{t("create_template_2")}</>
                     )}
                   </button>
                 </div>

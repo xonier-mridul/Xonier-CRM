@@ -38,6 +38,7 @@ import {
 import dealService from '@/src/services/deal.service'
 import { ParamValue } from 'next/dist/server/request/params'
 import { QuotationPaymentStatus, QuotationCurrency  } from '@/src/constants/enum'
+import { useTranslation } from "react-i18next";
 
 
 const CURRENCY_OPTIONS = Object.values(QuotationCurrency).map(c => ({
@@ -146,14 +147,15 @@ function LineItemRow({
   onChange: (index: number, field: keyof QuotationLineItemPayload, value: any) => void
   onRemove: (index: number) => void
 }) {
+  const { t } = useTranslation();
   return (
     <div className="grid grid-cols-12 gap-2 items-start bg-gray-50 dark:bg-gray-700/40 rounded-xl p-3 mb-2">
       {/* Description */}
       <div className="col-span-12 sm:col-span-4">
-        <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Description *</label>
+        <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">{t("description")}</label>
         <input
           className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-          placeholder="Service or product"
+          placeholder={t("service_or_product")}
           value={item.description}
           onChange={e => onChange(index, 'description', e.target.value)}
         />
@@ -161,7 +163,7 @@ function LineItemRow({
 
       {/* Qty */}
       <div className="col-span-4 sm:col-span-1">
-        <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Qty *</label>
+        <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">{t("qty_2")}</label>
         <input
           type="number"
           min="0"
@@ -174,10 +176,10 @@ function LineItemRow({
 
       {/* Unit */}
       <div className="col-span-4 sm:col-span-1">
-        <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Unit</label>
+        <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">{t("unit")}</label>
         <input
           className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-          placeholder="pcs"
+          placeholder={t("pcs")}
           value={item.unit || ''}
           onChange={e => onChange(index, 'unit', e.target.value)}
         />
@@ -185,7 +187,7 @@ function LineItemRow({
 
       {/* Unit Price */}
       <div className="col-span-4 sm:col-span-2">
-        <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Unit Price *</label>
+        <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">{t("unit_price_2")}</label>
         <div className="relative">
           <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">{symbol}</span>
           <input
@@ -201,7 +203,7 @@ function LineItemRow({
 
       {/* Discount % */}
       <div className="col-span-4 sm:col-span-1">
-        <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Disc %</label>
+        <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">{t("disc")}</label>
         <input
           type="number"
           min="0"
@@ -216,7 +218,7 @@ function LineItemRow({
 
       {/* Tax % */}
       <div className="col-span-4 sm:col-span-1">
-        <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Tax %</label>
+        <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">{t("tax")}</label>
         <input
           type="number"
           min="0"
@@ -231,7 +233,7 @@ function LineItemRow({
 
       {/* Total */}
       <div className="col-span-4 sm:col-span-1">
-        <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Total</label>
+        <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">{t("total_2")}</label>
         <div className="text-sm font-semibold text-gray-900 dark:text-white py-2 px-1">
           {symbol}{item.total.toFixed(2)}
         </div>
@@ -243,7 +245,7 @@ function LineItemRow({
           type="button"
           onClick={() => onRemove(index)}
           className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-          title="Remove item"
+          title={t("remove_item")}
         >
           <IoTrashOutline className="w-4 h-4" />
         </button>
@@ -261,6 +263,7 @@ function FinancialSummary({
   form: QuotationCreatePayload
   symbol: string
 }) {
+  const { t } = useTranslation();
   const rows = [
     { label: 'Subtotal', value: form.subTotal },
     form.discountAmount ? { label: `Discount`, value: -form.discountAmount } : null,
@@ -281,7 +284,7 @@ function FinancialSummary({
         </div>
       ))}
       <div className="flex justify-between pt-3 border-t border-gray-200 dark:border-gray-600">
-        <span className="font-bold text-gray-900 dark:text-white">Total</span>
+        <span className="font-bold text-gray-900 dark:text-white">{t("total_2")}</span>
         <span className="text-xl font-bold text-cyan-600 dark:text-cyan-400">
           {symbol}{form.total.toFixed(2)}
         </span>
@@ -293,6 +296,7 @@ function FinancialSummary({
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
 const Page = () => {
+  const { t } = useTranslation();
   const router = useRouter()
   const { id } = useParams()
 
@@ -491,10 +495,10 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <IoDocumentText className="w-7 h-7 text-cyan-600 dark:text-cyan-400" />
-            New Quotation
+            {t("new_quotation")}
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Fill in the details to create and send a quotation
+            {t("fill_in_the_details_to_create")}
           </p>
         </div>
         <button
@@ -523,31 +527,31 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
         <div className={showPreview ? 'xl:col-span-2' : ''}>
 
           {/* 1. Basic Info */}
-          <Section title="Basic Information" icon={<IoInformationCircleOutline className="w-5 h-5 text-cyan-500" />}>
+          <Section title={t("basic_information")} icon={<IoInformationCircleOutline className="w-5 h-5 text-cyan-500" />}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
                 <Input
-                  label="Quotation Title *"
+                  label={t("quotation_title_2")}
                   name="title"
                   value={formData.title}
                   onChange={handleInput}
-                  placeholder="e.g., Q4 2024 Marketing Campaign"
+                  placeholder={t("e_g_q4_2024_marketing_campaign")}
                   className="w-full"
                 />
               </div>
               <div className="md:col-span-2">
                 <Input
                   type="textarea"
-                  label="Description"
+                  label={t("description_2")}
                   name="description"
                   value={formData.description ?? ''}
                   onChange={handleInput}
-                  placeholder="Brief description of this quotation..."
+                  placeholder={t("brief_description_of_this_quotation")}
                   className="w-full"
                 />
               </div>
               <Select
-                label="Currency"
+                label={t("currency")}
                 name="currency"
                 value={formData.currency ?? 'USD'}
                 onChange={handleInput}
@@ -555,7 +559,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                 className="w-full"
               />
               <Select
-                label="Status"
+                label={t("status")}
                 name="quotationStatus"
                 value={formData.quotationStatus ?? QuotationStatus.SENT}
                 onChange={handleInput}
@@ -569,29 +573,29 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
           </Section>
 
           {/* 2. Customer Info */}
-          <Section title="Customer Information" icon={<IoPersonOutline className="w-5 h-5 text-cyan-500" />}>
+          <Section title={t("customer_information")} icon={<IoPersonOutline className="w-5 h-5 text-cyan-500" />}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                label="Customer Name *"
+                label={t("customer_name_2")}
                 name="customerName"
                 value={formData.customerName}
                 onChange={handleInput}
-                placeholder="John Doe"
+                placeholder={t("john_doe")}
                 disabled
                 className="w-full"
               />
               <Input
-                label="Email Address *"
+                label={t("email_address_2")}
                 name="customerEmail"
                 type="email"
                 value={formData.customerEmail}
                 onChange={handleInput}
-                placeholder="john@example.com"
+                placeholder={t("john_example_com")}
                 disabled
                 className="w-full"
               />
               <Input
-                label="Phone Number"
+                label={t("phone_number")}
                 name="customerPhone"
                 type="tel"
                 value={formData.customerPhone ?? ''}
@@ -601,27 +605,27 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                 className="w-full"
               />
               <Input
-                label="Company Name"
+                label={t("company_name")}
                 name="companyName"
                 value={formData.companyName ?? ''}
                 onChange={handleInput}
-                placeholder="Acme Corp"
+                placeholder={t("acme_corp")}
                 disabled
                 className="w-full"
               />
               <div className="md:col-span-2">
                 <Input
-                  label="Company Address"
+                  label={t("company_address")}
                   name="companyAddress"
                   value={formData.companyAddress ?? ''}
                   onChange={handleInput}
-                  placeholder="123 Business Street, City, Country"
+                  placeholder={t("123_business_street_city_country")}
                   className="w-full"
                 />
               </div>
               <div className="md:col-span-2">
                 <Input
-                  label="Company Website"
+                  label={t("company_website")}
                   name="companyWebsite"
                   value={formData.companyWebsite ?? ''}
                   onChange={handleInput}
@@ -633,10 +637,10 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
           </Section>
 
           {/* 3. Line Items */}
-          <Section title="Line Items" icon={<IoListOutline className="w-5 h-5 text-cyan-500" />}>
+          <Section title={t("line_items")} icon={<IoListOutline className="w-5 h-5 text-cyan-500" />}>
             {(formData.lineItems ?? []).length === 0 ? (
               <div className="text-center py-8 text-gray-400 dark:text-gray-500 text-sm">
-                No line items yet. Add items below to auto-calculate the subtotal.
+                {t("no_line_items_yet_add_items")}
               </div>
             ) : (
               <>
@@ -658,20 +662,20 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
               className="mt-2 flex items-center gap-2 px-4 py-2 text-sm font-medium text-cyan-600 dark:text-cyan-400 border border-cyan-300 dark:border-cyan-700 rounded-xl hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-colors"
             >
               <IoAddOutline className="w-4 h-4" />
-              Add Line Item
+              {t("add_line_item")}
             </button>
           </Section>
 
           {/* 4. Financial Details */}
-          <Section title="Financial Details" icon={<IoCashOutline className="w-5 h-5 text-cyan-500" />}>
+          <Section title={t("financial_details")} icon={<IoCashOutline className="w-5 h-5 text-cyan-500" />}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
               {/* Subtotal — editable only when no line items */}
               <div className="md:col-span-2 lg:col-span-3">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Subtotal *
+                  {t("subtotal_2")}
                   {(formData.lineItems ?? []).length > 0 && (
-                    <span className="ml-2 text-xs font-normal text-gray-400">(auto-calculated from line items)</span>
+                    <span className="ml-2 text-xs font-normal text-gray-400">{t("auto_calculated_from_line_items")}</span>
                   )}
                 </label>
                 <div className="relative max-w-xs">
@@ -692,7 +696,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
               {/* Discount */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Discount Amount ({symbol})
+                  {t("discount_amount")}{symbol})
                 </label>
                 <input
                   type="number"
@@ -708,7 +712,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Discount (%)
+                  {t("discount_2")}
                 </label>
                 <input
                   type="number"
@@ -726,7 +730,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
               {/* Tax */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Tax Amount ({symbol})
+                  {t("tax_amount")}{symbol})
                 </label>
                 <input
                   type="number"
@@ -742,7 +746,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Tax Rate (%)
+                  {t("tax_rate")}
                 </label>
                 <input
                   type="number"
@@ -760,7 +764,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
               {/* Shipping */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Shipping ({symbol})
+                  {t("shipping_2")}{symbol})
                 </label>
                 <input
                   type="number"
@@ -777,7 +781,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
               {/* Total (read-only, auto-computed) */}
               <div className="md:col-span-2 lg:col-span-3">
                 <div className="flex items-center justify-between bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded-xl px-5 py-4">
-                  <span className="font-semibold text-gray-900 dark:text-white">Grand Total</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">{t("grand_total")}</span>
                   <span className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">
                     {formatCurrency(formData.total)}
                   </span>
@@ -787,10 +791,10 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
           </Section>
 
           {/* 5. Dates */}
-          <Section title="Validity Period" icon={<IoCalendarOutline className="w-5 h-5 text-cyan-500" />}>
+          <Section title={t("validity_period")} icon={<IoCalendarOutline className="w-5 h-5 text-cyan-500" />}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                label="Issue Date *"
+                label={t("issue_date")}
                 name="issueDate"
                 type="date"
                 value={formData.issueDate}
@@ -798,7 +802,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                 className="w-full"
               />
               <Input
-                label="Valid Until"
+                label={t("valid_until")}
                 name="valid"
                 type="date"
                 value={formData.valid ?? ''}
@@ -810,8 +814,8 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                 <div className="md:col-span-2">
                   <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700/50 rounded-xl px-4 py-3">
                     <IoCalendarOutline className="w-4 h-4 text-cyan-500" />
-                    Valid for <span className="font-semibold text-gray-900 dark:text-white">{validityDays} days</span>
-                    &nbsp;— expires {formatDate(formData.valid ?? '')}
+                    {t("valid_for")} <span className="font-semibold text-gray-900 dark:text-white">{validityDays} {t("days")}</span>
+                    {t("nbsp_expires")} {formatDate(formData.valid ?? '')}
                   </div>
                 </div>
               )}
@@ -819,67 +823,67 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
           </Section>
 
           {/* 6. Payment */}
-          <Section title="Payment Details" icon={<IoReceiptOutline className="w-5 h-5 text-cyan-500" />} defaultOpen={false}>
+          <Section title={t("payment_details")} icon={<IoReceiptOutline className="w-5 h-5 text-cyan-500" />} defaultOpen={false}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                label="Payment Terms"
+                label={t("payment_terms")}
                 name="paymentTerms"
                 value={formData.paymentTerms ?? ''}
                 onChange={handleInput}
-                placeholder="e.g., Net 30, 50% upfront"
+                placeholder={t("e_g_net_30_50_upfront")}
                 className="w-full"
               />
               <Input
-                label="Payment Method"
+                label={t("payment_method")}
                 name="paymentMethod"
                 value={formData.paymentMethod ?? ''}
                 onChange={handleInput}
-                placeholder="e.g., Bank transfer, PayPal"
+                placeholder={t("e_g_bank_transfer_paypal")}
                 className="w-full"
               />
             </div>
           </Section>
 
           {/* 7. Notes & Terms */}
-          <Section title="Notes & Terms" icon={<IoDocumentTextOutline className="w-5 h-5 text-cyan-500" />} defaultOpen={false}>
+          <Section title={t("notes_terms")} icon={<IoDocumentTextOutline className="w-5 h-5 text-cyan-500" />} defaultOpen={false}>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Customer-Facing Notes
+                  {t("customer_facing_notes")}
                 </label>
                 <textarea
                   name="notes"
                   value={formData.notes ?? ''}
                   onChange={handleInput}
                   rows={3}
-                  placeholder="Notes visible to the customer..."
+                  placeholder={t("notes_visible_to_the_customer")}
                   className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Internal Notes
-                  <span className="ml-2 text-xs font-normal text-gray-400">(not visible to customer)</span>
+                  {t("internal_notes")}
+                  <span className="ml-2 text-xs font-normal text-gray-400">{t("not_visible_to_customer")}</span>
                 </label>
                 <textarea
                   name="internalNotes"
                   value={formData.internalNotes ?? ''}
                   onChange={handleInput}
                   rows={3}
-                  placeholder="Internal notes for your team..."
+                  placeholder={t("internal_notes_for_your_team")}
                   className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Terms & Conditions
+                  {t("terms_conditions")}
                 </label>
                 <textarea
                   name="termsAndConditions"
                   value={formData.termsAndConditions ?? ''}
                   onChange={handleInput}
                   rows={4}
-                  placeholder="Standard terms and conditions..."
+                  placeholder={t("standard_terms_and_conditions")}
                   className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
                 />
               </div>
@@ -895,7 +899,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                 disabled={isLoading}
                 className="px-5 py-2.5 rounded-xl text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
               >
-                Cancel
+                {t("cancel")}
               </button>
 
               <button
@@ -933,7 +937,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
               <div className="flex items-center justify-between">
                 <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                   <IoEyeOutline className="w-5 h-5 text-cyan-500" />
-                  Live Preview
+                  {t("live_preview")}
                 </h2>
                 <button
                   onClick={() => setShowPreview(false)}
@@ -955,7 +959,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
 
               {/* Customer */}
               <div className="space-y-1.5">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Customer</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">{t("customer")}</p>
                 <p className="font-semibold text-gray-900 dark:text-white">{formData.customerName || '—'}</p>
                 {formData.companyName && (
                   <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
@@ -986,14 +990,14 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
 
               {/* Dates */}
               <div className="space-y-1.5 pt-4 border-t border-gray-100 dark:border-gray-700">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Dates</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">{t("dates")}</p>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-500 dark:text-gray-400">Issue Date</span>
+                  <span className="text-gray-500 dark:text-gray-400">{t("issue_date_2")}</span>
                   <span className="text-gray-900 dark:text-white">{formatDate(formData.issueDate)}</span>
                 </div>
                 {formData.valid && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-500 dark:text-gray-400">Valid Until</span>
+                    <span className="text-gray-500 dark:text-gray-400">{t("valid_until")}</span>
                     <span className="text-gray-900 dark:text-white">{formatDate(formData.valid)}</span>
                   </div>
                 )}
@@ -1002,7 +1006,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
               {/* Line Items */}
               {(formData.lineItems ?? []).length > 0 && (
                 <div className="space-y-2 pt-4 border-t border-gray-100 dark:border-gray-700">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Items</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">{t("items")}</p>
                   {(formData.lineItems ?? []).map((item, i) => (
                     <div key={i} className="flex justify-between text-sm">
                       <span className="text-gray-600 dark:text-gray-300 truncate max-w-[65%]">
@@ -1019,7 +1023,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
 
               {/* Financial Summary */}
               <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">Summary</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">{t("summary")}</p>
                 <FinancialSummary form={formData} symbol={symbol} />
               </div>
 
@@ -1029,7 +1033,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                   <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
                     <IoAlertCircleOutline className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
                     <p className="text-xs text-amber-800 dark:text-amber-300">
-                      Fill in all required fields to enable sending.
+                      {t("fill_in_all_required_fields_to")}
                     </p>
                   </div>
                 </div>

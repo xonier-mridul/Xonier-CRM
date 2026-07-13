@@ -24,6 +24,7 @@ import {
 import { HiStar } from "react-icons/hi2";
 import { BsClipboardCheck } from "react-icons/bs";
 import { GoDotFill } from "react-icons/go";
+import { useTranslation } from "react-i18next";
 
 // ── Fractional Star Rating ────────────────────────────────────────────────────
 const StarRating = ({
@@ -209,6 +210,7 @@ const StatCard = ({
 
 // ── Task Card ─────────────────────────────────────────────────────────────────
 const TaskCard = ({ task, index }: { task: TaskDataForUser; index: number }) => {
+  const { t } = useTranslation();
   const cfg = task.rating ? getRatingConfig(task.rating) : null;
   const isOverdue = task.isOverdue;
 
@@ -253,7 +255,7 @@ const TaskCard = ({ task, index }: { task: TaskDataForUser; index: number }) => 
                   )}
                   <span className="inline-flex items-center gap-1 text-[11px] font-medium text-gray-400 bg-slate-50 dark:bg-gray-700/50 px-2 py-0.5 rounded-md">
                     <FiClock className="w-2.5 h-2.5" />
-                    Est.{" "}
+                    {t("est")}{" "}
                     <span className="text-gray-600 dark:text-gray-300">
                       {task.estimatedHours || 0}h
                     </span>
@@ -270,9 +272,9 @@ const TaskCard = ({ task, index }: { task: TaskDataForUser; index: number }) => 
                     ) : (
                       <FiCheckCircle className="w-2.5 h-2.5" />
                     )}
-                    Act. {task.actualHours || 0}h
+                    {t("act")} {task.actualHours || 0}h
                     {isOverdue && (
-                      <span className="ml-0.5 font-bold">· Overdue</span>
+                      <span className="ml-0.5 font-bold">{t("overdue_2")}</span>
                     )}
                   </span>
                 </div>
@@ -299,7 +301,7 @@ const TaskCard = ({ task, index }: { task: TaskDataForUser; index: number }) => 
                 <div className="shrink-0 flex flex-col items-center justify-center gap-1 px-4 py-3 rounded-2xl border border-dashed border-slate-200 dark:border-gray-600 min-w-[90px]">
                   <HiStar className="w-5 h-5 text-gray-200 dark:text-gray-600" />
                   <span className="text-[10px] text-gray-400 font-medium">
-                    Not rated
+                    {t("not_rated")}
                   </span>
                 </div>
               )}
@@ -311,7 +313,7 @@ const TaskCard = ({ task, index }: { task: TaskDataForUser; index: number }) => 
                 <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-indigo-400 to-violet-400 rounded-full" />
                 <div className="pl-3.5 pr-3 py-2.5 bg-slate-50 dark:bg-gray-700/40 rounded-r-xl rounded-bl-xl">
                   <p className="text-xs text-gray-500 dark:text-gray-400 italic leading-relaxed">
-                    &ldquo;{task.remark}&rdquo;
+                    {t("ldquo")}{task.remark}{t("rdquo")}
                   </p>
                 </div>
               </div>
@@ -325,6 +327,7 @@ const TaskCard = ({ task, index }: { task: TaskDataForUser; index: number }) => 
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function UserRatingPage() {
+  const { t } = useTranslation();
   const { id } = useParams() as { id: string };
   const router = useRouter();
 
@@ -448,7 +451,7 @@ export default function UserRatingPage() {
             <IoPersonCircle className="w-9 h-9 text-red-400" />
           </div>
           <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
-            Something went wrong
+            {t("something_went_wrong")}
           </h2>
           <p className="text-gray-400 text-sm mb-7">
             {error || "User not found"}
@@ -458,7 +461,7 @@ export default function UserRatingPage() {
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm shadow-indigo-200 dark:shadow-indigo-900/30"
           >
             <FiArrowLeft className="w-4 h-4" />
-            Go Back
+            {t("go_back")}
           </button>
         </div>
       </div>
@@ -540,7 +543,7 @@ export default function UserRatingPage() {
                       {user.rating.toFixed(1)}
                     </p>
                     <p className="text-[10px] text-gray-400 font-medium mt-0.5">
-                      out of 5
+                      {t("out_of_5")}
                     </p>
                   </div>
                   <div className="w-px h-10 bg-slate-100 dark:bg-gray-700" />
@@ -557,7 +560,7 @@ export default function UserRatingPage() {
                 <div className="flex items-center gap-2 px-4 py-3 rounded-2xl border border-dashed border-slate-200 dark:border-gray-600 bg-slate-50 dark:bg-gray-700/30">
                   <HiStar className="w-5 h-5 text-gray-300 dark:text-gray-600" />
                   <span className="text-sm text-gray-400 font-medium">
-                    No rating yet
+                    {t("no_rating_yet")}
                   </span>
                 </div>
               )}
@@ -572,7 +575,7 @@ export default function UserRatingPage() {
                 {user.isEmailVerified && (
                   <MdVerified
                     className="w-5 h-5 text-blue-500 shrink-0"
-                    title="Email Verified"
+                    title={t("email_verified")}
                   />
                 )}
                 <span
@@ -613,28 +616,28 @@ export default function UserRatingPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <StatCard
             icon={<BsClipboardCheck className="w-5 h-5" />}
-            label="Total Tasks"
+            label={t("total_tasks")}
             value={totalTasks}
             sub="assigned tasks"
             gradient="from-indigo-500 to-violet-500"
           />
           <StatCard
             icon={<HiStar className="w-5 h-5" />}
-            label="Rated Tasks"
+            label={t("rated_tasks")}
             value={ratedTasksCount}
             sub={`${totalTasks - ratedTasksCount} unrated`}
             gradient="from-amber-400 to-orange-500"
           />
           <StatCard
             icon={<FiClock className="w-5 h-5" />}
-            label="Avg. Actual Hrs"
+            label={t("avg_actual_hrs")}
             value={`${avgCompletionHrs}h`}
             sub="per task"
             gradient="from-violet-500 to-purple-600"
           />
           <StatCard
             icon={<IoCheckmarkDoneCircle className="w-5 h-5" />}
-            label="Overall Rating"
+            label={t("overall_rating")}
             value={user.rating ? `${user.rating.toFixed(1)}` : "—"}
             sub={ratingCfg?.label ?? "No rating"}
             gradient={
@@ -654,10 +657,10 @@ export default function UserRatingPage() {
               </div>
               <div>
                 <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100">
-                  Rating Distribution
+                  {t("rating_distribution")}
                 </h3>
                 <p className="text-xs text-gray-400">
-                  Based on {ratedTasksCount} rated task
+                  {t("based_on")} {ratedTasksCount} {t("rated_task")}
                   {ratedTasksCount !== 1 ? "s" : ""}
                 </p>
               </div>
@@ -745,10 +748,10 @@ export default function UserRatingPage() {
                 </div>
                 <div>
                   <h2 className="text-sm font-bold text-gray-800 dark:text-white">
-                    Task History & Reviews
+                    {t("task_history_reviews")}
                   </h2>
                   <p className="text-xs text-gray-400">
-                    {tasks.length} of {totalTasks} tasks loaded
+                    {tasks.length} {t("of")} {totalTasks} {t("tasks_loaded")}
                   </p>
                 </div>
               </div>
@@ -778,10 +781,10 @@ export default function UserRatingPage() {
                 </div>
                 <div>
                   <p className="text-base font-bold text-gray-400">
-                    No tasks found
+                    {t("no_tasks_found")}
                   </p>
                   <p className="text-sm text-gray-400 mt-1">
-                    This user has no task reviews yet.
+                    {t("this_user_has_no_task_reviews")}
                   </p>
                 </div>
               </div>
@@ -802,7 +805,7 @@ export default function UserRatingPage() {
                 <div className="flex items-center gap-2.5 px-5 py-2.5 bg-indigo-50 dark:bg-indigo-900/20 rounded-full">
                   <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
                   <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
-                    Loading more tasks…
+                    {t("loading_more_tasks")}
                   </span>
                 </div>
               )}
@@ -810,7 +813,7 @@ export default function UserRatingPage() {
                 <div className="flex items-center gap-4 w-full max-w-xs mx-auto">
                   <div className="flex-1 h-px bg-gradient-to-r from-transparent to-slate-200 dark:to-gray-700" />
                   <span className="text-xs font-semibold text-gray-400 whitespace-nowrap">
-                    ✓ All tasks loaded
+                    {t("all_tasks_loaded")}
                   </span>
                   <div className="flex-1 h-px bg-gradient-to-l from-transparent to-slate-200 dark:to-gray-700" />
                 </div>

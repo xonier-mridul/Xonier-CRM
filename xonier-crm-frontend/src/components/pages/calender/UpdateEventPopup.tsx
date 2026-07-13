@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import { EventInput } from "@fullcalendar/core";
+import { useTranslation } from "react-i18next";
 
 interface UpdateEventModalProps {
   open: boolean;
@@ -22,6 +23,7 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<CalendarEventPayload>({
     title: "",
     description: "",
@@ -186,7 +188,7 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
-            Update Event
+            {t("update_event")}
           </h2>
         </div>
 
@@ -196,14 +198,14 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
 
             <div>
               <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Event Title <span className="text-red-500">*</span>
+                {t("event_title_2")} <span className="text-red-500">*</span>
               </label>
               <input
                 id="title"
                 type="text"
                 value={formData.title}
                 onChange={(e) => handleChange("title", e.target.value)}
-                placeholder="Enter event title"
+                placeholder={t("enter_event_title")}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:bg-gray-700 dark:text-white ${
                   errors.title ? "border-red-500" : "border-gray-300 dark:border-gray-600"
                 }`}
@@ -216,7 +218,7 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
             
             <div>
               <label htmlFor="eventType" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Event Type
+                {t("event_type")}
               </label>
               <select
                 id="eventType"
@@ -236,7 +238,7 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
             {formData.eventType === EventType.MEETING && (
               <div>
                 <label htmlFor="meetingLink" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Meeting Link
+                  {t("meeting_link")}
                 </label>
                 <input
                   id="meetingLink"
@@ -257,7 +259,7 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
 
             <div>
               <label htmlFor="priority" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Priority
+                {t("priority")}
               </label>
               <select
                 id="priority"
@@ -265,9 +267,9 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
                 onChange={(e) => handleChange("priority", e.target.value as "low" | "medium" | "high")}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:bg-gray-700 dark:text-white"
               >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
+                <option value="low">{t("low")}</option>
+                <option value="medium">{t("medium")}</option>
+                <option value="high">{t("high")}</option>
               </select>
             </div>
 
@@ -276,7 +278,7 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
 
             <div>
               <label htmlFor="start" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Start {formData.isAllDay ? "Date" : "Date & Time"} <span className="text-red-500">*</span>
+                {t("start")} {formData.isAllDay ? "Date" : "Date & Time"} <span className="text-red-500">*</span>
               </label>
               <input
                 id="start"
@@ -296,7 +298,7 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
             {!formData.isAllDay && (
               <div>
                 <label htmlFor="end" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  End Date & Time
+                  {t("end_date_time")}
                 </label>
                 <input
                   id="end"
@@ -317,13 +319,13 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
             
           <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Description
+                {t("description_2")}
               </label>
               <textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => handleChange("description", e.target.value)}
-                placeholder="Enter event description (optional)"
+                placeholder={t("enter_event_description_optional")}
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:bg-gray-700 dark:text-white"
               />
@@ -338,7 +340,7 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
                 className="h-4 w-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500"
               />
               <label htmlFor="isAllDay" className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
-                All Day Event
+                {t("all_day_event_2")}
               </label>
             </div>
 
@@ -350,7 +352,7 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
               disabled={loading}
               className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 disabled:opacity-50"
             >
-              Cancel
+              {t("cancel")}
             </button>
             <button
               type="submit"
@@ -363,7 +365,7 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Updating...
+                  {t("updating_2")}
                 </>
               ) : (
                 "Update Event"

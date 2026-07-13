@@ -19,6 +19,7 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { SALES_STATUS } from "@/src/constants/enum";
 import { Plus, Trash2, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface NewCustomField {
   tempId: string;
@@ -76,6 +77,7 @@ const EMPTY_FORM: Record<string, string | number | null> = {
 type FormElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
 const page = (): JSX.Element => {
+  const { t } = useTranslation();
   const [err, setErr] = useState<string | string[]>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -334,11 +336,10 @@ const page = (): JSX.Element => {
           <div className="flex items-center gap-5 justify-between">
             <div className="flex flex-col gap-2">
               <h2 className="text-2xl font-bold dark:text-white text-slate-900 capitalize">
-                Update Leads
+                {t("update_leads")}
               </h2>
               <p className="text-slate-500 dark:text-slate-300">
-                You can customize your fields, if you want then click edit form
-                field button
+                {t("you_can_customize_your_fields_if_you_want_then_click_edit")}
               </p>
             </div>
 
@@ -407,7 +408,7 @@ const page = (): JSX.Element => {
                         <div className="flex items-center gap-3">
                           <div className="flex-1 h-px bg-slate-200 dark:bg-gray-500" />
                           <span className="text-sm font-medium text-slate-500 dark:text-slate-300 whitespace-nowrap">
-                            Additional Fields
+                            {t("additional_fields")}
                           </span>
                           <div className="flex-1 h-px bg-slate-200 dark:bg-gray-500" />
                         </div>
@@ -432,19 +433,19 @@ const page = (): JSX.Element => {
                       {newCustomFields.map((field) => (
                         <div key={field.tempId} className="col-span-1 flex flex-col gap-2">
                           <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                            New Field
+                            {t("new_field")}
                           </label>
                           <div className="flex gap-2 items-center">
                             <input
                               type="text"
-                              placeholder="Field name"
+                              placeholder={t("field_name")}
                               value={field.key}
                               onChange={(e) => handleNewFieldKeyChange(field.tempId, e.target.value)}
                               className="w-2/5 px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-gray-500 bg-white dark:bg-gray-600 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                             <input
                               type="text"
-                              placeholder="Value"
+                              placeholder={t("value")}
                               value={field.value}
                               onChange={(e) => handleNewFieldValueChange(field.tempId, e.target.value)}
                               className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-gray-500 bg-white dark:bg-gray-600 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -469,7 +470,7 @@ const page = (): JSX.Element => {
                       className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 border border-dashed border-blue-400 dark:border-blue-500 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                     >
                       <Plus size={16} />
-                      Add More Field
+                      {t("add_more_field")}
                     </button>
                   </div>
                 </>
@@ -477,11 +478,11 @@ const page = (): JSX.Element => {
                 <div className="flex items-center flex-col justify-center col-span-2 py-5">
                   <Image
                     src={"/images/Cry.gif"}
-                    alt="cry img"
+                    alt={t("cry_img")}
                     height={200}
                     width={200}
                   />
-                  <p>No form fields found, please select fields first</p>
+                  <p>{t("no_form_fields_found_please_select")}</p>
                 </div>
               )
             ) : (
@@ -511,7 +512,7 @@ const page = (): JSX.Element => {
               isLoading={loading}
               disabled={isMissingRequiredFields || loading}
             >
-              Update Lead
+              {t("update_lead")}
             </FormButton>
           </form>
         </div>
@@ -520,10 +521,10 @@ const page = (): JSX.Element => {
           <div className="flex items-center gap-5 justify-between">
             <div className="flex flex-col gap-2">
               <h2 className="text-2xl font-bold dark:text-white text-slate-900 capitalize">
-                Update Status
+                {t("update_status")}
               </h2>
               <p className="text-slate-500 dark:text-slate-300">
-                Update leads status
+                {t("update_leads_status")}
               </p>
             </div>
           </div>
@@ -533,9 +534,9 @@ const page = (): JSX.Element => {
           >
             <Select
               name="sales"
-              label="Lead Status"
+              label={t("lead_status")}
               options={SALES_STATUS_OPTIONS}
-              placeholder="select status type"
+              placeholder={t("select_status_type")}
               value={statusData.status}
               onChange={handleStatusChange}
               required={true}
@@ -546,7 +547,7 @@ const page = (): JSX.Element => {
               isLoading={statusLoading}
               disabled={statusLoading || !statusData.status}
             >
-              Update Status
+              {t("update_status")}
             </FormButton>
           </form>
         </div>

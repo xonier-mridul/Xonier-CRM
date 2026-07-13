@@ -11,6 +11,7 @@ import { COLOR_OPTIONS, PERMISSIONS, TASK_VISIBILITY } from "@/src/constants/enu
 import CategoryModal from "@/src/components/pages/task/createModal";
 import { FaRegEye } from "react-icons/fa6";
 import { MdDeleteOutline, MdOutlineEdit } from "react-icons/md";
+import { useTranslation } from "react-i18next";
 
 
 function getColorOption(hex: string | null): ColorOption {
@@ -74,6 +75,7 @@ const CategoryTable = ({
     handleSearch,
     err,
 }: CategoryTableProps) => {
+  const { t } = useTranslation();
     const [search, setSearch] = React.useState<string>("");
 
     const filtered = categoryData.filter(
@@ -85,6 +87,8 @@ const CategoryTable = ({
     const canCreate = hasPermissions(PERMISSIONS.taskCategoryCreate);
     const canEdit = hasPermissions(PERMISSIONS.taskCategoryUpdate);
     const canDelete = hasPermissions(PERMISSIONS.taskCategoryDelete);
+//   const { t } = useTranslation();
+
 
     return (
         <>
@@ -108,11 +112,11 @@ const CategoryTable = ({
                     <div className="flex items-center gap-2 mb-1">
                         <span className="text-2xl">🗂️</span>
                         <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-                            Task Categories
+                            {t("task_categories")}
                         </h1>
                     </div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Organise and manage task categories for your project.
+                        {t("organise_and_manage_task_categories_for")}
                     </p>
                 </div>
 
@@ -120,9 +124,9 @@ const CategoryTable = ({
                     <button
                         type="button"
                         onClick={() => setIsPopupShow(true)}
-                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-sm font-bold shadow-md shadow-blue-200 transition-all"
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 active:scale-95 text-white text-sm font-bold shadow-md shadow-cyan-200 transition-all"
                     >
-                        <span className="text-base">＋</span> New Category
+                        <span className="text-base">＋</span> {t("new_category")}
                     </button>
                 )}
             </div>
@@ -134,7 +138,7 @@ const CategoryTable = ({
                         label: "Total Categories",
                         value: categoryData.length,
                         icon: "🗂️",
-                        color: "bg-blue-50 border-blue-100",
+                        color: "bg-cyan-50 border-cyan-100",
                     },
                     {
                         label: "Active",
@@ -168,8 +172,8 @@ const CategoryTable = ({
                     onChange={(e) => {
                         handleSearch(e.target.value);
                     }}
-                    placeholder="Search categories…"
-                    className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-sm text-gray-900 dark:text-white dark:bg-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition bg-white"
+                    placeholder={t("search_categories")}
+                    className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-sm text-gray-900 dark:text-white dark:bg-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition bg-white"
                 />
             </div>
 
@@ -182,20 +186,20 @@ const CategoryTable = ({
                                 #
                             </th>
                             <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                Category
+                                {t("category")}
                             </th>
                             <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                Description
+                                {t("description_2")}
                             </th>
                             <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                Color
+                                {t("color")}
                             </th>
                             <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                Created By
+                                {t("created_by")}
                             </th>
                             {(canEdit || canDelete) && (
                                 <th className="text-right px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Actions
+                                    {t("actions")}
                                 </th>
                             )}
                         </tr>
@@ -214,7 +218,7 @@ const CategoryTable = ({
                                 >
                                     <div className="text-4xl mb-2">🔍</div>
                                     <div className="text-sm font-medium">
-                                        No categories found.
+                                        {t("no_categories_found_2")}
                                     </div>
                                 </td>
                             </tr>
@@ -247,7 +251,7 @@ const CategoryTable = ({
                                         <td className="px-5 py-4 text-gray-500 dark:text-gray-400 text-xs max-w-xs truncate">
                                             {c.description || (
                                                 <span className="italic text-gray-300 dark:text-gray-600">
-                                                    No description
+                                                    {t("no_description")}
                                                 </span>
                                             )}
                                         </td>
@@ -278,9 +282,9 @@ const CategoryTable = ({
                                                         <button
                                                             type="button"
                                                             onClick={() => handleEdit(c)}
-                                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 transition"
+                                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-cyan-600 bg-cyan-50 hover:bg-cyan-100 transition"
                                                         >
-                                                            <span className="items-center justify-center rounded-md bg-blue-100/80 text-blue-500 border-blue-100">
+                                                            <span className="items-center justify-center rounded-md bg-cyan-100/80 text-cyan-500 border-cyan-100">
                                                                 <MdOutlineEdit className="text-sm" />
                                                             </span>
                                                         </button>
@@ -310,11 +314,11 @@ const CategoryTable = ({
                 {/* Footer */}
                 <div className="px-5 py-3.5 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
               <span className="text-xs text-gray-400 dark:text-gray-500">
-                Showing{" page "} 
+                {t("showing")}{" page "} 
                 <span className="font-semibold text-gray-600 dark:text-gray-300">
                   {currentPage}
                 </span>{" "}
-                of{" "}
+                {t("of")}{" "}
                 <span className="font-semibold text-gray-600 dark:text-gray-300">{totalPages}</span>
               </span>
 
@@ -325,7 +329,7 @@ const CategoryTable = ({
                   onClick={() => handlepagechange(-1)}
                   className="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
                 >
-                  ← Prev
+                  {t("prev")}
                 </button>
                 <span className="text-xs text-gray-500 dark:text-gray-400 font-medium px-1">
                   {currentPage} 
@@ -336,7 +340,7 @@ const CategoryTable = ({
                   onClick={() => handlepagechange(1)}
                   className="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
                 >
-                  Next →
+                  {t("next")}
                 </button>
               </div>
             </div>

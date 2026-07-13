@@ -11,8 +11,10 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import axios, { AxiosError } from "axios";
 import extractErrorMessages from "../../utils/error.utils";
+import { useTranslation } from "react-i18next";
 
 const page = () => {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [err, setErr] = useState<any | null>(null);
   const [formData, setFormData] = useState<LoginPayload>({
@@ -61,7 +63,7 @@ const page = () => {
             src={"/images/trakeroo.png"}
             height={200}
             width={200}
-            alt="xonier logo"
+            alt={t("xonier_logo")}
             className="w-36"
           />
         </nav>
@@ -75,7 +77,7 @@ const page = () => {
         </div>
       </div>
       <div className="w-[35%] bg-white h-screen flex items-start justify-center flex-col gap-5 p-14">
-        <h1 className="text-2xl text-black font-medium">Welcome back Admin</h1>
+        <h1 className="text-2xl text-black font-medium">{t("welcome_back_admin")}</h1>
         {/* <div className="flex flex-col gap-2 text-gray-500">
           Continue with
           <div className="flex items-center justify-between gap-3 w-full">
@@ -110,15 +112,15 @@ const page = () => {
         <form className="w-full " onSubmit={handleSubmit}>
           <div className="flex flex-col gap-4">
             <Input
-              label="Email"
+              label={t("email")}
               name="email"
               type="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="example@gmail.com"
+              placeholder={t("example_gmail_com")}
             />
             <Input
-              label="Password"
+              label={t("password_2")}
               name="password"
               type="password"
               value={formData.password}
@@ -127,7 +129,7 @@ const page = () => {
             />
             <div className="flex items-center justify-end">
               <Link href={"/"} className="text-gray-500 font-semibold text-sm">
-                Forgot Password ?
+                {t("forgot_password")}
               </Link>
             </div>
             {err && (
@@ -140,7 +142,7 @@ const page = () => {
               isLoading={isLoading}
               disabled={formData.email === "" || formData.password === ""}
             >
-              Sign In
+              {t("sign_in")}
             </FormButton>
           </div>
         </form>

@@ -27,8 +27,10 @@ import DateFilterButton from "@/src/components/common/dateFilter";
 import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 import CreatedAt from "@/src/components/common/CreatedAt";
 import StatusBadge from "@/src/components/common/Status";
+import { useTranslation } from "react-i18next";
 
 const page = (): JSX.Element => {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [invoiceData, setInvoiceData] = useState<Invoice[]>([])
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -83,10 +85,10 @@ const page = (): JSX.Element => {
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm  gap-5 p-6 rounded-xl border-[1px] border-slate-900/10 w-full flex items-center justify-between">
         <div className="flex flex-col gap-1.5">
           <h2 className="text-2xl font-bold  dark:text-white text-slate-900 capitalize">
-            Invoices
+            {t("invoices")}
           </h2>
           <p className="text-gray-500 dark:text-gray-400">
-            You want to manage your invoices
+            {t("you_want_to_manage_your_invoices")}
           </p>
         </div>
       </div>
@@ -95,10 +97,10 @@ const page = (): JSX.Element => {
         <div className="flex w-full items-center gap-12 justify-between">
           <div className="flex flex-col gap-1.5">
             <h2 className="text-xl font-bold  dark:text-white text-slate-900 capitalize">
-              All Invoices
+              {t("all_invoices")}
             </h2>
             <p className="text-gray-500 dark:text-gray-400 ">
-              Edit or remove invoices.
+              {t("edit_or_remove_invoices")}
             </p>
           </div>
           <div className="flex items-center gap-6">
@@ -115,7 +117,7 @@ const page = (): JSX.Element => {
             </select>
             <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 text-slate-500 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2 dark:text-white/70">
               <IoIosSearch className="text-xl" />
-              <input type="text" className="outline-none" placeholder="Search..." onChange={(e) => handleSearch(e.target.value)} />
+              <input type="text" className="outline-none" placeholder={t("search_2")} onChange={(e) => handleSearch(e.target.value)} />
             </div>
             <div>
               <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
@@ -131,30 +133,30 @@ const page = (): JSX.Element => {
                   Invoice Id
                 </th> */}
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  Client Info
+                  {t("client_info")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  Issue date
+                  {t("issue_date_3")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
                   {" "}
-                  Due date
+                  {t("due_date_2")}
                 </th>
 
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
-                  amount
+                  {t("amount_2")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
-                  Status
+                  {t("status")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  created date
+                  {t("created_date_2")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  created by
+                  {t("created_by_2")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
-                  Actions
+                  {t("actions")}
                 </th>
               </tr>
             </thead>
@@ -274,7 +276,7 @@ const page = (): JSX.Element => {
                     </tr>
                   );
                 })
-              ) : <tr><td className="p-4 text-center text-slate-500 dark:text-white/70" colSpan={8}>Data not found</td></tr>) : (
+              ) : <tr><td className="p-4 text-center text-slate-500 dark:text-white/70" colSpan={8}>{t("data_not_found")}</td></tr>) : (
                 <tr className="p-4">
                   <td className="text-center p-4">
                     <Skeleton height={30} borderRadius={14} />

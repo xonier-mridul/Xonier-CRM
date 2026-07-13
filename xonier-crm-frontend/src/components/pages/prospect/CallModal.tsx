@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Phone, Mic, MicOff, Volume2, VolumeX, PhoneOff } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   phone: string;
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export default function Calling({ phone, onClose }: Props) {
+  const { t } = useTranslation();
   const [seconds, setSeconds] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const [isSpeakerOn, setIsSpeakerOn] = useState(true);
@@ -87,7 +89,7 @@ export default function Calling({ phone, onClose }: Props) {
         </div>
 
         <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
-          Calling
+          {t("calling_2")}
         </h2>
 
         <p className="text-gray-500 mt-1">{phone}</p>

@@ -19,6 +19,7 @@ import Input from "@/src/components/ui/Input";
 import Select from "@/src/components/ui/Select";
 import { RiGitRepositoryPrivateLine, RiGitRepositoryPrivateFill } from "react-icons/ri";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
+import { useTranslation } from "react-i18next";
 
 enum ACTIVE {
   ALL = "all",
@@ -37,6 +38,7 @@ const NoteCard = ({
   onDelete: (id: string) => void;
   onClick: (note: Note) => void;
 }) => {
+  const { t } = useTranslation();
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -53,14 +55,14 @@ const NoteCard = ({
     >
       {note.byAdmin && (
         <div className="absolute -right-10 top-6 w-40 bg-cyan-600 text-white text-xs font-semibold py-1 text-center transform rotate-45 shadow-md z-10">
-          BY ADMIN
+          {t("by_admin")}
         </div>
       )}
 
       {note.isPinned && (
         <div className="absolute top-3 left-3 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
           <BsPinAngleFill className="w-3 h-3" />
-          Pinned
+          {t("pinned")}
         </div>
       )}
 
@@ -78,7 +80,7 @@ const NoteCard = ({
               {formatDate(note.createdAt)}
             </span>
             <span className="text-xs text-gray-400 dark:text-gray-500">
-              by {note.createdBy.firstName} {note.createdBy.lastName}
+              {t("by")} {note.createdBy.firstName} {note.createdBy.lastName}
             </span>
           </div>
 
@@ -103,7 +105,7 @@ const NoteCard = ({
                 onDelete(note.id);
               }}
               className="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-colors"
-              title="Delete note"
+              title={t("delete_note")}
             >
               <MdDelete className="w-4 h-4" />
             </button>
@@ -125,6 +127,7 @@ const NoteDetailModal = ({
   onPin: (id: string) => void;
   onDelete: (id: string) => void;
 }) => {
+  const { t } = useTranslation();
   if (!note) return null;
 
   const formatDate = (dateString: string) => {
@@ -148,12 +151,12 @@ const NoteDetailModal = ({
               {note.isPinned && (
                 <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
                   <BsPinAngleFill className="w-3 h-3" />
-                  Pinned
+                  {t("pinned")}
                 </span>
               )}
               {note.byAdmin && (
                 <span className="bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400 px-2 py-1 rounded-full text-xs font-medium">
-                  BY ADMIN
+                  {t("by_admin")}
                 </span>
               )}
             </div>
@@ -179,7 +182,7 @@ const NoteDetailModal = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
             <div>
               <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">
-                Created By
+                {t("created_by")}
               </span>
               <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {note.createdBy.firstName} {note.createdBy.lastName}
@@ -187,7 +190,7 @@ const NoteDetailModal = ({
             </div>
             <div>
               <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">
-                Created At
+                {t("created_at")}
               </span>
               <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {formatDate(note.createdAt)}
@@ -195,7 +198,7 @@ const NoteDetailModal = ({
             </div>
             <div>
               <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">
-                Visibility
+                {t("visibility")}
               </span>
               <span className="text-sm font-medium text-gray-900 dark:text-white capitalize">
                 {note.visibility}
@@ -203,7 +206,7 @@ const NoteDetailModal = ({
             </div>
             <div>
               <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">
-                Status
+                {t("status")}
               </span>
               <span className="text-sm font-medium text-gray-900 dark:text-white capitalize">
                 {note.status}
@@ -223,12 +226,12 @@ const NoteDetailModal = ({
             {note.isPinned ? (
               <>
                 <BsPinAngleFill className="w-4 h-4" />
-                Unpin
+                {t("unpin")}
               </>
             ) : (
               <>
                 <BsPinAngle className="w-4 h-4" />
-                Pin
+                {t("pin")}
               </>
             )}
           </button>
@@ -240,7 +243,7 @@ const NoteDetailModal = ({
             className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors flex items-center gap-2"
           >
             <MdDelete className="w-4 h-4" />
-            Delete
+            {t("delete")}
           </button>
         </div>
       </div>
@@ -257,6 +260,7 @@ const CreateNoteModal = ({
   onClose: () => void;
   onCreate: () => void;
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<NoteCreatePayload>({
     title: "",
     content: "",
@@ -329,7 +333,7 @@ const CreateNoteModal = ({
         <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <MdOutlineNoteAlt className="w-6 h-6" />
-            Create New Note
+            {t("create_new_note")}
           </h2>
           <button
             onClick={handleClose}
@@ -342,9 +346,9 @@ const CreateNoteModal = ({
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <Input
-            label="Note Title"
+            label={t("note_title")}
             type="text"
-            placeholder="Enter note title"
+            placeholder={t("enter_note_title")}
             value={formData.title}
             onChange={(e) =>
               setFormData({ ...formData, title: e.target.value })
@@ -353,9 +357,9 @@ const CreateNoteModal = ({
           />
 
           <Input
-            label="Note Content"
+            label={t("note_content")}
             type="textarea"
-            placeholder="Enter note content"
+            placeholder={t("enter_note_content")}
             value={formData.content}
             onChange={(e) =>
               setFormData({ ...formData, content: e.target.value })
@@ -366,7 +370,7 @@ const CreateNoteModal = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Select
-              label="Entity Type"
+              label={t("entity_type")}
               options={entityOptions}
               value={formData.entityType}
               onChange={(e) =>
@@ -375,11 +379,11 @@ const CreateNoteModal = ({
                   entityType: e.target.value as NotesEntities,
                 })
               }
-              placeholder="Select entity type"
+              placeholder={t("select_entity_type")}
             />
 
             <Select
-              label="Visibility"
+              label={t("visibility")}
               options={visibilityOptions}
               value={formData.visibility}
               onChange={(e) =>
@@ -388,7 +392,7 @@ const CreateNoteModal = ({
                   visibility: e.target.value as NoteVisibility,
                 })
               }
-              placeholder="Select visibility"
+              placeholder={t("select_visibility")}
             />
           </div>
 
@@ -407,7 +411,7 @@ const CreateNoteModal = ({
               className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2 cursor-pointer"
             >
               <BsPinAngleFill className="w-4 h-4 text-amber-600" />
-              Pin this note
+              {t("pin_this_note")}
             </label>
           </div>
 
@@ -418,7 +422,7 @@ const CreateNoteModal = ({
               disabled={isSubmitting}
               className="px-6 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Cancel
+              {t("cancel")}
             </button>
             <button
               type="submit"
@@ -428,12 +432,12 @@ const CreateNoteModal = ({
               {isSubmitting ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Creating...
+                  {t("creating_2")}
                 </>
               ) : (
                 <>
                   <MdOutlineNoteAlt className="w-4 h-4" />
-                  Create Note
+                  {t("create_note")}
                 </>
               )}
             </button>
@@ -445,6 +449,7 @@ const CreateNoteModal = ({
 };
 
 const Page = (): JSX.Element => {
+  const { t } = useTranslation();
   const [active, setActive] = useState<ACTIVE>(ACTIVE.ALL);
   const [popup, setPopup] = useState<boolean>(false);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
@@ -632,10 +637,10 @@ const Page = (): JSX.Element => {
       <div className="flex w-full flex-col gap-6">
         <div>
           <h2 className="text-slate-900 dark:text-white font-bold text-4xl mb-2">
-            Notes
+            {t("notes")}
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
-            Manage and organize your notes
+            {t("manage_and_organize_your_notes")}
           </p>
         </div>
 
@@ -650,7 +655,7 @@ const Page = (): JSX.Element => {
               onClick={() => handleActive(ACTIVE.ALL)}
             >
               <TbNotes className="w-4 h-4" />
-              All notes
+              {t("all_notes")}
              
             </li>
             <li
@@ -666,7 +671,7 @@ const Page = (): JSX.Element => {
               ) : (
                 <FaRegStar className="w-4 h-4 text-amber-500" />
               )}
-              Pinned notes
+              {t("pinned_notes")}
               
             </li>
             <li
@@ -682,7 +687,7 @@ const Page = (): JSX.Element => {
               ) : (
                 <RiGitRepositoryPrivateLine className="w-4 h-4 text-green-500" />
               )}
-              Private notes
+              {t("private_notes")}
              
             </li>
           </ul>
@@ -700,9 +705,9 @@ const Page = (): JSX.Element => {
                 }
               }}
             >
-              <option value={6}>6 per page</option>
-              <option value={12}>12 per page</option>
-              <option value={24}>24 per page</option>
+              <option value={6}>{t("6_per_page")}</option>
+              <option value={12}>{t("12_per_page")}</option>
+              <option value={24}>{t("24_per_page")}</option>
             </select>
             <SecondaryButton
               text="Add Notes"
@@ -748,7 +753,7 @@ const Page = (): JSX.Element => {
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-gray-500 dark:text-gray-400">
             <TbNotes className="w-20 h-20 mb-4 opacity-30" />
-            <h3 className="text-xl font-semibold mb-2">No notes found</h3>
+            <h3 className="text-xl font-semibold mb-2">{t("no_notes_found")}</h3>
             <p className="text-sm">
               {active === ACTIVE.IMPORTANT
                 ? "You don't have any pinned notes yet"

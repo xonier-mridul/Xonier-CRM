@@ -50,6 +50,7 @@ import { PRIORITY_STYLE, STOP_DISPLAY_MS } from "@/src/constants/constants";
 import CategoryBadge from "@/src/components/pages/task/CategoryBadge";
 import BoardView from "@/src/components/pages/task/BoardView";
 import CategoryMultiSelect from "@/src/components/pages/task/CategoryMultiSeclect";
+import { useTranslation } from "react-i18next";
 
 
 
@@ -165,6 +166,7 @@ function ViewToggle({
 
 
 const TaskListPage = (): JSX.Element => {
+  const { t } = useTranslation();
   const router = useRouter();
   const { hasPermission } = usePermissions();
 
@@ -586,17 +588,17 @@ const fetchTasks = useCallback(
             <div>
               <div className="flex items-center gap-2.5 mb-1">
                 <span className="text-2xl">📋</span>
-                <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">All Tasks</h1>
+                <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">{t("all_tasks")}</h1>
               </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">View, filter, and manage all project tasks.</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t("view_filter_and_manage_all_project")}</p>
             </div>
             {canCreate && (
               <button
                 type="button"
                 onClick={() => router.push("/task/create")}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 active:scale-[0.98] text-white text-sm font-bold shadow-md group cursor-pointer shadow-cyan-200 dark:shadow-cyan-900/40 transition-all"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 active:scale-[0.98] text-white text-sm font-bold shadow-sm group cursor-pointer shadow-cyan-200 dark:shadow-cyan-900/40 transition-all"
               >
-                <span className="group-hover:rotate-90">＋</span> New Task
+                <span className="group-hover:rotate-90">＋</span> {t("new_task")}
               </button>
             )}
           </div>
@@ -619,7 +621,7 @@ const fetchTasks = useCallback(
                   <div className="text-xs text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1">
                     {s.label}
                     {s.priority && filterPriority === s.priority && (
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-900/40 text-cyan-600 dark:text-cyan-400">active</span>
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-900/40 text-cyan-600 dark:text-cyan-400">{t("active_3")}</span>
                     )}
                   </div>
                 </div>
@@ -633,7 +635,7 @@ const fetchTasks = useCallback(
               <input
                 type="text"
                 onChange={(e) => handleSearch(e.target.value)}
-                placeholder="Search tasks…"
+                placeholder={t("search_tasks")}
                 className="pl-8 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition"
               />
             </div>
@@ -642,7 +644,7 @@ const fetchTasks = useCallback(
               onChange={(e) => { setFilterPriority(e.target.value); setCurrentPage(1); }}
               className="px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition"
             >
-              <option value="">All Priorities</option>
+              <option value="">{t("all_priorities")}</option>
               {Object.values(TASK_PRIORITY).map((p) => (
                 <option key={p} value={p}>{p.charAt(0) + p.slice(1).toLowerCase()}</option>
               ))}
@@ -652,7 +654,7 @@ const fetchTasks = useCallback(
               mode="single"
               value={filterAssigned}
               onChange={setFilterAssigned}
-              placeholder="Search assignee…"
+              placeholder={t("search_assignee")}
               cls="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition"
             />
             <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
@@ -662,7 +664,7 @@ const fetchTasks = useCallback(
                 onClick={() => { setSearch(""); setFilterStatus(""); setFilterPriority(""); setCurrentPage(1); setFilterAssigned(""); setFiltrCategory([]); setDateFilter({ fromDate: "", toDate: "" }); }}
                 className="ml-auto px-3 py-2 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-1.5"
               >
-                <span>✕</span> Clear
+                <span>✕</span> {t("clear")}
               </button>
             )}
             <div className="w-px h-7 bg-gray-200 dark:bg-gray-600 ml-auto" />
@@ -728,17 +730,18 @@ const fetchTasks = useCallback(
                       <tr>
                         <td colSpan={colCount} className="text-center py-20 text-gray-400 dark:text-gray-500">
                           <div className="text-5xl mb-3">📭</div>
-                          <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">No tasks found</p>
-                          {hasFilters && <p className="text-xs text-gray-400 mt-1">Try clearing your filters</p>}
+                          <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">{t("no_tasks_found")}</p>
+                          {hasFilters && <p className="text-xs text-gray-400 mt-1">{t("try_clearing_your_filters")}</p>}
                           {canCreate && !hasFilters && (
                             <button type="button" onClick={() => router.push("/task/create")} className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-cyan-600 bg-cyan-50 hover:bg-cyan-100 border border-cyan-100 transition">
-                              + Create first task
+                              {t("create_first_task")}
                             </button>
                           )}
                         </td>
                       </tr>
                     ) : (
                       taskData.map((task, i) => {
+  const { t } = useTranslation();
                         const pri = PRIORITY_STYLE[task.priority];
                         const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
                         return (
@@ -771,11 +774,11 @@ const fetchTasks = useCallback(
                             </td>
                             <td className="px-5 py-4">
                               {task.assignedTo.length === 0 ? (
-                                <span className="text-xs italic text-gray-300 dark:text-gray-600">Unassigned</span>
+                                <span className="text-xs italic text-gray-300 dark:text-gray-600">{t("unassigned")}</span>
                               ) : (
                                 <div className="flex -space-x-2">
                                   {task.assignedTo.slice(0, 2).map((u) => (
-                                    <div key={u.id} title={u.firstName} className="ps-1 rounded-full bg-gradient-to-br from-cyan-400 to-indigo-600 border-2 border-white dark:border-gray-800 flex items-center px-2 py-1 capitalize justify-center text-white text-[12px] font-bold shrink-0">
+                                    <div key={u.id} title={u.firstName} className="ps-1 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 border-2 border-white dark:border-gray-800 flex items-center px-2 py-1 capitalize justify-center text-white text-[12px] font-bold shrink-0">
                                       {u.firstName} {u?.lastName ?? ""}
                                     </div>
                                   ))}
@@ -836,15 +839,15 @@ const fetchTasks = useCallback(
 
               <div className="px-5 py-3.5 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
                 <span className="text-xs text-gray-400 dark:text-gray-500">
-                  Showing page <span className="font-semibold text-gray-600 dark:text-gray-300">{currentPage}</span> of <span className="font-semibold text-gray-600 dark:text-gray-300">{totalCount}</span>
+                  {t("showing_page")} <span className="font-semibold text-gray-600 dark:text-gray-300">{currentPage}</span> {t("of")} <span className="font-semibold text-gray-600 dark:text-gray-300">{totalCount}</span>
                 </span>
                 <div className="flex items-center gap-2">
                   <button type="button" disabled={currentPage <= 1 || isLoading} onClick={() => setCurrentPage((p) => p - 1)} className="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
-                    ← Prev
+                    {t("prev")}
                   </button>
                   <span className="text-xs text-gray-500 dark:text-gray-400 font-medium px-1">{currentPage}</span>
                   <button type="button" disabled={currentPage >= totalCount || isLoading} onClick={() => setCurrentPage((p) => p + 1)} className="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
-                    Next →
+                    {t("next")}
                   </button>
                 </div>
               </div>

@@ -13,6 +13,7 @@ import { DashboardService } from "@/src/services/dashboard.service";
 import { useSelector } from "react-redux";
 import { RootState } from "@/src/store";
 import { Odometer } from "@/src/components/common/odometer";
+import { useTranslation } from "react-i18next";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -168,6 +169,7 @@ function RingChart({ pct, color }: { pct: number; color: string }) {
 // ─── 403 View ─────────────────────────────────────────────────────────────────
 
 function UnauthorizedView() {
+  const { t } = useTranslation();
     return (
         <div className="mt-10 ml-72 min-h-screen">
             <div className="bg-white mb-10 dark:bg-gray-700 p-6 rounded-xl border border-slate-900/10 w-full">
@@ -181,21 +183,21 @@ function UnauthorizedView() {
                         </div>
                     </div>
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 border border-red-100 dark:border-red-800 mb-4 tracking-widest uppercase">
-                        403 · Forbidden
+                        {t("403_forbidden")}
                     </span>
-                    <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-2">Access Denied</h1>
+                    <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-2">{t("access_denied")}</h1>
                     <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-sm mb-8">
-                        You don't have permission to view the task dashboard.
+                        {t("you_don_t_have_permission_to_view_the_task_dashboard")}
                     </p>
                     <div className="w-full flex items-start gap-3 px-4 py-3.5 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 text-left">
                         <AlertCircle className="w-4 h-4 text-amber-500 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                         <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
-                            Reach out to your admin with your user ID to request access.
+                            {t("reach_out_to_your_admin_with")}
                         </p>
                     </div>
                 </div>
                 <p className="text-center text-xs text-gray-400 dark:text-gray-600 mt-5">
-                    Error code 403 · Unauthorized access attempt has been logged
+                    {t("error_code_403_unauthorized_access_attempt")}
                 </p>
             </div>
         </div>
@@ -233,15 +235,16 @@ const INSIGHT_STYLES = {
 };
 
 function InsightsPanel({ data }: { data: TaskStatsData }) {
+  const { t } = useTranslation();
     const insights = buildInsights(data);
     if (!insights.length) return null;
     return (
         <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-4">
                 <Zap className="w-4 h-4 text-amber-500" />
-                <h2 className="text-sm font-semibold text-gray-800 dark:text-white">Smart insights</h2>
+                <h2 className="text-sm font-semibold text-gray-800 dark:text-white">{t("smart_insights")}</h2>
                 <span className="ml-auto text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400">
-                    {insights.length} alert{insights.length > 1 ? "s" : ""}
+                    {insights.length} {t("alert")}{insights.length > 1 ? "s" : ""}
                 </span>
             </div>
             <div className="flex flex-col gap-2">
@@ -261,17 +264,18 @@ function InsightsPanel({ data }: { data: TaskStatsData }) {
 
 
 function ActivitySection({ activity }: { activity: ActivityData }) {
+  const { t } = useTranslation();
     const hasData = activity.totalActions > 0;
     return (
         <div className="grid grid-cols-2 gap-4">
             <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
                 <div className="flex items-center justify-between mb-4">
                     <div>
-                        <h2 className="text-sm font-semibold text-gray-800 dark:text-white">Activity insights</h2>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Actions over time</p>
+                        <h2 className="text-sm font-semibold text-gray-800 dark:text-white">{t("activity_insights")}</h2>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{t("actions_over_time")}</p>
                     </div>
                     <span className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950 px-3 py-1.5 rounded-lg">
-                        <Activity className="w-3 h-3" /> {activity.totalActions} total
+                        <Activity className="w-3 h-3" /> {activity.totalActions} {t("total_3")}
                     </span>
                 </div>
 
@@ -288,13 +292,13 @@ function ActivitySection({ activity }: { activity: ActivityData }) {
                     </ResponsiveContainer>
                 ) : (
                     <div className="h-36 flex items-center justify-center text-xs text-gray-400 dark:text-gray-600">
-                        No activity recorded yet
+                        {t("no_activity_recorded_yet")}
                     </div>
                 )}
 
                 {activity.byAction.length > 0 && (
                     <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-                        <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Top actions</p>
+                        <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">{t("top_actions")}</p>
                         <div className="flex flex-wrap gap-1.5">
                             {activity.byAction.slice(0, 6).map((a) => (
                                 <span key={a.action} className={`text-xs font-semibold px-2.5 py-1 rounded-full ${ACTION_BADGE[a.action] ?? "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"}`}>
@@ -307,7 +311,7 @@ function ActivitySection({ activity }: { activity: ActivityData }) {
 
                 {activity.mostEditedFields.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
-                        <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Most edited fields</p>
+                        <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">{t("most_edited_fields")}</p>
                         <div className="flex flex-col gap-1.5">
                             {activity.mostEditedFields.slice(0, 4).map((f) => (
                                 <div key={f.field} className="flex items-center justify-between">
@@ -322,7 +326,7 @@ function ActivitySection({ activity }: { activity: ActivityData }) {
 
             {/* Recent Activity Feed */}
             <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-                <SectionTitle title="Recent activity" sub="Latest 5 task events" />
+                <SectionTitle title={t("recent_activity")} sub="Latest 5 task events" />
                 {activity.recentActivity.length > 0 ? (
                     <div className="flex flex-col gap-0">
                         {activity.recentActivity.slice(0, 5).map((item, i) => (
@@ -348,7 +352,7 @@ function ActivitySection({ activity }: { activity: ActivityData }) {
                 ) : (
                     <div className="h-40 flex flex-col items-center justify-center gap-2 text-gray-400 dark:text-gray-600">
                         <Activity className="w-6 h-6 opacity-40" />
-                        <p className="text-xs">No recent activity</p>
+                        <p className="text-xs">{t("no_recent_activity")}</p>
                     </div>
                 )}
             </div>
@@ -359,10 +363,11 @@ function ActivitySection({ activity }: { activity: ActivityData }) {
 // ── #4 Entity Type ────────────────────────────────────────────────
 
 function EntityTypeBreakdown({ entities, total }: { entities: ByEntityType[]; total: number }) {
+  const { t } = useTranslation();
     if (!entities.length) return null;
     return (
         <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-            <SectionTitle title="Entity type breakdown" sub="Tasks linked by entity" />
+            <SectionTitle title={t("entity_type_breakdown")} sub="Tasks linked by entity" />
             <div className="grid grid-cols-2 gap-3 mb-4">
                 {entities.map((e, i) => {
                     const color = ENTITY_COLORS[i % ENTITY_COLORS.length];
@@ -397,6 +402,7 @@ function EntityTypeBreakdown({ entities, total }: { entities: ByEntityType[]; to
 // ── #6 Overdue Insights ───────────────────────────────────────────
 
 function OverdueInsights({ performance, summary }: { performance: TaskPerformance; summary: TaskSummary }) {
+  const { t } = useTranslation();
     const cards = [
         { label: "Overdue tasks", value: performance.overdueCount, color: "bg-red-50 dark:bg-red-950", text: "text-red-600 dark:text-red-400" },
         { label: "Avg overdue", value: performance.avgOverdueDays > 0 ? `${performance.avgOverdueDays.toFixed(1)}d` : "0d", color: "bg-orange-50 dark:bg-orange-950", text: "text-orange-600 dark:text-orange-400" },
@@ -407,7 +413,7 @@ function OverdueInsights({ performance, summary }: { performance: TaskPerformanc
         <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-4">
                 <TrendingDown className="w-4 h-4 text-red-500" />
-                <h2 className="text-sm font-semibold text-gray-800 dark:text-white">Overdue insights</h2>
+                <h2 className="text-sm font-semibold text-gray-800 dark:text-white">{t("overdue_insights")}</h2>
             </div>
             <div className="grid grid-cols-2 gap-3">
                 {cards.map((c) => (
@@ -424,14 +430,15 @@ function OverdueInsights({ performance, summary }: { performance: TaskPerformanc
 // ── #5 Hours Analytics ────────────────────────────────────────────
 
 function HoursAnalytics({ performance }: { performance: TaskPerformance }) {
+  const { t } = useTranslation();
     const noActual = performance.actualHoursTotal === 0;
     return (
         <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-            <SectionTitle title="Hours analytics" sub="Estimated vs actual time" />
+            <SectionTitle title={t("hours_analytics")} sub="Estimated vs actual time" />
             {noActual && (
                 <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900 mb-4">
                     <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
-                    <p className="text-xs text-amber-700 dark:text-amber-400">No actual hours logged yet.</p>
+                    <p className="text-xs text-amber-700 dark:text-amber-400">{t("no_actual_hours_logged_yet")}</p>
                 </div>
             )}
             <div className="grid grid-cols-2 gap-3">
@@ -456,14 +463,15 @@ function HoursAnalytics({ performance }: { performance: TaskPerformance }) {
 // ── #7 Recurrence Detail ──────────────────────────────────────────
 
 function RecurrenceDetail({ recurrences, total }: { recurrences: ByRecurrenceType[]; total: number }) {
+  const { t } = useTranslation();
     return (
         <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-4">
                 <Repeat2 className="w-4 h-4 text-violet-500" />
-                <h2 className="text-sm font-semibold text-gray-800 dark:text-white">Recurrence detail</h2>
+                <h2 className="text-sm font-semibold text-gray-800 dark:text-white">{t("recurrence_detail")}</h2>
                 {recurrences.length > 0 && (
                     <span className="ml-auto text-xs font-mono font-semibold text-violet-600 dark:text-violet-400">
-                        {recurrences.reduce((s, r) => s + r.count, 0)} total
+                        {recurrences.reduce((s, r) => s + r.count, 0)} {t("total_3")}
                     </span>
                 )}
             </div>
@@ -493,7 +501,7 @@ function RecurrenceDetail({ recurrences, total }: { recurrences: ByRecurrenceTyp
                     })}
                 </div>
             ) : (
-                <p className="text-xs text-gray-400 dark:text-gray-600">No recurring tasks</p>
+                <p className="text-xs text-gray-400 dark:text-gray-600">{t("no_recurring_tasks")}</p>
             )}
         </div>
     );
@@ -502,9 +510,10 @@ function RecurrenceDetail({ recurrences, total }: { recurrences: ByRecurrenceTyp
 // ── #8 Monthly Trends Chart ───────────────────────────────────────
 
 function MonthlyTrendsChart({ monthly }: { monthly: { created: number; completed: number; month: string; completionRate: number }[] }) {
+  const { t } = useTranslation();
     return (
         <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-            <SectionTitle title="Monthly trends" sub="Created vs completed · completion rate" />
+            <SectionTitle title={t("monthly_trends")} sub="Created vs completed · completion rate" />
             {monthly.length > 0 ? (
                 <ResponsiveContainer width="100%" height={220}>
                     <BarChart data={monthly} margin={{ top: 5, right: 20, bottom: 0, left: 0 }}>
@@ -521,7 +530,7 @@ function MonthlyTrendsChart({ monthly }: { monthly: { created: number; completed
                     </BarChart>
                 </ResponsiveContainer>
             ) : (
-                <div className="h-40 flex items-center justify-center text-xs text-gray-400 dark:text-gray-600">No monthly data</div>
+                <div className="h-40 flex items-center justify-center text-xs text-gray-400 dark:text-gray-600">{t("no_monthly_data")}</div>
             )}
         </div>
     );
@@ -535,6 +544,7 @@ function CombinedTrendChart({
     creation: { date: string; created: number }[];
     completion: { date: string; completed: number }[];
 }) {
+  const { t } = useTranslation();
     const map: Record<string, { date: string; created: number; completed: number }> = {};
     creation.forEach((d) => { map[d.date] = { date: d.date, created: d.created, completed: 0 }; });
     completion.forEach((d) => {
@@ -547,15 +557,15 @@ function CombinedTrendChart({
         <div className="col-span-2 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
             <div className="flex items-center justify-between mb-5">
                 <div>
-                    <h2 className="text-sm font-semibold text-gray-800 dark:text-white">Daily task trend</h2>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Created and completed — combined view</p>
+                    <h2 className="text-sm font-semibold text-gray-800 dark:text-white">{t("daily_task_trend")}</h2>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{t("created_and_completed_combined_view")}</p>
                 </div>
                 <div className="flex items-center gap-3 text-xs">
                     <span className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
-                        <span className="w-2.5 h-2.5 rounded-sm" style={{ background: "#6366f1" }} /> Created
+                        <span className="w-2.5 h-2.5 rounded-sm" style={{ background: "#6366f1" }} /> {t("created")}
                     </span>
                     <span className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
-                        <span className="w-2.5 h-2.5 rounded-sm" style={{ background: "#22c55e" }} /> Completed
+                        <span className="w-2.5 h-2.5 rounded-sm" style={{ background: "#22c55e" }} /> {t("completed")}
                     </span>
                 </div>
             </div>
@@ -592,6 +602,7 @@ function CombinedTrendChart({
 
 
 export default function TaskDashboardPage() {
+  const { t } = useTranslation();
     const [data, setData] = useState<TaskStatsData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -650,7 +661,7 @@ export default function TaskDashboardPage() {
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{error}</p>
                 <button onClick={() => load()}
                     className="mt-1 px-4 py-2 text-sm font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors">
-                    Retry
+                    {t("retry")}
                 </button>
             </div>
         </div>
@@ -683,10 +694,10 @@ export default function TaskDashboardPage() {
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Task Dashboard</h1>
+                        <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">{t("task_dashboard")}</h1>
                         <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 flex items-center gap-2">
-                            Generated {new Date(data.meta.generatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                            <span className="px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-500 dark:text-indigo-400 text-[10px] font-semibold uppercase tracking-wide">Personal</span>
+                            {t("generated")} {new Date(data.meta.generatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                            <span className="px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-500 dark:text-indigo-400 text-[10px] font-semibold uppercase tracking-wide">{t("personal")}</span>
                         </p>
                     </div>
                     <button onClick={() => load(true)} disabled={refreshing}
@@ -738,12 +749,12 @@ export default function TaskDashboardPage() {
                 <div className="grid grid-cols-3 gap-4">
                     <CombinedTrendChart creation={trends.daily.creation} completion={trends.daily.completion} />
                     <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 flex flex-col items-center justify-center gap-4">
-                        <SectionTitle title="Completion rate" sub="Overall task progress" />
+                        <SectionTitle title={t("completion_rate")} sub="Overall task progress" />
                         <div className="relative flex items-center justify-center">
                             <RingChart pct={summary.completionRate} color="#22c55e" />
                             <div className="absolute flex flex-col items-center">
                                 <span className="font-mono text-l font-bold text-gray-900 dark:text-white">{summary.completionRate}%</span>
-                                <span className="text-[10px] text-gray-400 dark:text-gray-500">done</span>
+                                <span className="text-[10px] text-gray-400 dark:text-gray-500">{t("done_2")}</span>
                             </div>
                         </div>
                         <div className="grid grid-cols-3 gap-2 w-full text-center">
@@ -767,7 +778,7 @@ export default function TaskDashboardPage() {
                 <div className="grid grid-cols-3 gap-4">
                     {/* Priority */}
                     <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-                        <SectionTitle title="Priority breakdown" sub="Tasks by urgency level" />
+                        <SectionTitle title={t("priority_breakdown")} sub="Tasks by urgency level" />
                         <div className="flex flex-col gap-3">
                             {breakdowns.byPriority.length > 0 ? breakdowns.byPriority.map((item) => {
                                 const pct = ((item.count / totalTasks) * 100).toFixed(1);
@@ -789,15 +800,16 @@ export default function TaskDashboardPage() {
                                         </div>
                                     </div>
                                 );
-                            }) : <p className="text-xs text-gray-400 dark:text-gray-600">No priority data</p>}
+                            }) : <p className="text-xs text-gray-400 dark:text-gray-600">{t("no_priority_data")}</p>}
                         </div>
                     </div>
 
                     {/* #3 Fixed Status using byStatus */}
                     <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-                        <SectionTitle title="Status breakdown" sub="Detailed status distribution" />
+                        <SectionTitle title={t("status_breakdown")} sub="Detailed status distribution" />
                         <div className="flex flex-col gap-3">
                             {breakdowns.byStatus.length > 0 ? breakdowns.byStatus.map((item) => {
+  const { t } = useTranslation();
                                 const pct = ((item.count / totalTasks) * 100).toFixed(1);
                                 const color = item.statusColor || "#94a3b8";
                                 return (
@@ -807,7 +819,7 @@ export default function TaskDashboardPage() {
                                                 <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
                                                 <span className="text-xs font-medium text-gray-700 dark:text-gray-300 capitalize">{item.statusName}</span>
                                                 {item.isFinal && (
-                                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-50 dark:bg-green-950 text-green-600 dark:text-green-400 font-semibold">Final</span>
+                                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-50 dark:bg-green-950 text-green-600 dark:text-green-400 font-semibold">{t("final")}</span>
                                                 )}
                                             </div>
                                             <div className="flex items-center gap-2">
@@ -820,13 +832,13 @@ export default function TaskDashboardPage() {
                                         </div>
                                     </div>
                                 );
-                            }) : <p className="text-xs text-gray-400 dark:text-gray-600">No status data</p>}
+                            }) : <p className="text-xs text-gray-400 dark:text-gray-600">{t("no_status_data")}</p>}
                         </div>
                     </div>
 
                     {/* Category */}
                     <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-                        <SectionTitle title="Categories" sub="Distribution by category" />
+                        <SectionTitle title={t("categories")} sub="Distribution by category" />
                         <div className="flex flex-col gap-2">
                             {breakdowns.byCategory.length > 0 ? breakdowns.byCategory.map((cat, i) => {
                                 const color = cat.categoryColor || CATEGORY_COLORS[i % CATEGORY_COLORS.length];
@@ -839,7 +851,7 @@ export default function TaskDashboardPage() {
                                         <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 w-10 text-right">{pct}%</span>
                                     </div>
                                 );
-                            }) : <p className="text-xs text-gray-400 dark:text-gray-600">No category data</p>}
+                            }) : <p className="text-xs text-gray-400 dark:text-gray-600">{t("no_category_data")}</p>}
                         </div>
                         {breakdowns.byCategory.length > 0 && (
                             <div className="mt-4">
@@ -879,7 +891,7 @@ export default function TaskDashboardPage() {
 
                 {/* Row 7: Weekly Activity */}
                 <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-                    <SectionTitle title="Weekly activity pattern" sub="Tasks created by day of week" />
+                    <SectionTitle title={t("weekly_activity_pattern")} sub="Tasks created by day of week" />
                     <div className="flex items-end gap-2 h-32">
                         {weeklyBarData.map((d) => (
                             <div key={d.day} className="flex-1 flex flex-col items-center gap-1.5">
@@ -894,7 +906,7 @@ export default function TaskDashboardPage() {
 
                 {/* Row 8: Activity Snapshot */}
                 <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-                    <SectionTitle title="Activity snapshot" sub="Key task metrics at a glance" />
+                    <SectionTitle title={t("activity_snapshot_2")} sub="Key task metrics at a glance" />
                     <div className="grid grid-cols-4 gap-3">
                         {[
                             { label: "Sub tasks", value: summary.subTasks, color: "bg-slate-100 dark:bg-slate-800", text: "text-slate-600 dark:text-slate-400" },
