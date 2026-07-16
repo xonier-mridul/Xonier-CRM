@@ -701,6 +701,7 @@ const UserDetail = ({
   hi: "hi-IN",
   pt: "pt-BR", // or "pt-PT"
 };
+const language = i18n.resolvedLanguage ?? "en";
 
   return (
     <div className="flex flex-col gap-6 font-sans">
@@ -975,7 +976,7 @@ const UserDetail = ({
   label={t("member_since")}
   link=""
   value={new Date(userData.createdAt).toLocaleDateString(
-    localeMap[i18n.resolvedLanguage] || "en-IN",
+    localeMap[language] || "en-IN",
     {
       day: "2-digit",
       month: "short",
@@ -1118,7 +1119,7 @@ const UserDetail = ({
                   </div>
                   <span className="ml-auto text-xs text-gray-400">
                 {new Date(userData.createdAt).toLocaleDateString(
-                  localeMap[i18n.resolvedLanguage] || "en-IN",
+                  localeMap[language] || "en-IN",
                   {
                     day: "2-digit",
                     month: "short",
@@ -2367,7 +2368,7 @@ const UserDetail = ({
                       //   { day: "2-digit", month: "short", year: "numeric" },
                       // ),
                       value : new Date(userData.createdAt).toLocaleDateString(
-                              localeMap[i18n.resolvedLanguage] || "en-IN",
+                              localeMap[language] || "en-IN",
                               {
                                 day: "2-digit",
                                 month: "short",
@@ -2687,7 +2688,7 @@ const UserDetail = ({
                         label: t("created_at"),
                         value: companyData.createdAt
                           ? new Date(companyData.createdAt).toLocaleString(
-                               localeMap[i18n.resolvedLanguage] || "en-IN",
+                               localeMap[language] || "en-IN",
                               {
                                 day: "2-digit",
                                 month: "short",
@@ -2706,7 +2707,7 @@ const UserDetail = ({
                       label: t("updated_at"),
                         value: companyData.updatedAt
                           ? new Date(companyData.updatedAt).toLocaleString(
-                               localeMap[i18n.resolvedLanguage] ||"en-IN",
+                               localeMap[language] ||"en-IN",
                               {
                                 day: "2-digit",
                                 month: "short",
@@ -2722,19 +2723,7 @@ const UserDetail = ({
                         bg: "bg-amber-50 dark:bg-amber-900/20",
                       },
                       {    label: t("deleted_at"),
-                        value: companyData.deletedAt
-                          ? new Date(companyData.deletedAt).toLocaleString(
-                               localeMap[i18n.resolvedLanguage] || "en-IN",
-                              {
-                                day: "2-digit",
-                                month: "short",
-                                year: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: true,
-                              },
-                            )
-                          : t("not_deleted"),
+                    value: companyData.deletedAt ? new Date(companyData.deletedAt).toLocaleString( localeMap[language] || "en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true, }, ) : t("not_deleted"),
                         icon: "🗑️",
                         color: companyData.deletedAt
                           ? "text-red-600 dark:text-red-400"

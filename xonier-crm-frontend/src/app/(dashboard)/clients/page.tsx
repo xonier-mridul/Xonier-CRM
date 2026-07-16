@@ -1,3 +1,5 @@
+"use client"
+
 import React, { JSX } from 'react'
 import { PiUsersFour } from "react-icons/pi";
 import { useTranslation } from "react-i18next";

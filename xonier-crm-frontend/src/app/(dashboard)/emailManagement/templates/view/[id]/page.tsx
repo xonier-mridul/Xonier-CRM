@@ -294,11 +294,11 @@ export default function Page() {
 
   if (isLoading || !templateData) return <FetchingSkeleton />;
 
-  const t = templateData;
-  const templateVars: Variable[] = t.variables ?? [];
+  const te = templateData;
+  const templateVars: Variable[] = te.variables ?? [];
 
-  const categoryLabel = t.category
-    ? t.category.charAt(0).toUpperCase() + t.category.slice(1).toLowerCase().replace(/_/g, " ")
+  const categoryLabel = te.category
+    ? te.category.charAt(0).toUpperCase() + te.category.slice(1).toLowerCase().replace(/_/g, " ")
     : null;
 
   // Simulated email metadata
@@ -378,7 +378,7 @@ export default function Page() {
 
             {/* Subject */}
             <InfoRow label={t("subject")}>
-              <span className="text-slate-700 dark:text-slate-300 leading-snug">{t.subject || "—"}</span>
+              <span className="text-slate-700 dark:text-slate-300 leading-snug">{te.subject || "—"}</span>
             </InfoRow>
 
             <Divider />
@@ -392,7 +392,7 @@ export default function Page() {
                 }
               </InfoRow>
               <InfoRow label={t("privacy")}>
-                {t.privacy === "PUBLIC"
+                {te.privacy === "PUBLIC"
                   ? <Badge color="emerald">{t("public_2")}</Badge>
                   : <Badge color="slate">{t("private_2")}</Badge>
                 }
@@ -403,21 +403,21 @@ export default function Page() {
 
             {/* Status */}
             <InfoRow label={t("status")}>
-              {t.status
-                ? <Badge color={t.status === "active" ? "emerald" : "amber"}>
-                    {t.status.charAt(0).toUpperCase() + t.status.slice(1)}
+              {te.status
+                ? <Badge color={te.status === "active" ? "emerald" : "amber"}>
+                    {te.status.charAt(0).toUpperCase() + te.status.slice(1)}
                   </Badge>
                 : <span className="text-slate-400 text-sm">—</span>
               }
             </InfoRow>
 
             {/* Tags */}
-            {t.tags && t.tags.length > 0 && (
+            {te.tags && te.tags.length > 0 && (
               <>
                 <Divider />
                 <InfoRow label={t("tags")}>
                   <div className="flex flex-wrap gap-1.5 mt-0.5">
-                    {t.tags.map((tag: string) => (
+                    {te.tags.map((tag: string) => (
                       <span
                         key={tag}
                         className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-semibold"
@@ -486,11 +486,11 @@ export default function Page() {
 
         {/* ══ RIGHT: Email client preview ═══════════════════════ */}
         <EmailClientPreview
-          subject={t.subject ?? ""}
+          subject={te.subject ?? ""}
           from="noreply@yourcompany.com"
           to="recipient@example.com"
           date={dateStr}
-          html={t.html_body ?? ""}
+          html={te.html_body ?? ""}
         />
       </div>
     </div>

@@ -11,7 +11,7 @@ interface LanguageOption {
 interface LanguageSelectorProps {
   isOpen: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  dropdownRef: RefObject<HTMLDivElement>;
+  dropdownRef: RefObject<HTMLDivElement | null>;
 }
 
 const LanguageSelector: React.FC<LanguageSelectorProps> = ({ 
