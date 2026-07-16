@@ -4,6 +4,7 @@ import { IoClose } from "react-icons/io5";
 import { Prospect } from "@/src/types/prospect/prospect.type"
 import { toast } from "react-toastify";
 import prospectService from "@/src/services/prospect.service";
+import { useTranslation } from "react-i18next";
 
 const BulkSmsModal = ({
   leads,
@@ -12,6 +13,7 @@ const BulkSmsModal = ({
   leads: Prospect[];
   onClose: () => void;
 }) => {
+  const { t } = useTranslation();
   const [messageText, setMessageText] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -45,9 +47,9 @@ const BulkSmsModal = ({
               <MdMessage className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">Bulk SMS</h3>
+              <h3 className="text-lg font-bold text-white">{t("bulk_sms")}</h3>
               <p className="text-sm text-yellow-100">
-                Sending to {leads.length} lead{leads.length > 1 ? "s" : ""}
+                {t("sending_to")} {leads.length} {t("lead_2")}{leads.length > 1 ? "s" : ""}
               </p>
             </div>
           </div>
@@ -63,7 +65,7 @@ const BulkSmsModal = ({
         <div className="p-6 space-y-4">
           {/* Recipient chips */}
           <div>
-            <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Recipients</p>
+            <p className="text-xs font-semibold text-gray-500 uppercase mb-2">{t("recipients")}</p>
             <div className="flex flex-wrap gap-2 max-h-20 overflow-y-auto">
               {leads.map((lead) => (
                 <span
@@ -81,15 +83,15 @@ const BulkSmsModal = ({
 
           {/* Message */}
           <div>
-            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">Message</label>
+            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">{t("message")}</label>
             <textarea
               rows={4}
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
-              placeholder="Type your message..."
+              placeholder={t("type_your_message")}
               className="w-full mt-1.5 p-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-yellow-500 focus:outline-none dark:bg-gray-700 text-sm resize-none"
             />
-            <p className="text-xs text-gray-400 text-right mt-1">{messageText.length} chars</p>
+            <p className="text-xs text-gray-400 text-right mt-1">{messageText.length} {t("chars")}</p>
           </div>
 
           {/* Send */}
@@ -98,7 +100,7 @@ const BulkSmsModal = ({
               onClick={onClose}
               className="px-4 py-2.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:bg-gray-50"
             >
-              Cancel
+              {t("cancel")}
             </button>
             <button
               onClick={handleSend}

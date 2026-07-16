@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
+import { useTranslation } from "react-i18next";
 
 
 function today() {
@@ -60,6 +61,7 @@ interface Props {
 
 
 export default function DateFilterButton({ dateFilter, onChange }: Props) {
+  const { t } = useTranslation();
   const [open, setOpen]               = useState(false);
   const [from, setFrom]               = useState(dateFilter.fromDate);
   const [to,   setTo]                 = useState(dateFilter.toDate);
@@ -117,7 +119,7 @@ export default function DateFilterButton({ dateFilter, onChange }: Props) {
   const dayCount = dayCountLabel(dateFilter);
   const triggerLabel = isActive
     ? dayCount ?? `${dateFilter.fromDate} → ${dateFilter.toDate}`
-    : "Filter date";
+    : t("filter_date");
 
   return (
     <div ref={wrapRef} className="relative inline-block">
@@ -156,7 +158,7 @@ export default function DateFilterButton({ dateFilter, onChange }: Props) {
 
 
           <p className="text-[10px] font-bold tracking-widest uppercase mb-2.5 text-gray-400 dark:text-gray-600">
-            Quick Ranges
+            {t("quick_ranges")}
           </p>
 
           <div className="flex flex-wrap gap-1.5 mb-4">
@@ -181,18 +183,18 @@ export default function DateFilterButton({ dateFilter, onChange }: Props) {
           <hr className="border-t mb-4 border-gray-200 dark:border-white/10" />
 
           <p className="text-[10px] font-bold tracking-widest uppercase mb-2.5 text-gray-400 dark:text-gray-600">
-            Custom Range
+            {t("custom_range")}
           </p>
 
           {from && to && (
             <p className="text-[11px] text-cyan-500 dark:text-cyan-400 font-medium mb-3 -mt-1">
-              {dayCountLabel({ fromDate: from, toDate: to })} selected
+              {dayCountLabel({ fromDate: from, toDate: to })} {t("selected_2")}
             </p>
           )}
 
           <div className="mb-2.5">
             <label className="block text-[11px] font-medium mb-1 text-gray-400 dark:text-gray-500">
-              From date
+              {t("from_date")}
             </label>
             <div className="relative">
               <input
@@ -216,7 +218,7 @@ export default function DateFilterButton({ dateFilter, onChange }: Props) {
           {/* To date */}
           <div className="mb-4">
             <label className="block text-[11px] font-medium mb-1 text-gray-400 dark:text-gray-500">
-              To date
+              {t("to_date")}
             </label>
             <div className="relative">
               <input
@@ -247,7 +249,7 @@ export default function DateFilterButton({ dateFilter, onChange }: Props) {
                 dark:border-white/10 dark:text-gray-400 dark:hover:bg-white/5
               "
             >
-              Clear
+              {t("clear")}
             </button>
             <button
               onClick={handleApply}
@@ -258,7 +260,7 @@ export default function DateFilterButton({ dateFilter, onChange }: Props) {
                
               "
             >
-              Apply filter
+              {t("apply_filter")}
             </button>
           </div>
         </div>

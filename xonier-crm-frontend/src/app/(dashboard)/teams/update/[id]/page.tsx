@@ -20,8 +20,10 @@ import SuccessComponent from '@/src/components/ui/SuccessComponent';
 import { PERMISSIONS } from '@/src/constants/enum';
 import { FaXmark } from 'react-icons/fa6';
 import { FiCheck, FiChevronDown, FiSearch } from 'react-icons/fi';
+import { useTranslation } from "react-i18next";
 
 const page = ():JSX.Element => {
+  const { t } = useTranslation();
   const [isPopupShow, setIsPopupShow] = useState<boolean>(false);
     const [err, setErr] = useState<string | string[]>("");
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -272,7 +274,7 @@ const [searchManager, setSearchManager] = useState<string>("");
   return (
    <div className={`ml-72 mt-14 p-6`}>
          <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm flex flex-col gap-5 p-6 rounded-xl border-[1px] border-slate-900/10 w-full"> 
-         <h2 className="text-xl font-bold dark:text-white">Update Team</h2>
+         <h2 className="text-xl font-bold dark:text-white">{t("update_team")}</h2>
 
 {err && <ErrorComponent error={err} />}
 {showSuccess && <SuccessComponent message={showSuccess} />}
@@ -280,7 +282,7 @@ const [searchManager, setSearchManager] = useState<string>("");
 <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 ">
   {/* Team Name */}
   <Input
-    label="Team Name"
+    label={t("team_name")}
     name="name"
     value={formData.name}
     onChange={handleChange}
@@ -289,7 +291,7 @@ const [searchManager, setSearchManager] = useState<string>("");
 
  
   <div className="flex flex-col gap-1">
-    <label className="text-sm font-medium dark:text-gray-200">Category</label>
+    <label className="text-sm font-medium dark:text-gray-200">{t("category")}</label>
 
            <div className="relative w-full" ref={categoryDropdownRef}>
                       <button
@@ -318,7 +320,7 @@ const [searchManager, setSearchManager] = useState<string>("");
     
                             <input
                               type="text"
-                              placeholder="Search category..."
+                              placeholder={t("search_category")}
                               value={searchCategory}
                               onChange={(e) => setSearchCategory(e.target.value)}
                               className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-transparent py-2 pl-10 pr-3 text-sm outline-none"
@@ -352,7 +354,7 @@ const [searchManager, setSearchManager] = useState<string>("");
                               ))
                             ) : (
                               <div className="px-4 py-3 text-sm text-gray-500">
-                                No category found
+                                {t("no_category_found")}
                               </div>
                             )}
                           </div>
@@ -379,7 +381,7 @@ const [searchManager, setSearchManager] = useState<string>("");
 
    <div className="flex flex-col gap-2">
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                    Add Manager
+                    {t("add_manager")}
                   </label>
   
                   {/* <select
@@ -433,7 +435,7 @@ const [searchManager, setSearchManager] = useState<string>("");
                                           onClick={() => setIsManagerOpen(!isManagerOpen)}
                                           className="w-full flex items-center justify-between rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2.5 text-sm"
                                         >
-                                          <span>Select Manager</span>
+                                          <span>{t("select_manager")}</span>
                   
                                           <FiChevronDown
                                             className={`transition-transform ${
@@ -452,7 +454,7 @@ const [searchManager, setSearchManager] = useState<string>("");
                                               <input
                                                 value={searchManager}
                                                 onChange={(e) => setSearchManager(e.target.value)}
-                                                placeholder="Search user..."
+                                                placeholder={t("search_user")}
                                                 className="w-full border border-slate-200 rounded-md py-2 pl-10 pr-3 text-sm bg-transparent outline-none"
                                               />
                                             </div>
@@ -487,7 +489,7 @@ const [searchManager, setSearchManager] = useState<string>("");
                                                 ))
                                               ) : (
                                                 <div className="p-4 text-slate-500 text-sm">
-                                                  No user found
+                                                  {t("no_user_found")}
                                                 </div>
                                               )}
                                             </div>
@@ -523,7 +525,7 @@ const [searchManager, setSearchManager] = useState<string>("");
   {/* Members */}
   <div className="flex flex-col gap-2">
     <label className="text-sm font-medium dark:text-gray-200">
-      Team Members
+      {t("team_members")}
     </label>
 
     {/* <select
@@ -572,7 +574,7 @@ const [searchManager, setSearchManager] = useState<string>("");
                           onClick={() => setIsUserOpen(!isUserOpen)}
                           className="w-full flex items-center justify-between rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2.5 text-sm"
                         >
-                          <span>Select User</span>
+                          <span>{t("select_user_2")}</span>
   
                           <FiChevronDown
                             className={`transition-transform ${
@@ -591,7 +593,7 @@ const [searchManager, setSearchManager] = useState<string>("");
                               <input
                                 value={searchUser}
                                 onChange={(e) => setSearchUser(e.target.value)}
-                                placeholder="Search user..."
+                                placeholder={t("search_user")}
                                 className="w-full border border-slate-200 rounded-md py-2 pl-10 pr-3 text-sm bg-transparent outline-none"
                               />
                             </div>
@@ -625,7 +627,7 @@ const [searchManager, setSearchManager] = useState<string>("");
                                 ))
                               ) : (
                                 <div className="p-4 text-sm text-gray-500">
-                                  No user found
+                                  {t("no_user_found")}
                                 </div>
                               )}
                             </div>
@@ -675,12 +677,12 @@ const [searchManager, setSearchManager] = useState<string>("");
         setFormData(prev => ({ ...prev, isActive: e.target.checked }))
       }
     />
-    <span className="text-sm dark:text-gray-200">Active</span>
+    <span className="text-sm dark:text-gray-200">{t("active")}</span>
   </div>
 
   <div className="flex flex-col gap-1 col-span-2">
     <label className="text-sm font-medium dark:text-gray-200">
-      Description
+      {t("description_2")}
     </label>
     <textarea
     rows={3}
@@ -693,7 +695,7 @@ const [searchManager, setSearchManager] = useState<string>("");
 
 
   <div className="flex gap-3 pt-4 col-span-2">
-    <FormButton isLoading={isLoading} disabled={(formData.name === "" || formData.members.length <= 0 || formData.category === "") && hasPermission(PERMISSIONS.updateTeam)}>Update Team</FormButton>
+    <FormButton isLoading={isLoading} disabled={(formData.name === "" || formData.members.length <= 0 || formData.category === "") && hasPermission(PERMISSIONS.updateTeam)}>{t("update_team")}</FormButton>
   </div>
 </form>
 

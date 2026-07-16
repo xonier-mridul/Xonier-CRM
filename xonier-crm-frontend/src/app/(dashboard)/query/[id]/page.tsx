@@ -7,10 +7,12 @@ import  { useEffect, useState } from 'react'
 import { BsTelephone } from 'react-icons/bs'
 import { CgMail } from "react-icons/cg";
 import { FaArrowLeftLong } from 'react-icons/fa6'
+import { useTranslation } from "react-i18next";
 
 
 
 const QueryDetail = () => {
+  const { t } = useTranslation();
     const [isLoading,setIsLoading]=useState<boolean>(false)
     const [queryData,setQueryData]= useState<QueryData[]>([])
 
@@ -51,7 +53,7 @@ const QueryDetail = () => {
 
     <FaArrowLeftLong className="group-hover:-translate-x-1 transition-all" />
 
-    Back to Queries
+    {t("back_to_queries")}
 
   </button>
 </Link>
@@ -65,17 +67,17 @@ const QueryDetail = () => {
 
         <div>
           <h1 className="text-4xl lg:text-5xl font-bold text-slate-900">
-            John Smith
+            {t("john_smith")}
           </h1>
           <div className="flex min-h-[20px] items-center text-slate-600 gap-4 mt-4">
 
-            <p className='flex gap-2 items-center text-sm'><span className='text-xl'><CgMail /></span> john.smith@example.com</p>
+            <p className='flex gap-2 items-center text-sm'><span className='text-xl'><CgMail /></span> {t("john_smith_example_com")}</p>
             <p className='flex gap-2 items-center text-sm'><span className='text-lg'><BsTelephone /></span> +1 415 555 0123</p>
 
 
           <span className="flex text-sm items-center gap-2 px-4 py-2 rounded-full bg-green-100 text-green-700 ">
             <span className="w-2 h-2  rounded-3xl bg-green-500"></span>
-            New Lead
+            {t("new_lead")}
           </span>
 
           </div>
@@ -86,15 +88,15 @@ const QueryDetail = () => {
   <div className="flex justify-end items-end ">
     <div className="bg-white rounded-3xl p-6 border border-slate-200 w-[280px] shadow-sm">
       <p className="text-slate-500 text-sm mb-2">
-        Created At
+        {t("created_at")}
       </p>
 
       <p className="font-semibold text-lg">
-        June 10, 2026
+        {t("june_10_2026")}
       </p>
 
       <p className="text-slate-500 text-sm">
-        09:45 AM
+        {t("09_45_am")}
       </p>
     </div>
   </div>
@@ -109,24 +111,24 @@ const QueryDetail = () => {
 
     <div className="bg-white rounded-3xl border border-slate-200 p-8">
       <h3 className="text-xl font-semibold mb-8">
-        Personal Details
+        {t("personal_details")}
       </h3>
 
       <div className="space-y-4 text-sm">
         <div className="flex justify-between">
-          <span className="text-slate-500">Full Name</span>
-          <span className="font-medium">John Smith</span>
+          <span className="text-slate-500">{t("full_name")}</span>
+          <span className="font-medium">{t("john_smith")}</span>
         </div>
 
         <div className="flex justify-between">
-          <span className="text-slate-500">Email</span>
+          <span className="text-slate-500">{t("email")}</span>
           <span className="font-medium text-blue-600">
-            john.smith@example.com
+            {t("john_smith_example_com")}
           </span>
         </div>
 
         <div className="flex justify-between">
-          <span className="text-slate-500">Phone</span>
+          <span className="text-slate-500">{t("phone")}</span>
           <span className="font-medium">
             +1 415 555 0123
           </span>
@@ -136,31 +138,31 @@ const QueryDetail = () => {
 
     <div className="bg-white rounded-3xl border p-8 border-slate-200 ">
       <h3 className="text-xl font-semibold mb-8">
-        Company Details
+        {t("company_details")}
       </h3>
 
       <div className="space-y-4 text-sm">
         <div className="flex justify-between">
           <span className="text-slate-500 ">
-            Company Name
+            {t("company_name")}
           </span>
           <span className="font-medium">
-            TechNova Solutions
+            {t("technova_solutions")}
           </span>
         </div>
 
         <div className="flex justify-between">
           <span className="text-slate-500">
-            Industry Type
+            {t("industry_type")}
           </span>
           <span className="font-medium">
-            Information Technology
+            {t("information_technology")}
           </span>
         </div>
 
         <div className="flex justify-between">
           <span className="text-slate-500">
-            Team Size
+            {t("team_size")}
           </span>
           <span className="font-medium">
             50-100
@@ -173,53 +175,50 @@ const QueryDetail = () => {
   {/* Address */}
   <div className="bg-white rounded-3xl border p-8 border-slate-200 mt-6">
     <h3 className="text-xl font-semibold mb-6">
-      Address
+      {t("address")}
     </h3>
 
     <p className="text-slate-600 text-sm">
-      123 Market Street, San Francisco, CA 94105, USA
+      {t("123_market_street_san_francisco_ca_94105_usa")}
     </p>
   </div>
 
   {/* Message */}
   <div className="bg-white rounded-3xl border border-slate-200 p-8  mt-6">
     <h3 className="text-xl font-semibold mb-6">
-      Inquiry / Message
+      {t("inquiry_message")}
     </h3>
 
     <div className="bg-slate-50 rounded-2xl text-sm py-6 px-2 text-slate-700 leading-8">
-      We are looking for an HRMS solution to streamline
-      employee management, attendance tracking, payroll
-      processing, and performance reviews. Please share
-      more details about your product and pricing.
+      {t("we_are_looking_for_an_hrms_solution_to_streamline_employee")}
     </div>
   </div>
 
   {/* Additional Info */}
   <div className="bg-white rounded-3xl border border-slate-200 p-8 mt-6">
     <h3 className="text-xl font-semibold mb-8">
-      Additional Information
+      {t("additional_information")}
     </h3>
 
     <div className="space-y-4">
 
       <div className="flex justify-between items-center text-sm">
         <span className="text-slate-500">
-          Lead ID
+          {t("lead_id")}
         </span>
 
         <span className="font-mono bg-slate-100 px-4 py-2 rounded-lg">
-          6a293232b5a1cdbcd3518769
+          {t("6a293232b5a1cdbcd3518769")}
         </span>
       </div>
 
       <div className="flex items-center justify-between">
         <span className="text-slate-500">
-          Created At
+          {t("created_at")}
         </span>
 
         <span className="font-medium">
-          June 10, 2026 09:45 AM
+          {t("june_10_2026_09_45_am")}
         </span>
       </div>
 

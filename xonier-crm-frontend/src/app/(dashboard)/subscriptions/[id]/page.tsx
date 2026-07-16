@@ -7,8 +7,10 @@ import extractErrorMessages from "@/src/app/utils/error.utils";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 
 const SubscriptionViewPage = () => {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [subscriptionData, setSubscriptionData] = useState<Subscription | null>(null);
   const [errMessage, setErrMessage] = useState<string | string[]>("");
@@ -55,7 +57,7 @@ const SubscriptionViewPage = () => {
             onClick={getDataById}
             className="text-sm font-bold px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white transition-colors"
           >
-            Retry
+            {t("retry")}
           </button>
         </div>
       )}

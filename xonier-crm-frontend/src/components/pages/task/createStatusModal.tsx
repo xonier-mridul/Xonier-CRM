@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { CategoryService } from "@/src/services/category.service";
 import { useState, useEffect } from "react";
 import { CategoryItem } from "@/src/types/task/category.types";
+import { useTranslation } from "react-i18next";
 export function getColorOption(hex: string | null): ColorOption {
     return COLOR_OPTIONS.find(c => c.hex === hex) ?? COLOR_OPTIONS[0];
 }
@@ -30,6 +31,7 @@ export function StatusModal({
     handleClosePopup,
     err,
 }: ModalProps) {
+  const { t } = useTranslation();
     const isEdit = !!editTarget;
 
     const selectedColor = getColorOption(formData.color || null);
@@ -46,6 +48,7 @@ export function StatusModal({
     useEffect(() => {
         featchCategorys();
     }, []);
+    
     if (typeof window === "undefined") return null;
     return createPortal(
         <div className="fixed inset-0 z-150 flex items-center justify-center p-4">
@@ -56,7 +59,7 @@ export function StatusModal({
             />
 
             {/* Panel */}
-            <div className="relative z-10 w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+            <div className="relative h-180 z-10 w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-scroll">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 bg-gray-50">
                     <div>
@@ -80,7 +83,7 @@ export function StatusModal({
                 <div className="px-6 py-5 space-y-5">
                     {/* Live Preview */}
                     <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
-                        <span className="text-sm text-gray-500 font-medium">Preview:</span>
+                        <span className="text-sm text-gray-500 font-medium">{t("preview")}</span>
                         <StatusBadge
                             color={selectedColor}
                             icon={selectedIcon}
@@ -98,7 +101,7 @@ export function StatusModal({
                     {/* Name */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                            Status Name <span className="text-rose-500">*</span>
+                            {t("status_name")} <span className="text-rose-500">*</span>
                         </label>
                         <input
                             type="text"
@@ -106,8 +109,8 @@ export function StatusModal({
                             onChange={e =>
                                 setFormData(prev => ({ ...prev, name: e.target.value }))
                             }
-                            placeholder="e.g. In Progress"
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition"
+                            placeholder={t("e_g_in_progress")}
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-400 transition"
                         />
                     </div>
 
@@ -123,14 +126,14 @@ export function StatusModal({
                             }
                             placeholder="Briefly describe when this status applies…"
                             rows={2}
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition resize-none"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-400 transition resize-none"
                         />
                     </div> */}
 
                     {/* Category */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                            Category
+                            {t("category")}
                         </label>
                         <select
                             value={formData.category || ""}
@@ -140,13 +143,18 @@ export function StatusModal({
                                     category: e.target.value
                                 }))
                             }
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/40 "
                         >
-                            <option value="" disabled>— Select category —</option>
+                            <option value="" disabled>{t("select_category_3")}</option>
 
                             {categorys.map(c => (
                                 <option key={c.id} value={String(c.id)}>
-                                    {c.icon || "❓"} &nbsp; {c.name}
+                                    <div  className="flex gap-15 items-center">
+                                          {c.icon || "❓"}
+                                     {/* {t("nbsp")} */}
+                                      {c.name}
+                                    </div>
+                                  
                                 </option>
                             ))}
                         </select>
@@ -155,18 +163,18 @@ export function StatusModal({
                     {/* Is Final - Segmented Cards */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                            Status Type
+                            {t("status_type")}
                         </label>
                         <div className="grid grid-cols-2 gap-3">
                             <button
                                 type="button"
                                 onClick={() => setFormData(prev => ({ ...prev, isFinal: false }))}
                                 className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border-2 transition-all text-sm font-medium ${!formData.isFinal
-                                    ? "border-blue-500 bg-blue-50 text-blue-700 shadow-sm"
+                                    ? "border-cyan-500 bg-cyan-50 text-cyan-700 shadow-sm"
                                     : "border-gray-100 bg-white text-gray-500 hover:border-gray-200"
                                     }`}
                             >
-                                <span className="text-base">🔄</span> Ongoing
+                                <span className="text-base">🔄</span> {t("ongoing")}
                             </button>
                             <button
                                 type="button"
@@ -176,14 +184,14 @@ export function StatusModal({
                                     : "border-gray-100 bg-white text-gray-500 hover:border-gray-200"
                                     }`}
                             >
-                                <span className="text-base">🏁</span> Final
+                                <span className="text-base">🏁</span> {t("final")}
                             </button>
                         </div>
                     </div>
 
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                            Status Order <span className="text-rose-500">*</span>
+                            {t("status_order")} <span className="text-rose-500">*</span>
                         </label>
                         <input
                             type="number"
@@ -192,15 +200,15 @@ export function StatusModal({
                                 setFormData(prev => ({ ...prev, order: Number(e.target.value) }))
                             }
                             onBlur={() => formData.order}
-                            placeholder="eg: 2"
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition"
+                            placeholder={t("eg_2")}
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-400 transition"
                         />
                     </div>
 
                     {/* Icon Picker */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                            Icon
+                            {t("icon")}
                         </label>
                         <div className="flex flex-wrap gap-2">
                             {ICON_OPTIONS.map(ic => (
@@ -209,7 +217,7 @@ export function StatusModal({
                                     type="button"
                                     onClick={() => setFormData(prev => ({ ...prev, icon: ic }))}
                                     className={`w-9 h-9 rounded-lg text-lg flex items-center justify-center border-2 transition ${selectedIcon === ic
-                                        ? "border-blue-500 bg-blue-50 shadow-sm"
+                                        ? "border-cyan-500 bg-cyan-50 shadow-sm"
                                         : "border-gray-200 hover:border-gray-300 bg-white"
                                         }`}
                                 >
@@ -222,7 +230,7 @@ export function StatusModal({
                     {/* Color Picker */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                            Color
+                            {t("color")}
                         </label>
                         <div className="flex flex-wrap gap-2">
                             {COLOR_OPTIONS.map(c => (
@@ -249,13 +257,13 @@ export function StatusModal({
                         onClick={handleClosePopup}
                         className="px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition"
                     >
-                        Cancel
+                        {t("cancel")}
                     </button>
                     <button
                         type="button"
                         disabled={isLoading}
                         onClick={isEdit ? handleUpdate : handleSubmit}
-                        className="px-5 py-2 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+                        className="px-5 py-2 rounded-xl text-sm font-semibold text-white bg-cyan-600 hover:bg-cyan-700 active:scale-95 transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                         {isLoading && (
                             <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">

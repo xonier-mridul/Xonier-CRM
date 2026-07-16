@@ -25,6 +25,7 @@ import { ChevronDown, Search } from "lucide-react";
 import { CompanySelectProps } from "@/src/types/company/company.types";
 import { IoCheckmarkCircle } from "react-icons/io5";
 import { FaRegCircle } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
 
 
 
@@ -60,6 +61,7 @@ export const UsersTable = ({
   handleCompanyChange,
   checks
 }: UserTableComponentProps): JSX.Element => {
+  const { t } = useTranslation();
   const [selectedcountryCode, setCountryCode] = useState("+91");
   const { hasPermission } = usePermissions();
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -123,6 +125,7 @@ const isPasswordValid = checks.every((check) => check.valid);
     selectedCompanyId,
     onClear,
   }) => {
+  const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
     const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -172,7 +175,7 @@ const isPasswordValid = checks.every((check) => check.valid);
           onClick={() => setOpen(!open)}
           className={`w-full flex items-center justify-between overflow-hidden rounded-xl border px-4 py-2.5 text-sm  transition-all hover:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-300 ${
             selectedCompany
-              ? "border-cyan-400 bg-cyan-50 dark:bg-blue-900/20 text-cyan-700 dark:text-cyan-300"
+              ? "border-cyan-400 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300"
               : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-white"
           }`}
         >
@@ -213,7 +216,7 @@ const isPasswordValid = checks.every((check) => check.valid);
                 />
                 <input
                   type="text"
-                  placeholder="Search company..."
+                  placeholder={t("search_company")}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full rounded-lg border border-gray-200 dark:border-gray-600 py-1.5 pl-8 pr-3 text-sm outline-none focus:border-cyan-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
@@ -235,7 +238,7 @@ const isPasswordValid = checks.every((check) => check.valid);
                   }}
                   className="w-full px-4 py-2.5 text-left text-sm text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-b border-gray-50 dark:border-gray-700"
                 >
-                  All Companies
+                  {t("all_companies")}
                 </button>
               )}
 
@@ -254,8 +257,8 @@ const isPasswordValid = checks.every((check) => check.valid);
                       }}
                       className={`w-full px-4 py-2.5 text-left text-sm transition-colors flex items-center justify-between ${
                         isActive
-                          ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 font-semibold"
-                          : "text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700"
+                          ? "bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300 font-semibold"
+                          : "text-gray-700 dark:text-gray-200 hover:bg-cyan-50 dark:hover:bg-gray-700"
                       }`}
                     >
                       <div className="flex flex-col min-w-0">
@@ -264,7 +267,7 @@ const isPasswordValid = checks.every((check) => check.valid);
                       </div>
                       {isActive && (
                         <svg
-                          className="w-4 h-4 text-blue-500 shrink-0 ml-2"
+                          className="w-4 h-4 text-cyan-500 shrink-0 ml-2"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -282,7 +285,7 @@ const isPasswordValid = checks.every((check) => check.valid);
                 })
               ) : (
                 <div className="p-4 text-sm text-gray-500 dark:text-gray-400 text-center">
-                  No company found
+                  {t("no_company_found")}
                 </div>
               )}
 
@@ -307,13 +310,13 @@ const isPasswordValid = checks.every((check) => check.valid);
                       d="M4 12a8 8 0 018-8v8z"
                     />
                   </svg>
-                  Loading more…
+                  {t("loading_more_2")}
                 </div>
               )}
 
               {!hasMore && companyData.length > 0 && (
                 <div className="py-2 text-center text-xs text-gray-400 dark:text-gray-500 border-t border-gray-100 dark:border-gray-700">
-                  All companies loaded
+                  {t("all_companies_loaded")}
                 </div>
               )}
             </div>
@@ -330,7 +333,7 @@ const isPasswordValid = checks.every((check) => check.valid);
           <BlurryBackground onClick={() => setIsPopupShow(false)} />
          <div className="fixed top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 p-6 rounded-xl  z-[200] flex flex-col gap-5 shadow-xl w-150 min-h-140 ">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold dark:text-white">Create User</h2>
+              <h2 className="text-xl font-bold dark:text-white">{t("create_user")}</h2>
               <button
                 className="text-2xl text-gray-500 hover:text-red-500 cursor-pointer hover:rotate-90 transition-all duration-300"
                 onClick={() => setIsPopupShow(false)}
@@ -340,32 +343,32 @@ const isPasswordValid = checks.every((check) => check.valid);
             </div>
             <form onSubmit={handleSubmit} className="md:grid gap-4 text-xs md:text-lg">
               <Input
-                label="firstName"
+                label={t("firstname")}
                 type="text"
                 name="firstName"
-                placeholder="First Name"
+                placeholder={t("first_name")}
                 value={formData.firstName}
                 onChange={handleChange}
               />
               <Input
-                label="lastName"
+                label={t("lastname")}
                 type="text"
                 name="lastName"
-                placeholder="Last Name"
+                placeholder={t("last_name")}
                 value={formData.lastName}
                 onChange={handleChange}
               />
               <Input
-                label="email"
+                label={t("email_2")}
                 type="email"
                 name="email"
-                placeholder="Email Address"
+                placeholder={t("email_address")}
                 value={formData.email}
                 onChange={handleChange}
               />
               <div className="flex flex-col gap-1 w-full">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                  User Role
+                  {t("user_role")}
                 </label>
 
                 <select
@@ -374,7 +377,7 @@ const isPasswordValid = checks.every((check) => check.valid);
       bg-white dark:bg-gray-700 text-black dark:text-white
       border-gray-300 dark:border-gray-300/30 outline-none"
                 >
-                  <option value="">Select user role</option>
+                  <option value="">{t("select_user_role")}</option>
                   {roleData.map((role) => (
                     <option
                       key={role.id}
@@ -396,14 +399,14 @@ const isPasswordValid = checks.every((check) => check.valid);
                         <span
                           key={roleId}
                           className="flex items-center gap-2 px-3 py-1
-            bg-blue-100 text-blue-700 rounded-full text-sm"
+            bg-cyan-100 text-cyan-700 rounded-full text-sm"
                         >
                           {role.name}
 
                           <button
                             type="button"
                             onClick={() => handleRemoveRole(roleId)}
-                            className="hover:text-red-500 transition"
+                            className="hover:text-red-500 transition cursor-pointer"
                           >
                             <FaXmark size={12} />
                           </button>
@@ -415,7 +418,7 @@ const isPasswordValid = checks.every((check) => check.valid);
               </div>
               <div className="col-span-2 flex flex-col gap-1">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                  Phone
+                  {t("phone")}
                 </label>
 
                 <div className="flex gap-2">
@@ -436,7 +439,7 @@ const isPasswordValid = checks.every((check) => check.valid);
                   <input
                     type="text"
                     name="phone"
-                    placeholder="Phone Number"
+                    placeholder={t("phone_number")}
                     value={`${phoneNumber}`}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-300/30 bg-white dark:bg-gray-800 text-black dark:text-white outline-none"
@@ -444,23 +447,23 @@ const isPasswordValid = checks.every((check) => check.valid);
                 </div>
               </div>
               <Input
-                label="password"
+                label={t("password")}
                 type="password"
                 name="password"
-                placeholder="Password"
+                placeholder={t("password_2")}
                 value={formData.password}
                 onChange={handleChange}
               />
               <Input
-                label="confirm password"
+                label={t("confirm_password_2")}
                 type="password"
                 name="confirmPassword"
-                placeholder="Confirm Password"
+                placeholder={t("confirm_password")}
                 value={formData.confirmPassword}
                 onChange={handleChange}
               />
               <div className="space-y-2 ">
-                <span className="text-sm text-slate-500">Password Criteria:</span>
+                <span className="text-sm text-slate-500">{t("password_criteria")}</span>
                     {checks.map((check, index) => (
                       <div
                         key={index}
@@ -482,7 +485,7 @@ const isPasswordValid = checks.every((check) => check.valid);
               {isAdmin && (
                 <div className="col-span-2 flex flex-col gap-1">
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                    Company
+                    {t("company")}
                   </label>
                   <CompanySelect
                     companyData={companyData}
@@ -516,7 +519,7 @@ const isPasswordValid = checks.every((check) => check.valid);
                 className="col-span-2"
               >
                 {" "}
-                Submit{" "}
+                {t("submit")}{" "}
               </FormButton>
             </form>
           </div>
@@ -527,10 +530,10 @@ const isPasswordValid = checks.every((check) => check.valid);
         <div className="flex items-center gap-12 justify-between">
           <div className="flex flex-col gap-2">
             <h2 className="text-xl font-bold  dark:text-white text-slate-900 capitalize">
-              All users
+              {t("all_users")}
             </h2>
             <p className="text-gray-500 dark:text-gray-400">
-              Create, edit or remove users. Each user can have multiple roles.
+              {t("create_edit_or_remove_users_each")}
             </p>
           </div>
 
@@ -575,7 +578,7 @@ const isPasswordValid = checks.every((check) => check.valid);
             <IoIosSearch className="text-xl" />
             <input
               type="text"
-              placeholder="Search by name"
+              placeholder={t("search_by_name")}
               onChange={(e) => {
                 setCurrentPages(1)
                 setSearch(e.target.value);
@@ -590,35 +593,35 @@ const isPasswordValid = checks.every((check) => check.valid);
                         text-white px-5 py-2 rounded-md
                         flex items-center gap-2 cursor-pointer"
           >
-            <FiUserPlus className="text-lg" /> Create User
+            <FiUserPlus className="text-lg" /> {t("create_user")}
           </button>
         </div>
       </div>
       <div className="overflow-x-auto rounded-xl">
       <table className="w-full rounded-xl overflow-hidden text-slate-500 ">
         <thead className="">
-          <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
+          <tr className="w-full border-b-2 border-zinc-300 bg-slate-200 dark:bg-gray-800">
             <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
-              S.No.
+              {t("s_no")}
             </th>
             <th className=" uppercase text-xs text-start text-slate-500  dark:text-slate-100">
               {" "}
-              User
+              {t("user")}
             </th>
             <th className="md:px-0 px-3  uppercase text-xs text-start text-slate-500  dark:text-slate-100">
-              Type
+              {t("type")}
             </th>
             <th className=" uppercase text-xs text-start text-slate-500  dark:text-slate-100 whitespace-nowrap">
-              Created At
+              {t("created_at")}
             </th>
             <th className="md:px-0 px-3 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
-              Status
+              {t("status")}
             </th>
             <th className=" uppercase text-xs text-start text-slate-500  dark:text-slate-100 whitespace-nowrap">
-              Last Login
+              {t("last_login")}
             </th>
             <th className="md:px-0 px-3 uppercase text-xs text-start text-slate-500  dark:text-slate-100">
-              Actions
+              {t("actions")}
             </th>
           </tr>
         </thead>
@@ -653,7 +656,7 @@ const isPasswordValid = checks.every((check) => check.valid);
                     className={`${
                       rr
                         ? "bg-white dark:bg-transparent"
-                        : "bg-blue-100/50 dark:bg-slate-500"
+                        : "bg-slate-100/50 dark:bg-slate-500"
                     } w-full`}
                     key={item.id}
                   >
@@ -742,7 +745,7 @@ const isPasswordValid = checks.every((check) => check.valid);
             ) : (
               <tr className=" text-center ">
                 <td colSpan={7} className="p-4">
-                  User data not found
+                  {t("user_data_not_found")}
                 </td>
               </tr>
             )

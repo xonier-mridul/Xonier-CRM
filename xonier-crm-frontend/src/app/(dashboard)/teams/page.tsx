@@ -30,9 +30,11 @@ import FormButton from "@/src/components/ui/FormButton";
 import { TeamCategoryService } from "@/src/services/teamCategory.service";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import Skeleton from "react-loading-skeleton";
+import { useTranslation } from "react-i18next";
 
 
 const page = (): JSX.Element => {
+  const { t } = useTranslation();
   const [isPopupShow, setIsPopupShow] = useState<boolean>(false);
   const [err, setErr] = useState<string | string[]>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -335,24 +337,24 @@ getCategoryData();
                 flex flex-col gap-5 shadow-xl"
           >
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-bold dark:text-white">Create Team</h2>
+              <h2 className="text-xl font-bold dark:text-white">{t("create_team")}</h2>
               <button onClick={() => setIsPopupShow(false)}>
                 <FaXmark className="text-xl text-gray-500 hover:text-red-500 cursor-pointer hover:rotate-90 transition-all duration-300" />
               </button>
             </div>
             <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4">
               <Input
-                label="Team Name"
+                label={t("team_name")}
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="Enter team name"
+                placeholder={t("enter_team_name")}
                 required
               />
 
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                  Category
+                  {t("category")}
                 </label>
 
 
@@ -366,7 +368,7 @@ getCategoryData();
                     <span>
                       {formData.category
                         ? categoryData.find((c) => c.id === formData.category)?.name
-                        : "Select Category"}
+                        : t("select_category")}
                     </span>
 
                     <FiChevronDown
@@ -384,7 +386,7 @@ getCategoryData();
 
                         <input
                           type="text"
-                          placeholder="Search category..."
+                          placeholder={t("search_category")}
                           value={searchCategory}
                           onChange={(e) => setSearchCategory(e.target.value)}
                           className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-transparent py-2 pl-10 pr-3 text-sm outline-none"
@@ -418,7 +420,7 @@ getCategoryData();
                           ))
                         ) : (
                           <div className="px-4 py-3 text-sm text-gray-500">
-                            No category found
+                            {t("no_category_found")}
                           </div>
                         )}
                       </div>
@@ -430,7 +432,7 @@ getCategoryData();
 
                <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                  Add Manager
+                  {t("add_manager")}
                 </label>
 
                   <div className="relative w-full" ref={managerDropdownRef}>
@@ -440,7 +442,7 @@ getCategoryData();
                         onClick={() => setIsManagerOpen(!isManagerOpen)}
                         className="w-full flex items-center justify-between rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2.5 text-sm"
                       >
-                        <span>Select Manager</span>
+                        <span>{t("select_manager")}</span>
 
                         <FiChevronDown
                           className={`transition-transform ${
@@ -459,7 +461,7 @@ getCategoryData();
                             <input
                               value={searchManager}
                               onChange={(e) => setSearchManager(e.target.value)}
-                              placeholder="Search user..."
+                              placeholder={t("search_user")}
                               className="w-full border border-slate-200 rounded-md py-2 pl-10 pr-3 text-sm bg-transparent outline-none"
                             />
                           </div>
@@ -494,7 +496,7 @@ getCategoryData();
                               ))
                             ) : (
                               <div className="p-4 text-slate-500 text-sm">
-                                No user found
+                                {t("no_user_found")}
                               </div>
                             )}
                           </div>
@@ -548,7 +550,7 @@ getCategoryData();
 
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                  Add Members
+                  {t("add_members")}
                 </label>
 
                 {/* <select
@@ -574,7 +576,7 @@ getCategoryData();
                         onClick={() => setIsUserOpen(!isUserOpen)}
                         className="w-full flex items-center justify-between rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2.5 text-sm"
                       >
-                        <span>Select User</span>
+                        <span>{t("select_user_2")}</span>
 
                         <FiChevronDown
                           className={`transition-transform ${
@@ -593,7 +595,7 @@ getCategoryData();
                             <input
                               value={searchUser}
                               onChange={(e) => setSearchUser(e.target.value)}
-                              placeholder="Search user..."
+                              placeholder={t("search_user")}
                               className="w-full border border-slate-200 rounded-md py-2 pl-10 pr-3 text-sm bg-transparent outline-none"
                             />
                           </div>
@@ -627,7 +629,7 @@ getCategoryData();
                               ))
                             ) : (
                               <div className="p-4 text-sm text-gray-500">
-                                No user found
+                                {t("no_user_found")}
                               </div>
                             )}
                           </div>
@@ -663,13 +665,13 @@ getCategoryData();
 
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                  Description
+                  {t("description_2")}
                 </label>
                 <textarea
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
-                  placeholder="Team description..."
+                  placeholder={t("team_description")}
                   className="w-full rounded-md border px-3 py-2.5 border-gray-300 dark:border-gray-300/30 text-sm
                  bg-white dark:bg-gray-600 dark:text-white outline-none"
                 />
@@ -681,7 +683,7 @@ getCategoryData();
                   onClick={() => setIsPopupShow(false)}
                   className="px-4 py-2 rounded-md border text-gray-600 hover:bg-gray-100"
                 >
-                  Cancel
+                  {t("cancel")}
                 </button>
 
                 <FormButton
@@ -691,7 +693,7 @@ getCategoryData();
                   }
                 >
                   {" "}
-                  Submit{" "}
+                  {t("submit")}{" "}
                 </FormButton>
               </div>
             </form>
@@ -704,10 +706,10 @@ getCategoryData();
           <div className="flex items-center gap-12 justify-between">
             <div className="flex flex-col gap-2">
               <h2 className="text-xl font-bold  dark:text-white text-slate-900 capitalize">
-                All Teams
+                {t("all_teams")}
               </h2>
               <p className="text-gray-500 dark:text-gray-400">
-                Create, edit or remove teams.
+                {t("create_edit_or_remove_teams")}
               </p>
             </div>
             <div className="flex items-center gap-6">
@@ -723,7 +725,7 @@ getCategoryData();
               </select>
               <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 gap-1.5 rounded-lg border-[1px] text-slate-500 border-slate-900/10 flex items-center">
                 <IoIosSearch className="text-xl" />
-                <input type="text" placeholder="Search by name..."  onChange={(e)=>{setSearch(e.target.value)}} className="border-none bg-transparent outline-none text-sm font-medium text-slate-900 dark:text-white w-full"/>
+                <input type="text" placeholder={t("search_by_name")}  onChange={(e)=>{setSearch(e.target.value)}} className="border-none bg-transparent outline-none text-sm font-medium text-slate-900 dark:text-white w-full"/>
               </div>
               {hasPermission(PERMISSIONS.createTeam) ? (
                 <button
@@ -732,7 +734,7 @@ getCategoryData();
                                     text-white px-5 py-2 rounded-md
                                     flex items-center gap-2 cursor-pointer"
                 >
-                  <FiUserPlus /> Create Team
+                  <FiUserPlus /> {t("create_team")}
                 </button>
               ) : (
                 <span
@@ -740,7 +742,7 @@ getCategoryData();
                                     text-white px-5 py-2 rounded-md
                                     flex items-center gap-2"
                 >
-                  <FiUserPlus /> Create Team
+                  <FiUserPlus /> {t("create_team")}
                 </span>
               )}
             </div>
@@ -751,24 +753,24 @@ getCategoryData();
             <thead>
               <tr className="w-full  border-b-2 border-zinc-300 dark:border-zinc-400  bg-slate-200 dark:bg-gray-800">
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold tracking-wide">
-                  Manager
+                  {t("manager")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300 font-semibold tracking-wide">
                   {" "}
-                  Team
+                  {t("team")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold tracking-wide">
-                  Members
+                  {t("members")}
                 </th>
                 {/* <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300 font-semibold tracking-wide">
                   Created By
                 </th> */}
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300 font-semibold tracking-wide">
-                  Status
+                  {t("status")}
                 </th>
 
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300 font-semibold tracking-wide">
-                  Actions
+                  {t("actions")}
                 </th>
               </tr>
             </thead>
@@ -881,7 +883,7 @@ getCategoryData();
                 ) : (
                   <tr className=" text-center ">
                     <td colSpan={7} className="p-4">
-                      User data not found
+                      {t("user_data_not_found")}
                     </td>
                   </tr>
                 )

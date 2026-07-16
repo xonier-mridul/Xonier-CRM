@@ -18,6 +18,7 @@ import ErrorComponent from "@/src/components/ui/ErrorComponent";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { SALES_STATUS } from "@/src/constants/enum";
+import { useTranslation } from "react-i18next";
 
 
 const KNOWN_LEAD_KEYS = new Set([
@@ -71,6 +72,7 @@ const EMPTY_FORM: Record<string, string | number | null> = {
 };
 
 const page = (): JSX.Element => {
+  const { t } = useTranslation();
   const [err, setErr] = useState<string | string[]>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -184,11 +186,10 @@ const page = (): JSX.Element => {
         <div className="flex items-center gap-5 justify-between">
           <div className="flex flex-col gap-2">
             <h2 className="text-2xl font-bold dark:text-white text-slate-900 capitalize">
-              Create Leads
+              {t("create_leads")}
             </h2>
             <p className="text-slate-500 dark:text-slate-300">
-              You can customize your fields, if you want then click edit form
-              field button
+              {t("you_can_customize_your_fields_if_you_want_then_click_edit")}
             </p>
           </div>
 
@@ -250,11 +251,11 @@ const page = (): JSX.Element => {
               <div className="flex items-center flex-col justify-center col-span-2 py-5">
                 <Image
                   src={"/images/Cry.gif"}
-                  alt="cry img"
+                  alt={t("cry_img")}
                   height={200}
                   width={200}
                 />
-                <p>No form fields found, please select fields first</p>
+                <p>{t("no_form_fields_found_please_select")}</p>
               </div>
             )
           ) : (
@@ -273,7 +274,7 @@ const page = (): JSX.Element => {
             isLoading={loading}
             disabled={isMissingRequiredFields || loading}
           >
-            Create Lead
+            {t("create_lead")}
           </FormButton>
         </form>
       </div>

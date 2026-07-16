@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface SensitiveFieldProps {
   value: string;
@@ -18,6 +19,7 @@ export default function SensitiveField({
   revealDuration = 5000,
   fontSize = "base"
 }: SensitiveFieldProps) {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -34,7 +36,7 @@ export default function SensitiveField({
     <span
       onClick={() => setVisible(true)}
       className={`cursor-pointer select-none text-${fontSize} text-blue-400 dark:text-blue-300 hover:underline`}
-      title="Click to reveal for 5 seconds"
+      title={t("click_to_reveal_for_5_seconds")}
     >
       {value ? (visible ? (<Link href={link}
                                 className="text-sm hover:text-blue-500 dark:hover:text-blue-400 transition-all"

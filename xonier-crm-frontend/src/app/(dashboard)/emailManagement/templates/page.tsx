@@ -11,6 +11,7 @@ import Pagination from "@/src/components/common/pagination";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSIONS } from "@/src/constants/enum";
 import { MailService } from "@/src/services/communication/mail.service";
+import { useTranslation } from "react-i18next";
 
 type Template = {
   id: string;
@@ -22,6 +23,7 @@ type Template = {
 };
 
 const Page = (): JSX.Element => {
+  const { t } = useTranslation();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -104,21 +106,21 @@ const Page = (): JSX.Element => {
 
         <div className="flex flex-col gap-2">
           <h2 className="text-2xl font-bold dark:text-white text-slate-900">
-            Email Templates
+            {t("email_templates")}
           </h2>
 
           <p className="text-gray-500 dark:text-gray-400">
-            Create and manage AI email templates
+            {t("create_and_manage_ai_email_templates")}
           </p>
         </div>
 
         <Link
           href={canCreate ? "/emailManagement/templates/add" : "#"}
-          className={`bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md flex items-center gap-2 group ${!canCreate && "opacity-50 cursor-not-allowed pointer-events-none"
+          className={`bg-cyan-600 hover:bg-cyan-700 text-white px-5 py-2 rounded-md flex items-center gap-2 group ${!canCreate && "opacity-50 cursor-not-allowed pointer-events-none"
             }`}
         >
           <FaPlus className="group-hover:rotate-90 transition-all duration-300" />
-          Create Template
+          {t("create_template")}
         </Link>
 
       </div>
@@ -132,11 +134,11 @@ const Page = (): JSX.Element => {
 
             <div>
               <h2 className="text-xl font-bold dark:text-white">
-                All Email Templates
+                {t("all_email_templates")}
               </h2>
 
               <p className="text-gray-500 dark:text-gray-400">
-                Create, edit or remove templates
+                {t("create_edit_or_remove_templates")}
               </p>
             </div>
 
@@ -153,11 +155,11 @@ const Page = (): JSX.Element => {
               </select>
 
               <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2">
-                <IoIosSearch className="text-xl" />
+                <IoIosSearch className="text-xl text-slate-500" />
 
                 <input
                   type="text"
-                  placeholder="Search..."
+                  placeholder={t("search_3")}
                   className="outline-none bg-transparent"
                   onChange={(e) => handleSearch(e.target.value)}
                 />
@@ -172,14 +174,14 @@ const Page = (): JSX.Element => {
             <table className="min-w-[900px] w-full rounded-xl">
 
               <thead>
-                <tr className="border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
+                <tr className="border-b-2 text-slate-600 border-zinc-300 bg-slate-300 dark:bg-gray-800">
 
-                  <th className="p-4 text-xs text-start uppercase">Name</th>
-                  <th className="p-4 text-xs text-start uppercase">Subject</th>
-                  <th className="p-4 text-xs text-start uppercase">Status</th>
-                  <th className="p-4 text-xs text-start uppercase">Template</th>
-                  <th className="p-4 text-xs text-start uppercase">Tags</th>
-                  <th className="p-4 text-xs text-start uppercase">Actions</th>
+                  <th className="p-4 text-xs text-start rounded-tl-2xl ">{t("name_2")}</th>
+                  <th className="p-4 text-xs text-start ">{t("subject")}</th>
+                  <th className="p-4 text-xs text-start ">{t("status")}</th>
+                  <th className="p-4 text-xs text-start ">{t("template")}</th>
+                  <th className="p-4 text-xs text-start ">{t("tags")}</th>
+                  <th className="p-4 text-xs text-start rounded-tr-2xl ">{t("actions")}</th>
 
                 </tr>
               </thead>
@@ -198,7 +200,7 @@ const Page = (): JSX.Element => {
                           className={
                             rr
                               ? "bg-white dark:bg-transparent"
-                              : "bg-blue-100/50 dark:bg-slate-500"
+                              : "bg-slate-100/50 dark:bg-slate-500"
                           }
                         >
 
@@ -230,7 +232,7 @@ const Page = (): JSX.Element => {
                               {item.tags?.map((tag, index) => (
                                 <span
                                   key={index}
-                                  className="px-3 py-[3px] text-[11px] font-semibold rounded-full border border-blue-200 bg-blue-50 text-blue-600"
+                                  className="px-3 py-[3px] text-[11px] font-semibold rounded-full border border-cyan-200 bg-cyan-50 text-cyan-600"
                                 >
                                   #{tag}
                                 </span>
@@ -282,14 +284,14 @@ const Page = (): JSX.Element => {
                     })
                   ) : (
                     <tr>
-                      <td colSpan={6} className="text-center p-4">
-                        Data not found
+                      <td colSpan={6} className="text-center p-4 text-slate-500">
+                        {t("data_not_found")}
                       </td>
                     </tr>
                   )
                 ) : (
                   Array.from({ length: 6 }).map((_, i) => (
-                    <tr>
+                    <tr key={i}>
                       <td className="p-4"><Skeleton width={120} height={28} /></td>
                       <td className="p-4"><Skeleton width={160} height={28} /></td>
                       <td className="p-4"><Skeleton width={80} height={28} /></td>
@@ -326,11 +328,11 @@ const Page = (): JSX.Element => {
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-[400px]">
 
             <h2 className="text-lg font-semibold text-red-600">
-              Delete Template
+              {t("delete_template")}
             </h2>
 
             <p className="mt-2 text-sm text-gray-500">
-              Are you sure you want to delete this template?
+              {t("are_you_sure_you_want_to_delete_this_template")}
             </p>
 
             <div className="flex justify-end gap-3 mt-6">
@@ -339,7 +341,7 @@ const Page = (): JSX.Element => {
                 onClick={() => setShowDeleteModal(false)}
                 className="px-4 py-2 border rounded-md"
               >
-                Cancel
+                {t("cancel")}
               </button>
 
               <button

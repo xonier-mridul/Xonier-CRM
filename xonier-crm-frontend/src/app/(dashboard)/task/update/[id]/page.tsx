@@ -24,6 +24,7 @@ import { AuthService } from "@/src/services/auth.service";
 import { RootState } from "@/src/store";
 import { useSelector } from "react-redux";
 import { CategoryItem } from "@/src/types/task/category.types";
+import { useTranslation } from "react-i18next";
 
 // ── Priority config ───────────────────────────────────────────────────────────
 const PRIORITY_CFG: Record<
@@ -164,6 +165,7 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
 
 
 const UpdateTaskPage = (): JSX.Element => {
+  const { t } = useTranslation();
   const router = useRouter();
   const params = useParams();
   const taskId = params?.id as string;
@@ -444,7 +446,7 @@ const UpdateTaskPage = (): JSX.Element => {
             />
           </svg>
           <p className="text-sm text-gray-400 dark:text-gray-500 font-medium">
-            Loading task…
+            {t("loading_task")}
           </p>
         </div>
       </div>
@@ -468,12 +470,12 @@ const UpdateTaskPage = (): JSX.Element => {
             <div className="flex items-center gap-2.5 mb-1">
               <span className="text-2xl">🔧</span>
               <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-                Update Task
+                {t("update_task")}
               </h1>
             </div>
             {original && (
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Editing:{" "}
+                {t("editing")}{" "}
                 <span className="font-semibold text-gray-700 dark:text-gray-300">
                   {original.title}
                 </span>
@@ -495,29 +497,29 @@ const UpdateTaskPage = (): JSX.Element => {
           <div className="col-span-2 space-y-6">
 
             {/* Basic info */}
-            <Section icon="📝" title="Basic Information">
-              <Field label="Title" required>
+            <Section icon="📝" title={t("basic_information")}>
+              <Field label={t("title")} required>
                 <input
                   type="text"
                   value={form.title}
                   onChange={(e) => set("title", e.target.value)}
-                  placeholder="Task title"
+                  placeholder={t("task_title")}
                   className={inputCls}
                 />
               </Field>
 
-              <Field label="Description">
+              <Field label={t("description_2")}>
                 <textarea
                   value={form.description ?? ""}
                   onChange={(e) => set("description", e.target.value)}
-                  placeholder="Task description…"
+                  placeholder={t("task_description")}
                   rows={4}
                   className={`${inputCls} resize-none`}
                 />
               </Field>
 
               <div className="grid grid-cols-2 gap-4">
-                <Field label="Category" required>
+                <Field label={t("category")} required>
                   <select
                     value={form.category ?? ""}
                     onChange={(e) => {
@@ -526,16 +528,16 @@ const UpdateTaskPage = (): JSX.Element => {
                     }}
                     className={selectCls}
                   >
-                    <option value="" >Select category…</option>
+                    <option value="" >{t("select_category_2")}</option>
                     {categories.map((c) => (
                       <option key={c.id} value={c.id}>
-                        {c.icon} &nbsp; {c.name}
+                        {c.icon} {t("nbsp")} {c.name}
                       </option>
                     ))}
                   </select>
                 </Field>
                 <Field
-                  label="Current Status"
+                  label={t("current_status")}
                   hint={!form.category ? "Select a category first" : undefined}
                 >
                   <select
@@ -544,7 +546,7 @@ const UpdateTaskPage = (): JSX.Element => {
                     disabled={!form.category || statuses.length === 0}
                     className={`${selectCls} disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
-                    <option value="" selected> Select status… </option>
+                    <option value="" selected> {t("select_status")} </option>
                     {statuses.map((s) => (
                       <option key={s.id || s.id} value={s.id || s._id}>
                         {s.icon} {s.name}
@@ -556,9 +558,9 @@ const UpdateTaskPage = (): JSX.Element => {
             </Section>
 
 
-            <Section icon="📅" title="Scheduling">
+            <Section icon="📅" title={t("scheduling")}>
               <div className="grid grid-cols-2 gap-4">
-                <Field label="Start Date">
+                <Field label={t("start_date")}>
 
                   <input
                     type="date"
@@ -567,7 +569,7 @@ const UpdateTaskPage = (): JSX.Element => {
                     className={inputCls}
                   />
                 </Field>
-                <Field label="Due Date">
+                <Field label={t("due_date")}>
                   <input
                     type="date"
                     value={toDateInputValue(form.dueDate as Date | string | undefined)}
@@ -578,7 +580,7 @@ const UpdateTaskPage = (): JSX.Element => {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <Field label="Estimated Hours" hint="Original estimate">
+                <Field label={t("estimated_hours")} hint="Original estimate">
                   <input
                     type="number"
                     min={0}
@@ -594,7 +596,7 @@ const UpdateTaskPage = (): JSX.Element => {
                     className={inputCls}
                   />
                 </Field>
-                <Field label="Actual Hours" hint="Time actually spent">
+                <Field label={t("actual_hours")} hint="Time actually spent">
                   <input
                     type="number"
                     min={0}
@@ -641,17 +643,17 @@ const UpdateTaskPage = (): JSX.Element => {
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-gray-800 dark:text-white">
-                    Recurring Task
+                    {t("recurring_task")}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    Repeats on a set schedule
+                    {t("repeats_on_a_set_schedule")}
                   </p>
                 </div>
               </div>
 
               {form.isRecurring && (
                 <div className="grid grid-cols-2 gap-4 pl-3 border-l-2 border-blue-300 dark:border-blue-600 ml-1">
-                  <Field label="Recurrence Type" required>
+                  <Field label={t("recurrence_type")} required>
                     <select
                       value={form.recurrenceType ?? ""}
                       onChange={(e) =>
@@ -662,7 +664,7 @@ const UpdateTaskPage = (): JSX.Element => {
                       }
                       className={selectCls}
                     >
-                      <option value="">Select…</option>
+                      <option value="">{t("select")}</option>
                       {Object.values(RECURRENCE_TYPE).map((r) => (
                         <option key={r} value={r}>
                           {r.charAt(0) + r.slice(1).toLowerCase()}
@@ -670,7 +672,7 @@ const UpdateTaskPage = (): JSX.Element => {
                       ))}
                     </select>
                   </Field>
-                  <Field label="Ends At">
+                  <Field label={t("ends_at")}>
                     <input
                       type="date"
                       value={toDateInputValue(form.recurrenceEndsAt as Date | string | undefined)}
@@ -685,9 +687,9 @@ const UpdateTaskPage = (): JSX.Element => {
             </Section>
 
             {/* Linked Entity */}
-            <Section icon="🔗" title="Linked Entity">
+            <Section icon="🔗" title={t("linked_entity")}>
               <div className="grid grid-cols-3 gap-4">
-                <Field label="Entity Type">
+                <Field label={t("entity_type")}>
                   <select
                     value={form.entityType ?? ""}
                     onChange={(e) =>
@@ -698,7 +700,7 @@ const UpdateTaskPage = (): JSX.Element => {
                     }
                     className={selectCls}
                   >
-                    <option value="">None</option>
+                    <option value="">{t("none")}</option>
                     {Object.values(TASK_ENTITY_TYPE).map((et) => (
                       <option key={et} value={et}>
                         {et.charAt(0) + et.slice(1).toLowerCase()}
@@ -706,21 +708,21 @@ const UpdateTaskPage = (): JSX.Element => {
                     ))}
                   </select>
                 </Field>
-                <Field label="Entity ID">
+                <Field label={t("entity_id")}>
                   <input
                     type="text"
                     value={form.entityId ?? ""}
                     onChange={(e) => set("entityId", e.target.value)}
-                    placeholder="ID…"
+                    placeholder={t("id")}
                     className={inputCls}
                   />
                 </Field>
-                <Field label="Entity Name">
+                <Field label={t("entity_name")}>
                   <input
                     type="text"
                     value={form.entityName ?? ""}
                     onChange={(e) => set("entityName", e.target.value)}
-                    placeholder="Name…"
+                    placeholder={t("name")}
                     className={inputCls}
                   />
                 </Field>
@@ -728,7 +730,7 @@ const UpdateTaskPage = (): JSX.Element => {
             </Section>
 
             {/* Tags */}
-            <Section icon="🏷️" title="Tags">
+            <Section icon="🏷️" title={t("tags")}>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -737,7 +739,7 @@ const UpdateTaskPage = (): JSX.Element => {
                   onKeyDown={(e) =>
                     e.key === "Enter" && (e.preventDefault(), addTag())
                   }
-                  placeholder="Type tag and press Enter…"
+                  placeholder={t("type_tag_and_press_enter")}
                   className={`${inputCls} flex-1`}
                 />
                 <button
@@ -745,7 +747,7 @@ const UpdateTaskPage = (): JSX.Element => {
                   onClick={addTag}
                   className="px-4 py-2.5 rounded-xl text-sm font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-400 transition whitespace-nowrap"
                 >
-                  + Add
+                  {t("add")}
                 </button>
               </div>
               {(form.tags?.length ?? 0) > 0 && (
@@ -774,7 +776,7 @@ const UpdateTaskPage = (): JSX.Element => {
           <div className="space-y-6">
 
             {/* Priority */}
-            <Section icon="🎯" title="Priority">
+            <Section icon="🎯" title={t("priority")}>
               <div className="grid grid-cols-2 gap-2">
                 {Object.values(TASK_PRIORITY).map((p) => {
                   const cfg = PRIORITY_CFG[p];
@@ -801,12 +803,12 @@ const UpdateTaskPage = (): JSX.Element => {
             </Section>
 
             {/* Assign To */}
-            {(<Section icon="👥" title="Assign To">
+            {(<Section icon="👥" title={t("assign_to_2")}>
               {users.length === 0 ? (
                 <div className="text-center py-6">
                   <div className="text-3xl mb-2">👤</div>
                   <p className="text-xs text-gray-400 dark:text-gray-500">
-                    No users available
+                    {t("no_users_available")}
                   </p>
                 </div>
               ) : (
@@ -836,7 +838,7 @@ const UpdateTaskPage = (): JSX.Element => {
                       <div className="mb-2">
                         <input
                           type="text"
-                          placeholder="Search users..."
+                          placeholder={t("search_users")}
                           value={userSearch}
                           onChange={(e) => setUserSearch(e.target.value)}
                           className="w-full px-3 py-2 text-xs rounded-lg border bg-white dark:bg-gray-800 text-gray-800 dark:text-white outline-none"
@@ -844,6 +846,7 @@ const UpdateTaskPage = (): JSX.Element => {
                       </div>
                       <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
                         {userData.map((u) => {
+  const { t } = useTranslation();
                           const checked = (form.assignedTo ?? []).includes(u.id);
                           const isMe =
                             u.id === (auth.user?._id || auth.user?.id);
@@ -871,7 +874,7 @@ const UpdateTaskPage = (): JSX.Element => {
                                   {getUserName(u)}{" "}
                                   {isMe && (
                                     <span className="text-[10px] text-green-500">
-                                      (You)
+                                      {t("you_2")}
                                     </span>
                                   )}
                                 </p>
@@ -892,6 +895,7 @@ const UpdateTaskPage = (): JSX.Element => {
               {(form.assignedTo?.length ?? 0) > 0 && (
                 <div className="flex flex-wrap gap-2 pt-3">
                   {form.assignedTo?.map((id) => {
+  const { t } = useTranslation();
                     const user = users.find((u) => u.id === id);
                     const isMe = id === (auth.user?._id || auth.user?.id);
                     return (
@@ -906,7 +910,7 @@ const UpdateTaskPage = (): JSX.Element => {
                           {(user?.name?.[0] || "U").toUpperCase()}
                         </span>
                         {user?.name || "User"}
-                        {isMe && <span className="text-[10px]">(You)</span>}
+                        {isMe && <span className="text-[10px]">{t("you_2")}</span>}
                         <button
                           onClick={() => toggleAssignee(id)}
                           className="ml-1 text-gray-400 hover:text-red-500"
@@ -921,22 +925,22 @@ const UpdateTaskPage = (): JSX.Element => {
 
               {(form.assignedTo?.length ?? 0) > 0 && (
                 <p className="text-xs font-semibold text-blue-600 dark:text-blue-400">
-                  ✓ {form.assignedTo!.length} user
-                  {form.assignedTo!.length > 1 ? "s" : ""} selected
+                  ✓ {form.assignedTo!.length} {t("user_2")}
+                  {form.assignedTo!.length > 1 ? "s" : ""} {t("selected_2")}
                 </p>
               )}
             </Section>)}
 
             {/* Task info (read-only) */}
             {original && (
-              <Section icon="ℹ️" title="Task Info">
+              <Section icon="ℹ️" title={t("task_info")}>
                 <div>
                   <InfoRow
-                    label="Category"
+                    label={t("category")}
                     value={original.categoryName ?? original.category?.name}
                   />
                   <InfoRow
-                    label="Status"
+                    label={t("status")}
                     value={
                       <span className="inline-flex items-center gap-1">
                         {original.statusIcon && (
@@ -947,14 +951,14 @@ const UpdateTaskPage = (): JSX.Element => {
                     }
                   />
                   <InfoRow
-                    label="Created"
+                    label={t("created")}
                     value={new Date(original.createdAt).toLocaleDateString(
                       "en-GB",
                       { day: "2-digit", month: "short", year: "numeric" }
                     )}
                   />
                   <InfoRow
-                    label="Updated"
+                    label={t("updated")}
                     value={new Date(original.updatedAt).toLocaleDateString(
                       "en-GB",
                       { day: "2-digit", month: "short", year: "numeric" }
@@ -963,7 +967,7 @@ const UpdateTaskPage = (): JSX.Element => {
                   {original.assignedTo.length > 0 && (
                     <div className="pt-3">
                       <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-2">
-                        Assigned To
+                        {t("assigned_to")}
                       </p>
                       <div className="space-y-1.5 flex flex-wrap gap-2">
                         {original.assignedTo.map((u) => (
@@ -979,7 +983,7 @@ const UpdateTaskPage = (): JSX.Element => {
                 </div>
                 <div>
                   <p className="text-xs text-red-900 dark:text-gray-400 float-right rounded-xl bg-red-50 dark:bg-red-900/30 px-2 py-1 text-xs font-bold mb-4">
-                    Created by {original.createdBy?.firstName + " " + original.createdBy?.lastName}
+                    {t("created_by_3")} {original.createdBy?.firstName + " " + original.createdBy?.lastName}
                   </p>
                 </div>
               </Section>
@@ -994,7 +998,7 @@ const UpdateTaskPage = (): JSX.Element => {
             onClick={() => router.back()}
             className="w-[200px] px-5 py-3 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
           >
-            Cancel
+            {t("cancel")}
           </button>
           {canEdit ? (
             <button
@@ -1024,7 +1028,7 @@ const UpdateTaskPage = (): JSX.Element => {
                       d="M4 12a8 8 0 018-8v8H4z"
                     />
                   </svg>
-                  Saving…
+                  {t("saving")}
                 </>
               ) : (
                 "✓ Save Changes"
@@ -1032,7 +1036,7 @@ const UpdateTaskPage = (): JSX.Element => {
             </button>
           ) : (
             <div className="w-[200px] px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 text-center text-xs text-gray-400 font-medium">
-              No permission to edit tasks
+              {t("no_permission_to_edit_tasks")}
             </div>
           )}
         </div>

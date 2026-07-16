@@ -10,8 +10,10 @@ import { toast } from "react-toastify";
 import { PlanService } from "@/src/services/plan.service";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import { IoAdd } from "react-icons/io5";
+import { useTranslation } from "react-i18next";
 
 const PlansPage = (): JSX.Element => {
+  const { t } = useTranslation();
   const [planData, setPlanData] = useState<Plan[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [err, setErr] = useState<string[] | string>("");
@@ -160,17 +162,17 @@ const PlansPage = (): JSX.Element => {
     <div className="lg:ml-72 mt-14 p-6 flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Plan Management</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t("plan_management")}</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Create and manage subscription plans
+            {t("create_and_manage_subscription_plans")}
           </p>
         </div>
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-colors"
+          className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-colors"
         >
           <IoAdd className="text-lg" />
-          New Plan
+          {t("new_plan")}
         </button>
       </div>
 

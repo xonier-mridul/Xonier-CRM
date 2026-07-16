@@ -4,8 +4,10 @@ import { IoCalendarClearOutline, IoTrash } from "react-icons/io5";
 import PlanViewBadge from "./PlanViewBadge";
 import PrimaryBtn from "../btn/PrimaryBtn";
 import { PLAN_STATUS } from "@/src/constants/enum";
+import { useTranslation } from "react-i18next";
 
 const PlanViewHeader = ({ plan, createdAt, handleDelete }: PlanViewHeaderProps) => {
+  const { t } = useTranslation();
   const isDeleted = plan.status === PLAN_STATUS.DELETED;
 
   return (
@@ -19,7 +21,7 @@ const PlanViewHeader = ({ plan, createdAt, handleDelete }: PlanViewHeaderProps) 
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-3xl">
-          <p className="mb-2 text-xs font-semibold uppercase text-blue-600 dark:text-blue-400">Plan Details</p>
+          <p className="mb-2 text-xs font-semibold uppercase text-blue-600 dark:text-blue-400">{t("plan_details")}</p>
           <h1 className="text-2xl font-bold capitalize text-slate-900 dark:text-white">{plan.name}</h1>
           <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-gray-400">{plan.description || "No description added"}</p>
         </div>
@@ -31,7 +33,7 @@ const PlanViewHeader = ({ plan, createdAt, handleDelete }: PlanViewHeaderProps) 
 
           <div className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600 dark:bg-gray-900/40 dark:text-gray-300">
             <IoCalendarClearOutline className="text-base text-blue-500" />
-            <span>Created at {createdAt}</span>
+            <span>{t("created_at_2")} {createdAt}</span>
           </div>
         </div>
       </div>

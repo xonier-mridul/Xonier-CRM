@@ -10,6 +10,7 @@ import EmailService from "@/src/services/communication/mail.service";
 import StatusBadge from "@/src/components/common/Status";
 import CreatedAt from "@/src/components/common/CreatedAt";
 import Skeleton from "react-loading-skeleton";
+import { useTranslation } from "react-i18next";
 
 type Email = {
   id: string;
@@ -34,6 +35,7 @@ type Email = {
 
 
 export default function Page() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [emails, setEmails] = useState<Email[]>([]);
@@ -80,19 +82,19 @@ export default function Page() {
       <div className="bg-white mb-10 dark:bg-gray-700 flex gap-5 p-6 rounded-xl border border-slate-900/10 w-full items-center justify-between">
         <div className="flex flex-col gap-2">
           <h2 className="text-2xl font-bold dark:text-white text-slate-900 capitalize">
-            Email Outbox
+            {t("email_outbox")}
           </h2>
           <p className="text-gray-500 dark:text-gray-400">
-            View all sent emails from the system
+            {t("view_all_sent_emails_from_the")}
           </p>
         </div>
 
         <button
           onClick={handleRefresh}
-          className="flex items-center gap-2 px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white"
+          className="flex items-center gap-2 px-4 py-2 rounded-md bg-cyan-600 hover:bg-cyan-700 text-white"
         >
           <FiRefreshCw />
-          Refresh
+          {t("refresh")}
         </button>
       </div>
 
@@ -103,10 +105,10 @@ export default function Page() {
 
           <div className="flex flex-col gap-2">
             <h2 className="text-xl font-bold dark:text-white text-slate-900 capitalize">
-              All Sent Emails
+              {t("all_sent_emails")}
             </h2>
             <p className="text-gray-500 dark:text-gray-400">
-              View email history and delivery status.
+              {t("view_email_history_and_delivery_status")}
             </p>
           </div>
 
@@ -116,7 +118,7 @@ export default function Page() {
               <IoIosSearch className="text-xl" />
               <input
                 type="text"
-                placeholder="Search email..."
+                placeholder={t("search_email")}
                 className="outline-none bg-transparent"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -132,33 +134,33 @@ export default function Page() {
           <table className="w-full rounded-xl  text-nowrap">
 
             <thead>
-              <tr className="border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
+              <tr className="border-b-2 border-zinc-300 bg-slate-300 dark:bg-gray-800">
 
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
-                  To
+                <th className="p-4 rounded-tl-3xl text-xs text-start text-slate-500 dark:text-slate-100">
+                  {t("to_2")}
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
-                  From
-                </th>
-
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
-                  Subject
+                <th className="p-4  text-xs text-start text-slate-500 dark:text-slate-100">
+                  {t("from")}
                 </th>
 
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
-                  Template
+                <th className="p-4  text-xs text-start text-slate-500 dark:text-slate-100">
+                  {t("subject")}
                 </th>
 
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
-                  Status
+                <th className="p-4  text-xs text-start text-slate-500 dark:text-slate-100">
+                  {t("template")}
                 </th>
 
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
-                  Sent At
+                <th className="p-4  text-xs text-start text-slate-500 dark:text-slate-100">
+                  {t("status")}
                 </th>
 
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
-                  Actions
+                <th className="p-4  text-xs text-start text-slate-500 dark:text-slate-100">
+                  {t("sent_at")}
+                </th>
+
+                <th className="p-4 rounded-tr-3xl   text-xs text-start text-slate-500 dark:text-slate-100">
+                  {t("actions")}
                 </th>
 
               </tr>
@@ -206,7 +208,7 @@ export default function Page() {
                         key={email.id}
                         className={`${rr
                             ? "bg-white dark:bg-transparent"
-                            : "bg-blue-100/50 dark:bg-slate-500"
+                            : "bg-slate-100/50 dark:bg-slate-500"
                           }`}
                       >
                         <td className="p-4">{email.to_emails.join(", ")}</td>
@@ -248,7 +250,7 @@ export default function Page() {
                 ) : (
                   <tr>
                     <td colSpan={6} className="text-center p-6 text-gray-500">
-                      No emails found
+                      {t("no_emails_found")}
                     </td>
                   </tr>
                 )}

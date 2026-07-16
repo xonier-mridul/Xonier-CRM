@@ -44,12 +44,14 @@ import { MdOutlineEdit, MdDeleteOutline, MdTimeline } from "react-icons/md";
 import { FaRegUser, FaIndustry } from "react-icons/fa";
 import { MdOutlineLeaderboard } from "react-icons/md";
 import { EnquiryData } from "@/src/types/enquiry/enquiry.types";
+import { useTranslation } from "react-i18next";
 
 /* ─────────────── Type (matches schema) ─────────────── */
   
 
 /* ─────────────── Page ─────────────── */
 const EnquiryViewPage = (): JSX.Element => {
+  const { t } = useTranslation();
   const [enquiryData, setEnquiryData] = useState<EnquiryData | null>(null);
   const [err, setErr] = useState<string | string[]>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -173,17 +175,17 @@ const EnquiryViewPage = (): JSX.Element => {
           <div className="text-center">
             <IoDocumentText className="w-20 h-20 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              Enquiry Not Found
+              {t("enquiry_not_found")}
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              The enquiry you're looking for doesn't exist or has been removed.
+              {t("the_enquiry_you're_looking_for_doesn't")}
             </p>
             <button
               onClick={() => router.back()}
               className="inline-flex items-center gap-2 px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors"
             >
               <IoArrowBack className="w-5 h-5" />
-              Go Back
+              {t("go_back")}
             </button>
           </div>
         </div>
@@ -231,7 +233,7 @@ const EnquiryViewPage = (): JSX.Element => {
                   </span>
                   {!enquiryData!.isActive && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-300">
-                      Inactive
+                      {t("inactive")}
                     </span>
                   )}
                 </div>
@@ -242,7 +244,7 @@ const EnquiryViewPage = (): JSX.Element => {
                   }
                 >
                   <IoDocumentText className="w-4 h-4" />
-                  Enquiry ID:{" "}
+                  {t("enquiry_id_2")}{" "}
                   <span className="font-mono">{enquiryData!.enquiry_id}</span>
                 </p>
               </div>
@@ -256,12 +258,12 @@ const EnquiryViewPage = (): JSX.Element => {
                     className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors"
                   >
                     <MdOutlineEdit className="w-4 h-4 whitespace-nowrap" />
-                    Update Enquiry
+                    {t("update_enquiry")}
                   </Link>
                 ) : (
                   <span className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-400 opacity-60 text-white rounded-lg cursor-not-allowed">
                     <MdOutlineEdit className="w-4 h-4  whitespace-nowrap" />
-                    Update Enquiry
+                    {t("update_enquiry")}
                   </span>
                 )}
 
@@ -286,7 +288,7 @@ const EnquiryViewPage = (): JSX.Element => {
                         className="w-full flex items-center gap-2 px-4 py-2dark:hover:bg-red-900/20 transition-colors cursor-pointer"
                       >
                         <MdDeleteOutline className="w-4 h-4" />
-                        Delete
+                        {t("delete")}
                       </button>
            
                    
@@ -310,25 +312,25 @@ const EnquiryViewPage = (): JSX.Element => {
         <div className="metric-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <MetricCard
             icon={<IoBusinessOutline className="w-6 h-6" />}
-            label="Company"
+            label={t("company")}
             value={enquiryData!.companyName || "—"}
             color="bg-cyan-500"
           />
           <MetricCard
             icon={<IoBriefcaseOutline className="w-5 h-5" />}
-            label="Designation"
+            label={t("designation")}
             value={enquiryData!.designation || "—"}
             color="bg-purple-500"
           />
           <MetricCard
             icon={<IoCodeOutline className="w-5 h-5" />}
-            label="Project Type"
+            label={t("project_type")}
             value={enquiryData!.projectType?.replace(/_/g, " ") || "—"}
             color="bg-cyan-500"
           />
           <MetricCard
             icon={<IoInformationCircleOutline className="w-5 h-5" />}
-            label="Info Type"
+            label={t("info_type")}
             value={enquiryData!.infoType || "—"}
             color="bg-teal-500"
           />
@@ -369,37 +371,37 @@ const EnquiryViewPage = (): JSX.Element => {
                 {/* Enquiry Information */}
                 <SectionCard
                   icon={<IoInformationCircleOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />}
-                  title="Enquiry Information"
+                  title={t("enquiry_information")}
                 >
                   <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-6">
                     <InfoItem
                       icon={<IoInformationCircleOutline className="w-4 h-4" />}
-                      label="Source"
+                      label={t("source")}
                       value={enquiryData!.source?.replace(/_/g, " ") || "—"}
                     />
                     <InfoItem
                       icon={<IoCodeOutline className="w-4 h-4" />}
-                      label="Project Type"
+                      label={t("project_type")}
                       value={enquiryData!.projectType?.replace(/_/g, " ") || "—"}
                     />
                     <InfoItem
                       icon={<IoFlagOutline className="w-4 h-4" />}
-                      label="Priority"
+                      label={t("priority")}
                       value={enquiryData!.priority || "—"}
                     />
                     <InfoItem
                       icon={<IoStatsChartOutline className="w-4 h-4" />}
-                      label="Status"
+                      label={t("status")}
                       value={enquiryData!.status || "—"}
                     />
                     <InfoItem
                       icon={<IoInformationCircleOutline className="w-4 h-4" />}
-                      label="Info Type"
+                      label={t("info_type")}
                       value={enquiryData!.infoType || "—"}
                     />
                     <InfoItem
                       icon={<IoCheckmarkCircle className="w-4 h-4" />}
-                      label="Active"
+                      label={t("active")}
                       value={enquiryData!.isActive ? "Yes" : "No"}
                     />
                   </div>
@@ -411,13 +413,13 @@ const EnquiryViewPage = (): JSX.Element => {
                   (enquiryData!.keywords && enquiryData!.keywords.length > 0)) && (
                   <SectionCard
                     icon={<FaIndustry className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />}
-                    title="Industry & Technologies"
+                    title={t("industry_technologies")}
                   >
                     <div className="flex flex-col gap-5">
                       {enquiryData!.industry && enquiryData!.industry.length > 0 && (
                         <div>
                           <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1">
-                            <FaIndustry className="w-3 h-3" /> Industry
+                            <FaIndustry className="w-3 h-3" /> {t("industry_2")}
                           </p>
                           <div className="flex flex-wrap gap-2">
                             {enquiryData!.industry.map((ind, i) => (
@@ -429,7 +431,7 @@ const EnquiryViewPage = (): JSX.Element => {
                       {enquiryData!.technologies && enquiryData!.technologies.length > 0 && (
                         <div>
                           <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1">
-                            <IoLayersOutline className="w-3 h-3" /> Technologies
+                            <IoLayersOutline className="w-3 h-3" /> {t("technologies")}
                           </p>
                           <div className="flex flex-wrap gap-2">
                             {enquiryData!.technologies.map((tech, i) => (
@@ -441,7 +443,7 @@ const EnquiryViewPage = (): JSX.Element => {
                       {enquiryData!.keywords && enquiryData!.keywords.length > 0 && (
                         <div>
                           <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1">
-                            <IoSearchOutline className="w-3 h-3" /> Keywords
+                            <IoSearchOutline className="w-3 h-3" /> {t("keywords")}
                           </p>
                           <div className="flex flex-wrap gap-2">
                             {enquiryData!.keywords.map((kw, i) => (
@@ -458,18 +460,18 @@ const EnquiryViewPage = (): JSX.Element => {
                 {enquiryData!.assignTo && (
                   <SectionCard
                     icon={<MdOutlineLeaderboard className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />}
-                    title="Assigned To"
+                    title={t("assigned_to")}
                   >
                     <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-6">
                       <InfoItem
                         icon={<IoPersonOutline className="w-4 h-4" />}
-                        label="Name"
+                        label={t("name_2")}
                         value={`${enquiryData!.assignTo.firstName} ${enquiryData!.assignTo.lastName}`}
                       />
                       {enquiryData!.assignTo.email && (
                         <InfoItem
                           icon={<IoMailOutline className="w-4 h-4" />}
-                          label="Email"
+                          label={t("email")}
                           value={enquiryData!.assignTo.email}
                         />
                       )}
@@ -481,7 +483,7 @@ const EnquiryViewPage = (): JSX.Element => {
                 {enquiryData!.extra_fields && enquiryData!.extra_fields.length > 0 && (
                   <SectionCard
                     icon={<IoDocumentText className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />}
-                    title="Additional Fields"
+                    title={t("additional_fields")}
                   >
                     <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-6">
                       {enquiryData!.extra_fields.map((field, i) => (
@@ -500,7 +502,7 @@ const EnquiryViewPage = (): JSX.Element => {
                 {enquiryData!.message && (
                   <SectionCard
                     icon={<IoChatbubbleOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />}
-                    title="Client Message"
+                    title={t("client_message")}
                   >
                     <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                       <p className="text-gray-900 dark:text-white text-sm leading-relaxed whitespace-pre-wrap">
@@ -516,37 +518,37 @@ const EnquiryViewPage = (): JSX.Element => {
             {(activeTab === "contact" || isPrinting) && (
               <SectionCard
                 icon={<IoPersonOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />}
-                title="Contact Information"
+                title={t("contact_information")}
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-6">
                   <InfoItem
                     icon={<IoPersonOutline className="w-4 h-4" />}
-                    label="Full Name"
+                    label={t("full_name")}
                     value={enquiryData!.fullName}
                   />
                   <InfoItem
                     icon={<IoBriefcaseOutline className="w-4 h-4" />}
-                    label="Designation"
+                    label={t("designation")}
                     value={enquiryData!.designation || "—"}
                   />
                   <InfoItem
                     icon={<IoMailOutline className="w-4 h-4" />}
-                    label="Email"
+                    label={t("email")}
                     value={enquiryData!.email}
                   />
                   <InfoItem
                     icon={<IoCallOutline className="w-4 h-4" />}
-                    label="Phone"
+                    label={t("phone")}
                     value={enquiryData!.phone}
                   />
                   <InfoItem
                     icon={<IoBusinessOutline className="w-4 h-4" />}
-                    label="Company"
+                    label={t("company")}
                     value={enquiryData!.companyName || "—"}
                   />
                   <InfoItem
                     icon={<IoPeopleOutline className="w-4 h-4" />}
-                    label="Number of Employees"
+                    label={t("number_of_employees")}
                     value={enquiryData!.numberOfEmployees || "—"}
                   />
                   {enquiryData!.location && (
@@ -554,28 +556,28 @@ const EnquiryViewPage = (): JSX.Element => {
                       {enquiryData!.location.city && (
                         <InfoItem
                           icon={<IoLocationOutline className="w-4 h-4" />}
-                          label="City"
+                          label={t("city")}
                           value={enquiryData!.location.city}
                         />
                       )}
                       {enquiryData!.location.state && (
                         <InfoItem
                           icon={<IoLocationOutline className="w-4 h-4" />}
-                          label="State"
+                          label={t("state")}
                           value={enquiryData!.location.state}
                         />
                       )}
                       {enquiryData!.location.country && (
                         <InfoItem
                           icon={<IoGlobeOutline className="w-4 h-4" />}
-                          label="Country"
+                          label={t("country")}
                           value={enquiryData!.location.country}
                         />
                       )}
                       {enquiryData!.location.postalCode && (
                         <InfoItem
                           icon={<IoLocationOutline className="w-4 h-4" />}
-                          label="Postal Code"
+                          label={t("postal_code")}
                           value={enquiryData!.location.postalCode}
                         />
                       )}
@@ -589,7 +591,7 @@ const EnquiryViewPage = (): JSX.Element => {
                     <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-600">
                       <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
                         <IoLinkOutline className="w-4 h-4 text-cyan-500" />
-                        Social Links
+                        {t("social_links")}
                       </p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {Object.entries(enquiryData!.socialLinks)
@@ -618,13 +620,13 @@ const EnquiryViewPage = (): JSX.Element => {
                 <div className="flex items-center gap-2 mb-6">
                   <MdTimeline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Activity Timeline
+                    {t("activity_timeline")}
                   </h3>
                 </div>
                 <div className="text-center py-12">
                   <IoInformationCircleOutline className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
                   <p className="text-gray-500 dark:text-gray-400">
-                    Activity timeline coming soon
+                    {t("activity_timeline_coming_soon")}
                   </p>
                 </div>
               </div>
@@ -640,27 +642,27 @@ const EnquiryViewPage = (): JSX.Element => {
                 <div className="flex items-center gap-2 mb-4">
                   <FaRegUser className="text-xl text-white" />
                   <h2 className="text-white font-semibold text-xl">
-                    Creator Information
+                    {t("creator_information")}
                   </h2>
                 </div>
                 <div className="border-b border-white/30 w-full mb-4" />
                 <div className="space-y-4">
                   <ProfileField
                     icon={<IoPersonOutline className="w-4 h-4" />}
-                    label="Name"
+                    label={t("name_2")}
                     value={`${enquiryData!.createdBy.firstName} ${enquiryData!.createdBy.lastName ?? ""}`}
                   />
                   {enquiryData!.createdBy.email && (
                     <ProfileField
                       icon={<IoMailOutline className="w-4 h-4" />}
-                      label="Email"
+                      label={t("email")}
                       value={enquiryData!.createdBy.email}
                     />
                   )}
                   {enquiryData!.createdBy.phone && (
                     <ProfileField
                       icon={<IoCallOutline className="w-4 h-4" />}
-                      label="Phone"
+                      label={t("phone")}
                       value={enquiryData!.createdBy.phone}
                     />
                   )}
@@ -672,11 +674,11 @@ const EnquiryViewPage = (): JSX.Element => {
             {/* Quick Stats */}
             <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700 break-inside-avoid">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Quick Stats
+                {t("quick_stats")}
               </h3>
               <div className="space-y-3">
                 <StatItem
-                  label="Active"
+                  label={t("active")}
                   value={enquiryData!.isActive ? "Yes" : "No"}
                   color={
                     enquiryData!.isActive
@@ -685,18 +687,18 @@ const EnquiryViewPage = (): JSX.Element => {
                   }
                 />
                 <StatItem
-                  label="Created"
+                  label={t("created")}
                   value={formatDate(enquiryData!.createdAt)}
                   color="text-gray-600 dark:text-gray-400"
                 />
                 <StatItem
-                  label="Last Updated"
+                  label={t("last_updated")}
                   value={formatDate(enquiryData!.updatedAt)}
                   color="text-gray-600 dark:text-gray-400"
                 />
                 {enquiryData!.numberOfEmployees && (
                   <StatItem
-                    label="Employees"
+                    label={t("employees")}
                     value={enquiryData!.numberOfEmployees}
                     color="text-gray-600 dark:text-gray-400"
                   />
@@ -711,21 +713,21 @@ const EnquiryViewPage = (): JSX.Element => {
                   <div className="flex items-center gap-2 mb-4">
                     <IoLocationOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      Location Details
+                      {t("location_details")}
                     </h3>
                   </div>
                   <div className="space-y-3">
                     {enquiryData!.location.city && (
-                      <StatItem label="City" value={enquiryData!.location.city} color="text-gray-600 dark:text-gray-400" />
+                      <StatItem label={t("city")} value={enquiryData!.location.city} color="text-gray-600 dark:text-gray-400" />
                     )}
                     {enquiryData!.location.state && (
-                      <StatItem label="State" value={enquiryData!.location.state} color="text-gray-600 dark:text-gray-400" />
+                      <StatItem label={t("state")} value={enquiryData!.location.state} color="text-gray-600 dark:text-gray-400" />
                     )}
                     {enquiryData!.location.country && (
-                      <StatItem label="Country" value={enquiryData!.location.country} color="text-gray-600 dark:text-gray-400" />
+                      <StatItem label={t("country")} value={enquiryData!.location.country} color="text-gray-600 dark:text-gray-400" />
                     )}
                     {enquiryData!.location.postalCode && (
-                      <StatItem label="Postal Code" value={enquiryData!.location.postalCode} color="text-gray-600 dark:text-gray-400" />
+                      <StatItem label={t("postal_code")} value={enquiryData!.location.postalCode} color="text-gray-600 dark:text-gray-400" />
                     )}
                   </div>
                 </div>
@@ -738,7 +740,7 @@ const EnquiryViewPage = (): JSX.Element => {
                   <div className="flex items-center gap-2 mb-4">
                     <IoLinkOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      Social Links
+                      {t("social_links")}
                     </h3>
                   </div>
                   <div className="space-y-2">

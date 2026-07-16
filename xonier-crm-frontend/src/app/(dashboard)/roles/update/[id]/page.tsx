@@ -17,10 +17,12 @@ import { FiToggleLeft, FiToggleRight, FiZap } from "react-icons/fi";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSIONS } from "@/src/constants/enum";
+import { useTranslation } from "react-i18next";
 
 const MAX_POWER = 92;
 
 const UpdateRolePage = (): JSX.Element => {
+  const { t } = useTranslation();
   const [err, setErr] = useState<string | string[]>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -170,9 +172,9 @@ const UpdateRolePage = (): JSX.Element => {
                   <FaShieldHalved className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">Update Role</h2>
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">{t("update_role")}</h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Modify role name, power level and permissions
+                    {t("modify_role_name_power_level_and")}
                   </p>
                 </div>
               </div>
@@ -187,9 +189,9 @@ const UpdateRolePage = (): JSX.Element => {
                 </div>
               ) : (
                 <Input
-                  label="Role name"
+                  label={t("role_name")}
                   name="name"
-                  placeholder="e.g. Sales Manager, Team Lead, Developer"
+                  placeholder={t("e_g_sales_manager_team_lead")}
                   value={formData.name}
                   onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                   required
@@ -206,7 +208,7 @@ const UpdateRolePage = (): JSX.Element => {
                       <div className="flex items-center gap-2">
                         <FiZap className="text-amber-500 text-base" />
                         <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                          Power Level
+                          {t("power_level")}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -244,12 +246,12 @@ const UpdateRolePage = (): JSX.Element => {
                       />
                     </div>
                     <div className="flex items-center justify-between mt-1.5">
-                      <span className="text-[11px] text-slate-400">1 — least powerful</span>
-                      <span className="text-[11px] text-slate-400">max {MAX_POWER}</span>
+                      <span className="text-[11px] text-slate-400">{t("1_least_powerful")}</span>
+                      <span className="text-[11px] text-slate-400">{t("max")} {MAX_POWER}</span>
                     </div>
                     {(formData.power ?? 1) >= MAX_POWER && (
                       <p className="text-[11px] text-red-500 mt-1.5 font-medium">
-                        Maximum power level reached ({MAX_POWER})
+                        {t("maximum_power_level_reached")}{MAX_POWER})
                       </p>
                     )}
                   </div>
@@ -259,11 +261,11 @@ const UpdateRolePage = (): JSX.Element => {
                       <div className="flex items-center gap-2 mb-1">
                         <FaShieldHalved className="text-indigo-500 text-sm" />
                         <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                          Can Manage Below
+                          {t("can_manage_below")}
                         </span>
                       </div>
                       <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                        When enabled, this role can manage users and roles with a lower power level.
+                        {t("when_enabled_this_role_can_manage")}
                       </p>
                     </div>
                     <button
@@ -296,14 +298,14 @@ const UpdateRolePage = (): JSX.Element => {
                 <div className="bg-indigo-50 dark:bg-indigo-950/20 rounded-xl p-4 border border-indigo-100 dark:border-indigo-900/30">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-400">
-                      Selected Permissions
+                      {t("selected_permissions")}
                     </span>
                     <span className="text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/40 px-2 py-0.5 rounded-full">
                       <button
                         onClick={handleRemoveAll}
                         className="ml-1 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                       >
-                        Remove All &nbsp;{formData.permissions.length}
+                        {t("remove_all_nbsp")}{formData.permissions.length}
                       </button>
                     </span>
                   </div>
@@ -335,13 +337,13 @@ const UpdateRolePage = (): JSX.Element => {
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    Available Permissions
+                    {t("available_permissions")}
                   </span>
                   <div className="relative">
                     <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                       type="text"
-                      placeholder="Search permissions..."
+                      placeholder={t("search_permissions")}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter") e.preventDefault(); }}
@@ -402,7 +404,7 @@ const UpdateRolePage = (): JSX.Element => {
                     ))}
                     {Object.keys(groupedPermissions).length === 0 && (
                       <div className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">
-                        No permissions match your search.
+                        {t("no_permissions_match_your_search")}
                       </div>
                     )}
                   </div>
@@ -426,7 +428,7 @@ const UpdateRolePage = (): JSX.Element => {
                 onClick={() => router.back()}
                 className="px-5 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 text-slate-700 dark:text-slate-200 font-medium transition-colors"
               >
-                Cancel
+                {t("cancel")}
               </button>
               <FormButton
                 type="submit"
@@ -435,7 +437,7 @@ const UpdateRolePage = (): JSX.Element => {
                 disabled={formData.name === "" || formData.permissions.length === 0 || !hasPermission(PERMISSIONS.updateRole)}
               >
                 <FaFloppyDisk className="w-4 h-4" />
-                Update Role
+                {t("update_role")}
               </FormButton>
             </div>
 

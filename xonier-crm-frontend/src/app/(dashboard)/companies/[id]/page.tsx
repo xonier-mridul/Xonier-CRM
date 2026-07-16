@@ -35,6 +35,7 @@ import extractErrorMessages from "@/src/app/utils/error.utils";
 import Skeleton from "react-loading-skeleton";
 import { useSelector } from "react-redux";
 import { RootState } from "@/src/store";
+import { useTranslation } from "react-i18next";
 
 const statusConfig: Record<
   string,
@@ -183,6 +184,7 @@ function StatCard({
 }
 
 export default function CompanyDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const router = useRouter();
   const [company, setCompany] = useState<Company | null>(null);
@@ -346,7 +348,7 @@ export default function CompanyDetailPage() {
                   className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl bg-slate-100 dark:bg-gray-700 text-slate-700 dark:text-gray-200 hover:bg-slate-200 dark:hover:bg-gray-600 transition-colors"
                 >
                   <IoCreateOutline className="text-base" />
-                  Edit
+                  {t("edit")}
                 </Link>
 
                 <button
@@ -365,7 +367,7 @@ export default function CompanyDetailPage() {
                         className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-emerald-600 dark:text-emerald-400 hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors"
                       >
                         <IoCheckmarkCircle />
-                        Set Active
+                        {t("set_active")}
                       </button>
                     )}
                     {!isDeleted && company.status !== COMPANY_STATUS.SUSPENDED && (
@@ -374,7 +376,7 @@ export default function CompanyDetailPage() {
                         className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors"
                       >
                         <IoCloseCircle />
-                        Suspend
+                        {t("suspend")}
                       </button>
                     )}
                     {!isDeleted && company.status !== COMPANY_STATUS.INACTIVE && (
@@ -383,7 +385,7 @@ export default function CompanyDetailPage() {
                         className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-orange-500 hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors"
                       >
                         <IoAlertCircleOutline />
-                        Set Inactive
+                        {t("set_inactive")}
                       </button>
                     )}
                     <div className="my-1 border-t border-slate-100 dark:border-gray-700" />
@@ -393,7 +395,7 @@ export default function CompanyDetailPage() {
                         className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-blue-500 hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors"
                       >
                         <IoRefreshOutline />
-                        Restore Company
+                        {t("restore_company")}
                       </button>
                     ) : (
                       <button
@@ -401,7 +403,7 @@ export default function CompanyDetailPage() {
                         className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                       >
                         <IoTrashOutline />
-                        Delete Company
+                        {t("delete_company")}
                       </button>
                     )}
                   </div>
@@ -424,25 +426,25 @@ export default function CompanyDetailPage() {
         ) : company ? (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
-              label="Subscriptions"
+              label={t("subscriptions")}
               value={company.subscriptionCount}
               sub="Total subscriptions"
               color="text-blue-600 dark:text-blue-400"
             />
             <StatCard
-              label="User Limit"
+              label={t("user_limit")}
               value={company.userLimit ?? "∞"}
               sub="Max seats allowed"
-              color="text-purple-600 dark:text-purple-400"
+              color="text-cyan-600 dark:text-cyan-400"
             />
             <StatCard
-              label="Plan Price"
+              label={t("plan_price")}
               value={sub ? `$${sub.finalPrice}` : "—"}
               sub={sub ? `Per ${sub.billingCycle} cycle` : "No subscription"}
               color="text-emerald-600 dark:text-emerald-400"
             />
             <StatCard
-              label="Registered"
+              label={t("registered")}
               value={formatDate(company.createdAt)}
               sub={company.timezone ?? "UTC"}
               color="text-slate-700 dark:text-gray-200"
@@ -457,7 +459,7 @@ export default function CompanyDetailPage() {
           <div className="lg:col-span-2 flex flex-col gap-6">
 
             {/* Company Info */}
-            <Card title="Company Details" icon={<IoBusinessOutline />}>
+            <Card title={t("company_details")} icon={<IoBusinessOutline />}>
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <div key={i} className="py-3 border-b border-slate-100 dark:border-gray-700/60 last:border-0">
@@ -468,12 +470,12 @@ export default function CompanyDetailPage() {
                 <>
                   <InfoRow
                     icon={<IoBusinessOutline />}
-                    label="Industry"
+                    label={t("industry_2")}
                     value={<span className="capitalize">{company.industry}</span>}
                   />
                   <InfoRow
                     icon={<IoPeopleOutline />}
-                    label="Company Size"
+                    label={t("company_size")}
                     value={
                       company.companySize
                         ? sizeLabel[company.companySize] ?? company.companySize
@@ -482,7 +484,7 @@ export default function CompanyDetailPage() {
                   />
                   <InfoRow
                     icon={<IoLocationOutline />}
-                    label="Country"
+                    label={t("country")}
                     value={
                       company.country ? (
                         <span className="uppercase font-semibold">{company.country}</span>
@@ -491,12 +493,12 @@ export default function CompanyDetailPage() {
                   />
                   <InfoRow
                     icon={<IoTimeOutline />}
-                    label="Timezone"
+                    label={t("timezone")}
                     value={company.timezone}
                   />
                   <InfoRow
                     icon={<IoGlobeOutline />}
-                    label="Website"
+                    label={t("website")}
                     value={
                       company.website ? (
                         <a
@@ -513,7 +515,7 @@ export default function CompanyDetailPage() {
                   {company.subDomain && (
                     <InfoRow
                       icon={<IoGlobeOutline />}
-                      label="Subdomain"
+                      label={t("subdomain")}
                       value={company.subDomain}
                       mono
                     />
@@ -523,7 +525,7 @@ export default function CompanyDetailPage() {
             </Card>
 
             {/* Legal Info */}
-            <Card title="Legal & Registration" icon={<IoDocumentTextOutline />}>
+            <Card title={t("legal_registration")} icon={<IoDocumentTextOutline />}>
               {isLoading ? (
                 Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="py-3 border-b border-slate-100 dark:border-gray-700/60 last:border-0">
@@ -534,19 +536,19 @@ export default function CompanyDetailPage() {
                 <>
                   <InfoRow
                     icon={<IoDocumentTextOutline />}
-                    label="Registration Number"
+                    label={t("registration_number")}
                     value={company.registrationNumber}
                     mono
                   />
                   <InfoRow
                     icon={<IoDocumentTextOutline />}
-                    label="Trade Number"
+                    label={t("trade_number")}
                     value={company.tradeNumber}
                     mono
                   />
                   <InfoRow
                     icon={<IoDocumentTextOutline />}
-                    label="Slug"
+                    label={t("slug")}
                     value={company.slug}
                     mono
                   />
@@ -555,7 +557,7 @@ export default function CompanyDetailPage() {
             </Card>
 
             {/* Subscription */}
-            <Card title="Subscription" icon={<IoCardOutline />}>
+            <Card title={t("subscription")} icon={<IoCardOutline />}>
               {isLoading ? (
                 <div className="py-4">
                   <Skeleton height={120} borderRadius={12} />
@@ -569,7 +571,7 @@ export default function CompanyDetailPage() {
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-slate-800 dark:text-white capitalize">
-                          {sub.billingCycle} Plan
+                          {sub.billingCycle} {t("plan")}
                         </p>
                         <p className="text-xs text-slate-400 dark:text-gray-500 font-mono">
                           {sub.subscriptionId}
@@ -581,12 +583,12 @@ export default function CompanyDetailPage() {
                         ${sub.finalPrice}
                         {sub.discountAmount > 0 && (
                           <span className="text-xs font-normal text-emerald-500 ml-1">
-                            (-${sub.discountAmount} off)
+                            (-${sub.discountAmount} {t("off")}
                           </span>
                         )}
                       </p>
                       <p className="text-xs text-slate-400 dark:text-gray-500">
-                        Base: ${sub.basePrice}
+                        {t("base")}{sub.basePrice}
                       </p>
                     </div>
                   </div>
@@ -594,7 +596,7 @@ export default function CompanyDetailPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <div className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-3">
                       <p className="text-xs text-slate-400 dark:text-gray-500 uppercase tracking-wide font-medium mb-1">
-                        Trial Period
+                        {t("trial_period")}
                       </p>
                       <p className="text-sm font-semibold text-slate-700 dark:text-gray-200">
                         {formatDate(sub.trialStartDate)}
@@ -603,7 +605,7 @@ export default function CompanyDetailPage() {
                     </div>
                     <div className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-3">
                       <p className="text-xs text-slate-400 dark:text-gray-500 uppercase tracking-wide font-medium mb-1">
-                        Active Period
+                        {t("active_period")}
                       </p>
                       <p className="text-sm font-semibold text-slate-700 dark:text-gray-200">
                         {formatDate(sub.startSubscriptionDate)}
@@ -624,7 +626,7 @@ export default function CompanyDetailPage() {
                     </span>
                     {sub.cancelledAt && (
                       <span className="text-xs text-red-500">
-                        Cancelled {formatDate(sub.cancelledAt)}
+                        {t("cancelled")} {formatDate(sub.cancelledAt)}
                         {sub.cancelReason && ` · ${sub.cancelReason}`}
                       </span>
                     )}
@@ -633,7 +635,7 @@ export default function CompanyDetailPage() {
               ) : (
                 <div className="py-10 text-center">
                   <IoCardOutline className="text-3xl text-slate-300 dark:text-gray-600 mx-auto mb-2" />
-                  <p className="text-sm text-slate-400 dark:text-gray-500">No subscription found</p>
+                  <p className="text-sm text-slate-400 dark:text-gray-500">{t("no_subscription_found")}</p>
                 </div>
               )}
             </Card>
@@ -643,7 +645,7 @@ export default function CompanyDetailPage() {
           <div className="flex flex-col gap-6">
 
             {/* Primary Admin */}
-            <Card title="Primary Admin" icon={<IoPersonOutline />}>
+            <Card title={t("primary_admin")} icon={<IoPersonOutline />}>
               {isLoading ? (
                 <div className="py-4">
                   <Skeleton height={100} borderRadius={12} />
@@ -651,7 +653,7 @@ export default function CompanyDetailPage() {
               ) : admin ? (
                 <div className="py-4 flex flex-col gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-indigo-400 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-md">
+                    <div className="h-12 w-12 rounded-xl bg-gradient-to-r from-[#16c2cf] to-[#0fb8a5] flex items-center justify-center flex-shrink-0 shadow-md">
                       <span className="text-lg font-bold text-white">
                         {admin.firstName?.charAt(0).toUpperCase()}
                       </span>
@@ -697,7 +699,7 @@ export default function CompanyDetailPage() {
                       <div className="flex items-center gap-2">
                         <IoCalendarOutline className="text-slate-400 text-base flex-shrink-0" />
                         <span className="text-xs text-slate-500 dark:text-gray-400">
-                          Last login {formatDate(admin.lastLogin, true)}
+                          {t("last_login_2")} {formatDate(admin.lastLogin, true)}
                         </span>
                       </div>
                     )}
@@ -707,19 +709,19 @@ export default function CompanyDetailPage() {
                     href={`/users/${admin.id}`}
                     className="w-full flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-gray-600 text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors"
                   >
-                    View Profile
+                    {t("view_profile")}
                   </Link>
                 </div>
               ) : (
                 <div className="py-8 text-center">
                   <IoPersonOutline className="text-3xl text-slate-300 dark:text-gray-600 mx-auto mb-2" />
-                  <p className="text-sm text-slate-400 dark:text-gray-500">No admin assigned</p>
+                  <p className="text-sm text-slate-400 dark:text-gray-500">{t("no_admin_assigned")}</p>
                 </div>
               )}
             </Card>
 
             {/* Metadata */}
-            <Card title="Metadata" icon={<IoCalendarOutline />}>
+            <Card title={t("metadata")} icon={<IoCalendarOutline />}>
               {isLoading ? (
                 Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="py-3 border-b border-slate-100 dark:border-gray-700/60 last:border-0">
@@ -730,18 +732,18 @@ export default function CompanyDetailPage() {
                 <>
                   <InfoRow
                     icon={<IoCalendarOutline />}
-                    label="Created At"
+                    label={t("created_at")}
                     value={formatDate(company.createdAt, true)}
                   />
                   <InfoRow
                     icon={<IoCalendarOutline />}
-                    label="Updated At"
+                    label={t("updated_at")}
                     value={formatDate(company.updatedAt, true)}
                   />
                   {company.deletedAt && (
                     <InfoRow
                       icon={<IoTrashOutline />}
-                      label="Deleted At"
+                      label={t("deleted_at")}
                       value={
                         <span className="text-red-500">{formatDate(company.deletedAt, true)}</span>
                       }
@@ -753,17 +755,17 @@ export default function CompanyDetailPage() {
 
             {/* Quick Actions */}
             {!isLoading && company && (
-              <Card title="Quick Actions" icon={<IoShieldCheckmarkOutline />}>
+              <Card title={t("quick_actions")} icon={<IoShieldCheckmarkOutline />}>
                 <div className="py-3 flex flex-col gap-2">
                   <Link
                     href={`/companies/${company.id}`}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors group"
                   >
-                    <div className="h-8 w-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
-                      <IoPeopleOutline className="text-purple-600 dark:text-purple-400" />
+                    <div className="h-8 w-8 rounded-lg bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center flex-shrink-0">
+                      <IoPeopleOutline className="text-cyan-600 dark:text-cyan-400" />
                     </div>
                     <span className="text-sm font-medium text-slate-700 dark:text-gray-200 group-hover:text-slate-900 dark:group-hover:text-white">
-                      Manage Users
+                      {t("manage_users")}
                     </span>
                   </Link>
 
@@ -775,7 +777,7 @@ export default function CompanyDetailPage() {
                       <IoCardOutline className="text-blue-600 dark:text-blue-400" />
                     </div>
                     <span className="text-sm font-medium text-slate-700 dark:text-gray-200 group-hover:text-slate-900 dark:group-hover:text-white">
-                      View Subscriptions
+                      {t("view_subscriptions")}
                     </span>
                   </Link>
 
@@ -787,7 +789,7 @@ export default function CompanyDetailPage() {
                       <IoCreateOutline className="text-amber-600 dark:text-amber-400" />
                     </div>
                     <span className="text-sm font-medium text-slate-700 dark:text-gray-200 group-hover:text-slate-900 dark:group-hover:text-white">
-                      Edit Company
+                      {t("edit_company")}
                     </span>
                   </Link>
                 </div>

@@ -13,11 +13,13 @@ import { ResendLoginOtpPayload, VerifyLoginOtpPayload } from "@/src/types";
 import { login, logout } from "@/src/store/slices/authSlice";
 
 import extractErrorMessages from "@/src/app/utils/error.utils";
+import { useTranslation } from "react-i18next";
 
 const OTP_LENGTH = 6;
 const OTP_TIMER = 60;
 
 const page = () => {
+  const { t } = useTranslation();
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -171,11 +173,11 @@ const page = () => {
     <div className="flex items-center justify-center bg-violet-50 min-h-screen">
       <div className="bg-white p-8 rounded-xl w-[600px] flex flex-col gap-5">
         <h1 className="text-2xl font-semibold text-blue-800">
-          Verify Login OTP
+          {t("verify_login_otp")}
         </h1>
 
         <p className="text-sm text-gray-500">
-          OTP is sent to{" "}
+          {t("otp_is_sent_to")}{" "}
           <span className="font-medium text-blue-500">{email}</span>
         </p>
 
@@ -211,13 +213,13 @@ const page = () => {
             </div>
           )}
 
-          <FormButton isLoading={isLoading}>Verify OTP</FormButton>
+          <FormButton isLoading={isLoading}>{t("verify_otp")}</FormButton>
         </form>
 
         <div className="text-center text-sm text-gray-600">
           {timeLeft > 0 ? (
             <p>
-              Resend OTP in{" "}
+              {t("resend_otp_in")}{" "}
               <span className="font-semibold text-blue-600">{timeLeft}s</span>
             </p>
           ) : (
@@ -234,7 +236,7 @@ const page = () => {
           onClick={() => router.back()}
           className="flex items-center gap-1.5 text-slate-700 font-medium cursor-pointer hover:text-blue-400 tracking-wide"
         >
-          <IoChevronBack /> Step Back
+          <IoChevronBack /> {t("step_back")}
         </button>
       </div>
     </div>

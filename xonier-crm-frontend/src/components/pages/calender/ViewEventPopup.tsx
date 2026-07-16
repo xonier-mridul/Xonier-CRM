@@ -4,6 +4,7 @@ import React from "react";
 import { EventInput } from "@fullcalendar/core";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSIONS, PRIORITY } from "@/src/constants/enum";
+import { useTranslation } from "react-i18next";
 
 interface ViewEventPopupProps {
   open: boolean;
@@ -20,6 +21,7 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
   onDelete,
   onEdit,
 }) => {
+  const { t } = useTranslation();
   const { hasPermission } = usePermissions();
 
   if (!open || !event) return null;
@@ -168,7 +170,7 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
                 </span>
                 {event.allDay && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/20 backdrop-blur-sm text-white border border-white/30">
-                    🌅 All Day
+                    {t("all_day")}
                   </span>
                 )}
               </div>
@@ -205,14 +207,14 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
                     </p>
                     {event.end && (
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        to {formatDate(event.end)}
+                        {t("to_3")} {formatDate(event.end)}
                       </p>
                     )}
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">Start</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">{t("start")}</p>
                       <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
                         {formatDate(event.start)}
                       </p>
@@ -222,7 +224,7 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
                     </div>
                     {event.end && (
                       <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">End</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">{t("end")}</p>
                         <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
                           {formatDate(event.end)}
                         </p>
@@ -245,7 +247,7 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
               </div>
               <div className="flex-1">
                 <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide mb-1">
-                  Priority Level
+                  {t("priority_level")}
                 </h3>
                 <div className="flex items-center gap-2">
                   <span className={`text-xl font-bold ${priorityConfig.text} capitalize`}>
@@ -268,7 +270,7 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
                 </div>
                 <div className="flex-1">
                   <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-                    📝 Description
+                    {t("description_3")}
                   </h3>
                   <p className="text-base leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
                     {event.extendedProps.description}
@@ -289,7 +291,7 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
                 </div>
                 <div className="flex-1">
                   <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-                    🔗 Meeting Link
+                    {t("meeting_link_2")}
                   </h3>
                   <a
                     href={event.extendedProps.meetingLink}
@@ -297,7 +299,7 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 text-base font-medium text-green-700 dark:text-green-300 hover:text-green-800 dark:hover:text-green-200 underline decoration-2 underline-offset-4 break-all transition-colors"
                   >
-                    <span>Join Meeting</span>
+                    <span>{t("join_meeting")}</span>
                     <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                     </svg>
@@ -312,7 +314,7 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
         <div className="px-8 py-5 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
           <div className="flex items-center justify-between gap-4">
             <div className="text-xs text-gray-500 dark:text-gray-400">
-              Event ID: {event.id}
+              {t("event_id")} {event.id}
             </div>
             <div className="flex gap-3">
               {onEdit && hasPermission(PERMISSIONS.updateEvent) && (
@@ -323,7 +325,7 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
-                  Edit Event
+                  {t("edit_event")}
                 </button>
               )}
               {hasPermission(PERMISSIONS.deleteEvent) && (
@@ -334,7 +336,7 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
-                  Delete
+                  {t("delete")}
                 </button>
               )}
             </div>

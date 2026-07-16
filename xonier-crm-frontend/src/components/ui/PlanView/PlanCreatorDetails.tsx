@@ -5,6 +5,7 @@ import { IoCheckmarkCircle, IoPersonCircleOutline } from "react-icons/io5";
 import PlanViewBadge from "./PlanViewBadge";
 import PlanViewCard from "./PlanViewCard";
 import PlanViewInfoItem from "./PlanViewInfoItem";
+import { useTranslation } from "react-i18next";
 
 interface PlanCreatorDetailsProps {
   createdBy: User;
@@ -13,11 +14,12 @@ interface PlanCreatorDetailsProps {
 }
 
 const PlanCreatorDetails = ({ createdBy, formatDate, formatLabel }: PlanCreatorDetailsProps) => {
+  const { t } = useTranslation();
   const fullName = `${createdBy.firstName ?? ""} ${createdBy.lastName ?? ""}`.trim() || "Unknown user";
 
   return (
     <PlanViewCard
-      title="Created By"
+      title={t("created_by")}
       description="Owner and account details"
       icon={<IoPersonCircleOutline className="text-xl" />}
       action={
@@ -26,7 +28,7 @@ const PlanCreatorDetails = ({ createdBy, formatDate, formatLabel }: PlanCreatorD
             href={`/users/${createdBy.id}`}
             className="rounded-lg bg-green-50 px-3 py-2 text-xs font-medium text-green-700 transition-colors hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/30"
           >
-            View User
+            {t("view_user")}
           </Link>
         ) : null
       }
@@ -43,9 +45,9 @@ const PlanCreatorDetails = ({ createdBy, formatDate, formatLabel }: PlanCreatorD
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <PlanViewInfoItem label="Account Status" value={createdBy.isActive ? "Active" : "Inactive"} />
+        <PlanViewInfoItem label={t("account_status")} value={createdBy.isActive ? "Active" : "Inactive"} />
         <PlanViewInfoItem
-          label="Email Verified"
+          label={t("email_verified")}
           value={
             <span className="inline-flex items-center gap-2">
               {createdBy.isEmailVerified ? <IoCheckmarkCircle className="text-lg text-green-500" /> : null}
@@ -53,8 +55,8 @@ const PlanCreatorDetails = ({ createdBy, formatDate, formatLabel }: PlanCreatorD
             </span>
           }
         />
-        <PlanViewInfoItem label="Last Login" value={formatDate(createdBy.lastLogin)} />
-        <PlanViewInfoItem label="User Created" value={formatDate(createdBy.createdAt)} />
+        <PlanViewInfoItem label={t("last_login")} value={formatDate(createdBy.lastLogin)} />
+        <PlanViewInfoItem label={t("user_created")} value={formatDate(createdBy.createdAt)} />
       </div>
     </PlanViewCard>
   );

@@ -22,8 +22,10 @@ import { AssignedPhoneNumber } from "@/src/types";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import { PERMISSIONS } from "@/src/constants/enum";
 import { usePermissions } from "@/src/hooks/usePermissions";
+import { useTranslation } from "react-i18next";
 
 const Page = () => {
+  const { t } = useTranslation();
   const [telephoneData, setTelephoneData] = useState<TelephoneNumber[]>([]);
   const [userData, setUserData] = useState<User[] | []>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -307,10 +309,10 @@ const Page = () => {
           <div className="flex w-full items-center gap-12 justify-between">
             <div className="flex flex-col gap-1.5">
               <h2 className="text-xl font-bold dark:text-white text-slate-900 capitalize">
-                Telephone Numbers
+                {t("telephone_numbers")}
               </h2>
               <p className="text-gray-500 dark:text-gray-400">
-                Manage your organization's phone numbers
+                {t("manage_your_organization's_phone_numbers")}
               </p>
             </div>
             <div className="flex items-center gap-6">
@@ -331,7 +333,7 @@ const Page = () => {
                 <IoIosSearch className="text-xl" />
                 <input
                   type="text"
-                  placeholder="Search phone number..."
+                  placeholder={t("search_phone_number")}
                   className="outline-none bg-transparent"
                   value={searchVal}
                   onChange={(e) => handleSearch(e.target.value)}
@@ -340,31 +342,31 @@ const Page = () => {
 
               {(hasPermission(PERMISSIONS.telephoneCreate)) && <button
                 onClick={openCreateModal}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md flex items-center gap-2 group"
+                className="bg-cyan-600 hover:bg-cyan-700 text-white px-5 py-2 rounded-md flex items-center gap-2 group"
               >
                 <FaPlus className="group-hover:rotate-90 transition-all duration-300" />
-                Add Number
+                {t("add_number")}
               </button>}
             </div>
           </div>
 
           <table className="w-full rounded-xl overflow-hidden">
             <thead>
-              <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
+              <tr className="w-full border-b-2 border-zinc-300 bg-slate-300 dark:bg-gray-800">
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
-                  Phone Number
+                  {t("phone_number")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
-                  Status
+                  {t("status")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
-                  Created By
+                  {t("created_by")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
-                  Created Date
+                  {t("created_date")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
-                  Actions
+                  {t("actions")}
                 </th>
               </tr>
             </thead>
@@ -380,7 +382,7 @@ const Page = () => {
                         key={phone.id}
                         className={`${isEven
                           ? "bg-white dark:bg-transparent"
-                          : "bg-blue-100/50 dark:bg-slate-500"
+                          : "bg-slate-100/50 dark:bg-slate-500"
                           } w-full`}
                       >
                         <td className="p-4">
@@ -388,7 +390,7 @@ const Page = () => {
                             <span className="text-sm font-semibold font-mono">{phone.phoneNumber}</span>
                             <button
                               onClick={() => handleCopy(phone.phoneNumber)}
-                              className="text-gray-400 hover:text-blue-500 transition-colors ms-auto"
+                              className="text-gray-400 hover:text-cyan-500 transition-colors ms-auto"
                             >
                               <MdOutlineContentCopy className="text-sm " />
                             </button>
@@ -413,7 +415,7 @@ const Page = () => {
                         </td>
 
                         <td className="p-4">
-                          <span className="px-3 py-1.5 rounded-md bg-blue-100 text-xs text-blue-600 font-medium">
+                          <span className="px-3 py-1.5 rounded-md bg-cyan-100 text-xs text-cyan-600 font-medium">
                             {date}
                           </span>
                         </td>
@@ -439,7 +441,7 @@ const Page = () => {
                             {((hasPermission(PERMISSIONS.telephoneDelete)) && phone.status !== PHONE_NUMBER_STATUS.DELETED) && (
                               <button
                                 onClick={() => handleDeleteClick(phone)}
-                                className="h-9 w-9 flex items-center justify-center rounded-md bg-red-200/80 dark:bg-red-100 hover:bg-red-300/70 dark:hover:bg-red-200 text-red-500 hover:scale-104 transition-transform cursor-pointer" title="Delete phone number">
+                                className="h-9 w-9 flex items-center justify-center rounded-md bg-red-200/80 dark:bg-red-100 hover:bg-red-300/70 dark:hover:bg-red-200 text-red-500 hover:scale-104 transition-transform cursor-pointer" title={t("delete_phone_number_2")}>
 
                                 <MdDeleteOutline className="text-xl" />
                               </button>
@@ -449,7 +451,7 @@ const Page = () => {
                               <button
                                 onClick={() => openAssignModal(phone)}
                                 className="h-9 w-9 flex items-center justify-center rounded-md bg-purple-200/80 dark:bg-purple-100 hover:bg-purple-300/70 dark:hover:bg-purple-200 text-purple-500 hover:scale-104 transition-transform cursor-pointer"
-                                title="Assign to user"
+                                title={t("assign_to_user")}
                               >
                                 <HiUserAdd className="text-xl" />
                               </button>
@@ -462,7 +464,7 @@ const Page = () => {
                 ) : (
                   <tr>
                     <td className="p-4 text-center" colSpan={5}>
-                      Data not found
+                      {t("data_not_found")}
                     </td>
                   </tr>
                 )
@@ -474,7 +476,7 @@ const Page = () => {
                       key={i}
                       className={`${isEven
                         ? "bg-white dark:bg-transparent"
-                        : "bg-blue-100/50 dark:bg-slate-500"
+                        : "bg-cyan-100/50 dark:bg-slate-500"
                         } w-full`}
                     >
                       <td className="p-4">
@@ -516,14 +518,14 @@ const Page = () => {
       {showViewModal && selectedPhone && (
         <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-linear-to-r from-blue-600 to-indigo-600 px-6 py-5 rounded-t-2xl flex items-center justify-between">
+            <div className="sticky top-0 bg-linear-to-r from-cyan-600 to-indigo-600 px-6 py-5 rounded-t-2xl flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                   <IoPhonePortrait className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white">Phone Number Details</h3>
-                  <p className="text-sm text-blue-100">View complete information</p>
+                  <h3 className="text-xl font-bold text-white">{t("phone_number_details")}</h3>
+                  <p className="text-sm text-cyan-100">{t("view_complete_information")}</p>
                 </div>
               </div>
               <button
@@ -535,11 +537,11 @@ const Page = () => {
             </div>
 
             <div className="p-6 space-y-6">
-              <div className="bg-linear-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-blue-100 dark:border-blue-800">
+              <div className="bg-linear-to-br from-cyan-50 to-indigo-50 dark:from-cyan-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-cyan-100 dark:border-cyan-800">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                      Phone Number
+                      {t("phone_number")}
                     </p>
                     <p className="text-3xl font-bold text-gray-900 dark:text-white font-mono tracking-tight">
                       {selectedPhone.phoneNumber}
@@ -550,7 +552,7 @@ const Page = () => {
                       handleCopy(selectedPhone.phoneNumber);
                       toast.success("Phone number copied!");
                     }}
-                    className="w-12 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 flex items-center justify-center text-white transition-colors shadow-lg shadow-blue-200 dark:shadow-blue-900/30"
+                    className="w-12 h-12 rounded-xl bg-cyan-600 hover:bg-cyan-700 flex items-center justify-center text-white transition-colors shadow-lg shadow-cyan-200 dark:shadow-cyan-900/30"
                   >
                     <MdOutlineContentCopy className="w-5 h-5" />
                   </button>
@@ -568,7 +570,7 @@ const Page = () => {
                       )}
                     </div>
                     <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Status
+                      {t("status")}
                     </p>
                   </div>
                   <span
@@ -592,7 +594,7 @@ const Page = () => {
                       <MdPerson className="w-5 h-5 text-indigo-500" />
                     </div>
                     <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Created By
+                      {t("created_by")}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
@@ -613,10 +615,10 @@ const Page = () => {
                 <div className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-5 border border-slate-100 dark:border-gray-700">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-9 h-9 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                      <MdCalendarToday className="w-5 h-5 text-blue-500" />
+                      <MdCalendarToday className="w-5 h-5 text-cyan-500" />
                     </div>
                     <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Created Date
+                      {t("created_date")}
                     </p>
                   </div>
                   <p className="text-sm font-medium text-gray-900 dark:text-white">{formatDate(selectedPhone.createdAt)}</p>
@@ -628,7 +630,7 @@ const Page = () => {
                       <MdPhone className="w-5 h-5 text-violet-500" />
                     </div>
                     <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Phone ID
+                      {t("phone_id")}
                     </p>
                   </div>
                   <p className="text-xs font-mono text-gray-500 dark:text-gray-400 break-all">{selectedPhone.id}</p>
@@ -639,7 +641,7 @@ const Page = () => {
                   <div className="flex items-center gap-3 mb-3">
                     <FaUsers />
                     <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Assigned Users
+                      {t("assigned_users")}
                     </p>
                     <div className="flex items-center gap-2 ml-auto">
                       {(hasPermission(PERMISSIONS.telephoneAssign)) && <button
@@ -691,7 +693,7 @@ const Page = () => {
 
                     ) : (
                       <p className="text-sm text-gray-400">
-                        No users assigned
+                        {t("no_users_assigned")}
                       </p>
                     )}
                   </div>
@@ -704,10 +706,10 @@ const Page = () => {
                 onClick={closeViewModal}
                 className="px-5 py-2.5 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium transition-colors border border-slate-200 dark:border-gray-600"
               >
-                Close
+                {t("close")}
               </button>
               {/* {selectedPhone.status !== PHONE_NUMBER_STATUS.DELETED && (
-                <button className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-blue-200 dark:shadow-blue-900/30">
+                <button className="px-5 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-cyan-200 dark:shadow-cyan-900/30">
                   Edit Number
                 </button>
               )} */}
@@ -727,8 +729,8 @@ const Page = () => {
                   <MdEdit className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white">Edit Phone Number</h3>
-                  <p className="text-sm text-yellow-100">Update phone details</p>
+                  <h3 className="text-xl font-bold text-white">{t("edit_phone_number")}</h3>
+                  <p className="text-sm text-yellow-100">{t("update_phone_details")}</p>
                 </div>
               </div>
 
@@ -746,7 +748,7 @@ const Page = () => {
               {/* Phone Number */}
               <div className="bg-linear-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 rounded-2xl p-6 border border-yellow-100 dark:border-yellow-800">
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                  Phone Number
+                  {t("phone_number")}
                 </p>
 
                 <input
@@ -766,7 +768,7 @@ const Page = () => {
                   </div>
 
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Update Status
+                    {t("update_status")}
                   </p>
                 </div>
 
@@ -780,8 +782,8 @@ const Page = () => {
                   }
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-yellow-500"
                 >
-                  <option value={PHONE_NUMBER_STATUS.ACTIVE}>Active</option>
-                  <option value={PHONE_NUMBER_STATUS.INACTIVE}>Inactive</option>
+                  <option value={PHONE_NUMBER_STATUS.ACTIVE}>{t("active")}</option>
+                  <option value={PHONE_NUMBER_STATUS.INACTIVE}>{t("inactive")}</option>
                 </select>
               </div>
 
@@ -794,14 +796,14 @@ const Page = () => {
                 onClick={closeEditModal}
                 className="px-5 py-2.5 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium transition-colors border border-slate-200 dark:border-gray-600"
               >
-                Cancel
+                {t("cancel")}
               </button>
 
               <button
                 onClick={handleUpdatePhone}
                 className="px-5 py-2.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl font-medium transition-colors shadow-lg shadow-yellow-200 dark:shadow-yellow-900/30"
               >
-                Update Status
+                {t("update_status")}
               </button>
 
             </div>
@@ -819,8 +821,8 @@ const Page = () => {
                   <MdDeleteOutline className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white">Delete Phone Number</h3>
-                  <p className="text-sm text-red-100">This action cannot be undone</p>
+                  <h3 className="text-xl font-bold text-white">{t("delete_phone_number")}</h3>
+                  <p className="text-sm text-red-100">{t("this_action_cannot_be_undone")}</p>
                 </div>
               </div>
 
@@ -835,7 +837,7 @@ const Page = () => {
             {/* Body */}
             <div className="p-6">
               <p className="text-gray-700 dark:text-gray-300 text-sm">
-                Are you sure you want to delete this phone number?
+                {t("are_you_sure_you_want_to")}
               </p>
 
               <div className="mt-4 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
@@ -852,14 +854,14 @@ const Page = () => {
                 onClick={closeDeleteModal}
                 className="px-5 py-2.5 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl border"
               >
-                Cancel
+                {t("cancel")}
               </button>
 
               <button
                 onClick={handleDeletePhone}
                 className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium shadow-lg shadow-red-200 dark:shadow-red-900/30"
               >
-                Delete Number
+                {t("delete_number")}
               </button>
 
             </div>
@@ -870,14 +872,14 @@ const Page = () => {
       {showCreateModal && (
         <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full">
-            <div className="bg-linear-to-r from-blue-600 to-indigo-600 px-6 py-5 rounded-t-2xl flex items-center justify-between">
+            <div className="bg-linear-to-r from-[#16c2cf] to-[#0fb8a5] px-6 py-5 rounded-t-2xl flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                   <FaPlus className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white">Add Phone Number</h3>
-                  <p className="text-sm text-blue-100">Create a new telephone number</p>
+                  <h3 className="text-xl font-bold text-white">{t("add_phone_number")}</h3>
+                  <p className="text-sm text-cyan-100">{t("create_a_new_telephone_number")}</p>
                 </div>
               </div>
               <button
@@ -890,19 +892,19 @@ const Page = () => {
 
             <form onSubmit={handleCreate} className="p-6 space-y-5">
               <Input
-                label="Phone Number"
+                label={t("phone_number")}
                 type="text"
-                placeholder="Enter phone number (e.g., +1234567890)"
+                placeholder={t("enter_phone_number_e_g_1234567890")}
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 required
               />
 
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
-                <p className="text-sm text-blue-700 dark:text-blue-300 flex items-start gap-2">
+              <div className="bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded-xl p-4">
+                <p className="text-sm text-cyan-700 dark:text-cyan-300 flex items-start gap-2">
                   <span className="text-lg">💡</span>
                   <span>
-                    Make sure to include the country code and format the number correctly. Example: +1 (555) 123-4567
+                    {t("make_sure_to_include_the_country_code_and_format_the_number")}
                   </span>
                 </p>
               </div>
@@ -914,22 +916,22 @@ const Page = () => {
                   disabled={isCreating}
                   className="px-5 py-2.5 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium transition-colors border border-slate-200 dark:border-gray-600 disabled:opacity-50"
                 >
-                  Cancel
+                  {t("cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={isCreating}
-                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-blue-200 dark:shadow-blue-900/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-5 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-cyan-200 dark:shadow-cyan-900/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {isCreating ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Creating...
+                      {t("creating_2")}
                     </>
                   ) : (
                     <>
                       <FaPlus className="w-4 h-4" />
-                      Create Number
+                      {t("create_number")}
                     </>
                   )}
                 </button>
@@ -948,7 +950,7 @@ const Page = () => {
                   <HiUserAdd className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white">Assign Phone Number</h3>
+                  <h3 className="text-xl font-bold text-white">{t("assign_phone_number")}</h3>
                   <p className="text-sm text-purple-100 font-mono">{assignPhone.phoneNumber}</p>
                 </div>
               </div>
@@ -962,10 +964,10 @@ const Page = () => {
 
             <div className="p-6 flex flex-col gap-4 overflow-hidden flex-1">
               <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2 shrink-0">
-                <IoIosSearch className="text-xl text-gray-400 shrink-0" />
+                <IoIosSearch className="text-xl text-gray-300 shrink-0" />
                 <input
                   type="text"
-                  placeholder="Search by name or email..."
+                  placeholder={t("search_by_name_or_email")}
                   className="outline-none bg-transparent w-full text-sm"
                   value={userSearch}
                   onChange={(e) => setUserSearch(e.target.value)}
@@ -1036,7 +1038,7 @@ const Page = () => {
                 ) : (
                   <div className="flex flex-col items-center justify-center py-10 text-gray-400">
                     <MdPerson className="w-10 h-10 mb-2 opacity-40" />
-                    <p className="text-sm">No users found</p>
+                    <p className="text-sm">{t("no_users_found")}</p>
                   </div>
                 )}
               </div>
@@ -1046,7 +1048,7 @@ const Page = () => {
               <div className="text-sm text-gray-500 dark:text-gray-400">
                 {selectedUser ? (
                   <span className="text-purple-600 dark:text-purple-400 font-medium">
-                    Selected: {selectedUser.firstName} {selectedUser.lastName ?? ""}
+                    {t("selected_4")} {selectedUser.firstName} {selectedUser.lastName ?? ""}
                   </span>
                 ) : (
                   "No user selected"
@@ -1058,7 +1060,7 @@ const Page = () => {
                   disabled={isAssigning}
                   className="px-5 py-2.5 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium transition-colors border border-slate-200 dark:border-gray-600 disabled:opacity-50"
                 >
-                  Cancel
+                  {t("cancel")}
                 </button>
                 <button
                   onClick={handleAssign}
@@ -1068,12 +1070,12 @@ const Page = () => {
                   {isAssigning ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Assigning...
+                      {t("assigning")}
                     </>
                   ) : (
                     <>
                       <HiUserAdd className="w-4 h-4" />
-                      Assign
+                      {t("assign")}
                     </>
                   )}
                 </button>

@@ -62,6 +62,8 @@ import { ACTIVITY_ACTION, ACTIVITY_ENTITY_TYPE } from "@/src/constants/enum";
 import Link from "next/link";
 import ActivityDetailPopup from "./UserActivityPopup";
 import { Company } from "@/src/types/company/company.types";
+import { useTranslation } from "react-i18next";
+import { LiaStarSolid } from "react-icons/lia";
 
 export interface DateRangeFilter {
   from: string; // "2026-01-01"
@@ -100,7 +102,7 @@ const ENTITY_CONFIG: Record<
   [ACTIVITY_ENTITY_TYPE.LEAD]: {
     label: "Lead",
     color: "#6366f1",
-    bg: "bg-indigo-50 dark:bg-indigo-900/30",
+    bg: "bg-cyan-50 dark:bg-cyan-900/30",
     icon: <HiOutlineUserGroup className="w-4 h-4" />,
   },
   [ACTIVITY_ENTITY_TYPE.DEAL]: {
@@ -118,7 +120,7 @@ const ENTITY_CONFIG: Record<
   [ACTIVITY_ENTITY_TYPE.INVOICE]: {
     label: "Invoice",
     color: "#3b82f6",
-    bg: "bg-blue-50 dark:bg-blue-900/30",
+    bg: "bg-cyan-50 dark:bg-cyan-900/30",
     icon: <HiOutlineCurrencyDollar className="w-4 h-4" />,
   },
 };
@@ -134,8 +136,8 @@ const ACTION_CONFIG: Record<
   },
   [ACTIVITY_ACTION.UPDATED]: {
     label: "Updated",
-    color: "text-blue-600",
-    dot: "bg-blue-500",
+    color: "text-cyan-600",
+    dot: "bg-cyan-500",
   },
   [ACTIVITY_ACTION.SENT]: {
     label: "Sent",
@@ -425,6 +427,8 @@ const DateFilterPanel = ({
   onApply: (r: DateRangeFilter) => void;
   onClear: () => void;
 }) => {
+  const { t } = useTranslation();
+
   const [from, setFrom] = useState(value?.from ?? "");
   const [to, setTo] = useState(value?.to ?? "");
   const [err, setErr] = useState("");
@@ -452,7 +456,7 @@ const DateFilterPanel = ({
   return (
     <div className="bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-2xl shadow-2xl p-5 w-80">
       <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-        Quick ranges
+        {t("quick_ranges")}
       </p>
       <div className="flex flex-wrap gap-1.5 mb-5">
         {PRESETS.map((p) => {
@@ -464,8 +468,8 @@ const DateFilterPanel = ({
               onClick={() => pickPreset(r)}
               className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all ${
                 active
-                  ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
-                  : "border-slate-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+                  ? "bg-cyan-600 text-white border-cyan-600 shadow-sm"
+                  : "border-slate-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-400"
               }`}
             >
               {p.label}
@@ -476,13 +480,13 @@ const DateFilterPanel = ({
 
       <div className="h-px bg-slate-100 dark:bg-gray-700 mb-4" />
       <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-        Custom range
+        {t("custom_range")}
       </p>
 
       <div className="space-y-3">
         <div>
           <label className="block text-xs font-medium text-gray-500 mb-1.5">
-            From date
+            {t("from_date")}
           </label>
           <input
             type="date"
@@ -492,12 +496,12 @@ const DateFilterPanel = ({
               setFrom(e.target.value);
               setErr("");
             }}
-            className="w-full text-sm rounded-xl border border-slate-200 dark:border-gray-600 bg-slate-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400"
+            className="w-full text-sm rounded-xl border border-slate-200 dark:border-gray-600 bg-slate-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-400"
           />
         </div>
         <div>
           <label className="block text-xs font-medium text-gray-500 mb-1.5">
-            To date
+            {t("to_date")}
           </label>
           <input
             type="date"
@@ -507,7 +511,7 @@ const DateFilterPanel = ({
               setTo(e.target.value);
               setErr("");
             }}
-            className="w-full text-sm rounded-xl border border-slate-200 dark:border-gray-600 bg-slate-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400"
+            className="w-full text-sm rounded-xl border border-slate-200 dark:border-gray-600 bg-slate-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-400"
           />
         </div>
       </div>
@@ -522,9 +526,9 @@ const DateFilterPanel = ({
       <div className="flex gap-2 mt-4">
         <button
           onClick={apply}
-          className="flex-1 text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-2.5 transition-colors shadow-sm shadow-indigo-200 dark:shadow-indigo-900/30"
+          className="flex-1 text-sm font-semibold bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl py-2.5 transition-colors shadow-sm shadow-cyan-200 dark:shadow-cyan-900/30"
         >
-          Apply filter
+          {t("apply_filter")}
         </button>
         {value && (
           <button
@@ -536,7 +540,7 @@ const DateFilterPanel = ({
             }}
             className="px-4 text-sm font-medium text-gray-500 dark:text-gray-400 border border-slate-200 dark:border-gray-600 rounded-xl hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors"
           >
-            Clear
+            {t("clear")}
           </button>
         )}
       </div>
@@ -562,6 +566,9 @@ const UserDetail = ({
   companyData = null,
   companyLoading = false,
 }: ExtendedUserDetailProps): JSX.Element => {
+  const { t } = useTranslation();
+  const { i18n } = useTranslation();
+
   const [activeTab, setActiveTab] = useState<
     "overview" | "activity" | "summary" | "roles" | "company"
   >("overview");
@@ -627,7 +634,7 @@ const UserDetail = ({
     return (
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-12 text-center border border-slate-100 dark:border-gray-700">
         <IoPersonCircle className="w-16 h-16 text-gray-200 dark:text-gray-600 mx-auto mb-4" />
-        <p className="text-lg font-semibold text-gray-500">User not found</p>
+        <p className="text-lg font-semibold text-gray-500">{t("user_not_found")}</p>
       </div>
     );
 
@@ -658,40 +665,48 @@ const UserDetail = ({
   const totalActivities = activityData.length;
   const uniqueEntities = Object.keys(entityCounts).length;
 
+
   const tabs = [
     {
       key: "overview" as const,
-      label: "Overview",
+      label: t("overview"),
       icon: <IoPersonCircle className="w-4 h-4" />,
     },
     {
       key: "activity" as const,
-      label: "Activity",
+      label: t("activity"),
       icon: <FiActivity className="w-4 h-4" />,
       badge: totalActivities,
     },
     {
       key: "summary" as const,
-      label: "Summary",
+      label: t("summary"),
       icon: <IoBarChart className="w-4 h-4" />,
     },
     {
       key: "roles" as const,
-      label: "Roles",
+      label: t("roles"),
       icon: <IoShieldCheckmark className="w-4 h-4" />,
       badge: userData.userRole?.length,
     },
     {
       key: "company" as const,
-      label: "Company",
+      label: t("company"),
       icon: <MdBusiness className="w-4 h-4" />,
     },
   ];
 
+  const localeMap: Record<string, string> = {
+  en: "en-IN",
+  hi: "hi-IN",
+  pt: "pt-BR", // or "pt-PT"
+};
+const language = i18n.resolvedLanguage ?? "en";
+
   return (
     <div className="flex flex-col gap-6 font-sans">
       <div className="relative bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden">
-        <div className="h-28 bg-linear-to-r from-slate-700 via-slate-800 to-slate-900 relative">
+        <div className="h-28 bg-linear-to-b from-[#16c2cf]  relative">
           <div
             className="absolute inset-0 opacity-20"
             style={{
@@ -708,7 +723,7 @@ const UserDetail = ({
                   src="/images/dummy-user.png"
                   width={80}
                   height={80}
-                  alt="User"
+                  alt={t("user")}
                   className="object-cover"
                 />
               </div>
@@ -718,7 +733,7 @@ const UserDetail = ({
             </div>
             <div className="pb-1">
               <PrimaryButton
-                text="Edit Profile"
+                text={t("edit_profile")}
                 isLoading={isLoading}
                 disabled={isLoading}
                 link={`/users/update/${userData.id ?? userData._id}`}
@@ -733,8 +748,8 @@ const UserDetail = ({
               </h1>
               {userData.isEmailVerified && (
                 <MdVerified
-                  className="w-5 h-5 text-blue-500 shrink-0"
-                  title="Email Verified"
+                  className="w-5 h-5 text-cyan-500 shrink-0"
+                  title={t("email_verified")}
                 />
               )}
               <span
@@ -746,9 +761,7 @@ const UserDetail = ({
               {userData.rating != null
                 ? (() => {
                     const rating = userData.rating ?? 0;
-
-                    const colorConfig =
-                      rating >= 4.5
+                    const colorConfig =rating >= 4.5
                         ? {
                             badge:
                               "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800",
@@ -760,7 +773,7 @@ const UserDetail = ({
                         : rating >= 3.5
                           ? {
                               badge:
-                                "bg-blue-50 text-green-600 border-green-200 dark:bg-green-800/30 dark:text-green-400 dark:border-green-700",
+                                "bg-cyan-50 text-green-600 border-green-200 dark:bg-green-800/30 dark:text-green-400 dark:border-green-700",
                               // glow: "shadow-green-200 dark:shadow-green-900/50",
                               star: "#39e118",
                               label: "Good",
@@ -879,12 +892,27 @@ const UserDetail = ({
                       </Link>
                     );
                   })()
-                : null}
+                : 
+                  <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-1 text-sm text-slate-500">
+                    <div className="flex items-center gap-0.5">
+                      {Array.from({ length: 5 }).map((_, index) => (
+                        <LiaStarSolid
+                          key={index}
+                          className="text-base text-slate-300"
+                        />
+                      ))}
+                    </div>
+                    <span className="text-slate-300">|</span>
+
+                    <span className="font-medium text-sm">No ratings yet</span>
+                  </div>
+
+                }
             </div>
             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mt-1">
               <button
                 onClick={() => handleCopy(userData.email)}
-                className="flex items-center gap-1.5 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors group"
+                className="flex items-center gap-1.5 hover:text-cyan-600 dark:hover:text-cyan-400 cursor-pointer transition-colors group"
               >
                 <MdEmail className="w-4 h-4" />
                 {userData.email}
@@ -892,7 +920,7 @@ const UserDetail = ({
               </button>
               <Link
                 href={`tel:${userData.phone}`}
-                className="flex items-center cursor-pointer hover:text-blue-600 gap-1.5"
+                className="flex items-center cursor-pointer hover:text-cyan-600 gap-1.5"
               >
                 <MdPhone className="w-4 h-4" />
                 {userData.phone}
@@ -904,15 +932,15 @@ const UserDetail = ({
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          label="Total Activities"
+          label={t("total_activities")}
           value={totalActivities}
-          sub={`${uniqueEntities} entity types`}
+          sub={`${uniqueEntities} ${t("entity_types")}`}
           icon={<FiActivity />}
-          accent="bg-indigo-500"
+          accent="bg-cyan-500"
           link={`/leads?userid=${userData._id}`}
         />
         <StatCard
-          label="Last Login"
+          label={t("last_login")}
           link={``}
           value={
             userData.lastLogin
@@ -929,33 +957,38 @@ const UserDetail = ({
                   minute: "2-digit",
                   hour12: true,
                 })
-              : "Never"
+              : t("never")
           }
           icon={<RiLoginCircleLine />}
-          accent="bg-blue-500"
+          accent="bg-cyan-500"
         />
         <StatCard
           link={`/roles`}
-          label="Assigned Roles"
+          label={t("assigned_roles")}
           value={userData.userRole?.length ?? 0}
-          sub="access roles"
+          sub={t("access_roles")}
           icon={<IoShieldCheckmark />}
           accent="bg-violet-500"
         />
-        <StatCard
-          label="Member Since"
-          link={``}
-          value={new Date(userData.createdAt).toLocaleDateString("en-IN", {
-            day: "2-digit",
-            month: "short",
-          })}
-          sub={new Date(userData.createdAt).getFullYear().toString()}
-          icon={<IoCheckmarkDoneCircle />}
-          accent="bg-emerald-500"
-        />
+ 
+
+<StatCard
+  label={t("member_since")}
+  link=""
+  value={new Date(userData.createdAt).toLocaleDateString(
+    localeMap[language] || "en-IN",
+    {
+      day: "2-digit",
+      month: "short",
+    }
+  )}
+  sub={new Date(userData.createdAt).getFullYear().toString()}
+  icon={<IoCheckmarkDoneCircle />}
+  accent="bg-emerald-500"
+/>
       </div>
 
-      <div className="bg-white  dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
+      <div className="bg-white  dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl min-h-50">
         <div className="border-b border-slate-100 dark:border-gray-700 px-4">
           <nav className="flex gap-1">
             {tabs.map((tab) => (
@@ -964,7 +997,7 @@ const UserDetail = ({
                 onClick={() => setActiveTab(tab.key)}
                 className={`flex items-center gap-2 px-4 py-4 cursor-pointer text-sm font-medium border-b-2 transition-colors ${
                   activeTab === tab.key
-                    ? "border-indigo-500 text-indigo-600 dark:text-indigo-400"
+                    ? "border-cyan-500 text-cyan-600 dark:text-cyan-400"
                     : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 }`}
               >
@@ -974,7 +1007,7 @@ const UserDetail = ({
                   <span
                     className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${
                       activeTab === tab.key
-                        ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300"
+                        ? "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/50 dark:text-cyan-300"
                         : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400"
                     }`}
                   >
@@ -990,21 +1023,21 @@ const UserDetail = ({
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
-                Basic Information
+                {t("basic_information")}
               </h3>
               <div className="space-y-4">
                 {[
-                  { label: "First Name", value: userData.firstName },
-                  { label: "Last Name", value: userData.lastName || "—" },
-                  { label: "Email", value: userData.email },
-                  { label: "Phone", value: userData.phone },
-                  {
-                    label: "Email Verified",
-                    value: userData.isEmailVerified
-                      ? "Verified ✓"
-                      : "Not Verified",
-                  },
-                ].map(({ label, value }) => (
+  { label: t("first_name"), value: userData.firstName },
+  { label: t("last_name"), value: userData.lastName || "—" },
+  { label: t("email"), value: userData.email },
+  { label: t("phone"), value: userData.phone },
+  {
+    label: t("email_verified"),
+   value: userData.isEmailVerified
+  ? `${t("verified")} ✓`
+  : t("not_verified"),
+  },
+].map(({ label, value }) => (
                   <div
                     key={label}
                     className="flex items-start justify-between gap-4 py-2 border-b border-slate-50 dark:border-gray-700/50"
@@ -1021,31 +1054,34 @@ const UserDetail = ({
             </div>
             <div>
               <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
-                Account Information
+                {t("account_information")}
               </h3>
               <div className="space-y-4">
                 {[
-                  { label: "Status", value: userData.status },
-                  { label: "Active", value: userData.isActive ? "Yes" : "No" },
-                  {
-                    label: "Created At",
-                    value: formatDate(userData.createdAt),
-                  },
-                  {
-                    label: "Last Login",
-                    value: userData.lastLogin
-                      ? formatDate(userData.lastLogin)
-                      : "Never",
-                  },
-                  {
-                    label: "Updated At",
-                    value: formatDate(userData.updatedAt),
-                  },
-                  {
-                    label: "User ID",
-                    value: userData.id ?? userData._id ?? "—",
-                  },
-                ].map(({ label, value }) => (
+  { label: t("status"), value: userData.status },
+  {
+    label: t("active"),
+    value: userData.isActive ? t("yes") : t("no"),
+  },
+  {
+    label: t("created_at"),
+    value: formatDate(userData.createdAt),
+  },
+  {
+    label: t("last_login"),
+    value: userData.lastLogin
+      ? formatDate(userData.lastLogin)
+      : t("never"),
+  },
+  {
+    label: t("updated_at"),
+    value: formatDate(userData.updatedAt),
+  },
+  {
+    label: t("user_id"),
+    value: userData.id ?? userData._id ?? "—",
+  },
+].map(({ label, value }) => (
                   <div
                     key={label}
                     className="flex items-start justify-between gap-4 py-2 border-b border-slate-50 dark:border-gray-700/50"
@@ -1065,7 +1101,7 @@ const UserDetail = ({
             {userData.createdBy && (
               <div className="md:col-span-2">
                 <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
-                  Created By
+                  {t("created_by")}
                 </h3>
                 <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-gray-700/50 rounded-xl">
                   <div className="w-10 h-10 rounded-full bg-linear-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white font-bold text-sm">
@@ -1082,8 +1118,15 @@ const UserDetail = ({
                     </p> */}
                   </div>
                   <span className="ml-auto text-xs text-gray-400">
-                    {formatDate(userData.createdAt)}
-                  </span>
+                {new Date(userData.createdAt).toLocaleDateString(
+                  localeMap[language] || "en-IN",
+                  {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  }
+                )}
+              </span>
                 </div>
               </div>
             )}
@@ -1094,8 +1137,8 @@ const UserDetail = ({
           <div className="p-6 space-y-6">
             {activityLoading ? (
               <div className="flex flex-col items-center justify-center py-16 gap-3">
-                <div className="w-9 h-9 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                <p className="text-sm text-gray-400">Loading activity…</p>
+                <div className="w-9 h-9 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+                <p className="text-sm text-gray-400">{t("loading_activity")}</p>
               </div>
             ) : (
               <>
@@ -1105,14 +1148,14 @@ const UserDetail = ({
                       onClick={() => setShowDatePanel((v) => !v)}
                       className={`flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl border transition-all ${
                         dateRange
-                          ? "bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-200 dark:shadow-indigo-900/30"
-                          : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-slate-200 dark:border-gray-600 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+                          ? "bg-cyan-600 text-white border-cyan-600  shadow-cyan-200 dark:shadow-cyan-900/30"
+                          : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-slate-200 dark:border-gray-600 hover:border-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-400"
                       }`}
                     >
                       <LuCalendarRange className="w-4 h-4" />
                       {dateRange
                         ? `${displayDate(dateRange.from)} – ${displayDate(dateRange.to)}`
-                        : "Date Range"}
+                        : t("date_range")}
                       {dateRange && (
                         <span
                           role="button"
@@ -1156,7 +1199,7 @@ const UserDetail = ({
                   </div>
 
                   {dateRange && (
-                    <div className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-full border border-indigo-200 dark:border-indigo-800">
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/20 px-3 py-1.5 rounded-full border border-cyan-200 dark:border-cyan-800">
                       <FiCalendar className="w-3 h-3" />
                       {displayDate(dateRange.from)} —{" "}
                       {displayDate(dateRange.to)}
@@ -1172,9 +1215,9 @@ const UserDetail = ({
                     <select
                       value={entityFilter}
                       onChange={(e) => setEntityFilter(e.target.value)}
-                      className="text-xs rounded-lg border border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                      className="text-xs rounded-lg border border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
                     >
-                      <option value="all">All Entities</option>
+                      <option value="all">{t("all_entities")}</option>
                       {Object.values(ACTIVITY_ENTITY_TYPE).map((v) => (
                         <option key={v} value={v}>
                           {ENTITY_CONFIG[v]?.label ?? v}
@@ -1184,9 +1227,9 @@ const UserDetail = ({
                     <select
                       value={actionFilter}
                       onChange={(e) => setActionFilter(e.target.value)}
-                      className="text-xs rounded-lg border border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                      className="text-xs rounded-lg border border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
                     >
-                      <option value="all">All Actions</option>
+                      <option value="all">{t("all_actions")}</option>
                       {Object.values(ACTIVITY_ACTION).map((v) => (
                         <option key={v} value={v}>
                           {ACTION_CONFIG[v]?.label ?? v}
@@ -1202,11 +1245,11 @@ const UserDetail = ({
                         className="text-xs text-red-500 hover:text-red-600 font-medium flex items-center gap-1"
                       >
                         <FiX className="w-3 h-3" />
-                        Clear
+                        {t("clear")}
                       </button>
                     )}
                     <span className="text-xs text-gray-400 tabular-nums">
-                      {filteredActivities.length} results
+                      {filteredActivities.length} {t("results")}
                     </span>
                   </div>
                 </div>
@@ -1215,14 +1258,14 @@ const UserDetail = ({
                   <div className="text-center py-16 space-y-3">
                     <FiActivity className="w-12 h-12 text-gray-200 dark:text-gray-600 mx-auto" />
                     <p className="text-gray-400 font-medium">
-                      No activity recorded for this period
+                      {t("no_activity_recorded_for_this_period")}
                     </p>
                     {dateRange && (
                       <button
                         onClick={() => onDateFilter?.(null)}
-                        className="text-sm text-indigo-500 hover:text-indigo-600 font-medium"
+                        className="text-sm text-cyan-500 hover:text-cyan-600 font-medium"
                       >
-                        Clear date filter
+                        {t("clear_date_filter")}
                       </button>
                     )}
                   </div>
@@ -1232,15 +1275,15 @@ const UserDetail = ({
                       <div className="lg:col-span-2 bg-slate-50 dark:bg-gray-700/40 rounded-2xl p-5 border border-slate-100 dark:border-gray-700">
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 bg-indigo-100 dark:bg-indigo-900/40 rounded-lg flex items-center justify-center">
-                              <IoTrendingUp className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                            <div className="w-7 h-7 bg-cyan-100 dark:bg-cyan-900/40 rounded-lg flex items-center justify-center">
+                              <IoTrendingUp className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                             </div>
                             <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                              Activity Over Time
+                              {t("activity_over_time")}
                             </p>
                           </div>
                           <span className="text-xs font-medium text-gray-400 bg-white dark:bg-gray-800 px-2.5 py-1 rounded-full border border-slate-200 dark:border-gray-600">
-                            {totalActivities} total
+                            {totalActivities} {t("total_3")}
                           </span>
                         </div>
                         <ResponsiveContainer width="100%" height={190}>
@@ -1316,7 +1359,7 @@ const UserDetail = ({
                             <BsCircleFill className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                           </div>
                           <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                            By Entity
+                            {t("by_entity")}
                           </p>
                         </div>
                         <ResponsiveContainer width="100%" height={145}>
@@ -1378,11 +1421,11 @@ const UserDetail = ({
                             <FiActivity className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                           </div>
                           <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                            Actions Breakdown
+                            {t("actions_breakdown")}
                           </p>
                         </div>
                         <span className="text-xs text-gray-400">
-                          {actionBarData.length} action types
+                          {actionBarData.length} {t("action_types")}
                         </span>
                       </div>
                       <ResponsiveContainer width="100%" height={150}>
@@ -1430,7 +1473,7 @@ const UserDetail = ({
                     <div className="pt-2">
                       {filteredActivities.length === 0 ? (
                         <p className="text-sm text-gray-400 text-center py-8">
-                          No activities match the selected filters.
+                          {t("no_activities_match_the_selected_filters")}
                         </p>
                       ) : (
                         filteredActivities.map((activity) => (
@@ -1443,7 +1486,7 @@ const UserDetail = ({
                     {totalPages > 1 && onPageChange && (
                       <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-gray-700">
                         <p className="text-xs text-gray-400">
-                          Page {currentPage} of {totalPages}
+                          {t("page")} {currentPage} {t("of")} {totalPages}
                         </p>
                         <div className="flex items-center gap-2">
                           <button
@@ -1469,675 +1512,675 @@ const UserDetail = ({
             )}
           </div>
         )}
+{activeTab === "summary" && (
+  <div className="p-6 space-y-6">
+    {summaryLoading ? (
+      <div className="flex flex-col items-center justify-center py-16 gap-3">
+        <div className="w-9 h-9 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-gray-400">{t("loading_summary")}</p>
+      </div>
+    ) : !activitySummary ? (
+      <div className="text-center py-16">
+        <IoBarChart className="w-12 h-12 text-gray-200 dark:text-gray-600 mx-auto mb-3" />
+        <p className="text-gray-400 font-medium">
+          {t("no_summary_data_available")}
+        </p>
+      </div>
+    ) : (
+      <>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative">
+            <button
+              onClick={() => setShowSummaryDatePanel((v) => !v)}
+              className={`flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl border transition-all ${
+                summaryFilter?.from || summaryFilter?.to
+                  ? "bg-cyan-600 text-white border-cyan-600 shadow-md shadow-cyan-200 dark:shadow-cyan-900/30"
+                  : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-slate-200 dark:border-gray-600 hover:border-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-400"
+              }`}
+            >
+              <LuCalendarRange className="w-4 h-4" />
+              {summaryFilter?.from && summaryFilter?.to
+                ? `${displayDate(summaryFilter.from)} – ${displayDate(summaryFilter.to)}`
+                : t("date_range")}
+              {(summaryFilter?.from || summaryFilter?.to) && (
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSummaryFilter?.({
+                      ...summaryFilter,
+                      from: undefined,
+                      to: undefined,
+                    });
+                  }}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" &&
+                    (e.stopPropagation(),
+                    onSummaryFilter?.({
+                      groupBy: summaryFilter?.groupBy,
+                    }))
+                  }
+                  className="ml-1 hover:opacity-70"
+                >
+                  <FiX className="w-3.5 h-3.5" />
+                </span>
+              )}
+            </button>
 
-        {activeTab === "summary" && (
-          <div className="p-6 space-y-6">
-            {summaryLoading ? (
-              <div className="flex flex-col items-center justify-center py-16 gap-3">
-                <div className="w-9 h-9 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                <p className="text-sm text-gray-400">Loading summary…</p>
-              </div>
-            ) : !activitySummary ? (
-              <div className="text-center py-16">
-                <IoBarChart className="w-12 h-12 text-gray-200 dark:text-gray-600 mx-auto mb-3" />
-                <p className="text-gray-400 font-medium">
-                  No summary data available
-                </p>
-              </div>
-            ) : (
+            {showSummaryDatePanel && (
               <>
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="relative">
-                    <button
-                      onClick={() => setShowSummaryDatePanel((v) => !v)}
-                      className={`flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl border transition-all ${
-                        summaryFilter?.from || summaryFilter?.to
-                          ? "bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-200 dark:shadow-indigo-900/30"
-                          : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-slate-200 dark:border-gray-600 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400"
-                      }`}
-                    >
-                      <LuCalendarRange className="w-4 h-4" />
-                      {summaryFilter?.from && summaryFilter?.to
-                        ? `${displayDate(summaryFilter.from)} – ${displayDate(summaryFilter.to)}`
-                        : "Date Range"}
-                      {(summaryFilter?.from || summaryFilter?.to) && (
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onSummaryFilter?.({
-                              ...summaryFilter,
-                              from: undefined,
-                              to: undefined,
-                            });
-                          }}
-                          onKeyDown={(e) =>
-                            e.key === "Enter" &&
-                            (e.stopPropagation(),
-                            onSummaryFilter?.({
-                              groupBy: summaryFilter?.groupBy,
-                            }))
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowSummaryDatePanel(false)}
+                />
+                <div className="absolute left-0 top-full mt-2 z-50">
+                  <DateFilterPanel
+                    value={
+                      summaryFilter?.from && summaryFilter?.to
+                        ? {
+                            from: summaryFilter.from,
+                            to: summaryFilter.to,
                           }
-                          className="ml-1 hover:opacity-70"
-                        >
-                          <FiX className="w-3.5 h-3.5" />
-                        </span>
-                      )}
-                    </button>
-
-                    {showSummaryDatePanel && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-40"
-                          onClick={() => setShowSummaryDatePanel(false)}
-                        />
-                        <div className="absolute left-0 top-full mt-2 z-50">
-                          <DateFilterPanel
-                            value={
-                              summaryFilter?.from && summaryFilter?.to
-                                ? {
-                                    from: summaryFilter.from,
-                                    to: summaryFilter.to,
-                                  }
-                                : null
-                            }
-                            onApply={(range) => {
-                              onSummaryFilter?.({ ...summaryFilter, ...range });
-                              setShowSummaryDatePanel(false);
-                            }}
-                            onClear={() => {
-                              onSummaryFilter?.({
-                                groupBy: summaryFilter?.groupBy,
-                              });
-                              setShowSummaryDatePanel(false);
-                            }}
-                          />
-                        </div>
-                      </>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-1 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-xl p-1">
-                    {(["day", "week", "month"] as const).map((g) => (
-                      <button
-                        key={g}
-                        onClick={() =>
-                          onSummaryFilter?.({ ...summaryFilter, groupBy: g })
-                        }
-                        className={`text-xs font-semibold px-3 py-1.5 rounded-lg capitalize transition-all ${
-                          (summaryFilter?.groupBy ?? "month") === g
-                            ? "bg-indigo-600 text-white shadow-sm"
-                            : "text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400"
-                        }`}
-                      >
-                        {g}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    {summaryFilter?.from && summaryFilter?.to && (
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-full border border-indigo-200 dark:border-indigo-800">
-                        <FiCalendar className="w-3 h-3" />
-                        {displayDate(summaryFilter.from)} —{" "}
-                        {displayDate(summaryFilter.to)}
-                      </div>
-                    )}
-
-                    {(summaryFilter?.from ||
-                      summaryFilter?.to ||
-                      summaryFilter?.groupBy) && (
-                      <button
-                        onClick={() => onSummaryFilter?.({})}
-                        className="text-xs text-red-500 hover:text-white bg-red-50 hover:bg-red-500 px-2.5 py-1 rounded-full cursor-pointer group font-medium flex items-center gap-1 ml-auto"
-                      >
-                        <FiX className="w-3 h-3 group-hover:rotate-90" /> Reset
-                      </button>
-                    )}
-                  </div>
-
-                  {activitySummary && (
-                    <span className="ml-auto text-xs text-gray-400 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
-                      {displayDate(activitySummary.range.from)} —{" "}
-                      {displayDate(activitySummary.range.to)}
-                      <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded capitalize font-medium">
-                        {activitySummary.range.groupBy}
-                      </span>
-                    </span>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Link
-                    href={`/leads?userid=${userData._id}`}
-                    className="relative overflow-hidden hover:scale-105 cursor-point hover:shadow-[0_0_8px_10px_#00000014] bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center shrink-0">
-                        <HiOutlineUserGroup className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
-                          Leads Created
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white mt-0.5">
-                          {activitySummary.leads.created.reduce(
-                            (s, b) => s + b.count,
-                            0,
-                          )}
-                        </p>
-                        <p className="text-xs text-rose-500 mt-0.5">
-                          {activitySummary.leads.lost} lost
-                        </p>
-                      </div>
-                    </div>
-                    <div className="absolute -right-3 -bottom-3 w-16 h-16 rounded-full bg-indigo-500 opacity-[0.07]" />
-                  </Link>
-
-                  <Link
-                    href={`/deals?userid=${userData._id}`}
-                    className="relative overflow-hidden hover:scale-105 cursor-point hover:shadow-[0_0_8px_10px_#00000014] bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shrink-0">
-                        <HiOutlineBriefcase className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
-                          Deals Created
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white mt-0.5">
-                          {activitySummary.deals.created.reduce(
-                            (s, b) => s + b.count,
-                            0,
-                          )}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-0.5">
-                          <span className="text-emerald-500">
-                            {activitySummary.deals.won} won
-                          </span>
-                          {" · "}
-                          <span className="text-rose-500">
-                            {activitySummary.deals.lost} lost
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                    <div className="absolute -right-3 -bottom-3 w-16 h-16 rounded-full bg-emerald-500 opacity-[0.07]" />
-                  </Link>
-
-                  {/* Quotations */}
-                  <div className="relative overflow-hidden bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center shrink-0">
-                        <HiOutlineDocumentText className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
-                          Quotations
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white mt-0.5">
-                          {activitySummary.quotations.sent +
-                            activitySummary.quotations.accepted}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-0.5">
-                          <span className="text-violet-500">
-                            {activitySummary.quotations.sent} sent
-                          </span>
-                          {" · "}
-                          <span className="text-emerald-500">
-                            {activitySummary.quotations.accepted} accepted
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                    <div className="absolute -right-3 -bottom-3 w-16 h-16 rounded-full bg-amber-500 opacity-[0.07]" />
-                  </div>
-
-                  <div className="relative overflow-hidden bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center shrink-0">
-                        <HiOutlineCurrencyDollar className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
-                          Invoices
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white mt-0.5">
-                          {activitySummary.invoices.created}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-0.5">created</p>
-                      </div>
-                    </div>
-                    <div className="absolute -right-3 -bottom-3 w-16 h-16 rounded-full bg-blue-500 opacity-[0.07]" />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                  {/* Leads over time */}
-                  <div className="bg-slate-50 dark:bg-gray-700/40 rounded-2xl p-5 border border-slate-100 dark:border-gray-700">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-7 h-7 bg-indigo-100 dark:bg-indigo-900/40 rounded-lg flex items-center justify-center">
-                        <HiOutlineUserGroup className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                      </div>
-                      <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                        Leads Created
-                      </p>
-                      <span className="ml-auto text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                        {activitySummary.leads.created.reduce(
-                          (s, b) => s + b.count,
-                          0,
-                        )}{" "}
-                        total
-                      </span>
-                    </div>
-                    {activitySummary.leads.created.length > 0 ? (
-                      <ResponsiveContainer width="100%" height={160}>
-                        <AreaChart
-                          data={activitySummary.leads.created.map((b) => ({
-                            period: String(b._id),
-                            count: b.count,
-                          }))}
-                          margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
-                        >
-                          <defs>
-                            <linearGradient
-                              id="leadsGrad"
-                              x1="0"
-                              y1="0"
-                              x2="0"
-                              y2="1"
-                            >
-                              <stop
-                                offset="5%"
-                                stopColor="#6366f1"
-                                stopOpacity={0.3}
-                              />
-                              <stop
-                                offset="95%"
-                                stopColor="#6366f1"
-                                stopOpacity={0}
-                              />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid
-                            strokeDasharray="3 3"
-                            stroke="#e2e8f0"
-                            strokeOpacity={0.4}
-                          />
-                          <XAxis
-                            dataKey="period"
-                            tick={{ fontSize: 11, fill: "#94a3b8" }}
-                            axisLine={false}
-                            tickLine={false}
-                          />
-                          <YAxis
-                            allowDecimals={false}
-                            tick={{ fontSize: 11, fill: "#94a3b8" }}
-                            axisLine={false}
-                            tickLine={false}
-                          />
-                          <Tooltip content={<ChartTooltip />} />
-                          <Area
-                            type="monotone"
-                            dataKey="count"
-                            name="Leads"
-                            stroke="#6366f1"
-                            strokeWidth={2.5}
-                            fill="url(#leadsGrad)"
-                            dot={{
-                              r: 4,
-                              fill: "#6366f1",
-                              strokeWidth: 2,
-                              stroke: "#fff",
-                            }}
-                            activeDot={{
-                              r: 6,
-                              fill: "#6366f1",
-                              stroke: "#fff",
-                              strokeWidth: 2,
-                            }}
-                          />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    ) : (
-                      <div className="flex items-center justify-center h-40 text-sm text-gray-400">
-                        No data for this period
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Deals over time */}
-                  <div className="bg-slate-50 dark:bg-gray-700/40 rounded-2xl p-5 border border-slate-100 dark:border-gray-700">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-7 h-7 bg-emerald-100 dark:bg-emerald-900/40 rounded-lg flex items-center justify-center">
-                        <HiOutlineBriefcase className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                      </div>
-                      <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                        Deals Created
-                      </p>
-                      <span className="ml-auto text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                        {activitySummary.deals.created.reduce(
-                          (s, b) => s + b.count,
-                          0,
-                        )}{" "}
-                        total
-                      </span>
-                    </div>
-                    {activitySummary.deals.created.length > 0 ? (
-                      <ResponsiveContainer width="100%" height={160}>
-                        <AreaChart
-                          data={activitySummary.deals.created.map((b) => ({
-                            period: String(b._id),
-                            count: b.count,
-                          }))}
-                          margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
-                        >
-                          <defs>
-                            <linearGradient
-                              id="dealsGrad"
-                              x1="0"
-                              y1="0"
-                              x2="0"
-                              y2="1"
-                            >
-                              <stop
-                                offset="5%"
-                                stopColor="#10b981"
-                                stopOpacity={0.3}
-                              />
-                              <stop
-                                offset="95%"
-                                stopColor="#10b981"
-                                stopOpacity={0}
-                              />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid
-                            strokeDasharray="3 3"
-                            stroke="#e2e8f0"
-                            strokeOpacity={0.4}
-                          />
-                          <XAxis
-                            dataKey="period"
-                            tick={{ fontSize: 11, fill: "#94a3b8" }}
-                            axisLine={false}
-                            tickLine={false}
-                          />
-                          <YAxis
-                            allowDecimals={false}
-                            tick={{ fontSize: 11, fill: "#94a3b8" }}
-                            axisLine={false}
-                            tickLine={false}
-                          />
-                          <Tooltip content={<ChartTooltip />} />
-                          <Area
-                            type="monotone"
-                            dataKey="count"
-                            name="Deals"
-                            stroke="#10b981"
-                            strokeWidth={2.5}
-                            fill="url(#dealsGrad)"
-                            dot={{
-                              r: 4,
-                              fill: "#10b981",
-                              strokeWidth: 2,
-                              stroke: "#fff",
-                            }}
-                            activeDot={{
-                              r: 6,
-                              fill: "#10b981",
-                              stroke: "#fff",
-                              strokeWidth: 2,
-                            }}
-                          />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    ) : (
-                      <div className="flex items-center justify-center h-40 text-sm text-gray-400">
-                        No data for this period
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* ── Quotations + Deals win/loss bar charts ─────────── */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                  {/* Quotations breakdown bar */}
-                  <div className="bg-slate-50 dark:bg-gray-700/40 rounded-2xl p-5 border border-slate-100 dark:border-gray-700">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-7 h-7 bg-amber-100 dark:bg-amber-900/40 rounded-lg flex items-center justify-center">
-                        <HiOutlineDocumentText className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                      </div>
-                      <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                        Quotations Breakdown
-                      </p>
-                    </div>
-                    <ResponsiveContainer width="100%" height={140}>
-                      <BarChart
-                        data={[
-                          {
-                            name: "Sent",
-                            value: activitySummary.quotations.sent,
-                          },
-                          {
-                            name: "Accepted",
-                            value: activitySummary.quotations.accepted,
-                          },
-                        ]}
-                        margin={{ top: 0, right: 5, left: -20, bottom: 0 }}
-                      >
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          stroke="#e2e8f0"
-                          strokeOpacity={0.4}
-                          vertical={false}
-                        />
-                        <XAxis
-                          dataKey="name"
-                          tick={{ fontSize: 11, fill: "#94a3b8" }}
-                          axisLine={false}
-                          tickLine={false}
-                        />
-                        <YAxis
-                          allowDecimals={false}
-                          tick={{ fontSize: 11, fill: "#94a3b8" }}
-                          axisLine={false}
-                          tickLine={false}
-                        />
-                        <Tooltip content={<ChartTooltip />} />
-                        <Bar
-                          dataKey="value"
-                          name="Count"
-                          radius={[5, 5, 0, 0]}
-                          maxBarSize={60}
-                        >
-                          <Cell fill="#8b5cf6" />
-                          <Cell fill="#10b981" />
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-
-                  {/* Deals win/loss breakdown bar */}
-                  <div className="bg-slate-50 dark:bg-gray-700/40 rounded-2xl p-5 border border-slate-100 dark:border-gray-700">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-7 h-7 bg-emerald-100 dark:bg-emerald-900/40 rounded-lg flex items-center justify-center">
-                        <HiOutlineBriefcase className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                      </div>
-                      <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                        Deals Outcome
-                      </p>
-                    </div>
-                    <ResponsiveContainer width="100%" height={140}>
-                      <BarChart
-                        data={[
-                          {
-                            name: "Created",
-                            value: activitySummary.deals.created.reduce(
-                              (s, b) => s + b.count,
-                              0,
-                            ),
-                          },
-                          { name: "Won", value: activitySummary.deals.won },
-                          { name: "Lost", value: activitySummary.deals.lost },
-                        ]}
-                        margin={{ top: 0, right: 5, left: -20, bottom: 0 }}
-                      >
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          stroke="#e2e8f0"
-                          strokeOpacity={0.4}
-                          vertical={false}
-                        />
-                        <XAxis
-                          dataKey="name"
-                          tick={{ fontSize: 11, fill: "#94a3b8" }}
-                          axisLine={false}
-                          tickLine={false}
-                        />
-                        <YAxis
-                          allowDecimals={false}
-                          tick={{ fontSize: 11, fill: "#94a3b8" }}
-                          axisLine={false}
-                          tickLine={false}
-                        />
-                        <Tooltip content={<ChartTooltip />} />
-                        <Bar
-                          dataKey="value"
-                          name="Count"
-                          radius={[5, 5, 0, 0]}
-                          maxBarSize={60}
-                        >
-                          <Cell fill="#3b82f6" />
-                          <Cell fill="#10b981" />
-                          <Cell fill="#ef4444" />
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                {/* ── Entity performance summary table ───────────────── */}
-                <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden">
-                  <div className="px-5 py-4 border-b border-slate-100 dark:border-gray-700">
-                    <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                      Entity Performance
-                    </p>
-                  </div>
-                  <div className="divide-y divide-slate-50 dark:divide-gray-700">
-                    {[
-                      {
-                        icon: <HiOutlineUserGroup className="w-4 h-4" />,
-                        label: "Leads",
-                        color: "text-indigo-600",
-                        bg: "bg-indigo-50 dark:bg-indigo-900/30",
-                        stats: [
-                          {
-                            label: "Created/Assigned",
-                            value: activitySummary.leads.created.reduce(
-                              (s, b) => s + b.count,
-                              0,
-                            ),
-                            color: "text-gray-800 dark:text-gray-100",
-                          },
-                          {
-                            label: "Lost",
-                            value: activitySummary.leads.lost,
-                            color: "text-rose-500",
-                          },
-                        ],
-                      },
-                      {
-                        icon: <HiOutlineBriefcase className="w-4 h-4" />,
-                        label: "Deals",
-                        color: "text-emerald-600",
-                        bg: "bg-emerald-50 dark:bg-emerald-900/30",
-                        stats: [
-                          {
-                            label: "Created",
-                            value: activitySummary.deals.created.reduce(
-                              (s, b) => s + b.count,
-                              0,
-                            ),
-                            color: "text-gray-800 dark:text-gray-100",
-                          },
-                          {
-                            label: "Won",
-                            value: activitySummary.deals.won,
-                            color: "text-emerald-500",
-                          },
-                          {
-                            label: "Lost",
-                            value: activitySummary.deals.lost,
-                            color: "text-rose-500",
-                          },
-                        ],
-                      },
-                      {
-                        icon: <HiOutlineDocumentText className="w-4 h-4" />,
-                        label: "Quotations",
-                        color: "text-amber-600",
-                        bg: "bg-amber-50 dark:bg-amber-900/30",
-                        stats: [
-                          {
-                            label: "Sent",
-                            value: activitySummary.quotations.sent,
-                            color: "text-violet-500",
-                          },
-                          {
-                            label: "Accepted",
-                            value: activitySummary.quotations.accepted,
-                            color: "text-emerald-500",
-                          },
-                        ],
-                      },
-                      {
-                        icon: <HiOutlineCurrencyDollar className="w-4 h-4" />,
-                        label: "Invoices",
-                        color: "text-blue-600",
-                        bg: "bg-blue-50 dark:bg-blue-900/30",
-                        stats: [
-                          {
-                            label: "Created",
-                            value: activitySummary.invoices.created,
-                            color: "text-gray-800 dark:text-gray-100",
-                          },
-                        ],
-                      },
-                    ].map((row) => (
-                      <div
-                        key={row.label}
-                        className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 dark:hover:bg-gray-700/40 transition-colors"
-                      >
-                        <span
-                          className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg ${row.bg} ${row.color} min-w-28`}
-                        >
-                          {row.icon}
-                          {row.label}
-                        </span>
-                        <div className="flex items-center gap-6 flex-wrap">
-                          {row.stats.map((s) => (
-                            <div key={s.label} className="text-center">
-                              <p
-                                className={`text-base font-bold tabular-nums ${s.color}`}
-                              >
-                                {s.value}
-                              </p>
-                              <p className="text-xs text-gray-400">{s.label}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                        : null
+                    }
+                    onApply={(range) => {
+                      onSummaryFilter?.({ ...summaryFilter, ...range });
+                      setShowSummaryDatePanel(false);
+                    }}
+                    onClear={() => {
+                      onSummaryFilter?.({
+                        groupBy: summaryFilter?.groupBy,
+                      });
+                      setShowSummaryDatePanel(false);
+                    }}
+                  />
                 </div>
               </>
             )}
           </div>
-        )}
+
+          <div className="flex items-center gap-1 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-xl p-1">
+            {(["day", "week", "month"] as const).map((g) => (
+              <button
+                key={g}
+                onClick={() =>
+                  onSummaryFilter?.({ ...summaryFilter, groupBy: g })
+                }
+                className={`text-xs font-semibold px-3 py-1.5 rounded-lg capitalize transition-all ${
+                  (summaryFilter?.groupBy ?? "month") === g
+                    ? "bg-cyan-600 text-white shadow-sm"
+                    : "text-gray-500 dark:text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400"
+                }`}
+              >
+                {t(`group_by_${g}`)}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-3">
+            {summaryFilter?.from && summaryFilter?.to && (
+              <div className="flex items-center gap-1.5 text-xs font-medium text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/20 px-3 py-1.5 rounded-full border border-cyan-200 dark:border-cyan-800">
+                <FiCalendar className="w-3 h-3" />
+                {displayDate(summaryFilter.from)} —{" "}
+                {displayDate(summaryFilter.to)}
+              </div>
+
+              
+            )}
+
+            {(summaryFilter?.from ||
+              summaryFilter?.to ||
+              summaryFilter?.groupBy) && (
+              <button
+                onClick={() => onSummaryFilter?.({})}
+                className="text-xs text-red-500 hover:text-white bg-red-50 hover:bg-red-500 px-2.5 py-1 rounded-full cursor-pointer group font-medium flex items-center gap-1 ml-auto"
+              >
+                <FiX className="w-3 h-3 group-hover:rotate-90" /> {t("reset")}
+              </button>
+            )}
+          </div>
+
+        {activitySummary && (
+  <span className="ml-auto text-xs text-gray-400 flex items-center gap-1.5">
+    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+    {displayDate(activitySummary.range.from)} —{" "}
+    {displayDate(activitySummary.range.to)}
+    <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded capitalize font-medium">
+      {t(`group_by_${activitySummary.range.groupBy}`)}
+    </span>
+  </span>
+)}
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <Link
+            href={`/leads?userid=${userData._id}`}
+            className="relative hover:scale-105 cursor-point bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5 overflow-hidden"
+          >
+            <div className="flex items-start gap-3 ">
+              <div className="w-10 h-10 rounded-xl bg-cyan-500 flex items-center justify-center shrink-0">
+                <HiOutlineUserGroup className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  {t("leads_created")}
+                </p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-0.5">
+                  {activitySummary.leads.created.reduce(
+                    (s, b) => s + b.count,
+                    0,
+                  )}
+                </p>
+                <p className="text-xs text-rose-500 mt-0.5">
+                  {activitySummary.leads.lost} {t("lost")}
+                </p>
+              </div>
+            </div>
+            <div className="absolute -right-3 -bottom-3 w-16 h-16 rounded-full bg-cyan-500 opacity-[0.07]" />
+          </Link>
+
+          <Link
+            href={`/deals?userid=${userData._id}`}
+            className="relative overflow-hidden hover:scale-105 cursor-point bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5"
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shrink-0">
+                <HiOutlineBriefcase className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  {t("deals_created")}
+                </p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-0.5">
+                  {activitySummary.deals.created.reduce(
+                    (s, b) => s + b.count,
+                    0,
+                  )}
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  <span className="text-emerald-500">
+                    {activitySummary.deals.won} {t("won")}
+                  </span>
+                  {" · "}
+                  <span className="text-rose-500">
+                    {activitySummary.deals.lost} {t("lost")}
+                  </span>
+                </p>
+              </div>
+            </div>
+            <div className="absolute -right-3 -bottom-3 w-16 h-16 rounded-full bg-emerald-500 opacity-[0.07]" />
+          </Link>
+
+          <div className="relative overflow-hidden bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl hover:scale-105 bg-amber-500 flex items-center justify-center shrink-0">
+                <HiOutlineDocumentText className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  {t("quotations")}
+                </p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-0.5">
+                  {activitySummary.quotations.sent +
+                    activitySummary.quotations.accepted}
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  <span className="text-violet-500">
+                    {activitySummary.quotations.sent} {t("sent")}
+                  </span>
+                  {" · "}
+                  <span className="text-emerald-500">
+                    {activitySummary.quotations.accepted} {t("accepted")}
+                  </span>
+                </p>
+              </div>
+            </div>
+            <div className="absolute -right-3 -bottom-3 w-16 h-16 rounded-full bg-amber-500 opacity-[0.07]" />
+          </div>
+
+          <div className="relative overflow-hidden bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-cyan-500 flex items-center justify-center shrink-0">
+                <HiOutlineCurrencyDollar className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  {t("invoices")}
+                </p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-0.5">
+                  {activitySummary.invoices.created}
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">{t("created")}</p>
+              </div>
+            </div>
+            <div className="absolute -right-3 -bottom-3 w-16 h-16 rounded-full bg-cyan-500 opacity-[0.07]" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {/* Leads over time */}
+          <div className="bg-slate-50 dark:bg-gray-700/40 rounded-2xl p-5 border border-slate-100 dark:border-gray-700">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-7 h-7 bg-cyan-100 dark:bg-cyan-900/40 rounded-lg flex items-center justify-center">
+                <HiOutlineUserGroup className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+              </div>
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                {t("leads_created")}
+              </p>
+              <span className="ml-auto text-xs font-bold text-cyan-600 dark:text-cyan-400">
+                {activitySummary.leads.created.reduce(
+                  (s, b) => s + b.count,
+                  0,
+                )}{" "}
+                {t("total")}
+              </span>
+            </div>
+            {activitySummary.leads.created.length > 0 ? (
+              <ResponsiveContainer width="100%" height={160}>
+                <AreaChart
+                  data={activitySummary.leads.created.map((b) => ({
+                    period: String(b._id),
+                    count: b.count,
+                  }))}
+                  margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient
+                      id="leadsGrad"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="5%"
+                        stopColor="#6366f1"
+                        stopOpacity={0.3}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor="#6366f1"
+                        stopOpacity={0}
+                      />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="#e2e8f0"
+                    strokeOpacity={0.4}
+                  />
+                  <XAxis
+                    dataKey="period"
+                    tick={{ fontSize: 11, fill: "#94a3b8" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    allowDecimals={false}
+                    tick={{ fontSize: 11, fill: "#94a3b8" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip content={<ChartTooltip />} />
+                  <Area
+                    type="monotone"
+                    dataKey="count"
+                    name={t("leads")}
+                    stroke="#6366f1"
+                    strokeWidth={2.5}
+                    fill="url(#leadsGrad)"
+                    dot={{
+                      r: 4,
+                      fill: "#6366f1",
+                      strokeWidth: 2,
+                      stroke: "#fff",
+                    }}
+                    activeDot={{
+                      r: 6,
+                      fill: "#6366f1",
+                      stroke: "#fff",
+                      strokeWidth: 2,
+                    }}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-40 text-sm text-gray-400">
+                {t("no_data_for_this_period")}
+              </div>
+            )}
+          </div>
+
+          {/* Deals over time */}
+          <div className="bg-slate-50 dark:bg-gray-700/40 rounded-2xl p-5 border border-slate-100 dark:border-gray-700">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-7 h-7 bg-emerald-100 dark:bg-emerald-900/40 rounded-lg flex items-center justify-center">
+                <HiOutlineBriefcase className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                {t("deals_created")}
+              </p>
+              <span className="ml-auto text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                {activitySummary.deals.created.reduce(
+                  (s, b) => s + b.count,
+                  0,
+                )}{" "}
+                {t("total")}
+              </span>
+            </div>
+            {activitySummary.deals.created.length > 0 ? (
+              <ResponsiveContainer width="100%" height={160}>
+                <AreaChart
+                  data={activitySummary.deals.created.map((b) => ({
+                    period: String(b._id),
+                    count: b.count,
+                  }))}
+                  margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient
+                      id="dealsGrad"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="5%"
+                        stopColor="#10b981"
+                        stopOpacity={0.3}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor="#10b981"
+                        stopOpacity={0}
+                      />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="#e2e8f0"
+                    strokeOpacity={0.4}
+                  />
+                  <XAxis
+                    dataKey="period"
+                    tick={{ fontSize: 11, fill: "#94a3b8" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    allowDecimals={false}
+                    tick={{ fontSize: 11, fill: "#94a3b8" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip content={<ChartTooltip />} />
+                  <Area
+                    type="monotone"
+                    dataKey="count"
+                    name={t("deals")}
+                    stroke="#10b981"
+                    strokeWidth={2.5}
+                    fill="url(#dealsGrad)"
+                    dot={{
+                      r: 4,
+                      fill: "#10b981",
+                      strokeWidth: 2,
+                      stroke: "#fff",
+                    }}
+                    activeDot={{
+                      r: 6,
+                      fill: "#10b981",
+                      stroke: "#fff",
+                      strokeWidth: 2,
+                    }}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-40 text-sm text-gray-400">
+                {t("no_data_for_this_period")}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Quotations + Deals win/loss bar charts ─────────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {/* Quotations breakdown bar */}
+          <div className="bg-slate-50 dark:bg-gray-700/40 rounded-2xl p-5 border border-slate-100 dark:border-gray-700">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-7 h-7 bg-amber-100 dark:bg-amber-900/40 rounded-lg flex items-center justify-center">
+                <HiOutlineDocumentText className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              </div>
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                {t("quotations_breakdown")}
+              </p>
+            </div>
+            <ResponsiveContainer width="100%" height={140}>
+              <BarChart
+                data={[
+                  {
+                    name: t("sent"),
+                    value: activitySummary.quotations.sent,
+                  },
+                  {
+                    name: t("accepted"),
+                    value: activitySummary.quotations.accepted,
+                  },
+                ]}
+                margin={{ top: 0, right: 5, left: -20, bottom: 0 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="#e2e8f0"
+                  strokeOpacity={0.4}
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fontSize: 11, fill: "#94a3b8" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  allowDecimals={false}
+                  tick={{ fontSize: 11, fill: "#94a3b8" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip content={<ChartTooltip />} />
+                <Bar
+                  dataKey="value"
+                  name={t("count")}
+                  radius={[5, 5, 0, 0]}
+                  maxBarSize={60}
+                >
+                  <Cell fill="#8b5cf6" />
+                  <Cell fill="#10b981" />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Deals win/loss breakdown bar */}
+          <div className="bg-slate-50 dark:bg-gray-700/40 rounded-2xl p-5 border border-slate-100 dark:border-gray-700">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-7 h-7 bg-emerald-100 dark:bg-emerald-900/40 rounded-lg flex items-center justify-center">
+                <HiOutlineBriefcase className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                {t("deals_outcome")}
+              </p>
+            </div>
+            <ResponsiveContainer width="100%" height={140}>
+              <BarChart
+                data={[
+                  {
+                    name: t("created"),
+                    value: activitySummary.deals.created.reduce(
+                      (s, b) => s + b.count,
+                      0,
+                    ),
+                  },
+                  { name: t("won"), value: activitySummary.deals.won },
+                  { name: t("lost"), value: activitySummary.deals.lost },
+                ]}
+                margin={{ top: 0, right: 5, left: -20, bottom: 0 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="#e2e8f0"
+                  strokeOpacity={0.4}
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fontSize: 11, fill: "#94a3b8" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  allowDecimals={false}
+                  tick={{ fontSize: 11, fill: "#94a3b8" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip content={<ChartTooltip />} />
+                <Bar
+                  dataKey="value"
+                  name={t("count")}
+                  radius={[5, 5, 0, 0]}
+                  maxBarSize={60}
+                >
+                  <Cell fill="#3b82f6" />
+                  <Cell fill="#10b981" />
+                  <Cell fill="#ef4444" />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* ── Entity performance summary table ───────────────── */}
+        <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100 dark:border-gray-700">
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+              {t("entity_performance")}
+            </p>
+          </div>
+          <div className="divide-y divide-slate-50 dark:divide-gray-700">
+            {[
+              {
+                icon: <HiOutlineUserGroup className="w-4 h-4" />,
+                label: t("leads"),
+                color: "text-cyan-600",
+                bg: "bg-cyan-50 dark:bg-cyan-900/30",
+                stats: [
+                  {
+                    label: t("created_assigned"),
+                    value: activitySummary.leads.created.reduce(
+                      (s, b) => s + b.count,
+                      0,
+                    ),
+                    color: "text-gray-800 dark:text-gray-100",
+                  },
+                  {
+                    label: t("lost"),
+                    value: activitySummary.leads.lost,
+                    color: "text-rose-500",
+                  },
+                ],
+              },
+              {
+                icon: <HiOutlineBriefcase className="w-4 h-4" />,
+                label: t("deals"),
+                color: "text-emerald-600",
+                bg: "bg-emerald-50 dark:bg-emerald-900/30",
+                stats: [
+                  {
+                    label: t("created"),
+                    value: activitySummary.deals.created.reduce(
+                      (s, b) => s + b.count,
+                      0,
+                    ),
+                    color: "text-gray-800 dark:text-gray-100",
+                  },
+                  {
+                    label: t("won"),
+                    value: activitySummary.deals.won,
+                    color: "text-emerald-500",
+                  },
+                  {
+                    label: t("lost"),
+                    value: activitySummary.deals.lost,
+                    color: "text-rose-500",
+                  },
+                ],
+              },
+              {
+                icon: <HiOutlineDocumentText className="w-4 h-4" />,
+                label: t("quotations"),
+                color: "text-amber-600",
+                bg: "bg-amber-50 dark:bg-amber-900/30",
+                stats: [
+                  {
+                    label: t("sent"),
+                    value: activitySummary.quotations.sent,
+                    color: "text-violet-500",
+                  },
+                  {
+                    label: t("accepted"),
+                    value: activitySummary.quotations.accepted,
+                    color: "text-emerald-500",
+                  },
+                ],
+              },
+              {
+                icon: <HiOutlineCurrencyDollar className="w-4 h-4" />,
+                label: t("invoices"),
+                color: "text-cyan-600",
+                bg: "bg-cyan-50 dark:bg-cyan-900/30",
+                stats: [
+                  {
+                    label: t("created"),
+                    value: activitySummary.invoices.created,
+                    color: "text-gray-800 dark:text-gray-100",
+                  },
+                ],
+              },
+            ].map((row) => (
+              <div
+                key={row.label}
+                className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 dark:hover:bg-gray-700/40 transition-colors"
+              >
+                <span
+                  className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg ${row.bg} ${row.color} min-w-28`}
+                >
+                  {row.icon}
+                  {row.label}
+                </span>
+                <div className="flex items-center gap-6 flex-wrap">
+                  {row.stats.map((s) => (
+                    <div key={s.label} className="text-center">
+                      <p
+                        className={`text-base font-bold tabular-nums ${s.color}`}
+                      >
+                        {s.value}
+                      </p>
+                      <p className="text-xs text-gray-400">{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </>
+    )}
+  </div>
+)}
 
         {/* ── Roles ──────────────────────────────────────────────────── */}
         {activeTab === "roles" && (
@@ -2145,7 +2188,7 @@ const UserDetail = ({
             {!userData.userRole?.length ? (
               <div className="text-center py-12">
                 <IoShieldCheckmark className="w-10 h-10 text-gray-200 dark:text-gray-600 mx-auto mb-3" />
-                <p className="text-gray-400 font-medium">No roles assigned</p>
+                <p className="text-gray-400 font-medium">{t("no_roles_assigned")}</p>
               </div>
             ) : (
               userData.userRole.map((role) => (
@@ -2158,11 +2201,11 @@ const UserDetail = ({
                       href={`/roles`}
                       className="flex items-center gap-2 group"
                     >
-                      <div className="w-8 h-8 bg-linear-to-br from-violet-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                      <div className="w-8 h-8 bg-linear-to-br from-violet-500 to-cyan-600 rounded-lg flex items-center justify-center">
                         <IoShieldCheckmark className="w-4 h-4 text-white group-hover:scale-112" />
                       </div>
                       <div>
-                        <h4 className="font-semibold group-hover:text-blue-600 dark:group-hover:text-blue-500 text-gray-800 dark:text-gray-100">
+                        <h4 className="font-semibold group-hover:text-cyan-600 dark:group-hover:text-cyan-500 text-gray-800 dark:text-gray-100">
                           {role.name}
                         </h4>
                         <p className="text-xs font-mono text-gray-400">
@@ -2172,8 +2215,8 @@ const UserDetail = ({
                     </Link>
                     <div className="flex items-center gap-2">
                       {role.isSystemRole && (
-                        <span className="text-xs px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full font-medium">
-                          System Role
+                        <span className="text-xs px-2 py-0.5 bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 rounded-full font-medium">
+                          {t("system_role")}
                         </span>
                       )}
                       <span
@@ -2185,14 +2228,14 @@ const UserDetail = ({
                   </div>
                   <div className="flex items-center gap-2 text-xs text-gray-400">
                     <FiCalendar className="w-3 h-3" />
-                    <span>Created {formatDate(role.createdAt)}</span>
+                    <span>{t("created")} {formatDate(role.createdAt)}</span>
                     {role.permissions?.length > 0 && (
                       <>
                         <span className="text-slate-300 dark:text-gray-600">
                           •
                         </span>
                         <IoShieldCheckmark className="w-3 h-3" />
-                        <span>{role.permissions.length} permissions</span>
+                        <span>{role.permissions.length} {t("permissions_2")}</span>
                       </>
                     )}
                   </div>
@@ -2206,53 +2249,50 @@ const UserDetail = ({
           <div className="p-6">
             {companyLoading ? (
               <div className="flex flex-col items-center justify-center py-16 gap-3">
-                <div className="w-9 h-9 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                <p className="text-sm text-gray-400">Loading company…</p>
+                <div className="w-9 h-9 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+                <p className="text-sm text-gray-400">{t("loading_company")}</p>
               </div>
             ) : !companyData ? (
               <div className="text-center py-16 space-y-3">
                 <MdBusiness className="w-12 h-12 text-gray-200 dark:text-gray-600 mx-auto" />
                 <p className="text-base font-semibold text-gray-400">
-                  No company assigned
+                  {t("no_company_assigned")}
                 </p>
                 <p className="text-sm text-gray-400 dark:text-gray-500">
-                  This user is not linked to any company yet.
+                  {t("this_user_is_not_linked_to")}
                 </p>
                 <Link
                   href={`/users/update/${userData.id ?? userData._id}`}
-                  className="inline-flex items-center gap-2 mt-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                  className="inline-flex items-center gap-2 mt-2 text-sm font-semibold text-cyan-600 dark:text-cyan-400 hover:underline"
                 >
-                  <MdOutlineEdit className="w-4 h-4" /> Assign a company
+                  <MdOutlineEdit className="w-4 h-4" /> {t("assign_a_company")}
                 </Link>
               </div>
             ) : (
               <div className="space-y-5">
                 <div className="relative bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden">
                   <div
-                    className="h-20 relative"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, #4f46e5 0%, #7c3aed 60%, #a21caf 100%)",
-                    }}
+                    className="h-20 relative bg-gradient-to-r from-[#16c2cf] to-[#0fb8a5] "
+                    
                   >
-                    <div
+                    {/* <div
                       className="absolute inset-0 opacity-30"
                       style={{
                         backgroundImage:
                           "radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 60%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%)",
                       }}
-                    />
+                    /> */}
                   </div>
                   <div className="px-6 pb-5 relative">
                     <div className="flex items-end justify-between -mt-6 mb-4 flex-wrap gap-3">
-                      <div className="w-14 h-14 rounded-2xl border-4 border-white dark:border-gray-800 bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center shadow-xl">
-                        <MdBusiness className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
+                      <div className="w-14 h-14 rounded-2xl border-4 border-white dark:border-gray-800 bg-cyan-100 dark:bg-cyan-900/50 flex items-center justify-center shadow-xl">
+                        <MdBusiness className="w-7 h-7 text-cyan-600 dark:text-cyan-400" />
                       </div>
                       <Link
                         href={`/companies/${companyData.id ?? (companyData as any).id}`}
-                        className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                        className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-cyan-600 dark:text-cyan-400 hover:underline"
                       >
-                        <IoEyeOutline className="w-4 h-4" /> View Full Profile
+                        <IoEyeOutline className="w-4 h-4" /> {t("view_full_profile")}
                       </Link>
                     </div>
                     <div className="flex flex-col gap-1.5">
@@ -2305,15 +2345,16 @@ const UserDetail = ({
                 <div className="grid grid-cols-3 gap-3">
                   {[
                     {
-                      label: "Subscriptions",
+                         label: t("subscriptions"),
+
                       value: companyData.subscriptionCount ?? 0,
                       icon: <HiOutlineCurrencyDollar className="w-4 h-4" />,
-                      accent: "bg-blue-500",
-                      bg: "bg-blue-50 dark:bg-blue-900/20",
-                      text: "text-blue-600 dark:text-blue-400",
+                      accent: "bg-cyan-500",
+                      bg: "bg-cyan-50 dark:bg-cyan-900/20",
+                      text: "text-cyan-600 dark:text-cyan-400",
                     },
                     {
-                      label: "User Limit",
+                        label: t("user_limit"),
                       value: companyData.userLimit ?? "Unlimited",
                       icon: <HiOutlineUserGroup className="w-4 h-4" />,
                       accent: "bg-violet-500",
@@ -2321,11 +2362,18 @@ const UserDetail = ({
                       text: "text-violet-600 dark:text-violet-400",
                     },
                     {
-                      label: "Member Since",
-                      value: new Date(companyData.createdAt).toLocaleDateString(
-                        "en-IN",
-                        { day: "2-digit", month: "short", year: "numeric" },
-                      ),
+                       label: t("member_since"),
+                      // value: new Date(companyData.createdAt).toLocaleDateString(
+                      //   "en-IN",
+                      //   { day: "2-digit", month: "short", year: "numeric" },
+                      // ),
+                      value : new Date(userData.createdAt).toLocaleDateString(
+                              localeMap[language] || "en-IN",
+                              {
+                                day: "2-digit",
+                                month: "short",
+                              }
+                            ),
                       icon: <FiCalendar className="w-4 h-4" />,
                       accent: "bg-emerald-500",
                       bg: "bg-emerald-50 dark:bg-emerald-900/20",
@@ -2357,37 +2405,19 @@ const UserDetail = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
                     <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
-                      Company Details
+                      {t("company_details")}
                     </h3>
                     <div className="space-y-0">
                       {[
-                        {
-                          label: "Industry",
-                          value: companyData.industry || "—",
-                        },
-                        { label: "Website", value: companyData.website || "—" },
-                        {
-                          label: "Timezone",
-                          value: companyData.timezone || "—",
-                        },
-                        {
-                          label: "Company Size",
-                          value: companyData.companySize || "—",
-                        },
-                        { label: "Country", value: companyData.country || "—" },
-                        {
-                          label: "Sub Domain",
-                          value: companyData.subDomain || "—",
-                        },
-                        {
-                          label: "Reg. Number",
-                          value: companyData.registrationNumber || "—",
-                        },
-                        {
-                          label: "Trade Number",
-                          value: companyData.tradeNumber || "—",
-                        },
-                      ].map(({ label, value }) => (
+  { label: t("industry"), value: companyData.industry || "—" },
+  { label: t("website"), value: companyData.website || "—" },
+  { label: t("timezone"), value: companyData.timezone || "—" },
+  { label: t("company_size"), value: companyData.companySize || "—" },
+  { label: t("country"), value: companyData.country || "—" },
+  { label: t("sub_domain"), value: companyData.subDomain || "—" },
+  { label: t("registration_number"), value: companyData.registrationNumber || "—" },
+  { label: t("trade_number"), value: companyData.tradeNumber || "—" },
+].map(({ label, value }) => (
                         <div
                           key={label}
                           className="flex items-start justify-between gap-4 py-2.5 border-b border-slate-50 dark:border-gray-700/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-gray-700/20 rounded-lg px-1 transition-colors"
@@ -2405,12 +2435,12 @@ const UserDetail = ({
 
                   <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
                     <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
-                      Contact Info
+                      {t("contact_info")}
                     </h3>
                     <div className="space-y-0">
                       {[
-                        { label: "Email", value: companyData.email || "—" },
-                        { label: "Phone", value: companyData.number || "—" },
+                       { label: t("email"), value: companyData.email || "—" },
+  { label: t("phone"), value: companyData.number || "—" },
                       ].map(({ label, value }) => (
                         <div
                           key={label}
@@ -2432,10 +2462,10 @@ const UserDetail = ({
                       (companyData as any).primary_admin.firstName && (
                         <div className="mt-5">
                           <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
-                            Company Admin
+                            {t("company_admin")}
                           </h3>
                           <div className="flex items-center gap-3 p-3.5 bg-slate-50 dark:bg-gray-700/50 rounded-xl border border-slate-100 dark:border-gray-700">
-                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                            <div className="w-9 h-9 rounded-full bg-gradient-to-r from-[#16c2cf] to-[#0fb8a5]  flex items-center justify-center text-white font-bold text-sm shrink-0">
                               {
                                 (companyData as any).primary_admin
                                   .firstName?.[0]
@@ -2459,8 +2489,8 @@ const UserDetail = ({
                                 >
                                   {(companyData as any).primary_admin
                                     .isEmailVerified
-                                    ? "✓ Verified"
-                                    : "Unverified"}
+                                     ? `✓ ${t("verified")}`
+    : t("unverified")}
                                 </span>
                                 <span
                                   className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full capitalize ${
@@ -2476,9 +2506,9 @@ const UserDetail = ({
                             </div>
                             <Link
                               href={`/users/${(companyData as any).primary_admin.id ?? (companyData as any).primary_admin._id}`}
-                              className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 shrink-0"
+                              className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-1 shrink-0"
                             >
-                              <IoEyeOutline className="w-3.5 h-3.5" /> View
+                              <IoEyeOutline className="w-3.5 h-3.5" /> {t("view")}
                             </Link>
                           </div>
                         </div>
@@ -2493,7 +2523,7 @@ const UserDetail = ({
                     <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                          Subscription
+                          {t("subscription")}
                         </h3>
                         <span
                           className={`text-xs font-bold px-2.5 py-1 rounded-full capitalize ${
@@ -2502,7 +2532,7 @@ const UserDetail = ({
                               ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
                               : (companyData as any).subscription.status ===
                                   "trial"
-                                ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                                ? "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400"
                                 : "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
                           }`}
                         >
@@ -2513,13 +2543,13 @@ const UserDetail = ({
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         {[
                           {
-                            label: "Base Price",
+                             label: t("base_price"),
                             value: `$${(companyData as any).subscription.basePrice}`,
                             sub: (companyData as any).subscription.billingCycle,
                             color: "text-gray-800 dark:text-gray-100",
                           },
                           {
-                            label: "Discount",
+                              label: t("discount"),
                             value: `$${(companyData as any).subscription.discountAmount}`,
                             sub: "saved",
                             color:
@@ -2529,10 +2559,10 @@ const UserDetail = ({
                                 : "text-gray-400",
                           },
                           {
-                            label: "Final Price",
+                            label: t("final_price"),
                             value: `$${(companyData as any).subscription.finalPrice}`,
                             sub: `/${(companyData as any).subscription.billingCycle}`,
-                            color: "text-indigo-600 dark:text-indigo-400",
+                            color: "text-cyan-600 dark:text-cyan-400",
                           },
                         ].map((s) => (
                           <div
@@ -2555,7 +2585,7 @@ const UserDetail = ({
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
                         {[
                           {
-                            label: "Trial Start",
+                            label: t("trial_start"),
                             value: (companyData as any).subscription
                               .trialStartDate
                               ? new Date(
@@ -2570,7 +2600,7 @@ const UserDetail = ({
                             icon: "🎯",
                           },
                           {
-                            label: "Trial End",
+                            label: t("trial_end"),
                             value: (companyData as any).subscription
                               .trialEndDate
                               ? new Date(
@@ -2585,7 +2615,7 @@ const UserDetail = ({
                             icon: "⏳",
                           },
                           {
-                            label: "Start Date",
+                           label: t("start_date"),
                             value: (companyData as any).subscription
                               .startSubscriptionDate
                               ? new Date(
@@ -2600,7 +2630,7 @@ const UserDetail = ({
                             icon: "📅",
                           },
                           {
-                            label: "End Date",
+                          label: t("end_date"),
                             value: (companyData as any).subscription
                               .endSubscriptionDate
                               ? new Date(
@@ -2631,7 +2661,7 @@ const UserDetail = ({
 
                       <div className="mt-3 flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-gray-700">
                         <span className="text-xs text-gray-400 font-mono truncate flex-1">
-                          ID: {(companyData as any).subscription.subscriptionId}
+                          {t("id_2")} {(companyData as any).subscription.subscriptionId}
                         </span>
                         <button
                           onClick={() =>
@@ -2639,7 +2669,7 @@ const UserDetail = ({
                               (companyData as any).subscription.subscriptionId,
                             )
                           }
-                          className="text-gray-400 hover:text-indigo-500 transition-colors"
+                          className="text-gray-400 hover:text-cyan-500 transition-colors"
                         >
                           <MdOutlineContentCopy className="w-3.5 h-3.5" />
                         </button>
@@ -2650,15 +2680,15 @@ const UserDetail = ({
                 {/* ── Timestamps ──────────────────────────────────────────── */}
                 <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
                   <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
-                    Timeline
+                    {t("timeline")}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {[
                       {
-                        label: "Created At",
+                        label: t("created_at"),
                         value: companyData.createdAt
                           ? new Date(companyData.createdAt).toLocaleString(
-                              "en-IN",
+                               localeMap[language] || "en-IN",
                               {
                                 day: "2-digit",
                                 month: "short",
@@ -2670,14 +2700,14 @@ const UserDetail = ({
                             )
                           : "—",
                         icon: "📌",
-                        color: "text-indigo-600 dark:text-indigo-400",
-                        bg: "bg-indigo-50 dark:bg-indigo-900/20",
+                        color: "text-cyan-600 dark:text-cyan-400",
+                        bg: "bg-cyan-50 dark:bg-cyan-900/20",
                       },
                       {
-                        label: "Updated At",
+                      label: t("updated_at"),
                         value: companyData.updatedAt
                           ? new Date(companyData.updatedAt).toLocaleString(
-                              "en-IN",
+                               localeMap[language] ||"en-IN",
                               {
                                 day: "2-digit",
                                 month: "short",
@@ -2687,26 +2717,13 @@ const UserDetail = ({
                                 hour12: true,
                               },
                             )
-                          : "Not updated",
+                          :  t("not_updated"),
                         icon: "✏️",
                         color: "text-amber-600 dark:text-amber-400",
                         bg: "bg-amber-50 dark:bg-amber-900/20",
                       },
-                      {
-                        label: "Deleted At",
-                        value: companyData.deletedAt
-                          ? new Date(companyData.deletedAt).toLocaleString(
-                              "en-IN",
-                              {
-                                day: "2-digit",
-                                month: "short",
-                                year: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: true,
-                              },
-                            )
-                          : "Not deleted",
+                      {    label: t("deleted_at"),
+                    value: companyData.deletedAt ? new Date(companyData.deletedAt).toLocaleString( localeMap[language] || "en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true, }, ) : t("not_deleted"),
                         icon: "🗑️",
                         color: companyData.deletedAt
                           ? "text-red-600 dark:text-red-400"

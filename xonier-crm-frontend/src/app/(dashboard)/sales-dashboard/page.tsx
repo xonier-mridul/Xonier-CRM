@@ -19,6 +19,7 @@ import type {
 } from "@/src/types/dashboard/dashboard.types";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 
 type DashboardFilter = "today" | "this_week" | "this_month" | "this_year";
 
@@ -121,6 +122,7 @@ const SectionTitle = ({ title, sub }: { title: string; sub?: string }) => (
 );
 
 function UnauthorizedView() {
+  const { t } = useTranslation();
   return (
     <div className="mt-10 ml-72 min-h-screen">
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full">
@@ -135,21 +137,21 @@ function UnauthorizedView() {
             </div>
           </div>
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 border border-red-100 dark:border-red-800 mb-4 tracking-widest uppercase">
-            403 · Forbidden
+            {t("403_forbidden")}
           </span>
-          <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-2">Access Denied</h1>
+          <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-2">{t("access_denied")}</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-sm mb-8">
-            You don't have permission to view the sales dashboard. Contact your administrator to request access.
+            {t("you_don't_have_permission_to_view")}
           </p>
           <div className="w-full flex items-start gap-3 px-4 py-3.5 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 text-left">
             <AlertCircle className="w-4 h-4 text-amber-500 dark:text-amber-400 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
-              Your current role does not include dashboard access. Reach out to your admin with your user ID.
+              {t("your_current_role_does_not_include")}
             </p>
           </div>
         </div>
         <p className="text-center text-xs text-gray-400 dark:text-gray-600 mt-5">
-          Error code 403 · Unauthorized access attempt has been logged
+          {t("error_code_403_unauthorized_access_attempt")}
         </p>
       </div>
     </div>
@@ -163,6 +165,7 @@ type TrendData = {
 };
 
 export default function SalesDashboardPage() {
+  const { t } = useTranslation();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -265,7 +268,7 @@ const dealTrendData: TrendData[] =
           <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{error}</p>
           <button onClick={() => load()}
             className="mt-1 px-4 py-2 text-sm font-semibold rounded-lg bg-cyan-600 text-white hover:bg-cyan-700 transition-colors">
-            Retry
+            {t("retry")}
           </button>
         </div>
       </div>
@@ -478,7 +481,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
               <div className="flex items-center gap-2">
                 <span className="flex items-center gap-1.5 text-xs font-semibold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950 px-3 py-1.5 rounded-lg">
                   <Activity className="w-3 h-3" />
-                  {trendTab === "leads" ? fmt(leads.thisMonth) : deals.thisMonth} this month
+                  {trendTab === "leads" ? fmt(leads.thisMonth) : deals.thisMonth} {t("this_month_3")}
                 </span>
                 <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
                   {(["leads", "deals"] as const).map((tab) => (
@@ -525,7 +528,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
           </div>
 
           <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-            <SectionTitle title="Lead Sources" sub="Distribution by channel" />
+            <SectionTitle title={t("lead_sources")} sub="Distribution by channel" />
             {sourceChartData.length > 0 ? (
               <>
                 <ResponsiveContainer width="100%" height={160}>
@@ -562,7 +565,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
               </>
             ) : (
               <div className="h-[160px] flex items-center justify-center text-sm text-gray-400 dark:text-gray-600">
-                No source data
+                {t("no_source_data")}
               </div>
             )}
           </div>
@@ -572,12 +575,12 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
           <div className="col-span-6 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
             <div className="flex items-start justify-between mb-1">
               <div>
-                <h2 className="text-sm font-semibold text-gray-800 dark:text-white">Deal Pipeline</h2>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Deals by stage</p>
+                <h2 className="text-sm font-semibold text-gray-800 dark:text-white">{t("deal_pipeline")}</h2>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{t("deals_by_stage")}</p>
               </div>
               <span className="flex items-center gap-1.5 text-xs font-semibold text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-950 px-3 py-1.5 rounded-lg">
                 <DollarSign className="w-3 h-3" />
-                {fmtCurrency(pipelineTotalAmount)} total
+                {fmtCurrency(pipelineTotalAmount)} {t("total_3")}
               </span>
             </div>
             <ResponsiveContainer width="100%" height={240}>
@@ -606,13 +609,13 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
           <div className="col-span-6 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-sm font-semibold text-gray-800 dark:text-white">Latest Leads</h2>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Most recent pipeline entries</p>
+                <h2 className="text-sm font-semibold text-gray-800 dark:text-white">{t("latest_leads")}</h2>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{t("most_recent_pipeline_entries")}</p>
               </div>
               {hasPermission(PERMISSIONS.readLead) && (
                 <Link href="/leads">
                   <button className="flex items-center gap-1 text-xs font-semibold text-cyan-500 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors">
-                    View all <ArrowUpRight className="w-3 h-3" />
+                    {t("view_all")} <ArrowUpRight className="w-3 h-3" />
                   </button>
                 </Link>
               )}
@@ -704,7 +707,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
 
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-            <SectionTitle title="Lead Status Breakdown" sub="Current distribution across all statuses" />
+            <SectionTitle title={t("lead_status_breakdown")} sub="Current distribution across all statuses" />
             <div className="flex flex-col gap-3">
               {(data.leadStatusBreakdown ?? []).map((item) => {
                 const pct = ((item.count / totalLeads) * 100).toFixed(1);
@@ -735,7 +738,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
           </div>
 
           <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
-            <SectionTitle title="Activity Snapshot" sub="Key metrics at a glance" />
+            <SectionTitle title={t("activity_snapshot")} sub="Key metrics at a glance" />
             <div className="grid grid-cols-2 gap-3">
               {[
                 { label: "Leads this month", value: fmt(leads.thisMonth ?? 0), color: "bg-cyan-50 dark:bg-cyan-950", text: "text-cyan-600 dark:text-cyan-400", link: "/leads", show: hasPermission(PERMISSIONS.readLead) },
@@ -763,16 +766,16 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
   // Super admin sees a placeholder where lead/deal sections would be
   <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-8 flex flex-col items-center justify-center gap-2">
     <ShieldCheck className="w-8 h-8 text-cyan-400" />
-    <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Admin Overview</p>
+    <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{t("admin_overview")}</p>
     <p className="text-xs text-gray-400 dark:text-gray-500 text-center max-w-sm">
-      Lead and deal analytics are available at the company level. Select a company to drill down.
+      {t("lead_and_deal_analytics_are_available")}
     </p>
   </div>
 ) : null}
 
         <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
           <div className="flex justify-between items-center mb-4">
-            <SectionTitle title="Top Performers" sub="Sales team leaderboard this month" />
+            <SectionTitle title={t("top_performers")} sub="Sales team leaderboard this month" />
             <MdOutlineLeaderboard
               className="w-4 h-4 text-cyan-600 dark:text-cyan-400 cursor-pointer"
               onClick={() => setLeaderboard(true)}
@@ -791,7 +794,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
                   {i === 2 && <span className="absolute -top-1.5 -right-1.5 text-base">🥉</span>}
                 </div>
                 <p className="text-sm font-semibold text-slate-800 dark:text-white mb-0.5">{p.name}</p>
-                <p className="text-xs text-slate-400 mb-2">{p.deals} deals closed</p>
+                <p className="text-xs text-slate-400 mb-2">{p.deals} {t("deals_closed")}</p>
                 <p className="text-sm font-bold text-cyan-600 dark:text-cyan-400">${p.revenue.toLocaleString()}</p>
                 <div className="w-full mt-3 bg-slate-200 dark:bg-gray-600 rounded-full h-1">
                   <div className="h-1 rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 transition-all"
@@ -808,8 +811,8 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
           <div className="w-full max-w-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
               <div>
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Leaderboard</h2>
-                <p className="text-xs text-gray-400 dark:text-gray-500">Top performers this month</p>
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-white">{t("leaderboard")}</h2>
+                <p className="text-xs text-gray-400 dark:text-gray-500">{t("top_performers_this_month")}</p>
               </div>
               <button onClick={() => setLeaderboard(false)} className="text-gray-400 hover:text-red-500 transition-colors">✕</button>
             </div>
@@ -824,12 +827,12 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-gray-800 dark:text-white">{p.name}</p>
-                      <p className="text-xs text-gray-400">{p.deals} deals closed</p>
+                      <p className="text-xs text-gray-400">{p.deals} {t("deals_closed")}</p>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-bold text-cyan-600 dark:text-cyan-400">${p.revenue.toLocaleString()}</p>
-                    <p className="text-xs text-gray-400">Revenue</p>
+                    <p className="text-xs text-gray-400">{t("revenue")}</p>
                   </div>
                 </div>
               ))}
@@ -837,7 +840,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
             <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800 flex justify-end">
               <button onClick={() => setLeaderboard(false)}
                 className="px-4 py-2 text-sm font-semibold bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors">
-                Close
+                {t("close")}
               </button>
             </div>
           </div>

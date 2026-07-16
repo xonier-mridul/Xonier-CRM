@@ -1,5 +1,6 @@
 import { BoardViewProps } from "@/src/types/task/task.types";
 import CategoryBoard from "./CategoryBoard";
+import { useTranslation } from "react-i18next";
 
 export default function BoardView({
   tasks,
@@ -27,6 +28,7 @@ export default function BoardView({
   onTimer,
   onStop,
 }: BoardViewProps) {
+  const { t } = useTranslation();
   if (isLoading) {
     return (
       <div className="space-y-8">
@@ -69,7 +71,7 @@ export default function BoardView({
     return (
       <div className="flex flex-col items-center justify-center py-20 text-gray-400">
         <span className="text-5xl mb-3">📭</span>
-        <p className="text-sm font-semibold">No tasks to display</p>
+        <p className="text-sm font-semibold">{t("no_tasks_to_display")}</p>
       </div>
     );
   }

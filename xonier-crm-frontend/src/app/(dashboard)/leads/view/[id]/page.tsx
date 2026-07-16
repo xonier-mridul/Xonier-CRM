@@ -58,8 +58,10 @@ import { usePermissions } from "@/src/hooks/usePermissions";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import Skeleton from "react-loading-skeleton";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 
 const LeadViewPage = (): JSX.Element => {
+  const { t } = useTranslation();
   const [err, setErr] = useState<string | string[]>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [leadData, setLeadData] = useState<Lead | null>(null);
@@ -200,17 +202,17 @@ const LeadViewPage = (): JSX.Element => {
           <div className="text-center">
             <IoPersonOutline className="w-20 h-20 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              Lead Not Found
+              {t("lead_not_found")}
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              The lead you're looking for doesn't exist or has been removed.
+              {t("the_lead_you're_looking_for_doesn't")}
             </p>
             <button
               onClick={() => router.back()}
               className="inline-flex items-center gap-2 px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors"
             >
               <IoArrowBack className="w-5 h-5" />
-              Go Back
+              {t("go_back")}
             </button>
           </div>
         </div>
@@ -268,7 +270,7 @@ const LeadViewPage = (): JSX.Element => {
                 }
               >
                 <IoDocumentText className="w-4 h-4" />
-                Lead ID: <span className="font-mono">{leadData?.lead_id}</span>
+                {t("lead_id_3")} <span className="font-mono">{leadData?.lead_id}</span>
               </p>
             </div>
 
@@ -281,12 +283,12 @@ const LeadViewPage = (): JSX.Element => {
                   className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors"
                 >
                   <MdOutlineEdit className="w-4 h-4" />
-                  Update Lead
+                  {t("update_lead")}
                 </Link>
               ) : (
                 <span className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 opacity-60 text-white rounded-lg cursor-not-allowed">
                   <MdOutlineEdit className="w-4 h-4" />
-                  Update Lead
+                  {t("update_lead")}
                 </span>
               )}
 {/* 
@@ -322,7 +324,7 @@ const LeadViewPage = (): JSX.Element => {
                       className="w-full flex items-center gap-2 px-4  dark:hover:bg-red-900/20 transition-colors cursor-pointer"
                     >
                       <MdDeleteOutline className="w-4 h-4" />
-                      Delete
+                      {t("delete")}
                     </button>
                   )}
                 </div>
@@ -334,25 +336,25 @@ const LeadViewPage = (): JSX.Element => {
       <div className="metric-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <MetricCard
           icon={<IoBusinessOutline className="w-6 h-6" />}
-          label="Company"
+          label={t("company")}
           value={leadData?.companyName || "—"}
           color="bg-cyan-500"
         />
         <MetricCard
           icon={<IoCodeOutline className="w-5 h-5" />}
-          label="Project Type"
+          label={t("project_type")}
           value={leadData?.projectType?.replace("_", " ") || "—"}
           color="bg-purple-500"
         />
         <MetricCard
           icon={<IoLocationOutline className="w-5 h-5" />}
-          label="Location"
+          label={t("location")}
           value={leadData?.city || "—"}
           color="bg-green-500"
         />
         <MetricCard
           icon={<IoCheckmarkCircle className="w-5 h-5" />}
-          label="In Deal"
+          label={t("in_deal")}
           value={leadData?.inDeal ? "Yes" : "No"}
           color={leadData?.inDeal ? "bg-emerald-500" : "bg-gray-500"}
         />
@@ -392,39 +394,39 @@ const LeadViewPage = (): JSX.Element => {
                 <div className="flex items-center gap-2 mb-6">
                   <IoInformationCircleOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Lead Information
+                    {t("lead_information")}
                   </h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 print:grid-cols-2 gap-6">
                   <InfoItem
                     icon={<IoInformationCircleOutline className="w-4 h-4" />}
-                    label="Source"
+                    label={t("source")}
                     value={leadData?.source}
                   />
                   <InfoItem
                     icon={<IoCodeOutline className="w-4 h-4" />}
-                    label="Project Type"
+                    label={t("project_type")}
                     value={leadData?.projectType?.replace("_", " ")}
                   />
                   <InfoItem
                     icon={<FaIndustry className="w-4 h-4" />}
-                    label="Industry"
+                    label={t("industry_2")}
                     value={leadData?.industry || "—"}
                   />
                   <InfoItem
                     icon={<IoLanguageOutline className="w-4 h-4" />}
-                    label="Language"
+                    label={t("language")}
                     value={leadData?.language || "—"}
                   />
                   <InfoItem
                     icon={<IoFlagOutline className="w-4 h-4" />}
-                    label="Priority"
+                    label={t("priority")}
                     value={leadData?.priority}
                   />
                   <InfoItem
                     icon={<IoStatsChartOutline className="w-4 h-4" />}
-                    label="Status"
+                    label={t("status")}
                     value={leadData?.status}
                   />
                   {leadData?.extraFields &&
@@ -447,19 +449,19 @@ const LeadViewPage = (): JSX.Element => {
                 <div className="flex items-center gap-2 mb-6">
                   <IoBriefcaseOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Employee Details
+                    {t("employee_details")}
                   </h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-6">
                   <InfoItem
                     icon={<IoBriefcaseOutline className="w-4 h-4" />}
-                    label="Role"
+                    label={t("role")}
                     value={leadData?.employeeRole || "—"}
                   />
                   <InfoItem
                     icon={<IoStatsChartOutline className="w-4 h-4" />}
-                    label="Seniority"
+                    label={t("seniority")}
                     value={leadData?.employeeSeniority || "—"}
                   />
                 </div>
@@ -470,12 +472,13 @@ const LeadViewPage = (): JSX.Element => {
                   <div className="flex items-center gap-2 mb-6">
                     <MdOutlineLeaderboard className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      Lead Assign Information
+                      {t("lead_assign_information")}
                     </h3>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-6">
                     {leadData?.assignedTo?.map((item, i) => {
+  const { t } = useTranslation();
                       const isAssigned = leadData.assignedAt
                         ? formatDate(leadData.assignedAt)
                         : "-";
@@ -483,12 +486,12 @@ const LeadViewPage = (): JSX.Element => {
                         <React.Fragment key={i}>
                           <InfoItem
                             icon={<IoBriefcaseOutline className="w-4 h-4" />}
-                            label="Assign to"
+                            label={t("assign_to")}
                             value={`${item.firstName} ${item.lastName}` || "—"}
                           />
                           <InfoItem
                             icon={<IoStatsChartOutline className="w-4 h-4" />}
-                            label="Assign at"
+                            label={t("assign_at")}
                             value={isAssigned || "—"}
                           />
                         </React.Fragment>
@@ -503,7 +506,7 @@ const LeadViewPage = (): JSX.Element => {
                   <div className="flex items-center gap-2 mb-6">
                     <IoChatbubbleOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      Notes & Messages
+                      {t("notes_messages")}
                     </h3>
                   </div>
 
@@ -513,7 +516,7 @@ const LeadViewPage = (): JSX.Element => {
                         <div className="flex items-center gap-2 mb-2">
                           <IoChatbubbleOutline className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                           <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Message
+                            {t("message")}
                           </p>
                         </div>
                         <p className="text-gray-900 dark:text-white">
@@ -526,7 +529,7 @@ const LeadViewPage = (): JSX.Element => {
                         <div className="flex items-center gap-2 mb-2">
                           <IoDocumentText className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                           <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Membership Notes
+                            {t("membership_notes")}
                           </p>
                         </div>
                         <p className="text-gray-900 dark:text-white">
@@ -546,36 +549,36 @@ const LeadViewPage = (): JSX.Element => {
               <div className="flex items-center gap-2 mb-6">
                 <IoPersonOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Contact Information
+                  {t("contact_information")}
                 </h3>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-6">
                 <InfoItem
                   icon={<IoPersonOutline className="w-4 h-4" />}
-                  label="Full Name"
+                  label={t("full_name")}
                   value={leadData?.fullName}
                 />
-                <MaskEmailField label="Email" value={leadData?.email} />
-                <MaskPhoneField label="Phone" value={leadData?.phone} />
+                <MaskEmailField label={t("email")} value={leadData?.email} />
+                <MaskPhoneField label={t("phone")} value={leadData?.phone} />
                 <InfoItem
                   icon={<IoBusinessOutline className="w-4 h-4" />}
-                  label="Company"
+                  label={t("company")}
                   value={leadData?.companyName || "—"}
                 />
                 <InfoItem
                   icon={<IoLocationOutline className="w-4 h-4" />}
-                  label="City"
+                  label={t("city")}
                   value={leadData?.city || "—"}
                 />
                 <InfoItem
                   icon={<IoGlobeOutline className="w-4 h-4" />}
-                  label="Country"
+                  label={t("country")}
                   value={leadData?.country || "—"}
                 />
                 <InfoItem
                   icon={<IoLocationOutline className="w-4 h-4" />}
-                  label="Postal Code"
+                  label={t("postal_code")}
                   value={leadData?.postalCode || "—"}
                 />
               </div>
@@ -588,13 +591,13 @@ const LeadViewPage = (): JSX.Element => {
               <div className="flex items-center gap-2 mb-6">
                 <MdTimeline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Activity Timeline
+                  {t("activity_timeline")}
                 </h3>
               </div>
               <div className="text-center py-12">
                 <IoInformationCircleOutline className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
                 <p className="text-gray-500 dark:text-gray-400">
-                  Activity timeline coming soon
+                  {t("activity_timeline_coming_soon")}
                 </p>
               </div>
             </div>
@@ -609,26 +612,26 @@ const LeadViewPage = (): JSX.Element => {
               <div className="flex items-center gap-2 mb-4">
                 <FaRegUser className="text-xl text-white" />
                 <h2 className="text-white font-semibold text-xl">
-                  Creator Information
+                  {t("creator_information")}
                 </h2>
               </div>
               <div className="border-b border-white/30 w-full mb-4"></div>
               <div className="space-y-4">
                 <ProfileField
                   icon={<IoPersonOutline className="w-4 h-4" />}
-                  label="Name"
+                  label={t("name_2")}
                   value={`${leadData.createdBy?.firstName} ${
                     leadData.createdBy?.lastName ?? ""
                   }`}
                 />
                 <ProfileField
                   icon={<IoMailOutline className="w-4 h-4" />}
-                  label="Email"
+                  label={t("email")}
                   value={leadData.createdBy?.email}
                 />
                 <ProfileField
                   icon={<IoCallOutline className="w-4 h-4" />}
-                  label="Phone"
+                  label={t("phone")}
                   value={leadData.createdBy?.phone}
                 />
                 
@@ -639,11 +642,11 @@ const LeadViewPage = (): JSX.Element => {
           {/* Quick Stats */}
           <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700 break-inside-avoid">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Quick Stats
+              {t("quick_stats")}
             </h3>
             <div className="space-y-3">
               <StatItem
-                label="In Deal"
+                label={t("in_deal")}
                 value={leadData.inDeal ? "Yes" : "No"}
                 color={
                   leadData.inDeal
@@ -652,12 +655,12 @@ const LeadViewPage = (): JSX.Element => {
                 }
               />
               <StatItem
-                label="Created"
+                label={t("created")}
                 value={formatDate(leadData.createdAt)}
                 color="text-gray-600 dark:text-gray-400"
               />
               <StatItem
-                label="Last Updated"
+                label={t("last_updated")}
                 value={formatDate(leadData.updatedAt)}
                 color="text-gray-600 dark:text-gray-400"
               />
@@ -670,17 +673,17 @@ const LeadViewPage = (): JSX.Element => {
               <div className="flex items-center gap-2 mb-4">
                 <IoLocationOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Location Details
+                  {t("location_details")}
                 </h3>
               </div>
               <div className="space-y-3">
                 <StatItem
-                  label="Country"
+                  label={t("country")}
                   value={leadData?.country ? leadData?.country : "-"}
                   color="text-gray-600 dark:text-gray-400"
                 />
                 <StatItem
-                  label="Postal Code"
+                  label={t("postal_code")}
                   value={leadData?.postalCode ? leadData?.postalCode : null}
                   color="text-gray-600 dark:text-gray-400"
                 />

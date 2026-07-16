@@ -41,6 +41,7 @@ import StatusDropdown from "@/src/components/pages/lead/StatusDropdown";
 import { LeadEngagementStatus } from "@/src/constants/enum";
 import UserSelect from "@/src/components/common/userselect";
 import Limit from "../../ui/Limit";
+import { useTranslation } from "react-i18next";
 
 const TAB = { ALL: 1, WON: 2, LOST: 3, ASSIGNED: 4 } as const;
 
@@ -69,6 +70,7 @@ const AssignedToPill = ({
 };
 
 const LeadContent = (): JSX.Element => {
+  const { t } = useTranslation();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [leadData, setLeadData] = useState<Lead[]>([]);
@@ -529,7 +531,7 @@ const LeadContent = (): JSX.Element => {
               <FaRegHandshake className="text-lg" />
             </Link>
           ) : (
-            <span className="h-9 w-9 flex items-center justify-center rounded-md bg-cyan-900 text-white dark:bg-cyan-600 cursor-default" title="Already on deal"><FaHandshake className="text-lg" /></span>
+            <span className="h-9 w-9 flex items-center justify-center rounded-md bg-cyan-900 text-white dark:bg-cyan-600 cursor-default" title={t("already_on_deal")}><FaHandshake className="text-lg" /></span>
           )
         ) : (
           <span className="h-9 w-9 flex items-center justify-center rounded-md bg-cyan-100 text-cyan-500 opacity-50 cursor-not-allowed"><FaHandshake className="text-lg" /></span>
@@ -543,11 +545,12 @@ const LeadContent = (): JSX.Element => {
 
   const renderLeadRows = (data: Lead[]) => {
     if (!isLoading && data.length === 0) return (
-      <tr><td className="p-8 text-center text-slate-400 text-sm" colSpan={10}>No leads found</td></tr>
+      <tr><td className="p-8 text-center text-slate-400 text-sm" colSpan={10}>{t("no_leads_found")}</td></tr>
     );
     if (isLoading) return <SkeletonRows cols={hasPermission(PERMISSIONS.assignLead) && currentTab === TAB.ALL ? 11 : 12} />;
 
     return data.map((item, i) => {
+
       const isChecked = selectedLeadIds.has(item.id);
       return (
         <tr key={item.lead_id}
@@ -566,11 +569,11 @@ const LeadContent = (): JSX.Element => {
                   </div>
                 </label>
               ) : item.assignedTo?.length ? (
-                <span className="inline-flex items-center justify-center w-4.5 h-4.5 rounded-full bg-green-100 dark:bg-green-900/30" title="Already assigned">
+                <span className="inline-flex items-center justify-center w-4.5 h-4.5 rounded-full bg-green-100 dark:bg-green-900/30" title={t("already_assigned")}>
                   <FaCheck className="text-green-500 text-[8px]" />
                 </span>
               ) : (
-                <span className="inline-flex items-center justify-center w-4.5 h-4.5" title="Self-created leads cannot be assigned">
+                <span className="inline-flex items-center justify-center w-4.5 h-4.5" title={t("self_created_leads_cannot_be_assigned")}>
                   <span className="block w-2.5 h-0.5 bg-slate-300 dark:bg-slate-600 rounded-full" />
                 </span>
               )}
@@ -621,9 +624,9 @@ const LeadContent = (): JSX.Element => {
             <div className="w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center border border-amber-100 dark:border-amber-800/30">
               <RiUserSharedLine className="text-amber-400 text-3xl" />
             </div>
-            <p className="text-slate-600 dark:text-slate-300 text-sm font-semibold">No assigned leads yet</p>
+            <p className="text-slate-600 dark:text-slate-300 text-sm font-semibold">{t("no_assigned_leads_yet")}</p>
             <p className="text-slate-400 dark:text-slate-500 text-xs max-w-xs">
-              Assign leads from the All Leads tab first, then manage reassignments here.
+              {t("assign_leads_from_the_all_leads")}
             </p>
           </div>
         </td>
@@ -726,15 +729,15 @@ const LeadContent = (): JSX.Element => {
 
         <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm gap-5 p-6 rounded-xl border border-slate-900/10 w-full flex items-center justify-between">
           <div className="flex flex-col gap-2">
-            <h2 className="text-2xl font-bold dark:text-white text-slate-900">Add Bulk Leads</h2>
-            <p className="text-gray-500 dark:text-gray-400">Create bulk leads via CSV file upload</p>
+            <h2 className="text-2xl font-bold dark:text-white text-slate-900">{t("add_bulk_leads")}</h2>
+            <p className="text-gray-500 dark:text-gray-400">{t("create_bulk_leads_via_csv_file")}</p>
           </div>
           <div className="flex items-center justify-end gap-3">
             {hasPermission(PERMISSIONS.createLead) ? (
               <PrimaryButton text="Create Bulk Leads" link="/leads/bulk" icon={<LiaMailBulkSolid />} />
             ) : (
               <span className="bg-cyan-400 cursor-not-allowed text-white px-5 py-2.5 rounded-md flex items-center gap-2">
-                <LiaMailBulkSolid /> Create Bulk Leads
+                <LiaMailBulkSolid /> {t("create_bulk_leads")}
               </span>
             )}
           </div>
@@ -746,8 +749,8 @@ const LeadContent = (): JSX.Element => {
 
           <div className="flex w-full items-center gap-12 justify-between">
             <div className="flex flex-col gap-1.5">
-              <h2 className="text-xl font-bold dark:text-white text-slate-900">All Sales Leads</h2>
-              <p className="text-gray-500 dark:text-gray-400">Create, edit or remove leads.</p>
+              <h2 className="text-xl font-bold dark:text-white text-slate-900">{t("all_sales_leads")}</h2>
+              <p className="text-gray-500 dark:text-gray-400">{t("create_edit_or_remove_leads")}</p>
             </div>
             <div className="flex items-center gap-4">
               <select
@@ -763,18 +766,18 @@ const LeadContent = (): JSX.Element => {
 
               <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg outline-none border border-slate-900/10 flex items-center gap-2">
                 <IoIosSearch className="text-xl text-slate-400" />
-                <input type="text" id="searchbar" className="outline-none bg-transparent text-sm w-36 dark:text-white/70" placeholder="Search..." onChange={(e) => handleSearch(e.target.value)} value={searchVal} />
+                <input type="text" id="searchbar" className="outline-none bg-transparent text-sm w-36 dark:text-white/70" placeholder={t("search_3")} onChange={(e) => handleSearch(e.target.value)} value={searchVal} />
               </div>
               <div>
                 <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
               </div>
               {hasPermission(PERMISSIONS.createLead) ? (
                 <Link href="/leads/add" className="bg-cyan-600 hover:bg-cyan-700 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors group">
-                  <FaPlus className="group-hover:rotate-90 transition-transform duration-300" /> Create Lead
+                  <FaPlus className="group-hover:rotate-90 transition-transform duration-300" /> {t("create_lead")}
                 </Link>
               ) : (
                 <span className="bg-cyan-600 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 opacity-70 cursor-not-allowed text-sm">
-                  <FaPlus /> Create Lead
+                  <FaPlus /> {t("create_lead")}
                 </span>
               )}
             </div>
@@ -782,9 +785,9 @@ const LeadContent = (): JSX.Element => {
 
 
           <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-600 pb-3">
-            <TabsButton btnTxt="All Leads" dataLen={leadData.length} no={TAB.ALL} currentVal={currentTab} onClickEvent={() => setCurrentTab(TAB.ALL)} />
-            <TabsButton btnTxt="Won Leads" dataLen={wonLeadData.length} no={TAB.WON} currentVal={currentTab} onClickEvent={() => handleTabs(TAB.WON)} />
-            <TabsButton btnTxt="Lost Leads" dataLen={lostLeadData.length} no={TAB.LOST} currentVal={currentTab} onClickEvent={() => handleTabs(TAB.LOST)} />
+            <TabsButton btnTxt={t("all_leads")} dataLen={leadData.length} no={TAB.ALL} currentVal={currentTab} onClickEvent={() => setCurrentTab(TAB.ALL)} />
+            <TabsButton btnTxt={t("won_leads")} dataLen={wonLeadData.length} no={TAB.WON} currentVal={currentTab} onClickEvent={() => handleTabs(TAB.WON)} />
+            <TabsButton btnTxt={t("lost_leads")} dataLen={lostLeadData.length} no={TAB.LOST} currentVal={currentTab} onClickEvent={() => handleTabs(TAB.LOST)} />
 
 
             {hasPermission(PERMISSIONS.assignLead) && (
@@ -797,7 +800,7 @@ const LeadContent = (): JSX.Element => {
                   }`}
               >
                 <TbArrowsExchange className={`text-base transition-transform duration-300 ${currentTab === TAB.ASSIGNED ? "rotate-180" : ""}`} />
-                Assigned Leads
+                {t("assigned_leads")}
                 {assignedLeadData.length > 0 && (
                   <span className={`ml-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold
                     ${currentTab === TAB.ASSIGNED
@@ -818,16 +821,16 @@ const LeadContent = (): JSX.Element => {
                 <div className="bg-white/20 rounded-lg px-3 py-1.5 flex items-center gap-2">
                   <HiOutlineUserGroup className="text-white text-lg" />
                   <span className="text-white text-sm font-semibold">
-                    {selectedLeadIds.size} lead{selectedLeadIds.size > 1 ? "s" : ""} selected
+                    {selectedLeadIds.size} {t("lead_2")}{selectedLeadIds.size > 1 ? "s" : ""} {t("selected_2")}
                   </span>
                 </div>
                 <button onClick={clearAssignSelection} className="text-cyan-200 group cursor-pointer hover:text-white text-xs underline underline-offset-2 flex items-center gap-1 transition-colors">
-                  <FaXmark className="text-xs group-hover:rotate-90" /> Clear
+                  <FaXmark className="text-xs group-hover:rotate-90" /> {t("clear")}
                 </button>
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex flex-col gap-0.5">
-                  {!selectedUserId && <span className="text-cyan-200 text-[11px] ml-1">← Select a user first</span>}
+                  {!selectedUserId && <span className="text-cyan-200 text-[11px] ml-1">{t("select_a_user_first")}</span>}
                   {/* <UserSelect
                     users={nonAdminUsers}
                     selectedUserId={selectedUserId}
@@ -837,7 +840,7 @@ const LeadContent = (): JSX.Element => {
                     mode="single"
                     value={selectedUserId}
                     onChange={setSelectedUserId}
-                    placeholder="Search & select user..."
+                    placeholder={t("search_select_user")}
                     />
                 </div>
                 <button
@@ -845,7 +848,7 @@ const LeadContent = (): JSX.Element => {
                   disabled={!selectedUserId || isAssigning}
                   className="bg-white text-cyan-600 hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed px-5 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all shadow-sm"
                 >
-                  {isAssigning ? <><Spinner color="text-cyan-600" /> Assigning...</> : <><MdOutlinePersonAdd className="text-lg" /> Assign Leads</>}
+                  {isAssigning ? <><Spinner color="text-cyan-600" /> {t("assigning")}</> : <><MdOutlinePersonAdd className="text-lg" /> {t("assign_leads")}</>}
                 </button>
               </div>
             </div>
@@ -859,16 +862,16 @@ const LeadContent = (): JSX.Element => {
                 <div className="bg-white/20 rounded-lg px-3 py-1.5 flex items-center gap-2">
                   <TbArrowsExchange className="text-white text-lg" />
                   <span className="text-white text-sm font-semibold">
-                    {selectedReassignIds.size} lead{selectedReassignIds.size > 1 ? "s" : ""} ready to reassign
+                    {selectedReassignIds.size} {t("lead_2")}{selectedReassignIds.size > 1 ? "s" : ""} {t("ready_to_reassign")}
                   </span>
                 </div>
                 <button onClick={clearReassignSelection} className="text-amber-100 group cursor-pointer hover:text-white text-xs underline underline-offset-2 flex items-center gap-1 transition-colors">
-                  <FaXmark className="text-xs group-hover:rotate-90" /> Clear
+                  <FaXmark className="text-xs group-hover:rotate-90" /> {t("clear")}
                 </button>
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex flex-col gap-0.5">
-                  {!selectedReassignUserId && <span className="text-amber-100 text-[11px] ml-1">← Pick the new assignee</span>}
+                  {!selectedReassignUserId && <span className="text-amber-100 text-[11px] ml-1">{t("pick_the_new_assignee")}</span>}
                   {/* <UserSelect
                     users={nonAdminUsers}
                     selectedUserId={selectedReassignUserId}
@@ -878,7 +881,7 @@ const LeadContent = (): JSX.Element => {
                     mode="single"
                     value={selectedReassignUserId}
                     onChange={setSelectedReassignUserId}
-                    placeholder="Search & select user..."
+                    placeholder={t("search_select_user")}
                     />
                 </div>
                 <button
@@ -886,14 +889,14 @@ const LeadContent = (): JSX.Element => {
                   disabled={!selectedReassignUserId || isReassigning || !hasPermission("lead:reassign")}
                   className="bg-white text-amber-600 hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed px-5 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all shadow-sm"
                 >
-                  {isReassigning ? <><Spinner color="text-amber-500" /> Reassigning...</> : <><TbArrowsExchange className="text-lg" /> Reassign Leads</>}
+                  {isReassigning ? <><Spinner color="text-amber-500" /> {t("reassigning")}</> : <><TbArrowsExchange className="text-lg" /> {t("reassign_leads")}</>}
                 </button>
                 <button
                   onClick={handleRevokeLeads}
                   disabled={!hasPermission("deal:reassign")}
                   className="bg-white text-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed px-5 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all shadow-sm"
                 >
-                  Revoke
+                  {t("revoke")}
                 </button>
               </div>
             </div>
@@ -917,8 +920,9 @@ const LeadContent = (): JSX.Element => {
                         </label>
                       </th>
                     )}
-                    {["Client Info", "Phone", "Project Type", "Source", "Status", "Data Tag", "Created Date", "Created By", "Engagement Status", "Actions"]
+                    {["client_info", "phone", "project_type", "source", "status", "data_tag", "created_date", "created_by", "engagement_status", "actions"]
                       .map((h) => {
+
                         const filterConfig = (h != 'Status') ? (options[h]) : (currentTab === TAB.ALL && options[h]);
 
                         return (
@@ -926,7 +930,7 @@ const LeadContent = (): JSX.Element => {
                             key={h}
                             className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide"
                           >
-                            {h}
+                            {t(h)}
                             {filterConfig && (
                               <>
                                 <br />
@@ -936,7 +940,7 @@ const LeadContent = (): JSX.Element => {
                                   }
                                   className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20 outline-none"
                                 >
-                                  <option value="">All</option>
+                                  <option value="">{t("all")}</option>
 
                                   {filterConfig.value.map((option) => (
                                     <option key={option} value={option}>
@@ -951,7 +955,7 @@ const LeadContent = (): JSX.Element => {
                                 (
                                   <>
                                     <br />
-                                    <input type="text" className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20 outline-none" placeholder="Search..." onChange={(e) => handleProjectType(e.target.value)} />
+                                    <input type="text" className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20 outline-none" placeholder={t("search_2")} onChange={(e) => handleProjectType(e.target.value)} />
                                   </>
                                 )
                               )
@@ -961,7 +965,7 @@ const LeadContent = (): JSX.Element => {
                                 (
                                   <>
                                     <br />
-                                    <input type="text" className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20 outline-none" placeholder="Search..." onChange={(e) => handleSource(e.target.value)} />
+                                    <input type="text" className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20 outline-none" placeholder={t("search_2")} onChange={(e) => handleSource(e.target.value)} />
                                   </>
                                 )
                               )
@@ -971,7 +975,7 @@ const LeadContent = (): JSX.Element => {
                                 (
                                   <>
                                     <br />
-                                    <input type="text" className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20 outline-none" placeholder="Search..." onChange={(e) => handleDataTag(e.target.value)} />
+                                    <input type="text" className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20 outline-none" placeholder={t("search_2")} onChange={(e) => handleDataTag(e.target.value)} />
                                   </>
                                 )
                               )
@@ -985,7 +989,7 @@ const LeadContent = (): JSX.Element => {
                                     onChange={(e) => setFilters(prev => ({ ...prev, engagementStatus: e.target.value }))}
                                     className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm outline-none"
                                   >
-                                    <option value="">All</option>
+                                    <option value="">{t("all")}</option>
                                     {Object.values(LeadEngagementStatus).map(s => (
                                       <option key={s} value={s}>
                                         {s.replace(/_/g, " ").charAt(0).toUpperCase() + s.replace(/_/g, " ").slice(1)}
@@ -1037,7 +1041,7 @@ const LeadContent = (): JSX.Element => {
                                 }
                                 className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm outline-none"
                               >
-                                <option value="">All</option>
+                                <option value="">{t("all")}</option>
 
                                 {filterConfig.value.map((option) => (
                                   <option key={option} value={option}>
@@ -1052,7 +1056,7 @@ const LeadContent = (): JSX.Element => {
                             (h == 'Project Type') && (
                               <>
                                 <br />
-                                <input type="text" className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20 outline-none " placeholder="Search..." onChange={(e) => handleProjectType(e.target.value)} />
+                                <input type="text" className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20 outline-none " placeholder={t("search_2")} onChange={(e) => handleProjectType(e.target.value)} />
                               </>
                             )
                           }
@@ -1060,7 +1064,7 @@ const LeadContent = (): JSX.Element => {
                             (h == 'Source') && (
                               <>
                                 <br />
-                                <input type="text" className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20 outline-none " placeholder="Search..." onChange={(e) => handleSource(e.target.value)} />
+                                <input type="text" className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20 outline-none " placeholder={t("search_2")} onChange={(e) => handleSource(e.target.value)} />
                               </>
                             )
                           }
@@ -1069,7 +1073,7 @@ const LeadContent = (): JSX.Element => {
                               (
                                 <>
                                   <br />
-                                  <input type="text" className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20 outline-none " placeholder="Search..." onChange={(e) => handleDataTag(e.target.value)} />
+                                  <input type="text" className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20 outline-none " placeholder={t("search_2")} onChange={(e) => handleDataTag(e.target.value)} />
                                 </>
                               )
                             )
@@ -1083,7 +1087,7 @@ const LeadContent = (): JSX.Element => {
                                   onChange={(e) => setFilters(prev => ({ ...prev, engagementStatus: e.target.value }))}
                                   className="field outline-none  bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm   "
                                 >
-                                  <option value="">All</option>
+                                  <option value="">{t("all")}</option>
                                   {Object.values(LeadEngagementStatus).map(s => (
                                     <option key={s} value={s}>
                                       {s.replace(/_/g, " ").charAt(0).toUpperCase() + s.replace(/_/g, " ").slice(1)}
@@ -1097,17 +1101,17 @@ const LeadContent = (): JSX.Element => {
                       );
                     })}
                     <th className="p-4 uppercase text-xs text-start text-amber-600 dark:text-amber-400 font-semibold tracking-wide">
-                      <span className="flex items-center gap-1.5"><RiUserSharedLine /> Assigned To</span>
+                      <span className="flex items-center gap-1.5"><RiUserSharedLine /> {t("assigned_to")}</span>
                       <br />
                       <UserSelect
                         mode="single"
                         value={assignFilter}
                         onChange={setAssignFilter}
-                        placeholder="Search & select user..."
+                        placeholder={t("search_select_user")}
                       />
                       {/* <input type="text" className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm " placeholder="Search assignee..." onChange={(e) => handleAssignSearch(e.target.value)} /> */}
                     </th>
-                    <th className="p-4 rounded-tr-xl uppercase text-xs text-start text-amber-600 dark:text-amber-400 font-semibold tracking-wide">Actions</th>
+                    <th className="p-4 rounded-tr-xl uppercase text-xs text-start text-amber-600 dark:text-amber-400 font-semibold tracking-wide">{t("actions")}</th>
                   </tr>
                 </thead>
                 <tbody>{renderAssignedRows()}</tbody>

@@ -39,6 +39,7 @@ import {
   IoChevronDownOutline,
   IoChevronUpOutline,
 } from "react-icons/io5";
+import { useTranslation } from "react-i18next";
 
 const CURRENCY_SYMBOLS: Record<QuotationCurrency, string> = {
   [QuotationCurrency.USD]: '$',
@@ -96,6 +97,7 @@ function Section({
 }
 
 const Page = () => {
+  const { t } = useTranslation();
   const { id } = useParams();
   const router = useRouter();
 
@@ -286,7 +288,7 @@ const Page = () => {
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="flex flex-col items-center gap-4">
             <div className="w-10 h-10 border-4 border-cyan-600 border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm text-gray-500 dark:text-gray-400">Loading quotation...</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t("loading_quotation")}</p>
           </div>
         </div>
       </div>
@@ -299,16 +301,16 @@ const Page = () => {
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <IoDocumentText className="w-20 h-20 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Quotation Not Found</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t("quotation_not_found")}</h2>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              The quotation you're trying to edit doesn't exist or has been removed.
+              {t("the_quotation_you're_trying_to_edit")}
             </p>
             <button
               onClick={() => router.back()}
               className="inline-flex items-center gap-2 px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl transition-colors"
             >
               <IoArrowBack className="w-5 h-5" />
-              Go Back
+              {t("go_back")}
             </button>
           </div>
         </div>
@@ -323,11 +325,11 @@ const Page = () => {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <IoDocumentText className="w-6 h-6 text-cyan-500" />
-            Update Quotation
+            {t("update_quotation")}
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Editing: <span className="font-mono font-semibold text-gray-700 dark:text-gray-300">{original.quoteId}</span>
-            &nbsp;·&nbsp; {original.currency} ({symbol})
+            {t("editing")} <span className="font-mono font-semibold text-gray-700 dark:text-gray-300">{original.quoteId}</span>
+            {t("nbsp_nbsp")} {original.currency} ({symbol})
           </p>
         </div>
         <button
@@ -354,9 +356,9 @@ const Page = () => {
           <div className="flex items-start gap-3">
             <IoAlertCircleOutline className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
             <div>
-              <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">Unsaved changes</p>
+              <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">{t("unsaved_changes")}</p>
               <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
-                {Object.keys(diffPayload).length} field{Object.keys(diffPayload).length > 1 ? 's' : ''} modified:{' '}
+                {Object.keys(diffPayload).length} {t("field")}{Object.keys(diffPayload).length > 1 ? 's' : ''} {t("modified_2")}{' '}
                 {Object.keys(diffPayload).join(', ')}
               </p>
             </div>
@@ -367,59 +369,59 @@ const Page = () => {
       <div className={`grid gap-5 ${showPreview ? 'grid-cols-1 xl:grid-cols-3' : 'grid-cols-1'}`}>
         <div className={showPreview ? 'xl:col-span-2' : ''}>
 
-          <Section title="Basic Information" icon={<IoInformationCircleOutline className="w-4 h-4 text-cyan-500" />}>
+          <Section title={t("basic_information")} icon={<IoInformationCircleOutline className="w-4 h-4 text-cyan-500" />}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
                 <Input
-                  label="Quotation Title"
+                  label={t("quotation_title")}
                   name="title"
                   value={formData.title ?? ''}
                   onChange={handleInput}
-                  placeholder="Enter quotation title"
+                  placeholder={t("enter_quotation_title")}
                   className="w-full"
                 />
               </div>
               <div className="md:col-span-2">
                 <Input
                   type="textarea"
-                  label="Description"
+                  label={t("description_2")}
                   name="description"
                   value={formData.description ?? ''}
                   onChange={handleInput}
-                  placeholder="Enter description..."
+                  placeholder={t("enter_description")}
                   className="w-full"
                 />
               </div>
             </div>
           </Section>
 
-          <Section title="Customer Information" icon={<IoPersonOutline className="w-4 h-4 text-cyan-500" />}>
-            <p className="text-xs text-gray-400 mb-4 -mt-1">Customer details are read-only and linked to the deal.</p>
+          <Section title={t("customer_information")} icon={<IoPersonOutline className="w-4 h-4 text-cyan-500" />}>
+            <p className="text-xs text-gray-400 mb-4 -mt-1">{t("customer_details_are_read_only_and")}</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Customer Name" name="customerName" value={original.customerName} disabled className="w-full" />
-              <Input label="Company Name" name="companyName" value={original.companyName ?? '—'} disabled className="w-full" />
-              <Input label="Email" name="customerEmail" type="email" value={original.customerEmail} disabled className="w-full" />
-              <Input label="Phone" name="customerPhone" type="tel" value={original.customerPhone ?? '—'} disabled className="w-full" />
+              <Input label={t("customer_name")} name="customerName" value={original.customerName} disabled className="w-full" />
+              <Input label={t("company_name")} name="companyName" value={original.companyName ?? '—'} disabled className="w-full" />
+              <Input label={t("email")} name="customerEmail" type="email" value={original.customerEmail} disabled className="w-full" />
+              <Input label={t("phone")} name="customerPhone" type="tel" value={original.customerPhone ?? '—'} disabled className="w-full" />
             </div>
           </Section>
 
-          <Section title="Line Items" icon={<IoListOutline className="w-4 h-4 text-cyan-500" />}>
+          <Section title={t("line_items")} icon={<IoListOutline className="w-4 h-4 text-cyan-500" />}>
             {(formData.lineItems ?? []).length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-6">No line items. Add items to auto-calculate subtotal.</p>
+              <p className="text-sm text-gray-400 text-center py-6">{t("no_line_items_add_items_to")}</p>
             ) : (
               (formData.lineItems ?? []).map((item, index) => (
                 <div key={index} className="grid grid-cols-12 gap-2 items-start bg-gray-50 dark:bg-gray-700/40 rounded-xl p-3 mb-2">
                   <div className="col-span-12 sm:col-span-4">
-                    <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Description *</label>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">{t("description")}</label>
                     <input
                       className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                      placeholder="Service or product"
+                      placeholder={t("service_or_product")}
                       value={item.description}
                       onChange={e => updateLineItem(index, 'description', e.target.value)}
                     />
                   </div>
                   <div className="col-span-4 sm:col-span-1">
-                    <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Qty</label>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">{t("qty")}</label>
                     <input type="number" min="0" step="0.01"
                       className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
                       value={item.quantity}
@@ -427,16 +429,16 @@ const Page = () => {
                     />
                   </div>
                   <div className="col-span-4 sm:col-span-1">
-                    <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Unit</label>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">{t("unit")}</label>
                     <input
                       className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                      placeholder="pcs"
+                      placeholder={t("pcs")}
                       value={item.unit ?? ''}
                       onChange={e => updateLineItem(index, 'unit', e.target.value)}
                     />
                   </div>
                   <div className="col-span-4 sm:col-span-2">
-                    <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Unit Price</label>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">{t("unit_price")}</label>
                     <div className="relative">
                       <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">{symbol}</span>
                       <input type="number" min="0" step="0.01"
@@ -447,7 +449,7 @@ const Page = () => {
                     </div>
                   </div>
                   <div className="col-span-4 sm:col-span-1">
-                    <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Disc %</label>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">{t("disc")}</label>
                     <input type="number" min="0" max="100" step="0.01" placeholder="0"
                       className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
                       value={item.discount ?? ''}
@@ -455,7 +457,7 @@ const Page = () => {
                     />
                   </div>
                   <div className="col-span-4 sm:col-span-1">
-                    <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Tax %</label>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">{t("tax")}</label>
                     <input type="number" min="0" max="100" step="0.01" placeholder="0"
                       className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
                       value={item.taxRate ?? ''}
@@ -463,7 +465,7 @@ const Page = () => {
                     />
                   </div>
                   <div className="col-span-4 sm:col-span-1">
-                    <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Total</label>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">{t("total_2")}</label>
                     <p className="text-sm font-bold text-gray-900 dark:text-white py-2 px-1">{fmt(item.total)}</p>
                   </div>
                   <div className="col-span-4 sm:col-span-1 flex items-end justify-end pb-1">
@@ -478,16 +480,16 @@ const Page = () => {
             <button type="button" onClick={addLineItem}
               className="mt-2 flex items-center gap-2 px-4 py-2 text-sm font-medium text-cyan-600 dark:text-cyan-400 border border-cyan-300 dark:border-cyan-700 rounded-xl hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-colors">
               <IoAddOutline className="w-4 h-4" />
-              Add Line Item
+              {t("add_line_item")}
             </button>
           </Section>
 
-          <Section title="Financial Details" icon={<IoCashOutline className="w-4 h-4 text-cyan-500" />}>
+          <Section title={t("financial_details")} icon={<IoCashOutline className="w-4 h-4 text-cyan-500" />}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="md:col-span-2 lg:col-span-3">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Subtotal *
-                  {hasLineItems && <span className="ml-2 text-xs font-normal text-gray-400">(auto-calculated)</span>}
+                  {t("subtotal_2")}
+                  {hasLineItems && <span className="ml-2 text-xs font-normal text-gray-400">{t("auto_calculated")}</span>}
                 </label>
                 <div className="relative max-w-xs">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">{symbol}</span>
@@ -517,62 +519,62 @@ const Page = () => {
               ))}
               <div className="md:col-span-2 lg:col-span-3">
                 <div className="flex items-center justify-between bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded-xl px-5 py-4">
-                  <span className="font-semibold text-gray-900 dark:text-white">Grand Total</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">{t("grand_total")}</span>
                   <span className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">{fmt(formData.total ?? 0)}</span>
                 </div>
               </div>
             </div>
           </Section>
 
-          <Section title="Validity Period" icon={<IoCalendarOutline className="w-4 h-4 text-cyan-500" />}>
+          <Section title={t("validity_period")} icon={<IoCalendarOutline className="w-4 h-4 text-cyan-500" />}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Issue Date *" name="issueDate" type="date" value={formData.issueDate ?? ''} onChange={handleInput} className="w-full" />
-              <Input label="Valid Until" name="valid" type="date" value={formData.valid ?? ''} onChange={handleInput} min={formData.issueDate} className="w-full" />
+              <Input label={t("issue_date")} name="issueDate" type="date" value={formData.issueDate ?? ''} onChange={handleInput} className="w-full" />
+              <Input label={t("valid_until")} name="valid" type="date" value={formData.valid ?? ''} onChange={handleInput} min={formData.issueDate} className="w-full" />
               {validityDays !== null && validityDays > 0 && (
                 <div className="md:col-span-2">
                   <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700/50 rounded-xl px-4 py-3">
                     <IoCalendarOutline className="w-4 h-4 text-cyan-500" />
-                    Valid for <span className="font-semibold text-gray-900 dark:text-white">{validityDays} days</span>
-                    &nbsp;— expires {formatDate(formData.valid ?? '')}
+                    {t("valid_for")} <span className="font-semibold text-gray-900 dark:text-white">{validityDays} {t("days")}</span>
+                    {t("nbsp_expires")} {formatDate(formData.valid ?? '')}
                   </div>
                 </div>
               )}
             </div>
           </Section>
 
-          <Section title="Payment Details" icon={<IoReceiptOutline className="w-4 h-4 text-cyan-500" />} defaultOpen={false}>
+          <Section title={t("payment_details")} icon={<IoReceiptOutline className="w-4 h-4 text-cyan-500" />} defaultOpen={false}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Payment Terms" name="paymentTerms" value={formData.paymentTerms ?? ''} onChange={handleInput} placeholder="e.g., Net 30" className="w-full" />
-              <Input label="Payment Method" name="paymentMethod" value={formData.paymentMethod ?? ''} onChange={handleInput} placeholder="e.g., Bank transfer" className="w-full" />
+              <Input label={t("payment_terms")} name="paymentTerms" value={formData.paymentTerms ?? ''} onChange={handleInput} placeholder={t("e_g_net_30")} className="w-full" />
+              <Input label={t("payment_method")} name="paymentMethod" value={formData.paymentMethod ?? ''} onChange={handleInput} placeholder={t("e_g_bank_transfer")} className="w-full" />
             </div>
           </Section>
 
-          <Section title="Notes & Terms" icon={<IoDocumentTextOutline className="w-4 h-4 text-cyan-500" />} defaultOpen={false}>
+          <Section title={t("notes_terms")} icon={<IoDocumentTextOutline className="w-4 h-4 text-cyan-500" />} defaultOpen={false}>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Customer Notes</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("customer_notes")}</label>
                 <textarea name="notes" rows={3} value={formData.notes ?? ''}
                   onChange={handleInput}
-                  placeholder="Notes visible to the customer..."
+                  placeholder={t("notes_visible_to_the_customer")}
                   className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Internal Notes
-                  <span className="ml-2 text-xs font-normal text-gray-400">(not visible to customer)</span>
+                  {t("internal_notes")}
+                  <span className="ml-2 text-xs font-normal text-gray-400">{t("not_visible_to_customer")}</span>
                 </label>
                 <textarea name="internalNotes" rows={3} value={formData.internalNotes ?? ''}
                   onChange={handleInput}
-                  placeholder="Internal notes for your team..."
+                  placeholder={t("internal_notes_for_your_team")}
                   className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Terms & Conditions</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("terms_conditions")}</label>
                 <textarea name="termsAndConditions" rows={4} value={formData.termsAndConditions ?? ''}
                   onChange={handleInput}
-                  placeholder="Standard terms and conditions..."
+                  placeholder={t("standard_terms_and_conditions")}
                   className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
                 />
               </div>
@@ -583,7 +585,7 @@ const Page = () => {
             <div className="flex flex-col sm:flex-row gap-3 justify-end">
               <button type="button" onClick={() => router.back()} disabled={loading}
                 className="px-5 py-2.5 rounded-xl text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50">
-                Cancel
+                {t("cancel")}
               </button>
               <button type="button" onClick={handleUpdate}
                 disabled={!hasChanges || loading || original.quotationStatus === QuotationStatus.DELETE}
@@ -601,7 +603,7 @@ const Page = () => {
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                   <IoEyeOutline className="w-4 h-4 text-cyan-500" />
-                  Live Preview
+                  {t("live_preview")}
                 </h2>
                 <button onClick={() => setShowPreview(false)}
                   className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors xl:hidden">
@@ -618,13 +620,13 @@ const Page = () => {
                 {hasChanges && (
                   <div className="mt-2 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
                     <IoAlertCircleOutline className="w-3.5 h-3.5" />
-                    Unsaved changes
+                    {t("unsaved_changes")}
                   </div>
                 )}
               </div>
 
               <div className="space-y-1.5">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Customer</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">{t("customer")}</p>
                 <p className="font-semibold text-sm text-gray-900 dark:text-white">{original.customerName}</p>
                 {original.companyName && (
                   <p className="text-xs text-gray-500 flex items-center gap-1"><IoBusinessOutline className="w-3.5 h-3.5" />{original.companyName}</p>
@@ -637,12 +639,12 @@ const Page = () => {
 
               <div className="space-y-1.5 pt-4 border-t border-gray-100 dark:border-gray-700">
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-400">Issue Date</span>
+                  <span className="text-gray-400">{t("issue_date_2")}</span>
                   <span className="text-gray-900 dark:text-white">{formatDate(formData.issueDate ?? '')}</span>
                 </div>
                 {formData.valid && (
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-400">Valid Until</span>
+                    <span className="text-gray-400">{t("valid_until")}</span>
                     <span className="text-gray-900 dark:text-white">{formatDate(formData.valid)}</span>
                   </div>
                 )}
@@ -650,7 +652,7 @@ const Page = () => {
 
               {hasLineItems && (
                 <div className="space-y-1.5 pt-4 border-t border-gray-100 dark:border-gray-700">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Items</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">{t("items")}</p>
                   {(formData.lineItems ?? []).map((item, i) => (
                     <div key={i} className="flex justify-between text-xs">
                       <span className="text-gray-600 dark:text-gray-300 truncate max-w-[60%]">
@@ -664,25 +666,25 @@ const Page = () => {
               )}
 
               <div className="space-y-1.5 pt-4 border-t border-gray-100 dark:border-gray-700">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Summary</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">{t("summary")}</p>
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-400">Subtotal</span>
+                  <span className="text-gray-400">{t("subtotal")}</span>
                   <span className="text-gray-900 dark:text-white">{fmt(formData.subTotal ?? 0)}</span>
                 </div>
                 {formData.discountAmount && (
                   <div className="flex justify-between text-xs">
-                    <span className="text-emerald-500">Discount</span>
+                    <span className="text-emerald-500">{t("discount")}</span>
                     <span className="text-emerald-500">-{fmt(formData.discountAmount)}</span>
                   </div>
                 )}
                 {formData.taxAmount && (
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-400">Tax</span>
+                    <span className="text-gray-400">{t("tax_2")}</span>
                     <span className="text-gray-900 dark:text-white">+{fmt(formData.taxAmount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
-                  <span className="text-sm font-bold text-gray-900 dark:text-white">Total</span>
+                  <span className="text-sm font-bold text-gray-900 dark:text-white">{t("total_2")}</span>
                   <span className="text-base font-bold text-cyan-600 dark:text-cyan-400">{fmt(formData.total ?? 0)}</span>
                 </div>
               </div>
@@ -693,7 +695,7 @@ const Page = () => {
                     <div className="flex items-start gap-2">
                       <IoCheckmarkCircle className="w-4 h-4 text-cyan-500 shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-xs font-semibold text-cyan-900 dark:text-cyan-100 mb-1">Modified:</p>
+                        <p className="text-xs font-semibold text-cyan-900 dark:text-cyan-100 mb-1">{t("modified")}</p>
                         <p className="text-xs text-cyan-700 dark:text-cyan-300">
                           {Object.keys(diffPayload).map(k => k.charAt(0).toUpperCase() + k.slice(1)).join(', ')}
                         </p>

@@ -4,6 +4,7 @@ import React, { JSX, useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
 import  {OtpService}  from "@/src/services/otp.service";
+import { useTranslation } from "react-i18next";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface OtpItem {
@@ -64,13 +65,14 @@ function OtpTypeBadge({ type }: { type: string }) {
 
 // ── Status Badge ──────────────────────────────────────────────────────────────
 function StatusBadge({ isUsed, expiresAt }: { isUsed: boolean; expiresAt: string }) {
+  const { t } = useTranslation();
   const isExpired = new Date(expiresAt) < new Date();
 
   if (isUsed) {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
         <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-        Used
+        {t("used")}
       </span>
     );
   }
@@ -78,20 +80,21 @@ function StatusBadge({ isUsed, expiresAt }: { isUsed: boolean; expiresAt: string
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400">
         <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-        Expired
+        {t("expired")}
       </span>
     );
   }
   return (
     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-      Active
+      {t("active")}
     </span>
   );
 }
 
 // ── OTP Reveal Cell ───────────────────────────────────────────────────────────
 function OtpReveal({ encryptedOtp }: { encryptedOtp: string }) {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const [countdown, setCountdown] = useState(3);
@@ -133,7 +136,7 @@ function OtpReveal({ encryptedOtp }: { encryptedOtp: string }) {
           <span
             className="text-[10px] font-bold text-rose-500 bg-rose-50 dark:bg-rose-900/30 px-2 py-0.5 rounded-full border border-rose-100 dark:border-rose-800 tabular-nums min-w-[44px] text-center"
           >
-            {countdown}s ⏱
+            {countdown}{t("s")}
           </span>
         </div>
       ) : (
@@ -146,7 +149,7 @@ function OtpReveal({ encryptedOtp }: { encryptedOtp: string }) {
             <ellipse cx="6.5" cy="6.5" rx="5.5" ry="3.5" stroke="currentColor" strokeWidth="1.4" />
             <circle cx="6.5" cy="6.5" r="1.8" fill="currentColor" />
           </svg>
-          Reveal
+          {t("reveal")}
         </button>
       )}
     </div>
@@ -168,6 +171,7 @@ function SkeletonRow({ cols }: { cols: number }) {
 
 // ── Expiry Countdown ──────────────────────────────────────────────────────────
 function ExpiryCell({ expiresAt }: { expiresAt: string }) {
+  const { t } = useTranslation();
   const expDate = new Date(expiresAt);
   const now = new Date();
   const isExpired = expDate < now;
@@ -192,11 +196,11 @@ function ExpiryCell({ expiresAt }: { expiresAt: string }) {
       </div>
       {!isExpired && diffMs > 0 && (
         <div className="text-[10px] text-emerald-500 font-semibold">
-          Expires in {diffMin}m {diffSec}s
+          {t("expires_in")} {diffMin}m {diffSec}s
         </div>
       )}
       {isExpired && (
-        <div className="text-[10px] text-rose-400 font-semibold">Expired</div>
+        <div className="text-[10px] text-rose-400 font-semibold">{t("expired")}</div>
       )}
     </div>
   );
@@ -204,6 +208,7 @@ function ExpiryCell({ expiresAt }: { expiresAt: string }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 const OtpListPage = (): JSX.Element => {
+  const { t } = useTranslation();
   const [otpData, setOtpData] = useState<OtpItem[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageLimit] = useState(20);
@@ -264,11 +269,11 @@ const OtpListPage = (): JSX.Element => {
             <div className="flex items-center gap-2.5 mb-1">
               <span className="text-2xl">🔑</span>
               <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-                OTP Management
+                {t("otp_management")}
               </h1>
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Monitor and inspect all one-time passwords issued in the system.
+              {t("monitor_and_inspect_all_one_time")}
             </p>
           </div>
           <button
@@ -280,7 +285,7 @@ const OtpListPage = (): JSX.Element => {
               <path d="M13 7A6 6 0 1 1 7 1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
               <path d="M10 1h3v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            Refresh
+            {t("refresh")}
           </button>
         </div>
 
@@ -311,7 +316,7 @@ const OtpListPage = (): JSX.Element => {
             <input
               type="text"
               onChange={e => handleSearch(e.target.value)}
-              placeholder="Enter exact email to search…"
+              placeholder={t("enter_exact_email_to_search")}
               className="pl-9 pr-4 py-2.5 w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition"
             />
           </div>
@@ -322,11 +327,11 @@ const OtpListPage = (): JSX.Element => {
             onChange={e => { setFilterType(e.target.value); setCurrentPage(1); }}
             className="px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition"
           >
-            <option value="">All Types</option>
-            <option value="login">🔐 Login</option>
-            <option value="register">📝 Register</option>
-            <option value="reset">🔄 Reset</option>
-            <option value="verify">✅ Verify</option>
+            <option value="">{t("all_types")}</option>
+            <option value="login">{t("login_2")}</option>
+            <option value="register">{t("register_2")}</option>
+            <option value="reset">{t("reset_2")}</option>
+            <option value="verify">{t("verify_2")}</option>
           </select>
 
           {/* Status filter */}
@@ -335,10 +340,10 @@ const OtpListPage = (): JSX.Element => {
             onChange={e => { setFilterStatus(e.target.value); setCurrentPage(1); }}
             className="px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition"
           >
-            <option value="">All Statuses</option>
-            <option value="active">🟢 Active</option>
-            <option value="expired">⏰ Expired</option>
-            <option value="used">✅ Used</option>
+            <option value="">{t("all_statuses")}</option>
+            <option value="active">{t("active_2")}</option>
+            <option value="expired">{t("expired_2")}</option>
+            <option value="used">{t("used_2")}</option>
           </select>
 
           {hasFilters && (
@@ -352,7 +357,7 @@ const OtpListPage = (): JSX.Element => {
               }}
               className="px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-1.5"
             >
-              <span>✕</span> Clear
+              <span>✕</span> {t("clear")}
             </button>
           )}
 
@@ -360,7 +365,7 @@ const OtpListPage = (): JSX.Element => {
           <div className="ml-auto flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800">
             <span className="text-sm">💡</span>
             <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">
-              Enter the accurate &amp; complete email address to search
+              {t("enter_the_accurate_amp_complete_email_address_to_search")}
             </span>
           </div>
         </div>
@@ -397,10 +402,10 @@ const OtpListPage = (): JSX.Element => {
                   <tr>
                     <td colSpan={colCount} className="text-center py-20 text-gray-400 dark:text-gray-500">
                       <div className="text-5xl mb-3">📭</div>
-                      <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">No OTPs found</p>
+                      <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">{t("no_otps_found")}</p>
                       {hasFilters && (
                         <p className="text-xs text-gray-400 mt-1">
-                          Try clearing your filters — remember to use the exact &amp; complete email
+                          {t("try_clearing_your_filters_remember_to_use_the_exact_amp")}
                         </p>
                       )}
                     </td>
@@ -482,9 +487,9 @@ const OtpListPage = (): JSX.Element => {
           {/* ── Pagination ── */}
           <div className="px-5 py-3.5 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
             <span className="text-xs text-gray-400 dark:text-gray-500">
-              Showing page{" "}
+              {t("showing_page")}{" "}
               <span className="font-semibold text-gray-600 dark:text-gray-300">{currentPage}</span>
-              {" "}of{" "}
+              {" "}{t("of")}{" "}
               <span className="font-semibold text-gray-600 dark:text-gray-300">{totalPages}</span>
             </span>
 
@@ -495,7 +500,7 @@ const OtpListPage = (): JSX.Element => {
                 onClick={() => setCurrentPage(p => p - 1)}
                 className="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
               >
-                ← Prev
+                {t("prev")}
               </button>
               <span className="text-xs text-gray-500 dark:text-gray-400 font-medium px-1">
                 {currentPage}
@@ -506,7 +511,7 @@ const OtpListPage = (): JSX.Element => {
                 onClick={() => setCurrentPage(p => p + 1)}
                 className="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
               >
-                Next →
+                {t("next")}
               </button>
             </div>
           </div>

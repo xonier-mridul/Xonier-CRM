@@ -26,8 +26,10 @@ import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import ErrorComponent from "@/src/components/ui/ErrorComponent";
 import SuccessComponent from "@/src/components/ui/SuccessComponent";
 import Skeleton from "react-loading-skeleton";
+import { useTranslation } from "react-i18next";
 
 const page = (): JSX.Element => {
+  const { t } = useTranslation();
   const [isPopupShow, setIsPopupShow] = useState<boolean>(false);
 
  
@@ -174,7 +176,7 @@ const page = (): JSX.Element => {
             flex flex-col gap-5 shadow-xl"
           >
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-bold dark:text-white">Create Team Category</h2>
+              <h2 className="text-xl font-bold dark:text-white">{t("create_team_category")}</h2>
               <button onClick={() => setIsPopupShow(false)}>
                 <FaXmark className="text-xl text-gray-500 hover:text-red-500 cursor-pointer hover:rotate-90 transition-all duration-300" />
               </button>
@@ -182,15 +184,15 @@ const page = (): JSX.Element => {
 
             <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4">
               <Input
-                label="Category name"
+                label={t("category_name")}
                 name="name"
-                placeholder="e.g. Development team"
+                placeholder={t("e_g_development_team")}
                 value={formData.name}
                 onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                 required
               />
               <div className="flex flex-col gap-1 w-full">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-200 capitalize">Description</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-200 capitalize">{t("description_2")}</label>
                 <textarea
                   name="description"
                   id="description"
@@ -202,11 +204,11 @@ const page = (): JSX.Element => {
                   rows={5}
                   value={formData.description}
                   onChange={(e) => handleChange(e)}
-                  placeholder="Write your description..."
+                  placeholder={t("write_your_description")}
                 />
               </div>
               {err && <div className="flex items-center justify-end w-full"><p className="text-red-500">{err}</p></div>}
-              <FormButton isLoading={loading} disabled={formData.name === "" || formData.description === ""}>Upload</FormButton>
+              <FormButton isLoading={loading} disabled={formData.name === "" || formData.description === ""}>{t("upload")}</FormButton>
             </form>
           </div>
         </>
@@ -270,7 +272,7 @@ const page = (): JSX.Element => {
                 {viewData.isDefault && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-yellow-400/20 text-yellow-100 border border-yellow-300/30">
                     <span className="w-1.5 h-1.5 rounded-full bg-yellow-300" />
-                    Default
+                    {t("default")}
                   </span>
                 )}
               </div>
@@ -279,7 +281,7 @@ const page = (): JSX.Element => {
             <div className="relative -mt-5 mx-4 bg-white dark:bg-gray-700 rounded-xl shadow-md border border-slate-100 dark:border-slate-600 p-5 grid grid-cols-2 gap-4">
 
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-slate-50 dark:bg-gray-600/50">
-                <span className="text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-300 font-semibold">Created At</span>
+                <span className="text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-300 font-semibold">{t("created_at")}</span>
                 <span className="text-slate-700 dark:text-white text-sm font-medium">
                   {new Date(viewData.createdAt).toLocaleDateString("en-IN", {
                     day: "2-digit",
@@ -292,7 +294,7 @@ const page = (): JSX.Element => {
 
 
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-slate-50 dark:bg-gray-600/50">
-                <span className="text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-300 font-semibold">Updated At</span>
+                <span className="text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-300 font-semibold">{t("updated_at")}</span>
                 <span className="text-slate-700 dark:text-white text-sm font-medium">
                   {viewData.updatedAt
                     ? new Date(viewData.updatedAt).toLocaleDateString("en-IN", {
@@ -309,7 +311,7 @@ const page = (): JSX.Element => {
 
             {viewData.description && (
               <div className="mx-4 mt-3 p-4 rounded-xl bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-100 dark:border-cyan-800/30">
-                <span className="text-[10px] uppercase tracking-widest text-cyan-400 dark:text-cyan-300 font-semibold block mb-2">Description</span>
+                <span className="text-[10px] uppercase tracking-widest text-cyan-400 dark:text-cyan-300 font-semibold block mb-2">{t("description_2")}</span>
                 <p className="text-slate-600 dark:text-slate-200 text-sm leading-relaxed first-letter:uppercase">
                   {viewData.description}
                 </p>
@@ -323,7 +325,7 @@ const page = (): JSX.Element => {
                 className="px-5 py-2.5 rounded-lg text-sm font-medium text-slate-500 dark:text-slate-300
                   hover:bg-slate-100 dark:hover:bg-slate-600 transition-all duration-150 border border-slate-200 dark:border-slate-600"
               >
-                Close
+                {t("close")}
               </button>
               <Link
                 href={`/teams/categories/update/${viewData.id}`}
@@ -332,7 +334,7 @@ const page = (): JSX.Element => {
                   text-white flex items-center gap-2 transition-all duration-150 shadow-sm shadow-cyan-200 dark:shadow-cyan-900/30"
               >
                 <MdOutlineEdit className="text-base" />
-                Edit Category
+                {t("edit_category")}
               </Link>
             </div>
           </div>
@@ -345,10 +347,10 @@ const page = (): JSX.Element => {
           <div className="flex items-center gap-12 justify-between">
             <div className="flex flex-col gap-2">
               <h2 className="text-xl font-bold dark:text-white text-slate-900 capitalize">
-                All Team categories
+                {t("all_team_categories")}
               </h2>
               <p className="text-gray-500 dark:text-gray-400">
-                Create, edit or remove team categories.
+                {t("create_edit_or_remove_team_categories")}
               </p>
             </div>
             <div className="flex items-center gap-6">
@@ -364,18 +366,18 @@ const page = (): JSX.Element => {
               </select>
               <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 gap-1.5 rounded-lg border-[1px] border-slate-900/10 flex items-center">
                 <IoIosSearch className="text-xl" />
-                <input type="text" placeholder="search by name..."  onChange={(e)=>{setSearch(e.target.value)}} className="border-none bg-transparent outline-none text-sm font-medium text-slate-900 dark:text-white w-full"/>
+                <input type="text" placeholder={t("search_by_name_2")}  onChange={(e)=>{setSearch(e.target.value)}} className="border-none bg-transparent outline-none text-sm font-medium text-slate-900 dark:text-white w-full"/>
               </div>
               {hasPermission(PERMISSIONS.createTeamCategory) ? (
                 <button
                   onClick={() => setIsPopupShow(true)}
                   className="bg-cyan-600 hover:bg-cyan-700 text-white px-5 py-2 rounded-md flex items-center gap-2 cursor-pointer"
                 >
-                  <FiUserPlus /> Create Category
+                  <FiUserPlus /> {t("create_category")}
                 </button>
               ) : (
                 <span className="bg-cyan-400 opacity-89 cursor-not-allowed text-white px-5 py-2 rounded-md flex items-center gap-2">
-                  <FiUserPlus /> Create Category
+                  <FiUserPlus /> {t("create_category")}
                 </span>
               )}
             </div>
@@ -385,12 +387,12 @@ const page = (): JSX.Element => {
           <table className="w-full rounded-xl overflow-hidden">
             <thead>
               <tr className="w-full border-b-2 border-zinc-300 dark:border-zinc-400  bg-slate-200 dark:bg-gray-800">
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide">S.No.</th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide">Name</th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide">Description</th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide">Created At</th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide">Status</th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide">Actions</th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide">{t("s_no")}</th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide">{t("name")}</th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide">{t("description")}</th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide">{t("created_at")}</th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide">{t("status")}</th>
+                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide">{t("actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -458,7 +460,7 @@ const page = (): JSX.Element => {
                   })
                 ) : (
                   <tr className="text-center">
-                    <td colSpan={6} className="p-4">User data not found</td>
+                    <td colSpan={6} className="p-4">{t("user_data_not_found")}</td>
                   </tr>
                 )
               ) : (

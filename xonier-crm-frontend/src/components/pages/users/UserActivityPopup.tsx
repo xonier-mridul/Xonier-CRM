@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from "react";
 import { Activity } from "@/src/types/action/action.types";
 import { ACTIVITY_ACTION, ACTIVITY_ENTITY_TYPE } from "@/src/constants/enum";
 import { InfoCard } from "../../ui/LeadComponent";
+import { useTranslation } from "react-i18next";
 
 interface ActivityDetailPopupProps {
   activity: Activity | null;
@@ -192,6 +193,7 @@ const ActivityDetailPopup: React.FC<ActivityDetailPopupProps> = ({
   activity,
   onClose,
 }) => {
+  const { t } = useTranslation();
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -261,7 +263,7 @@ const ActivityDetailPopup: React.FC<ActivityDetailPopupProps> = ({
             {/* Close button */}
             <button
               onClick={onClose}
-              aria-label="Close"
+              aria-label={t("close")}
               className="ml-3 mt-0.5 p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -275,7 +277,7 @@ const ActivityDetailPopup: React.FC<ActivityDetailPopupProps> = ({
 
             {/* Description */}
             {activity.description && (
-              <InfoCard title="Description">
+              <InfoCard title={t("description_2")}>
                 <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
                   {activity.description}
                 </p>
@@ -284,25 +286,25 @@ const ActivityDetailPopup: React.FC<ActivityDetailPopupProps> = ({
 
             {/* Details grid */}
             <div className="grid grid-cols-2 gap-3">
-              <InfoCard title="Performed By">
+              <InfoCard title={t("performed_by")}>
                 <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
                   {getUserLabel(activity.userId)}
                 </p>
               </InfoCard>
 
-              <InfoCard title="Entity ID">
+              <InfoCard title={t("entity_id")}>
                 <p className="text-sm font-mono text-gray-700 dark:text-gray-300 truncate">
                   {activity.entityId ?? "—"}
                 </p>
               </InfoCard>
 
-              <InfoCard title="Perform Score">
+              <InfoCard title={t("perform_score")}>
                 <p className="text-sm font-mono text-gray-700 dark:text-gray-300">
                   {activity.perform}
                 </p>
               </InfoCard>
 
-              <InfoCard title="Created At">
+              <InfoCard title={t("created_at")}>
                 <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
                   {formatDate(activity.createdAt)}
                 </p>
@@ -310,7 +312,7 @@ const ActivityDetailPopup: React.FC<ActivityDetailPopupProps> = ({
             </div>
 
             {/* Activity ID */}
-            <InfoCard title="Activity ID">
+            <InfoCard title={t("activity_id")}>
               <p className="text-xs font-mono text-gray-500 dark:text-gray-400 break-all">
                 {activity.id}
               </p>
@@ -318,7 +320,7 @@ const ActivityDetailPopup: React.FC<ActivityDetailPopupProps> = ({
 
             {/* Metadata */}
             {metaEntries.length > 0 && (
-              <InfoCard title="Metadata">
+              <InfoCard title={t("metadata")}>
                 <div className="divide-y divide-gray-100 dark:divide-gray-600">
                   {metaEntries.map(([key, val]) => (
                     <div

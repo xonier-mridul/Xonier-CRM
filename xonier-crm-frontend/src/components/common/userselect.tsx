@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { User } from "@/src/types";
 import { AuthService } from "@/src/services/auth.service";
+import { useTranslation } from "react-i18next";
 
 
 
@@ -55,6 +56,7 @@ function Spinner() {
 // ─── UserSelect ───────────────────────────────────────────────────────────────
 
 const UserSelect: React.FC<UserSelectProps> = (props) => {
+  const { t } = useTranslation();
   const {
     showList = false,
     placeholder = "Search users…",
@@ -250,7 +252,7 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
           >
             <div className="flex items-center gap-2 min-w-0">
        
-              <span className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 text-[10px] font-bold flex items-center justify-center flex-shrink-0 uppercase">
+              <span className="w-6 h-6 rounded-full bg-cyan-100 dark:bg-cyan-900/50 text-cyan-600 dark:text-cyan-300 text-[10px] font-bold flex items-center justify-center flex-shrink-0 uppercase">
                 {user.firstName?.[0]}{user.lastName?.[0] ?? ""}
               </span>
               <span className="truncate">
@@ -273,21 +275,21 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
       {loading && (
         <div className="flex items-center justify-center gap-2 py-2">
           <Spinner />
-          <span className="text-xs text-gray-400">Loading more…</span>
+          <span className="text-xs text-gray-400">{t("loading_more_2")}</span>
         </div>
       )}
 
       {/* End of list */}
       {!hasMore && !loading && users.length > 0 && (
         <div className="text-center text-xs text-gray-400 dark:text-gray-500 py-1.5 border-t border-gray-100 dark:border-gray-700 mt-1">
-          No more users
+          {t("no_more_users")}
         </div>
       )}
 
       {/* Empty */}
       {!loading && users.length === 0 && (
         <div className="flex items-center justify-center py-3 text-sm text-gray-400 dark:text-gray-500">
-          No users found
+          {t("no_users_found")}
         </div>
       )}
     </div>
@@ -302,14 +304,14 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
         return (
           <span
             key={id}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-700"
           >
             👤 {id === currentUserId ? "You" : label}
             {!disabled && (
               <button
                 type="button"
                 onClick={() => deselect(id)}
-                className="text-indigo-300 hover:text-red-500 dark:hover:text-red-400 transition leading-none"
+                className="text-cyan-300 hover:text-red-500 dark:hover:text-red-400 transition leading-none"
               >
                 ×
               </button>
@@ -327,15 +329,15 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
 
        
         {isSingle && props.value && userMap[props.value] && (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700">
-            <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-300">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-cyan-50 dark:bg-cyan-900/30 border border-cyan-200 dark:border-cyan-700">
+            <span className="text-xs font-semibold text-cyan-600 dark:text-cyan-300">
               👤 {userMap[props.value] ? userName(userMap[props.value]) : props.value}
             </span>
             {!disabled && (
               <button
                 type="button"
                 onClick={() => deselect(props.value)}
-                className="ml-auto text-indigo-300 hover:text-red-500 transition text-sm leading-none"
+                className="ml-auto text-cyan-300 hover:text-red-500 transition text-sm leading-none"
               >
                 ×
               </button>
@@ -391,7 +393,7 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
               onClick={assignToMe}
               className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 cursor-pointer border-b border-gray-100 dark:border-gray-700 transition"
             >
-              ⚡ Assign to Me
+              {t("assign_to_me")}
             </div>
           )}
           {UserRows}

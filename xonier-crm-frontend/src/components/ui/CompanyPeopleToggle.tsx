@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 type ToggleValue = "company" | "people";
 
@@ -12,6 +13,7 @@ const CompanyPeopleToggle: React.FC<CompanyPeopleToggleProps> = ({
   value = "company",
   onChange,
 }) => {
+  const { t } = useTranslation();
 
   const toggle = () => {
     const newType: ToggleValue = value === "company" ? "people" : "company";
@@ -39,7 +41,7 @@ const CompanyPeopleToggle: React.FC<CompanyPeopleToggleProps> = ({
               : "text-white dark:text-black"
           }`}
         >
-          Company
+          {t("company")}
         </span>
 
         <span
@@ -49,7 +51,7 @@ const CompanyPeopleToggle: React.FC<CompanyPeopleToggleProps> = ({
               : "text-white dark:text-black"
           }`}
         >
-          People
+          {t("people")}
         </span>
       </div>
     </div>

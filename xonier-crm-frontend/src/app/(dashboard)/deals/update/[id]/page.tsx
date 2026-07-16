@@ -36,8 +36,10 @@ import Skeleton from "react-loading-skeleton";
 import { toast } from "react-toastify";
 import Select from "@/src/components/ui/Select";
 import { IoChevronBack } from "react-icons/io5";
+import { useTranslation } from "react-i18next";
 
 const page = (): JSX.Element => {
+  const { t } = useTranslation();
   const [err, setErr] = useState<string | string[]>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [fieldDataLoading, setFieldDataLoading] = useState<boolean>(false);
@@ -227,7 +229,7 @@ const page = (): JSX.Element => {
           <MdOutlineFormatIndentIncrease className="text-cyan-500" />
 
           <h2 className="text-slate-900 dark:text-white font-semibold text-lg tracking-wide ">
-            All Form Fields
+            {t("all_form_fields")}
           </h2>
         </div>
         <ul className="flex flex-col gap-3 px-4 py-2.5 min-h-[70vh] overflow-y-scroll custom-scrollbar">
@@ -311,7 +313,7 @@ const page = (): JSX.Element => {
           <div className="flex flex-col gap-1">
             <h2 className="text-slate-900 dark:text-white font-semibold text-2xl tracking-wide ">
               {" "}
-              Update Deal
+              {t("update_deal")}
             </h2>
           </div>
         </div>
@@ -335,8 +337,8 @@ const page = (): JSX.Element => {
       <div className="ml-92 relative mt-18 flex flex-col gap-3 p-8">
         <div className="w-full flex items-center justify-between mb-4">
             <div className="flex items-start flex-col gap-1">
-            <h2 className="text-cyan-500 capitalize font-medium">Lead Name: {isLoading ? <Skeleton height={22} width={100} borderRadius={10} className="animate-pulse"/> : dealData ? <span>{dealData.dealName}</span> : "not found"} </h2>
-            {isLoading ? <Skeleton height={18} width={190} borderRadius={8} className="animate-pulse"/>  : dealData && <span className="text-sm cursor-copy text-slate-500 dark:hover:text-cyan-300 hover:text-cyan-600" onClick={()=>handleCopy(dealData?.deal_id)}> Lead Id: {dealData?.deal_id}</span>}
+            <h2 className="text-cyan-500 capitalize font-medium">{t("lead_name")} {isLoading ? <Skeleton height={22} width={100} borderRadius={10} className="animate-pulse"/> : dealData ? <span>{dealData.dealName}</span> : "not found"} </h2>
+            {isLoading ? <Skeleton height={18} width={190} borderRadius={8} className="animate-pulse"/>  : dealData && <span className="text-sm cursor-copy text-slate-500 dark:hover:text-cyan-300 hover:text-cyan-600" onClick={()=>handleCopy(dealData?.deal_id)}> {t("lead_id_2")} {dealData?.deal_id}</span>}
             </div>
         </div>
         {err && <ErrorComponent error={err} />}
@@ -348,12 +350,12 @@ const page = (): JSX.Element => {
               <div className="flex items-center flex-col justify-center col-span-2 py-5">
                 <Image
                   src={"/images/Cry.gif"}
-                  alt="cry img"
+                  alt={t("cry_img")}
                   height={200}
                   width={200}
                 />
                 <p className="">
-                  No form fields found, please select fields first
+                  {t("no_form_fields_found_please_select")}
                 </p>
               </div>
             ) : (
@@ -498,7 +500,7 @@ const page = (): JSX.Element => {
               transition-colors duration-200"
               onClick={() => router.back()}
             >
-              <IoChevronBack /> Back
+              <IoChevronBack /> {t("back")}
             </button>
           </div>
         </div>

@@ -6,6 +6,7 @@ import { EmailLog } from "@/src/types/communication/mail.types";
 import EmailService from "@/src/services/communication/mail.service";
 import {Mail, User, Clock, CheckCircle, AlertCircle, FileText, Send, RefreshCw, Eye, MousePointer, Tag, Layers, LayoutTemplate, AtSign, Hash, Info} from "lucide-react";
 import { MailX } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 // ─── Status config ────────────────────────────────────────────────────────────
 const STATUS_STYLE: Record<string, { bg: string; text: string; dot: string }> = {
@@ -27,6 +28,7 @@ const fmt = (val: string | null | undefined) => {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function Page() {
+  const { t } = useTranslation();
   const params = useParams();
   const id = params.id;
 
@@ -71,15 +73,15 @@ export default function Page() {
           <div className="w-14 h-14 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <MailX size={26} className="text-red-500" />
           </div>
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">Email Log Not Found</h2>
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">{t("email_log_not_found")}</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-            This email log doesn't exist or may have been removed.
+            {t("this_email_log_doesn't_exist_or")}
           </p>
           <a
             href="/emailManagement/outbox"
             className="inline-block px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition"
           >
-            Go Back to Outbox
+            {t("go_back_to_outbox")}
           </a>
         </div>
       </div>
@@ -95,7 +97,7 @@ export default function Page() {
       <div className="bg-white dark:bg-gray-700 rounded-xl border border-gray-100 dark:border-gray-600 p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Email Log Details</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t("email_log_details")}</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
               {data.subject}
             </p>
@@ -110,18 +112,18 @@ export default function Page() {
 
         {/* Quick stats row */}
         <div className="mt-5 pt-5 border-t border-gray-100 dark:border-gray-600 grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <StatPill icon={<Eye size={14} />} label="Opens" value={data.opened_count ?? 0} />
-          <StatPill icon={<MousePointer size={14} />} label="Clicks" value={data.clicked_count ?? 0} />
-          <StatPill icon={<RefreshCw size={14} />} label="Retries" value={data.retry_count ?? 0} />
-          <StatPill icon={<Send size={14} />} label="Provider" value={data.provider ?? "—"} />
+          <StatPill icon={<Eye size={14} />} label={t("opens")} value={data.opened_count ?? 0} />
+          <StatPill icon={<MousePointer size={14} />} label={t("clicks")} value={data.clicked_count ?? 0} />
+          <StatPill icon={<RefreshCw size={14} />} label={t("retries")} value={data.retry_count ?? 0} />
+          <StatPill icon={<Send size={14} />} label={t("provider")} value={data.provider ?? "—"} />
         </div>
       </div>
 
       {/* ── Delivery Info ── */}
-      <Section title="Delivery Information" icon={<Send size={16} />}>
+      <Section title={t("delivery_information")} icon={<Send size={16} />}>
         <div className="grid md:grid-cols-2 gap-4">
-          <InfoCard icon={<Mail size={16} />} label="To" value={data.to_emails?.join(", ")} />
-          <InfoCard icon={<AtSign size={16} />} label="From" value={`${data.from_name ?? ""} <${data.from_email}>`} />
+          <InfoCard icon={<Mail size={16} />} label={t("to_2")} value={data.to_emails?.join(", ")} />
+          <InfoCard icon={<AtSign size={16} />} label={t("from")} value={`${data.from_name ?? ""} <${data.from_email}>`} />
           {data.cc_emails?.length > 0 && (
             <InfoCard icon={<Mail size={16} />} label="CC" value={data.cc_emails.join(", ")} />
           )}
@@ -129,32 +131,32 @@ export default function Page() {
             <InfoCard icon={<Mail size={16} />} label="BCC" value={data.bcc_emails.join(", ")} />
           )}
           {data.reply_to && (
-            <InfoCard icon={<Mail size={16} />} label="Reply To" value={data.reply_to} />
+            <InfoCard icon={<Mail size={16} />} label={t("reply_to")} value={data.reply_to} />
           )}
-          <InfoCard icon={<FileText size={16} />} label="Subject" value={data.subject} />
-          <InfoCard icon={<Hash size={16} />} label="Provider Message ID" value={data.provider_message_id} />
+          <InfoCard icon={<FileText size={16} />} label={t("subject")} value={data.subject} />
+          <InfoCard icon={<Hash size={16} />} label={t("provider_message_id")} value={data.provider_message_id} />
         </div>
       </Section>
 
       {/* ── Timeline ── */}
-      <Section title="Timeline" icon={<Clock size={16} />}>
+      <Section title={t("timeline")} icon={<Clock size={16} />}>
         <div className="grid md:grid-cols-2 gap-4">
-          <InfoCard icon={<Clock size={16} />} label="Created At" value={fmt(data.created_at)} />
-          <InfoCard icon={<Send size={16} />} label="Sent At" value={fmt(data.sent_at)} />
-          <InfoCard icon={<CheckCircle size={16} />} label="Delivered At" value={fmt(data.delivered_at)} />
-          <InfoCard icon={<Eye size={16} />} label="Opened At" value={fmt(data.opened_at)} />
-          <InfoCard icon={<MousePointer size={16} />} label="Clicked At" value={fmt(data.clicked_at)} />
-          <InfoCard icon={<AlertCircle size={16} />} label="Failed At" value={fmt(data.failed_at)} />
+          <InfoCard icon={<Clock size={16} />} label={t("created_at")} value={fmt(data.created_at)} />
+          <InfoCard icon={<Send size={16} />} label={t("sent_at")} value={fmt(data.sent_at)} />
+          <InfoCard icon={<CheckCircle size={16} />} label={t("delivered_at")} value={fmt(data.delivered_at)} />
+          <InfoCard icon={<Eye size={16} />} label={t("opened_at")} value={fmt(data.opened_at)} />
+          <InfoCard icon={<MousePointer size={16} />} label={t("clicked_at")} value={fmt(data.clicked_at)} />
+          <InfoCard icon={<AlertCircle size={16} />} label={t("failed_at")} value={fmt(data.failed_at)} />
         </div>
       </Section>
 
       {/* ── Sent By ── */}
       {data.sent_by && (
-        <Section title="Sent By" icon={<User size={16} />}>
+        <Section title={t("sent_by")} icon={<User size={16} />}>
           <div className="grid md:grid-cols-2 gap-4">
             <InfoCard
               icon={<User size={16} />}
-              label="Name"
+              label={t("name_2")}
               value={`${data.sent_by.firstName} ${data.sent_by.lastName}`}
             />
            
@@ -164,16 +166,16 @@ export default function Page() {
 
       {/* ── Template ── */}
       {data.template && (
-        <Section title="Template Used" icon={<LayoutTemplate size={16} />}>
+        <Section title={t("template_used")} icon={<LayoutTemplate size={16} />}>
           <div className="grid md:grid-cols-2 gap-4">
-            <InfoCard icon={<LayoutTemplate size={16} />} label="Template Name" value={data.template.name} />
-            <InfoCard icon={<Tag size={16} />} label="Category" value={data.template.category} />
-            <InfoCard icon={<Info size={16} />} label="Status" value={data.template.status} />
-            <InfoCard icon={<Hash size={16} />} label="Usage Count" value={String(data.template.usage_count ?? 0)} />
+            <InfoCard icon={<LayoutTemplate size={16} />} label={t("template_name")} value={data.template.name} />
+            <InfoCard icon={<Tag size={16} />} label={t("category")} value={data.template.category} />
+            <InfoCard icon={<Info size={16} />} label={t("status")} value={data.template.status} />
+            <InfoCard icon={<Hash size={16} />} label={t("usage_count")} value={String(data.template.usage_count ?? 0)} />
             {data.template.tags?.length > 0 && (
               <div className="md:col-span-2 bg-white dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl p-4 shadow-sm">
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1.5">
-                  <Tag size={12} /> Tags
+                  <Tag size={12} /> {t("tags")}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {data.template.tags.map((tag: string, i: number) => (
@@ -190,7 +192,7 @@ export default function Page() {
             {data.template.description && (
               <div className="md:col-span-2 bg-white dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl p-4 shadow-sm">
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-1.5">
-                  <FileText size={12} /> Description
+                  <FileText size={12} /> {t("description_2")}
                 </p>
                 <p className="text-sm text-gray-800 dark:text-white">{data.template.description}</p>
               </div>
@@ -201,7 +203,7 @@ export default function Page() {
 
       {/* ── Variables Used ── */}
       {data.variables_used && Object.keys(data.variables_used).length > 0 && (
-        <Section title="Variables Used" icon={<Layers size={16} />}>
+        <Section title={t("variables_used")} icon={<Layers size={16} />}>
           <div className="grid md:grid-cols-2 gap-3">
             {Object.entries(data.variables_used).map(([key, value]) => (
               <div
@@ -219,7 +221,7 @@ export default function Page() {
       )}
 
       {/* ── Email Body ── */}
-      <Section title="Email Body" icon={<FileText size={16} />}>
+      <Section title={t("email_body")} icon={<FileText size={16} />}>
         <div
           className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-5 text-sm text-gray-800 dark:text-gray-200 prose dark:prose-invert max-w-none"
           dangerouslySetInnerHTML={{ __html: data.html_body  || "<em>No body content</em>" }}
@@ -231,7 +233,7 @@ export default function Page() {
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/40 rounded-xl p-5">
           <div className="flex items-center gap-2 mb-2">
             <AlertCircle size={16} className="text-red-500" />
-            <h3 className="text-sm font-semibold text-red-700 dark:text-red-400">Error Message</h3>
+            <h3 className="text-sm font-semibold text-red-700 dark:text-red-400">{t("error_message")}</h3>
           </div>
           <p className="text-sm text-red-600 dark:text-red-300">{data.error_message}</p>
         </div>

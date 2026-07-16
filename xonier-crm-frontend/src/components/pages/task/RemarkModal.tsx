@@ -12,6 +12,7 @@ import axios from "axios";
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import { MdDeleteOutline } from "react-icons/md";
 import ConfirmPopup from "../../ui/ConfirmPopup";
+import { useTranslation } from "react-i18next";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -32,7 +33,6 @@ interface Props {
   onClose?: () => void;
 }
 
-
 const USER_PALETTES = [
   {
     bg: "bg-violet-100  dark:bg-violet-900/40",
@@ -41,10 +41,10 @@ const USER_PALETTES = [
     ring: "ring-violet-300  dark:ring-violet-700",
   },
   {
-    bg: "bg-blue-100    dark:bg-blue-900/40",
-    text: "text-blue-700    dark:text-blue-300",
-    avatar: "bg-blue-500",
-    ring: "ring-blue-300    dark:ring-blue-700",
+    bg: "bg-cyan-100    dark:bg-cyan-900/40",
+    text: "text-cyan-700    dark:text-cyan-300",
+    avatar: "bg-cyan-500",
+    ring: "ring-cyan-300    dark:ring-cyan-700",
   },
   {
     bg: "bg-emerald-100 dark:bg-emerald-900/40",
@@ -107,15 +107,15 @@ function initials(r: Remark["createdBy"]) {
   return `${r?.firstName[0] ?? ""}${r?.lastName?.[0] ?? ""}`.toUpperCase();
 }
 
-function relTime(iso: string) {
+function relTime(iso: string, t: any) {
   const diff = Date.now() - new Date(iso).getTime();
   const m = Math.floor(diff / 60_000);
-  if (m < 1) return "just now";
-  if (m < 60) return `${m}m ago`;
+  if (m < 1) return t("just_now");
+  if (m < 60) return t("minutes_ago", { count: m });
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
+  if (h < 24) return t("hours_ago", { count: h });
   const d = Math.floor(h / 24);
-  if (d < 7) return `${d}d ago`;
+  if (d < 7) return t("days_ago", { count: d });
   return new Date(iso).toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
@@ -123,13 +123,13 @@ function relTime(iso: string) {
   });
 }
 
-
 interface AddRemarkPanelProps {
   onSend: (content: string) => Promise<void>;
   onClose: () => void;
 }
 
 function AddRemarkPanel({ onSend, onClose }: AddRemarkPanelProps) {
+  const { t } = useTranslation();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -151,7 +151,7 @@ function AddRemarkPanel({ onSend, onClose }: AddRemarkPanelProps) {
     <div className="border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 px-5 py-4 space-y-3">
       <div className="flex items-center justify-between mb-1">
         <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-          New remark
+          {t("new_remark")}
         </p>
         <button
           type="button"
@@ -168,9 +168,9 @@ function AddRemarkPanel({ onSend, onClose }: AddRemarkPanelProps) {
         onKeyDown={(e) => {
           if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSend();
         }}
-        placeholder="Write your remark… (Ctrl+Enter to submit)"
+        placeholder={t("write_your_remark_placeholder")}
         rows={3}
-        className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition resize-none"
+        className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition resize-none"
       />
       <div className="flex items-center justify-end gap-2">
         <button
@@ -178,13 +178,13 @@ function AddRemarkPanel({ onSend, onClose }: AddRemarkPanelProps) {
           onClick={onClose}
           className="px-4 py-2 text-sm font-semibold rounded-xl text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
         >
-          Cancel
+          {t("cancel")}
         </button>
         <button
           type="button"
           onClick={handleSend}
           disabled={busy || !text.trim()}
-          className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold rounded-xl text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.97] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold rounded-xl text-white bg-cyan-600 hover:bg-cyan-700 active:scale-[0.97] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {busy ? (
             <>
@@ -207,7 +207,7 @@ function AddRemarkPanel({ onSend, onClose }: AddRemarkPanelProps) {
                   d="M4 12a8 8 0 018-8v8H4z"
                 />
               </svg>
-              Posting…
+              {t("posting")}
             </>
           ) : (
             <>
@@ -220,7 +220,7 @@ function AddRemarkPanel({ onSend, onClose }: AddRemarkPanelProps) {
                   strokeLinejoin="round"
                 />
               </svg>
-              Post remark
+              {t("post_remark")}
             </>
           )}
         </button>
@@ -246,6 +246,8 @@ function AckCheckbox({
   onChange,
   count,
 }: AckCheckboxProps) {
+  const { t } = useTranslation();
+  
   return (
     <button
       type="button"
@@ -253,10 +255,10 @@ function AckCheckbox({
       onClick={onChange}
       title={
         disabled
-          ? "You wrote this remark"
+          ? t("you_wrote_this_remark")
           : checked
-            ? "Acknowledged"
-            : "Mark as acknowledged"
+            ? t("acknowledged_tooltip")
+            : t("mark_as_acknowledged")
       }
       className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-semibold transition-all select-none flex-shrink-0 ${
         disabled
@@ -303,7 +305,7 @@ function AckCheckbox({
           )}
         </span>
       )}
-      <span>{checked ? "Acknowledged" : "Acknowledge"}</span>
+      <span>{checked ? t("acknowledged") : t("acknowledge")}</span>
       {count > 0 && (
         <span
           className={`px-1 rounded-full text-[9px] font-bold ${
@@ -336,6 +338,7 @@ function RemarkRow({
   index,
   reload
 }: RemarkRowProps) {
+  const { t } = useTranslation();
   const { hasPermission } = usePermissions();
   const [ackLoading, setAckLoading] = useState(false);
   const palette = getPalette(remark.createdBy.id);
@@ -350,21 +353,19 @@ function RemarkRow({
     setAckLoading(false);
   };
 
-  
-
   const handleDeleteRemark = async (remarkId: string) => {
     try {
       console.log("remarkId: ", remarkId);
       const isconfirm = await ConfirmPopup({
-        title: "Are you sure",
-        text: "Are you sure for delete this remark",
-        btnTxt: "Yes, delete",
-        cancelTxt: "Cancel",
+        title: t("are_you_sure"),
+        text: t("confirm_delete_remark"),
+        btnTxt: t("yes_delete"),
+        cancelTxt: t("cancel"),
       });
       if (isconfirm) {
         let result = await RemarkService.delete(remarkId);
         if (result.status === 200) {
-          toast.success("Remark deleted successfully");
+          toast.success(t("remark_deleted_successfully"));
           await reload()
         }
       }
@@ -372,10 +373,9 @@ function RemarkRow({
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(err);
       if (axios.isAxiosError(err)) {
         const messages = extractErrorMessages(err);
-        
         toast.error(messages[0]);
       } else {
-        toast.error(["Something went wrong"]);
+        toast.error(t("something_went_wrong"));
       }
     }
   };
@@ -415,12 +415,12 @@ function RemarkRow({
             {fullName}
           </span>
           {isAuthor && (
-            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-500 dark:text-blue-400 border border-blue-100 dark:border-blue-800">
-              You
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-cyan-50 dark:bg-cyan-900/30 text-cyan-500 dark:text-cyan-400 border border-cyan-100 dark:border-cyan-800">
+              {t("you")}
             </span>
           )}
           <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-auto flex-shrink-0">
-            {relTime(remark.createdAt)}
+            {relTime(remark.createdAt, t)}
           </span>
         </div>
 
@@ -432,15 +432,14 @@ function RemarkRow({
             onClick={() => handleDeleteRemark(remark._id)}
             className="h-8 w-8 rounded-full cursor-pointer group flex justify-center items-center bg-red-50 hover:bg-red-100 text-red-500"
           >
-            {" "}
-            <MdDeleteOutline className="group-hover:scale-110" />{" "}
+            <MdDeleteOutline className="group-hover:scale-110" />
           </button>}
         </div>
 
         {ackCount !== 0 && (
           <div className="flex items-center gap-1.5 mt-2 ms-auto flot-right justify-end">
             <span className="text-[10px] text-gray-400 dark:text-gray-500">
-              Acknowledged by
+              {t("acknowledged_by")}
             </span>
             <div className="flex -space-x-1.5">
               {
@@ -467,6 +466,7 @@ function RemarkRow({
 // ─── Main Modal ───────────────────────────────────────────────────────────────
 
 export default function RemarkModal({ taskId, onClose }: Props) {
+  const { t } = useTranslation();
   const [remarks, setRemarks] = useState<Remark[]>([]);
   const [loading, setLoading] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
@@ -502,16 +502,15 @@ export default function RemarkModal({ taskId, onClose }: Props) {
       const res = await RemarkService.create({ taskId, content });
       if (res.status === 201) {
         await loadRemarks();
-        toast.success("Remark posted");
+        toast.success(t("remark_posted_successfully"));
       }
     } catch(error) {
       if (axios.isAxiosError(error)) {
         const messages = extractErrorMessages(error);
         toast.error(`${messages}`);
       } else {
-        toast.error("Failed to create remark");
+        toast.error(t("failed_to_create_remark"));
       }
-     
     }
   };
 
@@ -524,7 +523,7 @@ export default function RemarkModal({ taskId, onClose }: Props) {
         const messages = extractErrorMessages(error);
         toast.error(`${messages}`);
       } else {
-        toast.error("Something went wrong");
+        toast.error(t("something_went_wrong"));
       }
       await loadRemarks();
     }
@@ -537,7 +536,6 @@ export default function RemarkModal({ taskId, onClose }: Props) {
   });
 
   const pendingCount = remarks.filter((r) => !r.acknowledgedBy).length;
-
   const ackedCount = remarks.filter((r) => r.acknowledgedBy).length;
 
   return (
@@ -549,14 +547,14 @@ export default function RemarkModal({ taskId, onClose }: Props) {
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex-shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-cyan-50 dark:bg-cyan-900/30 flex items-center justify-center">
               <svg
                 width="16"
                 height="16"
                 viewBox="0 0 16 16"
                 fill="none"
                 stroke="currentColor"
-                className="text-blue-500"
+                className="text-cyan-500"
                 strokeWidth="1.5"
                 strokeLinecap="round"
               >
@@ -565,10 +563,10 @@ export default function RemarkModal({ taskId, onClose }: Props) {
             </div>
             <div>
               <h3 className="text-sm font-bold text-gray-900 dark:text-white">
-                Remarks
+                {t("remarks")}
               </h3>
               <p className="text-[10px] text-gray-400 dark:text-gray-500">
-                {remarks.length} total · {pendingCount} pending acknowledgement
+                {remarks.length} {t("total")} • {pendingCount} {t("pending_acknowledgement")}
               </p>
             </div>
           </div>
@@ -580,8 +578,8 @@ export default function RemarkModal({ taskId, onClose }: Props) {
                 onClick={() => setShowAdd((p) => !p)}
                 className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
                   showAdd
-                    ? "bg-blue-600 text-white"
-                    : "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/50"
+                    ? "bg-cyan-600 text-white"
+                    : "bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-700 hover:bg-cyan-100 dark:hover:bg-cyan-900/50"
                 }`}
               >
                 <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
@@ -592,7 +590,7 @@ export default function RemarkModal({ taskId, onClose }: Props) {
                     strokeLinecap="round"
                   />
                 </svg>
-                Add remark
+                {t("add_remark")}
               </button>
             )}
           </div>
@@ -608,9 +606,9 @@ export default function RemarkModal({ taskId, onClose }: Props) {
         <div className="flex items-center gap-1 px-5 py-2.5 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/40 flex-shrink-0">
           {(
             [
-              { key: "all", label: "All", count: remarks.length },
-              { key: "pending", label: "Pending", count: pendingCount },
-              { key: "acknowledged", label: "Acknowledged", count: ackedCount },
+              { key: "all", label: t("filter_all"), count: remarks.length },
+              { key: "pending", label: t("filter_pending"), count: pendingCount },
+              { key: "acknowledged", label: t("filter_acknowledged"), count: ackedCount },
             ] as const
           ).map((tab) => (
             <button
@@ -627,7 +625,7 @@ export default function RemarkModal({ taskId, onClose }: Props) {
               <span
                 className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
                   filter === tab.key
-                    ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400"
+                    ? "bg-cyan-100 dark:bg-cyan-900/40 text-cyan-600 dark:text-cyan-400"
                     : "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500"
                 }`}
               >
@@ -677,15 +675,15 @@ export default function RemarkModal({ taskId, onClose }: Props) {
                 />
               </svg>
               <p className="text-sm font-semibold">
-                {filter === "all" ? "No remarks yet" : `No ${filter} remarks`}
+                {filter === "all" ? t("no_remarks_yet") : t("no_filter_remarks", { filter: t(`filter_${filter}`) })}
               </p>
               {filter === "all" && canCreate && (
                 <button
                   type="button"
                   onClick={() => setShowAdd(true)}
-                  className="mt-3 text-xs font-semibold text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition"
+                  className="mt-3 text-xs font-semibold text-cyan-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition"
                 >
-                  + Add the first remark
+                  {t("add_the_first_remark")}
                 </button>
               )}
             </div>
@@ -707,13 +705,13 @@ export default function RemarkModal({ taskId, onClose }: Props) {
           <div className="flex items-center gap-3 text-[10px] text-gray-400 dark:text-gray-500">
             <span className="flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
-              Acknowledged
+              {t("acknowledged")}
             </span>
             <span className="flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600 flex-shrink-0" />
-              Pending
+              {t("pending")}
             </span>
-            <span>· Writers cannot acknowledge own remarks</span>
+            <span>{t("writers_cannot_acknowledge_own_remarks")}</span>
           </div>
         </div>
       </div>

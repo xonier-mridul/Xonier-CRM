@@ -10,6 +10,7 @@ import Color from "@tiptap/extension-color";
 import { TextStyle } from "@tiptap/extension-text-style";
 import Link from "@tiptap/extension-link";
 import CharacterCount from "@tiptap/extension-character-count";
+import { useTranslation } from "react-i18next";
 
 // ─── Public API (via ref) ─────────────────────────────────────────────────────
 export interface RichTextEditorHandle {
@@ -82,6 +83,7 @@ const TDivider = () => (
 // INTERNAL: Toolbar
 // ═══════════════════════════════════════════════════════════════════════════════
 const RichToolbar = ({ editor }: { editor: Editor | null }) => {
+  const { t } = useTranslation();
   const [linkOpen, setLinkOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
 
@@ -123,20 +125,20 @@ const RichToolbar = ({ editor }: { editor: Editor | null }) => {
             appearance: "none",
           }}
         >
-          <option value="0">Paragraph</option>
-          <option value="1">Heading 1</option>
-          <option value="2">Heading 2</option>
-          <option value="3">Heading 3</option>
+          <option value="0">{t("paragraph")}</option>
+          <option value="1">{t("heading_1")}</option>
+          <option value="2">{t("heading_2")}</option>
+          <option value="3">{t("heading_3")}</option>
         </select>
 
         <TDivider />
 
         {/* Text formatting */}
-        <TBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} title="Bold (Ctrl+B)">        <b>B</b>   </TBtn>
-        <TBtn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive("italic")} title="Italic (Ctrl+I)">       <i>I</i>   </TBtn>
-        <TBtn onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive("underline")} title="Underline (Ctrl+U)">    <u>U</u>   </TBtn>
-        <TBtn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive("strike")} title="Strikethrough">         <s>S</s>   </TBtn>
-        <TBtn onClick={() => editor.chain().focus().toggleCode().run()} active={editor.isActive("code")} title="Inline Code">
+        <TBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} title={t("bold_ctrl_b")}>        <b>B</b>   </TBtn>
+        <TBtn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive("italic")} title={t("italic_ctrl_i")}>       <i>I</i>   </TBtn>
+        <TBtn onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive("underline")} title={t("underline_ctrl_u")}>    <u>U</u>   </TBtn>
+        <TBtn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive("strike")} title={t("strikethrough")}>         <s>S</s>   </TBtn>
+        <TBtn onClick={() => editor.chain().focus().toggleCode().run()} active={editor.isActive("code")} title={t("inline_code")}>
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
           </svg>
@@ -145,19 +147,19 @@ const RichToolbar = ({ editor }: { editor: Editor | null }) => {
         <TDivider />
 
         {/* Alignment */}
-        <TBtn onClick={() => editor.chain().focus().setTextAlign("left").run()} active={editor.isActive({ textAlign: "left" })} title="Align Left">
+        <TBtn onClick={() => editor.chain().focus().setTextAlign("left").run()} active={editor.isActive({ textAlign: "left" })} title={t("align_left")}>
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
             <rect x="3" y="5" width="18" height="2" /><rect x="3" y="10" width="12" height="2" />
             <rect x="3" y="15" width="18" height="2" /><rect x="3" y="20" width="12" height="2" />
           </svg>
         </TBtn>
-        <TBtn onClick={() => editor.chain().focus().setTextAlign("center").run()} active={editor.isActive({ textAlign: "center" })} title="Center">
+        <TBtn onClick={() => editor.chain().focus().setTextAlign("center").run()} active={editor.isActive({ textAlign: "center" })} title={t("center")}>
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
             <rect x="3" y="5" width="18" height="2" /><rect x="6" y="10" width="12" height="2" />
             <rect x="3" y="15" width="18" height="2" /><rect x="6" y="20" width="12" height="2" />
           </svg>
         </TBtn>
-        <TBtn onClick={() => editor.chain().focus().setTextAlign("right").run()} active={editor.isActive({ textAlign: "right" })} title="Align Right">
+        <TBtn onClick={() => editor.chain().focus().setTextAlign("right").run()} active={editor.isActive({ textAlign: "right" })} title={t("align_right")}>
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
             <rect x="3" y="5" width="18" height="2" /><rect x="9" y="10" width="12" height="2" />
             <rect x="3" y="15" width="18" height="2" /><rect x="9" y="20" width="12" height="2" />
@@ -167,26 +169,26 @@ const RichToolbar = ({ editor }: { editor: Editor | null }) => {
         <TDivider />
 
         {/* Lists + extras */}
-        <TBtn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive("bulletList")} title="Bullet List">
+        <TBtn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive("bulletList")} title={t("bullet_list")}>
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
             <circle cx="4" cy="7" r="1.5" /><rect x="8" y="6" width="13" height="2" />
             <circle cx="4" cy="12" r="1.5" /><rect x="8" y="11" width="13" height="2" />
             <circle cx="4" cy="17" r="1.5" /><rect x="8" y="16" width="13" height="2" />
           </svg>
         </TBtn>
-        <TBtn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive("orderedList")} title="Numbered List">
+        <TBtn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive("orderedList")} title={t("numbered_list")}>
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
             <text x="2" y="9" fontSize="7" fontWeight="bold">1.</text><rect x="9" y="6" width="12" height="2" />
             <text x="2" y="14" fontSize="7" fontWeight="bold">2.</text><rect x="9" y="11" width="12" height="2" />
             <text x="2" y="19" fontSize="7" fontWeight="bold">3.</text><rect x="9" y="16" width="12" height="2" />
           </svg>
         </TBtn>
-        <TBtn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive("blockquote")} title="Blockquote">
+        <TBtn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive("blockquote")} title={t("blockquote")}>
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
             <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5 3.5 3.5 0 01-2.748-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5 3.5 3.5 0 01-2.748-1.179z" />
           </svg>
         </TBtn>
-        <TBtn onClick={() => editor.chain().focus().setHorizontalRule().run()} active={false} title="Horizontal Rule">
+        <TBtn onClick={() => editor.chain().focus().setHorizontalRule().run()} active={false} title={t("horizontal_rule")}>
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="11" width="20" height="2" rx="1" /></svg>
         </TBtn>
 
@@ -196,14 +198,14 @@ const RichToolbar = ({ editor }: { editor: Editor | null }) => {
         <TBtn
           onClick={() => { setLinkOpen((v) => !v); setLinkUrl(editor.getAttributes("link").href || ""); }}
           active={editor.isActive("link") || linkOpen}
-          title="Insert Link"
+          title={t("insert_link")}
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
           </svg>
         </TBtn>
         {editor.isActive("link") && (
-          <TBtn onClick={() => editor.chain().focus().unsetLink().run()} active={false} title="Remove Link">
+          <TBtn onClick={() => editor.chain().focus().unsetLink().run()} active={false} title={t("remove_link")}>
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
             </svg>
@@ -215,7 +217,7 @@ const RichToolbar = ({ editor }: { editor: Editor | null }) => {
         {/* Text color */}
         <label
           className="w-7 h-7 flex items-center justify-center rounded-lg cursor-pointer hover:bg-violet-50 dark:hover:bg-gray-700 transition-colors relative"
-          title="Text Color"
+          title={t("text_color")}
         >
           <svg className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 pointer-events-none" viewBox="0 0 24 24" fill="currentColor">
             <text x="4" y="17" fontSize="14" fontWeight="bold">A</text>
@@ -231,12 +233,12 @@ const RichToolbar = ({ editor }: { editor: Editor | null }) => {
         <TDivider />
 
         {/* Undo / Redo */}
-        <TBtn onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} title="Undo (Ctrl+Z)">
+        <TBtn onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} title={t("undo_ctrl_z")}>
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
           </svg>
         </TBtn>
-        <TBtn onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} title="Redo (Ctrl+Y)">
+        <TBtn onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} title={t("redo_ctrl_y")}>
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10H11a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6" />
           </svg>
@@ -245,7 +247,7 @@ const RichToolbar = ({ editor }: { editor: Editor | null }) => {
         <TDivider />
 
         {/* Clear formatting */}
-        <TBtn onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()} title="Clear Formatting">
+        <TBtn onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()} title={t("clear_formatting")}>
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -253,7 +255,7 @@ const RichToolbar = ({ editor }: { editor: Editor | null }) => {
 
         {/* Char count – pushed to the far right */}
         <span className="ml-auto text-[10px] tabular-nums font-mono text-slate-300 dark:text-slate-600 select-none whitespace-nowrap pl-2">
-          {editor.storage.characterCount.characters()} chars
+          {editor.storage.characterCount.characters()} {t("chars")}
         </span>
       </div>
 
@@ -280,14 +282,14 @@ const RichToolbar = ({ editor }: { editor: Editor | null }) => {
             onClick={applyLink}
             className="px-3 py-1 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold cursor-pointer transition-colors"
           >
-            Apply
+            {t("apply")}
           </button>
           <button
             type="button"
             onClick={() => setLinkOpen(false)}
             className="px-3 py-1 rounded-lg border border-slate-200 dark:border-gray-600 hover:bg-slate-50 dark:hover:bg-gray-700 text-slate-500 dark:text-slate-400 text-xs font-semibold cursor-pointer transition-colors"
           >
-            Cancel
+            {t("cancel")}
           </button>
         </div>
       )}
@@ -309,6 +311,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
     },
     ref
   ) => {
+  const { t } = useTranslation();
     const editor = useEditor({
       extensions: [
         StarterKit,
@@ -432,24 +435,24 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
                 {readOnly ? (
                   <span className="flex items-center gap-1">
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                    Read-only
+                    {t("read_only")}
                   </span>
                 ) : (
                   <>
-                    Rich HTML output ·
+                    {t("rich_html_output")}
                     <code
                       className="font-mono text-[10px] px-1.5 py-0.5 rounded-md border"
                       style={{ background: "#F5F3FF", borderColor: "#DDD6FE", color: "#7C3AED" }}
                     >
                       {"{{variable}}"}
                     </code>
-                    placeholders supported
+                    {t("placeholders_supported")}
                   </>
                 )}
               </p>
               {!hideCharCount && (
                 <span className="text-[10px] text-slate-300 dark:text-slate-600 font-mono whitespace-nowrap ml-2">
-                  {editor?.storage.characterCount.characters() ?? 0} chars
+                  {editor?.storage.characterCount.characters() ?? 0} {t("chars")}
                 </span>
               )}
             </div>

@@ -11,6 +11,7 @@ import { EventService } from "@/src/services/event.service";
 import { CalendarEventPayload } from "@/src/types/calenders/calender.types";
 import { EventType } from "@/src/constants/enum";
 import ErrorComponent from "../../ui/ErrorComponent";
+import { useTranslation } from "react-i18next";
 
 interface CreateEventModalProps {
   open: boolean;
@@ -27,6 +28,7 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({
   onSubmit,
   getAllEvent
 }) => {
+  const { t } = useTranslation();
 const [err, setErr] = useState<string | string[]>("")
 const [isLoading, setIsLoading] = useState<boolean>(false)
   const [form, setForm] = useState<CalendarEventPayload>({
@@ -138,10 +140,10 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-400 dark:border-gray-700">
           <div>
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              Create Event
+              {t("create_event")}
             </h2>
             <p className="text-sm text-gray-500">
-              Schedule meeting, call or reminder
+              {t("schedule_meeting_call_or_reminder")}
             </p>
           </div>
 
@@ -156,16 +158,16 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
         <div className="px-6 py-5 grid grid-cols-2 gap-4  items-end justify-end">
           <Input
-            label="Event title"
+            label={t("event_title")}
             name="title"
-            placeholder="Enter event title"
+            placeholder={t("enter_event_title")}
             value={form.title}
             onChange={handleInputChange}
             required
           />
 
           <Select
-            label="Event type"
+            label={t("event_type_2")}
             name="eventType"
             value={form.eventType}
             onChange={handleSelectChange}
@@ -180,7 +182,7 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
           {/* <div className="grid grid-cols-2 gap-4 col-span-2"> */}
             <Input
-              label="Start date & time"
+              label={t("start_date_time_2")}
               type="datetime-local"
               name="start"
               value={form.start}
@@ -191,7 +193,7 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
             {!form.isAllDay && (
               <Input
-                label="End date & time"
+                label={t("end_date_time_2")}
                 type="datetime-local"
                 name="end"
                 value={form.end ?? ""}
@@ -203,7 +205,7 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
          
 
           <Select
-            label="Priority"
+            label={t("priority")}
             name="priority"
             value={form.priority}
             onChange={handleSelectChange}
@@ -216,7 +218,7 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             {form.eventType === EventType.MEETING &&
          
          <Input
-          label="Meeting Link"
+          label={t("meeting_link")}
           name="meetingLink"
           type="url"
           value={form.meetingLink ?? ""}
@@ -233,17 +235,17 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
               onChange={handleCheckboxChange}
               className="h-4 w-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500"
             />
-            All day event
+            {t("all_day_event")}
           </label>
          
          
           
           <div className="col-span-2">
           <Input
-            label="Description"
+            label={t("description")}
             type="textarea"
             name="description"
-            placeholder="Optional notes about this event"
+            placeholder={t("optional_notes_about_this_event")}
             value={form.description}
             
             onChange={handleInputChange}
@@ -258,14 +260,14 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             onClick={onClose}
             className="px-4 py-2 cursor-pointer text-slate-500 rounded-md text-sm font-medium bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
           >
-            Cancel
+            {t("cancel")}
           </button>
           <button
             onClick={handleSubmit}
             disabled={form.title === "" || form.start === "" }
             className="px-5 py-2 rounded-md text-sm font-medium cursor-hover disabled:cursor-not-allowed bg-cyan-600 hover:bg-cyan-600 disabled:bg-cyan-500  text-white "
           >
-           {isLoading ? "Creating..." : "Create Event"} 
+           {isLoading ? "Creating..." : t("create_event")} 
           </button>
         </div>
       </div>

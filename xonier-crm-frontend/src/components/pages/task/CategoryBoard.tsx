@@ -5,6 +5,7 @@ import MarkFinalModal, { MarkFinalPayload } from "./Marrkfinalmodal";
 import { toast } from "react-toastify";
 import { getColorOption } from "./createStatusModal";
 import BoardCard from "./BoardCard";
+import { useTranslation } from "react-i18next";
 
 function CategoryBoard({
   categoryId,
@@ -34,6 +35,7 @@ function CategoryBoard({
   onTimer,
   onStop,
 }: CategoryBoardProps) {
+  const { t } = useTranslation();
   const boardRef = useRef<HTMLDivElement>(null)
   const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const [dragOverStatusId, setDragOverStatusId] = useState<string | null>(null);
@@ -150,7 +152,7 @@ function CategoryBoard({
               className="text-xs font-bold px-2.5 py-0.5 rounded-full"
               style={{ backgroundColor: categoryColor + "18", color: categoryColor }}
             >
-              {tasks.length} task{tasks.length !== 1 ? "s" : ""}
+              {tasks.length} {t("task_2")}{tasks.length !== 1 ? "s" : ""}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
@@ -181,7 +183,7 @@ function CategoryBoard({
           {statuses.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center py-12 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 text-gray-400">
               <span className="text-3xl mb-2">🗂️</span>
-              <p className="text-sm font-semibold">No statuses for this category</p>
+              <p className="text-sm font-semibold">{t("no_statuses_for_this_category")}</p>
             </div>
           ) : (
             statuses.map((status) => {
@@ -210,7 +212,7 @@ function CategoryBoard({
                       </span>
                       {isFinal && (
                         <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 border border-green-100 dark:border-green-800 ml-1">
-                          FINAL
+                          {t("final_2")}
                         </span>
                       )}
                     </div>
@@ -254,7 +256,7 @@ function CategoryBoard({
                     )}
                     {columnTasks.length > 0 && isDragOver && (
                       <div className="flex items-center justify-center py-3 rounded-xl border-2 border-dashed border-blue-300 dark:border-blue-600 bg-blue-50/60 dark:bg-blue-900/20">
-                        <p className="text-xs text-blue-500 font-semibold">Drop here</p>
+                        <p className="text-xs text-blue-500 font-semibold">{t("drop_here")}</p>
                       </div>
                     )}
                   </div>

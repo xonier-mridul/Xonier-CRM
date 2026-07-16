@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { IoInformationCircleOutline } from "react-icons/io5";
 import { MaskEmailField, MaskPhoneField } from "../../ui/LeadComponent";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 
 
 interface LeadInfoCardProps {
@@ -15,6 +16,7 @@ interface LeadInfoCardProps {
 }
 
 const LeadInfoCard = ({ lead, loading = false }: LeadInfoCardProps) => {
+  const { t } = useTranslation();
   if (loading) {
     return (
       <div className="rounded-lg  bg-white dark:bg-gray-700 p-6 animate-pulse">
@@ -45,7 +47,7 @@ const LeadInfoCard = ({ lead, loading = false }: LeadInfoCardProps) => {
       <div className="flex items-center justify-between mb-5">
         <div className="flex flex-col gap-2">
           <h3 className="text-2xl font-semibold flex items-center gap-2 text-slate-900 dark:text-white">
-           <IoInformationCircleOutline className="text-yellow-400"/>  Lead Information
+           <IoInformationCircleOutline className="text-yellow-400"/>  {t("lead_information")}
           </h3>
           <Link href={`/leads/view/${lead.id}`} className="text-sm text-slate-500 hover:text-cyan-500 dark:text-gray-300 cursor-pointer">
             {lead.lead_id}
@@ -68,31 +70,31 @@ const LeadInfoCard = ({ lead, loading = false }: LeadInfoCardProps) => {
 
       {/* Content */}
       <div className="grid grid-cols-2 gap-4 text-sm">
-        <InfoItem icon={<FiUser />} label="Name" value={lead.fullName} />
+        <InfoItem icon={<FiUser />} label={t("name_2")} value={lead.fullName} />
  
-        <MaskEmailField  label="Email" value={lead.email}/>
+        <MaskEmailField  label={t("email")} value={lead.email}/>
         
-        <MaskPhoneField  label="Phone" value={lead.phone}/>
+        <MaskPhoneField  label={t("phone")} value={lead.phone}/>
         <InfoItem
           icon={<HiOutlineBuildingOffice2 />}
-          label="Company"
+          label={t("company")}
           value={lead.companyName || "—"}
         />
         <InfoItem
           icon={<MdOutlineSource />}
-          label="Source"
+          label={t("source")}
           value={lead.source}
         />
         <InfoItem
           icon={<FiMapPin />}
-          label="City"
+          label={t("city")}
           value={lead.city || "—"}
         />
       </div>
 
       {/* Footer */}
       <div className="mt-5 pt-4 border-t border-slate-200 dark:border-gray-600 text-xs text-slate-500 dark:text-gray-400">
-        Created on{" "}
+        {t("created_on")}{" "}
         {new Date(lead.createdAt).toLocaleDateString(undefined, {
           day: "2-digit",
           month: "short",

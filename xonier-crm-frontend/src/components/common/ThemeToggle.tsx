@@ -17,7 +17,7 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="h-10 w-10 flex  bg-slate-50 items-center justify-center text-xl  border rounded-full dark:bg-[#1a2432] border-[#ecf0f2] dark:border-gray-700 hover:text-blue-600 cursor-pointer hover:border-blue-600/20 hover:scale-103"
+      className="h-10 w-10 flex  bg-slate-50 items-center justify-center text-xl  border rounded-full dark:bg-[#1a2432] border-[#ecf0f2] dark:border-gray-700 hover:text-cyan-600 cursor-pointer hover:border-cyan-600/20 hover:scale-103"
     >
       {isDark ? <IoSunnyOutline /> : <LuSunMoon />}
     </button>

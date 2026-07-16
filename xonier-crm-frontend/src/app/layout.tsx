@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
+import "../i18n/index";
 import { Suspense, ReactNode } from "react";
 
 import Providers from "../components/providers/theme/Providers";

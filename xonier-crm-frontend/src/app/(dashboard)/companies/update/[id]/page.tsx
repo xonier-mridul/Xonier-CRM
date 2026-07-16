@@ -12,8 +12,10 @@ import { BsBuildings } from "react-icons/bs";
 import { FiArrowLeft } from "react-icons/fi";
 import Link from "next/link";
 import Skeleton from "react-loading-skeleton";
+import { useTranslation } from "react-i18next";
 
 const EditCompanyPage = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
 
@@ -111,12 +113,12 @@ const EditCompanyPage = () => {
       <div className="mb-8">
        
         <div className="flex items-center gap-3 mb-1">
-          <div className="h-9 w-9 rounded-xl bg-blue-600 flex items-center justify-center">
+          <div className="h-9 w-9 rounded-xl bg-cyan-600 flex items-center justify-center">
             <BsBuildings className="text-white text-base" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-              Edit Company
+              {t("edit_company")}
             </h1>
             {companyData && (
               <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -156,9 +158,9 @@ const EditCompanyPage = () => {
       ) : (
         <div className="flex flex-col items-center justify-center py-24 text-gray-400">
           <BsBuildings className="text-5xl mb-3 opacity-30" />
-          <p className="text-sm">Company not found</p>
-          <Link href="/companies" className="mt-3 text-sm text-blue-500 hover:underline">
-            Back to Companies
+          <p className="text-sm">{t("company_not_found")}</p>
+          <Link href="/companies" className="mt-3 text-sm text-cyan-500 hover:underline">
+            {t("back_to_companies")}
           </Link>
         </div>
       )}

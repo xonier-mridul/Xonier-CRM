@@ -4,8 +4,10 @@ import React, { JSX } from "react";
 import Link from "next/link";
 import { FiArrowLeft, FiHome } from "react-icons/fi";
 import Image from "next/image";
+import { useTranslation } from "react-i18next";
 
 const NotFound = () => {
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-gray-900 px-6">
       <div className="max-w-xl w-full text-center bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-slate-200 dark:border-gray-700 p-10">
@@ -17,13 +19,12 @@ const NotFound = () => {
 
         
         <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-2">
-          Page Not Found
+          {t("page_not_found")}
         </h2>
 
         
         <p className="text-slate-600 dark:text-slate-400 mb-8">
-          Sorry, the page you’re looking for doesn’t exist, has been removed,
-          or the URL might be incorrect.
+          {t("sorry_the_page_you_re_looking_for_doesn_t_exist_has_been")}
         </p>
 
         
@@ -33,7 +34,7 @@ const NotFound = () => {
             className="flex items-center gap-2 px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all"
           >
             <FiHome className="text-lg" />
-            Go to Dashboard
+            {t("go_to_dashboard")}
           </Link>
 
           <button
@@ -41,13 +42,13 @@ const NotFound = () => {
             className="flex items-center gap-2 px-6 py-3 rounded-lg border border-slate-300 dark:border-gray-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-gray-700 transition-all"
           >
             <FiArrowLeft className="text-lg" />
-            Go Back
+            {t("go_back")}
           </button>
         </div>
 
         
         <p className="mt-8 text-xs text-slate-400 dark:text-slate-500">
-          If you believe this is an error, please contact your system administrator.
+          {t("if_you_believe_this_is_an")}
         </p>
       </div>
       {/* <Image src={"/images/not-found.gif"} height={200} width={200} alt='not found' quality={100} className='w-full' /> */}

@@ -2,6 +2,7 @@
 
 import React from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
 
 type PaginationProps = {
   currentPage: number;
@@ -16,6 +17,7 @@ const Pagination = ({
   onPageChange,
   className = "",
 }: PaginationProps) => {
+  const { t } = useTranslation();
   if (totalPages <= 1) return null;
 
   const getPages = () => {
@@ -35,7 +37,7 @@ const Pagination = ({
     >
      
       <span className="text-sm text-gray-500 dark:text-gray-300">
-        Page {currentPage} of {totalPages}
+        {t("page")} {currentPage} {t("of")} {totalPages}
       </span>
 
       

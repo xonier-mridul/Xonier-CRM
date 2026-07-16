@@ -17,6 +17,7 @@ import {
 import filterOptions from "./filterOption";
 import DateFilterButton from "@/src/components/common/dateFilter";
 import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
+import { useTranslation } from "react-i18next";
 
 
 // ─── Props (your original shape) ─────────────────────────────────────────────
@@ -124,6 +125,7 @@ const SelectField = ({ field, value, onChange }: { field: FilterField; value: st
 );
 
 const MultiSelectField = ({ field, value, onChange }: { field: FilterField; value: string[]; onChange: (v: string[]) => void }): JSX.Element => {
+  const { t } = useTranslation();
     const [dropOpen, setDropOpen] = useState(false);
     const [search, setSearch] = useState("");
     const ref = useRef<HTMLDivElement>(null);
@@ -178,7 +180,7 @@ const MultiSelectField = ({ field, value, onChange }: { field: FilterField; valu
                                 type="text"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Search..."
+                                placeholder={t("search_2")}
                                 className="outline-none bg-transparent text-sm w-full dark:text-white"
                                 onClick={(e) => e.stopPropagation()}
                             />
@@ -196,7 +198,7 @@ const MultiSelectField = ({ field, value, onChange }: { field: FilterField; valu
                             {opt.label}
                         </div>
                     )) : (
-                        <div className="px-4 py-2 text-sm text-slate-400">No options found</div>
+                        <div className="px-4 py-2 text-sm text-slate-400">{t("no_options_found")}</div>
                     )}
                 </div>
             )}
@@ -258,6 +260,7 @@ const DateRangeField = ({ field, value, onChange }: {
     value: { from: string; to: string };
     onChange: (v: { from: string; to: string }) => void;
 }): JSX.Element => {
+  const { t } = useTranslation();
     const cfg = field.dateRangeConfig!;
     return (
         <div className="grid grid-cols-2 gap-3">
@@ -268,7 +271,7 @@ const DateRangeField = ({ field, value, onChange }: {
                     onChange={(e) => onChange({ ...value, from: e.target.value })}
                     className="w-full border p-2 rounded text-sm dark:bg-gray-600 dark:text-white outline-none focus:border-blue-400"
                 >
-                    <option value="">Year</option>
+                    <option value="">{t("year")}</option>
                     {cfg.options.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
             </div>
@@ -279,7 +282,7 @@ const DateRangeField = ({ field, value, onChange }: {
                     onChange={(e) => onChange({ ...value, to: e.target.value })}
                     className="w-full border p-2 rounded text-sm dark:bg-gray-600 dark:text-white outline-none focus:border-blue-400"
                 >
-                    <option value="">Year</option>
+                    <option value="">{t("year")}</option>
                     {cfg.options.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
             </div>
@@ -416,6 +419,7 @@ const SectionAccordion = ({ section, values, onChange }: {
 // ─── Main component (your original Props shape) ───────────────────────────────
 
 export default function FilterSidebar({ open, onClose, onApply, onReset, onFilterChange ,onInfoTypeChange ,infoValue }: Props): JSX.Element {
+  const { t } = useTranslation();
     const [values, setValues] = useState<FilterValues>(() => buildDefaultValues(filterOptions));
     const [infoType, setInfoType] = useState<CompanyPeopleToggleType>(infoValue as CompanyPeopleToggleType);
     const [dateFilter, setDateFilter] = useState<DateFilter>({ fromDate: "", toDate: "" });
@@ -453,7 +457,7 @@ export default function FilterSidebar({ open, onClose, onApply, onReset, onFilte
                     <div className="flex justify-between items-center mb-4 shrink-0">
                         <div className="flex items-center gap-2">
                             <MdFilterAlt className="text-blue-600 text-xl" />
-                            <h2 className="text-lg font-semibold dark:text-white">Filters</h2>
+                            <h2 className="text-lg font-semibold dark:text-white">{t("filters")}</h2>
                             {activeCount > 0 && (
                                 <span className="bg-blue-100 text-blue-600 text-xs font-bold px-2 py-0.5 rounded-full">
                                     {activeCount}

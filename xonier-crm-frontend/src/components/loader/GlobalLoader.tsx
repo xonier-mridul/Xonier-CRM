@@ -2,8 +2,10 @@
 
 import { useLoader } from "@/src/context/LoaderContext";
 import Image from "next/image";
+import { useTranslation } from "react-i18next";
 
 const GlobalLoader: React.FC = () => {
+  const { t } = useTranslation();
   const { loading } = useLoader();
 
   if (!loading) return null;
@@ -47,7 +49,7 @@ const GlobalLoader: React.FC = () => {
 
                   <span className="loader"></span>
           <p className="text-white text-sm tracking-wide">
-          Processing Trackeroo System...
+          {t("processing_trackeroo_system")}
         </p>
         </div>
       </div>

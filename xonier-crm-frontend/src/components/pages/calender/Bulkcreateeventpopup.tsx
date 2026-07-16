@@ -10,6 +10,7 @@ import extractErrorMessages from "@/src/app/utils/error.utils";
 import { EventService } from "@/src/services/event.service";
 import { CalendarEventPayload } from "@/src/types/calenders/calender.types";
 import { EventType } from "@/src/constants/enum";
+import { useTranslation } from "react-i18next";
 
 interface BulkCreateEventModalProps {
   open: boolean;
@@ -41,6 +42,7 @@ const BulkCreateEventModal: React.FC<BulkCreateEventModalProps> = ({
   onClose,
   getAllEvent,
 }) => {
+  const { t } = useTranslation();
   const [events, setEvents] = useState<CalendarEventPayload[]>([emptyEvent()]);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<BulkResult | null>(null);
@@ -132,10 +134,10 @@ const BulkCreateEventModal: React.FC<BulkCreateEventModalProps> = ({
         <div className="flex items-center justify-between px-6 py-4 border-b dark:border-gray-700 shrink-0">
           <div>
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              Bulk Create Events
+              {t("bulk_create_events")}
             </h2>
             <p className="text-sm text-gray-500">
-              Add multiple events at once — {events.length} event(s) queued
+              {t("add_multiple_events_at_once")} {events.length} {t("event_s_queued")}
             </p>
           </div>
           <button
@@ -152,25 +154,25 @@ const BulkCreateEventModal: React.FC<BulkCreateEventModalProps> = ({
             <div className="flex gap-3 flex-wrap">
               <span className="flex items-center gap-1.5 text-sm font-medium text-green-600 bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-full">
                 <CheckCircle2 className="w-4 h-4" />
-                {result.inserted} inserted
+                {result.inserted} {t("inserted")}
               </span>
               {result.duplicates > 0 && (
                 <span className="flex items-center gap-1.5 text-sm font-medium text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20 px-3 py-1 rounded-full">
                   <AlertCircle className="w-4 h-4" />
-                  {result.duplicates} duplicate(s)
+                  {result.duplicates} {t("duplicate_s")}
                 </span>
               )}
               {result.failed > 0 && (
                 <span className="flex items-center gap-1.5 text-sm font-medium text-red-600 bg-red-50 dark:bg-red-900/20 px-3 py-1 rounded-full">
                   <AlertCircle className="w-4 h-4" />
-                  {result.failed} failed
+                  {result.failed} {t("failed_2")}
                 </span>
               )}
             </div>
 
             {result.duplicateRecords.length > 0 && (
               <div className="text-xs text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg px-3 py-2 space-y-0.5">
-                <p className="font-semibold mb-1">Duplicates skipped:</p>
+                <p className="font-semibold mb-1">{t("duplicates_skipped")}</p>
                 {result.duplicateRecords.map((r, i) => (
                   <p key={i}>• {r.title} — {r.reason}</p>
                 ))}
@@ -179,7 +181,7 @@ const BulkCreateEventModal: React.FC<BulkCreateEventModalProps> = ({
 
             {result.failedRecords.length > 0 && (
               <div className="text-xs text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2 space-y-0.5">
-                <p className="font-semibold mb-1">Failed:</p>
+                <p className="font-semibold mb-1">{t("failed_3")}</p>
                 {result.failedRecords.map((r, i) => (
                   <p key={i}>• {r.title} — {r.reason}</p>
                 ))}
@@ -197,7 +199,7 @@ const BulkCreateEventModal: React.FC<BulkCreateEventModalProps> = ({
             >
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Event #{index + 1}
+                  {t("event")}{index + 1}
                 </span>
                 <button
                   onClick={() => handleRemoveRow(index)}
@@ -210,16 +212,16 @@ const BulkCreateEventModal: React.FC<BulkCreateEventModalProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <Input
-                  label="Title *"
+                  label={t("title_2")}
                   name="title"
-                  placeholder="Event title"
+                  placeholder={t("event_title")}
                   value={event.title}
                   onChange={(e) => handleFieldChange(index, "title", e.target.value)}
                   required
                 />
 
                 <Select
-                  label="Event Type"
+                  label={t("event_type")}
                   name="eventType"
                   value={event.eventType}
                   onChange={(e) => handleFieldChange(index, "eventType", e.target.value)}
@@ -233,7 +235,7 @@ const BulkCreateEventModal: React.FC<BulkCreateEventModalProps> = ({
                 />
 
                 <Input
-                  label="Start Date & Time *"
+                  label={t("start_date_time")}
                   type="datetime-local"
                   name="start"
                   value={event.start}
@@ -243,7 +245,7 @@ const BulkCreateEventModal: React.FC<BulkCreateEventModalProps> = ({
 
                 {!event.isAllDay && (
                   <Input
-                    label="End Date & Time"
+                    label={t("end_date_time")}
                     type="datetime-local"
                     name="end"
                     value={event.end ?? ""}
@@ -255,7 +257,7 @@ const BulkCreateEventModal: React.FC<BulkCreateEventModalProps> = ({
                 )}
 
                 <Select
-                  label="Priority"
+                  label={t("priority")}
                   name="priority"
                   value={event.priority}
                   onChange={(e) =>
@@ -274,7 +276,7 @@ const BulkCreateEventModal: React.FC<BulkCreateEventModalProps> = ({
 
                 {event.eventType === EventType.MEETING && (
                   <Input
-                    label="Meeting Link"
+                    label={t("meeting_link")}
                     name="meetingLink"
                     type="url"
                     placeholder="https://meet.google.com/..."
@@ -300,16 +302,16 @@ const BulkCreateEventModal: React.FC<BulkCreateEventModalProps> = ({
                                 }}}
                       className="h-4 w-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500"
                     />
-                    All day event
+                    {t("all_day_event")}
                   </label>
                 </div>
 
                 <div className="col-span-2">
                   <Input
-                    label="Description"
+                    label={t("description_2")}
                     type="textarea"
                     name="description"
-                    placeholder="Optional notes"
+                    placeholder={t("optional_notes")}
                     value={event.description}
                     onChange={(e) =>
                       handleFieldChange(index, "description", e.target.value)
@@ -325,21 +327,21 @@ const BulkCreateEventModal: React.FC<BulkCreateEventModalProps> = ({
             className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 text-sm text-gray-500 dark:text-gray-400 hover:border-cyan-400 hover:text-cyan-500 transition-colors"
           >
             <Plus className="w-4 h-4" />
-            Add Another Event
+            {t("add_another_event")}
           </button>
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-between px-6 py-4 border-t dark:border-gray-700 shrink-0">
           <p className="text-sm text-gray-400">
-            {events.length} event(s) will be submitted
+            {events.length} {t("event_s_will_be_submitted")}
           </p>
           <div className="flex gap-3">
             <button
               onClick={handleClose}
               className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
             >
-              Cancel
+              {t("cancel")}
             </button>
             <button
               onClick={handleSubmit}

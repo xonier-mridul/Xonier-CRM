@@ -29,9 +29,11 @@ import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 import CreatedAt from "@/src/components/common/CreatedAt";
 import Limit from "@/src/components/ui/Limit";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import { useTranslation } from "react-i18next";
 
 
 const page = (): JSX.Element => {
+  const { t } = useTranslation();
   const [enquiryData, setEnquiryData] = useState<EnquiryData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [err, setErr] = useState<string[] | string>("");
@@ -131,15 +133,15 @@ const page = (): JSX.Element => {
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm  gap-5 p-6 rounded-xl border-[1px] border-slate-900/10 w-full flex items-center justify-between">
         <div className="flex flex-col gap-2">
           <h2 className="text-2xl font-bold  dark:text-white text-slate-900 capitalize">
-            Add bulk enquiries
+            {t("add_bulk_enquiries")}
           </h2>
           <p className="text-gray-500 dark:text-gray-400">
-            You want to create bulk enquiries via CSV file
+            {t("you_want_to_create_bulk_enquiries")}
           </p>
         </div>
         {(hasPermission(PERMISSIONS.createEnquiry) ) && 
           <div className="flex items-center justify-end gap-3 ">
-            <PrimaryButton text="Create Bulk Enquiry" link="/enquiry/bulk" icon={<LiaMailBulkSolid />} />
+            <PrimaryButton text={t("create_bulk_enquiry")} link="/enquiry/bulk" icon={<LiaMailBulkSolid />} />
           </div>
         }
       </div>
@@ -147,10 +149,10 @@ const page = (): JSX.Element => {
         <div className="flex items-center gap-12 justify-between">
           <div className="flex flex-col gap-2">
             <h2 className="text-xl font-bold  dark:text-white text-slate-900 capitalize">
-              All Sales Enquiries
+              {t("all_sales_enquiries")}
             </h2>
             <p className="text-gray-500 dark:text-gray-400">
-              Create, edit or remove enquiries.
+              {t("create_edit_or_remove_enquiries")}
             </p>
           </div>
           
@@ -176,7 +178,7 @@ const page = (): JSX.Element => {
            {/* <Limit pageLimit={pageLimit} setPageLimit={setPageLimit}/> */}
             <div className="bg-slate-50 text-slate-500 col-span-2 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2">
               <IoIosSearch className="text-xl text-slate-500" />
-              <input type="text" className="outline-none dark:text-white/70" placeholder="Search..." onChange={(e) => handleSearch(e.target.value)} value={searchVal} />
+              <input type="text" className="outline-none dark:text-white/70" placeholder={t("search_3")} onChange={(e) => handleSearch(e.target.value)} value={searchVal} />
             </div>
             <div>
               <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter}  />
@@ -188,10 +190,10 @@ const page = (): JSX.Element => {
                           flex items-center gap-2 group "
             >
               <FaPlus className="group-hover:rotate-90 transition-all duration-300" />{" "}
-              Create New Enquiry
+              {t("create_new_enquiry")}
             </Link> : <span className="bg-cyan-600 
                           text-white px-5 py-2 rounded-md
-                          flex items-center gap-2  opacity-80 cursor-not-allowed"><FaPlus className=" transition-all duration-300" />Create New Enquiry</span>}
+                          flex items-center gap-2  opacity-80 cursor-not-allowed"><FaPlus className=" transition-all duration-300" />{t("create_new_enquiry")}</span>}
           </div>
         </div>
         <div className="w-full rounded-xl overflow-x-auto">
@@ -202,27 +204,27 @@ const page = (): JSX.Element => {
                 Enquiry Id
               </th> */}
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  Client Info
+                  {t("client_info")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
                   {" "}
-                  Project Type
+                  {t("project_type")}
                 </th>
 
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
-                  Source
+                  {t("source")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
-                  Status
+                  {t("status")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  Created At
+                  {t("created_at")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  Created By
+                  {t("created_by")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
-                  Actions
+                  {t("actions")}
                 </th>
               </tr>
             </thead>
@@ -314,7 +316,7 @@ const page = (): JSX.Element => {
                     </tr>
                   );
                 })
-              ) : <tr><td className="p-4 text-center text-slate-500 dark:text-white/70" colSpan={6}>Data not found</td></tr>) : (
+              ) : <tr><td className="p-4 text-center text-slate-500 dark:text-white/70" colSpan={6}>{t("data_not_found")}</td></tr>) : (
                 <tr className="p-4">
                   <td className="text-center p-4">
                     <Skeleton width={120} height={30} borderRadius={14} />

@@ -9,6 +9,7 @@ import { MailService } from "@/src/services/communication/mail.service";
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import { PERMISSIONS } from "@/src/constants/enum";
 import { usePermissions } from "@/src/hooks/usePermissions";
+import { useTranslation } from "react-i18next";
 
 const labelBase =
   "block text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1.5";
@@ -104,6 +105,7 @@ const EmailClientPreview = ({
   date: string;
   html: string;
 }) => {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col rounded-2xl border border-slate-200 dark:border-gray-600 overflow-hidden shadow-md bg-white dark:bg-gray-800">
 
@@ -116,16 +118,16 @@ const EmailClientPreview = ({
         <span className="w-3 h-3 rounded-full bg-yellow-400" />
         <span className="w-3 h-3 rounded-full bg-green-400" />
         <span className="ml-3 text-xs font-semibold text-slate-400 dark:text-slate-500 flex-1 truncate">
-           Email Preview — {subject || "No Subject"}
+           {t("email_preview")} {subject || "No Subject"}
         </span>
-        <span className="text-[10px] text-slate-300 dark:text-slate-600 font-mono">preview mode</span>
+        <span className="text-[10px] text-slate-300 dark:text-slate-600 font-mono">{t("preview_mode")}</span>
       </div>
 
       {/* ── Email header section ── */}
       <div className="px-6 pt-5 pb-4 border-b border-slate-100 dark:border-gray-700 bg-white dark:bg-gray-800">
         {/* Subject */}
         <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 leading-snug">
-          {subject || <span className="text-slate-400 italic">No subject</span>}
+          {subject || <span className="text-slate-400 italic">{t("no_subject")}</span>}
         </h2>
 
         {/* From / To / Date row */}
@@ -143,12 +145,12 @@ const EmailClientPreview = ({
               <div className="flex items-center justify-between gap-2">
                 <div>
                   <span className="text-sm font-semibold text-slate-800 dark:text-white">{from || "sender@example.com"}</span>
-                  <span className="ml-2 text-xs text-slate-400 dark:text-slate-500">&lt;{from || "sender@example.com"}&gt;</span>
+                  <span className="ml-2 text-xs text-slate-400 dark:text-slate-500">{t("lt")}{from || "sender@example.com"}{t("gt")}</span>
                 </div>
                 <span className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap flex-shrink-0">{date}</span>
               </div>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-xs text-slate-400 dark:text-slate-500">To:</span>
+                <span className="text-xs text-slate-400 dark:text-slate-500">{t("to")}</span>
                 <span className="text-xs text-slate-600 dark:text-slate-300">{to || "recipient@example.com"}</span>
               </div>
             </div>
@@ -217,9 +219,9 @@ const EmailClientPreview = ({
       {/* ── Footer (simulate email client footer) ── */}
       <div className="px-6 py-3 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-800/60 flex items-center justify-between">
         <span className="text-[11px] text-slate-400 dark:text-slate-500">
-          This is a template preview — variable placeholders like{" "}
+          {t("this_is_a_template_preview_variable_placeholders_like")}{" "}
           <code className="font-mono text-violet-500 bg-violet-50 dark:bg-violet-900/30 px-1 rounded">{"{{name}}"}</code>{" "}
-          will be replaced with real values on send
+          {t("will_be_replaced_with_real_values_on_send")}
         </span>
         <button
           type="button"
@@ -233,7 +235,7 @@ const EmailClientPreview = ({
           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
           </svg>
-          Copy HTML
+          {t("copy_html")}
         </button>
       </div>
     </div>
@@ -261,6 +263,7 @@ const VarChip = ({ variable }: { variable: Variable & { isCustom?: boolean } }) 
 );
 
 export default function Page() {
+  const { t } = useTranslation();
   const router = useRouter();
   const params = useParams();
   const id     = params?.id as string;
@@ -291,11 +294,11 @@ export default function Page() {
 
   if (isLoading || !templateData) return <FetchingSkeleton />;
 
-  const t = templateData;
-  const templateVars: Variable[] = t.variables ?? [];
+  const te = templateData;
+  const templateVars: Variable[] = te.variables ?? [];
 
-  const categoryLabel = t.category
-    ? t.category.charAt(0).toUpperCase() + t.category.slice(1).toLowerCase().replace(/_/g, " ")
+  const categoryLabel = te.category
+    ? te.category.charAt(0).toUpperCase() + te.category.slice(1).toLowerCase().replace(/_/g, " ")
     : null;
 
   // Simulated email metadata
@@ -316,16 +319,16 @@ export default function Page() {
               onClick={() => router.push("/emailManagement/templates")}
               className="hover:text-violet-600 transition-colors cursor-pointer"
             >
-              Templates
+              {t("templates")}
             </button>
             <span>/</span>
-            <span className="text-slate-500 dark:text-slate-400">View</span>
+            <span className="text-slate-500 dark:text-slate-400">{t("view")}</span>
           </div>
           <h1 className="text-[22px] font-extrabold text-slate-900 dark:text-white tracking-tight">
             {t.name || "Template Details"}
           </h1>
           <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
-            Read-only preview · ID:{" "}
+            {t("read_only_preview_id")}{" "}
             <code className="font-mono text-[11px] px-1.5 py-0.5 rounded-md bg-violet-50 dark:bg-violet-900/30 border border-violet-100 dark:border-violet-800 text-violet-700 dark:text-violet-300">
               {id}
             </code>
@@ -345,7 +348,7 @@ export default function Page() {
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
             </svg>
-            Edit Template
+            {t("edit_template")}
           </button>
           ))
         }
@@ -363,35 +366,35 @@ export default function Page() {
 
           <div className="p-6 flex flex-col gap-5">
             <p className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
-              Template Info
+              {t("template_info")}
             </p>
 
             {/* Name */}
-            <InfoRow label="Template Name">
+            <InfoRow label={t("template_name")}>
               <span className="font-semibold text-slate-800 dark:text-white">{t.name || "—"}</span>
             </InfoRow>
 
             <Divider />
 
             {/* Subject */}
-            <InfoRow label="Subject">
-              <span className="text-slate-700 dark:text-slate-300 leading-snug">{t.subject || "—"}</span>
+            <InfoRow label={t("subject")}>
+              <span className="text-slate-700 dark:text-slate-300 leading-snug">{te.subject || "—"}</span>
             </InfoRow>
 
             <Divider />
 
             {/* Category + Privacy in 2 cols */}
             <div className="grid grid-cols-2 gap-4">
-              <InfoRow label="Category">
+              <InfoRow label={t("category")}>
                 {categoryLabel
                   ? <Badge color="violet">{categoryLabel}</Badge>
                   : <span className="text-slate-400 text-sm">—</span>
                 }
               </InfoRow>
-              <InfoRow label="Privacy">
-                {t.privacy === "PUBLIC"
-                  ? <Badge color="emerald">🌐 Public</Badge>
-                  : <Badge color="slate">🔒 Private</Badge>
+              <InfoRow label={t("privacy")}>
+                {te.privacy === "PUBLIC"
+                  ? <Badge color="emerald">{t("public_2")}</Badge>
+                  : <Badge color="slate">{t("private_2")}</Badge>
                 }
               </InfoRow>
             </div>
@@ -399,22 +402,22 @@ export default function Page() {
             <Divider />
 
             {/* Status */}
-            <InfoRow label="Status">
-              {t.status
-                ? <Badge color={t.status === "active" ? "emerald" : "amber"}>
-                    {t.status.charAt(0).toUpperCase() + t.status.slice(1)}
+            <InfoRow label={t("status")}>
+              {te.status
+                ? <Badge color={te.status === "active" ? "emerald" : "amber"}>
+                    {te.status.charAt(0).toUpperCase() + te.status.slice(1)}
                   </Badge>
                 : <span className="text-slate-400 text-sm">—</span>
               }
             </InfoRow>
 
             {/* Tags */}
-            {t.tags && t.tags.length > 0 && (
+            {te.tags && te.tags.length > 0 && (
               <>
                 <Divider />
-                <InfoRow label="Tags">
+                <InfoRow label={t("tags")}>
                   <div className="flex flex-wrap gap-1.5 mt-0.5">
-                    {t.tags.map((tag: string) => (
+                    {te.tags.map((tag: string) => (
                       <span
                         key={tag}
                         className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-semibold"
@@ -433,7 +436,7 @@ export default function Page() {
               <>
                 <Divider />
                 <div>
-                  <label className={labelBase}>Variables ({templateVars.length})</label>
+                  <label className={labelBase}>{t("variables")}{templateVars.length})</label>
                   <div className="flex flex-wrap gap-1.5 mt-1">
                     {templateVars.map((v) => (
                       <VarChip key={v.key} variable={{ ...v, isCustom: true }} />
@@ -446,9 +449,9 @@ export default function Page() {
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="bg-violet-50 dark:bg-violet-900/20 border-b border-violet-100 dark:border-violet-900/30">
-                        <th className="text-left px-3 py-2 font-bold text-violet-700 dark:text-violet-400 uppercase tracking-wider">Key</th>
-                        <th className="text-left px-3 py-2 font-bold text-violet-700 dark:text-violet-400 uppercase tracking-wider">Label</th>
-                        <th className="text-center px-3 py-2 font-bold text-violet-700 dark:text-violet-400 uppercase tracking-wider">Req.</th>
+                        <th className="text-left px-3 py-2 font-bold text-violet-700 dark:text-violet-400 uppercase tracking-wider">{t("key")}</th>
+                        <th className="text-left px-3 py-2 font-bold text-violet-700 dark:text-violet-400 uppercase tracking-wider">{t("label")}</th>
+                        <th className="text-center px-3 py-2 font-bold text-violet-700 dark:text-violet-400 uppercase tracking-wider">{t("req")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -483,11 +486,11 @@ export default function Page() {
 
         {/* ══ RIGHT: Email client preview ═══════════════════════ */}
         <EmailClientPreview
-          subject={t.subject ?? ""}
+          subject={te.subject ?? ""}
           from="noreply@yourcompany.com"
           to="recipient@example.com"
           date={dateStr}
-          html={t.html_body ?? ""}
+          html={te.html_body ?? ""}
         />
       </div>
     </div>

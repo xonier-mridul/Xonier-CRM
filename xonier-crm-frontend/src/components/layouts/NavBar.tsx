@@ -42,6 +42,11 @@ import {FiHome,FiCalendar,
 import { MdKeyboardArrowRight } from "react-icons/md";
 import NotificationBell from "../common/NotificationBell";
 import { FaArrowLeftLong, FaArrowRightLong } from "react-icons/fa6";
+// import { useTranslation } from "react-i18next";
+// import i18n from "../../i18n/index";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "../common/LanguageSelector";
+import { IoLanguage } from "react-icons/io5";
 
 
 const mockNotifications = [
@@ -87,6 +92,7 @@ interface SearchDetail {
 }
 
 const NavBar = () => {
+  const { t } = useTranslation();
   const auth = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const router = useRouter();
@@ -102,6 +108,32 @@ const NavBar = () => {
   const USER_ID = auth.user?._id;
   const searchRef = useRef<HTMLDivElement>(null);
   const  calRef = useRef<HTMLDivElement>(null)
+   const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+  
 
 
 
@@ -224,7 +256,7 @@ const results = searchableData.filter((item) =>
 
   const handleLogout = async (): Promise<void> => {
     try {
-      let isConfirmed = await ConfirmPopup({
+      const isConfirmed = await ConfirmPopup({
         title: "Logout",
         text: "Are you want to logout",
         btnTxt: "Yes, Logout",
@@ -293,7 +325,7 @@ const results = searchableData.filter((item) =>
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search menu..."
+            placeholder={t("search_menu")}
             className="md:w-full pl-10 pr-16 py-2 text-sm bg-slate-100/60 dark:bg-gray-800/60 border border-transparent focus:border-cyan-500/30 focus:bg-white dark:focus:bg-gray-800 rounded-lg outline-none transition-all placeholder:text-gray-400 text-slate-500 dark:text-white"
           />
           
@@ -334,9 +366,36 @@ const results = searchableData.filter((item) =>
       </div>
 
 
+{/* <div className="flex gap-2">
+<button className="border text-sm border-slate-200 px-4 py-2.5 rounded-xl cursor-pointer" 
+onClick={() => i18n.changeLanguage("hi")}>
+    {t("hindi")}
+</button>
+
+<button className="border text-sm border-slate-200 px-4 py-2.5 rounded-xl cursor-pointer"  
+onClick={() => i18n.changeLanguage("en")}>
+    {t("english")}
+</button>
+<button className="border text-sm border-slate-200 px-4 py-2.5 rounded-xl cursor-pointer"  
+onClick={() => i18n.changeLanguage("po")}>
+    {t("portuguese")}
+</button>
+</div> */}
 
 
-     
+{/* <div className="w-5 h-5 rounded-full relative">
+<IoLanguage 
+  onClick={() => setIsOpen(!isOpen)} />
+  {isOpen && 
+<LanguageSelector isOpen={isOpen} setIsOpen={setIsOpen} dropdownRef={dropdownRef}/>
+
+
+  }
+
+</div> */}
+
+
+
 
       {/* RIGHT SIDE — Actions */}
       <div className="flex items-center gap-2 md:gap-3">
@@ -391,6 +450,22 @@ const results = searchableData.filter((item) =>
             
           </AnimatePresence>
         </div>
+          <div className="relative">
+        <button
+          ref={buttonRef}
+          onClick={() => setIsOpen(!isOpen)}
+          className="relative h-10 w-10 flex items-center justify-center rounded-full bg-slate-100/60 dark:bg-gray-800/60 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 hover:text-cyan-600 transition-all group cursor-pointer"
+          aria-label="Select Language"
+        >
+          <IoLanguage className="w-5 h-5" />
+        </button>
+
+        <LanguageSelector
+          isOpen={isOpen}
+          setIsOpen={setIsOpen}
+          dropdownRef={dropdownRef}
+        />
+      </div>
 
 
         <span className="border-r border-gray-200 dark:border-gray-700 h-8" />
@@ -408,7 +483,7 @@ const results = searchableData.filter((item) =>
                   src="/images/user-1.png"
                   height={200}
                   width={200}
-                  alt="profile image"
+                  alt={t("profile_image")}
                   className="group-hover:scale-110 duration-300"
                   quality={100}
                 />
@@ -437,7 +512,7 @@ const results = searchableData.filter((item) =>
                         className="rounded-full"
                         height={250}
                         width={250}
-                        alt="user profile image"
+                        alt={t("user_profile_image")}
                       />
                     </div>
                     <div className="w-2/3 flex flex-col gap-1">
@@ -463,7 +538,7 @@ const results = searchableData.filter((item) =>
                           <FiUser className="text-xl group-hover:scale-110 transition-all duration-300" />
                         </span>
                           <span className="text-slate-400  text-sm dark:text-white/80  ">
-                          View Profile
+                          {t("view_profile")}
                           </span>
                           
                       </Link>
@@ -482,7 +557,7 @@ const results = searchableData.filter((item) =>
                         <FaBuilding className="text-xl group-hover:scale-110 transition-all duration-300" />
                       </span>
                       <span className="text-slate-400  text-sm dark:text-white/80  ">
-                        Company
+                        {t("company")}
                       </span>
                       </Link>
 
@@ -494,7 +569,7 @@ const results = searchableData.filter((item) =>
                     onClick={handleLogout}
                     className="bg-cyan-600 hover:bg-cyan-700 text-white w-full rounded-md py-2.5 capitalize font-medium cursor-pointer"
                   >
-                    Log out
+                    {t("log_out")}
                   </button>
                 </motion.div>
               )}

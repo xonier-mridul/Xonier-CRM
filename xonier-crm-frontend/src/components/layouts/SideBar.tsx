@@ -33,10 +33,12 @@ import { FaRegUser ,FaTasks } from "react-icons/fa";
 import { CiMail } from "react-icons/ci";
 import { IoMailOutline } from "react-icons/io5";
 import { useFeatures } from "@/src/hooks/useFeatures";
+import { useTranslation } from "react-i18next";
 
 
 const SideBar = () => {
   const pathname = usePathname();
+  const {t} = useTranslation()
 
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [activeDashboard,setActiveDashboard] = useState<boolean >(false)
@@ -188,21 +190,21 @@ const SideBar = () => {
             src="/images/trakeroo.png"
             height={200}
             width={220}
-            alt="xonier logo"
+            alt={t("xonier_logo")}
             className="w-46 dark:hidden"
           />
           <Image
             src="/images/trakeroo-light.png"
             height={200}
             width={220}
-            alt="xonier logo"
+            alt={t("xonier_logo")}
             className="w-46 hidden dark:block "
           />
         </Link>
 
         <div className="flex flex-col gap-3 ">
           <h2 className="uppercase text-xs text-gray-500 dark:text-gray-400 pl-3">
-            Home
+            {t('home')}
           </h2>
 
           <ul className="flex flex-col gap-1 ">
@@ -218,7 +220,8 @@ const SideBar = () => {
                 <BiHome className="text-lg" />
 
               </span>
-                Dashboard
+               {t("dashboard")}
+
               </Link>
             </li>
             {(hasPermission(PERMISSIONS.readSalesDashbord) && !auth.isAdmin )&& (
@@ -234,7 +237,9 @@ const SideBar = () => {
                   <MdOutlineLeaderboard className="text-lg" />
 
                   </span>
-                  Sales Dashboard
+               {t("Sales Dashboard")}
+
+
                 </Link>
               </li>
             )}
@@ -251,7 +256,9 @@ const SideBar = () => {
                 
                 <SlCalender className="text-lg" />
                 </span>
-                Calender
+               {t("calender")}
+
+                
               </Link>
             </li>}
 
@@ -270,7 +277,9 @@ const SideBar = () => {
                 
 
                   <HiOutlineAdjustments className="text-lg" /></span>
-                  Prospects
+                                 {t("prospects")}
+
+                  
                 </span>
 
                 <IoChevronDown
@@ -295,7 +304,9 @@ const SideBar = () => {
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        People
+                                                         {t("people")}
+
+                        
                       </Link>
                     </li>
                     }
@@ -308,7 +319,9 @@ const SideBar = () => {
                             : "border-l-2 border-transparent"
                             } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                         >
-                          Company
+                                                                                   {t("company")}
+
+                          
                         </Link>
                       </li>
                     }
@@ -328,7 +341,7 @@ const SideBar = () => {
                        <span  className={`${isActive("/notes")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 <TbNotes className="text-lg" />
                 </span>
-                Notes
+                {t("notes")}
               </Link>
             </li>}
               {
@@ -345,7 +358,8 @@ const SideBar = () => {
                 
                 <MdOutlineNotificationsActive className="text-lg" />
                 </span>
-                Notifications
+                      {t("notifications")}
+                
               </Link>
             </li>}
             
@@ -364,7 +378,7 @@ const SideBar = () => {
                   
                   <FiUser className="text-lg" />
                   </span>
-                  Plans and Subscriptions
+                  {t("plans_and_subscriptions")}
                 </span>
 
                 <IoChevronDown
@@ -391,7 +405,7 @@ const SideBar = () => {
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        Plans
+                        {t("plans")}
                       </Link>
                     </li>}
                     { <li>
@@ -402,7 +416,7 @@ const SideBar = () => {
                             : "border-l-2 border-transparent"
                             } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                         >
-                          Subscriptions
+                          {t("subscriptions")}
                           </Link>
                       </li>
                     }
@@ -424,7 +438,7 @@ const SideBar = () => {
 
 
                   <BsBuildingGear className="text-lg" /></span>
-                  Company Management
+                  {t("company_management")}
                 </span>
 
                 <IoChevronDown
@@ -451,7 +465,7 @@ const SideBar = () => {
                           : "border-l-2 border-transparent px-4"
                           } block  py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        Companies
+                        {t("companies")}
                       </Link>
                     </li>}
                     { <li>
@@ -462,7 +476,7 @@ const SideBar = () => {
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        Create Companies
+                        {t("create_companies")}
                       </Link>
                     </li>}
                     
@@ -485,7 +499,7 @@ const SideBar = () => {
                   <span  className={`${isMenuActive("task")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                     <GoTasklist  className="text-lg"/>
                   </span>
-                  Task Management
+                  {t("task_management")}
                 </span>
 
                 <IoChevronDown
@@ -510,7 +524,7 @@ const SideBar = () => {
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        Tasks
+                        {t("tasks")}
                       </Link>
                     </li>}
                     
@@ -522,7 +536,7 @@ const SideBar = () => {
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        Task Category
+                        {t("task_category")}
                       </Link>
                     </li>}
                     {(hasPermission(PERMISSIONS.taskStatusRead) && (hasFeature(FEATURES.TASK))) && <li>
@@ -533,7 +547,7 @@ const SideBar = () => {
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        Task Status
+                        {t("task_status")}
                       </Link>
                     </li>}
                     {
@@ -545,7 +559,7 @@ const SideBar = () => {
                             : "border-l-2 border-transparent"
                             } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                         >
-                          Task Reports
+                          {t("task_reports")}
                         </Link>
                       </li>
                     }
@@ -558,7 +572,7 @@ const SideBar = () => {
                             : "border-l-2 border-transparent"
                             } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                         >
-                          Today's Task
+                          {t("today's_task")}
                         </Link>
                       </li>
                     }
@@ -581,7 +595,7 @@ const SideBar = () => {
                   <FiUser className="text-lg" />
 
                   </span>
-                  User Management
+                  {t("user_management")}
                 </span>
 
                 <IoChevronDown
@@ -608,7 +622,7 @@ const SideBar = () => {
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        Users
+                        {t("users")}
                       </Link>
                     </li>}
                     {
@@ -620,7 +634,7 @@ const SideBar = () => {
                             : "border-l-2 border-transparent"
                             } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                         >
-                          Deleted Users
+                          {t("deleted_users")}
                           </Link>
                       </li>
                     }
@@ -642,7 +656,7 @@ const SideBar = () => {
 
                   <AiOutlineTeam className="text-lg" />
                   </span>
-                  Team Management
+                  {t("team_management")}
                 </span>
 
                 <IoChevronDown
@@ -668,7 +682,7 @@ const SideBar = () => {
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        Roles
+                        {t("roles")}
                       </Link>
                     </li>}
                     {(hasPermission(PERMISSIONS.readTeamCategory) && !auth.isAdmin ) && <li>
@@ -679,7 +693,7 @@ const SideBar = () => {
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        Teams Categories
+                        {t("teams_categories")}
                       </Link>
                     </li>}
                     {(hasPermission(PERMISSIONS.readTeam)&& !auth.isAdmin) && <li>
@@ -690,7 +704,7 @@ const SideBar = () => {
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        Teams
+                        {t("teams")}
                       </Link>
                     </li>}
                     
@@ -711,7 +725,7 @@ const SideBar = () => {
                    <span className={`${isMenuActive("sales") ?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
                   <BsBarChart className="text-lg" />
                   </span>
-                  Sales
+                  {t("sales")}
                 </span>
 
                 <IoChevronDown
@@ -737,7 +751,7 @@ const SideBar = () => {
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        Enquiry
+                        {t("enquiry")}
                       </Link>
                     </li>}
                     {(hasPermission(PERMISSIONS.readLead) &&  (hasFeature(FEATURES.CRM))) && <li>
@@ -748,7 +762,7 @@ const SideBar = () => {
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        Leads
+                        {t("leads")}
                       </Link>
                     </li>}
                     {(hasPermission(PERMISSIONS.readDeal) &&  (hasFeature(FEATURES.CRM))) && <li>
@@ -759,7 +773,7 @@ const SideBar = () => {
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        Deals
+                        {t("deals")}
                       </Link>
                     </li>}
 
@@ -771,7 +785,7 @@ const SideBar = () => {
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        Quotations
+                        {t("quotations")}
                       </Link>
                     </li>}
                     {(hasPermission(PERMISSIONS.readInvoice) &&  (hasFeature(FEATURES.CRM))) && <li>
@@ -782,7 +796,7 @@ const SideBar = () => {
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        Invoice
+                        {t("invoice")}
                       </Link>
                     </li>}
                   </motion.ul>
@@ -800,7 +814,7 @@ const SideBar = () => {
                        <span  className={`${isActive("/clients")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 <FiUserCheck className="text-lg" />
                 </span>
-                Clients
+                {t("clients")}
               </Link>
             </li>}
 
@@ -816,7 +830,7 @@ const SideBar = () => {
                    <span className={`${isMenuActive("communication") ?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
                   <AiOutlineTeam className="text-lg" />
                   </span>
-                  Communication
+                  {t("communication")}
                 </span>
 
                 <IoChevronDown
@@ -842,7 +856,7 @@ const SideBar = () => {
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        Telephones Numbers
+                        {t("telephones_numbers")}
                       </Link>
                     </li>}
                     {(hasPermission(PERMISSIONS.smsReadLog) &&  (hasFeature(FEATURES.TELECOM)))&& <li>
@@ -853,7 +867,7 @@ const SideBar = () => {
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        Messages
+                        {t("messages")}
                       </Link>
                     </li>}
 
@@ -874,7 +888,7 @@ const SideBar = () => {
                    <span className={`${isMenuActive("emailManagement") ?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
                   <IoMailOutline className="text-lg" />
                   </span>
-                  Email Management
+                  {t("emailManagement")}
                 </span>
 
                 <IoChevronDown
@@ -900,7 +914,7 @@ const SideBar = () => {
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        Templates
+                        {t("templates")}
                       </Link>
                     </li>}
                     {hasPermission(PERMISSIONS.readEmailLog) && <li>
@@ -911,7 +925,7 @@ const SideBar = () => {
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        Outbox
+                        {t("outbox")}
                       </Link>
                     </li>}
                   </motion.ul>
@@ -929,7 +943,7 @@ const SideBar = () => {
                        <span  className={`${isActive("/query")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 <TbNotes className="text-lg" />
                 </span>
-                Query
+                {t("query")}
               </Link>
             </li>}
            
@@ -960,7 +974,7 @@ const SideBar = () => {
 
         <div className="flex flex-col gap-3">
           <h2 className="uppercase text-xs text-gray-500 dark:text-gray-400 pl-3">
-            Auth
+            {t("auth")}
           </h2>
           <ul className="flex flex-col gap-1 w-full">
             <li>
@@ -969,7 +983,7 @@ const SideBar = () => {
                 className={`w-full flex items-center cursor-pointer gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all border-l-2 border-transparent`}
               >
                 <MdOutlineLogout className="text-lg" />
-                Logout
+                {t("logout")}
               </button>
             </li>
             <li>
@@ -983,7 +997,7 @@ const SideBar = () => {
                        <span  className={`${isActive("/profile")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 <FaRegUser className="text-lg" />
                 </span>
-                Profile
+                {t("profile")}
               </Link>
             </li>
             <li>
@@ -997,7 +1011,7 @@ const SideBar = () => {
                        <span  className={`${isActive("/reset-password")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 <RiLockPasswordLine className="text-lg" />
                 </span>
-                Reset password
+                {t("reset_password")}
               </Link>
             </li>
 

@@ -50,10 +50,7 @@ import { PRIORITY_STYLE, STOP_DISPLAY_MS } from "@/src/constants/constants";
 import CategoryBadge from "@/src/components/pages/task/CategoryBadge";
 import BoardView from "@/src/components/pages/task/BoardView";
 import CategoryMultiSelect from "@/src/components/pages/task/CategoryMultiSeclect";
-
-
-
-
+import { useTranslation } from "react-i18next";
 
 function parseBackendDate(dateStr: string): Date {
   if (!dateStr) return new Date();
@@ -105,8 +102,6 @@ function computeTimerState(log: TaskTimeLog): {
   };
 }
 
-
-
 function SkeletonRow({ cols }: { cols: number }) {
   return (
     <tr className="animate-pulse border-b border-gray-50 dark:border-gray-700">
@@ -128,6 +123,8 @@ function ViewToggle({
   view: ViewMode;
   onChange: (v: ViewMode) => void;
 }) {
+  const { t } = useTranslation();
+  
   return (
     <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-700 rounded-xl">
       {(["list", "board"] as ViewMode[]).map((v) => (
@@ -154,17 +151,15 @@ function ViewToggle({
               <rect x="9.5" y="1" width="3.5" height="12" rx="1" fill="currentColor" />
             </svg>
           )}
-          {v.charAt(0).toUpperCase() + v.slice(1)}
+          {t(`view_mode_${v}`)}
         </button>
       ))}
     </div>
   );
 }
 
-
-
-
 const TaskListPage = (): JSX.Element => {
+  const { t } = useTranslation();
   const router = useRouter();
   const { hasPermission } = usePermissions();
 
@@ -301,83 +296,54 @@ const TaskListPage = (): JSX.Element => {
   }, []);
 
   const handleTimer = async (task: TaskItem) => {
-
-    return toast.info("Timer feature currently disabled, coming soon")
-    // try {
-
-    //   const entry = taskTimerMap.get(task.id);
-    //   const isThisRunning = activeTimerTaskId === task.id && entry?.status === "running";
-    //   const isThisPaused = entry?.status === "paused";
-
-    //   if (isThisRunning) {
-    //     if (!canPauseTimer) { toast.error("You don't have permission to pause timers."); return; }
-    //     const res = await TimerService.pause(entry!.logId);
-    //     applyLog(task.id, res.data.data);
-    //     return;
-    //   }
-
-    //   if (isThisPaused) {
-    //     if (!canResumeTimer) { toast.error("You don't have permission to resume timers."); return; }
-    //     if (activeTimerTaskId && activeTimerTaskId !== task.id) {
-    //       toast.error("Please pause your current running timer first. You can only track one task timer at a time.");
-    //       return;
-    //     }
-    //     const res = await TimerService.resume(entry!.logId);
-    //     applyLog(task.id, res.data.data);
-    //     return;
-    //   }
-
-    //   if (!canStartTimer) { toast.error("You don't have permission to start timers."); return; }
-    //   if (activeTimerTaskId && activeTimerTaskId !== task.id) {
-    //     toast.error("Please pause your current running timer first. You can only track one task timer at a time.");
-    //     return;
-    //   }
-
-    //   const res = await TimerService.start(task.id);
-    //   applyLog(task.id, res.data.data);
-    // } catch (error) {
-    //   if (axios.isAxiosError(error))
-    //     toast.error(error.response?.data?.message ?? "Timer action failed");
-    // }
+    return toast.info(t("timer_feature_disabled"));
   };
 
   const handleStop = async (task: TaskItem) => {
-    if (!canStopTimer) { toast.error("You don't have permission to stop timers."); return; }
+    if (!canStopTimer) { 
+      toast.error(t("no_permission_stop_timer")); 
+      return; 
+    }
     const entry = taskTimerMap.get(task.id);
     if (!entry) return;
 
     try {
-      const confirm = await ConfirmPopup({title: "Are you sure", text: "Are you sure for stop task timer, make sure if it stopped then it is not restart again, so if you want pause then click on pause button", btnTxt: "Yes, stop"})
+      const confirm = await ConfirmPopup({
+        title: t("are_you_sure"), 
+        text: t("confirm_stop_timer"), 
+        btnTxt: t("yes_stop")
+      });
 
       if(confirm){
         const res = await TimerService.stop(entry.logId);
-      const log: TaskTimeLog = res.data.data;
-      const finalSeconds = log.totalSeconds ?? entry.displaySeconds;
+        const log: TaskTimeLog = res.data.data;
+        const finalSeconds = log.totalSeconds ?? entry.displaySeconds;
 
-      setTaskTimerMap((prev) => {
-        const next = new Map(prev);
-        next.set(task.id, { logId: entry.logId, status: "stopped", committedSeconds: finalSeconds, segmentStartedAt: null, displaySeconds: finalSeconds });
-        return next;
-      });
-
-      if (activeTimerTaskId === task.id) {
-        setActiveTimerTaskId(null);
-        setLiveElapsedSeconds(0);
-        if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-      }
-
-      toast.success(`Timer stopped — ${formatSeconds(finalSeconds)} logged`);
-
-      setTimeout(() => {
         setTaskTimerMap((prev) => {
           const next = new Map(prev);
-          if (next.get(task.id)?.status === "stopped") next.delete(task.id);
+          next.set(task.id, { logId: entry.logId, status: "stopped", committedSeconds: finalSeconds, segmentStartedAt: null, displaySeconds: finalSeconds });
           return next;
         });
-      }, STOP_DISPLAY_MS);}
+
+        if (activeTimerTaskId === task.id) {
+          setActiveTimerTaskId(null);
+          setLiveElapsedSeconds(0);
+          if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+        }
+
+        toast.success(t("timer_stopped_message", { time: formatSeconds(finalSeconds) }));
+
+        setTimeout(() => {
+          setTaskTimerMap((prev) => {
+            const next = new Map(prev);
+            if (next.get(task.id)?.status === "stopped") next.delete(task.id);
+            return next;
+          });
+        }, STOP_DISPLAY_MS);
+      }
     } catch (error) {
       if (axios.isAxiosError(error))
-        toast.error(error.response?.data?.message ?? "Failed to stop timer");
+        toast.error(error.response?.data?.message ?? t("failed_to_stop_timer"));
     }
   };
 
@@ -403,96 +369,56 @@ const TaskListPage = (): JSX.Element => {
     setRemarkLoad(true);
     try {
       const result = await RemarkService.create(remarkPayload);
-      if (result.status === 201) { handleCloseRemark(); toast.success("Remark created successfully"); }
+      if (result.status === 201) { 
+        handleCloseRemark(); 
+        toast.success(t("remark_created_successfully")); 
+      }
     } catch (error) {
-      if (axios.isAxiosError(error)) toast.error(error.response?.data?.message ?? "Something went wrong");
+      if (axios.isAxiosError(error)) 
+        toast.error(error.response?.data?.message ?? t("something_went_wrong"));
     } finally {
       setRemarkLoad(false);
     }
   };
 
-  // const fetchTaskAll = useCallback(async (silent = false) => {
-  //   if (!silent) setIsLoading(true);
-  //   try {
-  //     const res = await TaskService.getAll({
-  //       currentPage,
-  //       pageLimit: viewMode === "board" ? 500 : pageLimit,
-  //       status: filterStatus || undefined,
-  //       priority: filterPriority || undefined,
-  //       category: filtrCategory.length > 0 ? filtrCategory.join(",") : undefined,
-  //       search: search || undefined,
-  //       user: filterAssigned || undefined,
-  //       fromDate: dateFilter.fromDate || undefined,
-  //       toDate: dateFilter.toDate || undefined,
-  //     });
-  //     if (res.status === 200) {
-  //       const d = res.data?.data || {};
-  //       const tasks: TaskItem[] = d.data ?? [];
-  //       setTaskData(tasks);
-  //       setTotalCount(tasks.length);
-  //       // if (!restoredRef.current && tasks.length > 0) restoreActiveTimer(tasks);
-  //     }
-  //   } catch (e) {
-  //     process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
-  //     if (axios.isAxiosError(e)) toast.error("Failed to load tasks");
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // }, [currentPage, pageLimit, viewMode, filterStatus, filterPriority, filtrCategory, search, filterAssigned, dateFilter, restoreActiveTimer]);
-
-  // const fetchTasks = useCallback(
-  //   (silent = false) => {
-  //     if (debounceRef.current) clearTimeout(debounceRef.current);
-  //     if (silent) {
-  //       debounceRef.current = setTimeout(fetchTaskAll, 3000);
-  //     } else {
-        
-  //       fetchTaskAll();
-  //     }
-  //   },
-  //   [fetchTaskAll],
-  // );
-
-
   const fetchTaskAll = useCallback(async (silent = false) => {
-  if (!silent) setIsLoading(true);   // ← moved here
-  try {
-    const res = await TaskService.getAll({
-      currentPage,
-      pageLimit: viewMode === "board" ? 500 : pageLimit,
-      status: filterStatus || undefined,
-      priority: filterPriority || undefined,
-      category: filtrCategory.length > 0 ? filtrCategory.join(",") : undefined,
-      search: search || undefined,
-      user: filterAssigned || undefined,
-      fromDate: dateFilter.fromDate || undefined,
-      toDate: dateFilter.toDate || undefined,
-    });
-    if (res.status === 200) {
-      const d = res.data?.data || {};
-      const tasks: TaskItem[] = d.data ?? [];
-      setTaskData(tasks);
-      setTotalCount(tasks.length);
+    if (!silent) setIsLoading(true);
+    try {
+      const res = await TaskService.getAll({
+        currentPage,
+        pageLimit: viewMode === "board" ? 500 : pageLimit,
+        status: filterStatus || undefined,
+        priority: filterPriority || undefined,
+        category: filtrCategory.length > 0 ? filtrCategory.join(",") : undefined,
+        search: search || undefined,
+        user: filterAssigned || undefined,
+        fromDate: dateFilter.fromDate || undefined,
+        toDate: dateFilter.toDate || undefined,
+      });
+      if (res.status === 200) {
+        const d = res.data?.data || {};
+        const tasks: TaskItem[] = d.data ?? [];
+        setTaskData(tasks);
+        setTotalCount(tasks.length);
+      }
+    } catch (e) {
+      process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
+    } finally {
+      setIsLoading(false);
     }
-  } catch (e) {
-    process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
-    // if (axios.isAxiosError(e)) toast.error("Failed to load tasks");
-  } finally {
-    setIsLoading(false);
-  }
-}, [currentPage, pageLimit, viewMode, filterStatus, filterPriority, filtrCategory, search, filterAssigned, dateFilter, restoreActiveTimer]);
+  }, [currentPage, pageLimit, viewMode, filterStatus, filterPriority, filtrCategory, search, filterAssigned, dateFilter, restoreActiveTimer]);
 
-const fetchTasks = useCallback(
-  (silent = false) => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (silent) {
-      debounceRef.current = setTimeout(() => fetchTaskAll(true), 3000);
-    } else {
-      fetchTaskAll(false);   
-    }
-  },
-  [fetchTaskAll],
-);
+  const fetchTasks = useCallback(
+    (silent = false) => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (silent) {
+        debounceRef.current = setTimeout(() => fetchTaskAll(true), 3000);
+      } else {
+        fetchTaskAll(false);   
+      }
+    },
+    [fetchTaskAll],
+  );
 
   const fetchStatuses = async () => {
     try {
@@ -516,9 +442,7 @@ const fetchTasks = useCallback(
   };
 
   useEffect(() => { setCurrentPage(1); }, [filterAssigned]);
-  useEffect(() => { fetchStatuses();
-    //  fetchCategories();
-     }, []);
+  useEffect(() => { fetchStatuses(); }, []);
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
   const handleStatusChange = async (taskId: string, payload: FinalStatusPayload): Promise<void> => {
@@ -536,21 +460,30 @@ const fetchTasks = useCallback(
     } catch (e) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
       setTaskData(previousData);
-      if (axios.isAxiosError(e)) toast.error(e.response?.data?.message ?? "Failed to update status");
+      if (axios.isAxiosError(e)) 
+        toast.error(e.response?.data?.message ?? t("failed_to_update_status"));
     }
   };
 
   const handleDelete = async (id: string): Promise<void> => {
     setDeleting(true);
     try {
-      const confirmed = await ConfirmPopup({ title: "Delete Task?", text: "This cannot be undone.", btnTxt: "Yes, Delete" });
+      const confirmed = await ConfirmPopup({ 
+        title: t("delete_task_title"), 
+        text: t("delete_task_message"), 
+        btnTxt: t("yes_delete") 
+      });
       if (confirmed) {
         const res = await TaskService.delete(id);
-        if (res.status === 200) { toast.success("Task deleted successfully"); await fetchTasks(); }
+        if (res.status === 200) { 
+          toast.success(t("task_deleted_successfully")); 
+          await fetchTasks(); 
+        }
       }
     } catch (e) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
-      if (axios.isAxiosError(e)) toast.error(e.response?.data?.message ?? "Something went wrong");
+      if (axios.isAxiosError(e)) 
+        toast.error(e.response?.data?.message ?? t("something_went_wrong"));
     } finally {
       setDeleting(false);
     }
@@ -561,8 +494,13 @@ const fetchTasks = useCallback(
     debounceRef.current = setTimeout(() => { setSearch(val); setCurrentPage(1); }, 300);
   };
 
-  const colCount = showActions ? 8 : 7;
+  const colCount = showActions ? 9 : 8;
   const hasFilters = !!(search || filterStatus || filterPriority || filterAssigned || filtrCategory.length > 0);
+
+  // Get translated priority labels
+  const getPriorityLabel = (priority: string) => {
+    return t(`priority_${priority.toLowerCase()}`);
+  };
 
   return (
     <>
@@ -586,27 +524,27 @@ const fetchTasks = useCallback(
             <div>
               <div className="flex items-center gap-2.5 mb-1">
                 <span className="text-2xl">📋</span>
-                <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">All Tasks</h1>
+                <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">{t("all_tasks")}</h1>
               </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">View, filter, and manage all project tasks.</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t("view_filter_and_manage_all_project")}</p>
             </div>
             {canCreate && (
               <button
                 type="button"
                 onClick={() => router.push("/task/create")}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 active:scale-[0.98] text-white text-sm font-bold shadow-md group cursor-pointer shadow-cyan-200 dark:shadow-cyan-900/40 transition-all"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 active:scale-[0.98] text-white text-sm font-bold shadow-sm group cursor-pointer shadow-cyan-200 dark:shadow-cyan-900/40 transition-all"
               >
-                <span className="group-hover:rotate-90">＋</span> New Task
+                <span className="group-hover:rotate-90">＋</span> {t("new_task")}
               </button>
             )}
           </div>
 
           <div className="grid grid-cols-4 gap-4 mb-7">
             {[
-              { label: "Total Tasks", value: totalCount, icon: "📋", bg: "bg-cyan-50 border-cyan-100", priority: "" },
-              { label: "High", value: taskData.filter((t) => t.priority === TASK_PRIORITY.HIGH).length, icon: "🟠", bg: "bg-orange-50 border-orange-100", priority: TASK_PRIORITY.HIGH },
-              { label: "Urgent", value: taskData.filter((t) => t.priority === TASK_PRIORITY.URGENT).length, icon: "🔴", bg: "bg-rose-50 border-rose-100", priority: TASK_PRIORITY.URGENT },
-              { label: "This Page", value: taskData.length, icon: "📄", bg: "bg-emerald-50 border-emerald-100", priority: "" },
+              { label: t("total_tasks"), value: totalCount, icon: "📋", bg: "bg-cyan-50 border-cyan-100", priority: "" },
+              { label: t("priority_high"), value: taskData.filter((t) => t.priority === TASK_PRIORITY.HIGH).length, icon: "🟠", bg: "bg-orange-50 border-orange-100", priority: TASK_PRIORITY.HIGH },
+              { label: t("priority_urgent"), value: taskData.filter((t) => t.priority === TASK_PRIORITY.URGENT).length, icon: "🔴", bg: "bg-rose-50 border-rose-100", priority: TASK_PRIORITY.URGENT },
+              { label: t("this_page"), value: taskData.length, icon: "📄", bg: "bg-emerald-50 border-emerald-100", priority: "" },
             ].map((s) => (
               <div
                 key={s.label}
@@ -619,7 +557,7 @@ const fetchTasks = useCallback(
                   <div className="text-xs text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1">
                     {s.label}
                     {s.priority && filterPriority === s.priority && (
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-900/40 text-cyan-600 dark:text-cyan-400">active</span>
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-900/40 text-cyan-600 dark:text-cyan-400">{t("active_3")}</span>
                     )}
                   </div>
                 </div>
@@ -633,7 +571,7 @@ const fetchTasks = useCallback(
               <input
                 type="text"
                 onChange={(e) => handleSearch(e.target.value)}
-                placeholder="Search tasks…"
+                placeholder={t("search_tasks")}
                 className="pl-8 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition"
               />
             </div>
@@ -642,9 +580,9 @@ const fetchTasks = useCallback(
               onChange={(e) => { setFilterPriority(e.target.value); setCurrentPage(1); }}
               className="px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition"
             >
-              <option value="">All Priorities</option>
+              <option value="">{t("all_priorities")}</option>
               {Object.values(TASK_PRIORITY).map((p) => (
-                <option key={p} value={p}>{p.charAt(0) + p.slice(1).toLowerCase()}</option>
+                <option key={p} value={p}>{getPriorityLabel(p)}</option>
               ))}
             </select>
             <CategoryMultiSelect categories={categories} isCatLoading={isCatLoading} fetchCategories={fetchCategories}  selected={filtrCategory} onChange={(val) => { setFiltrCategory(val); setCurrentPage(1); }} />
@@ -652,7 +590,7 @@ const fetchTasks = useCallback(
               mode="single"
               value={filterAssigned}
               onChange={setFilterAssigned}
-              placeholder="Search assignee…"
+              placeholder={t("search_assignee")}
               cls="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition"
             />
             <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
@@ -662,7 +600,7 @@ const fetchTasks = useCallback(
                 onClick={() => { setSearch(""); setFilterStatus(""); setFilterPriority(""); setCurrentPage(1); setFilterAssigned(""); setFiltrCategory([]); setDateFilter({ fromDate: "", toDate: "" }); }}
                 className="ml-auto px-3 py-2 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-1.5"
               >
-                <span>✕</span> Clear
+                <span>✕</span> {t("clear")}
               </button>
             )}
             <div className="w-px h-7 bg-gray-200 dark:bg-gray-600 ml-auto" />
@@ -700,22 +638,22 @@ const fetchTasks = useCallback(
 
           {viewMode === "list" && (
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
-              <div className="text-nowrap overflow-x-scroll">
-                <table className="w-full text-sm">
+              <div className="overflow-x-auto">
+                <table className="min-w-max w-full text-sm">
                   <thead>
                     <tr className="bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
                       {[
-                        { label: "#", cls: "w-12" },
-                        { label: "Title", cls: "" },
-                        { label: "Category", cls: "w-36" },
-                        { label: "Status", cls: "w-36" },
-                        { label: "Priority", cls: "w-28" },
-                        { label: "Assigned", cls: "w-28" },
-                        { label: "Created By", cls: "w-28" },
-                        { label: "Due Date", cls: "w-28" },
-                        ...(showActions ? [{ label: "Actions", cls: "w-28 text-right" }] : []),
+                        { label: t("table_number"), cls: "w-12" },
+                        { label: t("table_title"), cls: "min-w-[220px]" },
+                        { label: t("table_category"), cls: "min-w-[140px]" },
+                        { label: t("table_status"), cls: "min-w-[140px]" },
+                        { label: t("table_priority"), cls: "min-w-[120px]" },
+                        { label: t("table_assigned"), cls: "min-w-[140px]" },
+                        { label: t("table_created_by"), cls: "min-w-[140px]" },
+                        { label: t("table_due_date"), cls: "min-w-[130px]" },
+                        ...(showActions ? [{ label: t("table_actions"), cls: "min-w-[120px] text-right" }] : []),
                       ].map((col) => (
-                        <th key={col.label} className={`px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-left ${col.cls}`}>
+                        <th key={col.label} className={`px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-left whitespace-nowrap ${col.cls}`}>
                           {col.label}
                         </th>
                       ))}
@@ -728,11 +666,11 @@ const fetchTasks = useCallback(
                       <tr>
                         <td colSpan={colCount} className="text-center py-20 text-gray-400 dark:text-gray-500">
                           <div className="text-5xl mb-3">📭</div>
-                          <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">No tasks found</p>
-                          {hasFilters && <p className="text-xs text-gray-400 mt-1">Try clearing your filters</p>}
+                          <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">{t("no_tasks_found")}</p>
+                          {hasFilters && <p className="text-xs text-gray-400 mt-1">{t("try_clearing_your_filters")}</p>}
                           {canCreate && !hasFilters && (
                             <button type="button" onClick={() => router.push("/task/create")} className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-cyan-600 bg-cyan-50 hover:bg-cyan-100 border border-cyan-100 transition">
-                              + Create first task
+                              {t("create_first_task")}
                             </button>
                           )}
                         </td>
@@ -766,16 +704,16 @@ const fetchTasks = useCallback(
                             <td className="px-5 py-4">
                               <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${pri.cls}`}>
                                 <span className={`w-1.5 h-1.5 rounded-full ${pri.dot}`} />
-                                {pri.label}
+                                {getPriorityLabel(task.priority)}
                               </span>
                             </td>
                             <td className="px-5 py-4">
                               {task.assignedTo.length === 0 ? (
-                                <span className="text-xs italic text-gray-300 dark:text-gray-600">Unassigned</span>
+                                <span className="text-xs italic text-gray-300 dark:text-gray-600">{t("unassigned")}</span>
                               ) : (
                                 <div className="flex -space-x-2">
                                   {task.assignedTo.slice(0, 2).map((u) => (
-                                    <div key={u.id} title={u.firstName} className="ps-1 rounded-full bg-gradient-to-br from-cyan-400 to-indigo-600 border-2 border-white dark:border-gray-800 flex items-center px-2 py-1 capitalize justify-center text-white text-[12px] font-bold shrink-0">
+                                    <div key={u.id} title={u.firstName} className="ps-1 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 border-2 border-white dark:border-gray-800 flex items-center px-2 py-1 capitalize justify-center text-white text-[12px] font-bold shrink-0">
                                       {u.firstName} {u?.lastName ?? ""}
                                     </div>
                                   ))}
@@ -836,15 +774,15 @@ const fetchTasks = useCallback(
 
               <div className="px-5 py-3.5 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
                 <span className="text-xs text-gray-400 dark:text-gray-500">
-                  Showing page <span className="font-semibold text-gray-600 dark:text-gray-300">{currentPage}</span> of <span className="font-semibold text-gray-600 dark:text-gray-300">{totalCount}</span>
+                  {t("showing_page")} <span className="font-semibold text-gray-600 dark:text-gray-300">{currentPage}</span> {t("of")} <span className="font-semibold text-gray-600 dark:text-gray-300">{totalCount}</span>
                 </span>
                 <div className="flex items-center gap-2">
                   <button type="button" disabled={currentPage <= 1 || isLoading} onClick={() => setCurrentPage((p) => p - 1)} className="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
-                    ← Prev
+                    {t("prev")}
                   </button>
                   <span className="text-xs text-gray-500 dark:text-gray-400 font-medium px-1">{currentPage}</span>
                   <button type="button" disabled={currentPage >= totalCount || isLoading} onClick={() => setCurrentPage((p) => p + 1)} className="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
-                    Next →
+                    {t("next")}
                   </button>
                 </div>
               </div>
