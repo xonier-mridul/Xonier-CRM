@@ -252,7 +252,7 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
           >
             <div className="flex items-center gap-2 min-w-0">
        
-              <span className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 text-[10px] font-bold flex items-center justify-center flex-shrink-0 uppercase">
+              <span className="w-6 h-6 rounded-full bg-cyan-100 dark:bg-cyan-900/50 text-cyan-600 dark:text-cyan-300 text-[10px] font-bold flex items-center justify-center flex-shrink-0 uppercase">
                 {user.firstName?.[0]}{user.lastName?.[0] ?? ""}
               </span>
               <span className="truncate">
@@ -304,14 +304,14 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
         return (
           <span
             key={id}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-700"
           >
             👤 {id === currentUserId ? "You" : label}
             {!disabled && (
               <button
                 type="button"
                 onClick={() => deselect(id)}
-                className="text-indigo-300 hover:text-red-500 dark:hover:text-red-400 transition leading-none"
+                className="text-cyan-300 hover:text-red-500 dark:hover:text-red-400 transition leading-none"
               >
                 ×
               </button>
@@ -329,15 +329,15 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
 
        
         {isSingle && props.value && userMap[props.value] && (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700">
-            <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-300">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-cyan-50 dark:bg-cyan-900/30 border border-cyan-200 dark:border-cyan-700">
+            <span className="text-xs font-semibold text-cyan-600 dark:text-cyan-300">
               👤 {userMap[props.value] ? userName(userMap[props.value]) : props.value}
             </span>
             {!disabled && (
               <button
                 type="button"
                 onClick={() => deselect(props.value)}
-                className="ml-auto text-indigo-300 hover:text-red-500 transition text-sm leading-none"
+                className="ml-auto text-cyan-300 hover:text-red-500 transition text-sm leading-none"
               >
                 ×
               </button>

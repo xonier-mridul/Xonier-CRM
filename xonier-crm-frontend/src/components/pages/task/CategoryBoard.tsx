@@ -187,7 +187,6 @@ function CategoryBoard({
             </div>
           ) : (
             statuses.map((status) => {
-  const { t } = useTranslation();
               const columnTasks = tasks.filter((t) => t?.status?.id === status.id);
               const isDragOver = dragOverStatusId === status.id;
               const isFinal = status.isFinal;

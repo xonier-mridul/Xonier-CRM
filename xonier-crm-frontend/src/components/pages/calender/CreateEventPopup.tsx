@@ -242,7 +242,7 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           
           <div className="col-span-2">
           <Input
-            label={t("description_2")}
+            label={t("description")}
             type="textarea"
             name="description"
             placeholder={t("optional_notes_about_this_event")}
@@ -267,7 +267,7 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             disabled={form.title === "" || form.start === "" }
             className="px-5 py-2 rounded-md text-sm font-medium cursor-hover disabled:cursor-not-allowed bg-cyan-600 hover:bg-cyan-600 disabled:bg-cyan-500  text-white "
           >
-           {isLoading ? "Creating..." : "Create Event"} 
+           {isLoading ? "Creating..." : t("create_event")} 
           </button>
         </div>
       </div>

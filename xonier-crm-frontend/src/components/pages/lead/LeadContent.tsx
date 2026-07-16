@@ -544,14 +544,13 @@ const LeadContent = (): JSX.Element => {
 
 
   const renderLeadRows = (data: Lead[]) => {
-  const { t } = useTranslation();
     if (!isLoading && data.length === 0) return (
       <tr><td className="p-8 text-center text-slate-400 text-sm" colSpan={10}>{t("no_leads_found")}</td></tr>
     );
     if (isLoading) return <SkeletonRows cols={hasPermission(PERMISSIONS.assignLead) && currentTab === TAB.ALL ? 11 : 12} />;
 
     return data.map((item, i) => {
-  const { t } = useTranslation();
+
       const isChecked = selectedLeadIds.has(item.id);
       return (
         <tr key={item.lead_id}
@@ -618,7 +617,6 @@ const LeadContent = (): JSX.Element => {
 
 
   const renderAssignedRows = () => {
-  const { t } = useTranslation();
     if (!isLoading && assignedLeadData.length === 0) return (
       <tr>
         <td colSpan={8} className="py-20 text-center">
@@ -768,7 +766,7 @@ const LeadContent = (): JSX.Element => {
 
               <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg outline-none border border-slate-900/10 flex items-center gap-2">
                 <IoIosSearch className="text-xl text-slate-400" />
-                <input type="text" id="searchbar" className="outline-none bg-transparent text-sm w-36 dark:text-white/70" placeholder={t("search_2")} onChange={(e) => handleSearch(e.target.value)} value={searchVal} />
+                <input type="text" id="searchbar" className="outline-none bg-transparent text-sm w-36 dark:text-white/70" placeholder={t("search_3")} onChange={(e) => handleSearch(e.target.value)} value={searchVal} />
               </div>
               <div>
                 <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
@@ -787,9 +785,9 @@ const LeadContent = (): JSX.Element => {
 
 
           <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-600 pb-3">
-            <TabsButton btnTxt="All Leads" dataLen={leadData.length} no={TAB.ALL} currentVal={currentTab} onClickEvent={() => setCurrentTab(TAB.ALL)} />
-            <TabsButton btnTxt="Won Leads" dataLen={wonLeadData.length} no={TAB.WON} currentVal={currentTab} onClickEvent={() => handleTabs(TAB.WON)} />
-            <TabsButton btnTxt="Lost Leads" dataLen={lostLeadData.length} no={TAB.LOST} currentVal={currentTab} onClickEvent={() => handleTabs(TAB.LOST)} />
+            <TabsButton btnTxt={t("all_leads")} dataLen={leadData.length} no={TAB.ALL} currentVal={currentTab} onClickEvent={() => setCurrentTab(TAB.ALL)} />
+            <TabsButton btnTxt={t("won_leads")} dataLen={wonLeadData.length} no={TAB.WON} currentVal={currentTab} onClickEvent={() => handleTabs(TAB.WON)} />
+            <TabsButton btnTxt={t("lost_leads")} dataLen={lostLeadData.length} no={TAB.LOST} currentVal={currentTab} onClickEvent={() => handleTabs(TAB.LOST)} />
 
 
             {hasPermission(PERMISSIONS.assignLead) && (
@@ -922,9 +920,9 @@ const LeadContent = (): JSX.Element => {
                         </label>
                       </th>
                     )}
-                    {["Client Info", "Phone", "Project Type", "Source", "Status", "Data Tag", "Created Date", "Created By", "Engagement Status", "Actions"]
+                    {["client_info", "phone", "project_type", "source", "status", "data_tag", "created_date", "created_by", "engagement_status", "actions"]
                       .map((h) => {
-  const { t } = useTranslation();
+
                         const filterConfig = (h != 'Status') ? (options[h]) : (currentTab === TAB.ALL && options[h]);
 
                         return (
@@ -932,7 +930,7 @@ const LeadContent = (): JSX.Element => {
                             key={h}
                             className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide"
                           >
-                            {h}
+                            {t(h)}
                             {filterConfig && (
                               <>
                                 <br />
@@ -1027,7 +1025,6 @@ const LeadContent = (): JSX.Element => {
                       </th>
                     )}
                     {["Client Info", "Phone", "Project Type", "Source", "Status", "Data Tag", "Created Date", "Created By", "Engagement Status"].map((h) => {
-  const { t } = useTranslation();
                       const filterConfig = options[h];
                       return (
                         <th

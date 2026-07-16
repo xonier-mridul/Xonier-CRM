@@ -119,8 +119,8 @@ const StatusTable = ({
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 mb-7">
         {[
-          { label: "Total Statuses", value: statusData.length, icon: "📋", color: "bg-cyan-50 border-cyan-100" },
-          { label: "Active", value: statusData.length, icon: "🟢", color: "bg-emerald-50 border-emerald-100" },
+          { label: t("total_statuses"), value: statusData.length, icon: "📋", color: "bg-cyan-50 border-cyan-100" },
+          { label: t("active"), value: statusData.length, icon: "🟢", color: "bg-emerald-50 border-emerald-100" },
           //   { label: "Your Role",      value: isAdmin ? "Admin" : "Member", icon: "🔑", color: "bg-violet-50 border-violet-100" },
         ].map(s => (
           <div key={s.label} className={`flex items-center gap-4 p-4 rounded-2xl border ${s.color}`}>

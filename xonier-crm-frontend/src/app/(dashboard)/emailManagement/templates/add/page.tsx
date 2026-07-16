@@ -77,6 +77,8 @@ const TagInput = ({ tags, onChange }: { tags: string[]; onChange: (t: string[]) 
     if (e.key === "Backspace" && !input && tags.length) onChange(tags.slice(0, -1));
   };
 
+  const {t} = useTranslation()
+
   return (
     <div
       className="flex flex-wrap gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700
@@ -105,7 +107,7 @@ const TagInput = ({ tags, onChange }: { tags: string[]; onChange: (t: string[]) 
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={kd}
         onBlur={() => input.trim() && add(input)}
-        placeholder={tags.length === 0 ? "Type and press Enter or , to add…" : "Add more…"}
+        placeholder={tags.length === 0 ? t("type_and_press_enter_or_comma_to_add") : t("add_more")}
         className="flex-1 min-w-[160px] bg-transparent text-sm text-black dark:text-white placeholder-gray-400 outline-none py-0.5 px-1"
       />
     </div>
@@ -578,7 +580,7 @@ const Page = (): JSX.Element => {
                 <input
                   type="text"
                   required
-                  placeholder={t("e_g_welcome_to_company_customer_name")}
+                  placeholder={t("subject")}
                   value={form.subject}
                   onChange={(e) => setForm({ ...form, subject: e.target.value })}
                   className={inputClass(!!err)}
@@ -633,7 +635,7 @@ const Page = (): JSX.Element => {
                 <textarea
                   rows={3}
                   // placeholder="Describe the email you'd like to generate…"
-                  placeholder={"Ai template genration functionality is coming soon..."}
+                  placeholder={t("ai_template_generation_functionality_is_coming_soon")}
                   disabled
                   onChange={(e) => setForm({ ...form, aiPrompt: e.target.value })}
                   className={textareaClass()}

@@ -710,7 +710,7 @@ const Page = (): JSX.Element => {
               <option value={24}>{t("24_per_page")}</option>
             </select>
             <SecondaryButton
-              text="Add Notes"
+              text={t("add_notes")}
               onClickEvt={handlePopup}
               icon={<MdOutlineNoteAlt />}
             />
@@ -754,13 +754,13 @@ const Page = (): JSX.Element => {
           <div className="flex flex-col items-center justify-center py-20 text-gray-500 dark:text-gray-400">
             <TbNotes className="w-20 h-20 mb-4 opacity-30" />
             <h3 className="text-xl font-semibold mb-2">{t("no_notes_found")}</h3>
-            <p className="text-sm">
-              {active === ACTIVE.IMPORTANT
-                ? "You don't have any pinned notes yet"
-                : active === ACTIVE.PRIVATE
-                ? "You don't have any private notes yet"
-                : "Start by creating your first note"}
-            </p>
+           <p className="text-sm">
+  {active === ACTIVE.IMPORTANT
+    ? t("no_pinned_notes_yet")
+    : active === ACTIVE.PRIVATE
+    ? t("no_private_notes_yet")
+    : t("start_by_creating_your_first_note")}
+</p>
           </div>
         )}
       </div>

@@ -59,7 +59,7 @@ const DealContent = (): JSX.Element => {
 
 
 
-  const getDealData = async () => {
+ const getDealData = async () => {
     setIsLoading(true);
     try {
       const result = await dealService.getAll(currentPage, pageLimit, { ...filters, userid, ...dateFilter });
@@ -294,7 +294,7 @@ const DealContent = (): JSX.Element => {
               {!isLoading ? 
               ((dealData && Array.isArray(dealData) && dealData.length > 0) ? (
                 dealData.map((item, i) => {
-                  let rr = i % 2 == 0;
+                  const rr = i % 2 == 0;
 
 
                   const date = formatDate(item.createDate)
@@ -401,7 +401,7 @@ const DealContent = (): JSX.Element => {
                 })
               ) : <tr><td className="p-4 text-center text-slate-500 dark:text-white/70" colSpan={6}>{t("data_not_found")}</td></tr>) : (
                 Array.from({ length: 10 }).map((item, i) => {
-                  let rr = i % 2 == 0;
+                  const rr = i % 2 == 0;
 
                   return (<tr key={i}
                     className={`${rr
@@ -477,7 +477,7 @@ const DealContent = (): JSX.Element => {
             <tbody className="">
               {!isLoading ? ((wonDealData && Array.isArray(wonDealData) && wonDealData.length > 0) ? (
                 wonDealData.map((item, i) => {
-                  let rr = i % 2 == 0;
+                  const rr = i % 2 == 0;
 
                   // const maskMail = maskEmail(item.email)
                   // const maskNumber = maskPhone(item.phone)
@@ -564,7 +564,7 @@ const DealContent = (): JSX.Element => {
                 })
               ) : <tr> <td className="p-4 text-center text-slate-500 dark:text-white/70" colSpan={7}>{t("data_not_found")}</td></tr>) : (
                 Array.from({ length: 10 }).map((item, i) => {
-                  let rr = i % 2 == 0;
+                  const rr = i % 2 == 0;
 
                   return (<tr key={i}
                     className={`${rr
@@ -642,7 +642,7 @@ const DealContent = (): JSX.Element => {
             <tbody className="">
               {!isLoading ? (lostDealData && Array.isArray(lostDealData) && lostDealData.length > 0 ? (
                 lostDealData.map((item, i) => {
-                  let rr = i % 2 == 0;
+                  const rr = i % 2 == 0;
 
                   // const maskMail = maskEmail(item.email)
                   // const maskNumber = maskPhone(item.phone)
@@ -729,7 +729,7 @@ const DealContent = (): JSX.Element => {
                 })
               ) : <tr> <td className="p-4 text-center text-slate-500 dark:text-white/70" colSpan={7}>{t("data_not_found")}</td></tr>) : (
                 Array.from({ length: 10 }).map((item, i) => {
-                  let rr = i % 2 == 0;
+                  const rr = i % 2 == 0;
 
                   return (<tr key={i}
                     className={`${rr

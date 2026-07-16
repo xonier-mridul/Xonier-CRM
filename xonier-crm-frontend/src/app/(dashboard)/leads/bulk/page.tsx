@@ -524,7 +524,6 @@ const BulkLeadUpload = (): JSX.Element => {
 
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {paginatedData.map((lead, pageIdx) => {
-  const { t } = useTranslation();
                   const globalIdx = (currentPage - 1) * ITEMS_PER_PAGE + pageIdx;
                   const rowErrs = getErrorsForRow(globalIdx);
                   const isInvalid = rowErrs.length > 0;
@@ -573,7 +572,6 @@ const BulkLeadUpload = (): JSX.Element => {
                       </td>
 
                       {csvHeaders.map((header) => {
-  const { t } = useTranslation();
                         const value = lead[header];
                         const hasErr = fieldHasError(header);
                         const errMsg = rowErrs.find((e) => e.field === header)?.message;

@@ -119,7 +119,7 @@ export default function DateFilterButton({ dateFilter, onChange }: Props) {
   const dayCount = dayCountLabel(dateFilter);
   const triggerLabel = isActive
     ? dayCount ?? `${dateFilter.fromDate} → ${dateFilter.toDate}`
-    : "Filter date";
+    : t("filter_date");
 
   return (
     <div ref={wrapRef} className="relative inline-block">
@@ -158,7 +158,7 @@ export default function DateFilterButton({ dateFilter, onChange }: Props) {
 
 
           <p className="text-[10px] font-bold tracking-widest uppercase mb-2.5 text-gray-400 dark:text-gray-600">
-            {t("quick_ranges_2")}
+            {t("quick_ranges")}
           </p>
 
           <div className="flex flex-wrap gap-1.5 mb-4">
@@ -183,7 +183,7 @@ export default function DateFilterButton({ dateFilter, onChange }: Props) {
           <hr className="border-t mb-4 border-gray-200 dark:border-white/10" />
 
           <p className="text-[10px] font-bold tracking-widest uppercase mb-2.5 text-gray-400 dark:text-gray-600">
-            {t("custom_range_2")}
+            {t("custom_range")}
           </p>
 
           {from && to && (

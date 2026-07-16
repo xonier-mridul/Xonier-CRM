@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import { TaskActivity, TaskItem, TASK_PRIORITY, TimeStatus } from "@/src/types/task/task.types";
 import { PERMISSIONS, TASK_ACTIVITY_ACTION } from "@/src/constants/enum";
@@ -96,9 +96,9 @@ const PRIORITY_CONFIG: Record<TASK_PRIORITY, { label: string; colorClass: string
 
 const ACTION_CONFIG: Record<TASK_ACTIVITY_ACTION, { icon: React.ReactNode; color: string; dot: string; bg: string }> = {
   [TASK_ACTIVITY_ACTION.CREATED]: { icon: <CircleDot size={12} />, color: "text-emerald-600 dark:text-emerald-400", dot: "bg-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
-  [TASK_ACTIVITY_ACTION.STATUS_CHANGED]: { icon: <ArrowUpDown size={12} />, color: "text-violet-600 dark:text-violet-400", dot: "bg-violet-500", bg: "bg-violet-50 dark:bg-violet-900/20" },
+  [TASK_ACTIVITY_ACTION.STATUS_CHANGED]: { icon: <ArrowUpDown size={12} />, color: "text-cyan-600 dark:text-cyan-400", dot: "bg-cyan-500", bg: "bg-cyan-50 dark:bg-cyan-900/20" },
   [TASK_ACTIVITY_ACTION.ASSIGNED]: { icon: <UserPlus size={12} />, color: "text-sky-600 dark:text-sky-400", dot: "bg-sky-500", bg: "bg-sky-50 dark:bg-sky-900/20" },
-  [TASK_ACTIVITY_ACTION.REASSIGNED]: { icon: <UserCheck size={12} />, color: "text-indigo-600 dark:text-indigo-400", dot: "bg-indigo-500", bg: "bg-indigo-50 dark:bg-indigo-900/20" },
+  [TASK_ACTIVITY_ACTION.REASSIGNED]: { icon: <UserCheck size={12} />, color: "text-cyan-600 dark:text-cyan-400", dot: "bg-cyan-500", bg: "bg-cyan-50 dark:bg-cyan-900/20" },
   [TASK_ACTIVITY_ACTION.PRIORITY_CHANGED]: { icon: <ChevronsUp size={12} />, color: "text-amber-600 dark:text-amber-400", dot: "bg-amber-500", bg: "bg-amber-50 dark:bg-amber-900/20" },
   [TASK_ACTIVITY_ACTION.DUE_DATE_CHANGED]: { icon: <Calendar size={12} />, color: "text-rose-600 dark:text-rose-400", dot: "bg-rose-500", bg: "bg-rose-50 dark:bg-rose-900/20" },
   [TASK_ACTIVITY_ACTION.COMMENTED]: { icon: <MessageSquare size={12} />, color: "text-slate-600 dark:text-slate-400", dot: "bg-slate-500", bg: "bg-slate-50 dark:bg-slate-900/20" },
@@ -153,12 +153,12 @@ const formatRelativeTime = (date: string): string => {
 const AvatarCircle = ({ name, avatar, size = "sm" }: { name: string; avatar?: string; size?: "sm" | "md" | "lg" }) => {
   const sizeClass = size === "lg" ? "w-10 h-10 text-sm" : size === "md" ? "w-8 h-8 text-xs" : "w-6 h-6 text-[10px]";
   const colors = [
-    "bg-gradient-to-br from-violet-500 to-purple-600",
+    "bg-gradient-to-br from-cyan-500 to-cyan-600",
     "bg-gradient-to-br from-sky-500 to-blue-600",
     "bg-gradient-to-br from-emerald-500 to-teal-600",
     "bg-gradient-to-br from-amber-500 to-orange-500",
     "bg-gradient-to-br from-rose-500 to-pink-600",
-    "bg-gradient-to-br from-indigo-500 to-blue-600",
+    "bg-gradient-to-br from-cyan-500 to-blue-600",
   ];
   const color = colors[name.charCodeAt(0) % colors.length];
   if (avatar)
@@ -254,7 +254,7 @@ const ActivityLog = ({ activities, loading }: { activities: TaskActivity[]; load
 
   const barColor =
     progressPercent === 100 ? "from-emerald-400 to-emerald-500" :
-      progressPercent >= 60 ? "from-violet-500 to-purple-600" :
+      progressPercent >= 60 ? "from-cyan-500 to-cyan-600" :
         progressPercent >= 30 ? "from-amber-400 to-orange-400" :
           "from-slate-300 to-slate-400";
 
@@ -266,7 +266,7 @@ const ActivityLog = ({ activities, loading }: { activities: TaskActivity[]; load
       <div className="shrink-0 px-5 pt-4 pb-0">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-linear-to-r from-violet-500 to-purple-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-linear-to-r from-cyan-500 to-cyan-600 flex items-center justify-center">
               <Activity size={15} className="text-white" />
             </div>
             <div>
@@ -275,7 +275,7 @@ const ActivityLog = ({ activities, loading }: { activities: TaskActivity[]; load
             </div>
           </div>
           {activities.length > 0 && (
-            <span className="text-xs bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 px-3 py-1.5 rounded-full font-bold border border-violet-100 dark:border-violet-800">
+            <span className="text-xs bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 px-3 py-1.5 rounded-full font-bold border border-cyan-100 dark:border-cyan-800">
               {activities.length} {t("events")}
             </span>
           )}
@@ -337,7 +337,6 @@ const ActivityLog = ({ activities, loading }: { activities: TaskActivity[]; load
         ) : (
           <div className="space-y-1 pb-2">
             {activities.map((activity, index) => {
-  const { t } = useTranslation();
               const cfg = ACTION_CONFIG[activity.action] ?? { icon: <CircleDot size={12} />, color: "text-gray-500", dot: "bg-gray-400", bg: "bg-gray-50 dark:bg-gray-800" };
               const isLast = index === activities.length - 1;
               return (
@@ -419,8 +418,8 @@ const SubTaskItem = ({ subtask, isToggling, onToggle, onDelete, onEdit }: SubTas
           subtask.isCompleted
             ? "bg-emerald-500 border-emerald-500 cursor-not-allowed"
             : isToggling
-            ? "border-violet-300 cursor-wait animate-pulse"
-            : "border-gray-300 dark:border-gray-600 hover:border-violet-500 cursor-pointer"
+            ? "border-cyan-300 cursor-wait animate-pulse"
+            : "border-gray-300 dark:border-gray-600 hover:border-cyan-500 cursor-pointer"
         }`}
       >
         {subtask.isCompleted && <Check size={11} className="text-white" />}
@@ -437,7 +436,7 @@ const SubTaskItem = ({ subtask, isToggling, onToggle, onDelete, onEdit }: SubTas
             if (e.key === "Enter") handleEditSubmit();
             if (e.key === "Escape") { setEditing(false); setEditTitle(subtask.title); }
           }}
-          className="flex-1 text-sm bg-transparent border-b border-violet-400 focus:outline-none text-gray-800 dark:text-gray-200"
+          className="flex-1 text-sm bg-transparent border-b border-cyan-400 focus:outline-none text-gray-800 dark:text-gray-200"
         />
       ) : (
         <span
@@ -607,7 +606,7 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
 
   const barColor =
     pct === 100 ? "from-emerald-400 to-emerald-500" :
-    pct >= 60 ? "from-violet-400 to-violet-600" :
+    pct >= 60 ? "from-cyan-400 to-cyan-600" :
     pct >= 30 ? "from-amber-400 to-amber-500" :
     "from-gray-300 to-gray-400";
 
@@ -615,9 +614,9 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
     <div className="bg-white dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
 
      
-      <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-violet-50/50 to-purple-50/30 dark:from-violet-900/10 dark:to-purple-900/5">
+      <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-cyan-50/50 to-cyan-50/30 dark:from-cyan-900/10 dark:to-cyan-900/5">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">
             <ListChecks size={15} className="text-white" />
           </div>
           <div>
@@ -627,14 +626,14 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
             )}
           </div>
           {total > 0 && (
-            <span className="text-xs bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 px-2 py-0.5 rounded-full font-bold">
+            <span className="text-xs bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 px-2 py-0.5 rounded-full font-bold">
               {total}
             </span>
           )}
         </div>
         <button
           onClick={() => setAdding(true)}
-          className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white transition-colors"
+          className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white transition-colors"
         >
           <Plus size={13} /> {t("add_sub_task")}
         </button>
@@ -702,8 +701,8 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
 
         {/* ── Add input ── */}
         {adding && (
-          <div className="flex items-center gap-2 p-3.5 bg-violet-50/60 dark:bg-violet-900/10 border border-violet-200 dark:border-violet-800 rounded-xl">
-            <Circle size={16} className="text-violet-300 dark:text-violet-600 shrink-0" />
+          <div className="flex items-center gap-2 p-3.5 bg-cyan-50/60 dark:bg-cyan-900/10 border border-cyan-200 dark:border-cyan-800 rounded-xl">
+            <Circle size={16} className="text-cyan-300 dark:text-cyan-600 shrink-0" />
             <input
               autoFocus
               value={newTitle}
@@ -725,12 +724,12 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
                 if (e.key === "Escape") { setAdding(false); setNewTitle(""); }
               }}
               placeholder={t("hours")}
-              className="w-20 text-sm bg-transparent focus:outline-none text-gray-800 dark:text-gray-200 placeholder-gray-400 border-l border-violet-200 dark:border-violet-800 pl-2"
+              className="w-20 text-sm bg-transparent focus:outline-none text-gray-800 dark:text-gray-200 placeholder-gray-400 border-l border-cyan-200 dark:border-cyan-800 pl-2"
             />
             <div className="flex items-center gap-1 shrink-0">
               <button
                 onClick={handleAdd}
-                className="p-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white transition-colors"
+                className="p-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white transition-colors"
               >
                 <Plus size={13} />
               </button>
@@ -758,7 +757,7 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
               {filter === "all" ? "No sub-tasks yet" : `No ${filter} sub-tasks`}
             </p>
             {filter === "all" && (
-              <button onClick={() => setAdding(true)} className="text-xs text-violet-500 hover:underline font-semibold">
+              <button onClick={() => setAdding(true)} className="text-xs text-cyan-500 hover:underline font-semibold">
                 {t("add_your_first_sub_task")}
               </button>
             )}
@@ -899,10 +898,47 @@ setTaskData(result.data.data);
     }
     return 0;
   })();
+  const getStatusLabel = (statusName: string) => {
+  // Create a mapping of status names to translation keys
+  const statusMap: { [key: string]: string } = {
+    'pending': 'status_pending',
+    'in_progress': 'status_in_progress', 
+    'completed': 'status_completed',
+    'cancelled': 'status_cancelled',
+    'on_hold': 'status_on_hold',
+    'review': 'status_review',
+    // Add more status mappings as needed
+  };
+
+  const normalizedStatus = statusName?.toLowerCase().replace(/\s+/g, '_');
+  const translationKey = statusMap[normalizedStatus];
+  
+  // Return translation if exists, otherwise return original name
+  return translationKey ? t(translationKey) : statusName;
+};
+
+const getPriorityLabel = (priorityKey: string) => {
+  const priorityMap: { [key: string]: string } = {
+    'high': 'priority_high',
+    'medium': 'priority_medium', 
+    'low': 'priority_low',
+    'urgent': 'priority_urgent',
+    'critical': 'priority_critical',
+  };
+
+  const normalizedPriority = priorityKey?.toLowerCase();
+  const translationKey = priorityMap[normalizedPriority];
+  
+  return translationKey ? t(translationKey) : priorityKey;
+};
+
+console.log("taskStatus:",taskData.status.name)
+
+
 
   const taskProgressColor =
     taskProgressPct === 100 ? "from-emerald-400 to-emerald-500" :
-      taskProgressPct >= 60 ? "from-violet-500 to-purple-600" :
+      taskProgressPct >= 60 ? "from-cyan-500 to-cyan-600" :
         taskProgressPct >= 30 ? "from-amber-400 to-orange-400" :
           "from-gray-300 to-gray-400";
   const statusColor = getColorOption(taskData.status.color);
@@ -915,7 +951,7 @@ setTaskData(result.data.data);
           <div className="relative overflow-hidden rounded-2xl border-gray-200 dark:border-gray-700 ">
             
             <div className="absolute inset-0  pointer-events-none" />
-            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-violet-100/50 to-transparent dark:from-violet-900/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-cyan-100/50 to-transparent dark:from-cyan-900/20 rounded-full blur-3xl pointer-events-none" />
 
             <div className="relative p-6">
               
@@ -949,24 +985,22 @@ setTaskData(result.data.data);
 
                  
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border border-slate-400
+                <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border border-slate-400
                           ${statusColor.bg}
                           ${statusColor.text}
                         `}
+                      >
+                        <span className={`w-2 h-2 rounded-full animate-pulse border ${statusColor.text}`} />
+                        {getStatusLabel(taskData.status?.name ?? taskData.statusName)}
+                      </span>
 
-                    >
-                      <span className={`w-2 h-2 rounded-full animate-pulse border ${statusColor.text}`} />
-                      {taskData.status?.name ?? taskData.statusName}
-                    </span>
-
-                    <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold ${priority.bgClass} ${priority.colorClass}`}>
-                      {priority.icon}
-                      {priority.label}
-                    </span>
-
+                      <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold ${priority.bgClass} ${priority.colorClass}`}>
+                        {priority.icon}
+                        {getPriorityLabel(priority.label)}
+                      </span>
                     {taskData.isRecurring && (
-                      <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40">
+                      <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 border border-cyan-100 dark:border-cyan-900/40">
                         <RefreshCw size={11} />
                         {t("recurring_2")} {taskData.recurrenceType}
                       </span>
@@ -1010,7 +1044,7 @@ setTaskData(result.data.data);
                         : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
                       }`}>
                       <p className={`text-[10px] font-black uppercase tracking-widest mb-0.5 ${isOverdue ? "text-red-400" : isDueSoon ? "text-amber-500" : "text-gray-400"}`}>
-                        {isOverdue ? "⚠ Overdue" : isDueSoon ? "⏰ Due Soon" : "Due Date"}
+                        {isOverdue ? `⚠ ${t("overdue")}` : isDueSoon ? `⏰ ${t("due_soon")}` : `${t("due_date")}`}
                       </p>
                       <p className={`text-sm font-black ${isOverdue ? "text-red-600 dark:text-red-400" : isDueSoon ? "text-amber-600 dark:text-amber-400" : "text-gray-800 dark:text-gray-100"}`}>
                         {formatDate(taskData.dueDate as string)}
@@ -1021,7 +1055,7 @@ setTaskData(result.data.data);
                     <div className="flex items-center gap-2.5 px-3 py-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700">
                       <AvatarCircle name={`${taskData.createdBy.firstName} ${taskData.createdBy.lastName ?? ""}`} size="md" />
                       <div className="min-w-0">
-                        <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{t("created_by_3")}</p>
+                        <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{t("created_by")}</p>
                         <p className="text-xs font-semibold text-gray-700 dark:text-gray-200 truncate">{taskData.createdBy.firstName}</p>
                       </div>
                     </div>
@@ -1033,36 +1067,36 @@ setTaskData(result.data.data);
           </div>
 
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <StatCard
-              label={t("estimated")}
-              value={taskData.estimatedHours ? `${taskData.estimatedHours}h` : "—"}
-              sub="planned hours"
-              icon={<Timer size={18} className="text-white" />}
-              accent="bg-violet-500"
-            />
-            <StatCard
-              label={t("actual")}
-              value={taskData?.totalSeconds ? `${ConvertSecondToTime(taskData?.totalSeconds + lastStartSecond + timeCount) }`: "Not found"}
-              sub="hours logged (hh:mm:ss)"
-              icon={<Clock size={18} className="text-white" />}
-              accent="bg-blue-500"
-            />
-            <StatCard
-              label={t("activities")}
-              value={taskActivity.length || "0"}
-              sub="events recorded"
-              icon={<Zap size={18} className="text-white" />}
-              accent="bg-amber-500"
-            />
-            <StatCard
-              label={t("priority")}
-              value={priority.label}
-              sub="task urgency"
-              icon={<Star size={18} className="text-white" />}
-              accent="bg-rose-500"
-            />
-          </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+  <StatCard
+    label={t("estimated")}
+    value={taskData.estimatedHours ? `${taskData.estimatedHours}h` : "—"}
+    sub={t("planned_hours")}
+    icon={<Timer size={18} className="text-white" />}
+    accent="bg-cyan-500"
+  />
+  <StatCard
+    label={t("actual")}
+    value={taskData?.totalSeconds ? `${ConvertSecondToTime(taskData?.totalSeconds + lastStartSecond + timeCount)}` : t("not_found")}
+    sub={t("hours_logged")}
+    icon={<Clock size={18} className="text-white" />}
+    accent="bg-blue-500"
+  />
+  <StatCard
+    label={t("activities")}
+    value={taskActivity.length || "0"}
+    sub={t("events_recorded")}
+    icon={<Zap size={18} className="text-white" />}
+    accent="bg-amber-500"
+  />
+  <StatCard
+    label={t("priority")}
+    value={priority.label}
+    sub={t("task_urgency")}
+    icon={<Star size={18} className="text-white" />}
+    accent="bg-rose-500"
+  />
+</div>
 
           {/* ── Main grid ── */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
@@ -1109,7 +1143,7 @@ setTaskData(result.data.data);
                   <div className="p-5">
                     <div className="flex flex-wrap gap-2">
                       {taskData.tags.map((tag) => (
-                        <span key={tag} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-600 hover:border-violet-200 transition-colors">
+                        <span key={tag} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 hover:text-cyan-600 hover:border-cyan-200 transition-colors">
                           <Tag size={10} /> {tag}
                         </span>
                       ))}
@@ -1159,16 +1193,16 @@ setTaskData(result.data.data);
               
               <div className="bg-white dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-lg bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center">
-                    <TrendingUp size={13} className="text-violet-500 dark:text-violet-400" />
+                  <div className="w-7 h-7 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 flex items-center justify-center">
+                    <TrendingUp size={13} className="text-cyan-500 dark:text-cyan-400" />
                   </div>
                   <h3 className="text-sm font-bold text-gray-900 dark:text-white">{t("time_tracking")}</h3>
                 </div>
                 <div className="p-4 space-y-4">
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-linear-to-br from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/10 rounded-xl p-3 text-center border border-violet-100 dark:border-violet-900/30">
-                      <p className="text-[10px] font-black uppercase tracking-wider text-violet-400 mb-1">{t("estimated")}</p>
-                      <p className="text-2xl font-black text-violet-700 dark:text-violet-300">
+                    <div className="bg-linear-to-br from-cyan-50 to-cyan-50 dark:from-cyan-900/20 dark:to-cyan-900/10 rounded-xl p-3 text-center border border-cyan-100 dark:border-cyan-900/30">
+                      <p className="text-[10px] font-black uppercase tracking-wider text-cyan-400 mb-1">{t("estimated")}</p>
+                      <p className="text-2xl font-black text-cyan-700 dark:text-cyan-300">
                         {taskData.estimatedHours ?? "—"}
                         {taskData.estimatedHours && <span className="text-xs font-bold opacity-60 ml-0.5">h</span>}
                       </p>
@@ -1190,7 +1224,7 @@ setTaskData(result.data.data);
                       </div>
                       <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-linear-to-br from-violet-400 to-violet-600 rounded-full transition-all"
+                          className="h-full bg-linear-to-br from-cyan-400 to-cyan-600 rounded-full transition-all"
                           style={{ width: `${Math.min(100, ((taskData?.totalSeconds ? (taskData?.totalSeconds + lastStartSecond + timeCount) : 0) / (taskData.estimatedHours*3600)) * 100)}%` }}
                         />
                       </div>
@@ -1205,15 +1239,15 @@ setTaskData(result.data.data);
               {taskData.isRecurring && (
                 <div className="bg-white dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700  overflow-hidden">
                   <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
-                      <RefreshCw size={13} className="text-indigo-500 dark:text-indigo-400" />
+                    <div className="w-7 h-7 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 flex items-center justify-center">
+                      <RefreshCw size={13} className="text-cyan-500 dark:text-cyan-400" />
                     </div>
                     <h3 className="text-sm font-bold text-gray-900 dark:text-white">{t("recurrence")}</h3>
                   </div>
                   <div className="p-4 space-y-2">
                     <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700">
                       <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold">{t("frequency")}</span>
-                      <span className="text-xs font-black capitalize text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2.5 py-1 rounded-lg">{taskData.recurrenceType}</span>
+                      <span className="text-xs font-black capitalize text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/20 px-2.5 py-1 rounded-lg">{taskData.recurrenceType}</span>
                     </div>
                     {taskData.recurrenceEndsAt && (
                       <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700">
@@ -1305,16 +1339,16 @@ setTaskData(result.data.data);
                 {/* remark message task.remark */}
                 <div className="px-5 py-3.5 border-t border-gray-100 dark:border-gray-700">
                   {taskData.remark ? (
-                    <p className="px-3 text-sm text-purple-900 dark:text-white bg-purple-100 dark:bg-purple-800 p-3 rounded-2xl">
+                    <p className="px-3 text-sm text-cyan-900 dark:text-white bg-cyan-100 dark:bg-cyan-800 p-3 rounded-2xl">
                       {taskData.remark.split("\n").map((line, i) => (
                         <span key={i} className="flex items-start gap-2 mb-1">
-                          <span className="text-purple-600 dark:text-purple-300 leading-5 mt-[2px]">•</span>
+                          <span className="text-cyan-600 dark:text-cyan-300 leading-5 mt-[2px]">•</span>
                           <span className="leading-5">{line}</span>
                         </span>
                       ))}
                     </p>
                   ) : (
-                    <p className="px-3 text-sm text-purple-900 dark:text-white bg-purple-100 dark:bg-purple-800 p-2 rounded rounded-full text-center">
+                    <p className="px-3 text-sm text-cyan-900 dark:text-white bg-cyan-100 dark:bg-cyan-800 p-2 rounded rounded-full text-center">
                       {t("no_remarks_available")}
                     </p>
                   )}

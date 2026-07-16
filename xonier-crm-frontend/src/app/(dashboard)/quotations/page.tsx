@@ -350,7 +350,7 @@ const page = (): JSX.Element => {
             </select>
             <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2 dark:text-white/70">
               <IoIosSearch className="text-xl text-slate-400" />
-              <input type="text" className="outline-none bg-transparent" placeholder={t("search_2")} value={searchVal} onChange={(e)=> handleSearch(e.target.value)}/>
+              <input type="text" className="outline-none bg-transparent" placeholder={t("search_3")} value={searchVal} onChange={(e)=> handleSearch(e.target.value)}/>
             </div>
             <div>
               <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
@@ -368,7 +368,7 @@ const page = (): JSX.Element => {
         <ul className="w-full flex items-center gap-5">
           <li>
             <TabsButton
-              btnTxt="All Quotations"
+              btnTxt={t("all_quotations")}
               dataLen={quoteData.length}
               no={1}
               currentVal={currentTab}
@@ -377,7 +377,7 @@ const page = (): JSX.Element => {
           </li>
           <li>
             <TabsButton
-              btnTxt="Won Quotations"
+              btnTxt={t("won_quotations")}
               dataLen={wonQuoteData.length}
               no={2}
               currentVal={currentTab}
@@ -386,7 +386,7 @@ const page = (): JSX.Element => {
           </li>
           <li>
             <TabsButton
-              btnTxt="Lost Quotations"
+              btnTxt={t("lost_quotations")}
               dataLen={lostQuoteData.length}
               no={3}
               currentVal={currentTab}

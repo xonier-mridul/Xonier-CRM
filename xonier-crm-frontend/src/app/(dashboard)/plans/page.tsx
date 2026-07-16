@@ -169,7 +169,7 @@ const PlansPage = (): JSX.Element => {
         </div>
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-colors"
+          className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-colors"
         >
           <IoAdd className="text-lg" />
           {t("new_plan")}

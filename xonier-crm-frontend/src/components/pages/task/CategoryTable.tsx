@@ -189,7 +189,7 @@ const CategoryTable = ({
                                 {t("category")}
                             </th>
                             <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                {t("description_2")}
+                                {t("description")}
                             </th>
                             <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                 {t("color")}
@@ -269,7 +269,7 @@ const CategoryTable = ({
                                             </div>
                                         </td>
                                         <td className="px-5 py-4">
-                                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                            <span className="text-sm capitalize text-gray-500 dark:text-gray-400">
                                                 {c.createdBy?.firstName + " " + c.createdBy?.lastName}
                                             </span>
                                         </td>

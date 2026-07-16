@@ -181,6 +181,7 @@ const page = (): JSX.Element => {
         toast.error("Deal name is required")
         return
       }
+      console.log("formdata in deal create:",formData)
       const result = await dealService.create(formData);
       if (result.status === 201) {
         toast.success(`${formData.dealName} deal created successfully`);

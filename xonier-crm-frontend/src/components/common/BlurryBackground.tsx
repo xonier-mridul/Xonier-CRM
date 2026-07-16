@@ -25,7 +25,7 @@ const BlurryBackground = ({ onClick }: BlurryBackgroundProps): JSX.Element => {
       className="
         fixed inset-0 w-full h-full
         bg-black/30 backdrop-blur-sm
-        z-[199]
+        z-199
         cursor-pointer
       "
       aria-hidden="true"

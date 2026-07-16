@@ -117,7 +117,7 @@ const page = (): JSX.Element => {
             </select>
             <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 text-slate-500 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2 dark:text-white/70">
               <IoIosSearch className="text-xl" />
-              <input type="text" className="outline-none" placeholder={t("search_2")} onChange={(e) => handleSearch(e.target.value)} />
+              <input type="text" className="outline-none" placeholder={t("search_3")} onChange={(e) => handleSearch(e.target.value)} />
             </div>
             <div>
               <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
@@ -136,24 +136,24 @@ const page = (): JSX.Element => {
                   {t("client_info")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  {t("issue_date_3")}
+                  {t("issue_date")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
                   {" "}
-                  {t("due_date_2")}
+                  {t("due_date")}
                 </th>
 
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
-                  {t("amount_2")}
+                  {t("amount")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
                   {t("status")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  {t("created_date_2")}
+                  {t("created_date")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  {t("created_by_2")}
+                  {t("created_by")}
                 </th>
                 <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300">
                   {t("actions")}

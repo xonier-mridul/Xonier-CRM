@@ -7,13 +7,14 @@ import axios from "axios";
 import * as XLSX from "xlsx";
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import { toast } from "react-toastify";
-import { EnquiryService } from "@/src/services/enquiry.service";
+
 import ErrorComponent from "@/src/components/ui/ErrorComponent";
 import { FiUpload } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import { DESIGNATION, NUMBER_OF_EMPLOYEES, PRIORITY, PROJECT_TYPES, SOURCE, INFO_TYPE } from "@/src/constants/enum";
-import DesignationModal from "@/src/components/pages/enquiry/DesignationModal";
+// import DesignationModal from "./src/components/pages/enquiry/DesignationModal";
 import { useTranslation } from "react-i18next";
+import { EnquiryService } from "@/src/services/enquiry.service";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -307,10 +308,10 @@ const page = (): JSX.Element => {
     <div className="lg:ml-72 mt-14 p-6 space-y-6">
 
       {/* ── Designation Modal ── */}
-      <DesignationModal
+      {/* <DesignationModal
         isOpen={isDesignationModalOpen}
         onClose={() => setIsDesignationModalOpen(false)}
-      />
+      /> */}
 
       {/* ── Header card ── */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
@@ -336,7 +337,7 @@ const page = (): JSX.Element => {
             <p className="text-xs text-gray-400 dark:text-gray-500">
               {t("array_fields_industry_keywords_technologies_use")}{" "}
               <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">|</code>{" "}
-              {t("as_separator_nbsp_nbsp_e_g")}{" "}
+              {t("as_separator_e_g")}{" "}
               <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">
                 {t("react_nextjs_tailwind")}
               </code>
@@ -392,7 +393,7 @@ const page = (): JSX.Element => {
               {t("or_click_the_button_below_to_browse")}
             </p>
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-              {t("supported_formats")} <span className="font-medium">{t("csv")}</span> {t("nbsp_nbsp")} <span className="font-medium">{t("xlsx")}</span> {t("nbsp_nbsp")} <span className="font-medium">{t("xls")}</span>
+              {t("supported_formats")} <span className="font-medium">{t("csv")}</span>{" "}<span className="font-medium">{t("xlsx")}</span> {" "} <span className="font-medium">{t("xls")}</span>
             </p>
           </div>
 

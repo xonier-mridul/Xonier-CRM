@@ -91,7 +91,7 @@ export default function Page() {
 
         <button
           onClick={handleRefresh}
-          className="flex items-center gap-2 px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white"
+          className="flex items-center gap-2 px-4 py-2 rounded-md bg-cyan-600 hover:bg-cyan-700 text-white"
         >
           <FiRefreshCw />
           {t("refresh")}
@@ -134,32 +134,32 @@ export default function Page() {
           <table className="w-full rounded-xl  text-nowrap">
 
             <thead>
-              <tr className="border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
+              <tr className="border-b-2 border-zinc-300 bg-slate-300 dark:bg-gray-800">
 
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 rounded-tl-3xl text-xs text-start text-slate-500 dark:text-slate-100">
                   {t("to_2")}
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4  text-xs text-start text-slate-500 dark:text-slate-100">
                   {t("from")}
                 </th>
 
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4  text-xs text-start text-slate-500 dark:text-slate-100">
                   {t("subject")}
                 </th>
 
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4  text-xs text-start text-slate-500 dark:text-slate-100">
                   {t("template")}
                 </th>
 
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4  text-xs text-start text-slate-500 dark:text-slate-100">
                   {t("status")}
                 </th>
 
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4  text-xs text-start text-slate-500 dark:text-slate-100">
                   {t("sent_at")}
                 </th>
 
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
+                <th className="p-4 rounded-tr-3xl   text-xs text-start text-slate-500 dark:text-slate-100">
                   {t("actions")}
                 </th>
 
@@ -208,7 +208,7 @@ export default function Page() {
                         key={email.id}
                         className={`${rr
                             ? "bg-white dark:bg-transparent"
-                            : "bg-blue-100/50 dark:bg-slate-500"
+                            : "bg-slate-100/50 dark:bg-slate-500"
                           }`}
                       >
                         <td className="p-4">{email.to_emails.join(", ")}</td>

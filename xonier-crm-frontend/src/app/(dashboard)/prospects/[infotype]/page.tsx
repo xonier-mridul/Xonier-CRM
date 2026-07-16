@@ -96,14 +96,14 @@ const BulkCallModal = ({
     <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="bg-linear-to-r from-blue-600 to-indigo-600 px-6 py-5 rounded-t-2xl flex items-center justify-between shrink-0">
+        <div className="bg-linear-to-r from-cyan-600 to-indigo-600 px-6 py-5 rounded-t-2xl flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center">
               <MdCall className="w-5 h-5 text-white" />
             </div>
             <div>
               <h3 className="text-base font-bold text-white">{t("bulk_call")}</h3>
-              <p className="text-xs text-blue-100">{leads.length} {t("lead_2")}{leads.length > 1 ? "s" : ""} {t("queued_2")}</p>
+              <p className="text-xs text-cyan-100">{leads.length} {t("lead_2")}{leads.length > 1 ? "s" : ""} {t("queued_2")}</p>
             </div>
           </div>
           <button onClick={onClose} className="w-9 h-9 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center text-white">
@@ -113,14 +113,14 @@ const BulkCallModal = ({
 
         {/* Progress */}
         <div className="w-full bg-gray-100 dark:bg-gray-700 h-1 shrink-0">
-          <div className="bg-blue-500 h-1 transition-all duration-500" style={{ width: phase === "idle" ? "0%" : `${(completedCount / leads.length) * 100}%` }} />
+          <div className="bg-cyan-500 h-1 transition-all duration-500" style={{ width: phase === "idle" ? "0%" : `${(completedCount / leads.length) * 100}%` }} />
         </div>
 
         {/* Stats */}
         <div className="flex items-center gap-4 px-5 py-3 border-b border-slate-100 dark:border-gray-700 shrink-0 flex-wrap">
           {([
             { label: "Queued", count: Object.values(statuses).filter(s => s === "queued").length, color: "text-slate-500 dark:text-slate-400", dot: "bg-slate-300 dark:bg-slate-600" },
-            { label: "In Progress", count: Object.values(statuses).filter(s => s === "in_progress").length, color: "text-blue-500", dot: "bg-blue-500 animate-pulse" },
+            { label: "In Progress", count: Object.values(statuses).filter(s => s === "in_progress").length, color: "text-cyan-500", dot: "bg-cyan-500 animate-pulse" },
             { label: "Completed", count: completedCount, color: "text-green-600", dot: "bg-green-500" },
             ...(failedCount > 0 ? [{ label: "Failed", count: failedCount, color: "text-red-500", dot: "bg-red-500" }] : []),
           ] as { label: string; count: number; color: string; dot: string }[]).map(({ label, count, color, dot }) => (
@@ -137,19 +137,19 @@ const BulkCallModal = ({
             const status = statuses[lead.id];
             const isActive = status === "in_progress";
             return (
-              <div key={lead.id} className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all duration-200 ${isActive ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700 shadow-sm" : status === "completed" ? "bg-green-50/60 dark:bg-green-900/10 border-green-100 dark:border-green-900" : status === "failed" ? "bg-red-50/60 dark:bg-red-900/10 border-red-100 dark:border-red-900" : "bg-slate-50 dark:bg-gray-700/50 border-slate-100 dark:border-gray-700"}`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${isActive ? "bg-blue-600 text-white" : status === "completed" ? "bg-green-500 text-white" : status === "failed" ? "bg-red-400 text-white" : "bg-slate-200 dark:bg-gray-600 text-slate-500 dark:text-slate-300"}`}>
+              <div key={lead.id} className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all duration-200 ${isActive ? "bg-cyan-50 dark:bg-cyan-900/20 border-cyan-200 dark:border-cyan-700 shadow-sm" : status === "completed" ? "bg-green-50/60 dark:bg-green-900/10 border-green-100 dark:border-green-900" : status === "failed" ? "bg-red-50/60 dark:bg-red-900/10 border-red-100 dark:border-red-900" : "bg-slate-50 dark:bg-gray-700/50 border-slate-100 dark:border-gray-700"}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${isActive ? "bg-cyan-600 text-white" : status === "completed" ? "bg-green-500 text-white" : status === "failed" ? "bg-red-400 text-white" : "bg-slate-200 dark:bg-gray-600 text-slate-500 dark:text-slate-300"}`}>
                   {status === "completed" ? "✓" : status === "failed" ? "✕" : idx + 1}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-semibold capitalize truncate ${isActive ? "text-blue-700 dark:text-blue-300" : status === "completed" ? "text-green-700 dark:text-green-300" : "text-slate-700 dark:text-slate-200"}`}>{lead.fullName}</p>
+                  <p className={`text-sm font-semibold capitalize truncate ${isActive ? "text-cyan-700 dark:text-cyan-300" : status === "completed" ? "text-green-700 dark:text-green-300" : "text-slate-700 dark:text-slate-200"}`}>{lead.fullName}</p>
                   <p className="text-xs font-mono text-slate-400 dark:text-slate-500 truncate">{lead.phone}</p>
                 </div>
                 <StatusBadge status={status} />
                 {isActive && (
                   <div className="flex items-center gap-0.5 shrink-0">
                     {[0, 1, 2].map((i) => (
-                      <span key={i} className="w-1 rounded-full bg-blue-500 animate-bounce" style={{ height: `${10 + i * 4}px`, animationDelay: `${i * 0.15}s` }} />
+                      <span key={i} className="w-1 rounded-full bg-cyan-500 animate-bounce" style={{ height: `${10 + i * 4}px`, animationDelay: `${i * 0.15}s` }} />
                     ))}
                   </div>
                 )}
@@ -163,7 +163,7 @@ const BulkCallModal = ({
           {phase === "idle" && (
             <>
               <p className="text-xs text-slate-400">{t("calls_will_be_placed_one_by")}</p>
-              <button onClick={handleCallAll} className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-sm shadow-md transition-colors">
+              <button onClick={handleCallAll} className="flex items-center gap-2 px-6 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-semibold text-sm shadow-md transition-colors">
                 <MdCall className="w-4 h-4" /> {t("call_all")}
               </button>
             </>
@@ -171,7 +171,7 @@ const BulkCallModal = ({
           {phase === "running" && (
             <>
               <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" /> {t("calling_2")} {completedCount + 1} {t("of")} {leads.length}...
+                <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" /> {t("calling_2")} {completedCount + 1} {t("of")} {leads.length}...
               </div>
               <button onClick={handleCancel} className="flex items-center gap-2 px-5 py-2.5 bg-slate-100 dark:bg-gray-700 hover:bg-red-50 hover:text-red-600 text-slate-600 dark:text-slate-300 rounded-xl font-semibold text-sm transition-colors">
                 <IoClose className="w-4 h-4" /> {t("stop")}
@@ -457,7 +457,7 @@ const LeadContent = (): JSX.Element => {
         )}
 
         {hasPermission(PERMISSIONS.callProspects) && (
-          <button onClick={() => { setSingleActionLead(item); setSingleActionType("call"); }} className="h-8 w-8 flex items-center justify-center rounded-md bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 text-blue-600 hover:scale-105 transition-transform" title={t("call")}>
+          <button onClick={() => { setSingleActionLead(item); setSingleActionType("call"); }} className="h-8 w-8 flex items-center justify-center rounded-md bg-cyan-100 dark:bg-cyan-900/30 hover:bg-cyan-200 text-cyan-600 hover:scale-105 transition-transform" title={t("call")}>
             <MdPhoneEnabled className="text-sm" />
           </button>
         )}
@@ -523,7 +523,7 @@ const LeadContent = (): JSX.Element => {
             <div className="flex items-center gap-6 flex-wrap">
               {/* Search */}
               <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2">
-                <IoIosSearch className="text-xl" />
+                <IoIosSearch className="text-xl text-slate-400" />
                 <input
                   type="text"
                   className="outline-none bg-transparent"
@@ -537,11 +537,11 @@ const LeadContent = (): JSX.Element => {
               <div className="relative" ref={pickerRef}>
                 <button
                   onClick={() => setShowColumnPicker((v) => !v)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-900/10 text-sm font-semibold transition-all duration-200 cursor-pointer ${showColumnPicker ? "bg-blue-600 text-white border-blue-600" : "bg-slate-50 dark:bg-gray-600 text-slate-700 dark:text-white"}`}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-900/10 text-sm font-semibold transition-all duration-200 cursor-pointer ${showColumnPicker ? "bg-cyan-600 text-white border-cyan-600" : "bg-slate-50 dark:bg-gray-600 text-slate-700 dark:text-white"}`}
                 >
                   <FiColumns className="text-base" />
                   {t("columns")}
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${showColumnPicker ? "bg-white/20 text-white" : "bg-blue-100 text-blue-600"}`}>{activeCount}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${showColumnPicker ? "bg-white/20 text-white" : "bg-cyan-100 text-cyan-600"}`}>{activeCount}</span>
                 </button>
 
                 {showColumnPicker && (
@@ -555,7 +555,7 @@ const LeadContent = (): JSX.Element => {
                         onClick={() => toggleColumn(col.key)}
                         className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${col.required ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-700"}`}
                       >
-                        <div className={`w-4 h-4 rounded flex items-center justify-center border-2 shrink-0 transition-all ${activeColumns[col.key] ? "bg-blue-600 border-blue-600" : "border-slate-300 dark:border-gray-500"}`}>
+                        <div className={`w-4 h-4 rounded flex items-center justify-center border-2 shrink-0 transition-all ${activeColumns[col.key] ? "bg-cyan-600 border-cyan-600" : "border-slate-300 dark:border-gray-500"}`}>
                           {activeColumns[col.key] && <span className="text-white text-[10px] leading-none">✓</span>}
                         </div>
                         <span className="text-slate-700 dark:text-slate-200 font-medium">{col.label}</span>
@@ -565,7 +565,7 @@ const LeadContent = (): JSX.Element => {
                     <div className="flex gap-2 px-3 pt-2 mt-1 border-t border-slate-100 dark:border-gray-700">
                       <button
                         onClick={() => { const all = {} as ActiveColumns; ALL_COLUMNS.forEach((c) => (all[c.key] = true)); setActiveColumns(all); }}
-                        className="flex-1 py-1.5 rounded-md text-xs font-semibold bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                        className="flex-1 py-1.5 rounded-md text-xs font-semibold bg-cyan-50 text-cyan-600 hover:bg-cyan-100 transition-colors"
                       >{t("all")}</button>
                       <button
                         onClick={() => setActiveColumns(DEF_ACTIVE[infoType])}
@@ -584,17 +584,17 @@ const LeadContent = (): JSX.Element => {
 
               {/* Sidebar toggle */}
               <button
-                className="px-3 py-2 rounded-md flex items-center gap-2 text-sm font-normal transition-colors border-2"
+                className="px-3 py-2 rounded-md flex items-center gap-2 text-sm font-normal transition-colors border border-slate-300 outline-none"
                 onClick={() => setOpenFilter((prev) => !prev)}
               >
-                <LiaFilterSolid /> {openFilter ? "Hide Filters" : "Show Filters"}
+                <LiaFilterSolid /> {openFilter ? t("hide_filters") : t("show_filters")}
               </button>
             </div>
           </div>
 
           {/* Assign Bar */}
           {selectedLeadIds.size > 0 && (
-            <div className="w-full bg-blue-600 dark:bg-blue-700 rounded-xl px-5 py-3.5 flex items-center justify-between gap-4 flex-wrap shadow-lg shadow-blue-200/60 dark:shadow-blue-900/30 animate-in slide-in-from-top-2 duration-200">
+            <div className="w-full bg-cyan-600 dark:bg-cyan-700 rounded-xl px-5 py-3.5 flex items-center justify-between gap-4 flex-wrap shadow-lg shadow-cyan-200/60 dark:shadow-cyan-900/30 animate-in slide-in-from-top-2 duration-200">
               <div className="flex items-center gap-3">
                 <div className="bg-white/20 rounded-lg px-3 py-1.5 flex items-center gap-2">
                   <HiOutlineUserGroup className="text-white text-lg" />
@@ -602,13 +602,13 @@ const LeadContent = (): JSX.Element => {
                     {selectedLeadIds.size} {t("lead_2")}{selectedLeadIds.size > 1 ? "s" : ""} {t("selected_for_assignment")}
                   </span>
                 </div>
-                <button onClick={clearAssignSelection} className="text-blue-200 group cursor-pointer hover:text-white text-xs underline underline-offset-2 flex items-center gap-1 transition-colors">
+                <button onClick={clearAssignSelection} className="text-cyan-200 group cursor-pointer hover:text-white text-xs underline underline-offset-2 flex items-center gap-1 transition-colors">
                   <FaXmark className="text-xs group-hover:rotate-90" /> {t("clear")}
                 </button>
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex flex-col gap-0.5">
-                  {!selectedUserId && <span className="text-blue-200 text-[11px] ml-1">{t("select_a_user_first")}</span>}
+                  {!selectedUserId && <span className="text-cyan-200 text-[11px] ml-1">{t("select_a_user_first")}</span>}
                   {/* <UserSelect
                     users={assignableUsers}
                     selectedUserId={selectedUserId}
@@ -626,10 +626,10 @@ const LeadContent = (): JSX.Element => {
                 <button
                   onClick={handleAssignEnquirys}
                   disabled={!selectedUserId || isAssigning}
-                  className="bg-white text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed px-5 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all shadow-sm"
+                  className="bg-white text-cyan-600 hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed px-5 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all shadow-sm"
                 >
                   {isAssigning
-                    ? <><Spinner color="text-blue-600" /> {t("assigning")}</>
+                    ? <><Spinner color="text-cyan-600" /> {t("assigning")}</>
                     : <><MdOutlinePersonAdd className="text-lg" /> {t("assign_leads")}</>}
                 </button>
               </div>
@@ -639,14 +639,14 @@ const LeadContent = (): JSX.Element => {
           {/* Table */}
           <div className="w-full overflow-hidden rounded-xl">
             <div className="overflow-x-auto w-full">
-              <table className="w-full">
+              <table className="w-full table-auto">
                 <thead>
-                  <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
+                  <tr className="w-full border-b-2 border-zinc-300 bg-slate-300 dark:bg-gray-800">
                     {hasPermission(PERMISSIONS.assignEnquiry) && (
                       <th className="p-4 w-12 whitespace-nowrap">
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input ref={selectAllRef} type="checkbox" className="sr-only" checked={isAllSelected} onChange={handleSelectAll} />
-                          <div className={`w-4.5 h-4.5 rounded-sm border-2 flex items-center justify-center transition-all duration-150 ${isAllSelected || isIndeterminate ? "bg-blue-600 border-blue-600" : "bg-white dark:bg-gray-700 border-slate-300 hover:border-blue-400"}`}>
+                          <div className={`w-4.5 h-4.5 rounded-sm border-2 flex items-center justify-center transition-all duration-150 ${isAllSelected || isIndeterminate ? "bg-cyan-600 border-cyan-600" : "bg-white dark:bg-gray-700 border-slate-300 hover:border-cyan-400"}`}>
                             {isAllSelected && <FaCheck className="text-white text-[9px]" />}
                             {isIndeterminate && <span className="block w-2.5 h-0.5 bg-white rounded-full" />}
                           </div>
@@ -654,7 +654,12 @@ const LeadContent = (): JSX.Element => {
                       </th>
                     )}
                     {visibleCols.map((col) => (
-                      <th key={col.key} className={`p-4 uppercase text-xs text-slate-500 dark:text-slate-100 whitespace-nowrap ${col.key === "actions" ? "text-center" : "text-start"}`}>
+                      <th
+                          key={col.key}
+                          className={`p-4 text-xs text-slate-500 dark:text-slate-100 whitespace-nowrap ${
+                            col.key === "actions" ? "text-center" : "text-start"
+                          } whitespace-normal break-words`}
+                        >
                         {(hasPermission(PERMISSIONS.callProspects) || hasPermission(PERMISSIONS.smsProspects) || hasPermission(PERMISSIONS.emailProspects)) && col.key === "actions" ? (
                           <div className="flex items-center gap-4 px-2">
                             <label className="relative inline-flex items-center cursor-pointer" title={t("select_all_for_communication")}>
@@ -664,94 +669,287 @@ const LeadContent = (): JSX.Element => {
                                 {isCommIndeterminate && <span className="block w-2.5 h-0.5 bg-white rounded-full" />}
                               </div>
                             </label>
-                            <span>{col.label}</span>
+                            <span>{t(col.label)}</span>
                           </div>
-                        ) : col.label}
+                        ) : t(col.label)}
                       </th>
                     ))}
                   </tr>
                 </thead>
 
-                <tbody>
-                  {isLoading ? (
-                    Array.from({ length: 5 }).map((_, i) => (
-                      <tr key={`skel-${i}`} className={`${i % 2 === 0 ? "bg-white dark:bg-transparent" : "bg-blue-100/50 dark:bg-slate-500"} w-full`}>
-                        {hasPermission(PERMISSIONS.assignEnquiry) && <td className="p-4"><Skeleton borderRadius={10} /></td>}
-                        {Object.entries(activeColumns).map(([key, isActive]) =>
-                          isActive ? <td key={key} className="p-4"><Skeleton borderRadius={10} /></td> : null
-                        )}
-                      </tr>
-                    ))
-                  ) : leadData.length > 0 ? (
-                    <>
-                      {leadData.map((item, i) => {
-                        const isChecked = selectedLeadIds.has(item.id);
-                        return (
-                          <tr key={item.id} className={`${i % 2 === 0 ? "bg-white dark:bg-transparent" : "bg-blue-100/50 dark:bg-slate-500"} w-full`}>
-                            {hasPermission(PERMISSIONS.assignEnquiry) && (
-                              <td className="p-4 text-center">
-                                {!item.assignTo?.id ? (
-                                  <label className="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" className="sr-only" checked={isChecked} onChange={() => handleSelectOne(item.id)} />
-                                    <div className={`w-4.5 h-4.5 rounded-sm border-2 flex items-center justify-center transition-all duration-150 ${isChecked ? "bg-blue-600 border-blue-600" : "bg-white dark:bg-gray-700 border-slate-300 dark:border-slate-500 hover:border-blue-400"}`}>
-                                      {isChecked && <FaCheck className="text-white text-[9px]" />}
-                                    </div>
-                                  </label>
-                                ) : (
-                                  <span className="inline-flex items-center justify-center w-4.5 h-4.5 rounded-full bg-green-100 dark:bg-green-900/30" title={t("already_assigned")}>
-                                    <FaCheck className="text-green-500 text-[8px]" />
-                                  </span>
-                                )}
-                              </td>
-                            )}
-                            {Object.entries(activeColumns).map(([key, isActive]) => {
-                              if (!isActive) return null;
-                              const value = getValue(item, key);
-                              let content;
-                              if (key === "status") content = <StatusBadge status={value ?? "-"} />;
-                              else if (key === "technologies" && Array.isArray(value)) content = <span className="capitalize text-sm whitespace-nowrap">{value.join(", ")}</span>;
-                              else if (key === "projectType") content = <span className="px-2.5 py-1 rounded-full bg-green-100 text-green-600 text-xs font-medium">{value}</span>;
-                              else if (typeof value === "object" && value !== null) content = <span className="capitalize text-sm whitespace-nowrap">{Object.values(value).join(" ").trim() || "-"}</span>;
-                              else if (key === "email") content = <SensitiveField value={item.email} link={`mailto:${item.email}`} maskedValue={maskEmail(item.email)} fontSize="sm" />;
-                              else if (key === "phone") content = <SensitiveField value={value} link={`tel:${value}`} maskedValue={maskPhone(value)} fontSize="sm" />;
-                              else if (key === "actions") content = <RowActions item={item} />;
-                              else if (key === "createdAt") content = <CreatedAt timestamp={value} />;
-                              else if (key === "createdBy") content = <span className="capitalize text-sm whitespace-nowrap">{item.createdBy?.firstName + " " + item.createdBy?.lastName}</span>;
-                              else if (key === "dataTag") content = <TagBadge tag={item.dataTag || "N/A"} />;
-                              else if (key === "source") content = (
-                                <span className={`bg-yellow-100 text-yellow-800 px-2.5 py-1 rounded-full text-xs font-medium`}
-                                >
-                                  {item.source || "N/A"}
-                                </span>
-                              )
-                              else content = <span className="capitalize text-sm whitespace-nowrap">{value ?? "-"}</span>;
-                              return <td key={key} className="p-4 text-nowrap">{content}</td>;
-                            })}
-                          </tr>
-                        );
-                      })}
+               <tbody className="divide-y divide-slate-100 dark:divide-gray-700">
+  {isLoading ? (
+    Array.from({ length: 5 }).map((_, i) => (
+      <tr 
+        key={`skel-${i}`} 
+        className="hover:bg-slate-50 dark:hover:bg-gray-750 transition-colors"
+      >
+        {hasPermission(PERMISSIONS.assignEnquiry) && (
+          <td className="p-4 w-12">
+            <Skeleton width={18} height={18} borderRadius={4} />
+          </td>
+        )}
+        {Object.entries(activeColumns).map(([key, isActive]) =>
+          isActive ? (
+            <td key={key} className="p-4">
+              <Skeleton borderRadius={6} height={20} />
+            </td>
+          ) : null
+        )}
+      </tr>
+    ))
+  ) : leadData.length > 0 ? (
+    <>
+      {leadData.map((item, i) => {
+        const isChecked = selectedLeadIds.has(item.id);
+        return (
+          <tr 
+            key={item.id} 
+            className="hover:bg-slate-50 dark:hover:bg-gray-750 transition-colors group"
+          >
+            {hasPermission(PERMISSIONS.assignEnquiry) && (
+              <td className="p-4 text-center w-12">
+                {!item.assignTo?.id ? (
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only" 
+                      checked={isChecked} 
+                      onChange={() => handleSelectOne(item.id)} 
+                    />
+                    <div className={`w-4.5 h-4.5 rounded border-2 flex items-center justify-center transition-all duration-150 ${
+                      isChecked 
+                        ? "bg-cyan-600 border-cyan-600" 
+                        : "bg-white dark:bg-gray-700 border-slate-300 dark:border-slate-500 hover:border-cyan-400"
+                    }`}>
+                      {isChecked && <FaCheck className="text-white text-[9px]" />}
+                    </div>
+                  </label>
+                ) : (
+                  <span 
+                    className="inline-flex items-center justify-center w-4.5 h-4.5 rounded-full bg-green-100 dark:bg-green-900/30" 
+                    title={t("already_assigned")}
+                  >
+                    <FaCheck className="text-green-500 text-[8px]" />
+                  </span>
+                )}
+              </td>
+            )}
+            
+            {Object.entries(activeColumns).map(([key, isActive]) => {
+              if (!isActive) return null;
+              const value = getValue(item, key);
+              
+        
 
-                      {/* Fetching-more skeletons */}
-                      {isFetchingMore && Array.from({ length: 3 }).map((_, i) => (
-                        <tr key={`more-${i}`} className={`${(leadData.length + i) % 2 === 0 ? "bg-white dark:bg-transparent" : "bg-blue-100/50 dark:bg-slate-500"} w-full`}>
-                          {hasPermission(PERMISSIONS.assignEnquiry) && <td className="p-4"><Skeleton width={30} height={24} borderRadius={10} /></td>}
-                          {Object.entries(activeColumns).map(([key, isActive]) =>
-                            isActive ? <td key={key} className="p-4"><Skeleton borderRadius={10} /></td> : null
-                          )}
-                        </tr>
-                      ))}
-                    </>
-                  ) : (
-                    <tr>
-                      <td className="p-4 text-center" colSpan={visibleCols.length + 1}>{t("data_not_found")}</td>
-                    </tr>
-                  )}
+              let content;
+              
+              if (key === "status") {
+                content = <StatusBadge status={value ?? "-"} />;
+              } 
+              else if (key === "fullName") {
+                content = (
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                      {value?.[0]?.toUpperCase() ?? "?"}
+                    </div>
+                    <span 
+                      className="font-medium text-slate-800 dark:text-slate-200 truncate block" 
+                      title={value || "-"}
+                    >
+                      {value || "-"}
+                    </span>
+                  </div>
+                );
+              }
+              else if (key === "technologies" && Array.isArray(value)) {
+                const displayTechs = value.slice(0, 2);
+                const remaining = value.length - 2;
+                content = (
+                  <div className="flex flex-wrap gap-1 min-w-0">
+                    {displayTechs.map((tech, idx) => (
+                      <span 
+                        key={idx} 
+                        className="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium truncate max-w-[80px]"
+                        title={tech}
+                      >
+                        {tech}
+                      </span>
+                    ))}
+                    {remaining > 0 && (
+                      <span 
+                        className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-slate-400 text-xs font-medium"
+                        title={value.slice(2).join(", ")}
+                      >
+                        +{remaining}
+                      </span>
+                    )}
+                  </div>
+                );
+              }
+              else if (key === "projectType") {
+                content = (
+                  <span 
+                    className="inline-block px-2.5 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-medium truncate max-w-full"
+                    title={value}
+                  >
+                    {value}
+                  </span>
+                );
+              }
+              else if (key === "company") {
+                content = (
+                  <span 
+                    className="text-sm text-slate-700 w-[20px] overflow-hidden bg-black dark:text-slate-300 font-medium" 
+                    title={value || "-"}
+                  >
+                    {value || "-"}
+                  </span>
+                );
+              }
+              else if (key === "country") {
+                content = (
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-lg shrink-0">🌍</span>
+                    <span 
+                      className="text-sm text-slate-600 dark:text-slate-400 truncate" 
+                      title={value || "-"}
+                    >
+                      {value || "-"}
+                    </span>
+                  </div>
+                );
+              }
+              else if (key === "email") {
+                content = (
+                  <SensitiveField 
+                    value={item.email} 
+                    link={`mailto:${item.email}`} 
+                    maskedValue={maskEmail(item.email)} 
+                    fontSize="sm" 
+                  />
+                );
+              }
+              else if (key === "phone") {
+                content = (
+                  <SensitiveField 
+                    value={value} 
+                    link={`tel:${value}`} 
+                    maskedValue={maskPhone(value)} 
+                    fontSize="sm" 
+                  />
+                );
+              }
+              else if (key === "actions") {
+                content = <RowActions item={item} />;
+              }
+              else if (key === "createdAt") {
+                content = <CreatedAt timestamp={value} />;
+              }
+              else if (key === "createdBy") {
+                const fullName = `${item.createdBy?.firstName || ""} ${item.createdBy?.lastName || ""}`.trim();
+                content = (
+                  <span 
+                    className="text-sm text-slate-600 dark:text-slate-400 truncate block" 
+                    title={fullName || "-"}
+                  >
+                    {fullName || "-"}
+                  </span>
+                );
+              }
+              else if (key === "dataTag") {
+                content = <TagBadge tag={item.dataTag || "N/A"} />;
+              }
+              else if (key === "source") {
+                content = (
+                  <span 
+                    className="inline-block px-2.5 py-1 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 text-xs font-medium truncate max-w-full"
+                    title={item.source || "N/A"}
+                  >
+                    {item.source || "N/A"}
+                  </span>
+                );
+              }
+              else if (typeof value === "object" && value !== null) {
+                const displayValue = Object.values(value).join(" ").trim() || "-";
+                content = (
+                  <span 
+                    className="text-sm text-slate-700  dark:text-slate-300 truncate block" 
+                    title={displayValue}
+                  >
+                    {displayValue}
+                  </span>
+                );
+              }
+              else {
+                content = (
+                  <span 
+                    className="text-sm text-slate-700 max-w-25 overflow-hidden dark:text-slate-300 truncate block" 
+                    title={value?.toString() || "-"}
+                  >
+                    {value ?? "-"}
+                  </span>
+                );
+              }
 
-                  {/* Sentinel row — watched by IntersectionObserver */}
-                  <tr ref={bottomRef}>
-                    <td colSpan={visibleCols.length + 1} />
-                  </tr>
-                </tbody>
+              return (
+                <td 
+                  key={key} 
+                  className={`p-4 ${key === "actions" ? "text-center" : ""}`}
+                >
+                  <div className={` ${key === "actions" ? "max-w-full" : "max-w-30 "} truncate overflow-hidden capitalize`}>
+                    {content}
+                  </div>
+                </td>
+              );
+            })}
+          </tr>
+        );
+      })}
+
+      {/* Fetching-more skeletons */}
+      {isFetchingMore && Array.from({ length: 3 }).map((_, i) => (
+        <tr 
+          key={`more-${i}`} 
+          className="hover:bg-slate-50 dark:hover:bg-gray-750 transition-colors animate-pulse"
+        >
+          {hasPermission(PERMISSIONS.assignEnquiry) && (
+            <td className="p-4 w-12">
+              <Skeleton width={18} height={18} borderRadius={4} />
+            </td>
+          )}
+          {Object.entries(activeColumns).map(([key, isActive]) =>
+            isActive ? (
+              <td key={key} className="p-4">
+                <Skeleton borderRadius={6} height={20} />
+              </td>
+            ) : null
+          )}
+        </tr>
+      ))}
+    </>
+  ) : (
+    <tr>
+      <td 
+        className="p-8 text-center text-slate-500 dark:text-slate-400" 
+        colSpan={visibleCols.length + (hasPermission(PERMISSIONS.assignEnquiry) ? 1 : 0)}
+      >
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-gray-700 flex items-center justify-center">
+            <IoIosSearch className="w-8 h-8 text-slate-400" />
+          </div>
+          <p className="text-sm font-medium">{t("data_not_found")}</p>
+          <p className="text-xs text-slate-400">{t("try_adjusting_your_filters")}</p>
+        </div>
+      </td>
+    </tr>
+  )}
+
+  {/* Sentinel row — watched by IntersectionObserver */}
+  <tr ref={bottomRef}>
+    <td colSpan={visibleCols.length + (hasPermission(PERMISSIONS.assignEnquiry) ? 1 : 0)} />
+  </tr>
+</tbody>
               </table>
             </div>
 
@@ -841,7 +1039,7 @@ const LeadContent = (): JSX.Element => {
             {/* Actions */}
             <div className="flex items-center gap-2">
               {hasPermission(PERMISSIONS.callProspects) && (
-                <button onClick={() => setShowBulkCallModal(true)} className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-600 text-blue-600 dark:text-blue-400 hover:text-white border border-blue-200 dark:border-blue-700 hover:border-blue-600 text-sm font-semibold transition-all duration-150 shadow-sm hover:shadow-md">
+                <button onClick={() => setShowBulkCallModal(true)} className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-50 dark:bg-cyan-900/30 hover:bg-cyan-600 text-cyan-600 dark:text-cyan-400 hover:text-white border border-cyan-200 dark:border-cyan-700 hover:border-cyan-600 text-sm font-semibold transition-all duration-150 shadow-sm hover:shadow-md">
                   <MdPhoneEnabled className="text-base group-hover:scale-110 transition-transform" /> <span>{t("call_all")}</span>
                 </button>
               )}

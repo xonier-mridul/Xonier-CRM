@@ -61,9 +61,9 @@ const PRIORITY_CFG: Record<
 const PAGE_SIZE =5; // must match your API's default limit
 
 const inputCls =
-  "w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition";
+  "w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition";
 const selectCls =
-  "w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition";
+  "w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition";
 
 function SectionCard({
   icon,
@@ -353,7 +353,7 @@ const CreateTaskPage = (): JSX.Element => {
         <div className="flex items-center justify-between mb-8">
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-200 dark:shadow-blue-900/40">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center shadow-md shadow-cyan-200 dark:shadow-cyan-900/40">
                 <span className="text-white text-sm">✏️</span>
               </div>
               <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
@@ -460,7 +460,7 @@ const CreateTaskPage = (): JSX.Element => {
               </Field>
 
               <div
-                className={`flex items-start gap-3 p-4 rounded-xl border transition-all cursor-pointer select-none ${form.isRecurring ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700" : "bg-gray-50 dark:bg-gray-900/50 border-gray-100 dark:border-gray-700"}`}
+                className={`flex items-start gap-3 p-4 rounded-xl border transition-all cursor-pointer select-none ${form.isRecurring ? "bg-cyan-50 dark:bg-cyan-900/20 border-cyan-200 dark:border-cyan-700" : "bg-gray-50 dark:bg-gray-900/50 border-gray-100 dark:border-gray-700"}`}
                 onClick={() => {
                   set("isRecurring", !form.isRecurring);
                   if (form.isRecurring) {
@@ -470,7 +470,7 @@ const CreateTaskPage = (): JSX.Element => {
                 }}
               >
                 <div
-                  className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${form.isRecurring ? "bg-blue-600 border-blue-600" : "border-gray-300 dark:border-gray-500"}`}
+                  className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${form.isRecurring ? "bg-cyan-600 border-cyan-600" : "border-gray-300 dark:border-gray-500"}`}
                 >
                   {form.isRecurring && (
                     <span className="text-white text-xs font-bold leading-none">✓</span>
@@ -483,7 +483,7 @@ const CreateTaskPage = (): JSX.Element => {
               </div>
 
               {form.isRecurring && (
-                <div className="grid grid-cols-2 gap-4 pl-4 ml-1 border-l-2 border-blue-300 dark:border-blue-600">
+                <div className="grid grid-cols-2 gap-4 pl-4 ml-1 border-l-2 border-cyan-300 dark:border-cyan-600">
                   <Field label={t("recurrence_type")} required>
                     <select
                       value={form.recurrenceType ?? ""}
@@ -592,7 +592,7 @@ const CreateTaskPage = (): JSX.Element => {
                 <button
                   type="button"
                   onClick={addTag}
-                  className="px-3.5 py-2.5 rounded-xl text-sm font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-400 border border-blue-200 dark:border-blue-700 transition whitespace-nowrap"
+                  className="px-3.5 py-2.5 rounded-xl text-sm font-bold text-cyan-600 bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-900/30 dark:hover:bg-cyan-900/50 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-700 transition whitespace-nowrap"
                 >
                   {t("add")}
                 </button>
@@ -602,13 +602,13 @@ const CreateTaskPage = (): JSX.Element => {
                   {form.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-cyan-50 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 border border-cyan-100 dark:border-cyan-800"
                     >
                       #{tag}
                       <button
                         type="button"
                         onClick={() => set("tags", form.tags.filter((t) => t !== tag))}
-                        className="text-blue-300 hover:text-blue-600 dark:hover:text-blue-200 leading-none transition text-sm"
+                        className="text-cyan-300 hover:text-cyan-600 dark:hover:text-cyan-200 leading-none transition text-sm"
                       >
                         ×
                       </button>
@@ -630,7 +630,7 @@ const CreateTaskPage = (): JSX.Element => {
                     if (!form.assignedTo.includes(myId))
                       set("assignedTo", [...form.assignedTo, myId]);
                   }}
-                  className="w-full px-3 py-2 text-sm font-semibold rounded-xl border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-400 transition"
+                  className="w-full px-3 py-2 text-sm font-semibold rounded-xl border border-cyan-200 bg-cyan-50 text-cyan-600 hover:bg-cyan-100 dark:bg-cyan-900/30 dark:border-cyan-700 dark:text-cyan-400 transition"
                 >
                   {t("assign_to_me")}
                 </button>
@@ -643,7 +643,7 @@ const CreateTaskPage = (): JSX.Element => {
                       return (
                         <span
                           key={userId}
-                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-600 border border-indigo-200 dark:bg-indigo-900/30 dark:border-indigo-700 dark:text-indigo-300"
+                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-cyan-50 text-cyan-600 border border-cyan-200 dark:bg-cyan-900/30 dark:border-cyan-700 dark:text-cyan-300"
                         >
                           👤 {userId === auth.user?._id ? "You" : user?.firstName || "User"}
                           <button
@@ -651,7 +651,7 @@ const CreateTaskPage = (): JSX.Element => {
                             onClick={() =>
                               set("assignedTo", form.assignedTo.filter((id) => id !== userId))
                             }
-                            className="text-indigo-400 hover:text-red-500 ml-1"
+                            className="text-cyan-400 hover:text-red-500 ml-1"
                           >
                             ×
                           </button>
@@ -702,7 +702,7 @@ const CreateTaskPage = (): JSX.Element => {
               type="button"
               disabled={isLoading || !form.title.trim() || !form.category}
               onClick={handleSubmit}
-              className="flex items-center gap-2 px-7 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.97] transition-all shadow-lg shadow-blue-200 dark:shadow-blue-900/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+              className="flex items-center gap-2 px-7 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-cyan-600 to-cyan-600 hover:from-cyan-700 hover:to-cyan-700 active:scale-[0.97] transition-all shadow-lg shadow-cyan-200 dark:shadow-cyan-900/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
             >
               {isLoading ? (
                 <>

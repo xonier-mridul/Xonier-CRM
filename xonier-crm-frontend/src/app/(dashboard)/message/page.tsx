@@ -110,7 +110,7 @@ export default function Page() {
 
   const getStatusStyle = (status: Message["status"]) => {
     switch (status) {
-      case "sent": return "bg-blue-100 text-blue-600";
+      case "sent": return "bg-cyan-100 text-cyan-600";
       case "delivered": return "bg-green-100 text-green-600";
       case "queued": return "bg-yellow-100 text-yellow-600";
       case "failed": return "bg-red-100 text-red-600";
@@ -129,7 +129,7 @@ export default function Page() {
         <button
           onClick={() => fetchMessages(debouncedSearch, debouncedFilters)}
           disabled={isLoading}
-          className="flex items-center gap-2 px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white"
+          className="flex items-center gap-2 px-4 py-2 rounded-md bg-cyan-600 hover:bg-cyan-700 disabled:opacity-60 disabled:cursor-not-allowed text-white"
         >
           <FiRefreshCw className={isLoading ? "animate-spin" : ""} />
           {t("refresh")}
@@ -146,7 +146,7 @@ export default function Page() {
             <p className="text-gray-500 dark:text-gray-400 text-sm">
               {t("sms_delivery_status_and_history")}
               {(hasActiveFilters || search) && !isLoading && (
-                <span className="ml-2 text-blue-500 font-medium">
+                <span className="ml-2 text-cyan-500 font-medium">
                   · {totalCount} {t("result")}{totalCount !== 1 ? "s" : ""}
                 </span>
               )}
@@ -168,14 +168,14 @@ export default function Page() {
             <button
               onClick={() => setShowFilters((p) => !p)}
               className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border text-sm font-medium transition-colors ${showFilters || hasActiveFilters
-                ? "bg-blue-600 text-white border-blue-600"
+                ? "bg-cyan-600 text-white border-cyan-600"
                 : "bg-slate-50 dark:bg-gray-600 border-slate-900/10 text-gray-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-500"
                 }`}
             >
               <MdFilterAlt className="text-lg" />
               {t("filters")}
               {activeFilterCount > 0 && (
-                <span className="bg-white text-blue-600 text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                <span className="bg-white text-cyan-600 text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
                   {activeFilterCount}
                 </span>
               )}
@@ -266,16 +266,16 @@ export default function Page() {
         <div className="overflow-x-auto">
           <table className="w-full rounded-xl overflow-hidden">
             <thead>
-              <tr className="border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
-                {["To", "From", "Direction", "Channel", "Status", "Conversion ID", "Sent By", "Sent At", "Action"].map((h) => (
-                  <th key={h} className="p-4 text-xs uppercase text-start whitespace-nowrap text-slate-500 dark:text-slate-100">{h}</th>
+              <tr className="border-b-2 border-zinc-300 bg-slate-300 dark:bg-gray-800">
+                {["to", "from", "direction", "channel", "status", "conversion_id", "sent_by", "sent_at", "action"].map((h) => (
+                  <th key={h} className="p-4 text-sm  text-start whitespace-nowrap text-slate-500 dark:text-slate-100">{t(h)}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <tr>
+                  <tr key={i}>
                     <td className="p-4">
                       <Skeleton width={120} height={28} borderRadius={8} />
                     </td>
@@ -304,7 +304,7 @@ export default function Page() {
 
               ) : logs.length > 0 ? (
                 logs.map((log, i) => (
-                  <tr key={log.id} className={i % 2 === 0 ? "bg-white dark:bg-transparent" : "bg-blue-100/50 dark:bg-slate-500"}>
+                  <tr key={log.id} className={i % 2 === 0 ? "bg-white dark:bg-transparent" : "bg-cyan-100/50 dark:bg-slate-500"}>
                     <td className="p-4 whitespace-nowrap">{log.sent_to_number}</td>
                     <td className="p-4 whitespace-nowrap">{log.sent_from_number}</td>
                     <td className="p-4 whitespace-nowrap capitalize">{log.direction}</td>
@@ -331,7 +331,7 @@ export default function Page() {
               ) : (
                 <tr>
                   <td colSpan={9} className="text-center p-6 text-gray-500">
-                    {hasActiveFilters || search ? "No messages match the current filters." : "No SMS logs found"}
+                    {hasActiveFilters || search ? "No messages match the current filters." : t("no_sms_logs_found")}
                   </td>
                 </tr>
               )}

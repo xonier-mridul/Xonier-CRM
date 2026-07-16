@@ -600,7 +600,7 @@ const isPasswordValid = checks.every((check) => check.valid);
       <div className="overflow-x-auto rounded-xl">
       <table className="w-full rounded-xl overflow-hidden text-slate-500 ">
         <thead className="">
-          <tr className="w-full border-b-2 border-zinc-500 bg-cyan-100 dark:bg-gray-800">
+          <tr className="w-full border-b-2 border-zinc-300 bg-slate-200 dark:bg-gray-800">
             <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
               {t("s_no")}
             </th>
@@ -656,7 +656,7 @@ const isPasswordValid = checks.every((check) => check.valid);
                     className={`${
                       rr
                         ? "bg-white dark:bg-transparent"
-                        : "bg-cyan-100/50 dark:bg-slate-500"
+                        : "bg-slate-100/50 dark:bg-slate-500"
                     } w-full`}
                     key={item.id}
                   >

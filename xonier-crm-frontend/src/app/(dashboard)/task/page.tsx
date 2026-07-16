@@ -52,10 +52,6 @@ import BoardView from "@/src/components/pages/task/BoardView";
 import CategoryMultiSelect from "@/src/components/pages/task/CategoryMultiSeclect";
 import { useTranslation } from "react-i18next";
 
-
-
-
-
 function parseBackendDate(dateStr: string): Date {
   if (!dateStr) return new Date();
   if (dateStr.endsWith("Z") || /[+-]\d{2}:\d{2}$/.test(dateStr)) {
@@ -106,8 +102,6 @@ function computeTimerState(log: TaskTimeLog): {
   };
 }
 
-
-
 function SkeletonRow({ cols }: { cols: number }) {
   return (
     <tr className="animate-pulse border-b border-gray-50 dark:border-gray-700">
@@ -129,6 +123,8 @@ function ViewToggle({
   view: ViewMode;
   onChange: (v: ViewMode) => void;
 }) {
+  const { t } = useTranslation();
+  
   return (
     <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-700 rounded-xl">
       {(["list", "board"] as ViewMode[]).map((v) => (
@@ -155,15 +151,12 @@ function ViewToggle({
               <rect x="9.5" y="1" width="3.5" height="12" rx="1" fill="currentColor" />
             </svg>
           )}
-          {v.charAt(0).toUpperCase() + v.slice(1)}
+          {t(`view_mode_${v}`)}
         </button>
       ))}
     </div>
   );
 }
-
-
-
 
 const TaskListPage = (): JSX.Element => {
   const { t } = useTranslation();
@@ -303,83 +296,54 @@ const TaskListPage = (): JSX.Element => {
   }, []);
 
   const handleTimer = async (task: TaskItem) => {
-
-    return toast.info("Timer feature currently disabled, coming soon")
-    // try {
-
-    //   const entry = taskTimerMap.get(task.id);
-    //   const isThisRunning = activeTimerTaskId === task.id && entry?.status === "running";
-    //   const isThisPaused = entry?.status === "paused";
-
-    //   if (isThisRunning) {
-    //     if (!canPauseTimer) { toast.error("You don't have permission to pause timers."); return; }
-    //     const res = await TimerService.pause(entry!.logId);
-    //     applyLog(task.id, res.data.data);
-    //     return;
-    //   }
-
-    //   if (isThisPaused) {
-    //     if (!canResumeTimer) { toast.error("You don't have permission to resume timers."); return; }
-    //     if (activeTimerTaskId && activeTimerTaskId !== task.id) {
-    //       toast.error("Please pause your current running timer first. You can only track one task timer at a time.");
-    //       return;
-    //     }
-    //     const res = await TimerService.resume(entry!.logId);
-    //     applyLog(task.id, res.data.data);
-    //     return;
-    //   }
-
-    //   if (!canStartTimer) { toast.error("You don't have permission to start timers."); return; }
-    //   if (activeTimerTaskId && activeTimerTaskId !== task.id) {
-    //     toast.error("Please pause your current running timer first. You can only track one task timer at a time.");
-    //     return;
-    //   }
-
-    //   const res = await TimerService.start(task.id);
-    //   applyLog(task.id, res.data.data);
-    // } catch (error) {
-    //   if (axios.isAxiosError(error))
-    //     toast.error(error.response?.data?.message ?? "Timer action failed");
-    // }
+    return toast.info(t("timer_feature_disabled"));
   };
 
   const handleStop = async (task: TaskItem) => {
-    if (!canStopTimer) { toast.error("You don't have permission to stop timers."); return; }
+    if (!canStopTimer) { 
+      toast.error(t("no_permission_stop_timer")); 
+      return; 
+    }
     const entry = taskTimerMap.get(task.id);
     if (!entry) return;
 
     try {
-      const confirm = await ConfirmPopup({title: "Are you sure", text: "Are you sure for stop task timer, make sure if it stopped then it is not restart again, so if you want pause then click on pause button", btnTxt: "Yes, stop"})
+      const confirm = await ConfirmPopup({
+        title: t("are_you_sure"), 
+        text: t("confirm_stop_timer"), 
+        btnTxt: t("yes_stop")
+      });
 
       if(confirm){
         const res = await TimerService.stop(entry.logId);
-      const log: TaskTimeLog = res.data.data;
-      const finalSeconds = log.totalSeconds ?? entry.displaySeconds;
+        const log: TaskTimeLog = res.data.data;
+        const finalSeconds = log.totalSeconds ?? entry.displaySeconds;
 
-      setTaskTimerMap((prev) => {
-        const next = new Map(prev);
-        next.set(task.id, { logId: entry.logId, status: "stopped", committedSeconds: finalSeconds, segmentStartedAt: null, displaySeconds: finalSeconds });
-        return next;
-      });
-
-      if (activeTimerTaskId === task.id) {
-        setActiveTimerTaskId(null);
-        setLiveElapsedSeconds(0);
-        if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-      }
-
-      toast.success(`Timer stopped — ${formatSeconds(finalSeconds)} logged`);
-
-      setTimeout(() => {
         setTaskTimerMap((prev) => {
           const next = new Map(prev);
-          if (next.get(task.id)?.status === "stopped") next.delete(task.id);
+          next.set(task.id, { logId: entry.logId, status: "stopped", committedSeconds: finalSeconds, segmentStartedAt: null, displaySeconds: finalSeconds });
           return next;
         });
-      }, STOP_DISPLAY_MS);}
+
+        if (activeTimerTaskId === task.id) {
+          setActiveTimerTaskId(null);
+          setLiveElapsedSeconds(0);
+          if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+        }
+
+        toast.success(t("timer_stopped_message", { time: formatSeconds(finalSeconds) }));
+
+        setTimeout(() => {
+          setTaskTimerMap((prev) => {
+            const next = new Map(prev);
+            if (next.get(task.id)?.status === "stopped") next.delete(task.id);
+            return next;
+          });
+        }, STOP_DISPLAY_MS);
+      }
     } catch (error) {
       if (axios.isAxiosError(error))
-        toast.error(error.response?.data?.message ?? "Failed to stop timer");
+        toast.error(error.response?.data?.message ?? t("failed_to_stop_timer"));
     }
   };
 
@@ -405,96 +369,56 @@ const TaskListPage = (): JSX.Element => {
     setRemarkLoad(true);
     try {
       const result = await RemarkService.create(remarkPayload);
-      if (result.status === 201) { handleCloseRemark(); toast.success("Remark created successfully"); }
+      if (result.status === 201) { 
+        handleCloseRemark(); 
+        toast.success(t("remark_created_successfully")); 
+      }
     } catch (error) {
-      if (axios.isAxiosError(error)) toast.error(error.response?.data?.message ?? "Something went wrong");
+      if (axios.isAxiosError(error)) 
+        toast.error(error.response?.data?.message ?? t("something_went_wrong"));
     } finally {
       setRemarkLoad(false);
     }
   };
 
-  // const fetchTaskAll = useCallback(async (silent = false) => {
-  //   if (!silent) setIsLoading(true);
-  //   try {
-  //     const res = await TaskService.getAll({
-  //       currentPage,
-  //       pageLimit: viewMode === "board" ? 500 : pageLimit,
-  //       status: filterStatus || undefined,
-  //       priority: filterPriority || undefined,
-  //       category: filtrCategory.length > 0 ? filtrCategory.join(",") : undefined,
-  //       search: search || undefined,
-  //       user: filterAssigned || undefined,
-  //       fromDate: dateFilter.fromDate || undefined,
-  //       toDate: dateFilter.toDate || undefined,
-  //     });
-  //     if (res.status === 200) {
-  //       const d = res.data?.data || {};
-  //       const tasks: TaskItem[] = d.data ?? [];
-  //       setTaskData(tasks);
-  //       setTotalCount(tasks.length);
-  //       // if (!restoredRef.current && tasks.length > 0) restoreActiveTimer(tasks);
-  //     }
-  //   } catch (e) {
-  //     process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
-  //     if (axios.isAxiosError(e)) toast.error("Failed to load tasks");
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // }, [currentPage, pageLimit, viewMode, filterStatus, filterPriority, filtrCategory, search, filterAssigned, dateFilter, restoreActiveTimer]);
-
-  // const fetchTasks = useCallback(
-  //   (silent = false) => {
-  //     if (debounceRef.current) clearTimeout(debounceRef.current);
-  //     if (silent) {
-  //       debounceRef.current = setTimeout(fetchTaskAll, 3000);
-  //     } else {
-        
-  //       fetchTaskAll();
-  //     }
-  //   },
-  //   [fetchTaskAll],
-  // );
-
-
   const fetchTaskAll = useCallback(async (silent = false) => {
-  if (!silent) setIsLoading(true);   // ← moved here
-  try {
-    const res = await TaskService.getAll({
-      currentPage,
-      pageLimit: viewMode === "board" ? 500 : pageLimit,
-      status: filterStatus || undefined,
-      priority: filterPriority || undefined,
-      category: filtrCategory.length > 0 ? filtrCategory.join(",") : undefined,
-      search: search || undefined,
-      user: filterAssigned || undefined,
-      fromDate: dateFilter.fromDate || undefined,
-      toDate: dateFilter.toDate || undefined,
-    });
-    if (res.status === 200) {
-      const d = res.data?.data || {};
-      const tasks: TaskItem[] = d.data ?? [];
-      setTaskData(tasks);
-      setTotalCount(tasks.length);
+    if (!silent) setIsLoading(true);
+    try {
+      const res = await TaskService.getAll({
+        currentPage,
+        pageLimit: viewMode === "board" ? 500 : pageLimit,
+        status: filterStatus || undefined,
+        priority: filterPriority || undefined,
+        category: filtrCategory.length > 0 ? filtrCategory.join(",") : undefined,
+        search: search || undefined,
+        user: filterAssigned || undefined,
+        fromDate: dateFilter.fromDate || undefined,
+        toDate: dateFilter.toDate || undefined,
+      });
+      if (res.status === 200) {
+        const d = res.data?.data || {};
+        const tasks: TaskItem[] = d.data ?? [];
+        setTaskData(tasks);
+        setTotalCount(tasks.length);
+      }
+    } catch (e) {
+      process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
+    } finally {
+      setIsLoading(false);
     }
-  } catch (e) {
-    process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
-    // if (axios.isAxiosError(e)) toast.error("Failed to load tasks");
-  } finally {
-    setIsLoading(false);
-  }
-}, [currentPage, pageLimit, viewMode, filterStatus, filterPriority, filtrCategory, search, filterAssigned, dateFilter, restoreActiveTimer]);
+  }, [currentPage, pageLimit, viewMode, filterStatus, filterPriority, filtrCategory, search, filterAssigned, dateFilter, restoreActiveTimer]);
 
-const fetchTasks = useCallback(
-  (silent = false) => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (silent) {
-      debounceRef.current = setTimeout(() => fetchTaskAll(true), 3000);
-    } else {
-      fetchTaskAll(false);   
-    }
-  },
-  [fetchTaskAll],
-);
+  const fetchTasks = useCallback(
+    (silent = false) => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (silent) {
+        debounceRef.current = setTimeout(() => fetchTaskAll(true), 3000);
+      } else {
+        fetchTaskAll(false);   
+      }
+    },
+    [fetchTaskAll],
+  );
 
   const fetchStatuses = async () => {
     try {
@@ -518,9 +442,7 @@ const fetchTasks = useCallback(
   };
 
   useEffect(() => { setCurrentPage(1); }, [filterAssigned]);
-  useEffect(() => { fetchStatuses();
-    //  fetchCategories();
-     }, []);
+  useEffect(() => { fetchStatuses(); }, []);
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
   const handleStatusChange = async (taskId: string, payload: FinalStatusPayload): Promise<void> => {
@@ -538,21 +460,30 @@ const fetchTasks = useCallback(
     } catch (e) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
       setTaskData(previousData);
-      if (axios.isAxiosError(e)) toast.error(e.response?.data?.message ?? "Failed to update status");
+      if (axios.isAxiosError(e)) 
+        toast.error(e.response?.data?.message ?? t("failed_to_update_status"));
     }
   };
 
   const handleDelete = async (id: string): Promise<void> => {
     setDeleting(true);
     try {
-      const confirmed = await ConfirmPopup({ title: "Delete Task?", text: "This cannot be undone.", btnTxt: "Yes, Delete" });
+      const confirmed = await ConfirmPopup({ 
+        title: t("delete_task_title"), 
+        text: t("delete_task_message"), 
+        btnTxt: t("yes_delete") 
+      });
       if (confirmed) {
         const res = await TaskService.delete(id);
-        if (res.status === 200) { toast.success("Task deleted successfully"); await fetchTasks(); }
+        if (res.status === 200) { 
+          toast.success(t("task_deleted_successfully")); 
+          await fetchTasks(); 
+        }
       }
     } catch (e) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(e);
-      if (axios.isAxiosError(e)) toast.error(e.response?.data?.message ?? "Something went wrong");
+      if (axios.isAxiosError(e)) 
+        toast.error(e.response?.data?.message ?? t("something_went_wrong"));
     } finally {
       setDeleting(false);
     }
@@ -563,8 +494,13 @@ const fetchTasks = useCallback(
     debounceRef.current = setTimeout(() => { setSearch(val); setCurrentPage(1); }, 300);
   };
 
-  const colCount = showActions ? 8 : 7;
+  const colCount = showActions ? 9 : 8;
   const hasFilters = !!(search || filterStatus || filterPriority || filterAssigned || filtrCategory.length > 0);
+
+  // Get translated priority labels
+  const getPriorityLabel = (priority: string) => {
+    return t(`priority_${priority.toLowerCase()}`);
+  };
 
   return (
     <>
@@ -605,10 +541,10 @@ const fetchTasks = useCallback(
 
           <div className="grid grid-cols-4 gap-4 mb-7">
             {[
-              { label: "Total Tasks", value: totalCount, icon: "📋", bg: "bg-cyan-50 border-cyan-100", priority: "" },
-              { label: "High", value: taskData.filter((t) => t.priority === TASK_PRIORITY.HIGH).length, icon: "🟠", bg: "bg-orange-50 border-orange-100", priority: TASK_PRIORITY.HIGH },
-              { label: "Urgent", value: taskData.filter((t) => t.priority === TASK_PRIORITY.URGENT).length, icon: "🔴", bg: "bg-rose-50 border-rose-100", priority: TASK_PRIORITY.URGENT },
-              { label: "This Page", value: taskData.length, icon: "📄", bg: "bg-emerald-50 border-emerald-100", priority: "" },
+              { label: t("total_tasks"), value: totalCount, icon: "📋", bg: "bg-cyan-50 border-cyan-100", priority: "" },
+              { label: t("priority_high"), value: taskData.filter((t) => t.priority === TASK_PRIORITY.HIGH).length, icon: "🟠", bg: "bg-orange-50 border-orange-100", priority: TASK_PRIORITY.HIGH },
+              { label: t("priority_urgent"), value: taskData.filter((t) => t.priority === TASK_PRIORITY.URGENT).length, icon: "🔴", bg: "bg-rose-50 border-rose-100", priority: TASK_PRIORITY.URGENT },
+              { label: t("this_page"), value: taskData.length, icon: "📄", bg: "bg-emerald-50 border-emerald-100", priority: "" },
             ].map((s) => (
               <div
                 key={s.label}
@@ -646,7 +582,7 @@ const fetchTasks = useCallback(
             >
               <option value="">{t("all_priorities")}</option>
               {Object.values(TASK_PRIORITY).map((p) => (
-                <option key={p} value={p}>{p.charAt(0) + p.slice(1).toLowerCase()}</option>
+                <option key={p} value={p}>{getPriorityLabel(p)}</option>
               ))}
             </select>
             <CategoryMultiSelect categories={categories} isCatLoading={isCatLoading} fetchCategories={fetchCategories}  selected={filtrCategory} onChange={(val) => { setFiltrCategory(val); setCurrentPage(1); }} />
@@ -702,22 +638,22 @@ const fetchTasks = useCallback(
 
           {viewMode === "list" && (
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
-              <div className="text-nowrap overflow-x-scroll">
-                <table className="w-full text-sm">
+              <div className="overflow-x-auto">
+                <table className="min-w-max w-full text-sm">
                   <thead>
                     <tr className="bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
                       {[
-                        { label: "#", cls: "w-12" },
-                        { label: "Title", cls: "" },
-                        { label: "Category", cls: "w-36" },
-                        { label: "Status", cls: "w-36" },
-                        { label: "Priority", cls: "w-28" },
-                        { label: "Assigned", cls: "w-28" },
-                        { label: "Created By", cls: "w-28" },
-                        { label: "Due Date", cls: "w-28" },
-                        ...(showActions ? [{ label: "Actions", cls: "w-28 text-right" }] : []),
+                        { label: t("table_number"), cls: "w-12" },
+                        { label: t("table_title"), cls: "min-w-[220px]" },
+                        { label: t("table_category"), cls: "min-w-[140px]" },
+                        { label: t("table_status"), cls: "min-w-[140px]" },
+                        { label: t("table_priority"), cls: "min-w-[120px]" },
+                        { label: t("table_assigned"), cls: "min-w-[140px]" },
+                        { label: t("table_created_by"), cls: "min-w-[140px]" },
+                        { label: t("table_due_date"), cls: "min-w-[130px]" },
+                        ...(showActions ? [{ label: t("table_actions"), cls: "min-w-[120px] text-right" }] : []),
                       ].map((col) => (
-                        <th key={col.label} className={`px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-left ${col.cls}`}>
+                        <th key={col.label} className={`px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-left whitespace-nowrap ${col.cls}`}>
                           {col.label}
                         </th>
                       ))}
@@ -741,7 +677,6 @@ const fetchTasks = useCallback(
                       </tr>
                     ) : (
                       taskData.map((task, i) => {
-  const { t } = useTranslation();
                         const pri = PRIORITY_STYLE[task.priority];
                         const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
                         return (
@@ -769,7 +704,7 @@ const fetchTasks = useCallback(
                             <td className="px-5 py-4">
                               <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${pri.cls}`}>
                                 <span className={`w-1.5 h-1.5 rounded-full ${pri.dot}`} />
-                                {pri.label}
+                                {getPriorityLabel(task.priority)}
                               </span>
                             </td>
                             <td className="px-5 py-4">

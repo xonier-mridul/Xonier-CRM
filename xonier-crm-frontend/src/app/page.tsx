@@ -1,3 +1,4 @@
+"use client" 
 import ThemeToggle from "@/src/components/common/ThemeToggle";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,7 +11,7 @@ export default function Home() {
       
       <header className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2">
-          <span className="text-xl font-bold tracking-tight text-violet-600 dark:text-violet-400">
+          <span className="text-xl font-bold tracking-tight text-cyan-600 dark:text-cyan-400">
             <Image width={200} height={200} src={"/images/trakeroo-light.png"} alt={t("logo")} className="hidden dark:block"/>
             <Image width={200} height={200} src={"/images/trakeroo.png"} alt={t("logo")} className="dark:hidden "/>
           </span>
@@ -30,7 +31,7 @@ export default function Home() {
         <h1 className="max-w-4xl text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
           {t("welcome_to")}{" "}
           <span className="bg-gradient-to-r from-teal-500 to-blue-500 bg-clip-text text-transparent">
-            {t("trakeroo_crm")}
+            {t("Trakeroo_crm")}
           </span>
         </h1>
 
@@ -41,7 +42,7 @@ export default function Home() {
 
 
         <div className="mt-10 flex flex-wrap justify-center gap-4">
-          <Link href={"/dashboard"} className="rounded-xl bg-teal-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-violet-700 transition">
+          <Link href={"/dashboard"} className="rounded-xl bg-teal-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-cyan-700 transition">
             {t("go_to_dashboard")}
           </Link>
 

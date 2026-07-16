@@ -15,6 +15,9 @@ import extractErrorMessages from "@/src/app/utils/error.utils";
 import { useParams, useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/src/store"; 
+import { useTranslation } from "react-i18next";
+import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
+
 
 
 
@@ -153,6 +156,7 @@ function NumberInput({
   );
 }
 
+
 function PriorityBadge({ value }: { value: string }) {
   const style = PRIORITY_STYLES[value] ?? PRIORITY_STYLES.low;
   const dot = PRIORITY_DOT[value] ?? "bg-gray-400";
@@ -168,7 +172,10 @@ function PrioritySelector({
   value, onChange, disabled,
 }: {
   value: string; onChange: (v: string) => void; disabled?: boolean;
-}) {
+}) 
+{
+  const { t } = useTranslation();
+
   return (
     <div className="flex gap-1.5 flex-wrap">
       {PRIORITIES.map(p => (
@@ -183,7 +190,7 @@ function PrioritySelector({
               : "bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
             }`}
         >
-          {p}
+          {t(p)}
         </button>
       ))}
     </div>
@@ -252,11 +259,11 @@ function MorningEditCard({ item, index, onChange, onRemove }: {
       </div>
       <div className="space-y-3">
         <div>
-          <FieldLabel required>{t("task_title_2")}</FieldLabel>
+          <FieldLabel required>{t("task_title")}</FieldLabel>
           <TextInput value={item.title} onChange={v => onChange("title", v)} placeholder={t("what_are_you_going_to_work")} />
         </div>
         <div>
-          <FieldLabel>{t("description_2")}</FieldLabel>
+          <FieldLabel>{t("description")}</FieldLabel>
           <TextArea value={item.description ?? ""} onChange={v => onChange("description", v)} placeholder={t("brief_details_about_this_task")} />
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -328,7 +335,7 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
 
       <div className="space-y-3">
         <div>
-          <FieldLabel required>{t("task_title_2")}</FieldLabel>
+          <FieldLabel required>{t("task_title")}</FieldLabel>
           <TextInput
             value={item.title}
             onChange={v => onChange("title", v)}
@@ -770,6 +777,32 @@ const submitMorning = async () => {
     }
   };
 
+const handleEveningSubmit = async () => {
+  try {
+    const confirm = await ConfirmPopup({
+      title: !isFinalSubmitted 
+        ? t("save_evening_report_title") 
+        : t("submit_evening_report_title"),
+      text: !isFinalSubmitted
+        ? t("save_evening_report_text")
+        : t("submit_evening_report_text"),
+      btnTxt: !isFinalSubmitted 
+        ? t("yes_save") 
+        : t("yes_submit"),
+    }).catch(() => false);
+
+    if (confirm){
+    await submitEvening();
+    }
+
+  } catch (error) {
+
+    if (error !== false && error !== "cancel" && error !== "dismiss") {
+      toast.error(t("something_went_wrong"));
+    }
+  }
+};
+
   // ── Submit Evening ─────────────────────────────────────────────────────────
   const submitEvening = async () => {
     setErr("");
@@ -823,6 +856,7 @@ const submitMorning = async () => {
   const morningSubmitted = existingReport?.morningAgenda?.isSubmitted ?? false;
   const eveningSubmitted = existingReport?.eveningReport?.isSubmitted ?? false;
   const morningReadOnly = morningSubmitted && !isEditingMorning;
+  const { t, i18n } = useTranslation();
 
   const actualHour =
     Number(completedItems.reduce((s, i) => s + (i.actualHours ?? 0), 0).toFixed(1)) +
@@ -853,11 +887,21 @@ const submitMorning = async () => {
                 {t("daily_task_report")}
               </h1>
             </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {new Date().toLocaleDateString("en-GB", {
-                weekday: "long", day: "2-digit", month: "long", year: "numeric",
-              })}
-            </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+  {new Date().toLocaleDateString(
+    i18n.language === "hi"
+      ? "hi-IN"
+      : i18n.language === "pt" || i18n.language === "po"
+      ? "pt-BR" // Use Brazilian Portuguese instead of Portugal Portuguese
+      : "en-GB",
+    {
+      weekday: "long",
+      day: "2-digit", 
+      month: "long",
+      year: "numeric",
+    }
+  )}
+</p>
           </div>
         </div>
 
@@ -910,7 +954,7 @@ const submitMorning = async () => {
                   }`}
               >
                 <span>{tab === "morning" ? "🌅" : "🌆"}</span>
-                {tab === "morning" ? "Morning Agenda" : "Evening Report"}
+                {tab === "morning" ? t("morning_agenda") : t("evening_report")}
                 {isDone && (
                   <span className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shadow-sm">
                     <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
@@ -977,13 +1021,12 @@ const submitMorning = async () => {
               <div>
                 <h2 className="text-lg font-extrabold text-gray-900 dark:text-white">{t("morning_agenda")}</h2>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {morningReadOnly
-                    ? "Your plan for today (read-only)"
-                    : isEditingMorning
-                      ? "Update your plan — changes will be saved when you click Update"
-                      : "Plan your day — what tasks will you tackle?"
-                  }
-                </p>
+  {morningReadOnly
+    ? t("your_plan_for_today_read_only")
+    : isEditingMorning
+      ? t("update_your_plan_changes_will_be_saved_when_you_click_update")
+      : t("plan_your_day_what_tasks_will_you_tackle")}
+</p>
               </div>
             </div>
 
@@ -1327,29 +1370,39 @@ const submitMorning = async () => {
                 )}
               </div>
 
-              <div className="flex flex-col items-end gap-3">
-                {err && <p className="text-red-500 text-sm">{err}</p>}
-                {!eveningSubmitted ? (
-                  <button
-                    type="button"
-                    onClick={submitEvening}
-                    disabled={isSubmitting || eveningItems.filter(i => i.title.trim()).length === 0}
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-all active:scale-95 shadow-sm"
-                  >
-                    {isSubmitting
-                      ? <><div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> {t("submitting_2")}</>
-                      : <><span>🌆</span> {!isFinalSubmitted ? "Save Evening Report" : "Submit Evening Report"}</>
-                    }
-                  </button>
-                ) : (
-                  <div className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-                    <span className="text-emerald-600 dark:text-emerald-400 text-lg">🔒</span>
-                    <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
-                      {t("report_locked_final_submission_complete")}
-                    </span>
+             <div className="flex flex-col items-end gap-3">
+                  {err && <p className="text-red-500 text-sm">{err}</p>}
+                  {!eveningSubmitted ? (
+                    <button
+                      type="button"
+                      onClick={handleEveningSubmit} 
+                      disabled={isSubmitting || eveningItems.filter(i => i.title.trim()).length === 0}
+                      className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-all active:scale-95 shadow-sm"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                          {t("submitting_2")}
+                        </>
+                      ) : (
+                        <>
+                          <span>🌆</span>
+                          {!isFinalSubmitted 
+                            ? t("save_evening_report") 
+                            : t("submit_evening_report")
+                          }
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                      <div className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+                        <span className="text-emerald-600 dark:text-emerald-400 text-lg">🔒</span>
+                        <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
+                          {t("report_locked_final_submission_complete")}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
             </div>
           </div>
         )}

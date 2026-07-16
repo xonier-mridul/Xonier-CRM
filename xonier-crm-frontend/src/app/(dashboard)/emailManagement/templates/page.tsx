@@ -116,7 +116,7 @@ const Page = (): JSX.Element => {
 
         <Link
           href={canCreate ? "/emailManagement/templates/add" : "#"}
-          className={`bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md flex items-center gap-2 group ${!canCreate && "opacity-50 cursor-not-allowed pointer-events-none"
+          className={`bg-cyan-600 hover:bg-cyan-700 text-white px-5 py-2 rounded-md flex items-center gap-2 group ${!canCreate && "opacity-50 cursor-not-allowed pointer-events-none"
             }`}
         >
           <FaPlus className="group-hover:rotate-90 transition-all duration-300" />
@@ -155,11 +155,11 @@ const Page = (): JSX.Element => {
               </select>
 
               <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2">
-                <IoIosSearch className="text-xl" />
+                <IoIosSearch className="text-xl text-slate-500" />
 
                 <input
                   type="text"
-                  placeholder={t("search_2")}
+                  placeholder={t("search_3")}
                   className="outline-none bg-transparent"
                   onChange={(e) => handleSearch(e.target.value)}
                 />
@@ -174,14 +174,14 @@ const Page = (): JSX.Element => {
             <table className="min-w-[900px] w-full rounded-xl">
 
               <thead>
-                <tr className="border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
+                <tr className="border-b-2 text-slate-600 border-zinc-300 bg-slate-300 dark:bg-gray-800">
 
-                  <th className="p-4 text-xs text-start uppercase">{t("name_2")}</th>
-                  <th className="p-4 text-xs text-start uppercase">{t("subject")}</th>
-                  <th className="p-4 text-xs text-start uppercase">{t("status")}</th>
-                  <th className="p-4 text-xs text-start uppercase">{t("template")}</th>
-                  <th className="p-4 text-xs text-start uppercase">{t("tags")}</th>
-                  <th className="p-4 text-xs text-start uppercase">{t("actions")}</th>
+                  <th className="p-4 text-xs text-start rounded-tl-2xl ">{t("name_2")}</th>
+                  <th className="p-4 text-xs text-start ">{t("subject")}</th>
+                  <th className="p-4 text-xs text-start ">{t("status")}</th>
+                  <th className="p-4 text-xs text-start ">{t("template")}</th>
+                  <th className="p-4 text-xs text-start ">{t("tags")}</th>
+                  <th className="p-4 text-xs text-start rounded-tr-2xl ">{t("actions")}</th>
 
                 </tr>
               </thead>
@@ -200,7 +200,7 @@ const Page = (): JSX.Element => {
                           className={
                             rr
                               ? "bg-white dark:bg-transparent"
-                              : "bg-blue-100/50 dark:bg-slate-500"
+                              : "bg-slate-100/50 dark:bg-slate-500"
                           }
                         >
 
@@ -232,7 +232,7 @@ const Page = (): JSX.Element => {
                               {item.tags?.map((tag, index) => (
                                 <span
                                   key={index}
-                                  className="px-3 py-[3px] text-[11px] font-semibold rounded-full border border-blue-200 bg-blue-50 text-blue-600"
+                                  className="px-3 py-[3px] text-[11px] font-semibold rounded-full border border-cyan-200 bg-cyan-50 text-cyan-600"
                                 >
                                   #{tag}
                                 </span>
@@ -284,14 +284,14 @@ const Page = (): JSX.Element => {
                     })
                   ) : (
                     <tr>
-                      <td colSpan={6} className="text-center p-4">
+                      <td colSpan={6} className="text-center p-4 text-slate-500">
                         {t("data_not_found")}
                       </td>
                     </tr>
                   )
                 ) : (
                   Array.from({ length: 6 }).map((_, i) => (
-                    <tr>
+                    <tr key={i}>
                       <td className="p-4"><Skeleton width={120} height={28} /></td>
                       <td className="p-4"><Skeleton width={160} height={28} /></td>
                       <td className="p-4"><Skeleton width={80} height={28} /></td>

@@ -308,6 +308,7 @@ const DeletedUsersPage = (): JSX.Element => {
   const startEntry = (currentPage - 1) * pageLimit + 1;
   const endEntry = Math.min(currentPage * pageLimit, totalCount);
 
+
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
@@ -350,7 +351,7 @@ const DeletedUsersPage = (): JSX.Element => {
           </span>
           <input
             type="text"
-            placeholder={t("search_by_name_or_email_2")}
+            placeholder={t("search_by_name_or_email")}
             value={search}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
             className=" w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 pl-9 pr-4 py-2 text-sm text-gray-800 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-rose-400 dark:focus:ring-rose-600 transition-shadow"
@@ -388,7 +389,7 @@ const DeletedUsersPage = (): JSX.Element => {
             className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-rose-400 dark:focus:ring-rose-600 transition-shadow"
           >
             {[5, 10, 20, 50].map((n) => (
-              <option key={n} value={n}>{n} {t("page_2")}</option>
+              <option key={n} value={n}>{n} / {" "}{t("page")}</option>
             ))}
           </select>
 
@@ -455,7 +456,6 @@ const DeletedUsersPage = (): JSX.Element => {
                     </tr>
                   )
                   : userData.map((u) => {
-  const { t } = useTranslation();
                     const id = u.id as string;
                     const name = `${u.firstName} ${u.lastName}`;
                     const isChecked = selected.has(id);

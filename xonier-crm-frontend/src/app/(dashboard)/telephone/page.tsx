@@ -342,7 +342,7 @@ const Page = () => {
 
               {(hasPermission(PERMISSIONS.telephoneCreate)) && <button
                 onClick={openCreateModal}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md flex items-center gap-2 group"
+                className="bg-cyan-600 hover:bg-cyan-700 text-white px-5 py-2 rounded-md flex items-center gap-2 group"
               >
                 <FaPlus className="group-hover:rotate-90 transition-all duration-300" />
                 {t("add_number")}
@@ -352,7 +352,7 @@ const Page = () => {
 
           <table className="w-full rounded-xl overflow-hidden">
             <thead>
-              <tr className="w-full border-b-2 border-zinc-500 bg-blue-100 dark:bg-gray-800">
+              <tr className="w-full border-b-2 border-zinc-300 bg-slate-300 dark:bg-gray-800">
                 <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
                   {t("phone_number")}
                 </th>
@@ -374,7 +374,6 @@ const Page = () => {
               {!isLoading ? (
                 telephoneData && Array.isArray(telephoneData) && telephoneData.length > 0 ? (
                   telephoneData.map((phone, i) => {
-  const { t } = useTranslation();
                     const isEven = i % 2 === 0;
                     const date = formatDate(phone.createdAt);
 
@@ -383,7 +382,7 @@ const Page = () => {
                         key={phone.id}
                         className={`${isEven
                           ? "bg-white dark:bg-transparent"
-                          : "bg-blue-100/50 dark:bg-slate-500"
+                          : "bg-slate-100/50 dark:bg-slate-500"
                           } w-full`}
                       >
                         <td className="p-4">
@@ -391,7 +390,7 @@ const Page = () => {
                             <span className="text-sm font-semibold font-mono">{phone.phoneNumber}</span>
                             <button
                               onClick={() => handleCopy(phone.phoneNumber)}
-                              className="text-gray-400 hover:text-blue-500 transition-colors ms-auto"
+                              className="text-gray-400 hover:text-cyan-500 transition-colors ms-auto"
                             >
                               <MdOutlineContentCopy className="text-sm " />
                             </button>
@@ -416,7 +415,7 @@ const Page = () => {
                         </td>
 
                         <td className="p-4">
-                          <span className="px-3 py-1.5 rounded-md bg-blue-100 text-xs text-blue-600 font-medium">
+                          <span className="px-3 py-1.5 rounded-md bg-cyan-100 text-xs text-cyan-600 font-medium">
                             {date}
                           </span>
                         </td>
@@ -477,7 +476,7 @@ const Page = () => {
                       key={i}
                       className={`${isEven
                         ? "bg-white dark:bg-transparent"
-                        : "bg-blue-100/50 dark:bg-slate-500"
+                        : "bg-cyan-100/50 dark:bg-slate-500"
                         } w-full`}
                     >
                       <td className="p-4">
@@ -519,14 +518,14 @@ const Page = () => {
       {showViewModal && selectedPhone && (
         <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-linear-to-r from-blue-600 to-indigo-600 px-6 py-5 rounded-t-2xl flex items-center justify-between">
+            <div className="sticky top-0 bg-linear-to-r from-cyan-600 to-indigo-600 px-6 py-5 rounded-t-2xl flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                   <IoPhonePortrait className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-white">{t("phone_number_details")}</h3>
-                  <p className="text-sm text-blue-100">{t("view_complete_information")}</p>
+                  <p className="text-sm text-cyan-100">{t("view_complete_information")}</p>
                 </div>
               </div>
               <button
@@ -538,7 +537,7 @@ const Page = () => {
             </div>
 
             <div className="p-6 space-y-6">
-              <div className="bg-linear-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-blue-100 dark:border-blue-800">
+              <div className="bg-linear-to-br from-cyan-50 to-indigo-50 dark:from-cyan-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-cyan-100 dark:border-cyan-800">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
@@ -553,7 +552,7 @@ const Page = () => {
                       handleCopy(selectedPhone.phoneNumber);
                       toast.success("Phone number copied!");
                     }}
-                    className="w-12 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 flex items-center justify-center text-white transition-colors shadow-lg shadow-blue-200 dark:shadow-blue-900/30"
+                    className="w-12 h-12 rounded-xl bg-cyan-600 hover:bg-cyan-700 flex items-center justify-center text-white transition-colors shadow-lg shadow-cyan-200 dark:shadow-cyan-900/30"
                   >
                     <MdOutlineContentCopy className="w-5 h-5" />
                   </button>
@@ -616,7 +615,7 @@ const Page = () => {
                 <div className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-5 border border-slate-100 dark:border-gray-700">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-9 h-9 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                      <MdCalendarToday className="w-5 h-5 text-blue-500" />
+                      <MdCalendarToday className="w-5 h-5 text-cyan-500" />
                     </div>
                     <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       {t("created_date")}
@@ -710,7 +709,7 @@ const Page = () => {
                 {t("close")}
               </button>
               {/* {selectedPhone.status !== PHONE_NUMBER_STATUS.DELETED && (
-                <button className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-blue-200 dark:shadow-blue-900/30">
+                <button className="px-5 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-cyan-200 dark:shadow-cyan-900/30">
                   Edit Number
                 </button>
               )} */}
@@ -873,14 +872,14 @@ const Page = () => {
       {showCreateModal && (
         <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full">
-            <div className="bg-linear-to-r from-blue-600 to-indigo-600 px-6 py-5 rounded-t-2xl flex items-center justify-between">
+            <div className="bg-linear-to-r from-[#16c2cf] to-[#0fb8a5] px-6 py-5 rounded-t-2xl flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                   <FaPlus className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-white">{t("add_phone_number")}</h3>
-                  <p className="text-sm text-blue-100">{t("create_a_new_telephone_number")}</p>
+                  <p className="text-sm text-cyan-100">{t("create_a_new_telephone_number")}</p>
                 </div>
               </div>
               <button
@@ -901,8 +900,8 @@ const Page = () => {
                 required
               />
 
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
-                <p className="text-sm text-blue-700 dark:text-blue-300 flex items-start gap-2">
+              <div className="bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded-xl p-4">
+                <p className="text-sm text-cyan-700 dark:text-cyan-300 flex items-start gap-2">
                   <span className="text-lg">💡</span>
                   <span>
                     {t("make_sure_to_include_the_country_code_and_format_the_number")}
@@ -922,7 +921,7 @@ const Page = () => {
                 <button
                   type="submit"
                   disabled={isCreating}
-                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-blue-200 dark:shadow-blue-900/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-5 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-cyan-200 dark:shadow-cyan-900/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {isCreating ? (
                     <>
@@ -965,7 +964,7 @@ const Page = () => {
 
             <div className="p-6 flex flex-col gap-4 overflow-hidden flex-1">
               <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2 shrink-0">
-                <IoIosSearch className="text-xl text-gray-400 shrink-0" />
+                <IoIosSearch className="text-xl text-gray-300 shrink-0" />
                 <input
                   type="text"
                   placeholder={t("search_by_name_or_email")}

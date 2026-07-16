@@ -368,7 +368,7 @@ getCategoryData();
                     <span>
                       {formData.category
                         ? categoryData.find((c) => c.id === formData.category)?.name
-                        : "Select Category"}
+                        : t("select_category")}
                     </span>
 
                     <FiChevronDown
@@ -725,7 +725,7 @@ getCategoryData();
               </select>
               <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 gap-1.5 rounded-lg border-[1px] text-slate-500 border-slate-900/10 flex items-center">
                 <IoIosSearch className="text-xl" />
-                <input type="text" placeholder={t("search_by_name_3")}  onChange={(e)=>{setSearch(e.target.value)}} className="border-none bg-transparent outline-none text-sm font-medium text-slate-900 dark:text-white w-full"/>
+                <input type="text" placeholder={t("search_by_name")}  onChange={(e)=>{setSearch(e.target.value)}} className="border-none bg-transparent outline-none text-sm font-medium text-slate-900 dark:text-white w-full"/>
               </div>
               {hasPermission(PERMISSIONS.createTeam) ? (
                 <button

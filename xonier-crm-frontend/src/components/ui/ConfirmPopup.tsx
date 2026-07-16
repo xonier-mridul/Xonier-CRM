@@ -33,6 +33,15 @@ const ConfirmPopup = async ({
 
     buttonsStyling: false,
 
+    showClass: {
+      popup: "animate__animated animate__zoomIn animate__faster",
+      backdrop: "animate__animated animate__fadeIn animate__faster",
+    },
+    hideClass: {
+      popup: "animate__animated animate__zoomOut animate__faster",
+      backdrop: "animate__animated animate__fadeOut animate__faster",
+    },
+
     customClass: {
       popup: `
         rounded-3xl p-4 border
@@ -49,14 +58,6 @@ const ConfirmPopup = async ({
       cancelButton:
         "px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-medium transition-all cursor-pointer mr-3",
       actions: "gap-3",
-    },
-
-    showClass: {
-      popup: "animate__animated animate__zoomIn animate__faster",
-    },
-
-    hideClass: {
-      popup: "animate__animated animate__zoomOut animate__faster",
     },
   });
 

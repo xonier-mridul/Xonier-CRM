@@ -193,7 +193,6 @@ function BoardCard({
         {task.rating && (
           <div className="flex items-center gap-0.5 text-yellow-500 text-xs font-bold">
             <Star size={12} fill="currentColor" />
-            {t("nbsp")}
             <span>{task.rating.toFixed(1)}</span>
           </div>
         )}

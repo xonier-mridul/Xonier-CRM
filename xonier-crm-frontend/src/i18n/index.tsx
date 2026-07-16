@@ -5,7 +5,7 @@ import LanguageDetector from "i18next-browser-languagedetector";
 
 import en from "../locales/en/common.json";
 import hi from "../locales/hi/common.json";
-import po from "../locales/po/common.json";
+import pt from "../locales/pt/common.json";
 
 i18n
   .use(LanguageDetector)
@@ -18,8 +18,8 @@ i18n
       hi: {
         translation: hi,
       },
-      po: {
-        translation: po,
+      pt: {
+        translation: pt,
       },
     },
 

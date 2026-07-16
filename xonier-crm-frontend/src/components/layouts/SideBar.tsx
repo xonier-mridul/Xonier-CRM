@@ -304,7 +304,7 @@ const SideBar = () => {
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                                                         {t("People")}
+                                                         {t("people")}
 
                         
                       </Link>
@@ -319,7 +319,7 @@ const SideBar = () => {
                             : "border-l-2 border-transparent"
                             } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                         >
-                                                                                   {t("Company")}
+                                                                                   {t("company")}
 
                           
                         </Link>
@@ -796,7 +796,7 @@ const SideBar = () => {
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        {t("invoice_2")}
+                        {t("invoice")}
                       </Link>
                     </li>}
                   </motion.ul>

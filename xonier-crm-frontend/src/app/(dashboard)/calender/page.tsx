@@ -1,11 +1,12 @@
-
 "use client";
 
-import React, { JSX, useEffect, useRef, useState } from "react";
+import React, { JSX, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
+
+
 import CreateEventModal from "@/src/components/pages/calender/CreateEventPopup";
 import BulkCreateEventModal from "@/src/components/pages/calender/Bulkcreateeventpopup";
 import { CalendarEvent } from "@/src/types/calenders/calender.types";
@@ -33,7 +34,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 const Page = (): JSX.Element => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [openModal, setOpenModal] = useState(false);
   const [openBulkModal, setOpenBulkModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -52,6 +53,55 @@ const Page = (): JSX.Element => {
   const clickCountRef = useRef<number>(0);
   const calendarRef = useRef<any>(null);
 
+  const calendarLanguage = useMemo(() => {
+  const lang = i18n.language?.toLowerCase();
+
+  if (lang === "po") return "pt";
+  if (lang === "pt-br") return "pt-BR";
+  if (lang === "pt-pt") return "pt-PT";
+
+  return lang || "en";
+}, [i18n.language]);
+
+
+  const calendarLocale = useMemo(() => {
+  return {
+    code: calendarLanguage,
+    week: {
+      dow: 0,
+      doy: 6,
+    },
+    buttonText: {
+      prev: t("fc_prev"),
+      next: t("fc_next"),
+      today: t("fc_today"),
+      month: t("fc_month"),
+      week: t("fc_week"),
+      day: t("fc_day"),
+      list: t("fc_list"),
+    },
+    weekText: t("fc_week_text"),
+    allDayText: t("fc_all_day"),
+    moreLinkText: t("fc_more_link"),
+    noEventsText: t("fc_no_events"),
+  };
+}, [i18n.language, t]);
+
+  // Format current month based on locale
+  // const formatCurrentMonth = (date: Date) => {
+  //   return date.toLocaleDateString(i18n.language, {
+  //     month: "long",
+  //     year: "numeric",
+  //   });
+  // };
+
+const formatCurrentMonth = useMemo(() => {
+  return currentMonth.toLocaleDateString(calendarLanguage, {
+    month: "long",
+    year: "numeric",
+  });
+}, [currentMonth, calendarLanguage]);
+
   const openCreateEventModal = (dateStr: string) => {
     setSelectedDate(dateStr);
     setOpenModal(true);
@@ -69,7 +119,7 @@ const Page = (): JSX.Element => {
       if (axios.isAxiosError(error)) {
         setErr(extractErrorMessages(error));
       } else {
-        setErr(["Something went wrong"]);
+        setErr([t("something_went_wrong")]);
       }
     } finally {
       setIsLoading(false);
@@ -154,7 +204,7 @@ const Page = (): JSX.Element => {
     lastClickRef.current = now;
 
     if (!hasPermission(PERMISSIONS.createEvent)) {
-      toast.info("You do not have permission to create event");
+      toast.info(t("no_create_event_permission"));
       return;
     }
 
@@ -173,19 +223,19 @@ const Page = (): JSX.Element => {
     setLoading(true);
     try {
       if (!id) {
-        toast.info(`Event id not found`);
+        toast.info(t("event_id_not_found"));
         return;
       }
       const isConfirm = await ConfirmPopup({
-        title: "Are you sure",
-        text: `Are you want to delete "${title}" event?`,
-        btnTxt: "Yes, Delete",
+        title: t("are_you_sure"),
+        text: t("delete_event_message").replace("{{title}}", title),
+        btnTxt: t("yes_delete"),
       });
       if (isConfirm) {
         const result = await EventService.delete(id);
         setOpenViewModal(false);
         if (result.status === 200) {
-          toast.success("Event deleted successfully");
+          toast.success(t("event_deleted_successfully"));
           await getAllEvent();
         }
       }
@@ -196,7 +246,7 @@ const Page = (): JSX.Element => {
         setErr(messages);
         toast.error(`${messages}`);
       } else {
-        setErr(["Something went wrong"]);
+        setErr([t("something_went_wrong")]);
       }
     } finally {
       setLoading(false);
@@ -205,7 +255,7 @@ const Page = (): JSX.Element => {
 
   const handleEditClick = () => {
     if (!hasPermission(PERMISSIONS.updateEvent)) {
-      toast.info("You do not have permission to update events");
+      toast.info(t("no_update_event_permission"));
       return;
     }
     setOpenViewModal(false);
@@ -218,7 +268,7 @@ const Page = (): JSX.Element => {
 
   const handleBulkCreateClick = () => {
     if (!hasPermission(PERMISSIONS.createEvent)) {
-      toast.info("You do not have permission to create events");
+      toast.info(t("no_create_event_permission"));
       return;
     }
     setOpenBulkModal(true);
@@ -231,11 +281,25 @@ const Page = (): JSX.Element => {
       calendarApi.changeView(view);
     }
   };
+const handleDatesSet = useCallback((dateInfo: any) => {
+  const nextDate = dateInfo.view.currentStart;
 
+  setCurrentMonth((prev) => {
+    if (
+      prev.getFullYear() === nextDate.getFullYear() &&
+      prev.getMonth() === nextDate.getMonth() &&
+      prev.getDate() === nextDate.getDate()
+    ) {
+      return prev;
+    }
+
+    return nextDate;
+  });
+}, []);
   const viewButtons = [
-    { id: "dayGridMonth", label: "Month", icon: Grid3X3 },
-    { id: "timeGridWeek", label: "Week", icon: CalendarDays },
-    { id: "timeGridDay", label: "Day", icon: Clock },
+    { id: "dayGridMonth", label: t("view_month"), icon: Grid3X3 },
+    { id: "timeGridWeek", label: t("view_week"), icon: CalendarDays },
+    { id: "timeGridDay", label: t("view_day"), icon: Clock },
   ];
 
   return (
@@ -295,7 +359,7 @@ const Page = (): JSX.Element => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleBulkCreateClick}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-teal-400 via-teal-500 to-cyan-500   text-white transition-all shadow-[10px] hover:shadow-[#16c2cf]"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-teal-400 via-teal-500 to-cyan-500 text-white transition-all shadow-[10px] hover:shadow-[#16c2cf]"
             >
               <ListPlus className="w-4 h-4" />
               {t("bulk_create_events")}
@@ -320,34 +384,31 @@ const Page = (): JSX.Element => {
           {/* Custom Toolbar */}
           <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
             {/* Month Navigation */}
-            <div className="grid grid-cols-4 md:grid-cols-5  items-center gap-3">
+            <div className="grid grid-cols-4 md:grid-cols-5 items-center gap-3">
               <div className='flex col-span-3 md:col-span-4'>
-              <button
-                onClick={() => {
-                  const api = calendarRef.current?.getApi();
-                  api?.prev();
-                }}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-              >
-                <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-              </button>
-              <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 min-w-[200px] text-center">
-                {currentMonth.toLocaleDateString("en-US", {
-                  month: "long",
-                  year: "numeric",
-                })}
-              </h2>
-              <button
-                onClick={() => {
-                  const api = calendarRef.current?.getApi();
-                  api?.next();
-                }}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-              >
-                <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-              </button>
-
-              
+                <button
+                  onClick={() => {
+                    const api = calendarRef.current?.getApi();
+                    api?.prev();
+                  }}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  title={t("previous")}
+                >
+                  <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                </button>
+                <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 min-w-[200px] text-center">
+                  {formatCurrentMonth}
+                </h2>
+                <button
+                  onClick={() => {
+                    const api = calendarRef.current?.getApi();
+                    api?.next();
+                  }}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  title={t("next")}
+                >
+                  <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                </button>
               </div>
               <button
                 onClick={() => {
@@ -358,90 +419,79 @@ const Page = (): JSX.Element => {
               >
                 {t("today")}
               </button>
-             
-              
             </div>
+
             <div className='grid grid-cols-4 md:grid-cols-3 gap-4'>
-                 
-
-               {/* View Switcher */}
-            <div className="flex gap-2 col-span-3 md:col-span-2 bg-gray-100 dark:bg-gray-700 p-1 rounded-xl">
-              {viewButtons.map(({ id, label, icon: Icon }) => (
-                <button
-                  key={id}
-                  onClick={() => handleViewChange(id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    activeView === id
-                      ? "bg-white dark:bg-gray-600 text-cyan-600 dark:text-cyan-400 shadow-sm"
-                      : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  {label}
-                </button>
-              ))}
-            </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                if (!hasPermission(PERMISSIONS.createEvent)) {
-                  toast.info("You do not have permission to create events");
-                  return;
-                }
-                openCreateEventModal(new Date().toISOString());
-              }}
-              className="flex items-center gap-2 pr-3 md:px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-teal-400 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-teal-400 text-white transition-all shadow-lg hover:shadow-emerald-500/25 whitespace-nowrap"
-            >
-              <Plus className="w-4 h-4 " />
-              {t("add_event")}
-            </motion.button>
-
+              {/* View Switcher */}
+              <div className="flex gap-2 col-span-3 md:col-span-2 bg-gray-100 dark:bg-gray-700 p-1 rounded-xl">
+                {viewButtons.map(({ id, label, icon: Icon }) => (
+                  <button
+                    key={id}
+                    onClick={() => handleViewChange(id)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      activeView === id
+                        ? "bg-white dark:bg-gray-600 text-cyan-600 dark:text-cyan-400 shadow-sm"
+                        : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {label}
+                  </button>
+                ))}
               </div>
-
-           
-
-            {/* Quick Add Event Button */}
-            
+              
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  if (!hasPermission(PERMISSIONS.createEvent)) {
+                    toast.info(t("no_create_event_permission"));
+                    return;
+                  }
+                  openCreateEventModal(new Date().toISOString());
+                }}
+                className="flex items-center gap-2 pr-3 md:px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-teal-400 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-teal-400 text-white transition-all shadow-lg hover:shadow-emerald-500/25 whitespace-nowrap"
+              >
+                <Plus className="w-4 h-4 " />
+                {t("add_event")}
+              </motion.button>
+            </div>
           </div>
 
           {/* Calendar */}
           <div className="fc-custom-theme">
-            <FullCalendar
-              ref={calendarRef}
-              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-              initialView="dayGridMonth"
-              events={eventData}
-              height="75vh"
-              selectable
-              editable
-              nowIndicator
-              dateClick={handleDateClick}
-              eventClick={handleEventClick}
-              dayMaxEvents={3}
-              eventColor="#6366f1"
-              eventTextColor="#ffffff"
-              datesSet={(dateInfo) => {
-                setCurrentMonth(dateInfo.view.currentStart);
-              }}
-              headerToolbar={false}
-              views={{
-                dayGridMonth: {
-                  titleFormat: { year: "numeric", month: "long" },
-                },
-                timeGridWeek: {
-                  titleFormat: { year: "numeric", month: "long", day: "numeric" },
-                },
-                timeGridDay: {
-                  titleFormat: { year: "numeric", month: "long", day: "numeric" },
-                },
-              }}
-            />
+           <FullCalendar
+  ref={calendarRef}
+  plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+  initialView="dayGridMonth"
+  locale={calendarLocale}
+  events={eventData}
+  height="75vh"
+  selectable
+  editable
+  nowIndicator
+  dateClick={handleDateClick}
+  eventClick={handleEventClick}
+  dayMaxEvents={3}
+  eventColor="#6366f1"
+  eventTextColor="#ffffff"
+  datesSet={handleDatesSet}
+  headerToolbar={false}
+  views={{
+    dayGridMonth: {
+      titleFormat: { year: "numeric", month: "long" },
+    },
+    timeGridWeek: {
+      titleFormat: { year: "numeric", month: "long", day: "numeric" },
+    },
+    timeGridDay: {
+      titleFormat: { year: "numeric", month: "long", day: "numeric" },
+    },
+  }}
+/>
           </div>
         </motion.div>
       </div>
-
-     
     </>
   );
 };

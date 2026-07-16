@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 export interface SelectOption {
   label: string;
@@ -14,7 +15,6 @@ interface SelectProps
   options: SelectOption[];
   placeholder?: string;
 }
-
 const Select: React.FC<SelectProps> = ({
   label,
   error,
@@ -24,6 +24,8 @@ const Select: React.FC<SelectProps> = ({
   required = true,
   ...props
 }) => {
+const {t}= useTranslation()
+
   return (
     <div className="flex flex-col gap-1 w-full">
       {label && (
@@ -53,7 +55,7 @@ const Select: React.FC<SelectProps> = ({
 
         {options.map(option => (
           <option key={option.value} value={option.value}>
-            {option.label}
+            {t(option.label)}
           </option>
         ))}
       </select>

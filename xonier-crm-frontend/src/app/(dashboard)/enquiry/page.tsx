@@ -141,7 +141,7 @@ const page = (): JSX.Element => {
         </div>
         {(hasPermission(PERMISSIONS.createEnquiry) ) && 
           <div className="flex items-center justify-end gap-3 ">
-            <PrimaryButton text="Create Bulk Enquiry" link="/enquiry/bulk" icon={<LiaMailBulkSolid />} />
+            <PrimaryButton text={t("create_bulk_enquiry")} link="/enquiry/bulk" icon={<LiaMailBulkSolid />} />
           </div>
         }
       </div>
@@ -178,7 +178,7 @@ const page = (): JSX.Element => {
            {/* <Limit pageLimit={pageLimit} setPageLimit={setPageLimit}/> */}
             <div className="bg-slate-50 text-slate-500 col-span-2 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2">
               <IoIosSearch className="text-xl text-slate-500" />
-              <input type="text" className="outline-none dark:text-white/70" placeholder={t("search_2")} onChange={(e) => handleSearch(e.target.value)} value={searchVal} />
+              <input type="text" className="outline-none dark:text-white/70" placeholder={t("search_3")} onChange={(e) => handleSearch(e.target.value)} value={searchVal} />
             </div>
             <div>
               <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter}  />

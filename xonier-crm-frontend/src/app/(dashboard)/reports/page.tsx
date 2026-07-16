@@ -291,7 +291,7 @@ function ExpandableRow({
         <td className="px-5 py-4">
           <button
             type="button"
-            className="w-7 h-7 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all"
+            className="w-7 h-7 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all"
             onClick={(e) =>{ setOpen((o) => !o); e.stopPropagation()}}
           >
             <svg
@@ -314,15 +314,23 @@ function ExpandableRow({
             </svg>
           </button>
         </td>
-        <td className="justify-center px-5 py-4 text-center">
-          <button
-            onClick={() => handleDelete(report.id, report.reportDate)}
-            disabled={!canDelete}
-          >
-            <MdDelete
-              className={`w-5 h-5 disabled:text-red-200 text-red-400   transition-colors ${canDelete ? "cursor-pointer hover:text-red-700" : "cursor-not-allowed hover:text-red-200"}`}
-            />
-          </button>
+       <td className="justify-center px-5 py-4 text-center">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(report.id, report.reportDate);
+              }}
+              disabled={!canDelete}
+              className="inline-flex items-center justify-center p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+            >
+              <MdDelete
+                className={`w-5 h-5 transition-colors ${
+                  canDelete 
+                    ? "text-red-500 cursor-pointer hover:text-red-700" 
+                    : "text-red-200 cursor-not-allowed"
+                }`}
+              />
+            </button>
         </td>
       </tr>
 
@@ -369,7 +377,7 @@ function ExpandableRow({
                               </span>
                             )}
                             {item.linkedTaskId && (
-                              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-50 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400">
                                 {item.linkedTaskId}
                               </span>
                             )}
@@ -428,7 +436,7 @@ function ExpandableRow({
                               </span>
                             )}
                             {item.linkedTaskId && (
-                              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-50 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400">
                                 {item.linkedTaskId}
                               </span>
                             )}
@@ -641,25 +649,30 @@ const handleSearch = (val: string) => {
 setLoading(false)
     }
   }
-  const handleDelete =  async (id: string, date: string) => {
-    try {
-      const confirm = await ConfirmPopup({
-        title: "Are you sure",
-        text: `Are you sure to delete ${new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })} task report`,
-        btnTxt: "Yes, Delete",
-      });
-      if (confirm) {
-        const res = await TaskReportService.deleteReport(id);
-        if (res.status === 200) {
-          toast.success("Report deleted");
-          const filtered = reports.filter((item) => item.id !== id);
-          setReports(filtered);
-        }
+ 
+  const handleDelete = async (id: string, date: string) => {
+  try {
+    const confirm = await ConfirmPopup({
+      title: "Are you sure",
+      text: `Are you sure to delete ${new Date(date).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })} task report`,
+      btnTxt: "Yes, Delete",
+    }).catch(() => false);
+    if (confirm) {
+      const res = await TaskReportService.deleteReport(id);
+      if (res.status === 200) {
+        toast.success("Report deleted");
+        const filtered = reports.filter((item) => item.id !== id);
+        setReports(filtered);
       }
-    } catch {
-      toast.error("Failed to delete report");
     }
-  };
+  } catch {
+    toast.error("Failed to delete report");
+  }
+};
 
 
   useEffect(() => {
@@ -699,7 +712,7 @@ const handleUserId = (user: User) => {
               </h1>
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              {t("daily_task_reports_morning_agendas_amp_evening_progress")}
+              {t("daily_task_reports_morning_agendas_evening_progress")}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -737,31 +750,31 @@ const handleUserId = (user: User) => {
         {/* ── Stats Row ── */}
         <div className="grid grid-cols-4 gap-4 mb-7">
           {[
-            {
-              label: "Total (Page)",
-              value: totalReports,
-              icon: "📋",
-              bg: "bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800",
-            },
-            {
-              label: "Evening Submitted",
-              value: eveningDone,
-              icon: "🌆",
-              bg: "bg-emerald-50 border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800",
-            },
-            {
-              label: "Reviewed",
-              value: reviewed,
-              icon: "✅",
-              bg: "bg-purple-50 border-purple-100 dark:bg-purple-900/20 dark:border-purple-800",
-            },
-            {
-              label: "Avg Completion",
-              value: `${avgCompletion}%`,
-              icon: "📊",
-              bg: "bg-amber-50 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800",
-            },
-          ].map((s) => (
+  {
+    label: t("total_page"),
+    value: totalReports,
+    icon: "📋",
+    bg: "bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800",
+  },
+  {
+    label: t("evening_submitted"),
+    value: eveningDone,
+    icon: "🌆",
+    bg: "bg-emerald-50 border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800",
+  },
+  {
+    label: t("reviewed"),
+    value: reviewed,
+    icon: "✅",
+    bg: "bg-purple-50 border-purple-100 dark:bg-purple-900/20 dark:border-purple-800",
+  },
+  {
+    label: t("avg_completion"),
+    value: `${avgCompletion}%`,
+    icon: "📊",
+    bg: "bg-amber-50 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800",
+  },
+].map((s) => (
             <div
               key={s.label}
               className={`flex items-center gap-3 p-4 rounded-2xl border ${s.bg}`}
@@ -791,7 +804,7 @@ const handleUserId = (user: User) => {
     onChange={(e) => handleSearch(e.target.value)}
     onFocus={() => searchInput.length > 0 && setShowDropdown(true)}
     placeholder={t("search_by_employee_name")}
-    className="pl-9 pr-9 py-2.5 w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition"
+    className="pl-9 pr-9 py-2.5 w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition"
   />
   {searchInput && (
     <button
@@ -814,7 +827,7 @@ const handleUserId = (user: User) => {
       <div className="max-h-48 overflow-y-auto">
         {loading ? (
           <div className="flex items-center justify-center py-6">
-            <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           usersData.map((user) => (
@@ -822,13 +835,13 @@ const handleUserId = (user: User) => {
               key={user.id}
               type="button"
               onClick={() => handleUserId(user)}
-              className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors text-left group"
+              className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-colors text-left group"
             >
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                 {(user.firstName?.[0] ?? "").toUpperCase()}{(user.lastName?.[0] ?? "").toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
                   {user.firstName} {user.lastName}
                 </p>
                 {(user as any).company && (
@@ -836,7 +849,7 @@ const handleUserId = (user: User) => {
                 )}
               </div>
               {userId === user.id && (
-                <span className="text-indigo-500 flex-shrink-0 text-xs font-bold">{t("selected_3")}</span>
+                <span className="text-cyan-500 flex-shrink-0 text-xs font-bold">{t("selected_3")}</span>
               )}
             </button>
           ))
@@ -859,7 +872,7 @@ const handleUserId = (user: User) => {
               setFilterStatus(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition"
+            className="px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition"
           >
             <option value="">{t("all_statuses")}</option>
            
@@ -902,21 +915,21 @@ const handleUserId = (user: User) => {
               <thead>
                 <tr className="bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
                   {[
-                    "Employee",
-                    "Date",
-                    "Status",
-                    "Tasks",
-                    "Hours",
-                    "Mood",
-                    "Reviewed",
+                    "employee",
+                    "date",
+                    "status",
+                    "tasks",
+                    "hours",
+                    "mood",
+                    "reviewed",
                     "",
-                    "Action",
+                    "action",
                   ].map((col) => (
                     <th
                       key={col}
                       className="px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-left"
                     >
-                      {col}
+                            {col ? t(col) : ""}
                     </th>
                   ))}
                 </tr>

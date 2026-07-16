@@ -43,8 +43,10 @@ import { MdKeyboardArrowRight } from "react-icons/md";
 import NotificationBell from "../common/NotificationBell";
 import { FaArrowLeftLong, FaArrowRightLong } from "react-icons/fa6";
 // import { useTranslation } from "react-i18next";
-import i18n from "../../i18n/index";
+// import i18n from "../../i18n/index";
 import { useTranslation } from "react-i18next";
+import LanguageSelector from "../common/LanguageSelector";
+import { IoLanguage } from "react-icons/io5";
 
 
 const mockNotifications = [
@@ -106,6 +108,32 @@ const NavBar = () => {
   const USER_ID = auth.user?._id;
   const searchRef = useRef<HTMLDivElement>(null);
   const  calRef = useRef<HTMLDivElement>(null)
+   const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+  
 
 
 
@@ -228,7 +256,7 @@ const results = searchableData.filter((item) =>
 
   const handleLogout = async (): Promise<void> => {
     try {
-      let isConfirmed = await ConfirmPopup({
+      const isConfirmed = await ConfirmPopup({
         title: "Logout",
         text: "Are you want to logout",
         btnTxt: "Yes, Logout",
@@ -338,7 +366,7 @@ const results = searchableData.filter((item) =>
       </div>
 
 
-<div className="flex gap-2">
+{/* <div className="flex gap-2">
 <button className="border text-sm border-slate-200 px-4 py-2.5 rounded-xl cursor-pointer" 
 onClick={() => i18n.changeLanguage("hi")}>
     {t("hindi")}
@@ -352,11 +380,22 @@ onClick={() => i18n.changeLanguage("en")}>
 onClick={() => i18n.changeLanguage("po")}>
     {t("portuguese")}
 </button>
-</div>
+</div> */}
+
+
+{/* <div className="w-5 h-5 rounded-full relative">
+<IoLanguage 
+  onClick={() => setIsOpen(!isOpen)} />
+  {isOpen && 
+<LanguageSelector isOpen={isOpen} setIsOpen={setIsOpen} dropdownRef={dropdownRef}/>
+
+
+  }
+
+</div> */}
 
 
 
-     
 
       {/* RIGHT SIDE — Actions */}
       <div className="flex items-center gap-2 md:gap-3">
@@ -411,6 +450,22 @@ onClick={() => i18n.changeLanguage("po")}>
             
           </AnimatePresence>
         </div>
+          <div className="relative">
+        <button
+          ref={buttonRef}
+          onClick={() => setIsOpen(!isOpen)}
+          className="relative h-10 w-10 flex items-center justify-center rounded-full bg-slate-100/60 dark:bg-gray-800/60 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 hover:text-cyan-600 transition-all group cursor-pointer"
+          aria-label="Select Language"
+        >
+          <IoLanguage className="w-5 h-5" />
+        </button>
+
+        <LanguageSelector
+          isOpen={isOpen}
+          setIsOpen={setIsOpen}
+          dropdownRef={dropdownRef}
+        />
+      </div>
 
 
         <span className="border-r border-gray-200 dark:border-gray-700 h-8" />

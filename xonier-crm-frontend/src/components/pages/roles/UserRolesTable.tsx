@@ -690,12 +690,12 @@ const handleAllPermissions = (checked: boolean) => {
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
-                {["Role", "Permissions", "Power", "Can Manage Below", "Actions"].map((col) => (
+                {["role", "permissions", "power", "can_manage_below", "actions"].map((col) => (
                   <th
                     key={col}
                     className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400"
                   >
-                    {col}
+                    {t(col)}
                   </th>
                 ))}
               </tr>

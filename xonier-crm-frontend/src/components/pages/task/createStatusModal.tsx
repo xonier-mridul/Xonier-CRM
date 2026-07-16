@@ -149,7 +149,12 @@ export function StatusModal({
 
                             {categorys.map(c => (
                                 <option key={c.id} value={String(c.id)}>
-                                    {c.icon || "❓"} {t("nbsp")} {c.name}
+                                    <div  className="flex gap-15 items-center">
+                                          {c.icon || "❓"}
+                                     {/* {t("nbsp")} */}
+                                      {c.name}
+                                    </div>
+                                  
                                 </option>
                             ))}
                         </select>
