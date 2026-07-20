@@ -184,21 +184,36 @@ class AuthController:
         
 
     async def get_user_rating_data(
-    self,
-    request: Request,
-    id: str,
-    page: int = 1,
-    limit: int = 20,
-):
+        self,
+        request: Request,
+        id: str,
+        page: int = 1,
+        limit: int = 20,
+        date_filter: str = "all",
+        start_date: str = None,
+        end_date: str = None,
+        rating_filter: str = "all",
+        on_time_filter: str = "all",
+        trend_months: int = 6,
+    ):
         try:
             user = request.state.user
-            result = await self.service.get_user_rating_data(id, user, page, limit)
+            result = await self.service.get_user_rating_data(
+                id,
+                user,
+                page,
+                limit,
+                date_filter=date_filter,
+                start_date_str=start_date,
+                end_date_str=end_date,
+                rating_filter=rating_filter,
+                on_time_filter=on_time_filter,
+                trend_months=trend_months,
+            )
             return successResponse(200, "User rating data fetched successfully", result)
 
         except AppException as e:
             raise e
-        
-        
     async def get_user_profile(self, request:Request ):
         try:
            

@@ -796,7 +796,7 @@ const SideBar = () => {
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        {t("invoice")}
+                        {t("Invoice")}
                       </Link>
                     </li>}
                   </motion.ul>
