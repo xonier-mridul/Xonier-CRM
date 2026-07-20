@@ -30,7 +30,7 @@ const {t}= useTranslation()
     <div className="flex flex-col gap-1 w-full">
       {label && (
         <label className="text-sm font-medium text-gray-700 dark:text-gray-200 capitalize">
-          {label} {" "}{required && <span className="text-red-500 text-xl">*</span>}
+          {t(label)} {" "}{required && <span className="text-red-500 text-xl">*</span>}
         </label>
       )}
 
@@ -49,7 +49,7 @@ const {t}= useTranslation()
         {placeholder && (
           <option
            value="" disabled>
-            {placeholder}
+            {t(placeholder)}
           </option>
         )}
 

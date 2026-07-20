@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 interface InputProps
@@ -22,6 +23,9 @@ const Input: React.FC<InputProps> = ({
 
   const isPassword = type === "password";
   const isTextarea = type === "textarea";
+  const {t} = useTranslation()
+
+  const head = label?.toLowerCase()
 
   const commonClasses = `
     w-full px-3 py-2 rounded-md border text-sm
@@ -38,7 +42,7 @@ const Input: React.FC<InputProps> = ({
     <div className="flex flex-col gap-1 w-full">
       {label && (
         <label className="text-sm font-medium text-gray-700 dark:text-gray-200 capitalize">
-          {label} {required && <span className="text-red-500 text-xl">*</span>}
+          {t(head)} {required && <span className="text-red-500 text-xl">*</span>}
         </label>
       )}
 

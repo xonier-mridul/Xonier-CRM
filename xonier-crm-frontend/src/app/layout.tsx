@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
-import "./globals.css";
+import './globals.css'
 import "../i18n/index";
 import { Suspense, ReactNode } from "react";
 
@@ -16,6 +16,7 @@ import RouteLoader from "../components/loader/RouteLoader";
 
 import "react-toastify/dist/ReactToastify.css";
 import "react-loading-skeleton/dist/skeleton.css";
+import I18nProvider from "../components/providers/I18nProvider";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <Providers>
           <ReduxProvider>
             <LoaderProvider>
+              <I18nProvider>
 
               <RouteLoader />
 
@@ -59,6 +61,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
 
               {/* App content */}
               {children}
+              </I18nProvider>
             </LoaderProvider>
           </ReduxProvider>
         </Providers>
