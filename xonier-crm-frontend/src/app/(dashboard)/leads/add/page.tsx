@@ -151,7 +151,7 @@ const page = (): JSX.Element => {
       const result = await LeadService.create(payload);
 
       if (result.status === 201) {
-        toast.success(`${flatFormData.fullName} lead created successfully`);
+        toast.success(`${flatFormData.fullName} ${t('lead_created_successfully')}`);
 
         // Reset: clear known fields + any dynamic extra fields
         setFlatFormData((prev) => {
@@ -194,18 +194,18 @@ const page = (): JSX.Element => {
           </div>
 
           <PrimaryButton
-            text={userFormData.length <= 0 ? "Create form first" : "Edit Form Fields"}
+            text={userFormData.length <= 0 ? t("create_form_first"): t("edit_form_fields") }
             link="/leads/update-form"
             icon={<GrDocumentUpdate />}
           />
         </div>
 
         {isMissingRequiredFields && (
-          <InformationComponent message="Full Name, Email, Phone, Source, Priority, Project Type and Status fields are mandatory" />
+          <InformationComponent message={t("mandatory_fields_message")} />
         )}
         {err && <ErrorComponent error={err} />}
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-8">
+        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-8 items-end">
           {!isLoading ? (
             userFormField && userFormField.length > 0 ? (
               userFormField.map((item) => {
@@ -222,7 +222,7 @@ const page = (): JSX.Element => {
                       name={item.key}
                       type={item.type}
                       label={item.name}
-                      placeholder={item.placeholder ?? ""}
+                      placeholder={t(item.placeholder) ?? ""}
                       value={fieldValue as string}
                       onChange={handleChange}
                       required={item.required}

@@ -49,6 +49,7 @@ export interface CategoryTableProps {
   isLoading: boolean;
   loading: boolean;
   isPopupShow: boolean;
+  isBlur:boolean;
   setIsPopupShow: Dispatch<SetStateAction<boolean>>;
   formData: CategoryPayload;
   setFormData: Dispatch<SetStateAction<CategoryPayload>>;

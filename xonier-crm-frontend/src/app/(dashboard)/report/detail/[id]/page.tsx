@@ -20,16 +20,16 @@ const STATUS_META: Record<
   { label: string; dot: string; bg: string; text: string }
 > = {
   morning_pending: {
-    label: "Morning Pending",
+    label: ("morning_ending"),
     dot: "bg-amber-400",
     bg: "bg-amber-50 dark:bg-amber-900/20",
     text: "text-amber-700 dark:text-amber-400",
   },
   morning_submitted: {
     label: "Morning Submitted",
-    dot: "bg-blue-500",
-    bg: "bg-blue-50 dark:bg-blue-900/20",
-    text: "text-blue-700 dark:text-blue-400",
+    dot: "bg-cyan-500",
+    bg: "bg-cyan-50 dark:bg-cyan-900/20",
+    text: "text-cyan-700 dark:text-cyan-400",
   },
   evening_pending: {
     label: "Evening Pending",
@@ -45,9 +45,9 @@ const STATUS_META: Record<
   },
   reviewed: {
     label: "Reviewed",
-    dot: "bg-purple-500",
-    bg: "bg-purple-50 dark:bg-purple-900/20",
-    text: "text-purple-700 dark:text-purple-400",
+    dot: "bg-cyan-500",
+    bg: "bg-cyan-50 dark:bg-cyan-900/20",
+    text: "text-cyan-700 dark:text-cyan-400",
   },
 };
 
@@ -56,7 +56,7 @@ const PRIORITY_BADGE: Record<string, string> = {
     "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800",
   high: "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800",
   medium:
-    "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800",
+    "bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800",
   low: "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400 border border-gray-200 dark:border-gray-600",
 };
 
@@ -72,8 +72,8 @@ const ITEM_STATUS_META: Record<
   },
   in_progress: {
     label: "In Progress",
-    bg: "bg-blue-50 dark:bg-blue-900/20",
-    text: "text-blue-600 dark:text-blue-400",
+    bg: "bg-cyan-50 dark:bg-cyan-900/20",
+    text: "text-cyan-600 dark:text-cyan-400",
     icon: "🔄",
   },
   completed: {
@@ -84,8 +84,8 @@ const ITEM_STATUS_META: Record<
   },
   carried_forward: {
     label: "Carried Forward",
-    bg: "bg-purple-50 dark:bg-purple-900/20",
-    text: "text-purple-600 dark:text-purple-400",
+    bg: "bg-cyan-50 dark:bg-cyan-900/20",
+    text: "text-cyan-600 dark:text-cyan-400",
     icon: "➡️",
   },
   blocked: {
@@ -108,7 +108,7 @@ const MOOD_MAP: Record<
   good: {
     emoji: "😊",
     label: "Good",
-    color: "text-blue-600 dark:text-blue-400",
+    color: "text-cyan-600 dark:text-cyan-400",
   },
   neutral: {
     emoji: "😐",
@@ -150,7 +150,7 @@ function CompletionBar({ value }: { value: number }) {
     pct >= 75
       ? "bg-emerald-500"
       : pct >= 40
-      ? "bg-blue-500"
+      ? "bg-cyan-500"
       : pct > 0
       ? "bg-amber-400"
       : "bg-gray-200 dark:bg-gray-600";
@@ -186,7 +186,7 @@ function TaskItemCard({
     <div className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4 hover:shadow-md hover:border-gray-200 dark:hover:border-gray-600 transition-all duration-200 hover:-translate-y-0.5">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-start gap-2.5 flex-1 min-w-0">
-          <span className="mt-0.5 flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 text-xs font-bold text-gray-500 dark:text-gray-400 flex items-center justify-center group-hover:bg-blue-100 group-hover:text-blue-600 dark:group-hover:bg-blue-900/30 dark:group-hover:text-blue-400 transition-colors duration-200">
+          <span className="mt-0.5 flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 text-xs font-bold text-gray-500 dark:text-gray-400 flex items-center justify-center group-hover:bg-cyan-100 group-hover:text-cyan-600 dark:group-hover:bg-cyan-900/30 dark:group-hover:text-cyan-400 transition-colors duration-200">
             {index + 1}
           </span>
           <div className="min-w-0">
@@ -430,14 +430,14 @@ function ReviewPanel({
     <div
       className={`rounded-2xl border overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 ${
         isAlreadyReviewed
-          ? "bg-purple-50 dark:bg-purple-900/10 border-purple-200 dark:border-purple-800"
+          ? "bg-cyan-50 dark:bg-cyan-900/10 border-cyan-200 dark:border-cyan-800"
           : "bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700"
       }`}
     >
       <div
         className={`px-5 py-4 border-b flex items-center justify-between ${
           isAlreadyReviewed
-            ? "border-purple-200 dark:border-purple-800 bg-purple-100/50 dark:bg-purple-900/20"
+            ? "border-cyan-200 dark:border-cyan-800 bg-cyan-100/50 dark:bg-cyan-900/20"
             : "border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/30"
         }`}
       >
@@ -447,10 +447,10 @@ function ReviewPanel({
           </span>
           <div>
             <h2 className="text-base font-extrabold text-gray-900 dark:text-white tracking-tight">
-              {isAlreadyReviewed ? "Review Submitted" : "Manager Review"}
+              {isAlreadyReviewed ? t("review_submitted") : t("manager_review")}
             </h2>
             {isAlreadyReviewed && report.managerReviewedAt && (
-              <p className="text-xs text-purple-600 dark:text-purple-400 mt-0.5">
+              <p className="text-xs text-cyan-600 dark:text-cyan-400 mt-0.5">
                 {t("reviewed_on")}{" "}
                 {new Date(report.managerReviewedAt).toLocaleString("en-IN", {
                   day: "2-digit",
@@ -465,8 +465,8 @@ function ReviewPanel({
         </div>
 
         {isAlreadyReviewed && (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border border-purple-200 dark:border-purple-700">
-            <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-700">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
             {t("reviewed")}
           </span>
         )}
@@ -474,9 +474,9 @@ function ReviewPanel({
 
       <div className="p-5 space-y-4">
         {isAlreadyReviewed && report.reviewedBy && (
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-gray-800 border border-purple-100 dark:border-purple-800/50">
-            <div className="h-8 w-8 rounded-full bg-purple-200 dark:bg-purple-800 flex items-center justify-center flex-shrink-0">
-              <span className="text-xs font-bold text-purple-700 dark:text-purple-300">
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-gray-800 border border-cyan-100 dark:border-cyan-800/50">
+            <div className="h-8 w-8 rounded-full bg-cyan-200 dark:bg-cyan-800 flex items-center justify-center flex-shrink-0">
+              <span className="text-xs font-bold text-cyan-700 dark:text-cyan-300">
                 {report.reviewedBy.firstName.charAt(0)}
                 {report.reviewedBy.lastName?.charAt(0) ?? ""}
               </span>
@@ -495,7 +495,7 @@ function ReviewPanel({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-              {isAlreadyReviewed ? "Review Comment" : "Write your review comment"}
+              {isAlreadyReviewed ? t("review_comment") : t("write_your_review_comment")}
             </label>
             {!isAlreadyReviewed && (
               <span
@@ -513,7 +513,7 @@ function ReviewPanel({
           </div>
 
           {isAlreadyReviewed ? (
-            <div className="p-4 rounded-xl bg-white dark:bg-gray-800 border border-purple-100 dark:border-purple-800/50 min-h-[80px]">
+            <div className="p-4 rounded-xl bg-white dark:bg-gray-800 border border-cyan-100 dark:border-cyan-800/50 min-h-[80px]">
               <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
                 {report.managerComment ?? (
                   <span className="text-gray-400 italic">{t("no_comment_provided")}</span>
@@ -531,7 +531,7 @@ function ReviewPanel({
                 className={`w-full px-4 py-3 rounded-xl border text-sm resize-none transition-all duration-200 focus:outline-none focus:ring-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 ${
                   err
                     ? "border-red-300 dark:border-red-700 focus:ring-red-400"
-                    : "border-gray-200 dark:border-gray-600 focus:ring-blue-400 dark:focus:ring-blue-500 group-hover:border-gray-300 dark:group-hover:border-gray-500"
+                    : "border-gray-200 dark:border-gray-600 focus:ring-cyan-400 dark:focus:ring-cyan-500 group-hover:border-gray-300 dark:group-hover:border-gray-500"
                 }`}
               />
               <div
@@ -564,7 +564,7 @@ function ReviewPanel({
               type="button"
               onClick={handleSubmit}
               disabled={isSubmitting || !comment.trim() ||!hasPermission("taskReport:review")}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold transition-all duration-200 shadow-sm hover:shadow-md hover:shadow-purple-200 dark:hover:shadow-purple-900/30"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold transition-all duration-200 shadow-sm hover:shadow-md hover:shadow-cyan-200 dark:hover:shadow-cyan-900/30"
             >
               {isSubmitting ? (
                 <>
@@ -655,6 +655,16 @@ const TaskReportDetailPage = (): JSX.Element => {
   const { id } = useParams();
   const router = useRouter();
 
+  const { i18n } = useTranslation();
+
+const localeMap: Record<string, string> = {
+  en: "en-IN",
+  hi: "hi-IN",
+  pt: "pt-PT",
+};
+
+const language = (i18n.resolvedLanguage ?? "en").split("-")[0];
+
 
 
   const getTaskReport = useCallback(async () => {
@@ -727,6 +737,7 @@ const TaskReportDetailPage = (): JSX.Element => {
     );
   }
 
+
   return (
     <div className="ml-72 mt-14">
       <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full mb-10">
@@ -741,18 +752,22 @@ const TaskReportDetailPage = (): JSX.Element => {
               </div>
               {!isLoading && report && (
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 ml-9">
-                  {new Date(report.reportDate).toLocaleDateString("en-IN", {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                  {report.user && (
-                    <span className="ml-2 text-blue-600 dark:text-blue-400 font-semibold">
-                      · {report.user.firstName} {report.user.lastName}
-                    </span>
-                  )}
-                </p>
+  {new Date(report.reportDate).toLocaleDateString(
+    localeMap[language] || "en-IN",
+    {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }
+  )}
+
+  {report.user && (
+    <span className="ml-2 text-cyan-600 dark:text-cyan-400 font-semibold">
+      · {report.user.firstName} {report.user.lastName}
+    </span>
+  )}
+</p>
               )}
             </div>
           </div>
@@ -799,32 +814,32 @@ const TaskReportDetailPage = (): JSX.Element => {
             <div className="grid grid-cols-4 gap-4">
               {[
                 {
-                  label: "Morning Tasks",
+                  label: t("morning_tasks"),
                   value: morning?.items.length ?? 0,
                   icon: "🌅",
                   bg: "bg-amber-50 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800",
                   hover: "hover:border-amber-300 dark:hover:border-amber-700 hover:shadow-amber-100 dark:hover:shadow-amber-900/20",
                 },
                 {
-                  label: "Evening Tasks",
+                  label: t("evening_tasks"),
                   value: evening?.completedItems.length ?? 0,
                   icon: "🌆",
                   bg: "bg-emerald-50 border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800",
                   hover: "hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-emerald-100 dark:hover:shadow-emerald-900/20",
                 },
                 {
-                  label: "Total Hours",
+                  label: t("total_hours"),
                   value: `${totalActual || totalEstimated}h`,
                   icon: "⏱️",
-                  bg: "bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800",
-                  hover: "hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-blue-100 dark:hover:shadow-blue-900/20",
+                  bg: "bg-cyan-50 border-cyan-100 dark:bg-cyan-900/20 dark:border-cyan-800",
+                  hover: "hover:border-cyan-300 dark:hover:border-cyan-700 hover:shadow-cyan-100 dark:hover:shadow-cyan-900/20",
                 },
                 {
-                  label: "Avg Completion",
+                  label: t("avg_completion"),
                   value: `${avgCompletion}%`,
                   icon: "📊",
-                  bg: "bg-purple-50 border-purple-100 dark:bg-purple-900/20 dark:border-purple-800",
-                  hover: "hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-purple-100 dark:hover:shadow-purple-900/20",
+                  bg: "bg-cyan-50 border-cyan-100 dark:bg-cyan-900/20 dark:border-cyan-800",
+                  hover: "hover:border-cyan-300 dark:hover:border-cyan-700 hover:shadow-cyan-100 dark:hover:shadow-cyan-900/20",
                 },
               ].map((s) => (
                 <div
@@ -956,8 +971,8 @@ const TaskReportDetailPage = (): JSX.Element => {
                   </div>
                 )}
                 {evening?.tomorrowPlan && (
-                  <div className="p-3.5 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 hover:shadow-sm transition-shadow duration-200">
-                    <p className="text-xs font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wide mb-1">
+                  <div className="p-3.5 rounded-xl bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-100 dark:border-cyan-800 hover:shadow-sm transition-shadow duration-200">
+                    <p className="text-xs font-bold text-cyan-700 dark:text-cyan-400 uppercase tracking-wide mb-1">
                       {t("tomorrow_s_plan")}
                     </p>
                     <p className="text-sm text-gray-700 dark:text-gray-200">

@@ -258,8 +258,18 @@ const Page = () => {
   const fmt = (n: number) =>
     `${symbol}${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-  const formatDate = (s: string) =>
-    s ? new Date(s).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—';
+  // const formatDate = (s: string) =>
+  //   s ? new Date(s).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—';
+  const { i18n } = useTranslation();
+
+const formatDate = (s: string) =>
+  s
+    ? new Date(s).toLocaleDateString(i18n.language, {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "—";
 
   const getStatusColor = (status: QuotationStatus) => {
     const colors: Record<QuotationStatus, string> = {
@@ -329,7 +339,7 @@ const Page = () => {
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             {t("editing")} <span className="font-mono font-semibold text-gray-700 dark:text-gray-300">{original.quoteId}</span>
-            {t("nbsp_nbsp")} {original.currency} ({symbol})
+           {" "} {original.currency} ({symbol})
           </p>
         </div>
         <button
@@ -488,7 +498,7 @@ const Page = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="md:col-span-2 lg:col-span-3">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t("subtotal_2")}
+                  {t("subtotal")}
                   {hasLineItems && <span className="ml-2 text-xs font-normal text-gray-400">{t("auto_calculated")}</span>}
                 </label>
                 <div className="relative max-w-xs">
@@ -501,12 +511,19 @@ const Page = () => {
                   />
                 </div>
               </div>
+             
+
+
+
+
+
+
               {[
-                { label: `Discount Amount (${symbol})`, name: 'discountAmount', val: formData.discountAmount },
-                { label: 'Discount (%)', name: 'discountPercent', val: formData.discountPercent },
-                { label: `Tax Amount (${symbol})`, name: 'taxAmount', val: formData.taxAmount },
-                { label: 'Tax Rate (%)', name: 'taxPercent', val: formData.taxPercent },
-                { label: `Shipping (${symbol})`, name: 'shippingAmount', val: formData.shippingAmount },
+                {label: `${t("discount_amount")} (${symbol})`, name: 'discountAmount', val: formData.discountAmount },
+                {  label: `${t("discount")} (%)`, name: 'discountPercent', val: formData.discountPercent },
+                {label: `${t("tax_amount")} (${symbol})`, name: 'taxAmount', val: formData.taxAmount },
+                { label: `${t("tax_rate")} (%)`, name: 'taxPercent', val: formData.taxPercent },
+                { label: `${t("shipping")} (${symbol})`, name: 'shippingAmount', val: formData.shippingAmount },
               ].map(({ label, name, val }) => (
                 <div key={name}>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
@@ -535,7 +552,7 @@ const Page = () => {
                   <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700/50 rounded-xl px-4 py-3">
                     <IoCalendarOutline className="w-4 h-4 text-cyan-500" />
                     {t("valid_for")} <span className="font-semibold text-gray-900 dark:text-white">{validityDays} {t("days")}</span>
-                    {t("nbsp_expires")} {formatDate(formData.valid ?? '')}
+                    {t("expires")} {formatDate(formData.valid ?? '')}
                   </div>
                 </div>
               )}
@@ -591,7 +608,7 @@ const Page = () => {
                 disabled={!hasChanges || loading || original.quotationStatus === QuotationStatus.DELETE}
                 className="px-5 py-2.5 rounded-xl text-sm font-medium bg-cyan-600 hover:bg-cyan-700 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                 <IoSaveOutline className="w-4 h-4" />
-                {loading ? 'Updating...' : 'Update Quotation'}
+                {loading ? t('updating') : t('update_quotation')}
               </button>
             </div>
           </div>

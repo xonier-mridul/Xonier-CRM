@@ -2,10 +2,22 @@
 import ThemeToggle from "@/src/components/common/ThemeToggle";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
+
 
 export default function Home() {
   const { t } = useTranslation();
+  const router = useRouter();
+  const handleDashboard = () => {
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    router.push("/dashboard");
+  } else {
+    router.push("/login");
+  }
+};
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       
@@ -31,7 +43,7 @@ export default function Home() {
         <h1 className="max-w-4xl text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
           {t("welcome_to")}{" "}
           <span className="bg-gradient-to-r from-teal-500 to-blue-500 bg-clip-text text-transparent">
-            {t("Trakeroo_crm")}
+            {t("trakeroo_crm")}
           </span>
         </h1>
 
@@ -42,9 +54,15 @@ export default function Home() {
 
 
         <div className="mt-10 flex flex-wrap justify-center gap-4">
-          <Link href={"/dashboard"} className="rounded-xl bg-teal-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-cyan-700 transition">
+          {/* <Link href={"/dashboard"} className="rounded-xl bg-teal-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-cyan-700 transition">
             {t("go_to_dashboard")}
-          </Link>
+          </Link> */}
+          <button
+  onClick={handleDashboard}
+  className="rounded-xl bg-teal-600 px-6 py-3 text-sm font-semibold text-white"
+>
+  {t("go_to_dashboard")}
+</button>
 
           <button className="rounded-xl border border-gray-300 dark:border-gray-600 px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
             {t("learn_more")}
@@ -54,19 +72,19 @@ export default function Home() {
 
         <div className="mt-20 grid max-w-5xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {[
-            {
-              title: "Role Based Access",
-              desc: "Granular permissions and secure role management.",
-            },
-            {
-              title: "Lead & Enquiry Tracking",
-              desc: "Track enquiries from source to conversion.",
-            },
-            {
-              title: "Modern UI",
-              desc: "Fast, responsive, and dark-mode friendly.",
-            },
-          ].map((item, idx) => (
+  {
+    title: t("role_based_access"),
+    desc: t("role_based_access_desc"),
+  },
+  {
+    title: t("lead_enquiry_tracking"),
+    desc: t("lead_enquiry_tracking_desc"),
+  },
+  {
+    title: t("modern_ui"),
+    desc: t("modern_ui_desc"),
+  },
+].map((item, idx) => (
             <div
               key={idx}
               className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 text-left shadow-sm hover:shadow-md transition"

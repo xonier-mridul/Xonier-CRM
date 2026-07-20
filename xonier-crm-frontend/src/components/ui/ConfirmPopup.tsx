@@ -15,6 +15,22 @@ const ConfirmPopup = async ({
 }: ConfirmPopupInterface): Promise<boolean> => {
   const isDark = document.documentElement.classList.contains("dark");
 
+  // Add blur style to backdrop
+  const styleElement = document.createElement('style');
+  styleElement.innerHTML = `
+    .swal2-container.swal2-backdrop-show {
+      backdrop-filter: blur(10px) !important;
+      -webkit-backdrop-filter: blur(10px) !important;
+      background-color: ${isDark ? 'rgba(0, 0, 0, 0.7)' : 'rgba(0, 0, 0, 0.5)'} !important;
+      transition: all 0.3s ease !important;
+    }
+    
+    .swal2-popup {
+      box-shadow: 0 25px 50px -12px ${isDark ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0.25)'} !important;
+    }
+  `;
+  document.head.appendChild(styleElement);
+
   const result = await Swal.fire({
     title,
     text,
@@ -28,7 +44,11 @@ const ConfirmPopup = async ({
     reverseButtons: true,
     focusCancel: true,
 
-    background: isDark ? "#222A3D" : "#ffffff",
+    // Allow closing by clicking outside
+    allowOutsideClick: true,
+    allowEscapeKey: true,
+
+    background: isDark ? "#1e293b" : "#ffffff",
     color: isDark ? "#f8fafc" : "#1f2937",
 
     buttonsStyling: false,
@@ -44,20 +64,36 @@ const ConfirmPopup = async ({
 
     customClass: {
       popup: `
-        rounded-3xl p-4 border
+        rounded-2xl p-6 border shadow-2xl
         ${isDark
-          ? "bg-slate-900 border-slate-700 shadow-slate-950/50"
-          : "bg-white border-slate-200 shadow-2xl"}
+          ? "bg-slate-800 border-slate-700"
+          : "bg-white border-slate-200"}
       `,
-      title: "text-2xl font-bold",
-      htmlContainer: isDark
-        ? "text-slate-400 text-base"
-        : "text-slate-500 text-base",
+      title: "text-2xl font-bold mb-2",
+      htmlContainer: `mt-2 ${
+        isDark ? "text-slate-300 text-base" : "text-slate-600 text-base"
+      }`,
       confirmButton:
-        "px-5 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-medium transition-all cursor-pointer",
+        "px-6 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl",
       cancelButton:
-        "px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-medium transition-all cursor-pointer mr-3",
-      actions: "gap-3",
+        "px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-white font-semibold transition-all duration-200 cursor-pointer mr-3 shadow-lg hover:shadow-xl",
+      actions: "gap-3 mt-6",
+    },
+
+    didOpen: () => {
+      // Apply blur to backdrop
+      const container = document.querySelector('.swal2-container') as HTMLElement;
+      if (container) {
+        container.style.backdropFilter = 'blur(10px)';
+        container.style.webkitBackdropFilter = 'blur(10px)';
+      }
+    },
+
+    willClose: () => {
+      // Remove style element when popup closes
+      if (styleElement.parentNode) {
+        styleElement.parentNode.removeChild(styleElement);
+      }
     },
   });
 
