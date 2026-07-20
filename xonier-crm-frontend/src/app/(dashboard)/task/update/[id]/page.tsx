@@ -846,7 +846,6 @@ const UpdateTaskPage = (): JSX.Element => {
                       </div>
                       <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
                         {userData.map((u) => {
-  const { t } = useTranslation();
                           const checked = (form.assignedTo ?? []).includes(u.id);
                           const isMe =
                             u.id === (auth.user?._id || auth.user?.id);
@@ -895,7 +894,6 @@ const UpdateTaskPage = (): JSX.Element => {
               {(form.assignedTo?.length ?? 0) > 0 && (
                 <div className="flex flex-wrap gap-2 pt-3">
                   {form.assignedTo?.map((id) => {
-  const { t } = useTranslation();
                     const user = users.find((u) => u.id === id);
                     const isMe = id === (auth.user?._id || auth.user?.id);
                     return (

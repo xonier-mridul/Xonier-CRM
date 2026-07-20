@@ -50,7 +50,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-
+import { useRouter } from "next/navigation";
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 type DashboardFilter = "today" | "this_week" | "this_month" | "this_year";
@@ -2158,6 +2158,7 @@ function RatingPerformersSection({
 
   const PerformerRow = ({
     performer,
+    userId,
     rank,
     accentColor,
   }: {
@@ -2169,7 +2170,10 @@ function RatingPerformersSection({
     const medals = ["🥇", "🥈", "🥉"];
 
     return (
-      <div className="flex items-center gap-3 p-2.5 rounded-xl dark:bg-slate-700/30 border dark:border-slate-700/40 border-slate-200 hover:border-slate-300 dark:hover:border-slate-600 transition-all group">
+      <div
+       className="flex items-center gap-3 p-2.5 rounded-xl dark:bg-slate-700/30 border dark:border-slate-700/40 border-slate-200 hover:border-slate-300 dark:hover:border-slate-600 transition-all group cursor-pointer"
+         onClick={() => router.push(`/users/${userId}`)}
+       >
         <span className="text-sm w-6 text-center flex-shrink-0 font-bold text-slate-400">
           {rank < 3 ? medals[rank] : `${rank + 1}`}
         </span>
@@ -2222,7 +2226,8 @@ function RatingPerformersSection({
       </Card>
     );
   }
-
+const router = useRouter();
+ 
   return (
     <div className="grid grid-cols-2 gap-4">
       <Card
@@ -2237,6 +2242,7 @@ function RatingPerformersSection({
             {leaderboard.topRatedEmployees.map((p, i) => (
               <PerformerRow
                 key={p.userId}
+                userId={p.userId}
                 performer={p}
                 rank={i}
                 accentColor="#10b981"
@@ -2261,6 +2267,7 @@ function RatingPerformersSection({
             {leaderboard.worstRatedEmployees.map((p, i) => (
               <PerformerRow
                 key={p.userId}
+                userId={p.userId}
                 performer={p}
                 rank={i}
                 accentColor="#ef4444"
