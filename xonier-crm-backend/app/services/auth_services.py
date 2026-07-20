@@ -1705,12 +1705,28 @@ class AuthServices:
 
             return True
 
-        except AppException:
+        except AppException as e:
 
-            raise
+            raise e
 
         except Exception as e:
 
+            raise AppException(status_code=500, message="internal server error")
+
+
+
+    async def forgot_password(self, payload: Dict[str,Any]):
+        try:
+          hash_mail = hash_value(payload.get("email"))
+
+          
+
+        except AppException as e:
+        
+            raise e
+        
+        except Exception as e:
+        
             raise AppException(status_code=500, message="internal server error")
 
     async def restore_user(self, userId: PydanticObjectId, user: Dict[str, Any]):
