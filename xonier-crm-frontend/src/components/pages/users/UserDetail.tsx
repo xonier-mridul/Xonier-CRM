@@ -5,7 +5,7 @@ import { USER_STATUS } from "@/src/types";
 import { User } from "@/src/types";
 import { Activity, ActivitySummary } from "@/src/types/action/action.types";
 import Image from "next/image";
-import ComponentLoader from "../../common/ComponentLoader";
+
 import { handleCopy } from "@/src/app/utils/clipboard.utils";
 import {
   AreaChart,
@@ -291,6 +291,336 @@ const ChartTooltip = ({ active, payload, label }: ChartTooltipProps) => {
     </div>
   );
 };
+
+// ── Skeleton Primitives ──────────────────────────────────────────────────────
+
+const Bone = ({ className = "" }: { className?: string }) => (
+  <div className={`animate-pulse rounded-lg bg-slate-200/80 dark:bg-gray-700/60 ${className}`} />
+);
+
+const BoneCircle = ({ className = "" }: { className?: string }) => (
+  <div className={`animate-pulse rounded-full bg-slate-200/80 dark:bg-gray-700/60 ${className}`} />
+);
+
+// ── Full Page Skeleton (Initial Load) ─────────────────────────────────────────
+
+const HeaderSkeleton = () => (
+  <div className="relative bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden">
+    <div className="h-28 bg-slate-100 dark:bg-gray-700/50 animate-pulse" />
+    <div className="px-6 pb-6">
+      <div className="flex items-end justify-between -mt-10 mb-4 flex-wrap gap-4">
+        <BoneCircle className="w-20 h-20 rounded-2xl border-4 border-white dark:border-gray-800" />
+        <Bone className="w-32 h-10 rounded-xl" />
+      </div>
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Bone className="h-7 w-48" />
+          <BoneCircle className="h-5 w-5" />
+          <Bone className="h-6 w-20 rounded-full" />
+          <Bone className="h-7 w-44 rounded-full" />
+        </div>
+        <div className="flex items-center gap-4">
+          <Bone className="h-4 w-48" />
+          <Bone className="h-4 w-32" />
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const StatCardSkeleton = () => (
+  <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-100 dark:border-gray-700 p-5 flex items-start gap-4">
+    <BoneCircle className="w-11 h-11 shrink-0" />
+    <div className="flex-1 space-y-2">
+      <Bone className="h-3 w-20" />
+      <Bone className="h-6 w-16" />
+      <Bone className="h-3 w-24" />
+    </div>
+  </div>
+);
+
+const UserDetailSkeleton = () => (
+  <div className="flex flex-col gap-6 font-sans">
+    <HeaderSkeleton />
+
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <StatCardSkeleton key={i} />
+      ))}
+    </div>
+
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl min-h-[400px]">
+      <div className="border-b border-slate-100 dark:border-gray-700 px-4">
+        <div className="flex gap-1 py-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Bone key={i} className="h-9 w-24 my-2 rounded-lg" />
+          ))}
+        </div>
+      </div>
+      <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        {[0, 1].map((col) => (
+          <div key={col} className="space-y-4">
+            <Bone className="h-4 w-40 mb-2" />
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between gap-4 py-2 border-b border-slate-50 dark:border-gray-700/50"
+              >
+                <Bone className="h-3.5 w-24" />
+                <Bone className="h-3.5 w-32" />
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+// ── Activity Tab Skeleton ──────────────────────────────────────────────────────
+
+const ActivityTabSkeleton = () => (
+  <div className="space-y-6">
+    <div className="flex flex-wrap items-center gap-3">
+      <Bone className="h-10 w-44 rounded-xl" />
+      <div className="flex-1" />
+      <Bone className="h-8 w-32 rounded-lg" />
+      <Bone className="h-8 w-32 rounded-lg" />
+    </div>
+
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="lg:col-span-2 bg-slate-50 dark:bg-gray-700/40 rounded-2xl p-5 border border-slate-100 dark:border-gray-700">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <BoneCircle className="w-7 h-7" />
+            <Bone className="h-4 w-32" />
+          </div>
+          <Bone className="h-5 w-16 rounded-full" />
+        </div>
+        <Bone className="h-[190px] w-full rounded-xl" />
+      </div>
+
+      <div className="bg-slate-50 dark:bg-gray-700/40 rounded-2xl p-5 border border-slate-100 dark:border-gray-700">
+        <div className="flex items-center gap-2 mb-4">
+          <BoneCircle className="w-7 h-7" />
+          <Bone className="h-4 w-24" />
+        </div>
+        <div className="flex justify-center my-2">
+          <BoneCircle className="w-32 h-32" />
+        </div>
+        <div className="mt-3 space-y-2">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Bone key={i} className="h-3 w-full" />
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <div className="bg-slate-50 dark:bg-gray-700/40 rounded-2xl p-5 border border-slate-100 dark:border-gray-700">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <BoneCircle className="w-7 h-7" />
+          <Bone className="h-4 w-32" />
+        </div>
+        <Bone className="h-3 w-20" />
+      </div>
+      <Bone className="h-[150px] w-full rounded-xl" />
+    </div>
+
+    <div className="space-y-0 pt-2">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="flex gap-4">
+          <div className="flex flex-col items-center">
+            <BoneCircle className="w-3 h-3 mt-1.5" />
+            <div className="w-px flex-1 bg-slate-100 dark:bg-gray-700 mt-1" />
+          </div>
+          <div className="pb-5 flex-1">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-100 dark:border-gray-700 p-4 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex gap-2">
+                  <Bone className="h-6 w-20 rounded-lg" />
+                  <Bone className="h-5 w-16" />
+                </div>
+                <Bone className="h-3 w-24" />
+              </div>
+              <Bone className="h-4 w-2/3" />
+              <div className="flex gap-2">
+                <Bone className="h-5 w-20 rounded-md" />
+                <Bone className="h-5 w-24 rounded-md" />
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+// ── Summary Tab Skeleton ────────────────────────────────────────────────────
+
+const SummaryTabSkeleton = () => (
+  <div className="space-y-6">
+    <div className="flex flex-wrap items-center gap-3">
+      <Bone className="h-10 w-44 rounded-xl" />
+      <Bone className="h-9 w-56 rounded-xl" />
+      <div className="flex-1" />
+      <Bone className="h-6 w-40 rounded-full" />
+    </div>
+
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div
+          key={i}
+          className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5"
+        >
+          <div className="flex items-start gap-3">
+            <BoneCircle className="w-10 h-10 shrink-0" />
+            <div className="flex-1 space-y-2">
+              <Bone className="h-3 w-20" />
+              <Bone className="h-6 w-14" />
+              <Bone className="h-3 w-24" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      {Array.from({ length: 2 }).map((_, i) => (
+        <div
+          key={i}
+          className="bg-slate-50 dark:bg-gray-700/40 rounded-2xl p-5 border border-slate-100 dark:border-gray-700"
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <BoneCircle className="w-7 h-7" />
+            <Bone className="h-4 w-32" />
+            <Bone className="h-3 w-16 ml-auto" />
+          </div>
+          <Bone className="h-[160px] w-full rounded-xl" />
+        </div>
+      ))}
+    </div>
+
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      {Array.from({ length: 2 }).map((_, i) => (
+        <div
+          key={i}
+          className="bg-slate-50 dark:bg-gray-700/40 rounded-2xl p-5 border border-slate-100 dark:border-gray-700"
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <BoneCircle className="w-7 h-7" />
+            <Bone className="h-4 w-32" />
+          </div>
+          <Bone className="h-[140px] w-full rounded-xl" />
+        </div>
+      ))}
+    </div>
+
+    <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden">
+      <div className="px-5 py-4 border-b border-slate-100 dark:border-gray-700">
+        <Bone className="h-4 w-40" />
+      </div>
+      <div className="divide-y divide-slate-50 dark:divide-gray-700">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-4 px-5 py-4">
+            <Bone className="h-7 w-28 rounded-lg" />
+            <div className="flex gap-6">
+              <Bone className="h-8 w-14" />
+              <Bone className="h-8 w-14" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+// ── Company Tab Skeleton ──────────────────────────────────────────────────────
+
+const CompanyTabSkeleton = () => (
+  <div className="space-y-5">
+    <div className="relative bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl overflow-hidden">
+      <div className="h-20 bg-slate-100 dark:bg-gray-700/50 animate-pulse" />
+      <div className="px-6 pb-5 relative">
+        <div className="flex items-end justify-between -mt-6 mb-4">
+          <BoneCircle className="w-14 h-14 rounded-2xl border-4 border-white dark:border-gray-800" />
+          <Bone className="h-5 w-32" />
+        </div>
+        <div className="space-y-2">
+          <Bone className="h-6 w-56" />
+          <Bone className="h-3.5 w-64" />
+        </div>
+      </div>
+    </div>
+
+    <div className="grid grid-cols-3 gap-3">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div
+          key={i}
+          className="flex items-center gap-3 p-4 rounded-2xl border border-slate-100 dark:border-gray-700 bg-white dark:bg-gray-800"
+        >
+          <BoneCircle className="w-9 h-9 shrink-0" />
+          <div className="flex-1 space-y-1.5">
+            <Bone className="h-3 w-16" />
+            <Bone className="h-4 w-20" />
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      {Array.from({ length: 2 }).map((_, col) => (
+        <div
+          key={col}
+          className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5"
+        >
+          <Bone className="h-3 w-32 mb-4" />
+          <div className="space-y-3">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex items-center justify-between gap-4 py-1">
+                <Bone className="h-3.5 w-24" />
+                <Bone className="h-3.5 w-32" />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
+      <div className="flex items-center justify-between mb-4">
+        <Bone className="h-3 w-28" />
+        <Bone className="h-6 w-16 rounded-full" />
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={i}
+            className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-4 text-center border border-slate-100 dark:border-gray-700 space-y-2"
+          >
+            <Bone className="h-3 w-16 mx-auto" />
+            <Bone className="h-5 w-14 mx-auto" />
+            <Bone className="h-3 w-10 mx-auto" />
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Bone key={i} className="h-16 rounded-xl" />
+        ))}
+      </div>
+    </div>
+
+    <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5">
+      <Bone className="h-3 w-24 mb-4" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Bone key={i} className="h-20 rounded-xl" />
+        ))}
+      </div>
+    </div>
+  </div>
+);
 
 const StatCard = ({
   label,
@@ -628,7 +958,7 @@ const UserDetail = ({
 
   const hasClientFilters = entityFilter !== "all" || actionFilter !== "all";
 
-  if (isLoading) return <ComponentLoader />;
+if (isLoading) return <UserDetailSkeleton />;
 
   if (!userData)
     return (
@@ -1136,10 +1466,7 @@ const language = i18n.resolvedLanguage ?? "en";
         {activeTab === "activity" && (
           <div className="p-6 space-y-6">
             {activityLoading ? (
-              <div className="flex flex-col items-center justify-center py-16 gap-3">
-                <div className="w-9 h-9 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
-                <p className="text-sm text-gray-400">{t("loading_activity")}</p>
-              </div>
+               <ActivityTabSkeleton />
             ) : (
               <>
                 <div className="flex flex-wrap items-center gap-3">
@@ -1515,10 +1842,7 @@ const language = i18n.resolvedLanguage ?? "en";
 {activeTab === "summary" && (
   <div className="p-6 space-y-6">
     {summaryLoading ? (
-      <div className="flex flex-col items-center justify-center py-16 gap-3">
-        <div className="w-9 h-9 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm text-gray-400">{t("loading_summary")}</p>
-      </div>
+      <SummaryTabSkeleton />
     ) : !activitySummary ? (
       <div className="text-center py-16">
         <IoBarChart className="w-12 h-12 text-gray-200 dark:text-gray-600 mx-auto mb-3" />
@@ -2248,10 +2572,7 @@ const language = i18n.resolvedLanguage ?? "en";
         {activeTab === "company" && (
           <div className="p-6">
             {companyLoading ? (
-              <div className="flex flex-col items-center justify-center py-16 gap-3">
-                <div className="w-9 h-9 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
-                <p className="text-sm text-gray-400">{t("loading_company")}</p>
-              </div>
+              <CompanyTabSkeleton />
             ) : !companyData ? (
               <div className="text-center py-16 space-y-3">
                 <MdBusiness className="w-12 h-12 text-gray-200 dark:text-gray-600 mx-auto" />

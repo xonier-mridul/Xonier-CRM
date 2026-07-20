@@ -22,6 +22,79 @@ import asyncio
 
 class CompanyAdminDashboardService:
 
+
+    async def _rating_leaderboard(self, company_id: str) -> Dict[str, Any]:
+      
+        match = self._company_match(company_id)
+        MIN_RATED_TASKS = 3
+
+        pipeline = [
+            {
+                "$match": {
+                    **match,
+                    "deletedAt": None,
+                    "rating": {"$ne": None},
+                    "completedAt": {"$ne": None},
+                }
+            },
+            {"$unwind": "$assignedTo"},
+            {
+                "$group": {
+                    "_id": "$assignedTo.$id",
+                    "avgRating": {"$avg": "$rating"},
+                    "ratedTasksCount": {"$sum": 1},
+                    "onTimeCount": {
+                        "$sum": {"$cond": [{"$eq": ["$isOverdue", False]}, 1, 0]}
+                    },
+                }
+            },
+            {"$match": {"ratedTasksCount": {"$gte": MIN_RATED_TASKS}}},
+            {
+                "$lookup": {
+                    "from": "users",
+                    "localField": "_id",
+                    "foreignField": "_id",
+                    "as": "user",
+                }
+            },
+            {"$unwind": "$user"},
+            {"$match": {"user.status": {"$ne": USER_STATUS.DELETED.value}}},
+            {
+                "$project": {
+                    "_id": 0,
+                    "userId": {"$toString": "$_id"},
+                    "firstName": "$user.firstName",
+                    "lastName": "$user.lastName",
+                    "avgRating": {"$round": ["$avgRating", 1]},
+                    "ratedTasksCount": 1,
+                    "onTimeRate": {
+                        "$round": [
+                            {
+                                "$multiply": [
+                                    {"$divide": ["$onTimeCount", "$ratedTasksCount"]},
+                                    100,
+                                ]
+                            },
+                            1,
+                        ]
+                    },
+                }
+            },
+            {"$sort": {"avgRating": -1}},
+        ]
+
+        result = await self._aggregate(TaskModel, pipeline)
+
+        top_rated = result[:5]
+        worst_rated = list(reversed(result[-5:])) if result else []
+
+        return {
+            "topRatedEmployees": top_rated,
+            "worstRatedEmployees": worst_rated,
+            "totalRatedEmployees": len(result),
+            "minTasksRequired": MIN_RATED_TASKS,
+        }
+
     async def _aggregate(self, model, pipeline: list) -> list:
         collection = database_module.db[model.Settings.name]
         cursor = collection.aggregate(pipeline)
@@ -196,13 +269,16 @@ class CompanyAdminDashboardService:
                     }
                 )
 
-            if has_task:
-                coroutines["tasks"] = self._task_stats(
-                    company_id, range_start, range_end
-                )
-                coroutines["taskPriorityBreakdown"] = (
-                    self._task_priority_breakdown(company_id)
-                )
+                if has_task:
+                    coroutines["tasks"] = self._task_stats(
+                        company_id, range_start, range_end
+                    )
+                    coroutines["taskPriorityBreakdown"] = (
+                        self._task_priority_breakdown(company_id)
+                    )
+                    coroutines["ratingLeaderboard"] = self._rating_leaderboard(  # ADD THIS
+                        company_id
+                    )
 
             keys = list(coroutines.keys())
             results = await asyncio.gather(*coroutines.values())
@@ -250,6 +326,15 @@ class CompanyAdminDashboardService:
                         "tasks": gathered.get("tasks", {}),
                         "taskPriorityBreakdown": gathered.get(
                             "taskPriorityBreakdown", []
+                        ),
+                        "ratingLeaderboard": gathered.get(  # ADD THIS
+                            "ratingLeaderboard",
+                            {
+                                "topRatedEmployees": [],
+                                "worstRatedEmployees": [],
+                                "totalRatedEmployees": 0,
+                                "minTasksRequired": 3,
+                            },
                         ),
                     }
                 )

@@ -699,7 +699,7 @@ const TaskListPage = (): JSX.Element => {
                               <CategoryBadge color={getColorOption(task.category.color || null)} icon={task.category.icon || "❓"} name={task.category.name} />
                             </td>
                             <td className="px-5 py-4">
-                              <StatusBadge color={getColorOption(task.status.color)} icon={task.status.icon || "⚡"} name={task.status.name} />
+                              <StatusBadge color={getColorOption(task?.status?.color)} icon={task?.status?.icon || "⚡"} name={task?.status?.name} />
                             </td>
                             <td className="px-5 py-4">
                               <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${pri.cls}`}>

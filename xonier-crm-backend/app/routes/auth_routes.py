@@ -6,6 +6,7 @@ from app.schemas.user_schema import UserLoginSchema, VerifyLoginOtpSchema, Regis
 from app.controllers.auth_controller import AuthController
 from app.core.dependencies import Dependencies
 from beanie import PydanticObjectId
+from app.core.enums import DATE_FILTER, RATING_FILTER, ON_TIME_FILTER
 
 router = APIRouter()
 
@@ -61,8 +62,26 @@ async def get_user_rating_data(
     request: Request,
     page: int = Query(default=1, ge=1, description="Page number"),
     limit: int = Query(default=20, ge=1, le=100, description="Items per page"),
+    dateFilter: DATE_FILTER = Query(default=DATE_FILTER.ALL, description="Date range preset"),
+    startDate: str = Query(default=None, description="Required if dateFilter=custom (YYYY-MM-DD)"),
+    endDate: str = Query(default=None, description="Required if dateFilter=custom (YYYY-MM-DD)"),
+    ratingFilter: RATING_FILTER = Query(default=RATING_FILTER.ALL, description="Filter by rating"),
+    onTimeFilter: ON_TIME_FILTER = Query(default=ON_TIME_FILTER.ALL, description="Filter by timeliness"),
+    trendMonths: int = Query(default=6, ge=3, le=12, description="Months for trend chart"),
 ):
-    return await auth_controller.get_user_rating_data(request, id, page, limit)
+    return await auth_controller.get_user_rating_data(
+        request,
+        id,
+        page,
+        limit,
+        date_filter=dateFilter.value,
+        start_date=startDate,
+        end_date=endDate,
+        rating_filter=ratingFilter.value,
+        on_time_filter=onTimeFilter.value,
+        trend_months=trendMonths,
+    )
+
 
 @router.get("/profile", status_code=200, dependencies=[Depends(dependencies.authorized),Depends(dependencies.company_active), Depends(dependencies.company_context), Depends(dependencies.permissions(["user:read"]))])
 async def get_user_profiles( request: Request):

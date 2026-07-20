@@ -1059,3 +1059,30 @@ class PAYMENT_METHOD(str, Enum):
 class BILLING_CYCLE(str, Enum):
     MONTHLY = "monthly"
     YEARLY = "yearly"
+
+
+
+class DATE_FILTER(str, Enum):
+    ALL = "all"
+    TODAY = "today"
+    WEEK = "week"
+    MONTH = "month"
+    YEAR = "year"
+    CUSTOM = "custom"
+
+
+class RATING_FILTER(str, Enum):
+    ALL = "all"
+    RATED = "rated"
+    UNRATED = "unrated"
+    ONE = "1"
+    TWO = "2"
+    THREE = "3"
+    FOUR = "4"
+    FIVE = "5"
+
+
+class ON_TIME_FILTER(str, Enum):
+    ALL = "all"
+    ON_TIME = "onTime"
+    OVERDUE = "overdue"
