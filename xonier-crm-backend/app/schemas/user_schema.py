@@ -182,6 +182,18 @@ class ResetPasswordSchema(BaseModel):
         return v
     
 
+class ForgotPasswordSchema(BaseModel):
+    email: EmailStr
+
+    @field_validator("email")
+    @classmethod
+    def forgot_password(cls, v:str):
+        if not v:
+            raise AppException(422, "Email is required")
+
+        return v
+    
+
 class ResetPasswordByAdminSchema(BaseModel):
     password: Password
     confirmPassword: Password

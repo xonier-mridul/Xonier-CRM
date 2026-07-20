@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Response, Request, Query
 
 
 from app.middlewares.auth_middleware import AuthMiddleware
-from app.schemas.user_schema import UserLoginSchema, VerifyLoginOtpSchema, RegisterUserSchema, ResendOTPSchema, UpdateUserSchema, ResetPasswordSchema, UpdateUserStatusSchema, ResetPasswordByAdminSchema, AssignPhoneNumberSchema, BulkPermanentDeleteSchema, BulkRestoreUsersSchema
+from app.schemas.user_schema import UserLoginSchema, VerifyLoginOtpSchema, RegisterUserSchema, ResendOTPSchema, UpdateUserSchema, ResetPasswordSchema, UpdateUserStatusSchema, ResetPasswordByAdminSchema, AssignPhoneNumberSchema, BulkPermanentDeleteSchema, BulkRestoreUsersSchema, ForgotPasswordSchema
 from app.controllers.auth_controller import AuthController
 from app.core.dependencies import Dependencies
 from beanie import PydanticObjectId
@@ -134,6 +134,11 @@ async def clear_phone_number(request: Request, id:str):
 @router.patch("/reset-password", status_code=200, dependencies=[Depends(dependencies.authorized),  Depends(dependencies.company_active), Depends(dependencies.company_context)])
 async def reset_password(request: Request, data: ResetPasswordSchema):
     return await auth_controller.reset_password(request, data.model_dump(exclude_unset=True))
+
+
+@router.post("/forgot-password", status_code=200, dependencies=[])
+async def forgot_password(request: Request, data: ForgotPasswordSchema):
+    return await auth_controller.forgot_password(request, data.model_dump(exclude_unset=True))
 
 @router.patch("/reset-user-password/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context), Depends(dependencies.permissions(["user:update"]))])
 async def reset_user_password(request:Request, id:str, payload: ResetPasswordByAdminSchema):

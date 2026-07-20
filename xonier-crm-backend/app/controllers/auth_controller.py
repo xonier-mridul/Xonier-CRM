@@ -337,6 +337,9 @@ class AuthController:
         
         except Exception as e:
             raise e
+
+
+    
         
     async def reset_user_password(self, request: Request, userId:str, data:Dict[str, Any]):
         try:
@@ -351,6 +354,15 @@ class AuthController:
             raise e
         
 
+
+
+    async def forgot_password(self, request: Request, payload: Dict[str, Any] ):
+        try:
+            await self.service
+
+
+        except AppException as e: 
+            raise e
     
     async def permanent_delete(self, request: Request, userId: str):
         try:
