@@ -175,7 +175,7 @@ class ResetPasswordSchema(BaseModel):
         }
 
         if not all(rules.values()):
-            raise ValueError(
+            raise AppException(422,
                 "Password must contain uppercase, lowercase, digit, special character and be at least 8 characters long"
             )
 
@@ -192,7 +192,45 @@ class ForgotPasswordSchema(BaseModel):
             raise AppException(422, "Email is required")
 
         return v
-    
+
+class ForgotPassOtpSchema(BaseModel):
+    email: EmailStr
+    otp: str
+    password: str
+    confirmPassword: str
+
+    @model_validator(mode="before")
+    @classmethod
+    def verify_forgot_pass_schema(cls, values):
+        email = values.get("email")
+        otp = values.get("otp")
+        password = values.get("password")
+        confirmPassword = values.get("confirmPassword")
+
+        if not email or not otp:
+            raise AppException(422, f"{"Email" if not email else "OTP" if not otp else "Password" if not password else "Confirm Password"} field is missing")
+
+        if len(otp) < 6:
+            raise AppException(422, "OTP should be 6 numbers")
+
+        if password != confirmPassword:
+            raise AppException(422, "Password and Confirm Password is not same, Please try again")
+
+        rules = {
+            "lowercase": any(c.islower() for c in password),
+            "uppercase": any(c.isupper() for c in password),
+            "digit": any(c.isdigit() for c in password),
+            "special": any(c in "@$!%*?&#" for c in password),
+            "length": len(password) >= 8,
+        }
+        
+        if not all(rules.values()):
+            raise AppException(422,
+                "Password must contain uppercase, lowercase, digit, special character and be at least 8 characters long"
+            )
+
+        return values
+
 
 class ResetPasswordByAdminSchema(BaseModel):
     password: Password

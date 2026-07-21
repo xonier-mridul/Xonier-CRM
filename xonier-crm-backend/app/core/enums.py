@@ -27,13 +27,14 @@ class OTP_TYPE(str, Enum):
 
     PASSWORD_RESET = "password_reset"
     CHANGE_PASSWORD = "change_password"
-
+    FORGOT_PASSWORD = "forgot_password"
     ACCOUNT_RECOVERY = "account_recovery"
 
     TRANSACTION = "transaction"
     PAYMENT_CONFIRMATION = "payment_confirmation"
 
     INVITE_ACCEPTANCE = "invite_acceptance"
+    EMAIL_VERIFICATION_AND_FORGOT_PASSWORD = "email_verification_and_forgot_password"
 
 class OTP_EXPIRY(int, Enum):
     TEN_MINUTS = 10
@@ -630,6 +631,8 @@ class ACTIVITY_ACTION(str, Enum):
     RESTORE = "restore"
     VERIFY = "verify"
     REGISTER = "register"
+
+    FORGOT_PASSWORD = "forgot_password"
 
 
 class LEAD_SOURCE_TYPE(str, Enum):
