@@ -358,11 +358,27 @@ class AuthController:
 
     async def forgot_password(self, request: Request, payload: Dict[str, Any] ):
         try:
-            await self.service
+            await self.service.forgot_password(payload=payload)
+
+            return successResponse(200, "Email verified, confirmation OTP send to your email")
 
 
         except AppException as e: 
             raise e
+
+        
+
+    async def verify_forgot_pass_otp(self, request: Request, payload: Dict[str, Any]):
+        try:
+            clientIp = request.client.host
+            user_agent = request.headers.get("user-agent")
+            
+            await self.service.verify_forgot_pass_otp(payload=payload, userIp=clientIp, userAgent=user_agent)
+            return successResponse(200, "OTP Verified")
+
+        except AppException as e: 
+            raise e
+
     
     async def permanent_delete(self, request: Request, userId: str):
         try:

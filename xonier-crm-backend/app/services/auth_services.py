@@ -1715,11 +1715,39 @@ class AuthServices:
 
 
 
-    async def forgot_password(self, payload: Dict[str,Any]):
+    async def forgot_password(self, payload: Dict[str,Any])->bool:
         try:
-          hash_mail = hash_value(payload.get("email"))
+            hash_mail = hash_value(payload.get("email"))
+            
+            with system_query():
+                is_exist = await self.repo.find_user_by_hashMail(hashMail=hash_mail)
+
+            
+            if not is_exist:
+                raise AppException(400, "User not found with this mail")
+
+            
+            if is_exist.status == USER_STATUS.INACTIVE:
+                raise AppException(400, "User account is inactive, please connect with support team")
+
+            
+            if is_exist.status == USER_STATUS.SUSPENDED:
+                raise AppException(400, "User account is suspended, please connect with support team")
+            
+            if is_exist.status == USER_STATUS.DELETED:
+                raise AppException(400, "User account is deleted")
 
           
+            otp = generate_otp()
+            
+            if not is_exist.isEmailVerified:
+
+                await self.otp_repo.create(data={"encrypt_mail": encryptor.encrypt_data(payload.get("email")), "email": hash_mail, "otp": hash_value(str(otp)), "encrypt_opt": encryptor.encrypt_data(str(otp)), "otp_type": OTP_TYPE.EMAIL_VERIFICATION_AND_FORGOT_PASSWORD})
+            else:
+                await self.otp_repo.create(data={"encrypt_mail": encryptor.encrypt_data(payload.get("email")), "email": hash_mail, "otp": hash_value(str(otp)), "encrypt_opt": encryptor.encrypt_data(str(otp)), "otp_type": OTP_TYPE.FORGOT_PASSWORD})
+            
+            return True
+
 
         except AppException as e:
         
@@ -1727,7 +1755,60 @@ class AuthServices:
         
         except Exception as e:
         
-            raise AppException(status_code=500, message="internal server error")
+            raise AppException(status_code=500, message=f"internal server error: {e}")
+
+
+    async def verify_forgot_pass_otp(self, payload:  Dict[str, Any], userIp: str = None, userAgent: str = None)->bool:
+        async with await self.client.start_session() as session:
+            async with session.start_transaction():
+                try:
+                    hash_mail = hash_value(payload.get("email"))
+
+                    hash_otp = hash_value(payload.get("otp"))
+                    with system_query():
+                       otp = await self.otp_repo.find_latest_otp(filters={"email": hash_mail, "otp_type": {"$in": [OTP_TYPE.FORGOT_PASSWORD.value, OTP_TYPE.EMAIL_VERIFICATION_AND_FORGOT_PASSWORD]}})
+
+                    
+                    if not otp:
+                        raise AppException(400, "Otp not found, please try again")
+       
+                    if otp.otp != hash_otp:
+                        raise AppException(400, "Invalid OTP, please try again")
+                    
+                    with system_query():
+                        user = await self.repo.find_user_by_hashMail(hashMail=hash_mail)
+
+                        if not user:
+                            raise AppException(404, "User not found")
+
+                    # is_old = user.compare_password(payload.get("password"))
+
+                    # if is_old:
+                    #     raise AppException(400, "Your new and old password are same")
+                    
+                    user.password = hash_password(password=payload.get("password"))
+                    with system_query():
+                        await user.save(session=session)
+
+                    
+                    activity = activity_payload(userId=user.id, entityType=ACTIVITY_ENTITY_TYPE.AUTH, action=ACTIVITY_ACTION.FORGOT_PASSWORD.value, title="Reset password at forgot password", ipAddress=userIp, userAgent=userAgent)
+
+                    
+                    with system_query():
+                        await self.activityRepo.create(data=activity, session=session)
+
+                    return True
+
+            
+
+                except AppException as e:
+                        
+                    raise e
+                        
+                except Exception as e:
+                        
+                    raise AppException(status_code=500, message=f"internal server error: {e}")
+        
 
     async def restore_user(self, userId: PydanticObjectId, user: Dict[str, Any]):
         session = await self.client.start_session()
