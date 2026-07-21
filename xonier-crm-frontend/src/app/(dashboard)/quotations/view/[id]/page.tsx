@@ -668,7 +668,6 @@ const Page = (): JSX.Element => {
               {quoteHistoryData && quoteHistoryData.length > 0 ? (
                 <div className="space-y-4">
                   {quoteHistoryData.map((history, index) => {
-  const { t } = useTranslation();
                     const isLast = index === quoteHistoryData.length - 1;
 
                     const getEventStyle = (eventType: string) => {

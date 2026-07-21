@@ -478,7 +478,6 @@ const page = (): JSX.Element => {
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {paginatedData.map((item, pageIdx) => {
-  const { t } = useTranslation();
                   const globalIdx = (currentPage - 1) * ITEMS_PER_PAGE + pageIdx;
                   const errors = paginatedErrors[pageIdx];
                   const isInvalid = errors.length > 0;

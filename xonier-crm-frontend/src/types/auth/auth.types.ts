@@ -31,6 +31,13 @@ export interface changePasswordPayload {
   newPassword: string
 }
 
+export interface changePassword{
+  email: string;
+  otp:string;
+  password: string
+}
+
+
 export interface OtpInputProps {
   length?: number;
   value: string;

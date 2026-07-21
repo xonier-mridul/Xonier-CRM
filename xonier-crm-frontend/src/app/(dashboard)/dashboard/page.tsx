@@ -2165,6 +2165,7 @@ function RatingPerformersSection({
     performer: RatingPerformer;
     rank: number;
     accentColor: string;
+    userId: string;
   }) => {
     const ratingColor = getRatingColor(performer.avgRating);
     const medals = ["🥇", "🥈", "🥉"];

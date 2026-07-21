@@ -11,9 +11,12 @@ import {
   UserPasswordUpdatedByAdminPayload,
   AssignedPhoneNumber,
   UserRatingParams,
+  changePassword,
 } from "../types";
 import { ParamValue } from "next/dist/server/request/params";
-import { data } from "framer-motion/client";
+import { verifyPasswordOtp } from "../app/(auth)/change-password/page";
+import { verifyEmail } from "../app/(auth)/forgot-password/page";
+
 
 export const AuthService = {
   getAll: (data: GetAllUsers) => {
@@ -36,6 +39,15 @@ export const AuthService = {
     api.get(
       `/auth/by-team?${data.search ? `search=${data.search}` : ""}${data.page ? `&page=${data.page}` : ""}`,
     ),
+
+  emailVerify:(payload:verifyEmail)=>{
+  return api.post('/forgot-password',payload)},
+
+  verifyChangePassword:(payload:verifyPasswordOtp)=>{
+    return api.post('/verify-forgot-pass-otp',payload)
+
+  },
+ 
 
   create: (payload: RegisterPayload) => api.post("/auth/register", payload),
   login: (data: { email: string; password: string }) =>
