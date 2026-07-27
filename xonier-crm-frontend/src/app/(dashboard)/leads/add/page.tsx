@@ -222,7 +222,7 @@ const page = (): JSX.Element => {
                       name={item.key}
                       type={item.type}
                       label={item.name}
-                      placeholder={t(item.placeholder) ?? ""}
+                      placeholder={item.placeholder ? t(item.placeholder) : ""}
                       value={fieldValue as string}
                       onChange={handleChange}
                       required={item.required}
@@ -237,7 +237,7 @@ const page = (): JSX.Element => {
                       name={item.key}
                       label={item.name}
                       options={item.options ?? []}
-                      placeholder={item.placeholder ?? "Select"}
+                     placeholder={item.placeholder ? t(item.placeholder) : t("select")}
                       value={fieldValue as string}
                       onChange={handleChange}
                       required={item.required}

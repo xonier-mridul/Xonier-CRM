@@ -85,7 +85,6 @@ const ConfirmPopup = async ({
       const container = document.querySelector('.swal2-container') as HTMLElement;
       if (container) {
         container.style.backdropFilter = 'blur(10px)';
-        container.style.webkitBackdropFilter = 'blur(10px)';
       }
     },
 

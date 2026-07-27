@@ -67,6 +67,7 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
     order: 0
   });
 
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -80,16 +81,16 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
   };
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node) &&
-        buttonRef.current &&
-        !buttonRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
+   const handleClickOutside = (event: globalThis.MouseEvent) => {
+  if (
+    dropdownRef.current &&
+    !dropdownRef.current.contains(event.target as Node) &&
+    buttonRef.current &&
+    !buttonRef.current.contains(event.target as Node)
+  ) {
+    setIsOpen(false);
+  }
+};
 
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
@@ -240,6 +241,8 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
       if (result.status === 200) {
         toast.success(t("form_field_updated_successfully"));
         await getFormFields();
+
+        router.push('/leads/add')
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
