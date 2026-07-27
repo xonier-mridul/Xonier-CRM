@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { FiFilter, FiX } from "react-icons/fi";
+import { FiFilter, FiX, FiSearch } from "react-icons/fi";
 import { DateFilterType, RatingFilterType, OnTimeFilterType } from "@/src/types";
 
 const DATE_PRESETS: { label: string; value: DateFilterType }[] = [
@@ -45,6 +45,12 @@ interface FilterBarProps {
   onReset: () => void;
   hasActiveFilters: boolean;
   isLoading?: boolean;
+  /** Called only when the user clicks the Search/Apply button for the custom date range */
+  onApplyCustomRange?: () => void;
+  /** True once both custom start & end dates are selected */
+  isCustomRangeReady?: boolean;
+  /** True when the picked (unapplied) dates differ from the applied ones */
+  isCustomRangeDirty?: boolean;
 }
 
 export const FilterBar = ({
@@ -61,6 +67,9 @@ export const FilterBar = ({
   onReset,
   hasActiveFilters,
   isLoading,
+  onApplyCustomRange,
+  isCustomRangeReady,
+  isCustomRangeDirty,
 }: FilterBarProps) => {
   const { t } = useTranslation();
 
@@ -97,7 +106,7 @@ export const FilterBar = ({
         )}
       </div>
 
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-4 items-end">
         {/* Date Filter */}
         <div className="flex-1 min-w-[180px]">
           <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5 block">
@@ -143,6 +152,32 @@ export const FilterBar = ({
                 onChange={(e) => setCustomEnd(e.target.value)}
                 className="w-full text-sm px-3 py-2.5 rounded-xl border border-slate-200 dark:border-gray-600 bg-slate-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-400"
               />
+            </div>
+
+            {/* Search / Apply button — only this triggers the custom range API call */}
+            <div className="shrink-0">
+              <button
+                type="button"
+                onClick={onApplyCustomRange}
+                disabled={!isCustomRangeReady}
+                title={
+                  !isCustomRangeReady
+                    ? t("select_both_dates") || "Select both From and To dates"
+                    : t("apply_range") || "Apply date range"
+                }
+                className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                  !isCustomRangeReady
+                    ? "bg-slate-100 dark:bg-gray-700 text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                    : isCustomRangeDirty
+                    ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm shadow-indigo-200 dark:shadow-indigo-900/30"
+                    : "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400"
+                }`}
+              >
+                <FiSearch className="w-4 h-4" />
+                {isCustomRangeReady && !isCustomRangeDirty
+                  ? t("applied") || "Applied"
+                  : t("search") || "Search"}
+              </button>
             </div>
           </>
         )}
