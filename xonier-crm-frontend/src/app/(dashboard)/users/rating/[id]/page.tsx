@@ -272,8 +272,18 @@ export default function UserRatingPage() {
 
   // Filter state
   const [dateFilter, setDateFilter] = useState<DateFilterType>("all");
+
+  // Raw (uncommitted) custom date inputs — bound directly to the date pickers.
+  // Changing these does NOT trigger an API call.
   const [customStart, setCustomStart] = useState<string>("");
   const [customEnd, setCustomEnd] = useState<string>("");
+
+  // Applied (committed) custom date values — these are the ones actually
+  // passed down to the data-fetching hook. They only change when the user
+  // clicks the "Search" button in the FilterBar.
+  const [appliedCustomStart, setAppliedCustomStart] = useState<string>("");
+  const [appliedCustomEnd, setAppliedCustomEnd] = useState<string>("");
+
   const [ratingFilter, setRatingFilter] = useState<RatingFilterType>("all");
   const [onTimeFilter, setOnTimeFilter] = useState<OnTimeFilterType>("all");
 
@@ -291,8 +301,8 @@ export default function UserRatingPage() {
   } = useUserRatingData({
     userId: id,
     dateFilter,
-    customStart,
-    customEnd,
+    customStart: appliedCustomStart,
+    customEnd: appliedCustomEnd,
     ratingFilter,
     onTimeFilter,
   });
@@ -305,9 +315,34 @@ export default function UserRatingPage() {
     setDateFilter("all");
     setCustomStart("");
     setCustomEnd("");
+    setAppliedCustomStart("");
+    setAppliedCustomEnd("");
     setRatingFilter("all");
     setOnTimeFilter("all");
   };
+
+  // When the date preset dropdown changes, reset custom range state
+  // whenever the user moves away from "custom" (or into it fresh).
+  const handleDateFilterChange = (v: DateFilterType) => {
+    setDateFilter(v);
+    if (v !== "custom") {
+      setCustomStart("");
+      setCustomEnd("");
+      setAppliedCustomStart("");
+      setAppliedCustomEnd("");
+    }
+  };
+
+  // Only called when the user explicitly clicks "Search" for custom range
+  const handleApplyCustomRange = () => {
+    if (!customStart || !customEnd) return;
+    setAppliedCustomStart(customStart);
+    setAppliedCustomEnd(customEnd);
+  };
+
+  const isCustomRangeReady = Boolean(customStart && customEnd);
+  const isCustomRangeDirty =
+    customStart !== appliedCustomStart || customEnd !== appliedCustomEnd;
 
   // Infinite scroll observer
   React.useEffect(() => {
@@ -486,7 +521,7 @@ export default function UserRatingPage() {
         {/* ── Filter Bar ────────────────────────────────────────────────── */}
         <FilterBar
           dateFilter={dateFilter}
-          setDateFilter={setDateFilter}
+          setDateFilter={handleDateFilterChange}
           customStart={customStart}
           setCustomStart={setCustomStart}
           customEnd={customEnd}
@@ -498,6 +533,9 @@ export default function UserRatingPage() {
           onReset={resetFilters}
           hasActiveFilters={hasActiveFilters}
           isLoading={isFilterLoading}
+          onApplyCustomRange={handleApplyCustomRange}
+          isCustomRangeReady={isCustomRangeReady}
+          isCustomRangeDirty={isCustomRangeDirty}
         />
 
         {/* ── Stat Cards (backend-computed, accurate for full filtered set) ── */}

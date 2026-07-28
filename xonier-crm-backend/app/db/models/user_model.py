@@ -23,9 +23,9 @@ class UserModel(BaseDocument):
     firstName: str = Field(..., min_length=3, max_length=49)
     lastName: Optional[str] = Field(None, max_length=49)
     email: str = Field(...)
-    hashedEmail: str = Indexed(unique=True)
+    hashedEmail: Optional[str] = Field(default=None, exclude=False) # = Indexed(unique=True)
     phone: str = Field(...)
-    hashedPhone: str = Indexed(unique=True) 
+    hashedPhone: Optional[str] = Field(default=None, exclude=False) # = Indexed(unique=True) 
     password: str = Field(...)
     isEmailVerified: bool = True
     status: USER_STATUS = Field(default=USER_STATUS.ACTIVE)
@@ -64,15 +64,18 @@ class UserModel(BaseDocument):
 
     @before_event(Insert, Replace, Save)
     def encrypt_email(self):
+        
         if not self.email:
             return
 
         if self.id is None:
             plain_email = self.email.lower()
+            
             self.hashedEmail = hash_value(plain_email)
+            
             self.email = encryptor.encrypt_data(plain_email)
             return
-
+        
         if "email" in self.get_changes():
             plain_email:str = self.email.lower()
             self.hashedEmail = hash_value(plain_email)

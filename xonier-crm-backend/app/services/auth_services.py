@@ -783,6 +783,8 @@ class AuthServices:
             else:
                 companyId = userModel.companyId if userModel.companyId else None
 
+           
+
             new_user = await self.repo.create(
                 data={**data, "createdBy": userModel.id, "companyId": companyId},
                 session=session,
