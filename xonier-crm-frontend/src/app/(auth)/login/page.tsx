@@ -20,6 +20,7 @@ const page = () => {
   const [formData, setFormData] = useState<LoginPayload>({
     email: "",
     password: "",
+    companyId:""
   });
 
   const router = useRouter();
@@ -34,12 +35,13 @@ const page = () => {
     setIsLoading(true);
     setErr(null);
     try {
-      let result = await AuthService.login(formData);
+      const result = await AuthService.login(formData);
       if (result.status === 200) {
         router.push("/login/verify-otp");
         sessionStorage.setItem("loginMail", formData.email);
+        sessionStorage.setItem("company_Id", formData.companyId);
         sessionStorage.setItem("loginPassword", formData.password);
-        setFormData({ email: "", password: "" });
+        setFormData({ email: "", password: "" ,companyId:""});
         toast.success(result.data.message);
       }
     } catch (error) {
@@ -126,6 +128,14 @@ const page = () => {
               value={formData.password}
               onChange={handleChange}
               placeholder="*********"
+            />
+             <Input
+              label={t("company_id")}
+              name="companyId"
+              type="text"
+              value={formData.companyId}
+              onChange={handleChange}
+              placeholder="324298"
             />
             <div className="flex items-center justify-end">
               <Link href={"/forgot-password"} className="text-gray-500 font-semibold text-sm">

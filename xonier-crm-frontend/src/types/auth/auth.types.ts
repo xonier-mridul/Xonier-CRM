@@ -13,17 +13,20 @@ export interface AuthState {
 export interface LoginPayload {
   email: string;
   password: string;
+  companyId:string
 }
 
 export interface VerifyLoginOtpPayload {
   email: string;
   otp: number;
   password: string;
+  companyId:string;
 }
 
 export interface ResendLoginOtpPayload {
   email: string;
   password: string;
+  companyId?:string
 }
 
 export interface changePasswordPayload {

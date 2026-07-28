@@ -26,6 +26,7 @@ const page = () => {
   const [resendLoading, setResetLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [email, setEmail] = useState("");
+  const [companyId, setCompanyId] = useState("");
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState<string>("");
   const [timeLeft, setTimeLeft] = useState<number>(OTP_TIMER);
@@ -35,7 +36,9 @@ const page = () => {
   useEffect(() => {
     const userEmail = sessionStorage.getItem("loginMail");
     const userPassword = sessionStorage.getItem("loginPassword");
+    const companyId = sessionStorage.getItem("companyId")
     if (userEmail) setEmail(userEmail);
+    if (companyId) setCompanyId(companyId);
     if (userPassword) setPassword(userPassword);
   }, []);
 
@@ -109,6 +112,7 @@ const page = () => {
         email,
         otp: Number(otp),
         password,
+        companyId
       };
 
       const result = await AuthService.verifyLoginOtp(payload);
@@ -150,6 +154,7 @@ const page = () => {
       const payload: ResendLoginOtpPayload = {
         email,
         password,
+        companyId
       };
 
       const result = await AuthService.resendOTP(payload);
