@@ -24,6 +24,7 @@ from app.core.enums import (
     ACTIVITY_ENTITY_TYPE,
     ACTIVITY_ACTION,
     COMPANY_STATUS,
+    SUBSCRIPTION_STATUS
 )
 from datetime import datetime, timezone, timedelta
 from app.core.config import get_setting
@@ -837,18 +838,34 @@ class AuthServices:
 
             hashed_mail = hash_value(data["email"])
             encrypt_email = self.crypto.encrypt_data(data["email"])
-
+            print("one")
             with system_query():
-                isUserExist = await self.repo.find_user_by_hashMail(
+                company = await self.companyRepo.find_one(filter={"companyId": data.get("companyId")}, populate=["subscription"], session=session)
+
+                if not company:
+                    raise AppException(404, "Company not found against provided company Id, kindly check and try again")
+                # print("comapny: ", company)
+                if company.status != COMPANY_STATUS.ACTIVE:
+                    raise AppException(400, f"Company status is {company.status}, so you can't login, connect with support team")
+                
+                if not company.subscription:
+                    raise AppException(404, "Company not have subscription, kindly connect with support team")
+
+                if company.subscription.status != SUBSCRIPTION_STATUS.ACTIVE:
+                    raise AppException(400, f"Company status is {company.status}, so you can't login, connect with support team")
+            print("twoe")
+            with system_query():
+                isUserExist = await self.repo.find_user_by_hashMail_and_companyId(
                     hashMail=hashed_mail,
+                    companyId=str(company.id),
                     projections=None,
                     populate=["userRole"],
                     session=session,
                 )
-
+            
             if not isUserExist:
                 raise AppException(404, "User not found, Please create account first")
-
+            print("othree")
             if not isUserExist.isEmailVerified:
                 raise AppException(400, "Email is not verified, please verified first")
 
@@ -862,7 +879,7 @@ class AuthServices:
                     400,
                     "Your account is inactive, please contact with support team or admin",
                 )
-
+            print("four")
             if isUserExist.status == USER_STATUS.DELETED.value:
                 raise AppException(
                     400, "Your account is deleted, please connect with support team"
