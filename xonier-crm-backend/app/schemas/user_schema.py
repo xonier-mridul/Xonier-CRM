@@ -88,12 +88,29 @@ class UpdateUserSchema(BaseModel):
         return v
 
 class UserLoginSchema(BaseModel):
+    companyId: str
     email: EmailStr
     password: Password
+
+    @model_validator(mode="before")
+    @classmethod
+    def verify_fields(cls, value):
+        companyId = value.get("companyId")
+        email = value.get("email")
+
+        if not companyId:
+            raise AppException(422, "Company Id required")
+
+        if not email:
+            raise AppException(422, "Email field is required")
+
+        return value
+
 
     @field_validator("password")
     @classmethod
     def strong_password2(cls, v: str):
+
         rules = {
             "lowercase": any(c.islower() for c in v),
             "uppercase": any(c.isupper() for c in v),
@@ -114,6 +131,7 @@ class UpdateUserStatusSchema(BaseModel):
     status: USER_STATUS
     
 class ResendOTPSchema(BaseModel):
+    companyId: str
     email: EmailStr
     password: Password
 
@@ -136,6 +154,7 @@ class ResendOTPSchema(BaseModel):
         return v
     
 class VerifyLoginOtpSchema(BaseModel):
+    companyId: str
     email: EmailStr
     otp: Otp
     password: Password
