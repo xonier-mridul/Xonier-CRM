@@ -128,6 +128,42 @@ html {
   animation: ballStepUp 4s linear infinite;
 }
 
+.phone-input input {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.5rem;
+  outline: none;
+  font-size: 0.875rem;
+  background: white;
+  color: rgb(15 23 42);
+}
+
+.dark .phone-input input {
+  background: rgb(31 41 55);
+  border-color: rgb(75 85 99);
+  color: white;
+}
+
+.phone-input input:focus {
+  border-color: rgb(6 182 212);
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+}
+
+.phone-input.error input {
+  border-color: rgb(239 68 68);
+}
+
+.phone-input input:disabled {
+  background-color: rgb(248 250 252);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.dark .phone-input input:disabled {
+  background-color: rgb(17 24 39);
+}
+
 /* rom-[#16c2cf] to-[#0fb8a5] */
 
 @keyframes pillerPushUp {

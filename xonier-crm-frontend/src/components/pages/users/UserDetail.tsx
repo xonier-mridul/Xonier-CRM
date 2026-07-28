@@ -2525,15 +2525,16 @@ const language = i18n.resolvedLanguage ?? "en";
                       href={`/roles`}
                       className="flex items-center gap-2 group"
                     >
-                      <div className="w-8 h-8 bg-linear-to-br from-violet-500 to-cyan-600 rounded-lg flex items-center justify-center">
+                      <div className="w-8 h-8 bg-linear-to-br from-cyan-500 to-cyan-600 rounded-lg flex items-center justify-center">
                         <IoShieldCheckmark className="w-4 h-4 text-white group-hover:scale-112" />
                       </div>
                       <div>
-                        <h4 className="font-semibold group-hover:text-cyan-600 dark:group-hover:text-cyan-500 text-gray-800 dark:text-gray-100">
-                          {role.name}
+                       <h4 className="font-semibold group-hover:text-cyan-600 dark:group-hover:text-cyan-500 text-gray-800 dark:text-gray-100">
+                          {role?.name ? t(role.name.toLowerCase()) : "-"}
                         </h4>
+
                         <p className="text-xs font-mono text-gray-400">
-                          {role.code}
+                          {role?.code ? t(role.code.toLowerCase()) : "-"}
                         </p>
                       </div>
                     </Link>
@@ -2866,13 +2867,13 @@ const language = i18n.resolvedLanguage ?? "en";
                           {
                              label: t("base_price"),
                             value: `$${(companyData as any).subscription.basePrice}`,
-                            sub: (companyData as any).subscription.billingCycle,
+                            sub: `${t((companyData as any).subscription.billingCycle)}`,
                             color: "text-gray-800 dark:text-gray-100",
                           },
                           {
                               label: t("discount"),
                             value: `$${(companyData as any).subscription.discountAmount}`,
-                            sub: "saved",
+                            sub: t("saved"),
                             color:
                               (companyData as any).subscription.discountAmount >
                               0
@@ -2882,7 +2883,7 @@ const language = i18n.resolvedLanguage ?? "en";
                           {
                             label: t("final_price"),
                             value: `$${(companyData as any).subscription.finalPrice}`,
-                            sub: `/${(companyData as any).subscription.billingCycle}`,
+                         sub: `/${t((companyData as any)?.subscription?.billingCycle )}`,
                             color: "text-cyan-600 dark:text-cyan-400",
                           },
                         ].map((s) => (

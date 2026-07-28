@@ -670,7 +670,7 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
       <div className="fixed min-h-screen overflow-y-scroll custom-scrollbar z-100 top-0 left-0 right-0 w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
         
       {/* Left Sidebar - Field Selector */}
-<div className="fixed z-100 left-0 top-0 w-80 shadow-lg flex flex-col border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 h-screen ">
+<div className="fixed z-100 left-0 top-0 w-80 border-r flex flex-col border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 h-screen ">
   
   {/* Sidebar Header - Fixed */}
   <div className="shrink-0 px-6 pt-6 pb-4 border-b border-gray-200 dark:border-gray-700 dark:from-gray-800 dark:to-gray-800">
@@ -956,10 +956,10 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
 </div>
 
         {/* Top Navigation Bar */}
-        <div className="fixed top-0 z-50 left-90 right-5 backdrop-blur-md bg-white dark:bg-gray-800/80 border-b border-gray-200 dark:border-gray-700 rounded-b-2xl shadow-sm">
+        <div className="fixed top-2 z-90 right-0 left-80  bg-white dark:bg-gray-800/80 border-b border-gray-200 dark:border-gray-700 ">
           <div className="flex items-center justify-between px-8 py-4">
             <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center shadow-lg">
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center ">
                 <GrDocumentUpdate className="text-white text-xl" />
               </div>
               <div>
@@ -975,22 +975,22 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
             <div className="flex items-center gap-3">
               <button
                 onClick={() => router.back()}
-                className="h-11 w-11 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 transition-all duration-200 group"
+                className="h-10 w-10 flex  bg-slate-50 items-center justify-center text-xl  border rounded-full dark:bg-[#1a2432] border-[#ecf0f2] dark:border-gray-700 hover:text-cyan-600 cursor-pointer hover:border-cyan-600/20 hover:scale-103 group"
               >
                 <FaArrowLeftLong className="text-lg group-hover:-translate-x-1 transition-transform" />
               </button>
               <button
                 onClick={() => router.forward()}
-                className="h-11 w-11 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 transition-all duration-200 group"
+                className="h-10 w-10 flex  bg-slate-50 items-center justify-center text-xl  border rounded-full dark:bg-[#1a2432] border-[#ecf0f2] dark:border-gray-700 hover:text-cyan-600 cursor-pointer hover:border-cyan-600/20 hover:scale-103 group"
               >
                 <FaArrowRightLong className="text-lg group-hover:translate-x-1 transition-transform" />
               </button>
               <ThemeToggle />
-              <div className="relative">
+              <div className="relative ">
                 <button
                   ref={buttonRef}
                   onClick={() => setIsOpen(!isOpen)}
-                  className="h-11 w-11 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 transition-all duration-200"
+                  className="h-10 w-10 flex  bg-slate-50 items-center justify-center text-xl  border rounded-full dark:bg-[#1a2432] border-[#ecf0f2] dark:border-gray-700 hover:text-cyan-600 cursor-pointer hover:border-cyan-600/20 hover:scale-103"
                   aria-label={t("select_language")}
                 >
                   <IoLanguage className="w-5 h-5" />
@@ -1007,7 +1007,7 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
         </div>
 
         {/* Main Content Area - Form Preview */}
-        <div className="ml-85 pt-24 px-8 pb-8">
+        <div className="ml-85 pt-28 px-8 pb-8">
           <div className="max-w-5xl mx-auto">
             
             {/* Stats Cards */}
@@ -1056,7 +1056,7 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
             </div>
 
             {/* Form Preview Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl  border border-gray-200 dark:border-gray-700 overflow-hidden">
               
               {/* Card Header */}
               <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-800 border-b border-gray-200 dark:border-gray-700 px-8 py-6">

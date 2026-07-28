@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 interface LanguageOption {
   code: string;
   label: string;
+  icon:string;
 }
 
 interface LanguageSelectorProps {
@@ -22,9 +23,9 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   const { t } = useTranslation();
 
   const languages: LanguageOption[] = [
-    { code: "en", label: t("english") },
-    { code: "hi", label: t("hindi") },
-    { code: "pt", label: t("portuguese") }, 
+     { code: "en", icon: "🇬🇧", label: t("english") },    // or 🇺🇸 for US English
+  { code: "hi", icon: "🇮🇳", label: t("hindi") },
+  { code: "pt", icon: "🇵🇹", label: t("portuguese") }, 
   ];
 
   const handleLanguageSelect = (code: string) => {
@@ -56,7 +57,11 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
               }
             `}
           >
+            <div className="flex gap-4 items-center "> 
+     <span>{lang.icon}</span>
             <span>{lang.label}</span>
+            </div>
+       
             {i18n.language === lang.code && (
               <svg
                 className="w-4 h-4 text-cyan-600 dark:text-cyan-400"

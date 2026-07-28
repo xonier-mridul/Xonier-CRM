@@ -1,17 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNotifications } from "@/src/hooks/useNotifications";
 import NotificationItem from "./NotificationItem";
 import { NotificationFilter, NotificationStatus } from "@/src/types/notification/notification.types";
-import { FiCheckCircle, FiTrash2, FiFilter } from "react-icons/fi";
+import { FiCheckCircle, FiTrash2 } from "react-icons/fi";
 import DateFilterButton from "../../common/dateFilter";
 import { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 import { IoSearchOutline } from "react-icons/io5";
 import { TbRefresh } from "react-icons/tb";
 import { useTranslation } from "react-i18next";
-
-
 
 const NotificationList = () => {
   const { t } = useTranslation();
@@ -30,12 +28,44 @@ const NotificationList = () => {
 
   const [filter, setFilter] = useState<NotificationFilter>({});
   const [dateFilter, setDateFilter] = useState<DateFilter>({ fromDate: "", toDate: "" });
-  
+  const [searchQuery, setSearchQuery] = useState("");
+
+
+
+  const applyFilters = () => {
+    const combinedFilter: NotificationFilter = {
+      ...filter,
+      ...(dateFilter.fromDate && { fromDate: dateFilter.fromDate }),
+      ...(dateFilter.toDate && { toDate: dateFilter.toDate }),
+      ...(searchQuery && { search: searchQuery }),
+    };
+    
+    fetchNotifications(combinedFilter);
+  };
+
+    useEffect(() => {
+    applyFilters();
+  }, [filter, dateFilter, searchQuery]);
 
   const handleFilterChange = (key: keyof NotificationFilter, value: any) => {
     const newFilter = { ...filter, [key]: value };
     setFilter(newFilter);
-    fetchNotifications(newFilter);
+  };
+
+  const handleDateFilterChange = (newDateFilter: DateFilter) => {
+    setDateFilter(newDateFilter);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleClearFilters = () => {
+    setFilter({});
+    setDateFilter({ fromDate: "", toDate: "" });
+    setSearchQuery("");
+    setPage(1);
+    fetchNotifications({});
   };
 
   const handleMarkAsRead = async (id: string) => {
@@ -46,18 +76,28 @@ const NotificationList = () => {
     await deleteNotification(id);
   };
 
-  console.log("page notification data:",notifications)
+  const hasActiveFilters = 
+    filter.status || 
+    filter.isRead !== undefined || 
+    dateFilter.fromDate || 
+    dateFilter.toDate || 
+    searchQuery;
+
+  console.log("page notification data:", notifications);
 
   return (
     <div className="w-full px-4">
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-          {t("notifications")}
-        </h1>
-         <p className="text-gray-600 dark:text-gray-400">{t("stay_updated_with_all_your_alert")}</p>
+            {t("notifications")}
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            {t("stay_updated_with_all_your_alert")}
+          </p>
         </div>
-               <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <button
             onClick={markAllAsRead}
             className="flex items-center gap-2 px-4 py-2 text-sm bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
@@ -73,62 +113,85 @@ const NotificationList = () => {
         </div>
       </div>
 
-
+      {/* Filters */}
       <div className="flex items-center gap-4 mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 justify-between">
-        {/* <FiFilter className="text-gray-400" /> */}
         <div className="flex gap-10">
-        <label className="flex flex-col gap-2 text-[14px] text-slate-500 dark:text-white/70">
-          {t("status")}
-        <select
-          value={filter.status || ""}
-          onChange={(e) =>
-            handleFilterChange("status", e.target.value || undefined)
-          }
-          className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm outline-none"
-        >
-          <option value="">{t("all_status")}</option>
-          <option value={NotificationStatus.UNREAD}>{t("unread")}</option>
-          <option value={NotificationStatus.READ}>{t("read")}</option>
-        </select>
-        </label>
-
-       <label className="flex flex-col gap-2 text-[14px] text-slate-500 dark:text-white/70">
-          {t("type")}
-        <select
-          value={filter.isRead !== undefined ? String(filter.isRead) : ""}
-          onChange={(e) =>
-            handleFilterChange(
-              "isRead",
-              e.target.value === "" ? undefined : e.target.value === "true"
-            )
-          }
-          className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm outline-none"
-        >
-          <option value="">{t("all")}</option>
-          <option value="false">{t("unread_only")}</option>
-          <option value="true">{t("read_only_2")}</option>
-        </select>
-        </label>
-        <label className="flex flex-col gap-2 text-[14px] text-slate-500 dark:text-white/70">
-          {t("date_range")}
-          <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter}  />
+          {/* Status Filter */}
+          <label className="flex flex-col gap-2 text-[14px] text-slate-500 dark:text-white/70">
+            {t("status")}
+            <select
+              value={filter.status || ""}
+              onChange={(e) =>
+                handleFilterChange("status", e.target.value || undefined)
+              }
+              className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm outline-none"
+            >
+              <option value="">{t("all_status")}</option>
+              <option value={NotificationStatus.UNREAD}>{t("unread")}</option>
+              <option value={NotificationStatus.READ}>{t("read")}</option>
+            </select>
           </label>
 
-          <label className="flex flex-col gap-2 text-[14px] text-slate-500 dark:text-white/70  " >
+          {/* Type Filter */}
+          <label className="flex flex-col gap-2 text-[14px] text-slate-500 dark:text-white/70">
+            {t("type")}
+            <select
+              value={filter.isRead !== undefined ? String(filter.isRead) : ""}
+              onChange={(e) =>
+                handleFilterChange(
+                  "isRead",
+                  e.target.value === "" ? undefined : e.target.value === "true"
+                )
+              }
+              className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm outline-none"
+            >
+              <option value="">{t("all")}</option>
+              <option value="false">{t("unread_only")}</option>
+              <option value="true">{t("read_only_2")}</option>
+            </select>
+          </label>
+
+          {/* Date Filter */}
+          <label className="flex flex-col gap-2 text-[14px] text-slate-500 dark:text-white/70">
+            {t("date_range")}
+            <DateFilterButton 
+              dateFilter={dateFilter} 
+              onChange={handleDateFilterChange}  
+            />
+          </label>
+
+          {/* Search */}
+          <label className="flex flex-col gap-2 text-[14px] text-slate-500 dark:text-white/70">
             {t("search")}
-            <div className='flex border border-slate-200 rounded-lg text-slate-500 px-4 py-2.5 items-center dark:text-white/70 gap-2 dark:border-gray-600' >
-              <IoSearchOutline className='text-xl '/>
-            <input type='text' placeholder={t("search_3")}  className='outline-none text-sm'/>
+            <div className="flex border border-slate-200 rounded-lg text-slate-500 px-4 py-2.5 items-center dark:text-white/70 gap-2 dark:border-gray-600 bg-white dark:bg-gray-700">
+              <IoSearchOutline className="text-xl" />
+              <input
+                type="text"
+                placeholder={t("search_3")}
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="outline-none text-sm bg-transparent w-full"
+              />
             </div>
-
           </label>
-          </div>
-          <button className=" group flex gap-2 px-4 py-2.5 rounded-lg border border-slate-200 text-[14px] dark:text-white/70 items-center text-slate-500 dark:border-gray-600">
-            <TbRefresh  className="group-hover:rotate-180 transition-all duration-200" />
-            {t("clear_filter")} 
-          </button>
+        </div>
+
+        {/* Clear Filters Button */}
+        <button
+          onClick={handleClearFilters}
+          disabled={!hasActiveFilters}
+          className={`group flex gap-2 px-4 py-2.5 rounded-lg border border-slate-200 text-[14px] dark:text-white/70 items-center text-slate-500 dark:border-gray-600 transition-all
+            ${hasActiveFilters 
+              ? 'hover:bg-slate-50 dark:hover:bg-gray-700 cursor-pointer' 
+              : 'opacity-50 cursor-not-allowed'
+            }`}
+        >
+          <TbRefresh className={`${hasActiveFilters ? 'group-hover:rotate-180' : ''} transition-all duration-200`} />
+          {t("clear_filter")}
+        </button>
       </div>
 
+      {/* Loading State */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600"></div>
@@ -136,11 +199,23 @@ const NotificationList = () => {
       ) : notifications.length === 0 ? (
         <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
           <p className="text-gray-500 dark:text-gray-400">
-            {t("no_notifications_found")}
+            {hasActiveFilters 
+              ? t("no_notifications_match_filters") 
+              : t("no_notifications_found")
+            }
           </p>
+          {hasActiveFilters && (
+            <button
+              onClick={handleClearFilters}
+              className="mt-4 text-cyan-600 hover:text-cyan-700 text-sm"
+            >
+              {t("clear_filters_to_see_all")}
+            </button>
+          )}
         </div>
       ) : (
         <>
+          {/* Notifications List */}
           <div className="space-y-3">
             {notifications.map((notification) => (
               <NotificationItem
@@ -153,12 +228,13 @@ const NotificationList = () => {
             ))}
           </div>
 
+          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2 mt-6">
               <button
                 onClick={() => setPage(page - 1)}
                 disabled={page === 1}
-                className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors"
               >
                 {t("previous")}
               </button>
@@ -168,7 +244,7 @@ const NotificationList = () => {
               <button
                 onClick={() => setPage(page + 1)}
                 disabled={page === totalPages}
-                className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors"
               >
                 {t("next_2")}
               </button>

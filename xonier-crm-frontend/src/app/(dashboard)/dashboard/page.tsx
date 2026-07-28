@@ -3461,9 +3461,26 @@ function UserLayout({ d }: { d: DashboardData }) {
 }
 
 // ── Main Dashboard ─────────────────────────────────────────────────────────────
+export const formatDate = (date: string, language: string) => {
+  const localeMap: Record<string, string> = {
+    en: "en-US",
+    hi: "hi-IN",
+    pt: "pt-PT", // or "pt-BR"
+  };
+
+  return new Date(date).toLocaleDateString(
+    localeMap[language] || "en-US",
+    {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }
+  );
+};
 
 export default function UnifiedDashboardPage() {
   const { t } = useTranslation();
+  const { i18n } = useTranslation();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -3543,7 +3560,7 @@ export default function UnifiedDashboardPage() {
           <p className="text-sm text-slate-400">{error}</p>
           <button
             onClick={() => load()}
-            className="px-5 py-2 rounded-xl bg-indigo-600 dark:text-white text-sm font-semibold hover:bg-indigo-500 transition-colors"
+            className="px-5 py-2 rounded-xl text-white bg-cyan-600 dark:text-white text-sm font-semibold hover:bg-cyan-500 transition-colors"
           >
             {t("retry")}
           </button>
@@ -3582,14 +3599,7 @@ export default function UnifiedDashboardPage() {
                 <span>·</span>
                 <span>
                   {t("generated")}{" "}
-                  {new Date(data.period.generatedAt).toLocaleDateString(
-                    "en-US",
-                    {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    },
-                  )}
+                  {formatDate(data.period.generatedAt, i18n.language)}
                 </span>
               </p>
             </div>
