@@ -6,7 +6,7 @@ import React, { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { BiHome, BiUserCheck } from "react-icons/bi";
 import { AiOutlineTeam } from "react-icons/ai";
-import { IoChevronDown } from "react-icons/io5";
+import { IoChevronDown, IoSettingsOutline } from "react-icons/io5";
 import { motion, AnimatePresence } from "framer-motion";
 import { SIDEBAR_WIDTH } from "@/src/constants/constants";
 import { HiOutlineAdjustments } from "react-icons/hi";
@@ -34,6 +34,7 @@ import { CiMail } from "react-icons/ci";
 import { IoMailOutline } from "react-icons/io5";
 import { useFeatures } from "@/src/hooks/useFeatures";
 import { useTranslation } from "react-i18next";
+import { GrUserSettings } from "react-icons/gr";
 
 
 const SideBar = () => {
@@ -131,6 +132,8 @@ const SideBar = () => {
     if (pathname.startsWith("/reports") || pathname.startsWith("/report/create")) {
       setOpenMenu("task")
     }
+
+
   }, [pathname]);
 
   const toggleMenu = (menu: string) => {
@@ -971,6 +974,41 @@ const SideBar = () => {
             }
           </ul>
         </div>
+    
+        <div className="flex flex-col gap-3">
+          <h2 className=" text-xs text-gray-500 dark:text-gray-400 pl-3">
+            {t("setting")}
+          </h2>
+
+            <Link
+                href="/companySetting"
+                className={`${isActive("/companySetting")
+                  ? " dark:text-cyan-300 text-cyan-700   border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                  : "border-l-2 border-transparent"
+                  } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
+              >
+              <span  className={`${isActive("/companySetting")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                <GrUserSettings className="text-lg" />
+
+              </span>
+               {t("company_setting")}
+
+              </Link>
+              <Link
+                href="/setting"
+                className={`${isActive("/setting")
+                  ? " dark:text-cyan-300 text-cyan-700   border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                  : "border-l-2 border-transparent"
+                  } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
+              >
+              <span  className={`${isActive("/setting")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                <IoSettingsOutline className="text-lg" />
+
+              </span>
+               {t("setting")}
+
+              </Link>
+        </div>
 
         <div className="flex flex-col gap-3">
           <h2 className="uppercase text-xs text-gray-500 dark:text-gray-400 pl-3">
@@ -1017,6 +1055,7 @@ const SideBar = () => {
 
           </ul>
         </div>
+         
       </div>
     </div>
   );

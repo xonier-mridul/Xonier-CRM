@@ -19,6 +19,13 @@ export const QuoteService = {
 
     return api.get(`/quote/get-all?${params.toString()}`);
   },
+  uploadFiles: (dealId: any, formData: FormData) => {
+  return api.post(`/deal/${dealId}/files`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+},
   get_by_id: (id:string)=> api.get(`/quote/get-by-id/${id}`),
   get_data_with_token: (token: string)=> api.get(`/quote/public/${token}`),
   confirm: (token: string)=> api.post(`/quote/confirm/${token}`),

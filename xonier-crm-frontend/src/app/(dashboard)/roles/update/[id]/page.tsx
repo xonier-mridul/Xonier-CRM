@@ -168,8 +168,8 @@ const UpdateRolePage = (): JSX.Element => {
 
             <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                  <FaShieldHalved className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                <div className="w-10 h-10 rounded-xl bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center">
+                  <FaShieldHalved className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-slate-900 dark:text-white">{t("update_role")}</h2>
@@ -216,7 +216,7 @@ const UpdateRolePage = (): JSX.Element => {
                           type="button"
                           onClick={() => handlePowerChange((formData.power ?? 1) - 1)}
                           disabled={(formData.power ?? 1) <= 1}
-                          className="h-7 w-7 rounded-lg border border-slate-200 dark:border-gray-600 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-bold text-lg leading-none"
+                          className="h-7 w-7 outline-none rounded-lg border border-slate-200 dark:border-gray-600 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-bold text-lg leading-none"
                         >
                           −
                         </button>
@@ -226,24 +226,36 @@ const UpdateRolePage = (): JSX.Element => {
                           max={MAX_POWER}
                           value={formData.power ?? 1}
                           onChange={(e) => handlePowerChange(Number(e.target.value))}
-                          className="w-14 text-center text-sm font-bold rounded-lg border border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 py-1"
+                          className="w-14 text-center text-sm font-bold rounded-lg border border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 py-1"
                         />
                         <button
                           type="button"
                           onClick={() => handlePowerChange((formData.power ?? 1) + 1)}
                           disabled={(formData.power ?? 1) >= MAX_POWER}
-                          className="h-7 w-7 rounded-lg border border-slate-200 dark:border-gray-600 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-bold text-lg leading-none"
+                          className="h-7 w-7 rounded-lg outline-none border border-slate-200 dark:border-gray-600 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-bold text-lg leading-none"
                         >
                           +
                         </button>
                       </div>
                     </div>
 
-                    <div className="relative h-2 rounded-full bg-slate-200 dark:bg-gray-600 overflow-hidden">
+                    <div className="relative h-2 rounded-full bg-slate-200 dark:bg-gray-600 ">
                       <div
                         className={`absolute left-0 top-0 h-full rounded-full transition-all duration-300 ${powerColor}`}
                         style={{ width: `${powerPercent}%` }}
                       />
+                       <input
+                          type="range"
+                          min={1}
+                          max={92}
+                          step={1}
+                          value={formData.power}
+                          onChange={(e) =>
+                            setFormData((prev) => ({ ...prev, power: Number(e.target.value) }))
+                          }
+                          className={`w-full h-2 absolute top-0 bottom-0 rounded-lg appearance-none cursor-pointer accent-cyan-600
+                      `}
+                  />
                     </div>
                     <div className="flex items-center justify-between mt-1.5">
                       <span className="text-[11px] text-slate-400">{t("1_least_powerful")}</span>
@@ -259,7 +271,7 @@ const UpdateRolePage = (): JSX.Element => {
                   <div className="bg-slate-50 dark:bg-gray-800/50 rounded-xl border border-slate-200 dark:border-gray-600 p-4 flex flex-col justify-between">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <FaShieldHalved className="text-indigo-500 text-sm" />
+                        <FaShieldHalved className="text-cyan-500 text-sm" />
                         <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                           {t("can_manage_below")}
                         </span>
@@ -276,14 +288,14 @@ const UpdateRolePage = (): JSX.Element => {
                       className="flex items-center gap-2.5 mt-4 w-fit"
                     >
                       {formData.canManageBelow ? (
-                        <FiToggleRight className="text-3xl text-indigo-500" />
+                        <FiToggleRight className="text-3xl text-cyan-500" />
                       ) : (
                         <FiToggleLeft className="text-3xl text-slate-400 dark:text-gray-500" />
                       )}
                       <span
                         className={`text-sm font-semibold transition-colors ${
                           formData.canManageBelow
-                            ? "text-indigo-600 dark:text-indigo-400"
+                            ? "text-cyan-600 dark:text-cyan-400"
                             : "text-slate-400 dark:text-gray-500"
                         }`}
                       >
@@ -295,12 +307,12 @@ const UpdateRolePage = (): JSX.Element => {
               )}
 
               {formData.permissions.length > 0 && (
-                <div className="bg-indigo-50 dark:bg-indigo-950/20 rounded-xl p-4 border border-indigo-100 dark:border-indigo-900/30">
+                <div className="bg-cyan-50 dark:bg-cyan-950/20 rounded-xl p-4 border border-cyan-100 dark:border-cyan-900/30">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-400">
+                    <span className="text-sm font-semibold text-cyan-700 dark:text-cyan-400">
                       {t("selected_permissions")}
                     </span>
-                    <span className="text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/40 px-2 py-0.5 rounded-full">
+                    <span className="text-xs font-medium text-cyan-600 dark:text-cyan-400 bg-cyan-100 dark:bg-cyan-900/40 px-2 py-0.5 rounded-full">
                       <button
                         onClick={handleRemoveAll}
                         className="ml-1 hover:text-red-500 dark:hover:text-red-400 transition-colors"
@@ -316,9 +328,9 @@ const UpdateRolePage = (): JSX.Element => {
                       return (
                         <span
                           key={permId}
-                          className="group bg-white dark:bg-gray-700 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 px-3 py-1.5 rounded-lg text-sm flex items-center gap-2 capitalize hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
+                          className="group bg-white dark:bg-gray-700 border border-cyan-200 dark:border-cyan-800 text-cyan-700 dark:text-cyan-300 px-3 py-1.5 rounded-lg text-sm flex items-center gap-2 capitalize hover:bg-cyan-50 dark:hover:bg-cyan-900/30 transition-colors"
                         >
-                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 flex-shrink-0" />
                           {perm.title}
                           <button
                             type="button"
@@ -347,7 +359,7 @@ const UpdateRolePage = (): JSX.Element => {
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter") e.preventDefault(); }}
-                      className="pl-9 pr-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent w-56"
+                      className="pl-9 pr-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 focus:border-transparent w-56"
                     />
                   </div>
                 </div>
@@ -376,7 +388,7 @@ const UpdateRolePage = (): JSX.Element => {
                                     <div
                                       className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0 ${
                                         selected
-                                          ? "bg-indigo-500 border-indigo-500"
+                                          ? "bg-cyan-500 border-cyan-500"
                                           : "border-gray-300 dark:border-gray-500"
                                       }`}
                                     >

@@ -116,7 +116,8 @@ export enum TASK_REPORT_STATUS{
     COMPLETED_PENDING_REVIEW = "completed_pending_review",
     SUBMITTED="submitted",
     REVIEWED = "reviewed",
-    MISSED= "missed"
+    MISSED= "missed",
+    NOT_SUBMIT = "not_submit"
 }
 
 export enum PERMISSIONS {

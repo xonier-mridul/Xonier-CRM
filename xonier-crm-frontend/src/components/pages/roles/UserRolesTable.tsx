@@ -394,17 +394,7 @@ const handleAllPermissions = (checked: boolean) => {
                       {formData.power}
                     </span>
                   </label>
-                  <input
-                    type="range"
-                    min={1}
-                    max={100}
-                    step={1}
-                    value={formData.power}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, power: Number(e.target.value) }))
-                    }
-                    className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-cyan-600"
-                  />
+                 
                   <div className="flex items-center justify-between text-xs text-slate-400 dark:text-slate-500">
                     <span>{t("viewer_1")}</span>
                     <span
@@ -414,12 +404,24 @@ const handleAllPermissions = (checked: boolean) => {
                     </span>
                     <span>{t("owner_100")}</span>
                   </div>
-                  <div className="w-full h-1.5 bg-slate-100 dark:bg-gray-700 rounded-full overflow-hidden mt-1">
+                  <div className="w-full h-1.5 relative bg-slate-100 dark:bg-gray-700 rounded-full mt-1">
                     <div
                       className={`h-full rounded-full transition-all ${getPowerConfig(formData.power).color}`}
                       style={{ width: `${formData.power}%` }}
                     />
+                    <input
+                      type="range"
+                      min={1}
+                      max={100}
+                      step={1}
+                      value={formData.power}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, power: Number(e.target.value) }))
+                      }
+                      className={`w-full h-2 absolute top-0 bottom-0 rounded-lg appearance-none bg-transparent cursor-pointer transition-colors ${getPowerConfig(formData.power).color.replace("bg-", "accent-")}`}
+                    />
                   </div>
+                  
                 </div>
 
                 <div className="flex flex-col gap-2">

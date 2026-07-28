@@ -6,7 +6,7 @@ import axios from "axios";
 import Link from "next/link";
 import React, { JSX, useState, useEffect, useRef } from "react";
 import { IoIosSearch } from "react-icons/io";
-import { MdOutlineEdit, MdOutlineLeaderboard } from "react-icons/md";
+import { MdDriveFolderUpload, MdOutlineEdit, MdOutlineLeaderboard } from "react-icons/md";
 import extractErrorMessages from "../../utils/error.utils";
 import { toast } from "react-toastify";
 import Skeleton from "react-loading-skeleton";
@@ -21,6 +21,8 @@ import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 import StatusBadge from "@/src/components/common/Status";
 import Limit from "@/src/components/ui/Limit";
 import { useTranslation } from "react-i18next";
+import { useRouter } from "next/navigation";
+import QuotationFileUploadModal from "@/src/components/common/QuotationFileUploadModal";
 
 
 const STATUS_CONFIG = {
@@ -170,8 +172,10 @@ const page = (): JSX.Element => {
   const [TosearchVal, setToSearchVal] = useState<string>("");
   const [dateFilter, setDateFilter] = useState<DateFilter>({ fromDate: "", toDate: "" });
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const [uploadModalOpen,setUploadModalOpen] = useState<string | null>(null)
 
   const { hasPermission } = usePermissions();
+  const router = useRouter()
 
   const getQuotationData = async () => {
     setIsLoading(true);
@@ -322,6 +326,11 @@ const page = (): JSX.Element => {
     setSearchVal("");
   },[currentTab]);
 
+    const handleUploadSuccess = () => {
+    router.refresh(); // Refresh server components
+    setUploadModalOpen(null);
+  };
+
  
 
   return (
@@ -365,6 +374,7 @@ const page = (): JSX.Element => {
             </Link>}
           </div>
         </div>
+        <div className="flex items-center justify-between w-full">
         <ul className="w-full flex items-center gap-5">
           <li>
             <TabsButton
@@ -394,6 +404,14 @@ const page = (): JSX.Element => {
             />
           </li>
         </ul>
+
+        {/* <button
+        onClick={()=>router.push('/quotations/upload')}
+          className=" px-6 py-2.5  bg-slate-100 text-cyan-600 rounded-full cursor-pointer text-sm font-semibold whitespace-nowrap">
+         {t("upload_quotation")}
+        </button> */}
+
+        </div>
         {currentTab === 1 && (
           <table className="w-full">
             <thead className="w-full bg-slate-200">
@@ -427,7 +445,7 @@ const page = (): JSX.Element => {
                 Array.isArray(quoteData) &&
                 quoteData.length > 0 ? (
                   quoteData.map((item, i) => {
-                    let rr = i % 2 == 0;
+                    const rr = i % 2 == 0;
                     const date = formatDate(item.createdAt);
 
                     return (
@@ -492,6 +510,24 @@ const page = (): JSX.Element => {
                                 <MdOutlineEdit className="text-xl" />
                               </span>
                             )}
+                            
+  
+  {/* Show upload button only if no attachments */}
+  {(!item.attachments || item.attachments.length === 0) && (
+    <button
+      onClick={() => setUploadModalOpen(item.id)}
+      className="h-9 w-9 flex items-center justify-center rounded-md bg-green-200/80 dark:bg-green-100 hover:bg-green-300/70 dark:hover:bg-green-200 text-green-500 hover:scale-104"
+    >
+      <MdDriveFolderUpload className="text-xl" />
+    </button>
+  )}
+  
+  <QuotationFileUploadModal
+    isOpen={uploadModalOpen === item.id}
+    onClose={() => setUploadModalOpen(null)}
+    quotationId={item.id}
+     onUploadSuccess={handleUploadSuccess}
+  />
                           </div>
                         </td>
                       </tr>
@@ -788,6 +824,22 @@ const page = (): JSX.Element => {
                                 <MdOutlineEdit className="text-xl" />
                               </span>
                             )}
+                              {(!item.attachments || item.attachments.length === 0) && (
+                                  <button
+                                    onClick={() => setUploadModalOpen(item.id)}
+                                    className="h-9 w-9 flex items-center justify-center rounded-md bg-green-200/80 dark:bg-green-100 hover:bg-green-300/70 dark:hover:bg-green-200 text-green-500 hover:scale-104"
+                                  >
+                                    <MdDriveFolderUpload className="text-xl" />
+                                  </button>
+                                )}
+                                
+                                <QuotationFileUploadModal
+                                  isOpen={uploadModalOpen === item.id}
+                                  onClose={() => setUploadModalOpen(null)}
+                                  quotationId={item.id}
+                                  onUploadSuccess={handleUploadSuccess}
+                                />
+
                           </div>
                         </td>
                       </tr>

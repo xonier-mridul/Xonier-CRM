@@ -18,6 +18,7 @@ import {
 } from "../types/company/company.types";
 
 import { COMPANY_STATUS } from "../constants/enum";
+import { CompanySetting, CompanySettingUpdatePayload } from "../types/companySetting/company.types";
 
 const CompanyService = {
   selfRegister: (
@@ -68,6 +69,16 @@ const CompanyService = {
 
   restore: (companyId: string): Promise<ApiResponse<MessageResponse>> =>
     api.patch(`/companies/${companyId}/restore`),
+
+   getCompanyDetails: async (): Promise<CompanySetting> => {
+    const response = await api.get("/company/settings");
+    return response.data;
+  },
+
+  updateCompanySettings: async (data: CompanySettingUpdatePayload): Promise<CompanySetting> => {
+    const response = await api.put("/company/settings", data);
+    return response.data;}
+  
 };
 
 export default CompanyService;

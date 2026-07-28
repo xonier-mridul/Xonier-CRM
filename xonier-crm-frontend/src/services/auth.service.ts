@@ -41,10 +41,10 @@ export const AuthService = {
     ),
 
   emailVerify:(payload:verifyEmail)=>{
-  return api.post('/forgot-password',payload)},
+  return api.post('/auth/forgot-password',payload)},
 
   verifyChangePassword:(payload:verifyPasswordOtp)=>{
-    return api.post('/verify-forgot-pass-otp',payload)
+    return api.post('/auth/verify-forgot-pass-otp',payload)
 
   },
  
@@ -77,6 +77,8 @@ export const AuthService = {
     api.get(
       `/auth/all-deleted?page=${filter.page}&limit=${filter.limit}&search=${filter.search}`,
     ),
+
+  // getDepartments:(search:string)=>{api.get(``)},
   permanentDelete: (id: string) => api.delete(`/auth/permanent-delete/${id}`),
   bulkPermanentDelete: (payload: { userIds: string[] }) =>
     api.delete(`/auth/bulk-permanent-delete`, {
