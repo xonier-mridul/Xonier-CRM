@@ -168,6 +168,8 @@
  "welcome_back_user": "Welcome Back!",
   "welcome_back_admin": "Welcome Back, Admin!",
   "login_subtitle": "Sign in to access the admin dashboard",
+    "assigned_to_me": "✅ Assigned to Me",
+  "assign_to_me": "⚡ Assign to Me",
  
   "login_failed_message": "Login failed. Please check your credentials and try again.",
   "manage_your_platform": "Manage your platform with ease",
@@ -2482,7 +2484,6 @@
   "deals_closed": "deals closed",
   "select_category_2": "Select category…",
   "auto_default_status": "Auto (default status)",
-  "assign_to_me": "⚡ Assign to Me",
   "search_users_2": "Search users…",
   "create_task_2": "✓ Create Task",
   "events_recorded": "events recorded",

@@ -829,6 +829,7 @@ class AuthServices:
 
         finally:
             await session.end_session()
+            
 
     async def admin_login(self, data: Dict[str, Any]):
         session = await self.client.start_session()
@@ -851,9 +852,13 @@ class AuthServices:
             
             if not isUserExist:
                 raise AppException(404, "User not found, Please create account first")
-
-            if isUserExist.userRole.code != USER_ROLES.SUPER_ADMIN.value:
-                raise AppException(400, "Invalid user role, Only super admin allowed")
+            
+            print("data",isUserExist)
+            
+            parse = isUserExist.model_dump(mode="json")
+            if not validate_admin(parse["userRole"]):
+                raise AppException(400, "Invalid user role, only super admin allowed")
+                
 
             
             if not isUserExist.isEmailVerified:
@@ -864,7 +869,7 @@ class AuthServices:
                     400, "Your account is suspended, please contact with support team"
                 )
 
-            if isUserExist.status == USER_STATUS.NACTIVE.value:
+            if isUserExist.status == USER_STATUS.INACTIVE.value:
                 raise AppException(
                     400,
                     "Your account is inactive, please contact with support team or admin",
@@ -1255,14 +1260,14 @@ class AuthServices:
     ):
         session = await self.client.start_session()
         try:
-
+       
             session.start_transaction()
             
             hashed_mail = hash_value(data["email"])
             hashed_otp = hash_value(str(data["otp"]))
-
+            
             with system_query():
-                user = await self.repo.find_user_by_hashMail_and_companyId(
+                user = await self.repo.find_user_by_hashMail(
                     hashMail=hashed_mail,
                     projections=None,
                     populate=["userRole"],
@@ -1271,8 +1276,10 @@ class AuthServices:
 
             if not user:
                 raise AppException(404, "User not found, Please create account first")
-
-            if user.userRole.code != USER_ROLES.SUPER_ADMIN.value:
+            
+            parse = user.model_dump(mode="json")
+            
+            if not validate_admin(parse["userRole"]):
                 raise AppException(400, "Invalid user role, only super admin allowed")
 
             isPasswordValid = user.compare_password(data["password"])

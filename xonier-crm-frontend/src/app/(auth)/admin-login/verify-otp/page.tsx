@@ -5,12 +5,11 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { IoChevronBack } from "react-icons/io5";
-import { useDispatch, UseDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/src/store";
 import FormButton from "@/src/components/ui/FormButton";
 import { AuthService } from "@/src/services/auth.service";
-import { ResendAdminLoginOtpPayload, ResendLoginOtpPayload, VerifyAdminLoginOtpPayload, VerifyLoginOtpPayload } from "@/src/types";
-import { login, logout } from "@/src/store/slices/authSlice";
+import { ResendAdminLoginOtpPayload, VerifyAdminLoginOtpPayload} from "@/src/types";
 
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import { useTranslation } from "react-i18next";
@@ -25,19 +24,21 @@ const page = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [resendLoading, setResetLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const [otp, setOtp] = useState<string>("");
   const [timeLeft, setTimeLeft] = useState<number>(OTP_TIMER);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  useEffect(() => {
-    const userEmail = sessionStorage.getItem("loginMail");
-    const userPassword = sessionStorage.getItem("loginPassword");
-    if (userEmail) setEmail(userEmail);
-    if (userPassword) setPassword(userPassword);
-  }, []);
+useEffect(() => {
+  const userEmail = sessionStorage.getItem("email");
+  const userPassword = sessionStorage.getItem("password");
+  console.log("User email from storage:", userEmail);
+  console.log("Password from storage:", userPassword);
+  if (userEmail) setEmail(userEmail);
+  if (userPassword) setPassword(userPassword);
+}, []);
 
   useEffect(() => {
     if (timeLeft === 0) return;
@@ -55,8 +56,8 @@ const page = () => {
     return () => clearInterval(timer);
   }, [timeLeft]);
 
-  const dispatch = useDispatch<AppDispatch>()
-
+  // const dispatch = useDispatch<AppDispatch>()
+    
   const handleOtpChange = (index: number, value: string) => {
     if (!/^\d?$/.test(value)) return;
 
@@ -79,6 +80,10 @@ const page = () => {
       inputRefs.current[index - 1]?.focus();
     }
   };
+
+  useEffect(() => {
+  console.log("email state is now:", email);
+}, [email]);
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
@@ -110,15 +115,15 @@ const page = () => {
         otp: Number(otp),
         password,
       };
-
+      
       const result = await AuthService.verifyAdminLoginOtp(payload);
 
       if (result.status === 200) {
         toast.success("Logged in successfully");
-        sessionStorage.removeItem("loginMail");
-        sessionStorage.removeItem("loginPassword");
+        sessionStorage.removeItem("email");
+        sessionStorage.removeItem("password");
         
-        dispatch(login(result.data.data))
+        // dispatch(login(result.data.data))
         // setTimeout(() => {
         //   router.push("/dashboard")
         // }, 300);

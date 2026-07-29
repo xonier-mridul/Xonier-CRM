@@ -1126,6 +1126,8 @@
     "verify_login_otp": "लॉगिन OTP सत्यापित करें",
     "verify_otp": "OTP सत्यापित करें",
    "all_statuses": "सभी स्थितियां",
+   "assigned_to_me": "✅ मुझे सौंपा गया",
+  "assign_to_me": "⚡ मुझे सौंपें",
      "welcome_back_user": "वापसी पर आपका स्वागत है!",
     "channel": "चैनल",
     "clear_dates": "तारीखें साफ़ करें",

@@ -1181,6 +1181,8 @@
   "conversation": "Conversa",
   "conversation_id": "ID da Conversa",
   "conversion_id": "ID de Conversão",
+    "assigned_to_me": "✅ Atribuído a Mim",
+  "assign_to_me": "⚡ Atribuir a Mim",
   "cost": "Custo",
   "delivered": "Entregue",
   "delivered_at": "Entregue Em",

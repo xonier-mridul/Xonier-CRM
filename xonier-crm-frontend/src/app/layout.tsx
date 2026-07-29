@@ -43,7 +43,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
       >
 
         <Providers>
-          {/* <ReduxProvider> */}
+          <ReduxProvider>
             <LoaderProvider>
               <I18nProvider>
 
@@ -63,7 +63,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
               {children}
               </I18nProvider>
             </LoaderProvider>
-          {/* </ReduxProvider> */}
+          </ReduxProvider>
         </Providers>
       </body>
     </html>

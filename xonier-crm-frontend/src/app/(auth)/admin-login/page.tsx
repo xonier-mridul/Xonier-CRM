@@ -34,9 +34,11 @@ const Page = () => {
       const result = await AuthService.adminLogin(formData)
 
       if (result.status == 200) {
-        sessionStorage.setItem("Email ", formData.email)
-        sessionStorage.setItem("Password ", formData.password)
-        router.push('/admin/login/verify-otp')
+        sessionStorage.setItem("email", formData.email)
+        sessionStorage.setItem("password", formData.password)
+        setFormData({ email: "", password: "" });
+
+        router.push('/admin-login/verify-otp')
       }
     } catch (error) {
       console.log("err i admin login :", error)

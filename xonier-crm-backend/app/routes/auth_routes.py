@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Response, Request, Query
 
 
 from app.middlewares.auth_middleware import AuthMiddleware
-from app.schemas.user_schema import UserLoginSchema, VerifyLoginOtpSchema, RegisterUserSchema, ResendOTPSchema, UpdateUserSchema, ResetPasswordSchema, UpdateUserStatusSchema, ResetPasswordByAdminSchema, AssignPhoneNumberSchema, BulkPermanentDeleteSchema, BulkRestoreUsersSchema, ForgotPasswordSchema, ForgotPassOtpSchema, AdminLoginSchema, ResendAdminOTPSchema
+from app.schemas.user_schema import UserLoginSchema, VerifyLoginOtpSchema, RegisterUserSchema, ResendOTPSchema, UpdateUserSchema, ResetPasswordSchema, UpdateUserStatusSchema, ResetPasswordByAdminSchema, AssignPhoneNumberSchema, BulkPermanentDeleteSchema, BulkRestoreUsersSchema, ForgotPasswordSchema, ForgotPassOtpSchema, AdminLoginSchema, ResendAdminOTPSchema,VerifyAdminLoginOtpSchema
 from app.controllers.auth_controller import AuthController
 from app.core.dependencies import Dependencies
 from beanie import PydanticObjectId
@@ -104,8 +104,8 @@ async def resend_login_otp(data: ResendAdminOTPSchema):
     return await auth_controller.resend_admin_verification_otp(data.model_dump())
 
 @router.post("/verify-admin-login-otp", status_code=200)
-async def verify_admin_login_otp(request: Request, response: Response, data: VerifyLoginOtpSchema):
-    return await auth_controller.verify_login_otp(request, response, data.model_dump())
+async def verify_admin_login_otp(request: Request, response: Response, data: VerifyAdminLoginOtpSchema):
+    return await auth_controller.verify_admin_login_otp(request, response, data.model_dump())
 
 @router.post("/verify-login-otp", status_code=200)
 async def verify_login_otp(request: Request, response: Response, data: VerifyLoginOtpSchema):
