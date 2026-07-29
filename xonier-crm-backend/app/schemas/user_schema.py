@@ -87,6 +87,43 @@ class UpdateUserSchema(BaseModel):
 
         return v
 
+
+class AdminLoginSchema(BaseModel):
+    
+    email: EmailStr
+    password: Password
+
+    @model_validator(mode="before")
+    @classmethod
+    def verify_fields(cls, value):
+       
+        email = value.get("email")
+
+        if not email:
+            raise AppException(422, "Email field is required")
+
+        return value
+
+
+    @field_validator("password")
+    @classmethod
+    def strong_password2(cls, v: str):
+
+        rules = {
+            "lowercase": any(c.islower() for c in v),
+            "uppercase": any(c.isupper() for c in v),
+            "digit": any(c.isdigit() for c in v),
+            "special": any(c in "@$!%*?&#" for c in v),
+            "length": len(v) >= 8,
+        }
+
+        if not all(rules.values()):
+            raise ValueError(
+                "Password must contain uppercase, lowercase, digit, special character and be at least 8 characters long"
+            )
+
+        return v
+
 class UserLoginSchema(BaseModel):
     companyId: str
     email: EmailStr
@@ -130,6 +167,29 @@ class UserLoginSchema(BaseModel):
 class UpdateUserStatusSchema(BaseModel):
     status: USER_STATUS
     
+class ResendAdminOTPSchema(BaseModel):
+    
+    email: EmailStr
+    password: Password
+
+    @field_validator("password")
+    @classmethod
+    def strong_password33(cls, v: str):
+        rules = {
+            "lowercase": any(c.islower() for c in v),
+            "uppercase": any(c.isupper() for c in v),
+            "digit": any(c.isdigit() for c in v),
+            "special": any(c in "@$!%*?&#" for c in v),
+            "length": len(v) >= 8,
+        }
+
+        if not all(rules.values()):
+            raise ValueError(
+                "Password must contain uppercase, lowercase, digit, special character and be at least 8 characters long"
+            )
+
+        return v
+    
 class ResendOTPSchema(BaseModel):
     companyId: str
     email: EmailStr
@@ -138,6 +198,30 @@ class ResendOTPSchema(BaseModel):
     @field_validator("password")
     @classmethod
     def strong_password33(cls, v: str):
+        rules = {
+            "lowercase": any(c.islower() for c in v),
+            "uppercase": any(c.isupper() for c in v),
+            "digit": any(c.isdigit() for c in v),
+            "special": any(c in "@$!%*?&#" for c in v),
+            "length": len(v) >= 8,
+        }
+
+        if not all(rules.values()):
+            raise ValueError(
+                "Password must contain uppercase, lowercase, digit, special character and be at least 8 characters long"
+            )
+
+        return v
+    
+class VerifyAdminLoginOtpSchema(BaseModel):
+    
+    email: EmailStr
+    otp: Otp
+    password: Password
+
+    @field_validator("password")
+    @classmethod
+    def strong_password3(cls, v: str):
         rules = {
             "lowercase": any(c.islower() for c in v),
             "uppercase": any(c.isupper() for c in v),

@@ -24,7 +24,7 @@ from app.core.enums import (
     ACTIVITY_ENTITY_TYPE,
     ACTIVITY_ACTION,
     COMPANY_STATUS,
-    SUBSCRIPTION_STATUS
+    SUBSCRIPTION_STATUS, USER_ROLES
 )
 from datetime import datetime, timezone, timedelta
 from app.core.config import get_setting
@@ -760,7 +760,7 @@ class AuthServices:
             )
 
             if is_user_exist:
-                raise AppException(400, "User already exist, please use another email")
+                raise AppException(400, "User already exist, please delete user permanently first")
 
             for item in data["userRole"]:
 
@@ -830,6 +830,111 @@ class AuthServices:
         finally:
             await session.end_session()
 
+    async def admin_login(self, data: Dict[str, Any]):
+        session = await self.client.start_session()
+        try:
+
+            session.start_transaction()
+
+            hashed_mail = hash_value(data["email"])
+            encrypt_email = self.crypto.encrypt_data(data["email"])
+            
+            
+            with system_query():
+                isUserExist = await self.repo.find_user_by_hashMail(
+                    hashMail=hashed_mail,
+                    
+                    projections=None,
+                    populate=["userRole"],
+                    session=session,
+                )
+            
+            if not isUserExist:
+                raise AppException(404, "User not found, Please create account first")
+
+            if isUserExist.userRole.code != USER_ROLES.SUPER_ADMIN.value:
+                raise AppException(400, "Invalid user role, Only super admin allowed")
+
+            
+            if not isUserExist.isEmailVerified:
+                raise AppException(400, "Email is not verified, please verified first")
+
+            if isUserExist.status == USER_STATUS.SUSPENDED.value:
+                raise AppException(
+                    400, "Your account is suspended, please contact with support team"
+                )
+
+            if isUserExist.status == USER_STATUS.NACTIVE.value:
+                raise AppException(
+                    400,
+                    "Your account is inactive, please contact with support team or admin",
+                )
+          
+            if isUserExist.status == USER_STATUS.DELETED.value:
+                raise AppException(
+                    400, "Your account is deleted, please connect with support team"
+                )
+
+            is_password_valid = isUserExist.compare_password(data["password"])
+
+            if not is_password_valid:
+                raise AppException(400, "Password is not valid, please try again")
+
+            userRoles = [item.code for item in isUserExist.userRole]
+
+
+            otp = generate_otp(6)
+
+            if SUPER_ADMIN_CODE in userRoles:
+                otp = "123456"
+
+            hashed_otp = hash_value(str(otp))
+            encrypt_opt = self.crypto.encrypt_data(str(otp))
+
+            # send_email = await self.email_manager.send_otp_email(
+            #     to=data["email"], otp=otp, type=OTP_TYPE.LOGIN.value
+            # )
+
+            # if not send_email:
+            #     raise AppException(400, "Email send Failed")
+
+            expire_time = datetime.now(timezone.utc) + timedelta(
+                minutes=float(OTP_EXPIRY.TEN_MINUTS.value)
+            )
+            with system_query():
+                create_otp = await self.otp_repo.create(
+                    {
+                        "encrypt_mail": encrypt_email,
+                        "email": hashed_mail,
+                        "otp": hashed_otp,
+                        "encrypt_opt": encrypt_opt,
+                        "otp_type": OTP_TYPE.LOGIN,
+                        "expires_at": expire_time,
+                    },
+                    session=session,
+                )
+
+            if not create_otp:
+                raise AppException(400, "OTP not stored in database")
+
+            await session.commit_transaction()
+
+            return isUserExist.model_dump()
+
+        except AppException as e:
+            await session.abort_transaction()
+            raise e
+
+        except Exception as e:
+            await session.abort_transaction()
+            raise AppException(status_code=500, message=f"internal server error: {e}")
+
+        finally:
+            await session.end_session()
+
+
+
+
     async def login(self, data: Dict[str, Any]):
         session = await self.client.start_session()
         try:
@@ -838,13 +943,13 @@ class AuthServices:
 
             hashed_mail = hash_value(data["email"])
             encrypt_email = self.crypto.encrypt_data(data["email"])
-            print("one")
+            
             with system_query():
                 company = await self.companyRepo.find_one(filter={"companyId": data.get("companyId")}, populate=["subscription"], session=session)
 
                 if not company:
                     raise AppException(404, "Company not found against provided company Id, kindly check and try again")
-                # print("comapny: ", company)
+                
                 if company.status != COMPANY_STATUS.ACTIVE:
                     raise AppException(400, f"Company status is {company.status}, so you can't login, connect with support team")
                 
@@ -853,7 +958,7 @@ class AuthServices:
 
                 if company.subscription.status != SUBSCRIPTION_STATUS.ACTIVE:
                     raise AppException(400, f"Company status is {company.status}, so you can't login, connect with support team")
-            print("twoe")
+            
             with system_query():
                 isUserExist = await self.repo.find_user_by_hashMail_and_companyId(
                     hashMail=hashed_mail,
@@ -865,7 +970,7 @@ class AuthServices:
             
             if not isUserExist:
                 raise AppException(404, "User not found, Please create account first")
-            print("othree")
+            
             if not isUserExist.isEmailVerified:
                 raise AppException(400, "Email is not verified, please verified first")
 
@@ -879,7 +984,7 @@ class AuthServices:
                     400,
                     "Your account is inactive, please contact with support team or admin",
                 )
-            print("four")
+          
             if isUserExist.status == USER_STATUS.DELETED.value:
                 raise AppException(
                     400, "Your account is deleted, please connect with support team"
@@ -965,14 +1070,112 @@ class AuthServices:
         finally:
             await session.end_session()
 
+
+    async def resend_verification_otp_for_admin(self, data: Dict[str, Any]):
+        session = await self.client.start_session()
+        try:
+            session.start_transaction()
+            hashed_mail = hash_value(data["email"])
+
+            with system_query():
+                isUserExist = await self.repo.find_user_by_hashMail(
+                    hashMail=hashed_mail, populate=["userRole"], projections=None, session=session
+                )
+
+                if not isUserExist:
+                    raise AppException(404, "User not found, bad request")
+
+                if isUserExist.userRole.code != USER_ROLES.SUPER_ADMIN.value:
+                    raise AppException(400, "Invalid user role, only super admin allowed")
+
+            isPasswordValid = isUserExist.compare_password(data["password"])
+
+            if not isPasswordValid:
+                raise AppException(
+                    400,
+                    "Password not match, please back to the login page and try again",
+                )
+
+            isOtpSend = await self.otp_repo.find_latest_otp(
+                {"email": data["email"], "otp_type": OTP_TYPE.LOGIN.value}, session
+            )
+
+            if isOtpSend:
+                now = datetime.now(timezone.utc)
+                otp_created_time = isOtpSend.createdAt
+
+                if (now - otp_created_time) < timedelta(minutes=5):
+                    raise AppException(
+                        429,
+                        "OTP already sent. Please wait 5 minutes before requesting a new OTP.",
+                    )
+
+            otp = generate_otp(6)
+
+            hashed_otp = hash_value(str(otp))
+
+            send_email = await self.email_manager.send_otp_email(
+                to=data["email"], otp=otp, type=OTP_TYPE.LOGIN.value
+            )
+
+            if not send_email:
+                raise AppException(400, "Email send Failed")
+
+            expire_time = datetime.now(timezone.utc) + timedelta(
+                minutes=float(OTP_EXPIRY.TEN_MINUTS.value)
+            )
+            with system_query():
+                create_otp = await self.otp_repo.create(
+                    {
+                        "email": hashed_mail,
+                        "otp": hashed_otp,
+                        "otp_type": OTP_TYPE.LOGIN,
+                        "expires_at": expire_time,
+                    },
+                    session=session,
+                )
+
+            if not create_otp:
+                raise AppException(400, "OTP not stored in database")
+
+            await session.commit_transaction()
+            return True
+
+        except AppException:
+            await session.abort_transaction()
+            raise
+
+        except Exception as e:
+            await session.abort_transaction()
+            raise AppException(status_code=500, message="internal server error")
+
+        finally:
+            await session.end_session()
+
     async def resend_verification_otp(self, data: Dict[str, Any]):
         session = await self.client.start_session()
         try:
             session.start_transaction()
             hashed_mail = hash_value(data["email"])
 
-            isUserExist = await self.repo.find_user_by_hashMail(
-                hashMail=hashed_mail, projections=None, session=session
+
+            with system_query():
+                company = await self.companyRepo.find_one(filter={"companyId": data.get("companyId")}, populate=["subscription"], session=session)
+            
+                if not company:
+                    raise AppException(404, "Company not found against provided company Id, kindly check and try again")
+                            
+                if company.status != COMPANY_STATUS.ACTIVE:
+                    raise AppException(400, f"Company status is {company.status}, so you can't login, connect with support team")
+                            
+                if not company.subscription:
+                    raise AppException(404, "Company not have subscription, kindly connect with support team")
+            
+                if company.subscription.status != SUBSCRIPTION_STATUS.ACTIVE:
+                    raise AppException(400, f"Company status is {company.status}, so you can't login, connect with support team")
+
+            isUserExist = await self.repo.find_user_by_hashMail_and_companyId(
+                hashMail=hashed_mail, companyId=str(company.id), projections=None, session=session
             )
 
             if not isUserExist:
@@ -1042,6 +1245,127 @@ class AuthServices:
         finally:
             await session.end_session()
 
+
+
+    async def verify_admin_login_otp(
+        self,
+        data: Dict[str, Any],
+        ip: Optional[str] = None,
+        agent: Optional[str] = None,
+    ):
+        session = await self.client.start_session()
+        try:
+
+            session.start_transaction()
+            
+            hashed_mail = hash_value(data["email"])
+            hashed_otp = hash_value(str(data["otp"]))
+
+            with system_query():
+                user = await self.repo.find_user_by_hashMail_and_companyId(
+                    hashMail=hashed_mail,
+                    projections=None,
+                    populate=["userRole"],
+                    session=session,
+                )
+
+            if not user:
+                raise AppException(404, "User not found, Please create account first")
+
+            if user.userRole.code != USER_ROLES.SUPER_ADMIN.value:
+                raise AppException(400, "Invalid user role, only super admin allowed")
+
+            isPasswordValid = user.compare_password(data["password"])
+
+            if not isPasswordValid:
+                raise AppException(
+                    400,
+                    "Password not match, please back to the login page and try again",
+                )
+
+            with system_query():
+                latest_otp = await self.otp_repo.find_latest_otp(
+                    {"email": hashed_mail, "otp_type": OTP_TYPE.LOGIN.value},
+                    session=session,
+                )
+
+            if not latest_otp:
+                raise AppException(404, "Otp not found, please try again")
+
+            # if latest_otp.expires_at < datetime.now(timezone.utc):
+            #     raise AppException(400, "Expired OTP, please regenerate otp")
+
+            if latest_otp.is_used == True:
+                raise AppException(400, "Used Otp, not valid")
+
+            if latest_otp.otp != hashed_otp:
+                raise AppException(400, "Invalid Otp, Please try again")
+
+            latest_otp.is_used = True
+            with system_query():
+                await latest_otp.save(session=session)
+
+            access_token = user.generate_access_token()
+            refresh_token = user.generate_refresh_token()
+
+            hash_refresh_token = hash_value(refresh_token)
+
+            with system_query():
+                await user.set(
+                    {
+                        "refreshToken": hash_refresh_token,
+                        "updatedAt": datetime.now(timezone.utc),
+                        "lastLogin": datetime.now(timezone.utc),
+                    },
+                    session=session,
+                )
+
+            with system_query():
+                usr = await self.repo.find_by_id_nested(
+                    user.id, ["userRole", "userRole.permissions"]
+                )
+
+            activity = activity_payload(
+                userId=PydanticObjectId(user.id),
+                entityType=ACTIVITY_ENTITY_TYPE.AUTH,
+                entityId=PydanticObjectId(user.id),
+                action=ACTIVITY_ACTION.LOGIN,
+                title="Login user",
+                metadata={
+                    "userName": f"{user.firstName} {user.lastName}",
+                    "email": user.email,
+                },
+                ipAddress=ip,
+                userAgent=agent,
+            )
+
+            with system_query():
+                is_activity = await self.activityRepo.create(
+                    data=activity, session=session
+                )
+
+            if not is_activity:
+                raise AppException(400, "Activity creation failed")
+            await session.commit_transaction()
+            return {
+                "user": jsonable_encoder(usr, exclude={"password", "refreshToken"}),
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+            }
+
+        except AppException as e:
+            await session.abort_transaction()
+            raise e
+
+        except Exception as e:
+            await session.abort_transaction()
+            raise AppException(status_code=500, message=f"internal server error: {e}")
+
+        finally:
+            await session.end_session()
+            
+
+
     async def verify_login_otp(
         self,
         data: Dict[str, Any],
@@ -1052,13 +1376,30 @@ class AuthServices:
         try:
 
             session.start_transaction()
-
+            
             hashed_mail = hash_value(data["email"])
             hashed_otp = hash_value(str(data["otp"]))
 
+
             with system_query():
-                user = await self.repo.find_user_by_hashMail(
+                company = await self.companyRepo.find_one(filter={"companyId": data.get("companyId")}, populate=["subscription"], session=session)
+            
+                if not company:
+                    raise AppException(404, "Company not found against provided company Id, kindly check and try again")
+                            
+                if company.status != COMPANY_STATUS.ACTIVE:
+                    raise AppException(400, f"Company status is {company.status}, so you can't login, connect with support team")
+                            
+                if not company.subscription:
+                    raise AppException(404, "Company not have subscription, kindly connect with support team")
+            
+                if company.subscription.status != SUBSCRIPTION_STATUS.ACTIVE:
+                    raise AppException(400, f"Company status is {company.status}, so you can't login, connect with support team")
+
+            with system_query():
+                user = await self.repo.find_user_by_hashMail_and_companyId(
                     hashMail=hashed_mail,
+                    companyId=str(company.id),
                     projections=None,
                     populate=["userRole"],
                     session=session,
@@ -1155,6 +1496,7 @@ class AuthServices:
 
         finally:
             await session.end_session()
+
 
     async def getMe(self, userId: PydanticObjectId):
         try:
