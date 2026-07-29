@@ -109,7 +109,7 @@ export default function SingleStepResetPage() {
   };
 
   return (
-    <div className="flex items-center justify-center bg-gradient-to-br from-cyan-100 to-blue-100 min-h-screen p-4">
+    <div className="flex items-center justify-center bg-gradient-to-br from-cyan-50 to-blue-50ßßß min-h-screen p-4">
       <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 p-8 w-full max-w-[500px] flex flex-col gap-6">
         
         <button onClick={() => router.push("/forgot-password")} className="flex items-center gap-1.5 text-slate-700 font-medium hover:text-cyan-600 self-start">

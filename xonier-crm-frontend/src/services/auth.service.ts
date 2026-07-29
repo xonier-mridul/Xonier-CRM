@@ -14,6 +14,7 @@ import {
   changePassword,
   AdminLogin,
   VerifyAdminLoginOtpPayload,
+  ResendAdminLoginOtpPayload,
 } from "../types";
 import { ParamValue } from "next/dist/server/request/params";
 import { verifyPasswordOtp } from "../app/(auth)/change-password/page";
@@ -50,10 +51,11 @@ export const AuthService = {
 
   },
 
-  adminLogin: (payload:AdminLogin)=> api.post("/admin/login",payload),
+  adminLogin: (payload:AdminLogin)=> api.post("/auth/admin-login",payload),
    
   verifyAdminLoginOtp:(data:VerifyAdminLoginOtpPayload)=>
     api.post("/auth/verify-admin-login-otp",data),
+
  
 
   create: (payload: RegisterPayload) => api.post("/auth/register", payload),
@@ -62,6 +64,8 @@ export const AuthService = {
   logout: () => api.post("/auth/logout", {}),
   verifyLoginOtp: (data: VerifyLoginOtpPayload) =>
     api.post("/auth/verify-login-otp", data),
+  resendAdminOTP: (data: ResendAdminLoginOtpPayload) =>
+    api.post("/auth//resend-admin-login-otp", data),
 
   
   resendOTP: (data: ResendLoginOtpPayload) =>

@@ -15,7 +15,6 @@ export function proxy(request: NextRequest){
     if(PROTECTED_ROUTES.some((item)=> pathname.startsWith(item) && !accessToken)){
        
         const loginUrl = new URL("/login", request.url)
-        
 
         return NextResponse.redirect(loginUrl)
     }

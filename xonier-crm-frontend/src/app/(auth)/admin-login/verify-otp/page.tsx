@@ -152,7 +152,7 @@ const page = () => {
         password,
       };
 
-      const result = await AuthService.resendOTP(payload);
+      const result = await AuthService.resendAdminOTP(payload);
       if (result.status === 200) {
         toast.success("Verification OTP send successfully");
       }
