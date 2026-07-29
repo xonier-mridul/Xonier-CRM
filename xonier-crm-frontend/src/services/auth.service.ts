@@ -12,6 +12,8 @@ import {
   AssignedPhoneNumber,
   UserRatingParams,
   changePassword,
+  AdminLogin,
+  VerifyAdminLoginOtpPayload,
 } from "../types";
 import { ParamValue } from "next/dist/server/request/params";
 import { verifyPasswordOtp } from "../app/(auth)/change-password/page";
@@ -47,6 +49,11 @@ export const AuthService = {
     return api.post('/auth/verify-forgot-pass-otp',payload)
 
   },
+
+  adminLogin: (payload:AdminLogin)=> api.post("/admin/login",payload),
+   
+  verifyAdminLoginOtp:(data:VerifyAdminLoginOtpPayload)=>
+    api.post("/auth/verify-admin-login-otp",data),
  
 
   create: (payload: RegisterPayload) => api.post("/auth/register", payload),
@@ -55,6 +62,8 @@ export const AuthService = {
   logout: () => api.post("/auth/logout", {}),
   verifyLoginOtp: (data: VerifyLoginOtpPayload) =>
     api.post("/auth/verify-login-otp", data),
+
+  
   resendOTP: (data: ResendLoginOtpPayload) =>
     api.post("/auth/resend-login-otp", data),
   getUserById: (id: ParamValue) => api.get(`/auth/user/${id}`),

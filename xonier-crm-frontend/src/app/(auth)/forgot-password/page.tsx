@@ -51,7 +51,7 @@ try {
 };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cyan-100 via-white to-blue-100 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cyan-50 to-blue-50 px-4">
       <div className="w-full max-w-md rounded-3xl bg-white shadow-2xl border border-slate-200 p-8">
 
         <div className="flex justify-center">

@@ -9,7 +9,7 @@ import { useDispatch, UseDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "@/src/store";
 import FormButton from "@/src/components/ui/FormButton";
 import { AuthService } from "@/src/services/auth.service";
-import { ResendLoginOtpPayload, VerifyLoginOtpPayload } from "@/src/types";
+import { ResendAdminLoginOtpPayload, ResendLoginOtpPayload, VerifyAdminLoginOtpPayload, VerifyLoginOtpPayload } from "@/src/types";
 import { login, logout } from "@/src/store/slices/authSlice";
 
 import extractErrorMessages from "@/src/app/utils/error.utils";
@@ -26,7 +26,6 @@ const page = () => {
   const [resendLoading, setResetLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [email, setEmail] = useState("");
-  const [companyId, setCompanyId] = useState("");
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState<string>("");
   const [timeLeft, setTimeLeft] = useState<number>(OTP_TIMER);
@@ -36,9 +35,7 @@ const page = () => {
   useEffect(() => {
     const userEmail = sessionStorage.getItem("loginMail");
     const userPassword = sessionStorage.getItem("loginPassword");
-    const companyId = sessionStorage.getItem("companyId")
     if (userEmail) setEmail(userEmail);
-    if (companyId) setCompanyId(companyId);
     if (userPassword) setPassword(userPassword);
   }, []);
 
@@ -108,20 +105,18 @@ const page = () => {
     setErrors([]);
 
     try {
-      const payload: VerifyLoginOtpPayload = {
+      const payload: VerifyAdminLoginOtpPayload= {
         email,
         otp: Number(otp),
         password,
-        companyId
       };
 
-      const result = await AuthService.verifyLoginOtp(payload);
+      const result = await AuthService.verifyAdminLoginOtp(payload);
 
       if (result.status === 200) {
         toast.success("Logged in successfully");
         sessionStorage.removeItem("loginMail");
         sessionStorage.removeItem("loginPassword");
-        sessionStorage.removeItem("companyId");
         
         dispatch(login(result.data.data))
         // setTimeout(() => {
@@ -152,10 +147,9 @@ const page = () => {
         ]);
       }
 
-      const payload: ResendLoginOtpPayload = {
+      const payload: ResendAdminLoginOtpPayload = {
         email,
         password,
-        companyId
       };
 
       const result = await AuthService.resendOTP(payload);

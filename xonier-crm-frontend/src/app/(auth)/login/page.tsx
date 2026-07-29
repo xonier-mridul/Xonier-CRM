@@ -39,7 +39,7 @@ const page = () => {
       if (result.status === 200) {
         router.push("/login/verify-otp");
         sessionStorage.setItem("loginMail", formData.email);
-        sessionStorage.setItem("company_Id", formData.companyId);
+        sessionStorage.setItem("companyId", formData.companyId);
         sessionStorage.setItem("loginPassword", formData.password);
         setFormData({ email: "", password: "" ,companyId:""});
         toast.success(result.data.message);
@@ -58,7 +58,7 @@ const page = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-start justify-center bg-violet-50">
+    <div className="min-h-screen flex items-start justify-center bg-cyan-50">
       <div className="w-[65%] mt-7 mx-11 flex flex-col justify-center ">
         <nav>
           <Image

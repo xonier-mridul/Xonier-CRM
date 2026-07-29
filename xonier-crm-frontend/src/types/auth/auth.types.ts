@@ -9,6 +9,10 @@ export interface AuthState {
   isAdmin: boolean,
   user: User | null;
 }
+export interface AdminLogin{
+  email:string;
+  password:string;
+}
 
 export interface LoginPayload {
   email: string;
@@ -22,11 +26,21 @@ export interface VerifyLoginOtpPayload {
   password: string;
   companyId:string;
 }
+export interface VerifyAdminLoginOtpPayload{
+   email: string;
+  otp: number;
+  password: string;
+
+}
 
 export interface ResendLoginOtpPayload {
   email: string;
   password: string;
   companyId?:string
+}
+export interface ResendAdminLoginOtpPayload {
+  email: string;
+  password: string;
 }
 
 export interface changePasswordPayload {
