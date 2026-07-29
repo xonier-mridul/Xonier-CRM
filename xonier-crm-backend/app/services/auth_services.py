@@ -760,7 +760,7 @@ class AuthServices:
             )
 
             if is_user_exist:
-                raise AppException(400, "User already exist, please use another email")
+                raise AppException(400, "User already exist, please delete user permanently first")
 
             for item in data["userRole"]:
 
@@ -838,13 +838,13 @@ class AuthServices:
 
             hashed_mail = hash_value(data["email"])
             encrypt_email = self.crypto.encrypt_data(data["email"])
-            print("one")
+            
             with system_query():
                 company = await self.companyRepo.find_one(filter={"companyId": data.get("companyId")}, populate=["subscription"], session=session)
 
                 if not company:
                     raise AppException(404, "Company not found against provided company Id, kindly check and try again")
-                # print("comapny: ", company)
+                
                 if company.status != COMPANY_STATUS.ACTIVE:
                     raise AppException(400, f"Company status is {company.status}, so you can't login, connect with support team")
                 
@@ -865,7 +865,7 @@ class AuthServices:
             
             if not isUserExist:
                 raise AppException(404, "User not found, Please create account first")
-            print("othree")
+            
             if not isUserExist.isEmailVerified:
                 raise AppException(400, "Email is not verified, please verified first")
 
@@ -879,7 +879,7 @@ class AuthServices:
                     400,
                     "Your account is inactive, please contact with support team or admin",
                 )
-            print("four")
+          
             if isUserExist.status == USER_STATUS.DELETED.value:
                 raise AppException(
                     400, "Your account is deleted, please connect with support team"
