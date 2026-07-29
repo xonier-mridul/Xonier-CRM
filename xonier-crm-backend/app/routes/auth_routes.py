@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Response, Request, Query
 
 
 from app.middlewares.auth_middleware import AuthMiddleware
-from app.schemas.user_schema import UserLoginSchema, VerifyLoginOtpSchema, RegisterUserSchema, ResendOTPSchema, UpdateUserSchema, ResetPasswordSchema, UpdateUserStatusSchema, ResetPasswordByAdminSchema, AssignPhoneNumberSchema, BulkPermanentDeleteSchema, BulkRestoreUsersSchema, ForgotPasswordSchema, ForgotPassOtpSchema
+from app.schemas.user_schema import UserLoginSchema, VerifyLoginOtpSchema, RegisterUserSchema, ResendOTPSchema, UpdateUserSchema, ResetPasswordSchema, UpdateUserStatusSchema, ResetPasswordByAdminSchema, AssignPhoneNumberSchema, BulkPermanentDeleteSchema, BulkRestoreUsersSchema, ForgotPasswordSchema, ForgotPassOtpSchema, AdminLoginSchema, ResendAdminOTPSchema
 from app.controllers.auth_controller import AuthController
 from app.core.dependencies import Dependencies
 from beanie import PydanticObjectId
@@ -87,13 +87,25 @@ async def get_user_rating_data(
 async def get_user_profiles( request: Request):
     return await auth_controller.get_user_profile(request)
 
+@router.post("/admin-login", status_code=200)
+async def admin_login( request:Request, data: AdminLoginSchema):
+    return await auth_controller.admin_login( request,  data.model_dump())
+
 @router.post("/login", status_code=200)
-async def register_users( request:Request, data: UserLoginSchema):
+async def user_login( request:Request, data: UserLoginSchema):
     return await auth_controller.login( request,  data.model_dump())
 
 @router.post("/resend-login-otp", status_code=200)
 async def resend_login_otp(data: ResendOTPSchema):
     return await auth_controller.resend_verification_otp(data.model_dump())
+
+@router.post("/resend-admin-login-otp", status_code=200)
+async def resend_login_otp(data: ResendAdminOTPSchema):
+    return await auth_controller.resend_admin_verification_otp(data.model_dump())
+
+@router.post("/verify-admin-login-otp", status_code=200)
+async def verify_admin_login_otp(request: Request, response: Response, data: VerifyLoginOtpSchema):
+    return await auth_controller.verify_login_otp(request, response, data.model_dump())
 
 @router.post("/verify-login-otp", status_code=200)
 async def verify_login_otp(request: Request, response: Response, data: VerifyLoginOtpSchema):

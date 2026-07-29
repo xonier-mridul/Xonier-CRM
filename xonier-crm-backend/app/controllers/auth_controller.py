@@ -57,6 +57,22 @@ class AuthController:
         except AppException as e:
             raise e
 
+
+    async def admin_login(self, request: Request, data: Dict[str, Any]):
+        try:
+           
+           
+            result = await self.service.admin_login(data=data)
+
+            user_name= f"{result.get("firstName")} {result.get("lastName", "")}"
+            
+            return successResponse(200, f"{user_name} Credential accepted, verification otp send successfully")
+
+        except AppException as e:
+
+           raise e
+
+        
     async def login(self, request: Request, data: Dict[str, Any]):
         try:
            
@@ -71,6 +87,16 @@ class AuthController:
 
            raise e
         
+    async def resend_admin_verification_otp(self, data: Dict[str, Any]):
+        try:
+            
+            result = await self.service.resend_verification_otp_for_admin(data)
+            return successResponse(200, f"Verification otp send successfully")
+
+        except AppException as e:
+           
+           raise e
+
     async def resend_verification_otp(self, data: Dict[str, Any]):
         try:
             
@@ -81,6 +107,31 @@ class AuthController:
            
            raise e
 
+
+        
+    async def verify_admin_login_otp(self, request: Request, response: Response, data: dict[str, Any]):
+        try:
+            ip = request.client.host
+
+            user_agent = request.headers.get("user-agent")
+            result = await self.service.verify_admin_login_otp(data=data, ip=ip, agent=user_agent)
+
+            access_token_expiry = int(self.settings.ACCESS_TOKEN_EXPIRY) * 24 * 60 * 60
+            # access_token_expiry = int(self.settings.ACCESS_TOKEN_EXPIRY) * 60
+            refresh_token_expiry = int(self.settings.REFRESH_TOKEN_EXPIRY) * 24 * 60 * 60
+
+            
+            response.set_cookie(key="accessToken", value=result["access_token"], max_age=access_token_expiry, **JWT_OPTIONS)
+            response.set_cookie(key="refreshToken", value=result["refresh_token"], max_age=refresh_token_expiry, **JWT_OPTIONS)
+
+            user_name = f"{result['user']["firstName"]} {result['user']["lastName"]}"
+
+            return successResponse(200, f"{user_name} logged in successfully", {**result["user"], "accessToken": result["access_token"], "refreshToken": result["refresh_token"]})
+
+
+        except AppException as e:
+
+           raise e
 
         
     async def verify_login_otp(self, request: Request, response: Response, data: dict[str, Any]):
