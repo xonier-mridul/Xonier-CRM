@@ -17,6 +17,7 @@ const OTP_LENGTH = 6;
 export interface verifyPasswordOtp{
         email: string,
         otp: string, 
+        companyId:string,
         password: string,
         confirmPassword: string,
 }
@@ -27,6 +28,7 @@ export default function SingleStepResetPage() {
 
   // ─── State ───────────────────────────────────
   const [email, setEmail] = useState("");
+  const [companyId, setCompanyId] = useState("");
   const [otp, setOtp] = useState<string>("");
   const [formData, setFormData] = useState({ newPassword: "", confirmPassword: "" });
   const [isLoading, setIsLoading] = useState(false);
@@ -37,9 +39,13 @@ export default function SingleStepResetPage() {
   // ─── Init: Load Email ────────────────────────
   useEffect(() => {
     const userEmail = sessionStorage.getItem("forgotPasswordEmail");
+   const userCompanyId = sessionStorage.getItem("forgotPasswordCompanyId");
+
     if (userEmail) setEmail(userEmail);
-    else router.replace("/forgot-password");
-  }, [router]);
+    if(userCompanyId) setCompanyId(userCompanyId);
+
+    // else router.replace("/forgot-password");
+  }, []);
 
   // ─── OTP Handlers ────────────────────────────
   const handleOtpChange = (index: number, value: string) => {
@@ -86,6 +92,7 @@ export default function SingleStepResetPage() {
       const payload = {
         email: email,
         otp: otp, 
+        companyId: companyId,
         password: formData.newPassword,
         confirmPassword: formData.confirmPassword,
       };
@@ -109,7 +116,7 @@ export default function SingleStepResetPage() {
   };
 
   return (
-    <div className="flex items-center justify-center bg-gradient-to-br from-cyan-50 to-blue-50ßßß min-h-screen p-4">
+    <div className="flex items-center justify-center bg-gradient-to-br from-cyan-50 to-blue-50 min-h-screen p-4">
       <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 p-8 w-full max-w-[500px] flex flex-col gap-6">
         
         <button onClick={() => router.push("/forgot-password")} className="flex items-center gap-1.5 text-slate-700 font-medium hover:text-cyan-600 self-start">

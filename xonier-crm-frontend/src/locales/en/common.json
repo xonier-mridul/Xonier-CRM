@@ -2544,6 +2544,7 @@
   "postal code": "Postal Code",
   "Language": "Language",
   "enter_registered_email_for_otp": "Enter your registered email address and we'll send you an OTP.",
+  "enter_registered_email_for_find": "Enter your registered email address and we'll find you comapanyId.",
   "enter_email": "Enter your email",
   "send_otp": "Send OTP",
   

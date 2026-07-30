@@ -17,6 +17,7 @@ import RouteLoader from "../components/loader/RouteLoader";
 import "react-toastify/dist/ReactToastify.css";
 import "react-loading-skeleton/dist/skeleton.css";
 import I18nProvider from "../components/providers/I18nProvider";
+import Support from "../components/support/page";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -61,6 +62,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
 
               {/* App content */}
               {children}
+              <Support/>
               </I18nProvider>
             </LoaderProvider>
           </ReduxProvider>

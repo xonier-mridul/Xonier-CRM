@@ -135,11 +135,16 @@ const page = () => {
               type="text"
               value={formData.companyId}
               onChange={handleChange}
-              placeholder="324298"
+              placeholder="COMP6-2026........."
             />
             <div className="flex items-center justify-end">
               <Link href={"/forgot-password"} className="text-gray-500 font-semibold text-sm">
                 {t("forgot_password")}
+              </Link>
+            </div>
+             <div className="flex items-center justify-end">
+              <Link href={"/forgot-companyId"} className="text-gray-500 font-semibold text-sm">
+                {t("forgot_companyId")}
               </Link>
             </div>
             {err && (

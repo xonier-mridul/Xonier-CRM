@@ -393,7 +393,7 @@ const page = () => {
   ];
 
   return (
-    <div className="px-4 py-6 mx-auto ml-72 mt-10 max-w-7xl pb-32">
+    <div className="px-4 py-6 mx-auto ml-72 mt-10 max-w-7xl h-screen pb-32">
       {/* ============ HEADER ============ */}
       <header className="mb-8 flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
@@ -444,7 +444,7 @@ const page = () => {
 
       <div className="flex gap-8 items-start">
         {/* ============ STICKY SIDE NAV ============ */}
-        <nav className="hidden lg:block w-56 flex-shrink-0 sticky top-24">
+        <nav className="hidden lg:block w-56 flex-shrink-0 sticky top-24 ">
           <ul className="space-y-1">
             {NAV.map((item) => (
               <li key={item.id}>
@@ -468,7 +468,7 @@ const page = () => {
         </nav>
 
         {/* ============ FORM ============ */}
-        <form onSubmit={handleSave} className="flex-1 space-y-6 min-w-0">
+        <form onSubmit={handleSave} className="flex-1 space-y-6 min-w-0 ">
           {/* -------- 1. APPEARANCE -------- */}
           <Section
             id="appearance"

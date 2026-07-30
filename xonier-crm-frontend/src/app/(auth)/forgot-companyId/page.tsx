@@ -57,7 +57,7 @@ try {
     sessionStorage.setItem("forgotPasswordCompanyId", formData.companyId);
 
     toast.success(t("otp_sent_successfully"));
-
+    
     setFormData({
       email:"",
       companyId:""
@@ -84,11 +84,11 @@ try {
         </div>
 
         <h1 className="mt-6 text-center text-3xl font-bold text-slate-800">
-          {t("forgot_password")}
+          {t("forgot_companyId")}
         </h1>
 
         <p className="mt-2 text-center text-sm text-slate-500">
-          {t("enter_registered_email_for_otp")}
+          {t("enter_registered_email_for_find")}
         </p>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-5">
@@ -132,7 +132,7 @@ try {
                 {t("sending")}
               </>
             ) : (
-              t("send_otp")
+              t("find_companyId")
             )}
           </button>
         </form>
