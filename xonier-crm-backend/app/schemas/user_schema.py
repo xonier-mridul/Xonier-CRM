@@ -423,4 +423,17 @@ class BulkRestoreUsersSchema(BaseModel):
         if not v:
             raise ValueError("userIds cannot be empty")
         return v
- 
+
+
+class FindMyCompanyId(BaseModel):
+    email: EmailStr
+    companyName: str
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_fields(cls, item):
+        email = item.get("email")
+        companyId = item.get("companyName")
+
+        if not email or not companyId:
+            raise AppException(422, f"{"email" if not email else "companyName"} field required")

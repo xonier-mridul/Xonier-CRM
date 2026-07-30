@@ -546,6 +546,24 @@ class AuthController:
             response.delete_cookie(key="accessToken", **JWT_OPTIONS)
             response.delete_cookie(key="refreshToken", **JWT_OPTIONS)
             raise AppException(500, f"Internal server error: {e}")
+
+
+    async def find_my_company_id(self, request: Request, payload: Dict[str, Any]):
+        try:
+
+            result = await self.service.find_my_company_id(payload=payload)
+
+            return successResponse(status_code=200, message="Company ID fetched successfully", data=result)
+
+
+        except AppException as e:
+            return AppException(e.status_code, e.message)
+        
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+        
+        
+    
     
             
             
