@@ -2086,13 +2086,33 @@ class AuthServices:
     async def forgot_password(self, payload: Dict[str,Any])->bool:
         try:
             hash_mail = hash_value(payload.get("email"))
+
+            with system_query():
+                company = await self.companyRepo.find_one(filter={"companyId": payload.get("companyId")}, populate=["subscription"], session=session)
+                        
+                if not company:
+                    raise AppException(404, "Company not found against provided company Id, kindly check and try again")
+                                        
+                if company.status != COMPANY_STATUS.ACTIVE:
+                    raise AppException(400, f"Company status is {company.status}, so you can't login, connect with support team")
+                                        
+                if not company.subscription:
+                    raise AppException(404, "Company not have subscription, kindly connect with support team")
+                        
+                if company.subscription.status != SUBSCRIPTION_STATUS.ACTIVE:
+                    raise AppException(400, f"Company status is {company.status}, so you can't login, connect with support team")
             
             with system_query():
-                is_exist = await self.repo.find_user_by_hashMail(hashMail=hash_mail)
+                is_exist = await self.repo.find_user_by_hashMail_and_companyId(hashMail=hash_mail, companyId=str(company.id), populate=["userRole"])
 
             
             if not is_exist:
                 raise AppException(400, "User not found with this mail")
+
+            parse = is_exist.model_dump(mode="json")
+
+            if validate_admin(parse["userRole"]):
+                raise AppException(400, "Super Admin password can't be changed")
 
             
             if is_exist.status == USER_STATUS.INACTIVE:
@@ -2133,6 +2153,23 @@ class AuthServices:
                     hash_mail = hash_value(payload.get("email"))
 
                     hash_otp = hash_value(payload.get("otp"))
+
+                    with system_query():
+                        company = await self.companyRepo.find_one(filter={"companyId": payload.get("companyId")}, populate=["subscription"], session=session)
+                                            
+                        if not company:
+                            raise AppException(404, "Company not found against provided company Id, kindly check and try again")
+                                                            
+                        if company.status != COMPANY_STATUS.ACTIVE:
+                            raise AppException(400, f"Company status is {company.status}, so you can't login, connect with support team")
+                                                            
+                        if not company.subscription:
+                            raise AppException(404, "Company not have subscription, kindly connect with support team")
+                                            
+                        if company.subscription.status != SUBSCRIPTION_STATUS.ACTIVE:
+                            raise AppException(400, f"Company status is {company.status}, so you can't login, connect with support team")
+
+                        
                     with system_query():
                        otp = await self.otp_repo.find_latest_otp(filters={"email": hash_mail, "otp_type": {"$in": [OTP_TYPE.FORGOT_PASSWORD.value, OTP_TYPE.EMAIL_VERIFICATION_AND_FORGOT_PASSWORD]}})
 
@@ -2144,7 +2181,7 @@ class AuthServices:
                         raise AppException(400, "Invalid OTP, please try again")
                     
                     with system_query():
-                        user = await self.repo.find_user_by_hashMail(hashMail=hash_mail)
+                        user = await self.repo.find_user_by_hashMail_and_companyId(hashMail=hash_mail, companyId=str(payload.get("companyId")))
 
                         if not user:
                             raise AppException(404, "User not found")
@@ -2159,7 +2196,7 @@ class AuthServices:
                         await user.save(session=session)
 
                     
-                    activity = activity_payload(userId=user.id, entityType=ACTIVITY_ENTITY_TYPE.AUTH, action=ACTIVITY_ACTION.FORGOT_PASSWORD.value, title="Reset password at forgot password", ipAddress=userIp, userAgent=userAgent)
+                    activity = activity_payload(userId=user.id, entityType=ACTIVITY_ENTITY_TYPE.AUTH, action=ACTIVITY_ACTION.FORGOT_PASSWORD.value, title="Reset password at forgot password", ipAddress=userIp, userAgent=userAgent, metadata={"companyId": str(company.id)})
 
                     
                     with system_query():

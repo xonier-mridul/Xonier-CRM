@@ -286,6 +286,7 @@ class ResetPasswordSchema(BaseModel):
     
 
 class ForgotPasswordSchema(BaseModel):
+    companyId: str
     email: EmailStr
 
     @field_validator("email")
@@ -296,8 +297,17 @@ class ForgotPasswordSchema(BaseModel):
 
         return v
 
+    @field_validator("companyId")
+    @classmethod
+    def forgot_password(cls, v:str):
+        if not v:
+            raise AppException(422, "Company Id field is required")
+
+        return v
+
 class ForgotPassOtpSchema(BaseModel):
     email: EmailStr
+    companyId: str
     otp: str
     password: str
     confirmPassword: str
@@ -306,12 +316,13 @@ class ForgotPassOtpSchema(BaseModel):
     @classmethod
     def verify_forgot_pass_schema(cls, values):
         email = values.get("email")
+        companyId = values.get("companyId")
         otp = values.get("otp")
         password = values.get("password")
         confirmPassword = values.get("confirmPassword")
 
-        if not email or not otp:
-            raise AppException(422, f"{"Email" if not email else "OTP" if not otp else "Password" if not password else "Confirm Password"} field is missing")
+        if not email or not companyId or not otp:
+            raise AppException(422, f"{"Email" if not email else "companyId" if not companyId else "OTP" if not otp else "Password" if not password else "Confirm Password"} field is missing")
 
         if len(otp) < 6:
             raise AppException(422, "OTP should be 6 numbers")
@@ -356,6 +367,8 @@ class ResetPasswordByAdminSchema(BaseModel):
             )
 
         return v
+
+    
     @field_validator("confirmPassword")
     @classmethod
     def strong_password6(cls, v: str):
