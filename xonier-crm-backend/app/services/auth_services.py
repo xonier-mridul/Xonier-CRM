@@ -2,9 +2,12 @@ from app.utils.custom_exception import AppException
 from app.repositories.user_repository import UserRepository
 from app.core.security import hash_value
 from app.db.db import Client
-
+from app.db.models.company_model import CompanyModel
+from difflib import SequenceMatcher
+from beanie.operators import Or
 from typing import Dict, Any, List
 from app.utils.otp_manager import generate_otp
+
 
 
 from app.utils.rating_filters import (
@@ -78,6 +81,8 @@ class AuthServices:
         self.crypto = encryptor
         self.companyRepo = CompanyRepository()
         self.taskRepo = TaskRepository()
+
+    MATCH_THRESHOLD = 90.0 
 
     async def getAll(
         self,
@@ -2445,3 +2450,65 @@ class AuthServices:
 
         except Exception as e:
             raise AppException(status_code=500, message=f"Internal server error: {e}")
+
+
+
+    MATCH_THRESHOLD = 90.0 
+
+    async def find_my_company_id(self, payload: Dict[str, Any]):
+        try:
+            email = payload.get("email", "").strip().lower()
+            company_name_input = payload.get("companyName", "").strip()
+
+            hash_mail = hash_value(email)
+
+            
+            user = await UserModel.find_one(UserModel.hashedEmail == hash_mail)
+            if not user:
+                raise AppException(404, "No account found with this email")
+
+            
+            companies = await CompanyModel.find(
+                Or(
+                    CompanyModel.createdBy.id == user.id,
+                    CompanyModel.primary_admin.id == user.id,
+                )
+            ).to_list()
+
+            if not companies:
+                raise AppException(404, "No company associated with this account")
+
+      
+            best_match = None
+            best_score = 0.0
+
+            for company in companies:
+                score = self._similarity(company_name_input, company.companyName) * 100
+                if score > best_score:
+                    best_score = score
+                    best_match = company
+
+       
+            if not best_match or best_score < self.MATCH_THRESHOLD:
+                raise AppException(
+                    404,
+                    "No matching company found. Please check the company name and try again."
+                )
+
+            return {
+                "companyId": best_match.companyId,
+                "companyName": best_match.companyName,
+                "matchScore": round(best_score, 2),
+            }
+
+        except AppException as e:
+            raise e
+
+        except Exception as e:
+            raise AppException(status_code=500, message=f"internal server error: {e}")
+
+    @staticmethod
+    def _similarity(a: str, b: str) -> float:
+        """Returns similarity ratio between 0 and 1 (case-insensitive)."""
+        return SequenceMatcher(None, a.lower().strip(), b.lower().strip()).ratio()
+

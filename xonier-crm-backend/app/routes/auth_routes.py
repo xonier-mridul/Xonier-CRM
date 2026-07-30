@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Response, Request, Query
 
 
 from app.middlewares.auth_middleware import AuthMiddleware
-from app.schemas.user_schema import UserLoginSchema, VerifyLoginOtpSchema, RegisterUserSchema, ResendOTPSchema, UpdateUserSchema, ResetPasswordSchema, UpdateUserStatusSchema, ResetPasswordByAdminSchema, AssignPhoneNumberSchema, BulkPermanentDeleteSchema, BulkRestoreUsersSchema, ForgotPasswordSchema, ForgotPassOtpSchema, AdminLoginSchema, ResendAdminOTPSchema,VerifyAdminLoginOtpSchema
+from app.schemas.user_schema import UserLoginSchema, VerifyLoginOtpSchema, RegisterUserSchema, ResendOTPSchema, UpdateUserSchema, ResetPasswordSchema, UpdateUserStatusSchema, ResetPasswordByAdminSchema, AssignPhoneNumberSchema, BulkPermanentDeleteSchema, BulkRestoreUsersSchema, ForgotPasswordSchema, ForgotPassOtpSchema, AdminLoginSchema, ResendAdminOTPSchema,VerifyAdminLoginOtpSchema, FindMyCompanyId
 from app.controllers.auth_controller import AuthController
 from app.core.dependencies import Dependencies
 from beanie import PydanticObjectId
@@ -181,6 +181,9 @@ Depends(dependencies.company_context), Depends(dependencies.permissions(["user:u
 async def bulk_restore_users(request: Request, payload: BulkRestoreUsersSchema):
     return await auth_controller.bulk_restore_users(request=request, payload=payload.model_dump(mode="json"))
 
+@router.post("/find-company-id", status_code=200)
+async def find_my_company_id(request: Request, payload: FindMyCompanyId):
+    return await auth_controller.find_my_company_id(request, payload.model_dump(mode="json"))
 
 @router.post("/refresh", status_code=200)
 async def refresh_access_token(
