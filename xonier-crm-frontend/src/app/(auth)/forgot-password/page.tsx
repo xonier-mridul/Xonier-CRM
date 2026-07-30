@@ -8,9 +8,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { AuthService } from "@/src/services/auth.service";
 
-export interface verifyEmail{
-  email:string
-}
+
 export interface forgotPasswordPayload{
   email:string;
   companyId:string

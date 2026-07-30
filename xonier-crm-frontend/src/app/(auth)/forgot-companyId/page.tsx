@@ -1,82 +1,103 @@
 "use client";
 
-import React, { ChangeEvent, ChangeEventHandler, useState } from "react";
+import React, { ChangeEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { MdOutlineMailOutline } from "react-icons/md";
+import { MdOutlineMailOutline, MdContentCopy, MdCheckCircle, MdErrorOutline } from "react-icons/md";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { AuthService } from "@/src/services/auth.service";
 
-export interface verifyEmail{
-  email:string
+export interface verifyEmail {
+  email: string;
 }
-export interface forgotPasswordPayload{
-  email:string;
-  companyId:string
+
+export interface forgotPasswordPayload {
+  email: string;
+  companyName: string;
+}
+
+interface FindCompanyIdState {
+  status: "success" | "error";
+  companyId?: string;
+  message?: string;
 }
 
 const Page = () => {
   const { t } = useTranslation();
   const router = useRouter();
-  
-  const [formData, setFormData] = useState<forgotPasswordPayload>({
-    email:"",
-    companyId:""
-  });
 
+  const [email, setEmail] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<FindCompanyIdState | null>(null);
+  const [copied, setCopied] = useState(false);
 
-const handelChange = (e: ChangeEvent<HTMLInputElement>) => {
-  const { name, value } = e.target;
+  const handelChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    // reset previous result whenever user edits the input again
+    if (result) setResult(null);
+  };
 
-  setFormData((prev) => ({
-    ...prev,
-    [name]: value,
-  }));
-};
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+    if (!email.trim()) return;
 
-  if (!formData.email.trim()) return;
+    setLoading(true);
+    setResult(null);
+    setCopied(false);
 
-  setLoading(true);
-  
-const payload: forgotPasswordPayload = {
-  email: formData.email,
-  companyId: formData.companyId,
-};
+    const payload: forgotPasswordPayload = {
+      email: email.trim(),
+      companyName: companyName,
+    };
 
-try {
+    try {
+      const response = await AuthService.findcompanyID(payload);
 
-  const result = await AuthService.emailVerify(payload);
+      const foundCompanyId =
+        response?.data?.companyId ||
+        response?.data?.data?.companyId ||
+        response?.companyId;
 
-  if (result.status === 200) {
-    sessionStorage.setItem("forgotPasswordEmail", formData.email);
-    sessionStorage.setItem("forgotPasswordCompanyId", formData.companyId);
+      if (response?.status === 200 && foundCompanyId) {
+        setResult({ status: "success", companyId: foundCompanyId });
+        toast.success(t("company_id_found_successfully"));
+      } else {
+        setResult({
+          status: "error",
+          message: t("company_id_not_found"),
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      setResult({
+        status: "error",
+        message: t("company_id_not_found"),
+      });
+      toast.error(t("something_went_wrong"));
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    toast.success(t("otp_sent_successfully"));
-    
-    setFormData({
-      email:"",
-      companyId:""
-    })
-
-    router.push("/change-password");
-  }
-} catch (error) {
-  console.error(error);
-  toast.error(t("something_went_wrong"));
-} finally {
-  setLoading(false);
-}
-};
+  const handleCopy = async () => {
+    if (!result?.companyId) return;
+    try {
+      await navigator.clipboard.writeText(result.companyId);
+      setCopied(true);
+      toast.success(t("copied_to_clipboard"));
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error(err);
+      toast.error(t("copy_failed"));
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cyan-50 to-blue-50 px-4">
       <div className="w-full max-w-md rounded-3xl bg-white shadow-2xl border border-slate-200 p-8">
-
         <div className="flex justify-center">
           <div className="h-16 w-16 rounded-full bg-cyan-100 flex items-center justify-center">
             <MdOutlineMailOutline className="text-3xl text-cyan-600" />
@@ -101,41 +122,73 @@ try {
               type="email"
               name="email"
               placeholder={t("enter_email")}
-              value={formData.email}
+              value={email}
               onChange={handelChange}
               className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
             />
           </div>
            <div>
             <label className="mb-2 block text-sm font-semibold text-slate-700">
-              {t("company_id")}
+              {t("company_name")}
             </label>
 
             <input
               type="text"
-              name="companyId"
-              placeholder={t("COMP6-2026.........")}
-              value={formData.companyId}
-              onChange={handelChange}
+              name="companyName"
+              placeholder={t("xonier")}
+              value={companyName}
+              onChange={(e)=>setCompanyName(e.target.value)}
               className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
             />
           </div>
 
           <button
             type="submit"
-            disabled={loading || !formData.email.trim() || !formData.companyId.trim()}
+            disabled={loading || !email.trim()}
             className="flex w-full items-center justify-center rounded-xl bg-cyan-600 py-3 text-white font-semibold transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? (
               <>
                 <span className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                {t("sending")}
+                {t("searching")}
               </>
             ) : (
               t("find_companyId")
             )}
           </button>
         </form>
+
+        {/* Result section */}
+        {result?.status === "success" && (
+          <div className="mt-6 rounded-xl border border-green-200 bg-green-50 p-4">
+            <div className="flex items-center gap-2 text-green-700 font-semibold">
+              <MdCheckCircle className="text-xl" />
+              {t("company_id_found_successfully")}
+            </div>
+
+            <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-green-300 bg-white px-4 py-3">
+              <span className="font-mono text-sm font-semibold text-slate-800 break-all">
+                {result.companyId}
+              </span>
+
+              <button
+                type="button"
+                onClick={handleCopy}
+                className="flex shrink-0 items-center gap-1 rounded-lg bg-cyan-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-cyan-700"
+              >
+                <MdContentCopy />
+                {copied ? t("copied") : t("copy")}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {result?.status === "error" && (
+          <div className="mt-6 flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700 font-semibold">
+            <MdErrorOutline className="text-xl" />
+            {result.message || t("company_id_not_found")}
+          </div>
+        )}
 
         <div className="mt-8 text-center">
           <Link

@@ -18,7 +18,7 @@ import {
 } from "../types";
 import { ParamValue } from "next/dist/server/request/params";
 import { verifyPasswordOtp } from "../app/(auth)/change-password/page";
-import { forgotPasswordPayload, verifyEmail } from "../app/(auth)/forgot-password/page";
+import { forgotPasswordPayload } from "../app/(auth)/forgot-password/page";
 
 
 export const AuthService = {
@@ -97,6 +97,8 @@ export const AuthService = {
     api.delete(`/auth/bulk-permanent-delete`, {
       data: { userIds: payload.userIds },
     }),
+
+  findCompanyID:(payload:forgotPasswordPayload)=>api.post(`/auth/find-companyId`,payload),
   restore: (id: string) => api.patch(`/auth/restore/${id}`, {}),
   bulkRestore: (payload: { userIds: string[] }) =>
     api.patch(`/auth/bulk-restore`, {

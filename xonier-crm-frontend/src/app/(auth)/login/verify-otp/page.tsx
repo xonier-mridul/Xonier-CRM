@@ -58,7 +58,7 @@ const page = () => {
     return () => clearInterval(timer);
   }, [timeLeft]);
 
-  // const dispatch = useDispatch<AppDispatch>()
+  const dispatch = useDispatch<AppDispatch>()
 
   const handleOtpChange = (index: number, value: string) => {
     if (!/^\d?$/.test(value)) return;
