@@ -18,7 +18,8 @@ import {
 } from "../types";
 import { ParamValue } from "next/dist/server/request/params";
 import { verifyPasswordOtp } from "../app/(auth)/change-password/page";
-import { verifyEmail } from "../app/(auth)/forgot-password/page";
+import { forgotPasswordPayload } from "../app/(auth)/forgot-password/page";
+import { forgotCompanyIdPayload } from "../app/(auth)/forgot-companyId/page";
 
 
 export const AuthService = {
@@ -43,7 +44,7 @@ export const AuthService = {
       `/auth/by-team?${data.search ? `search=${data.search}` : ""}${data.page ? `&page=${data.page}` : ""}`,
     ),
 
-  emailVerify:(payload:verifyEmail)=>{
+  emailVerify:(payload:forgotPasswordPayload)=>{
   return api.post('/auth/forgot-password',payload)},
 
   verifyChangePassword:(payload:verifyPasswordOtp)=>{
@@ -97,6 +98,8 @@ export const AuthService = {
     api.delete(`/auth/bulk-permanent-delete`, {
       data: { userIds: payload.userIds },
     }),
+
+  findCompanyID:(payload:forgotCompanyIdPayload)=>api.post(`/auth/find-company-id`,payload),
   restore: (id: string) => api.patch(`/auth/restore/${id}`, {}),
   bulkRestore: (payload: { userIds: string[] }) =>
     api.patch(`/auth/bulk-restore`, {

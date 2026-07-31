@@ -35,6 +35,7 @@ import { IoMailOutline } from "react-icons/io5";
 import { useFeatures } from "@/src/hooks/useFeatures";
 import { useTranslation } from "react-i18next";
 import { GrUserSettings } from "react-icons/gr";
+import { LuTicket } from "react-icons/lu";
 
 
 const SideBar = () => {
@@ -935,6 +936,21 @@ const SideBar = () => {
                 )}
               </AnimatePresence>
             </li>}
+
+              <li>
+              <Link
+                href="/supportTicket"
+                className={`${isActive("/supportTicket")
+                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                  : "border-l-2 border-transparent"
+                  } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
+              >
+                       <span  className={`${isActive("/supportTicket")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                <LuTicket className="text-lg" />
+                </span>
+                {t("ticket")}
+              </Link>
+            </li>
             {(auth.isAdmin)  && <li>
               <Link
                 href="/query"

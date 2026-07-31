@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { ChangeEvent, ChangeEventHandler, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { MdOutlineMailOutline } from "react-icons/md";
@@ -8,37 +8,58 @@ import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { AuthService } from "@/src/services/auth.service";
 
-export interface verifyEmail{
-  email:string
+
+export interface forgotPasswordPayload{
+  email:string;
+  companyId:string
 }
 
 const Page = () => {
   const { t } = useTranslation();
   const router = useRouter();
+  
+  const [formData, setFormData] = useState<forgotPasswordPayload>({
+    email:"",
+    companyId:""
+  });
 
-  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+
+const handelChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const { name, value } = e.target;
+
+  setFormData((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
+};
 
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
 
-  if (!email.trim()) return;
+  if (!formData.email.trim()) return;
 
   setLoading(true);
   
-const payload = {
-  email,
+const payload: forgotPasswordPayload = {
+  email: formData.email,
+  companyId: formData.companyId,
 };
 
 try {
-  setLoading(true);
 
   const result = await AuthService.emailVerify(payload);
 
   if (result.status === 200) {
-    sessionStorage.setItem("forgotPasswordEmail", email);
+    sessionStorage.setItem("forgotPasswordEmail", formData.email);
+    sessionStorage.setItem("forgotPasswordCompanyId", formData.companyId);
 
     toast.success(t("otp_sent_successfully"));
+
+    setFormData({
+      email:"",
+      companyId:""
+    })
 
     router.push("/change-password");
   }
@@ -76,16 +97,31 @@ try {
 
             <input
               type="email"
+              name="email"
               placeholder={t("enter_email")}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={formData.email}
+              onChange={handelChange}
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
+            />
+          </div>
+           <div>
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
+              {t("company_id")}
+            </label>
+
+            <input
+              type="text"
+              name="companyId"
+              placeholder={t("COMP6-2026.........")}
+              value={formData.companyId}
+              onChange={handelChange}
               className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
             />
           </div>
 
           <button
             type="submit"
-            disabled={loading || !email.trim()}
+            disabled={loading || !formData.email.trim() || !formData.companyId.trim()}
             className="flex w-full items-center justify-center rounded-xl bg-cyan-600 py-3 text-white font-semibold transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? (

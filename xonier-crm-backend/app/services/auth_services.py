@@ -2093,7 +2093,7 @@ class AuthServices:
             hash_mail = hash_value(payload.get("email"))
 
             with system_query():
-                company = await self.companyRepo.find_one(filter={"companyId": payload.get("companyId")}, populate=["subscription"], session=session)
+                company = await self.companyRepo.find_one(filter={"companyId": payload.get("companyId")}, populate=["subscription"])
                         
                 if not company:
                     raise AppException(404, "Company not found against provided company Id, kindly check and try again")
@@ -2158,7 +2158,7 @@ class AuthServices:
                     hash_mail = hash_value(payload.get("email"))
 
                     hash_otp = hash_value(payload.get("otp"))
-
+                    
                     with system_query():
                         company = await self.companyRepo.find_one(filter={"companyId": payload.get("companyId")}, populate=["subscription"], session=session)
                                             
@@ -2174,7 +2174,7 @@ class AuthServices:
                         if company.subscription.status != SUBSCRIPTION_STATUS.ACTIVE:
                             raise AppException(400, f"Company status is {company.status}, so you can't login, connect with support team")
 
-                        
+                    
                     with system_query():
                        otp = await self.otp_repo.find_latest_otp(filters={"email": hash_mail, "otp_type": {"$in": [OTP_TYPE.FORGOT_PASSWORD.value, OTP_TYPE.EMAIL_VERIFICATION_AND_FORGOT_PASSWORD]}})
 
@@ -2184,9 +2184,9 @@ class AuthServices:
        
                     if otp.otp != hash_otp:
                         raise AppException(400, "Invalid OTP, please try again")
-                    
+                   
                     with system_query():
-                        user = await self.repo.find_user_by_hashMail_and_companyId(hashMail=hash_mail, companyId=str(payload.get("companyId")))
+                        user = await self.repo.find_user_by_hashMail_and_companyId(hashMail=hash_mail, companyId=str(company.id))
 
                         if not user:
                             raise AppException(404, "User not found")
@@ -2463,20 +2463,22 @@ class AuthServices:
             hash_mail = hash_value(email)
 
             
-            user = await UserModel.find_one(UserModel.hashedEmail == hash_mail)
-            if not user:
-                raise AppException(404, "No account found with this email")
-
             
-            companies = await CompanyModel.find(
-                Or(
-                    CompanyModel.createdBy.id == user.id,
-                    CompanyModel.primary_admin.id == user.id,
-                )
-            ).to_list()
 
-            if not companies:
-                raise AppException(404, "No company associated with this account")
+            with system_query(): 
+                user = await UserModel.find_one(UserModel.hashedEmail == hash_mail)
+                if not user:
+                    raise AppException(404, "No account found with this email")
+                            
+                companies = await CompanyModel.find(
+                    Or(
+                        CompanyModel.createdBy.id == user.id,
+                        CompanyModel.primary_admin.id == user.id,
+                    )
+                ).to_list()
+
+                if not companies:
+                    raise AppException(404, "No company associated with this account")
 
       
             best_match = None

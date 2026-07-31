@@ -1168,13 +1168,12 @@ const handleEveningSubmit = async () => {
             )}
 
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-600 flex items-center justify-center text-lg shadow-md">🌆</div>
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center text-lg shadow-md">🌆</div>
               <div>
                 <h2 className="text-lg font-extrabold text-gray-900 dark:text-white">{t("evening_report")}</h2>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   {eveningSubmitted
-                    ? "This report has been finally submitted and is now read-only."
-                    : "All morning tasks are pre-loaded. Change each task's status to move it between sections."
+                    ?  t("report_read_only"):t("morning_tasks_instruction")
                   }
                 </p>
               </div>
@@ -1184,7 +1183,7 @@ const handleEveningSubmit = async () => {
               <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 mb-6">
                 <span className="text-base shrink-0 mt-0.5">💡</span>
                 <p className="text-xs text-blue-700 dark:text-blue-400 font-medium leading-relaxed">
-                  {t("changing_a_task_apos_s")} <b>{t("status")}</b> {t("to_3")} <b>{t("completed")}</b> {t("automatically_moves_it_to_the_green_section_setting_it_to")} <b>{t("in_progress_pending_blocked_carried_forward")}</b> {t("moves_it_to_the_amber_section")}
+                  {t("changing_a_task")} <b>{t("status")}</b> {t("to_3")} <b>{t("completed")}</b> {t("automatically_moves_it_to_the_green_section_setting_it_to")} <b>{t("in_progress_pending_blocked_carried_forward")}</b> {t("moves_it_to_the_amber_section")}
                 </p>
               </div>
             )}

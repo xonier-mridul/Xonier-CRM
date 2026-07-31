@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -8,6 +9,7 @@ interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement> {
   label?: string;
   error?: string;
+  link?:boolean
   
 }
 
@@ -16,6 +18,7 @@ const Input: React.FC<InputProps> = ({
   error,
   type = "text",
   className = "",
+  link= false,
   required = false,
   ...props
 }) => {
@@ -40,9 +43,14 @@ const Input: React.FC<InputProps> = ({
   return (
     <div className="flex flex-col gap-1 w-full">
       {label && (
-  <label className="text-sm font-medium text-gray-700 dark:text-gray-200 capitalize">
-    {t(label.toLowerCase())}
-    {required && <span className="text-red-500 text-xl">*</span>}
+  <label className="text-sm font-medium text-gray-700 dark:text-gray-200 capitalize flex gap-2">
+   <> {t(label.toLowerCase())}
+    {required && <span className="text-red-500 text-xl">*</span>}</>
+    {link == true && (<div className="flex items-center text-xs justify-end text-blue-400">
+              <Link href={"/forgot-companyId"} className=" font-semibold">
+               ({t("get_companyId")})
+              </Link>
+            </div>)}
   </label>
 )}
 
