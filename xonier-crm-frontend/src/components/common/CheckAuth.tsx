@@ -26,7 +26,7 @@ export default function CheckAuth({ children }: { children: React.ReactNode }) {
       } catch (error) {
         const pathname = window.location.pathname;
         if (error instanceof AxiosError) {
-          // if (error.response?.status === 401 && pathname !== "/login") {
+          // if (error.response?.status === 401 && (pathname !== "/login")) {
           //   try {
               
           //     const res = await AuthService.refreshAccessToken();
@@ -45,7 +45,7 @@ export default function CheckAuth({ children }: { children: React.ReactNode }) {
         }
         else{
 
-        dispatch(logout());
+        // dispatch(logout());
         }
       } finally {
         setIsLoading(false);

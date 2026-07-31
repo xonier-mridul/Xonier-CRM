@@ -92,7 +92,7 @@ export const AuthService = {
       `/auth/all-deleted?page=${filter.page}&limit=${filter.limit}&search=${filter.search}`,
     ),
 
-  // getDepartments:(search:string)=>{api.get(``)},
+
   permanentDelete: (id: string) => api.delete(`/auth/permanent-delete/${id}`),
   bulkPermanentDelete: (payload: { userIds: string[] }) =>
     api.delete(`/auth/bulk-permanent-delete`, {
@@ -107,7 +107,7 @@ export const AuthService = {
     }),
 
   refreshAccessToken: () => api.post("/auth/refresh"),
-  // REPLACE your existing getUserRatingData with this
+ 
 
 getUserRatingData: (id: ParamValue, params?: UserRatingParams) => {
   const queryParams = new URLSearchParams();
