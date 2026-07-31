@@ -93,6 +93,11 @@ class SALES_STATUS(str, Enum):
     LOST = "lost"
     DELETE = "delete"
 
+
+class MEETING_SCHEDULED(str, Enum):
+    YES="yes"
+    NO="no"
+
 class PRIORITY(str, Enum):
     LOW = "low"
     MEDIUM = "medium"

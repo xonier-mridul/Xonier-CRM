@@ -1184,12 +1184,13 @@ class AuthServices:
                 if company.subscription.status != SUBSCRIPTION_STATUS.ACTIVE:
                     raise AppException(400, f"Company status is {company.status}, so you can't login, connect with support team")
 
-            isUserExist = await self.repo.find_user_by_hashMail_and_companyId(
-                hashMail=hashed_mail, companyId=str(company.id), projections=None, session=session
-            )
+            with system_query():
+                isUserExist = await self.repo.find_user_by_hashMail_and_companyId(
+                    hashMail=hashed_mail, companyId=str(company.id), projections=None, session=session
+                )
 
-            if not isUserExist:
-                raise AppException(404, "User not found, bad request")
+                if not isUserExist:
+                    raise AppException(404, "User not found, bad request")
 
             isPasswordValid = isUserExist.compare_password(data["password"])
 
@@ -1230,8 +1231,10 @@ class AuthServices:
             with system_query():
                 create_otp = await self.otp_repo.create(
                     {
+                         "encrypt_mail": self.crypto.encrypt_data(data.get("email")),
                         "email": hashed_mail,
                         "otp": hashed_otp,
+                        "encrypt_opt": self.crypto.encrypt_data(str(otp)),
                         "otp_type": OTP_TYPE.LOGIN,
                         "expires_at": expire_time,
                     },
@@ -1244,13 +1247,13 @@ class AuthServices:
             await session.commit_transaction()
             return True
 
-        except AppException:
+        except AppException as e:
             await session.abort_transaction()
-            raise
+            raise e
 
         except Exception as e:
             await session.abort_transaction()
-            raise AppException(status_code=500, message="internal server error")
+            raise AppException(status_code=500, message=f"internal server error: {e}")
 
         finally:
             await session.end_session()

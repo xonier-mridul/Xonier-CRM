@@ -291,7 +291,7 @@ class ForgotPasswordSchema(BaseModel):
 
     @field_validator("email")
     @classmethod
-    def forgot_password(cls, v:str):
+    def validate_email(cls, v:str):
         if not v:
             raise AppException(422, "Email is required")
 
@@ -299,7 +299,7 @@ class ForgotPasswordSchema(BaseModel):
 
     @field_validator("companyId")
     @classmethod
-    def forgot_password(cls, v:str):
+    def validate_companyId(cls, v:str):
         if not v:
             raise AppException(422, "Company Id field is required")
 
