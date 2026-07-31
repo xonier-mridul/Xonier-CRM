@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { FiServer, FiDatabase, FiLock, FiHardDrive, FiMail } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
 import { ServiceStatus, ServiceStatusLevel } from "@/src/types/support/support.type";
-import StatusBadge from "../../common/Status";
+import { StatusBadge } from "../statusBage/page";
 
 
 const serviceIcons: Record<string, IconType> = {

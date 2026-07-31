@@ -2508,6 +2508,8 @@
     "automatically_moves_it_to_the_green_section_setting_it_to": "इसे स्वचालित रूप से हरे अनुभाग में ले जाता है और इसकी स्थिति उसी अनुसार सेट कर देता है।",
   "moves_it_to_the_amber_section": "इसे एम्बर (पीले) अनुभाग में ले जाता है।",
    "to_3": "तक",
+    "meeting_details": "बैठक का विवरण",
+  "basic_details": "मूल विवरण",
    
   "assign_tickets": "टिकट असाइन करें",
   "assign_selected": "असाइन करें ({{count}})",

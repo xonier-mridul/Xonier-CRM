@@ -3008,8 +3008,9 @@
   "showing_results": "Showing {{from}}–{{to}} of {{total}} results",
   "previous_page": "Previous page",
   "next_page": "Next page",
-  "page_of": "Page {{page}} of {{totalPages}}"
-
+  "page_of": "Page {{page}} of {{totalPages}}",
+  "meeting_details": "Meeting Details",
+  "basic_details": "Basic Details"
 
 
 

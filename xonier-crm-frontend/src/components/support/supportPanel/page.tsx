@@ -10,6 +10,7 @@ import Documentation from "../documentation/page";
 import ReportBug from "../reportBug/page";
 import FeatureRequest from "../featureRequest/page";
 import SystemStatus from "../systemStatus/page";
+import { useTranslation } from "react-i18next";
 
 interface SupportPanelProps {
   activeView: SupportView;
