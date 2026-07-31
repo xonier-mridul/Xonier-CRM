@@ -207,15 +207,7 @@ FORM_FIELDS = [
         "placeholder": "Meeting End",
         "module": [FORM_FIELD_MODULES.LEAD.value]
     },
-    {
-        "name": "meeting all day",
-        "key": "meetingAllDay",
-        "type": FORM_INPUT_TYPE.CHECKBOX.value,
-        "required": False,
-        "isActive": True,
-        "placeholder": "Meeting All Day",
-        "module": [FORM_FIELD_MODULES.LEAD.value]
-    },
+    
     {
         "name": "meeting link",
         "key": "meetingLink",
