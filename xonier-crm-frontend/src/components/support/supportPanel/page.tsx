@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 // import FeatureRequest from "./FeatureRequest";
 // import SystemStatus from "./SystemStatus";
 import { SupportView } from "@/src/types/support/support.type";
+import SupportMenu from "../supportMenu/page";
 
 interface SupportPanelProps {
   activeView: SupportView;

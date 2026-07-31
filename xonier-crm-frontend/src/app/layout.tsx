@@ -61,8 +61,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
               <ToastProvider />
 
               {/* App content */}
-              {children}
-              <Support/>
+              {children }
+              <Support hasUnread/>
               </I18nProvider>
             </LoaderProvider>
           </ReduxProvider>

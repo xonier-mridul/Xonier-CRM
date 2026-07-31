@@ -1406,7 +1406,6 @@
   "our_team_will_be_in_touch": "Our team will be in touch with you shortly regarding next steps.",
   "please_read_and_agree_to_the": "Please read and agree to the terms before confirming.",
   "quotation_confirmed": "Quotation Confirmed!",
-  "something_went_wrong": "Something went wrong",
   "thank_you": "Thank you",
   "we_couldn't_load_your_quotation_the": "We couldn't load your quotation. The link may be invalid or this quotation may no longer exist.",
   "add_line_item": "Add Line Item",
@@ -2543,10 +2542,21 @@
  "sales_status": "Sales Status",
   "postal code": "Postal Code",
   "Language": "Language",
+  "get_companyId": "Get Company ID",
   "enter_registered_email_for_otp": "Enter your registered email address and we'll send you an OTP.",
-  "enter_registered_email_for_find": "Enter your registered email address and we'll find you comapanyId.",
-  "enter_email": "Enter your email",
   "send_otp": "Send OTP",
+    "forgot_companyId": "Forgot Company ID",
+  "enter_registered_email_for_find": "Enter your registered email to find your Company ID.",
+  "enter_email": "Enter your email",
+  "find_companyId": "Find Company ID",
+  "searching": "Searching...",
+  "company_id_found_successfully": "Company ID found successfully.",
+  "company_id_not_found": "Company ID not found.",
+  "copied_to_clipboard": "Copied to clipboard.",
+  "copy_failed": "Failed to copy.",
+  "copy": "Copy",
+  "copied": "Copied",
+  "something_went_wrong": "Something went wrong. Please try again.",
   
  "create_new_password": "Create New Password",
   "enter_strong_password_msg": "Please enter a strong password to secure your account.",
@@ -2728,12 +2738,282 @@
    "dashboard_overview": "Dashboard Overview",
   "welcome_back": "Welcome Back",
   "track_team_performance": "Track your team's performance in real time.",
-  "recent_activities": "Recent Activities",
-  "top_performers": "Top Performers",
   "sales_summary": "Sales Summary",
-  "monthly_revenue": "Monthly Revenue",
   "no_data_found": "No data found",
-  "search_users": "Search users...",
   "view_details": "View Details",
-  "create_new_lead": "Create New Lead"
+  "create_new_lead": "Create New Lead",
+ 
+  "support": {
+    "widget": {
+      "openLabel": "Open support",
+      "closeLabel": "Close support",
+      "title": "Support Center",
+      "subtitle": "We're here to help you"
+    },
+    "common": {
+      "back": "Back",
+      "close": "Close",
+      "sending": "Sending..."
+    },
+    "menu": {
+      "contact": { "title": "Contact Support", "description": "Get help from our team via email" },
+      "chat": { "title": "Live Chat", "description": "Chat with an agent in real time" },
+      "docs": { "title": "Documentation", "description": "Browse guides and articles" },
+      "bug": { "title": "Report a Bug", "description": "Let us know something's wrong" },
+      "feature": { "title": "Feature Request", "description": "Suggest an idea or improvement" },
+      "status": { "title": "System Status", "description": "Check the status of our services" }
+    },
+    "contact": {
+      "fields": {
+        "name": "Full name",
+        "email": "Email address",
+        "subject": "Subject",
+        "category": "Category",
+        "message": "Message"
+      },
+      "placeholders": {
+        "name": "John Doe",
+        "email": "john@company.com",
+        "subject": "How can we help?",
+        "message": "Describe your issue in detail..."
+      },
+      "categories": {
+        "general": "General inquiry",
+        "billing": "Billing",
+        "technical": "Technical issue",
+        "account": "Account"
+      },
+      "errors": {
+        "name": "Please enter your name",
+        "email": "Please enter a valid email address",
+        "subject": "Please enter a subject",
+        "message": "Please provide at least 10 characters"
+      },
+      "submit": "Send message",
+      "successTitle": "Message sent!",
+      "successMessage": "Our support team will get back to you within 24 hours.",
+      "sendAnother": "Send another message"
+    },
+    "bug": {
+      "fields": {
+        "subject": "Subject",
+        "description": "Description",
+        "priority": "Priority",
+        "screenshot": "Screenshot",
+        "url": "Current URL",
+        "browser": "Browser",
+        "os": "Operating system"
+      },
+      "placeholders": {
+        "subject": "Short summary of the bug",
+        "description": "Steps to reproduce, expected vs actual result..."
+      },
+      "priorities": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High",
+        "critical": "Critical"
+      },
+      "errors": {
+        "subject": "Please enter a subject",
+        "description": "Please provide at least 10 characters"
+      },
+      "uploadPlaceholder": "Upload a screenshot (optional)",
+      "submit": "Submit bug report",
+      "successTitle": "Bug reported",
+      "successMessage": "Thanks for the report! Our engineering team will investigate.",
+      "reportAnother": "Report another bug"
+    },
+    "feature": {
+      "fields": {
+        "title": "Title",
+        "description": "Description",
+        "businessImpact": "Business impact",
+        "priority": "Priority"
+      },
+      "placeholders": {
+        "title": "What would you like to see?",
+        "description": "Describe the feature in detail...",
+        "businessImpact": "How would this help you or your team?"
+      },
+      "priorities": {
+        "low": "Nice to have",
+        "medium": "Important",
+        "high": "Critical"
+      },
+      "errors": {
+        "title": "Please enter a title",
+        "description": "Please provide at least 10 characters"
+      },
+      "submit": "Submit request",
+      "successTitle": "Request submitted",
+      "successMessage": "Thanks for the suggestion! Our product team will review it.",
+      "submitAnother": "Submit another request"
+    },
+    "docs": {
+      "searchPlaceholder": "Search documentation...",
+      "noResults": "No articles match your search",
+      "articles": {
+        "gettingStarted": { "title": "Getting Started", "description": "Set up your workspace in minutes", "href": "/docs/getting-started" },
+        "projects": { "title": "Projects", "description": "Organize and manage your projects", "href": "/docs/projects" },
+        "tasks": { "title": "Tasks", "description": "Create, assign and track tasks", "href": "/docs/tasks" },
+        "users": { "title": "Users", "description": "Manage user accounts and permissions", "href": "/docs/users" },
+        "teams": { "title": "Teams", "description": "Collaborate with your team members", "href": "/docs/teams" },
+        "billing": { "title": "Billing", "description": "Manage subscriptions and invoices", "href": "/docs/billing" },
+        "api": { "title": "API", "description": "Integrate with our REST API", "href": "/docs/api" }
+      }
+    },
+    "chat": {
+      "agentName": "Alex from Support",
+      "agentInitial": "A",
+      "onlineLabel": "Online now",
+      "welcomeMessage": "Hi there! 👋 How can I help you today?",
+      "autoReply": "Thanks for your message! One of our agents will respond shortly.",
+      "inputPlaceholder": "Type your message...",
+      "sendLabel": "Send message"
+    },
+    "status": {
+      "allOperational": "All systems operational",
+      "partialOutage": "Some systems are experiencing issues",
+      "services": {
+        "api": "API",
+        "database": "Database",
+        "auth": "Authentication",
+        "storage": "Storage",
+        "email": "Email Service"
+      },
+      "labels": {
+        "operational": "Operational",
+        "maintenance": "Maintenance",
+        "outage": "Outage"
+      }
+    }
+  }
+,
+
+ "assign_tickets": "Assign Tickets",
+  "assign_selected": "Assign ({{count}})",
+  "assign_selected_count": "{{count}} ticket(s) selected",
+  "search_agents_placeholder": "Search by name or department...",
+  "no_agents_found": "No matching agents found",
+  "not_assigned": "N/A",
+  "raise_new_ticket": "Raise a New Ticket",
+  "raise_ticket_subtitle": "Fill in the details below and our support team will get back to you shortly",
+
+  "ticket_created_title": "Ticket created successfully",
+  "ticket_created_desc": "Your ticket has been submitted. Our team will respond shortly.",
+
+  "subject_placeholder": "Briefly describe the issue",
+
+  "select_placeholder": "Select an option",
+  "issue_type_bug": "Bug",
+  "issue_type_feature_request": "Feature Request",
+  "issue_type_integration_issue": "Integration Issue",
+  "issue_type_billing": "Billing",
+  "issue_type_other": "Other",
+
+  "product_trakeroo_crm": "Trakeroo CRM",
+  "product_trakeroo_mail": "Trakeroo Mail",
+  "product_trakeroo_analytics": "Trakeroo Analytics",
+
+  "module_contacts_sync": "Contacts & Sync",
+  "module_dashboard": "Dashboard",
+  "module_billing_module": "Billing",
+  "module_reports": "Reports",
+  "module_settings": "Settings",
+
+  "department_sales_operations": "Sales Operations",
+  "department_marketing": "Marketing",
+  "department_engineering": "Engineering",
+  "department_customer_success": "Customer Success",
+  "department_it_admin": "IT Admin",
+  "ticket_not_found_title": "Ticket not found",
+  "ticket_not_found_desc": "We couldn't find a ticket with ID \"{{id}}\". It may have been removed or the link is incorrect.",
+  "back_to_tickets": "Back to All Tickets",
+
+  "description_placeholder": "Provide as much detail as possible about the issue you're facing",
+
+  "upload_drag_drop": "Click to upload or drag and drop",
+  "upload_file_types": "PDF, PNG, JPG up to 10MB",
+  "remove_file": "Remove file",
+
+  "submit_ticket": "Submit Ticket",
+
+  "error_field_required": "This field is required",
+
+
+
+  "my_tickets": "My Tickets",
+  "ticket_details": "Ticket Details",
+  "track_ticket_subtitle": "Track the progress and updates of your support ticket",
+
+  "ticket_number": "Ticket Number",
+  "raised_by": "Raised By",
+  "department": "Department",
+
+  "view_conversation": "View Conversation",
+
+  "status_open": "Open",
+  "status_under_review": "Under Review",
+  "status_waiting_for_user": "Waiting for You",
+  "status_resolved": "Resolved",
+
+
+  "status_timeline": "Status Timeline",
+  "timeline_raised": "Ticket Raised",
+  "timeline_under_review": "Under Review",
+  "timeline_in_progress": "In Progress",
+  "timeline_waiting": "Waiting For You",
+  "timeline_resolved": "Resolved",
+
+  "desc_raised": "Your ticket has been successfully submitted to our support team.",
+  "desc_under_review": "Our support team has reviewed your ticket and identified the issue category.",
+  "desc_in_progress": "Our engineering team is actively investigating your issue.",
+  "desc_waiting": "We need additional information from you to proceed further.",
+  "desc_resolved": "Your issue has been resolved and the ticket will be closed.",
+
+  "estimated_response": "Estimated Response",
+
+  "ticket_information": "Ticket Information",
+  "issue_type": "Issue Type",
+  "product": "Product",
+  "module": "Module",
+ 
+  "no_attachments_2": "No attachments added to this ticket.",
+  "download_file": "Download file",
+
+  "need_help": "Need Help?",
+  "help_center": "Visit Help Center",
+  "live_chat": "Live Chat",
+  "call_support": "Call Support",
+  "email_support": "Email Support",
+
+  "receive_updates_desc": "Receive updates about this ticket via email as our team makes progress.",
+  "update_preferences": "Update Preferences",
+
+  "previous_tickets": "Previous Tickets",
+  "all_tickets": "All Tickets",
+  "all_tickets_subtitle": "View and manage all your support tickets in one place",
+  "raise_ticket": "Raise Ticket",
+  "search_tickets_placeholder": "Search by ticket ID or subject...",
+  "filter_by_status": "Filter by status",
+  "ticket_id": "Ticket ID",
+  "report_read_only": "This report has been finally submitted and is now read-only.",
+  "changing_a_task": "Changing a Task",
+  "morning_tasks_instruction": "All morning tasks are pre-loaded. Change each task's status to move it between sections.",
+
+  "view_ticket": "View ticket",
+  "no_tickets_found": "No tickets found",
+  "no_tickets_found_desc": "Try adjusting your search or filter to find what you're looking for.",
+  "showing_results": "Showing {{from}}–{{to}} of {{total}} results",
+  "previous_page": "Previous page",
+  "next_page": "Next page",
+  "page_of": "Page {{page}} of {{totalPages}}"
+
+
+
+
+
+
 }
+

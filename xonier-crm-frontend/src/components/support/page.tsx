@@ -6,9 +6,6 @@ import { AnimatePresence } from "framer-motion";
 import SupportPanel from "./supportPanel/page";
 import { SupportView } from "@/src/types/support/support.type";
 import FloatingButton from "./floatingButton/page";
-// import type { SupportView } from "./types";
-// import { useClickOutside } from "./hooks/useClickOutside";
-// import { useEscapeKey } from "./hooks/useEscapeKey";
 
 interface SupportProps {
   hasUnread?: boolean;

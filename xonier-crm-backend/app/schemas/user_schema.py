@@ -433,7 +433,9 @@ class FindMyCompanyId(BaseModel):
     @classmethod
     def validate_fields(cls, item):
         email = item.get("email")
-        companyId = item.get("companyName")
+        companyName = item.get("companyName")
 
-        if not email or not companyId:
+        if not email or not companyName:
             raise AppException(422, f"{"email" if not email else "companyName"} field required")
+    
+        return item

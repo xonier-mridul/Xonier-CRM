@@ -1170,6 +1170,18 @@
   "please_enter_6_digit_otp": "Por favor, insira o OTP de 6 dígitos",
   "sign_in": "Entrar",
   "step_back": "Voltar",
+    "forgot_companyId": "Esqueceu o ID da Empresa",
+  "enter_registered_email_for_find": "Digite seu e-mail registrado para encontrar o ID da sua empresa.",
+  "xonier": "Digite o nome da empresa",
+  "find_companyId": "Encontrar ID da Empresa",
+  "searching": "Procurando...",
+  "company_id_found_successfully": "ID da empresa encontrado com sucesso.",
+  "company_id_not_found": "ID da empresa não encontrado.",
+  "copied_to_clipboard": "Copiado para a área de transferência.",
+  "copy_failed": "Falha ao copiar.",
+  "copy": "Copiar",
+  "copied": "Copiado",
+  "something_went_wrong": "Algo deu errado. Tente novamente.",
   "verification_otp_send_successfully": "OTP de verificação enviado com sucesso",
   "verify_login_otp": "Verificar OTP de Login",
   "verify_otp": "Verificar OTP",
@@ -1532,7 +1544,6 @@
   "our_team_will_be_in_touch": "Nossa equipe entrará em contato em breve para os próximos passos.",
   "please_read_and_agree_to_the": "Leia e concorde com os termos antes de confirmar.",
   "quotation_confirmed": "Cotação Confirmada!",
-  "something_went_wrong": "Algo Deu Errado",
   "thank_you": "Obrigado",
   "we_couldn't_load_your_quotation_the": "Não foi possível carregar sua cotação. O link pode ser inválido ou a cotação pode não existir mais.",
   "add_line_item": "Adicionar Item de Linha",
@@ -2093,7 +2104,6 @@
   "select_status": "Selecionar status...",
   "select_user": "selecionar usuário...",
   "showing_page": "Mostrando página",
-  "something_went_wrong": "Algo deu errado",
   "soon": "EM BREVE",
   "start_timer": "Iniciar Cronômetro",
   "start_timer_2": "Iniciar cronômetro",
@@ -2101,6 +2111,8 @@
   "status_order": "Ordem do Status",
   "status_type": "Tipo de Status",
   "stop": "Parar",
+
+  "get_companyId": "Obter ID da Empresa",
   "stop_timer": "Parar cronômetro",
   "sub_task_added": "Subtarefa adicionada",
   "sub_task_is_already_completed": "Subtarefa já está concluída",
@@ -2382,6 +2394,121 @@
   "update_user_status": "Atualizar status do usuário",
   "updated": "Atualizado",
   "user": "Usuário",
+  
+  "assign_tickets": "Atribuir Tickets",
+  "assign_selected": "Atribuir ({{count}})",
+  "assign_selected_count": "{{count}} ticket(s) selecionado(s)",
+  "search_agents_placeholder": "Pesquisar por nome ou departamento...",
+  "no_agents_found": "Nenhum agente correspondente encontrado",
+  "not_assigned": "N/D",
+  "raise_new_ticket": "Criar Novo Ticket",
+  "raise_ticket_subtitle": "Preencha os detalhes abaixo e nossa equipe de suporte responderá em breve.",
+
+  "ticket_created_title": "Ticket criado com sucesso",
+  "ticket_created_desc": "Seu ticket foi enviado. Nossa equipe responderá em breve.",
+
+  "subject_placeholder": "Descreva brevemente o problema",
+
+  "select_placeholder": "Selecione uma opção",
+  "issue_type_bug": "Erro",
+  "issue_type_feature_request": "Solicitação de Recurso",
+  "issue_type_integration_issue": "Problema de Integração",
+  "issue_type_billing": "Cobrança",
+  "issue_type_other": "Outro",
+
+  "product_trakeroo_crm": "Trakeroo CRM",
+  "product_trakeroo_mail": "Trakeroo Mail",
+  "product_trakeroo_analytics": "Trakeroo Analytics",
+
+  "module_contacts_sync": "Contatos e Sincronização",
+  "module_dashboard": "Painel",
+  "module_billing_module": "Cobrança",
+  "module_reports": "Relatórios",
+  "module_settings": "Configurações",
+
+  "department_sales_operations": "Operações de Vendas",
+  "department_marketing": "Marketing",
+  "department_engineering": "Engenharia",
+  "department_customer_success": "Sucesso do Cliente",
+  "department_it_admin": "Administrador de TI",
+
+  "ticket_not_found_title": "Ticket não encontrado",
+  "ticket_not_found_desc": "Não foi possível encontrar um ticket com o ID \"{{id}}\". Ele pode ter sido removido ou o link está incorreto.",
+  "back_to_tickets": "Voltar para Todos os Tickets",
+
+  "description_placeholder": "Forneça o máximo de detalhes possível sobre o problema",
+
+  "upload_drag_drop": "Clique para enviar ou arraste e solte",
+  "upload_file_types": "PDF, PNG, JPG até 10 MB",
+  "remove_file": "Remover arquivo",
+
+  "submit_ticket": "Enviar Ticket",
+
+  "error_field_required": "Este campo é obrigatório",
+
+  "my_tickets": "Meus Tickets",
+  "ticket_details": "Detalhes do Ticket",
+  "track_ticket_subtitle": "Acompanhe o progresso e as atualizações do seu ticket de suporte",
+
+  "ticket_number": "Número do Ticket",
+  "raised_by": "Criado por",
+  "department": "Departamento",
+
+  "view_conversation": "Ver Conversa",
+
+  "status_open": "Aberto",
+  "status_under_review": "Em Revisão",
+  "status_waiting_for_user": "Aguardando Você",
+  "status_resolved": "Resolvido",
+
+  "status_timeline": "Linha do Tempo",
+  "timeline_raised": "Ticket Criado",
+  "timeline_under_review": "Em Revisão",
+  "timeline_in_progress": "Em Andamento",
+  "timeline_waiting": "Aguardando Você",
+  "timeline_resolved": "Resolvido",
+
+  "desc_raised": "Seu ticket foi enviado com sucesso para nossa equipe de suporte.",
+  "desc_under_review": "Nossa equipe de suporte analisou seu ticket e identificou a categoria do problema.",
+  "desc_in_progress": "Nossa equipe de engenharia está investigando ativamente seu problema.",
+  "desc_waiting": "Precisamos de informações adicionais para continuar.",
+  "desc_resolved": "Seu problema foi resolvido e o ticket será encerrado.",
+
+  "estimated_response": "Resposta Estimada",
+
+  "ticket_information": "Informações do Ticket",
+  "issue_type": "Tipo de Problema",
+  "product": "Produto",
+  "module": "Módulo",
+
+  "no_attachments_2": "Nenhum anexo foi adicionado a este ticket.",
+  "download_file": "Baixar arquivo",
+
+  "need_help": "Precisa de ajuda?",
+  "help_center": "Visitar Central de Ajuda",
+  "live_chat": "Chat ao Vivo",
+  "call_support": "Ligar para o Suporte",
+  "email_support": "Suporte por E-mail",
+
+  "receive_updates_desc": "Receba atualizações deste ticket por e-mail conforme nossa equipe avança.",
+  "update_preferences": "Atualizar Preferências",
+
+  "previous_tickets": "Tickets Anteriores",
+  "all_tickets": "Todos os Tickets",
+  "all_tickets_subtitle": "Visualize e gerencie todos os seus tickets de suporte em um só lugar",
+  "raise_ticket": "Criar Ticket",
+  "search_tickets_placeholder": "Pesquisar por ID ou assunto do ticket...",
+  "filter_by_status": "Filtrar por status",
+  "ticket_id": "ID do Ticket",
+
+  "view_ticket": "Ver Ticket",
+  "no_tickets_found": "Nenhum ticket encontrado",
+  "no_tickets_found_desc": "Tente ajustar sua pesquisa ou filtro para encontrar o que procura.",
+  "showing_results": "Mostrando {{from}}–{{to}} de {{total}} resultados",
+  "previous_page": "Página anterior",
+  "next_page": "Próxima página",
+  "page_of": "Página {{page}} de {{totalPages}}"
+,
   "user_data_not_found": "Dados do usuário não encontrados",
   "user_deleted_successfully": "Usuário excluído com sucesso",
   "user_id": "ID do Usuário",
@@ -2391,5 +2518,159 @@
   "very_poor": "Muito Ruim",
   "view": "Ver",
   "view_full_profile": "Ver Perfil Completo",
-  "won": "Ganho"
+  "won": "Ganho",
+   "report_read_only": "Este relatório foi enviado definitivamente e agora está disponível apenas para leitura.",
+  "changing_a_task": "Alterando uma Tarefa",
+  "morning_tasks_instruction": "Todas as tarefas da manhã já estão carregadas. Altere o status de cada tarefa para movê-la entre as seções.",
+    "automatically_moves_it_to_the_green_section_setting_it_to": "Move automaticamente a tarefa para a seção verde, definindo seu status de acordo.",
+  "moves_it_to_the_amber_section": "Move a tarefa para a seção âmbar.",
+    "to_3": "Para",
+  
+  "support": {
+    "widget": {
+      "openLabel": "Abrir suporte",
+      "closeLabel": "Fechar suporte",
+      "title": "Central de Suporte",
+      "subtitle": "Estamos aqui para ajudar"
+    },
+    "common": {
+      "back": "Voltar",
+      "close": "Fechar",
+      "sending": "Enviando..."
+    },
+    "menu": {
+      "contact": { "title": "Contatar Suporte", "description": "Receba ajuda da nossa equipe por e-mail" },
+      "chat": { "title": "Chat ao Vivo", "description": "Converse com um agente em tempo real" },
+      "docs": { "title": "Documentação", "description": "Veja guias e artigos" },
+      "bug": { "title": "Reportar um Bug", "description": "Nos avise se algo não está funcionando" },
+      "feature": { "title": "Solicitar Funcionalidade", "description": "Sugira uma ideia ou melhoria" },
+      "status": { "title": "Status do Sistema", "description": "Verifique o status dos nossos serviços" }
+    },
+    "contact": {
+      "fields": {
+        "name": "Nome completo",
+        "email": "Endereço de e-mail",
+        "subject": "Assunto",
+        "category": "Categoria",
+        "message": "Mensagem"
+      },
+      "placeholders": {
+        "name": "João Silva",
+        "email": "joao@empresa.com",
+        "subject": "Como podemos ajudar?",
+        "message": "Descreva seu problema em detalhes..."
+      },
+      "categories": {
+        "general": "Dúvida geral",
+        "billing": "Faturamento",
+        "technical": "Problema técnico",
+        "account": "Conta"
+      },
+      "errors": {
+        "name": "Por favor, insira seu nome",
+        "email": "Insira um e-mail válido",
+        "subject": "Por favor, insira um assunto",
+        "message": "Insira pelo menos 10 caracteres"
+      },
+      "submit": "Enviar mensagem",
+      "successTitle": "Mensagem enviada!",
+      "successMessage": "Nossa equipe de suporte responderá em até 24 horas.",
+      "sendAnother": "Enviar outra mensagem"
+    },
+    "bug": {
+      "fields": {
+        "subject": "Assunto",
+        "description": "Descrição",
+        "priority": "Prioridade",
+        "screenshot": "Captura de tela",
+        "url": "URL atual",
+        "browser": "Navegador",
+        "os": "Sistema operacional"
+      },
+      "placeholders": {
+        "subject": "Resumo breve do bug",
+        "description": "Passos para reproduzir, resultado esperado vs. real..."
+      },
+      "priorities": {
+        "low": "Baixa",
+        "medium": "Média",
+        "high": "Alta",
+        "critical": "Crítica"
+      },
+      "errors": {
+        "subject": "Por favor, insira um assunto",
+        "description": "Insira pelo menos 10 caracteres"
+      },
+      "uploadPlaceholder": "Enviar uma captura de tela (opcional)",
+      "submit": "Enviar relatório",
+      "successTitle": "Bug reportado",
+      "successMessage": "Obrigado pelo relatório! Nossa equipe de engenharia irá investigar.",
+      "reportAnother": "Reportar outro bug"
+    },
+    "feature": {
+      "fields": {
+        "title": "Título",
+        "description": "Descrição",
+        "businessImpact": "Impacto no negócio",
+        "priority": "Prioridade"
+      },
+      "placeholders": {
+        "title": "O que você gostaria de ver?",
+        "description": "Descreva a funcionalidade em detalhes...",
+        "businessImpact": "Como isso ajudaria você ou sua equipe?"
+      },
+      "priorities": {
+        "low": "Seria bom ter",
+        "medium": "Importante",
+        "high": "Crítico"
+      },
+      "errors": {
+        "title": "Por favor, insira um título",
+        "description": "Insira pelo menos 10 caracteres"
+      },
+      "submit": "Enviar solicitação",
+      "successTitle": "Solicitação enviada",
+      "successMessage": "Obrigado pela sugestão! Nossa equipe de produto irá analisá-la.",
+      "submitAnother": "Enviar outra solicitação"
+    },
+    "docs": {
+      "searchPlaceholder": "Pesquisar documentação...",
+      "noResults": "Nenhum artigo corresponde à sua pesquisa",
+      "articles": {
+        "gettingStarted": { "title": "Primeiros Passos", "description": "Configure seu espaço de trabalho em minutos", "href": "/docs/getting-started" },
+        "projects": { "title": "Projetos", "description": "Organize e gerencie seus projetos", "href": "/docs/projects" },
+        "tasks": { "title": "Tarefas", "description": "Crie, atribua e acompanhe tarefas", "href": "/docs/tasks" },
+        "users": { "title": "Usuários", "description": "Gerencie contas e permissões", "href": "/docs/users" },
+        "teams": { "title": "Equipes", "description": "Colabore com os membros da sua equipe", "href": "/docs/teams" },
+        "billing": { "title": "Faturamento", "description": "Gerencie assinaturas e faturas", "href": "/docs/billing" },
+        "api": { "title": "API", "description": "Integre-se com nossa API REST", "href": "/docs/api" }
+      }
+    },
+    "chat": {
+      "agentName": "Alex do Suporte",
+      "agentInitial": "A",
+      "onlineLabel": "Online agora",
+      "welcomeMessage": "Olá! 👋 Como posso ajudar você hoje?",
+      "autoReply": "Obrigado pela sua mensagem! Um de nossos agentes responderá em breve.",
+      "inputPlaceholder": "Digite sua mensagem...",
+      "sendLabel": "Enviar mensagem"
+    },
+    "status": {
+      "allOperational": "Todos os sistemas operacionais",
+      "partialOutage": "Alguns sistemas estão com problemas",
+      "services": {
+        "api": "API",
+        "database": "Banco de Dados",
+        "auth": "Autenticação",
+        "storage": "Armazenamento",
+        "email": "Serviço de E-mail"
+      },
+      "labels": {
+        "operational": "Operacional",
+        "maintenance": "Manutenção",
+        "outage": "Interrupção"
+      }
+    }
+  }
+
 }

@@ -12,7 +12,7 @@ export interface verifyEmail {
   email: string;
 }
 
-export interface forgotPasswordPayload {
+export interface forgotCompanyIdPayload {
   email: string;
   companyName: string;
 }
@@ -48,18 +48,16 @@ const Page = () => {
     setResult(null);
     setCopied(false);
 
-    const payload: forgotPasswordPayload = {
+    const payload: forgotCompanyIdPayload = {
       email: email.trim(),
       companyName: companyName,
     };
 
     try {
-      const response = await AuthService.findcompanyID(payload);
+      const response = await AuthService.findCompanyID(payload);
 
-      const foundCompanyId =
-        response?.data?.companyId ||
-        response?.data?.data?.companyId ||
-        response?.companyId;
+
+      const foundCompanyId =response?.data?.data?.companyId 
 
       if (response?.status === 200 && foundCompanyId) {
         setResult({ status: "success", companyId: foundCompanyId });
@@ -96,13 +94,42 @@ const Page = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cyan-50 to-blue-50 px-4">
+    <div className="min-h-screen w- flex items-center justify-center bg-gradient-to-br from-cyan-50 to-blue-50 px-4">
       <div className="w-full max-w-md rounded-3xl bg-white shadow-2xl border border-slate-200 p-8">
+          {result?.status === "success" ? (
+  <div className="mt-6 overflow-hidden rounded-xl border border-green-200 bg-green-50 p-4">
+    <div className="flex items-center gap-2 text-green-700 font-semibold">
+      <MdCheckCircle className="h-5 w-5 shrink-0" />
+      <span>{t("company_id_found_successfully")}</span>
+    </div>
+
+    <div className="mt-3 flex w-full items-center justify-between gap-3 rounded-lg border border-green-300 bg-white px-3 py-2 overflow-hidden">
+      <div className="min-w-0 flex-1 overflow-x-auto">
+        <span className="block whitespace-nowrap font-mono text-sm font-semibold leading-6 text-slate-800">
+          {result.companyId}
+        </span>
+      </div>
+
+      <button
+        type="button"
+        onClick={handleCopy}
+        className="flex shrink-0 items-center gap-1 rounded-lg bg-cyan-600 px-3 py-1.5 text-xs font-semibold leading-6 text-white transition hover:bg-cyan-700"
+      >
+        <MdContentCopy className="h-4 w-4" />
+        {copied ? t("copied") : t("copy")}
+      </button>
+    </div>
+  </div>
+
+        ):(
+             <div>
         <div className="flex justify-center">
           <div className="h-16 w-16 rounded-full bg-cyan-100 flex items-center justify-center">
             <MdOutlineMailOutline className="text-3xl text-cyan-600" />
           </div>
         </div>
+
+
 
         <h1 className="mt-6 text-center text-3xl font-bold text-slate-800">
           {t("forgot_companyId")}
@@ -111,6 +138,7 @@ const Page = () => {
         <p className="mt-2 text-center text-sm text-slate-500">
           {t("enter_registered_email_for_find")}
         </p>
+
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-5">
           <div>
@@ -157,31 +185,13 @@ const Page = () => {
             )}
           </button>
         </form>
+        </div>
+        )
+    }
+       
 
         {/* Result section */}
-        {result?.status === "success" && (
-          <div className="mt-6 rounded-xl border border-green-200 bg-green-50 p-4">
-            <div className="flex items-center gap-2 text-green-700 font-semibold">
-              <MdCheckCircle className="text-xl" />
-              {t("company_id_found_successfully")}
-            </div>
-
-            <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-green-300 bg-white px-4 py-3">
-              <span className="font-mono text-sm font-semibold text-slate-800 break-all">
-                {result.companyId}
-              </span>
-
-              <button
-                type="button"
-                onClick={handleCopy}
-                className="flex shrink-0 items-center gap-1 rounded-lg bg-cyan-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-cyan-700"
-              >
-                <MdContentCopy />
-                {copied ? t("copied") : t("copy")}
-              </button>
-            </div>
-          </div>
-        )}
+      
 
         {result?.status === "error" && (
           <div className="mt-6 flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700 font-semibold">

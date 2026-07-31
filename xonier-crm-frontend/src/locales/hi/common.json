@@ -1130,6 +1130,18 @@
   "assign_to_me": "⚡ मुझे सौंपें",
      "welcome_back_user": "वापसी पर आपका स्वागत है!",
     "channel": "चैनल",
+    "forgot_companyId": "कंपनी आईडी भूल गए",
+  "enter_registered_email_for_find": "अपनी कंपनी आईडी खोजने के लिए अपना पंजीकृत ईमेल दर्ज करें।",
+  "xonier": "कंपनी का नाम दर्ज करें",
+  "find_companyId": "कंपनी आईडी खोजें",
+  "searching": "खोजा जा रहा है...",
+  "company_id_found_successfully": "कंपनी आईडी सफलतापूर्वक मिल गई।",
+  "company_id_not_found": "कंपनी आईडी नहीं मिली।",
+  "copied_to_clipboard": "क्लिपबोर्ड पर कॉपी किया गया।",
+  "copy_failed": "कॉपी करने में विफल।",
+  "copy": "कॉपी करें",
+  "copied": "कॉपी हो गया",
+  "something_went_wrong": "कुछ गलत हो गया। कृपया पुनः प्रयास करें।",
     "clear_dates": "तारीखें साफ़ करें",
     "code": "कोड:",
     "conversation": "बातचीत",
@@ -1551,7 +1563,6 @@
     "our_team_will_be_in_touch": "अगले कदमों के संबंध में हमारी टीम जल्द ही आपसे संपर्क करेगी।",
     "please_read_and_agree_to_the": "पुष्टि करने से पहले कृपया नियम पढ़ें और सहमत हों।",
     "quotation_confirmed": "कोटेशन की पुष्टि हो गई!",
-    "something_went_wrong": "कुछ गलत हो गया",
     "thank_you": "धन्यवाद",
     "we_couldn't_load_your_quotation_the": "हम आपका कोटेशन लोड नहीं कर सके। लिंक अमान्य हो सकता है या यह कोटेशन अब मौजूद नहीं है।"
 ,
@@ -1563,7 +1574,6 @@
     "created_date": "बनाने की तारीख",
     "customer": "ग्राहक",
     "customer_details_are_read_only_and": "ग्राहक विवरण केवल पढ़ने योग्य हैं और डील से जुड़े हैं।",
-    "customer_name": "ग्राहक का नाम",
     "customer_notes": "ग्राहक नोट्स",
     "disc": "छूट %",
     "download": "डाउनलोड",
@@ -1571,7 +1581,6 @@
     "e_g_bank_transfer": "उदा. बैंक ट्रांसफर",
     "e_g_net_30": "उदा. नेट 30",
     "edit_quotation": "कोटेशन संपादित करें",
-    "editing": "संपादन:",
     "enter_description": "विवरण दर्ज करें...",
     "enter_quotation_title": "कोटेशन का शीर्षक दर्ज करें",
     "failed_to_update_status": "स्थिति अपडेट करने में विफल",
@@ -1594,28 +1603,23 @@
     "payment_details": "भुगतान विवरण",
     "payment_method": "भुगतान विधि",
     "pcs": "टुकड़े",
-    "phone": "फ़ोन",
-    "qty": "मात्रा",
     "quotation_created": "कोटेशन बनाया गया",
     "quotation_deleted_successfully": "कोटेशन सफलतापूर्वक हटा दिया गया",
     "quotation_expired": "कोटेशन समाप्त",
     "quotation_not_found": "कोटेशन नहीं मिला",
     "quotation_resent_successfully": "कोटेशन सफलतापूर्वक फिर से भेजा गया",
     "quotation_status": "कोटेशन की स्थिति",
-    "quotation_title": "कोटेशन का शीर्षक",
     "quotation_updated_successfully": "कोटेशन सफलतापूर्वक अपडेट किया गया",
-    "quote_id": "कोट (Quote) आईडी",
     "quote_title": "को का शीर्षक",
     "rejected": "अस्वीकृत",
     "resend": "फिर से भेजें",
     "service_or_product": "सेवा या उत्पाद",
     "standard_terms_and_conditions": "मानक नियम और शर्तें...",
-    "tax": "कर (Tax) %",
-    "tax_2": "कर (Tax)",
+    "tax": "कर  %",
+    "tax_2": "कर ",
     "the_quotation_you're_looking_for_doesn't": "आप जिस कोटेशन की तलाश कर रहे हैं वह मौजूद नहीं है या हटा दिया गया है।",
     "the_quotation_you're_trying_to_edit": "आप जिस कोटेशन को संपादित करने का प्रयास कर रहे हैं वह मौजूद नहीं है या हटा दिया गया है।",
     "unit": "इकाई",
-    "unit_price": "इकाई मूल्य",
     "unsaved_changes": "सहेजे न गए परिवर्तन",
     "update_quotation": "कोटेशन अपडेट करें",
     "valid_for": "के लिए मान्य",
@@ -1628,8 +1632,8 @@
     "all_tasks_completed": "सभी कार्य पूरे हुए! 🎉",
     "amazing_work_today": "आज शानदार काम",
     "any_blockers_issues_or_challenges_faced": "आज सामना की गई कोई बाधाएं, समस्याएं या चुनौतियाँ?",
-    "avg_completion": "औसत पूर्णता",
-    "blocked": "अवरुद्ध (Blocked)",
+    "blocked": "अवरुद्ध ",
+    "get_companyId": "कंपनी आईडी प्राप्त करें",
     "brief_details_about_this_task": "इस कार्य के बारे में संक्षिप्त विवरण…",
     "carried_forward": "आगे बढ़ाया गया",
     "change_a_task's_status_to_completed": "इसे यहाँ ले जाने के लिए किसी कार्य की स्थिति को \"पूरा हुआ\" में बदलें",
@@ -2150,7 +2154,7 @@
     "select_status": "स्थिति चुनें…",
     "select_user": "उपयोगकर्ता चुनें...",
     "showing_page": "पृष्ठ दिखा रहा है",
-    "something_went_wrong": "कुछ गलत हो गया",
+
     "soon": "जल्द (SOON)",
     "start_timer": "टाइमर शुरू करें",
     "start_timer_2": "टाइमर शुरू करें",
@@ -2497,5 +2501,273 @@
     "very_poor": "बहुत खराब",
     "view": "देखें",
     "view_full_profile": "पूरी प्रोफ़ाइल देखें",
-    "won": "जीत गए" 
+    "won": "जीत गए" ,
+    "report_read_only": "यह रिपोर्ट अंतिम रूप से सबमिट की जा चुकी है और अब केवल पढ़ने योग्य है।",
+  "changing_a_task": "कार्य बदलना",
+  "morning_tasks_instruction": "सुबह के सभी कार्य पहले से लोड किए गए हैं। किसी कार्य को अलग-अलग अनुभागों में ले जाने के लिए उसकी स्थिति बदलें।",
+    "automatically_moves_it_to_the_green_section_setting_it_to": "इसे स्वचालित रूप से हरे अनुभाग में ले जाता है और इसकी स्थिति उसी अनुसार सेट कर देता है।",
+  "moves_it_to_the_amber_section": "इसे एम्बर (पीले) अनुभाग में ले जाता है।",
+   "to_3": "तक",
+   
+  "assign_tickets": "टिकट असाइन करें",
+  "assign_selected": "असाइन करें ({{count}})",
+  "assign_selected_count": "{{count}} टिकट चयनित",
+  "search_agents_placeholder": "नाम या विभाग से खोजें...",
+  "no_agents_found": "कोई मेल खाने वाला एजेंट नहीं मिला",
+  "not_assigned": "एन/ए",
+  "raise_new_ticket": "नया टिकट बनाएँ",
+  "raise_ticket_subtitle": "नीचे विवरण भरें और हमारी सहायता टीम शीघ्र ही आपसे संपर्क करेगी",
+
+  "ticket_created_title": "टिकट सफलतापूर्वक बनाया गया",
+  "ticket_created_desc": "आपका टिकट जमा कर दिया गया है। हमारी टीम जल्द ही जवाब देगी।",
+
+  "subject_placeholder": "समस्या का संक्षिप्त विवरण दें",
+
+  "select_placeholder": "एक विकल्प चुनें",
+  "issue_type_bug": "बग",
+  "issue_type_feature_request": "फ़ीचर अनुरोध",
+  "issue_type_integration_issue": "इंटीग्रेशन समस्या",
+  "issue_type_billing": "बिलिंग",
+  "issue_type_other": "अन्य",
+
+  "product_trakeroo_crm": "Trakeroo CRM",
+  "product_trakeroo_mail": "Trakeroo Mail",
+  "product_trakeroo_analytics": "Trakeroo Analytics",
+
+  "module_contacts_sync": "संपर्क और सिंक",
+  "module_dashboard": "डैशबोर्ड",
+  "module_billing_module": "बिलिंग",
+  "module_reports": "रिपोर्ट्स",
+  "module_settings": "सेटिंग्स",
+
+  "department_sales_operations": "सेल्स ऑपरेशंस",
+  "department_marketing": "मार्केटिंग",
+  "department_engineering": "इंजीनियरिंग",
+  "department_customer_success": "कस्टमर सक्सेस",
+  "department_it_admin": "आईटी एडमिन",
+
+  "ticket_not_found_title": "टिकट नहीं मिला",
+  "ticket_not_found_desc": "हमें आईडी \"{{id}}\" वाला टिकट नहीं मिला। हो सकता है इसे हटा दिया गया हो या लिंक गलत हो।",
+  "back_to_tickets": "सभी टिकटों पर वापस जाएँ",
+
+  "description_placeholder": "आप जिस समस्या का सामना कर रहे हैं, उसका अधिक से अधिक विवरण दें",
+
+  "upload_drag_drop": "अपलोड करने के लिए क्लिक करें या फ़ाइल यहाँ खींचें",
+  "upload_file_types": "PDF, PNG, JPG (अधिकतम 10MB)",
+  "remove_file": "फ़ाइल हटाएँ",
+
+  "submit_ticket": "टिकट जमा करें",
+
+  "error_field_required": "यह फ़ील्ड आवश्यक है",
+
+  "my_tickets": "मेरे टिकट",
+  "ticket_details": "टिकट विवरण",
+  "track_ticket_subtitle": "अपने सहायता टिकट की प्रगति और अपडेट देखें",
+
+  "ticket_number": "टिकट संख्या",
+  "raised_by": "द्वारा बनाया गया",
+  "department": "विभाग",
+
+  "view_conversation": "वार्तालाप देखें",
+
+  "status_open": "खुला",
+  "status_under_review": "समीक्षा में",
+  "status_waiting_for_user": "आपकी प्रतीक्षा में",
+  "status_resolved": "समाधान हो गया",
+
+  "status_timeline": "स्थिति टाइमलाइन",
+  "timeline_raised": "टिकट बनाया गया",
+  "timeline_under_review": "समीक्षा में",
+  "timeline_in_progress": "प्रगति पर",
+  "timeline_waiting": "आपकी प्रतीक्षा में",
+  "timeline_resolved": "समाधान हो गया",
+
+  "desc_raised": "आपका टिकट हमारी सहायता टीम को सफलतापूर्वक भेज दिया गया है।",
+  "desc_under_review": "हमारी सहायता टीम ने आपके टिकट की समीक्षा कर ली है और समस्या की श्रेणी निर्धारित कर ली है।",
+  "desc_in_progress": "हमारी इंजीनियरिंग टीम आपकी समस्या की सक्रिय रूप से जाँच कर रही है।",
+  "desc_waiting": "आगे बढ़ने के लिए हमें आपसे अतिरिक्त जानकारी चाहिए।",
+  "desc_resolved": "आपकी समस्या का समाधान कर दिया गया है और टिकट बंद कर दिया जाएगा।",
+
+  "estimated_response": "अनुमानित प्रतिक्रिया",
+
+  "ticket_information": "टिकट जानकारी",
+  "issue_type": "समस्या का प्रकार",
+  "product": "उत्पाद",
+  "module": "मॉड्यूल",
+
+  "no_attachments_2": "इस टिकट में कोई संलग्नक नहीं जोड़ा गया है।",
+  "download_file": "फ़ाइल डाउनलोड करें",
+
+  "need_help": "सहायता चाहिए?",
+  "help_center": "सहायता केंद्र पर जाएँ",
+  "live_chat": "लाइव चैट",
+  "call_support": "सहायता को कॉल करें",
+  "email_support": "ईमेल सहायता",
+
+  "receive_updates_desc": "हमारी टीम की प्रगति के साथ इस टिकट के अपडेट ईमेल द्वारा प्राप्त करें।",
+  "update_preferences": "प्राथमिकताएँ अपडेट करें",
+
+  "previous_tickets": "पिछले टिकट",
+  "all_tickets": "सभी टिकट",
+  "all_tickets_subtitle": "अपने सभी सहायता टिकट एक ही स्थान पर देखें और प्रबंधित करें",
+  "raise_ticket": "टिकट बनाएँ",
+  "search_tickets_placeholder": "टिकट आईडी या विषय से खोजें...",
+  "filter_by_status": "स्थिति के अनुसार फ़िल्टर करें",
+  "ticket_id": "टिकट आईडी",
+
+  "view_ticket": "टिकट देखें",
+  "no_tickets_found": "कोई टिकट नहीं मिला",
+  "no_tickets_found_desc": "जो आप खोज रहे हैं उसे पाने के लिए अपनी खोज या फ़िल्टर बदलें।",
+  "showing_results": "{{total}} में से {{from}}–{{to}} परिणाम दिखाए जा रहे हैं",
+  "previous_page": "पिछला पृष्ठ",
+  "next_page": "अगला पृष्ठ",
+  "page_of": "{{totalPages}} में से पृष्ठ {{page}}"
+,
+  "support": {
+    "widget": {
+      "openLabel": "सहायता खोलें",
+      "closeLabel": "सहायता बंद करें",
+      "title": "सहायता केंद्र",
+      "subtitle": "हम आपकी मदद के लिए यहाँ हैं"
+    },
+    "common": {
+      "back": "वापस",
+      "close": "बंद करें",
+      "sending": "भेजा जा रहा है..."
+    },
+    "menu": {
+      "contact": { "title": "सहायता से संपर्क करें", "description": "ईमेल के ज़रिए हमारी टीम से मदद पाएं" },
+      "chat": { "title": "लाइव चैट", "description": "एजेंट के साथ रीयल-टाइम में चैट करें" },
+      "docs": { "title": "दस्तावेज़", "description": "गाइड और लेख देखें" },
+      "bug": { "title": "बग रिपोर्ट करें", "description": "हमें बताएं कि कुछ सही नहीं है" },
+      "feature": { "title": "फ़ीचर अनुरोध", "description": "एक विचार या सुधार सुझाएं" },
+      "status": { "title": "सिस्टम स्थिति", "description": "हमारी सेवाओं की स्थिति देखें" }
+    },
+    "contact": {
+      "fields": {
+        "name": "पूरा नाम",
+        "email": "ईमेल पता",
+        "subject": "विषय",
+        "category": "श्रेणी",
+        "message": "संदेश"
+      },
+      "placeholders": {
+        "name": "जॉन डो",
+        "email": "john@company.com",
+        "subject": "हम आपकी कैसे मदद कर सकते हैं?",
+        "message": "अपनी समस्या को विस्तार से बताएं..."
+      },
+      "categories": {
+        "general": "सामान्य पूछताछ",
+        "billing": "बिलिंग",
+        "technical": "तकनीकी समस्या",
+        "account": "खाता"
+      },
+      "errors": {
+        "name": "कृपया अपना नाम दर्ज करें",
+        "email": "कृपया एक मान्य ईमेल पता दर्ज करें",
+        "subject": "कृपया एक विषय दर्ज करें",
+        "message": "कृपया कम से कम 10 अक्षर दर्ज करें"
+      },
+      "submit": "संदेश भेजें",
+      "successTitle": "संदेश भेज दिया गया!",
+      "successMessage": "हमारी सहायता टीम 24 घंटे के भीतर आपसे संपर्क करेगी।",
+      "sendAnother": "एक और संदेश भेजें"
+    },
+    "bug": {
+      "fields": {
+        "subject": "विषय",
+        "description": "विवरण",
+        "priority": "प्राथमिकता",
+        "screenshot": "स्क्रीनशॉट",
+        "url": "वर्तमान URL",
+        "browser": "ब्राउज़र",
+        "os": "ऑपरेटिंग सिस्टम"
+      },
+      "placeholders": {
+        "subject": "बग का संक्षिप्त सारांश",
+        "description": "पुनः उत्पन्न करने के चरण, अपेक्षित बनाम वास्तविक परिणाम..."
+      },
+      "priorities": {
+        "low": "कम",
+        "medium": "मध्यम",
+        "high": "उच्च",
+        "critical": "गंभीर"
+      },
+      "errors": {
+        "subject": "कृपया एक विषय दर्ज करें",
+        "description": "कृपया कम से कम 10 अक्षर दर्ज करें"
+      },
+      "uploadPlaceholder": "स्क्रीनशॉट अपलोड करें (वैकल्पिक)",
+      "submit": "बग रिपोर्ट सबमिट करें",
+      "successTitle": "बग रिपोर्ट हो गया",
+      "successMessage": "रिपोर्ट के लिए धन्यवाद! हमारी इंजीनियरिंग टीम इसकी जांच करेगी।",
+      "reportAnother": "एक और बग रिपोर्ट करें"
+    },
+    "feature": {
+      "fields": {
+        "title": "शीर्षक",
+        "description": "विवरण",
+        "businessImpact": "व्यावसायिक प्रभाव",
+        "priority": "प्राथमिकता"
+      },
+      "placeholders": {
+        "title": "आप क्या देखना चाहेंगे?",
+        "description": "फ़ीचर का विस्तार से वर्णन करें...",
+        "businessImpact": "यह आपकी या आपकी टीम की कैसे मदद करेगा?"
+      },
+      "priorities": {
+        "low": "होना अच्छा रहेगा",
+        "medium": "महत्वपूर्ण",
+        "high": "गंभीर"
+      },
+      "errors": {
+        "title": "कृपया एक शीर्षक दर्ज करें",
+        "description": "कृपया कम से कम 10 अक्षर दर्ज करें"
+      },
+      "submit": "अनुरोध सबमिट करें",
+      "successTitle": "अनुरोध सबमिट हो गया",
+      "successMessage": "सुझाव के लिए धन्यवाद! हमारी प्रोडक्ट टीम इसकी समीक्षा करेगी।",
+      "submitAnother": "एक और अनुरोध सबमिट करें"
+    },
+    "docs": {
+      "searchPlaceholder": "दस्तावेज़ खोजें...",
+      "noResults": "आपकी खोज से कोई लेख मेल नहीं खाता",
+      "articles": {
+        "gettingStarted": { "title": "आरंभ करना", "description": "मिनटों में अपना वर्कस्पेस सेट करें", "href": "/docs/getting-started" },
+        "projects": { "title": "प्रोजेक्ट्स", "description": "अपने प्रोजेक्ट्स को व्यवस्थित और प्रबंधित करें", "href": "/docs/projects" },
+        "tasks": { "title": "कार्य", "description": "कार्य बनाएं, असाइन करें और ट्रैक करें", "href": "/docs/tasks" },
+        "users": { "title": "उपयोगकर्ता", "description": "उपयोगकर्ता खातों और अनुमतियों को प्रबंधित करें", "href": "/docs/users" },
+        "teams": { "title": "टीमें", "description": "अपनी टीम के सदस्यों के साथ सहयोग करें", "href": "/docs/teams" },
+        "billing": { "title": "बिलिंग", "description": "सदस्यता और चालान प्रबंधित करें", "href": "/docs/billing" },
+        "api": { "title": "API", "description": "हमारे REST API के साथ एकीकृत करें", "href": "/docs/api" }
+      }
+    },
+    "chat": {
+      "agentName": "सहायता से एलेक्स",
+      "agentInitial": "A",
+      "onlineLabel": "अभी ऑनलाइन",
+      "welcomeMessage": "नमस्ते! 👋 आज मैं आपकी कैसे मदद कर सकता हूँ?",
+      "autoReply": "आपके संदेश के लिए धन्यवाद! हमारा कोई एजेंट जल्द ही जवाब देगा।",
+      "inputPlaceholder": "अपना संदेश लिखें...",
+      "sendLabel": "संदेश भेजें"
+    },
+    "status": {
+      "allOperational": "सभी सिस्टम चालू हैं",
+      "partialOutage": "कुछ सिस्टम में समस्या आ रही है",
+      "services": {
+        "api": "API",
+        "database": "डेटाबेस",
+        "auth": "प्रमाणीकरण",
+        "storage": "स्टोरेज",
+        "email": "ईमेल सेवा"
+      },
+      "labels": {
+        "operational": "चालू",
+        "maintenance": "रखरखाव",
+        "outage": "आउटेज"
+      }
+    }
+  }
+
 }

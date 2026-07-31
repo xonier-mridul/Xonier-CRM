@@ -19,6 +19,7 @@ import {
 import { ParamValue } from "next/dist/server/request/params";
 import { verifyPasswordOtp } from "../app/(auth)/change-password/page";
 import { forgotPasswordPayload } from "../app/(auth)/forgot-password/page";
+import { forgotCompanyIdPayload } from "../app/(auth)/forgot-companyId/page";
 
 
 export const AuthService = {
@@ -98,7 +99,7 @@ export const AuthService = {
       data: { userIds: payload.userIds },
     }),
 
-  findCompanyID:(payload:forgotPasswordPayload)=>api.post(`/auth/find-companyId`,payload),
+  findCompanyID:(payload:forgotCompanyIdPayload)=>api.post(`/auth/find-company-id`,payload),
   restore: (id: string) => api.patch(`/auth/restore/${id}`, {}),
   bulkRestore: (payload: { userIds: string[] }) =>
     api.patch(`/auth/bulk-restore`, {

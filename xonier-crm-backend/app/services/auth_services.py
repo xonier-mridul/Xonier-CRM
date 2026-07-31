@@ -2463,20 +2463,22 @@ class AuthServices:
             hash_mail = hash_value(email)
 
             
-            user = await UserModel.find_one(UserModel.hashedEmail == hash_mail)
-            if not user:
-                raise AppException(404, "No account found with this email")
-
             
-            companies = await CompanyModel.find(
-                Or(
-                    CompanyModel.createdBy.id == user.id,
-                    CompanyModel.primary_admin.id == user.id,
-                )
-            ).to_list()
 
-            if not companies:
-                raise AppException(404, "No company associated with this account")
+            with system_query(): 
+                user = await UserModel.find_one(UserModel.hashedEmail == hash_mail)
+                if not user:
+                    raise AppException(404, "No account found with this email")
+                            
+                companies = await CompanyModel.find(
+                    Or(
+                        CompanyModel.createdBy.id == user.id,
+                        CompanyModel.primary_admin.id == user.id,
+                    )
+                ).to_list()
+
+                if not companies:
+                    raise AppException(404, "No company associated with this account")
 
       
             best_match = None
