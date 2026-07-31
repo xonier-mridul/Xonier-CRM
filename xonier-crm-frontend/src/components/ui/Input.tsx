@@ -43,7 +43,8 @@ const Input: React.FC<InputProps> = ({
   return (
     <div className="flex flex-col gap-1 w-full">
       {label && (
-  <label className="text-sm font-medium text-gray-700 dark:text-gray-200 capitalize flex gap-2">
+  <label className="text-sm     font-semibold 
+ text-gray-700 dark:text-gray-200 capitalize flex gap-2">
    <> {t(label.toLowerCase())}
     {required && <span className="text-red-500 text-xl">*</span>}</>
     {link == true && (<div className="flex items-center text-xs justify-end text-blue-400">

@@ -94,8 +94,8 @@ const Page = () => {
   };
 
   return (
-    <div className="min-h-screen w- flex items-center justify-center bg-gradient-to-br from-cyan-50 to-blue-50 px-4">
-      <div className="w-full max-w-md rounded-3xl bg-white shadow-2xl border border-slate-200 p-8">
+    <div className="min-h-screen w- flex items-center justify-center bg-gradient-to-br from-cyan-50 dark:from-cyan-900 to-blue-50 dark:to-blue-900  px-4">
+      <div className="w-full max-w-md rounded-3xl  dark:bg-slate-900 bg-white shadow-2xl border border-slate-200 dark:border-slate-600 p-8">
           {result?.status === "success" ? (
   <div className="mt-6 overflow-hidden rounded-xl border border-green-200 bg-green-50 p-4">
     <div className="flex items-center gap-2 text-green-700 font-semibold">
@@ -131,18 +131,18 @@ const Page = () => {
 
 
 
-        <h1 className="mt-6 text-center text-3xl font-bold text-slate-800">
+        <h1 className="mt-6 text-center text-3xl dark:text-white font-bold text-slate-800">
           {t("forgot_companyId")}
         </h1>
 
-        <p className="mt-2 text-center text-sm text-slate-500">
+        <p className="mt-2 text-center dark:text-stone-200 text-sm text-slate-500">
           {t("enter_registered_email_for_find")}
         </p>
 
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-5">
           <div>
-            <label className="mb-2 block text-sm font-semibold text-slate-700">
+            <label className="mb-2 block text-sm dark:text-gray-200 font-semibold text-slate-700">
               {t("email_address")}
             </label>
 
@@ -152,11 +152,12 @@ const Page = () => {
               placeholder={t("enter_email")}
               value={email}
               onChange={handelChange}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:ring-2 
+    focus:outline-none focus:border-cyan-400 dark:focus:border-cyan-500 text-slate-600  focus:ring-teal-400/20"
             />
           </div>
            <div>
-            <label className="mb-2 block text-sm font-semibold text-slate-700">
+            <label className="mb-2 block text-sm dark:text-gray-200 font-semibold text-slate-700">
               {t("company_name")}
             </label>
 
@@ -166,7 +167,8 @@ const Page = () => {
               placeholder={t("xonier")}
               value={companyName}
               onChange={(e)=>setCompanyName(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:ring-2 
+    focus:outline-none focus:border-cyan-400 dark:focus:border-cyan-500 text-slate-600  focus:ring-teal-400/20"
             />
           </div>
 

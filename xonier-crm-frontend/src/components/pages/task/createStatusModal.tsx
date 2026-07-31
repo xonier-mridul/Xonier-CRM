@@ -151,7 +151,6 @@ export function StatusModal({
                                 <option key={c.id} value={String(c.id)}>
                                     <div  className="flex gap-15 items-center">
                                           {c.icon || "❓"}
-                                     {/* {t("nbsp")} */}
                                       {c.name}
                                     </div>
                                   

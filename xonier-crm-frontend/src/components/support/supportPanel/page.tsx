@@ -2,16 +2,14 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { FiArrowLeft, FiX } from "react-icons/fi";
-import { useTranslation } from "react-i18next";
-// import SupportMenu from "./SupportMenu";
-// import ContactSupport from "./ContactSupport";
-// import LiveChat from "./LiveChat";
-// import Documentation from "./Documentation";
-// import ReportBug from "./ReportBug";
-// import FeatureRequest from "./FeatureRequest";
-// import SystemStatus from "./SystemStatus";
 import { SupportView } from "@/src/types/support/support.type";
 import SupportMenu from "../supportMenu/page";
+import ContactSupport from "../contact/page";
+import LiveChat from "../liveChat/page";
+import Documentation from "../documentation/page";
+import ReportBug from "../reportBug/page";
+import FeatureRequest from "../featureRequest/page";
+import SystemStatus from "../systemStatus/page";
 
 interface SupportPanelProps {
   activeView: SupportView;

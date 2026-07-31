@@ -1008,7 +1008,7 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
 
         {/* Main Content Area - Form Preview */}
         <div className="ml-85 pt-28 px-8 pb-8">
-          <div className="max-w-5xl mx-auto">
+          <div className="w-full mx-auto">
             
             {/* Stats Cards */}
             <div className="grid grid-cols-3 gap-4 mb-6">
