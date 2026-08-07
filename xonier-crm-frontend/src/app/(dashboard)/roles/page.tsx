@@ -1,7 +1,7 @@
 "use client";
 import { MARGIN_TOP, SIDEBAR_WIDTH, SUPER_ADMIN_ROLE_CODE } from "@/src/constants/constants";
 
-import React, { JSX, useState, useEffect } from "react";
+import React, { JSX, useState, useEffect, useRef, useCallback } from "react";
 import extractErrorMessages from "../../utils/error.utils";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -21,11 +21,15 @@ const page = (): JSX.Element => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [isPopupShow, setIsPopShow] = useState<boolean>(false);
   const [pageLimit, setPageLimit] = useState<number>(10);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  
   const [err, setErr] = useState<string | string[] | null>(null);
  
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [roleData, setRoleData] = useState<UserRole[]>([]);
+   const [searchVal, setSearchVal] = useState<string>("");
+     const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [permissionData, setPermissionData] =
     useState<Array<Permissions> | null>(null);
@@ -49,16 +53,19 @@ const page = (): JSX.Element => {
     setErr(null);
     setIsLoading(true);
     try {
+        // const filters: Record<string, string> = {};
+        // if (search && search.trim()) filters.search = search.trim();
       const result = await RoleService.getRoles({
         currentPage: currentPage,
         pageLimit: pageLimit,
       });
       if (result.status === 200) {
         const data = result.data.data;
-        
+        console.log("role:",data)
         setRoleData(data.data);
-        setCurrentPage(Number(data.page));
-        setPageLimit(Number(data.limit));
+        // setCurrentPage(Number(data.page));
+        // setPageLimit(Number(data.limit));
+        setTotalPages(Number(data.totalPages))
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
@@ -142,9 +149,21 @@ const page = (): JSX.Element => {
     }
   };
 
+  
+
+
+    const handleSearch = (val: string) => {
+    setSearchVal(val);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => {
+      setCurrentPage(1);
+      // getAllRoles(val);
+    }, 400);
+  };
+
   useEffect(() => {
     getAllRoles();
-  }, []);
+  }, [currentPage, pageLimit]);
 
   useEffect(() => {
     getAllPermissions();
@@ -164,6 +183,7 @@ const page = (): JSX.Element => {
         permissionData={permissionData}
         currentPage={currentPage}
         pageLimit={pageLimit}
+        setPageLimit={setPageLimit}
         handleDelete={handleDelete}
         isLoading={isLoading}
         isPopupShow={isPopupShow}
@@ -173,6 +193,10 @@ const page = (): JSX.Element => {
         handleSubmit={handleSubmit}
         hasPermissions={hasPermission}
         isAdmin={isAdmin}
+        searchVal={searchVal}
+        onSearch={handleSearch}
+        setCurrentPage={setCurrentPage}
+        totalPages={totalPages}
       />
     </div>
   );

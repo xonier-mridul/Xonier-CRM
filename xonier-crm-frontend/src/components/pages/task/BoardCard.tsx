@@ -76,7 +76,7 @@ function BoardCard({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onRemark(task); }}
-              className="p-1 rounded-lg text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition"
+              className="p-1 rounded-lg text-cyan-500 hover:bg-cyan-50 dark:hover:bg-cyan-900/30 transition"
             >
               <MdOutlineMessage className="text-sm" />
             </button>
@@ -85,7 +85,7 @@ function BoardCard({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onEdit(task.id); }}
-              className="p-1 rounded-lg text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition"
+              className="p-1 rounded-lg text-cyan-500 hover:bg-cyan-50 dark:hover:bg-cyan-900/30 transition"
             >
               <MdEdit className="text-sm" />
             </button>
@@ -168,7 +168,7 @@ function BoardCard({
                   onClick={(e) => { e.stopPropagation(); router.push(`/users/${u.id}`); }}
                   key={u.id}
                   title={u.firstName}
-                  className="px-2 h-6 rounded-full bg-linear-to-br cursor-pointer hover:scale-105 from-blue-400 to-indigo-600 border-2 border-white dark:border-gray-800 flex items-center justify-center capitalize text-white text-[8px] font-bold shrink-0"
+                  className="px-2 h-6 rounded-full bg-linear-to-br cursor-pointer hover:scale-105 from-cyan-400 to-cyan-600 border-2 border-white dark:border-gray-800 flex items-center justify-center capitalize text-white text-[8px] font-bold shrink-0"
                 >
                   {u.firstName ?? "N/A"} {u?.lastName}
                 </button>

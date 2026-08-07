@@ -32,7 +32,7 @@ const CreateRemarkPopup = ({
 
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-cyan-50 dark:bg-cyan-900/30 flex items-center justify-center">
               <span className="text-base">💬</span>
             </div>
             <div>
@@ -87,7 +87,7 @@ const CreateRemarkPopup = ({
               )}
 
               {task.assignedTo.length > 0 && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-50 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400">
                   <IoPersonOutline className="w-3 h-3" />
                   {task.assignedTo[0].firstName}
                   {task.assignedTo.length > 1 && ` +${task.assignedTo.length - 1}`}
@@ -108,7 +108,7 @@ const CreateRemarkPopup = ({
               onChange={onChange}
               value={remarkPayload.content}
               placeholder={t("write_your_remark_here")}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition resize-none"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition resize-none"
             />
             <p className="text-[10px] text-gray-400 mt-1 text-right">{remarkPayload.content.length} {t("characters")}</p>
           </div>
@@ -124,7 +124,7 @@ const CreateRemarkPopup = ({
             <button
               type="submit"
               disabled={remarkPayload.content.trim() === "" || remarkLoad}
-              className="px-5 py-2 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-5 py-2 rounded-xl text-sm font-medium bg-cyan-600 hover:bg-cyan-700 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               <IoSaveOutline className="w-4 h-4" />
               {remarkLoad ? "Creating…" : "Add Remark"}

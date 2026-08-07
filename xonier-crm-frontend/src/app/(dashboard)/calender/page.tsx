@@ -155,7 +155,7 @@ const formatCurrentMonth = useMemo(() => {
       high: "#ef4444", // red
       medium: "#f59e0b", // amber
       low: "#10b981", // emerald
-      default: "#6366f1", // indigo
+      default: "#6366f1", // cyan
     };
     return colors[priority?.toLowerCase() as keyof typeof colors] || colors.default;
   };
@@ -332,7 +332,7 @@ const handleDatesSet = useCallback((dateInfo: any) => {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="fixed top-4 right-4 z-50 bg-indigo-500 text-white px-6 py-3 rounded-lg shadow-lg"
+              className="fixed top-4 right-4 z-50 bg-cyan-500 text-white px-6 py-3 rounded-lg shadow-lg"
             >
               {t("loading_events")}
             </motion.div>

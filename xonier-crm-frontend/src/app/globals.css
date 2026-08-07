@@ -95,6 +95,17 @@ html {
   scrollbar-color: #0891b2 transparent;
 }
 
+.react-tel-input .flag-dropdown:hover {
+  border-color: #CBD5E1 !important;
+}
+
+.react-tel-input .flag-dropdown.open {
+  border-color: #CBD5E1 !important;
+}
+
+.react-tel-input .selected-flag:hover {
+  background-color: #f8fafc !important;
+}
 
 
 

@@ -162,7 +162,7 @@ export default function Calculator({ setCalOpen }: { setCalOpen: (v: boolean) =>
   /* ------------------ Styles ------------------ */
   const btn = "h-12 sm:h-14 rounded-2xl text-base sm:text-lg font-semibold transition-all active:scale-95 flex items-center justify-center select-none"
   const num = "dark:bg-slate-800 bg-slate-200 text-gray-800 dark:text-white hover:bg-slate-300 dark:hover:bg-slate-700 shadow-md shadow-black/10 dark:shadow-black/20"
-  const opBtn = "bg-indigo-500 text-white hover:bg-indigo-400 shadow-lg shadow-indigo-500/30"
+  const opBtn = "bg-cyan-500 text-white hover:bg-cyan-400 shadow-lg shadow-cyan-500/30"
   const util = "bg-slate-200 dark:bg-slate-700 text-gray-800 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600"
 
   const keys = [
@@ -214,7 +214,7 @@ export default function Calculator({ setCalOpen }: { setCalOpen: (v: boolean) =>
         </div>
         {/* Result / Live line */}
         <div className={`text-right text-4xl sm:text-5xl font-light tracking-tight overflow-hidden text-ellipsis transition-colors duration-200 ${
-          displayResult !== null ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-800 dark:text-white'
+          displayResult !== null ? 'text-cyan-600 dark:text-cyan-400' : 'text-slate-800 dark:text-white'
         }`}>
           {displayResult ?? (expression ? formatExpr(expression) : '0')}
         </div>
@@ -254,7 +254,7 @@ export default function Calculator({ setCalOpen }: { setCalOpen: (v: boolean) =>
                   className="w-full text-right p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
                 >
                   <div className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">{formatExpr(item.expression)} =</div>
-                  <div className="text-lg font-semibold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  <div className="text-lg font-semibold text-slate-800 dark:text-slate-100 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
                     {item.result}
                   </div>
                 </button>

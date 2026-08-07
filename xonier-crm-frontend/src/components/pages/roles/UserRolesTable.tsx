@@ -15,6 +15,8 @@ import Skeleton from "react-loading-skeleton";
 import Link from "next/link";
 import { UserRole } from "@/src/types";
 import { useTranslation } from "react-i18next";
+import Pagination from "../../common/pagination";
+import { IoIosSearch } from "react-icons/io";
 
 const POWER_LEVELS = [
   { value: 10, label: "Viewer", color: "bg-slate-400" },
@@ -53,18 +55,29 @@ const UserRolesTable: React.FC<RoleTableProps> = ({
   handleDelete,
   isLoading,
   permissionData,
+  pageLimit,
+  setPageLimit,
   isPopupShow,
   setIsPopupShow,
   formData,
   setFormData,
   handleSubmit,
   hasPermissions,
+  currentPage,
+  totalPages,
+  searchVal,
+  onSearch,
+  setCurrentPage,
   isAdmin,
 }) => {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = React.useState("");
 
   const [viewRoleModal, setViewRoleModal] = React.useState<UserRole | null>(null);
+  
+  console.log("current page:",currentPage)
+  console.log("totalpage page:",totalPages)
+
 
   const addPermission = (permissionId: string) => {
     if (formData.permissions.includes(permissionId)) {
@@ -678,7 +691,28 @@ const handleAllPermissions = (checked: boolean) => {
               </p>
             </div>
           </div>
-          <button
+           <div className="flex items-center gap-3 flex-wrap">
+                    <select
+                      value={pageLimit}
+                      className="bg-slate-50 dark:bg-gray-700 px-3 py-2 rounded-lg border border-slate-900/10 dark:border-gray-600 text-sm dark:text-white outline-none"
+                      onChange={(e) => setPageLimit(Number(e.target.value))}
+                    >
+                      {[10, 20, 30, 40].map((n) => (
+                        <option key={n} value={n}>{n} {t("page_2")}</option>
+                      ))}
+                    </select>
+          
+                    <div className="bg-slate-50 dark:bg-gray-700 px-3 py-2 rounded-lg border border-slate-900/10 dark:border-gray-600 flex items-center gap-2">
+                      <IoIosSearch className="text-lg text-gray-400" />
+                      <input
+                        type="text"
+                        className="outline-none bg-transparent text-sm dark:text-white placeholder:text-gray-400 w-44"
+                        placeholder={t("search_role")}
+                        value={searchVal}
+                        onChange={(e) => onSearch(e.target.value)}
+                      />
+                    </div>
+                    <button
             onClick={() => setIsPopupShow(true)}
             className="bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-600 text-white px-5 py-2.5 rounded-xl flex text-sm  md:text-lg  items-center gap-2 font-semibold disabled:cursor-not-allowed disabled:opacity-50 transition-all shadow-sm hover:shadow-md"
             disabled={!hasPermissions(PERMISSIONS.createRole)}
@@ -686,6 +720,8 @@ const handleAllPermissions = (checked: boolean) => {
             <FaPlus className="w-4 h-4" />
             {t("create_role")}
           </button>
+                  </div>
+          
         </div>
 
         <div className="overflow-x-auto">
@@ -894,6 +930,13 @@ const handleAllPermissions = (checked: boolean) => {
             </tbody>
           </table>
         </div>
+         <div className="px-6 pb-6">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={(page) => setCurrentPage(page)}
+        />
+      </div>
       </div>
     </>
   );

@@ -4,6 +4,7 @@ import { User, UserRole } from "../auth/auth.types";
 export interface GetAllRolesPayload {
     currentPage: number,
     pageLimit: number,
+    // filter:string,
     
 }
 
@@ -39,6 +40,13 @@ export interface RoleTableProps {
   handleSubmit: () => Promise<void>;
   hasPermissions: (permission: string)=>boolean
   isAdmin: boolean
+
+ searchVal: string;
+  onSearch: (val: string) => void;
+
+  totalPages:number,
+  setCurrentPage: Dispatch<SetStateAction<number>>;
+  setPageLimit: Dispatch<SetStateAction<number>>;
 }
 
 

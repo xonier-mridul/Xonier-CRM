@@ -2510,6 +2510,49 @@
    "to_3": "तक",
     "meeting_details": "बैठक का विवरण",
   "basic_details": "मूल विवरण",
+    "lost_leads": "खोए हुए लीड्स",
+  "all_sources": "सभी स्रोत",
+  "by_company": "कंपनी के अनुसार",
+  "by_referral": "रेफरल के अनुसार",
+
+  "team": "टीम",
+
+  "all_designations": "सभी पद",
+
+  "sales_person": "सेल्स पर्सन",
+
+  "clear_all_filters": "सभी फ़िल्टर साफ़ करें",
+
+
+
+
+  "deal_name": "डील का नाम",
+  "deal_stage": "डील चरण",
+  "against": "के विरुद्ध",
+  "created_date_2": "बनाने की तिथि",
+  "created_by_2": "द्वारा बनाया गया",
+  "search_2": "खोजें...",
+
+
+  "lead_2": "लीड",
+  "selected_2": "चयनित",
+  "select_a_user_first": "पहले एक उपयोगकर्ता चुनें",
+
+  "ready_to_reassign": "पुनः असाइन करने के लिए तैयार",
+  "pick_the_new_assignee": "नया असाइनी चुनें",
+
+
+
+  "source_col": "स्रोत",
+
+  "client_info_col": "क्लाइंट जानकारी",
+  "project_type_col": "प्रोजेक्ट प्रकार",
+  "status_col": "स्थिति",
+  "created_date_col": "बनाने की तिथि",
+  "created_by_col": "द्वारा बनाया गया",
+  "actions_col": "कार्य",
+
+
    
   "assign_tickets": "टिकट असाइन करें",
   "assign_selected": "असाइन करें ({{count}})",
@@ -2583,6 +2626,61 @@
   "timeline_in_progress": "प्रगति पर",
   "timeline_waiting": "आपकी प्रतीक्षा में",
   "timeline_resolved": "समाधान हो गया",
+  "referral_form": "रेफरल फ़ॉर्म",
+  "editing_referral_lead": "रेफरल लीड संपादित करें",
+  "add_new_referral_lead": "नई रेफरल लीड जोड़ें",
+  "enter_phone": "फ़ोन नंबर दर्ज करें",
+
+  "employee_role": "कर्मचारी की भूमिका",
+  "enter_employee_role": "कर्मचारी की भूमिका दर्ज करें",
+  "select_industry": "उद्योग चुनें",
+  "enter_city": "शहर दर्ज करें",
+  "enter_country": "देश दर्ज करें",
+  "enter_postal_code": "पिन/पोस्टल कोड दर्ज करें",
+
+  "employee_seniority": "कर्मचारी वरिष्ठता",
+  "select_seniority": "वरिष्ठता चुनें",
+
+  "junior": "जूनियर",
+  "mid": "मिड-लेवल",
+  "senior": "सीनियर",
+
+  "executive": "कार्यकारी",
+
+  "web_development": "वेब डेवलपमेंट",
+  "mobile_app": "मोबाइल ऐप",
+  "software_development": "सॉफ़्टवेयर डेवलपमेंट",
+  "consulting": "परामर्श",
+  "design": "डिज़ाइन",
+
+  "spanish": "स्पेनिश",
+  "french": "फ़्रेंच",
+  "german": "जर्मन",
+  "chinese": "चीनी",
+
+  "enter_message": "संदेश दर्ज करें",
+    "referral_leads_form": "Formulário de Leads por Indicação",
+
+  "enter_membership_notes": "सदस्यता नोट्स दर्ज करें",
+
+  "add_to_table": "तालिका में जोड़ें",
+  "update_in_table": "तालिका में अपडेट करें",
+
+  "submit_leads": "लीड सबमिट करें",
+  "submit_all_leads": "सभी लीड सबमिट करें",
+
+  "referral_leads_list": "रेफरल लीड सूची",
+  "lead(s)_added": "लीड जोड़ी गई",
+
+  "please_fill_required_fields": "कृपया सभी आवश्यक फ़ील्ड भरें।",
+  "no_leads_to_submit": "सबमिट करने के लिए कोई लीड नहीं है।",
+  "leads_submitted_successfully": "लीड सफलतापूर्वक सबमिट की गई।",
+  "error_submitting_leads": "लीड सबमिट करते समय त्रुटि हुई।",
+
+  "are_you_sure_?": "क्या आप सुनिश्चित हैं?",
+  "confirm_delete_lead": "क्या आप इस रेफरल लीड को हटाना चाहते हैं?",
+  "confirm_submitting_leads": "क्या आप इस रेफरल लीड को सबमिट करना चाहते हैं?",
+  "confirm_submitting_all_leads": "क्या आप सभी रेफरल लीड्स सबमिट करना चाहते हैं?",
 
   "desc_raised": "आपका टिकट हमारी सहायता टीम को सफलतापूर्वक भेज दिया गया है।",
   "desc_under_review": "हमारी सहायता टीम ने आपके टिकट की समीक्षा कर ली है और समस्या की श्रेणी निर्धारित कर ली है।",
