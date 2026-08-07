@@ -1,10 +1,10 @@
-from beanie import Document, Link
+from beanie import Document, Link, PydanticObjectId
 from pydantic import Field, model_validator, field_serializer
 from typing import Optional, Literal
 from datetime import datetime, timezone
 from app.core.enums import EVENT_TYPE
 from app.db.models.user_model import UserModel
-from app.db.models.deal_model import DealModel
+
 from pymongo import IndexModel
 from app.db.models.base_model import BaseDocument
 from app.core.constants import TIME_ZONE
@@ -12,7 +12,7 @@ from app.core.constants import TIME_ZONE
 class CalenderEventModel(BaseDocument):
     title: str
     description: Optional[str] = None
-    eventType: EVENT_TYPE
+    eventType: EVENT_TYPE = EVENT_TYPE.NOTE.value
     start: datetime
     end: Optional[datetime] = None
     isAllDay: bool = False
@@ -20,6 +20,7 @@ class CalenderEventModel(BaseDocument):
     createdBy: Link[UserModel]
     updatedBy: Optional[Link[UserModel]] = None
     priority: Optional[Literal["low", "medium", "high"]] = "low"
+    entityId: Optional[PydanticObjectId] = None
     createdAt: datetime = Field(default_factory=lambda:datetime.now(timezone.utc))
     updatedAt: datetime = Field(default_factory=lambda:datetime.now(timezone.utc))
 

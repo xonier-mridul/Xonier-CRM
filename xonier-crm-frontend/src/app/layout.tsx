@@ -27,7 +27,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Trackeroo CRM | Smart Sales, Leads & Customer Management",
+  title: "Trakeroo CRM | Smart Sales, Leads & Customer Management",
   description:
     "Trackeroo is a modern CRM platform to manage leads, deals, quotations, invoices, and customer relationships with powerful analytics and team collaboration.",
 };

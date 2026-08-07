@@ -953,6 +953,8 @@ class AuthServices:
 
             hashed_mail = hash_value(data["email"])
             encrypt_email = self.crypto.encrypt_data(data["email"])
+
+            print("Data: ", data)
             
             with system_query():
                 company = await self.companyRepo.find_one(filter={"companyId": data.get("companyId")}, populate=["subscription"], session=session)

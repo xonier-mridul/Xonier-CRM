@@ -39,7 +39,7 @@ interface CreateCompanyFormProps {
 
 const STEPS = ["Company Details", "Select Plan", "Verify Email"];
 
-const countryOptions = Object.entries(COUNTRY_CODE).map(([, val]) => ({
+const countryOptions = Array.from(new Set(Object.values(COUNTRY_CODE))).map((val) => ({
   label: val,
   value: val,
 }));
@@ -365,7 +365,7 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {planData.map((plan) => {
-  const { t } = useTranslation();
+  // const { t } = useTranslation();
                 const sym = currencySymbol[plan.currency] ?? "$";
                 const { final, saved } = getDiscountedPrice(plan, form.billingCycle ?? BILLING_CYCLE.MONTHLY);
                 const isSelected = form.planId === plan.id;

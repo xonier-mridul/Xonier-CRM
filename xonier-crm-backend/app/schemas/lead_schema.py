@@ -9,9 +9,10 @@ from app.core.enums import (
     LANGUAGE_CODE,
     COUNTRY_CODE,
     INDUSTRIES,
-    EMPLOYEE_SENIORITY, CONTACT_STATUS
+    EMPLOYEE_SENIORITY, CONTACT_STATUS, MEETING_SCHEDULED
 )
 from app.utils.custom_exception import AppException
+from datetime import datetime
 
 class LeadBaseSchema(BaseModel):
     fullName: str
@@ -28,6 +29,15 @@ class LeadBaseSchema(BaseModel):
     postalCode: Optional[int] = None
     language: Optional[LANGUAGE_CODE] = None
     dataTag: Optional[str] = None
+
+    #meeting
+    meetingScheduled: MEETING_SCHEDULED = MEETING_SCHEDULED.NO.value
+    meetingTitle: Optional[str] = None
+    meetingDescription: Optional[str] = None
+    meetingStart: Optional[datetime] = None
+    meetingEnd: Optional[datetime] = None
+    meetingLink: Optional[str] = None
+    meetingPriority: Optional[PRIORITY] = None
 
     industry: Optional[str] = None
     employeeRole: Optional[str] = None
@@ -68,6 +78,26 @@ class LeadBaseSchema(BaseModel):
             raise AppException(422, "Postal code must be between 4 and 6 digits (e.g., 1234–123456)")
         
         return v
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_meeting(cls, value):
+            isMeetingScheduled = value.get("meetingScheduled").strip()
+    
+            if isMeetingScheduled != MEETING_SCHEDULED.YES.value:
+                return value
+    
+            meetingTitle = value.get("meetingTitle").strip()
+            meetingDescription = value.get("meetingDescription").strip()
+            meetingStart = value.get("meetingStart").strip()
+            meetingEnd = value.get("meetingEnd").strip()
+            meetingLink = value.get("meetingLink").strip()
+            meetingPriority = value.get("meetingPriority").strip()
+    
+            if not meetingTitle or not meetingStart or not meetingEnd or not meetingLink or not meetingPriority:
+                raise AppException(422, f"{'Meeting Title' if not meetingTitle else 'Meeting Start Date' if not meetingStart else "Meeting End Date" if not meetingEnd else "Meeting Link" if not meetingLink else "Meeting Priority" if not meetingPriority else "unknown"} field is required" )
+    
+            return value
 
 
 class LeadsCreateSchema(LeadBaseSchema):
