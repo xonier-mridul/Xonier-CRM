@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { BiHome, BiUserCheck } from "react-icons/bi";
+import { BiHome, BiSupport, BiUserCheck } from "react-icons/bi";
 import { AiOutlineTeam } from "react-icons/ai";
 import { IoChevronDown, IoSettingsOutline } from "react-icons/io5";
 import { motion, AnimatePresence } from "framer-motion";
@@ -939,16 +939,16 @@ const SideBar = () => {
 
               <li>
               <Link
-                href="/supportTicket"
-                className={`${isActive("/supportTicket")
+                href="/support"
+                className={`${isActive("/support")
                   ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"
                   } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
-                       <span  className={`${isActive("/supportTicket")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
-                <LuTicket className="text-lg" />
+                       <span  className={`${isActive("/support")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                <BiSupport className="text-lg" />
                 </span>
-                {t("ticket")}
+                {t("supports")}
               </Link>
             </li>
             {(auth.isAdmin)  && <li>

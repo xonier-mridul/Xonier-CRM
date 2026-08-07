@@ -3010,7 +3010,93 @@
   "next_page": "Next page",
   "page_of": "Page {{page}} of {{totalPages}}",
   "meeting_details": "Meeting Details",
-  "basic_details": "Basic Details"
+  "basic_details": "Basic Details",
+    "lost_leads": "Lost Leads",
+    
+  "all_sources": "All Sources",
+  "by_company": "By Company",
+  "by_referral": "By Referral",
+ 
+  "all_designations": "All Designations",
+
+  "sales_person": "Sales Person",
+
+
+  "clear_all_filters": "Clear All Filters",
+  
+
+
+
+  "referral_form": "Referral Form",
+  "editing_referral_lead": "Editing Referral Lead",
+  "add_new_referral_lead": "Add New Referral Lead",
+  "enter_phone": "Enter phone number",
+
+  "employee_role": "Employee Role",
+  "enter_employee_role": "Enter employee role",
+  "select_industry": "Select industry",
+  "enter_city": "Enter city",
+  "enter_country": "Enter country",
+  "enter_postal_code": "Enter postal code",
+
+  "employee_seniority": "Employee Seniority",
+  "select_seniority": "Select seniority",
+
+  "junior": "Junior",
+  "mid": "Mid-Level",
+  "senior": "Senior",
+
+  "executive": "Executive",
+
+  "web_development": "Web Development",
+  "mobile_app": "Mobile App",
+  "software_development": "Software Development",
+  "consulting": "Consulting",
+  "design": "Design",
+  "spanish": "Spanish",
+  "french": "French",
+  "german": "German",
+  "chinese": "Chinese",
+
+  "enter_message": "Enter message",
+
+  "enter_membership_notes": "Enter membership notes",
+
+  "add_to_table": "Add to Table",
+  "update_in_table": "Update in Table",
+
+  "submit_leads": "Submit Lead",
+  "submit_all_leads": "Submit All Leads",
+
+  "referral_leads_list": "Referral Leads List",
+  "lead(s)_added": "Lead(s) Added",
+
+
+  "please_fill_required_fields": "Please fill all required fields.",
+  "no_leads_to_submit": "There are no leads to submit.",
+  "leads_submitted_successfully": "Leads submitted successfully.",
+  "error_submitting_leads": "An error occurred while submitting leads.",
+
+  "are_you_sure_?": "Are you sure?",
+  "confirm_delete_lead": "Do you want to delete this referral lead?",
+  "confirm_submitting_leads": "Do you want to submit this referral lead?",
+  "confirm_submitting_all_leads": "Do you want to submit all referral leads?",
+    "referral_leads_form": "Referral Leads Form",
+
+
+
+
+
+  "source_col": "Source",
+
+  "client_info_col": "Client Info",
+  "project_type_col": "Project Type",
+  "status_col": "Status",
+  "created_date_col": "Created Date",
+  "created_by_col": "Created By",
+  "actions_col": "Actions"
+
+
 
 
 

@@ -2358,6 +2358,7 @@
   "no_roles_assigned": "Nenhuma função atribuída",
   "no_summary_data_available": "Nenhum dado de resumo disponível",
   "not_rated": "Não classificado",
+   "lost_leads": "Leads Perdidos",
   "on_time": "No Prazo",
   "overall_rating": "Classificação Geral",
   "overview": "Visão Geral",
@@ -2527,6 +2528,103 @@
     "automatically_moves_it_to_the_green_section_setting_it_to": "Move automaticamente a tarefa para a seção verde, definindo seu status de acordo.",
   "moves_it_to_the_amber_section": "Move a tarefa para a seção âmbar.",
     "to_3": "Para",
+    
+  "all_sources": "Todas as Origens",
+  "by_company": "Por Empresa",
+  "by_referral": "Por Indicação",
+   "referral_form": "Formulário de Indicação",
+  "editing_referral_lead": "Editando Lead de Indicação",
+  "add_new_referral_lead": "Adicionar Novo Lead de Indicação",
+  "enter_phone": "Digite o número de telefone",
+
+  "employee_role": "Cargo do Funcionário",
+  "enter_employee_role": "Digite o cargo do funcionário",
+  "select_industry": "Selecione o setor",
+  "enter_city": "Digite a cidade",
+  "enter_country": "Digite o país",
+  "enter_postal_code": "Digite o código postal",
+
+  "employee_seniority": "Nível do Funcionário",
+  "select_seniority": "Selecione o nível",
+
+  "junior": "Júnior",
+  "mid": "Pleno",
+  "senior": "Sênior",
+
+  "executive": "Executivo",
+
+  "web_development": "Desenvolvimento Web",
+  "mobile_app": "Aplicativo Móvel",
+  "software_development": "Desenvolvimento de Software",
+  "consulting": "Consultoria",
+  "design": "Design",
+
+  "spanish": "Espanhol",
+  "french": "Francês",
+  "german": "Alemão",
+  "chinese": "Chinês",
+
+  "enter_message": "Digite a mensagem",
+
+  "enter_membership_notes": "Digite as notas de associação",
+
+  "add_to_table": "Adicionar à Tabela",
+  "update_in_table": "Atualizar na Tabela",
+
+  "submit_leads": "Enviar Lead",
+  "submit_all_leads": "Enviar Todos os Leads",
+
+  "referral_leads_list": "Lista de Leads de Indicação",
+  "lead(s)_added": "Lead(s) Adicionado(s)",
+
+  "please_fill_required_fields": "Por favor, preencha todos os campos obrigatórios.",
+  "no_leads_to_submit": "Não há leads para enviar.",
+  "leads_submitted_successfully": "Leads enviados com sucesso.",
+  "error_submitting_leads": "Ocorreu um erro ao enviar os leads.",
+
+  "are_you_sure_?": "Tem certeza?",
+  "confirm_delete_lead": "Deseja excluir este lead de indicação?",
+  "confirm_submitting_leads": "Deseja enviar este lead de indicação?",
+  "confirm_submitting_all_leads": "Deseja enviar todos os leads de indicação?",
+
+  "team": "Equipe",
+
+  "all_designations": "Todos os Cargos",
+    "referral_leads_form": "रेफरल लीड्स फ़ॉर्म",
+
+  "sales_person": "Vendedor",
+
+  "clear_all_filters": "Limpar Todos os Filtros",
+
+ 
+
+  "deal_name": "Nome do Negócio",
+  "deal_stage": "Etapa do Negócio",
+  "against": "Contra",
+  "created_date_2": "Data de Criação",
+  "created_by_2": "Criado por",
+  "search_2": "Pesquisar...",
+
+
+  "lead_2": "Lead",
+  "selected_2": "Selecionado",
+  "select_a_user_first": "Selecione um usuário primeiro",
+
+  "ready_to_reassign": "Pronto para reatribuir",
+  "pick_the_new_assignee": "Escolha o novo responsável",
+
+
+  "source_col": "Origem",
+
+  "client_info_col": "Informações do Cliente",
+  "project_type_col": "Tipo de Projeto",
+  "status_col": "Status",
+  "created_date_col": "Data de Criação",
+  "created_by_col": "Criado por",
+  "actions_col": "Ações",
+
+  
+
   
   "support": {
     "widget": {

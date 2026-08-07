@@ -116,6 +116,7 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const [otpError, setOtpError] = useState<string>("");
   const [cooldown, setCooldown] = useState(0);
+  const [isAdminPhoneEdited, setIsAdminPhoneEdited] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -277,26 +278,32 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
         <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
           <section className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-900/10 dark:border-gray-700 p-6">
             <div className="flex items-center gap-2 mb-5 pb-4 border-b border-slate-100 dark:border-gray-700">
-              <BsBuildings className="text-violet-500 text-lg" />
+              <BsBuildings className="text-cyan-500 text-lg" />
               <h3 className="font-semibold text-slate-800 dark:text-white text-base">
                 {t("company_information")}
               </h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5  items-end">
               <Input label={t("company_name")} required placeholder={t("xonier_technologies")} value={form.companyName} onChange={(e) => set("companyName", (e.target as HTMLInputElement).value)} error={errors.companyName} />
               <Input label={t("industry_2")} required placeholder={t("technology")} value={form.industry} onChange={(e) => set("industry", (e.target as HTMLInputElement).value)} error={errors.industry} />
-              <Input label={t("company_phone")} required placeholder="+913001234567" value={form.number} onChange={(e) => set("number", (e.target as HTMLInputElement).value)} error={errors.number} />
+              <Input label={t("company_phone")} required placeholder="+913001234567" value={form.number}  onChange={(e) => {
+                  const value = (e.target as HTMLInputElement).value;
+                  set("number", value);
+                  if (!isAdminPhoneEdited) {
+                    set("adminPhone", value);
+                  }
+                }} error={errors.number} />
               <Input label={t("website")} placeholder="https://company.io" value={form.website ?? ""} onChange={(e) => set("website", (e.target as HTMLInputElement).value)} />
               <div className="flex flex-col gap-1 w-full">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-200">{t("company_size")}</label>
-                <select value={form.companySize ?? ""} onChange={(e) => set("companySize", (e.target.value as NUMBER_OF_EMPLOYEES) || undefined)} className="w-full px-3 py-2 rounded-md border bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm">
+                <select value={form.companySize ?? ""} onChange={(e) => set("companySize", (e.target.value as NUMBER_OF_EMPLOYEES) || undefined)} className="w-full px-3 py-2 rounded-md border bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm">
                   <option value="">{t("select_size")}</option>
                   {sizeOptions.map((o) => (<option key={o.value} value={o.value}>{o.label}</option>))}
                 </select>
               </div>
               <div className="flex flex-col gap-1 w-full">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-200">{t("country")}</label>
-                <select value={form.country ?? ""} onChange={(e) => set("country", (e.target.value as COUNTRY_CODE) || undefined)} className="w-full px-3 py-2 rounded-md border bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm">
+                <select value={form.country ?? ""} onChange={(e) => set("country", (e.target.value as COUNTRY_CODE) || undefined)} className="w-full px-3 py-2 rounded-md border bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm">
                   <option value="">{t("select_country")}</option>
                   {countryOptions.map((o) => (<option key={o.value} value={o.value}>{o.label}</option>))}
                 </select>
@@ -308,14 +315,16 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
 
           <section className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-900/10 dark:border-gray-700 p-6">
             <div className="flex items-center gap-2 mb-5 pb-4 border-b border-slate-100 dark:border-gray-700">
-              <FiShield className="text-violet-500 text-lg" />
+              <FiShield className="text-cyan-500 text-lg" />
               <h3 className="font-semibold text-slate-800 dark:text-white text-base">{t("admin_account")}</h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-end">
               <Input label={t("first_name")} required placeholder={t("first_name")} value={form.adminFirstName} onChange={(e) => set("adminFirstName", (e.target as HTMLInputElement).value)} error={errors.adminFirstName} />
               <Input label={t("last_name")} placeholder={t("last_name")} value={form.adminLastName ?? ""} onChange={(e) => set("adminLastName", (e.target as HTMLInputElement).value)} />
               <Input label={t("admin_email")} type="email" required placeholder={t("admin_company_io")} value={form.adminEmail} onChange={(e) => set("adminEmail", (e.target as HTMLInputElement).value)} error={errors.adminEmail} />
-              <Input label={t("admin_phone")} required placeholder="+913009876543" value={form.adminPhone} onChange={(e) => set("adminPhone", (e.target as HTMLInputElement).value)} error={errors.adminPhone} />
+              <Input label={t("admin_phone")} required placeholder="+913009876543" value={form.adminPhone}   onChange={(e) => {setIsAdminPhoneEdited(true);
+                set("adminPhone", (e.target as HTMLInputElement).value);
+              }} error={errors.adminPhone} />
               <div className="md:col-span-2">
                 <Input label={t("password_2")} type="password" required placeholder={t("min_8_chars_upper_lower_digit")} value={form.password} onChange={(e) => set("password", (e.target as HTMLInputElement).value)} error={errors.password} />
               </div>
@@ -323,7 +332,7 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
           </section>
 
           <div className="flex justify-end">
-            <button onClick={handleNext} className="flex items-center gap-2 px-6 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-medium text-sm transition-colors">
+            <button onClick={handleNext} className="flex items-center gap-2 px-6 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-medium text-sm transition-colors">
               {t("next_select_plan")} <FiArrowRight />
             </button>
           </div>
@@ -340,7 +349,7 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
             </div>
             <div className="flex items-center gap-1 bg-slate-100 dark:bg-gray-700 p-1 rounded-xl">
               {[BILLING_CYCLE.MONTHLY, BILLING_CYCLE.YEARLY].map((cycle) => (
-                <button key={cycle} onClick={() => set("billingCycle", cycle)} className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${form.billingCycle === cycle ? "bg-white dark:bg-gray-600 text-violet-600 dark:text-violet-400 shadow-sm" : "text-slate-500 dark:text-gray-400"}`}>
+                <button key={cycle} onClick={() => set("billingCycle", cycle)} className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${form.billingCycle === cycle ? "bg-white dark:bg-gray-600 text-cyan-600 dark:text-cyan-400 shadow-sm" : "text-slate-500 dark:text-gray-400"}`}>
                   {cycle === BILLING_CYCLE.MONTHLY ? "Monthly" : "Yearly"}
                   {cycle === BILLING_CYCLE.YEARLY && (<span className="ml-1.5 text-[10px] bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 px-1.5 py-0.5 rounded-full font-semibold">SAVE</span>)}
                 </button>
@@ -348,13 +357,13 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
             </div>
           </div>
 
-          <button onClick={() => set("planId", undefined)} className={`w-full text-left px-5 py-4 rounded-2xl border-2 transition-all ${!form.planId ? "border-violet-500 bg-violet-50 dark:bg-violet-900/10" : "border-slate-200 dark:border-gray-700 hover:border-slate-300 dark:hover:border-gray-600"}`}>
+          <button onClick={() => set("planId", undefined)} className={`w-full text-left px-5 py-4 rounded-2xl border-2 transition-all ${!form.planId ? "border-cyan-500 bg-cyan-50 dark:bg-cyan-900/10" : "border-slate-200 dark:border-gray-700 hover:border-slate-300 dark:hover:border-gray-600"}`}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-semibold text-slate-800 dark:text-white text-sm">{t("no_plan_assign_later")}</p>
                 <p className="text-xs text-gray-400 mt-0.5">{t("create_the_company_first_add_subscription")}</p>
               </div>
-              <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${!form.planId ? "border-violet-500 bg-violet-500" : "border-slate-300 dark:border-gray-600"}`}>
+              <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${!form.planId ? "border-cyan-500 bg-cyan-500" : "border-slate-300 dark:border-gray-600"}`}>
                 {!form.planId && <FiCheck className="text-white text-xs" />}
               </div>
             </div>
@@ -371,14 +380,14 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
                 const isSelected = form.planId === plan.id;
                 const isFeatured = plan.trial_days > 0;
                 return (
-                  <button key={plan.id} onClick={() => set("planId", plan.id)} className={`relative text-left rounded-2xl border-2 p-5 transition-all duration-200 ${isSelected ? "border-violet-500 bg-violet-50 dark:bg-violet-900/10 shadow-lg shadow-violet-100 dark:shadow-violet-900/20" : "border-slate-200 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-700 bg-white dark:bg-gray-800"}`}>
+                  <button key={plan.id} onClick={() => set("planId", plan.id)} className={`relative text-left rounded-2xl border-2 p-5 transition-all duration-200 ${isSelected ? "border-cyan-500 bg-cyan-50 dark:bg-cyan-900/10 shadow-lg shadow-cyan-100 dark:shadow-cyan-900/20" : "border-slate-200 dark:border-gray-700 hover:border-cyan-300 dark:hover:border-cyan-700 bg-white dark:bg-gray-800"}`}>
                     {isFeatured && (<div className="absolute -top-2.5 left-4"><span className="flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 bg-amber-400 text-amber-900 rounded-full"><FiStar className="text-[10px]" /> {plan.trial_days}{t("d_free_trial")}</span></div>)}
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <p className="font-bold text-slate-900 dark:text-white capitalize text-base">{plan.name}</p>
                         <p className="text-xs text-gray-400 mt-0.5 line-clamp-2 max-w-[160px]">{plan.description}</p>
                       </div>
-                      <div className={`h-5 w-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all mt-0.5 ${isSelected ? "border-violet-500 bg-violet-500" : "border-slate-300 dark:border-gray-600"}`}>
+                      <div className={`h-5 w-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all mt-0.5 ${isSelected ? "border-cyan-500 bg-cyan-500" : "border-slate-300 dark:border-gray-600"}`}>
                         {isSelected && <FiCheck className="text-white text-xs" />}
                       </div>
                     </div>
@@ -393,7 +402,7 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
                       <ul className="space-y-1.5 border-t border-slate-100 dark:border-gray-700 pt-3">
                         {plan.features.slice(0, 4).map((f, i) => (
                           <li key={i} className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
-                            <FiZap className="text-violet-400 flex-shrink-0 text-[11px]" />
+                            <FiZap className="text-cyan-400 flex-shrink-0 text-[11px]" />
                             <span className="Capitalize">{typeof f.feature === "object" && f.feature !== null && "name" in f.feature ? (f.feature as { name: string }).name : "Feature"}{f.is_unlimited ? " — Unlimited" : f.limit ? ` — up to ${f.limit}` : ""}</span>
                           </li>
                         ))}
@@ -407,9 +416,9 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
           )}
 
           {selectedPlan && (
-            <div className="flex items-center justify-between bg-violet-50 dark:bg-violet-900/10 border border-violet-200 dark:border-violet-800 rounded-xl px-5 py-3">
+            <div className="flex items-center justify-between bg-cyan-50 dark:bg-cyan-900/10 border border-cyan-200 dark:border-cyan-800 rounded-xl px-5 py-3">
               <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-violet-600 flex items-center justify-center">
+                <div className="h-8 w-8 rounded-lg bg-cyan-600 flex items-center justify-center">
                   <FiCheck className="text-white text-sm" />
                 </div>
                 <div>
@@ -417,7 +426,7 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
                   <p className="text-xs text-gray-400">{form.billingCycle === BILLING_CYCLE.MONTHLY ? "Monthly billing" : "Annual billing"}</p>
                 </div>
               </div>
-              <p className="text-lg font-black text-violet-600 dark:text-violet-400">
+              <p className="text-lg font-black text-cyan-600 dark:text-cyan-400">
                 {currencySymbol[selectedPlan.currency] ?? "$"}{getDiscountedPrice(selectedPlan, form.billingCycle ?? BILLING_CYCLE.MONTHLY).final}
                 <span className="text-xs font-normal text-gray-400 ml-1">/{form.billingCycle === BILLING_CYCLE.MONTHLY ? "mo" : "yr"}</span>
               </p>
@@ -428,7 +437,7 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
             <button onClick={() => setStep(0)} className="flex items-center gap-2 px-5 py-2.5 border border-slate-200 dark:border-gray-700 text-slate-600 dark:text-gray-300 rounded-xl font-medium text-sm hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">
               <FiArrowLeft /> {t("back")}
             </button>
-            <button onClick={handleSubmit} disabled={isSubmitting} className="flex items-center gap-2 px-7 py-2.5 bg-violet-600 hover:bg-violet-700 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-xl font-medium text-sm transition-colors">
+            <button onClick={handleSubmit} disabled={isSubmitting} className="flex items-center gap-2 px-7 py-2.5 bg-cyan-600 hover:bg-cyan-700 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-xl font-medium text-sm transition-colors">
               {isSubmitting ? (
                 <><svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" /><path fill="currentColor" className="opacity-75" d="M4 12a8 8 0 018-8v8z" /></svg>{t("creating_2")}</>
               ) : (
@@ -446,8 +455,8 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-900/10 dark:border-gray-700 p-8 text-center">
               {/* Icon */}
               <div className="flex justify-center mb-5">
-                <div className="h-16 w-16 rounded-2xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
-                  <FiMail className="text-violet-600 dark:text-violet-400 text-3xl" />
+                <div className="h-16 w-16 rounded-2xl bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center">
+                  <FiMail className="text-cyan-600 dark:text-cyan-400 text-3xl" />
                 </div>
               </div>
 
@@ -457,7 +466,7 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
                 {t("we_sent_a_6_digit_code")}
               </p>
-              <p className="text-sm font-semibold text-violet-600 dark:text-violet-400 mb-8">
+              <p className="text-sm font-semibold text-cyan-600 dark:text-cyan-400 mb-8">
                 {form.adminEmail}
               </p>
 
@@ -477,8 +486,8 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
                       otpError
                         ? "border-red-400 dark:border-red-500"
                         : otp[i]
-                        ? "border-violet-500 dark:border-violet-400"
-                        : "border-slate-200 dark:border-gray-600 focus:border-violet-400 dark:focus:border-violet-500"
+                        ? "border-cyan-500 dark:border-cyan-400"
+                        : "border-slate-200 dark:border-gray-600 focus:border-cyan-400 dark:focus:border-cyan-500"
                     }`}
                   />
                 ))}
@@ -492,7 +501,7 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
               <button
                 onClick={handleVerify}
                 disabled={isVerifying || otp.join("").length < OTP_LENGTH}
-                className="w-full flex items-center justify-center gap-2 py-3 bg-violet-600 hover:bg-violet-700 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-xl font-semibold text-sm transition-colors mt-4"
+                className="w-full flex items-center justify-center gap-2 py-3 bg-cyan-600 hover:bg-cyan-700 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-xl font-semibold text-sm transition-colors mt-4"
               >
                 {isVerifying ? (
                   <><svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" /><path fill="currentColor" className="opacity-75" d="M4 12a8 8 0 018-8v8z" /></svg>{t("verifying")}</>
@@ -505,13 +514,13 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
               <div className="mt-5 flex items-center justify-center gap-1 text-sm text-gray-500 dark:text-gray-400">
                 <span>{t("didn't_receive_it")}</span>
                 {cooldown > 0 ? (
-                  <span className="text-violet-500 dark:text-violet-400 font-medium tabular-nums">
+                  <span className="text-cyan-500 dark:text-cyan-400 font-medium tabular-nums">
                     {t("resend_in")} {cooldown}s
                   </span>
                 ) : (
                   <button
                     onClick={handleResend}
-                    className="text-violet-600 dark:text-violet-400 font-semibold hover:underline"
+                    className="text-cyan-600 dark:text-cyan-400 font-semibold hover:underline"
                   >
                     {t("resend_otp")}
                   </button>

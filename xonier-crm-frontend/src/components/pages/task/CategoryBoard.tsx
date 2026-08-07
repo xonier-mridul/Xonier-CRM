@@ -195,7 +195,7 @@ function CategoryBoard({
                   key={status.id}
                   className={`flex flex-col rounded-2xl border-2 transition-all min-w-[260px] max-w-[300px] flex-shrink-0 ${
                     isDragOver
-                      ? "border-blue-400 bg-blue-50/60 dark:bg-blue-900/20"
+                      ? "border-cyan-400 bg-cyan-50/60 dark:bg-cyan-900/20"
                       : isFinal
                         ? "border-green-200 dark:border-green-800 bg-green-50/30 dark:bg-green-900/10"
                         : "border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50"
@@ -221,9 +221,9 @@ function CategoryBoard({
                     </span>
                   </div>
 
-                  <div className={`flex-1 p-2.5 space-y-2 overflow-y-auto min-h-[100px] transition-colors ${isDragOver ? "bg-blue-50/40 dark:bg-blue-900/10" : ""}`}>
+                  <div className={`flex-1 p-2.5 space-y-2 overflow-y-auto min-h-[100px] transition-colors ${isDragOver ? "bg-cyan-50/40 dark:bg-cyan-900/10" : ""}`}>
                     {columnTasks.length === 0 ? (
-                      <div className={`flex flex-col items-center justify-center py-8 rounded-xl border-2 border-dashed transition-colors ${isDragOver ? "border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20" : "border-gray-200 dark:border-gray-600"}`}>
+                      <div className={`flex flex-col items-center justify-center py-8 rounded-xl border-2 border-dashed transition-colors ${isDragOver ? "border-cyan-300 dark:border-cyan-600 bg-cyan-50 dark:bg-cyan-900/20" : "border-gray-200 dark:border-gray-600"}`}>
                         <span className="text-xl mb-1 opacity-40">📋</span>
                         <p className="text-[10px] text-gray-400 font-medium">{isDragOver ? "Drop here" : "No tasks"}</p>
                       </div>
@@ -255,8 +255,8 @@ function CategoryBoard({
                       ))
                     )}
                     {columnTasks.length > 0 && isDragOver && (
-                      <div className="flex items-center justify-center py-3 rounded-xl border-2 border-dashed border-blue-300 dark:border-blue-600 bg-blue-50/60 dark:bg-blue-900/20">
-                        <p className="text-xs text-blue-500 font-semibold">{t("drop_here")}</p>
+                      <div className="flex items-center justify-center py-3 rounded-xl border-2 border-dashed border-cyan-300 dark:border-cyan-600 bg-cyan-50/60 dark:bg-cyan-900/20">
+                        <p className="text-xs text-cyan-500 font-semibold">{t("drop_here")}</p>
                       </div>
                     )}
                   </div>

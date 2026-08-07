@@ -36,7 +36,7 @@ export type UserSelectProps = SingleUserSelectProps | MultiUserSelectProps;
 const PAGE_SIZE = 10;
 
 const inputCls =
-  "w-full px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition";
+  "w-full px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -46,7 +46,7 @@ function userName(u: User) {
 
 function Spinner() {
   return (
-    <svg className="animate-spin h-3.5 w-3.5 text-blue-500" viewBox="0 0 24 24" fill="none">
+    <svg className="animate-spin h-3.5 w-3.5 text-cyan-500" viewBox="0 0 24 24" fill="none">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
     </svg>
@@ -246,7 +246,7 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
             onClick={() => !disabled && toggle(user.id)}
             className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg cursor-pointer text-sm transition select-none ${disabled ? "opacity-50 cursor-not-allowed" :
               selected
-                ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                ? "bg-cyan-50 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300"
                 : "text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
               }`}
           >
@@ -265,7 +265,7 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
               </span>
             </div>
             {selected && (
-              <span className="text-blue-500 text-xs font-bold flex-shrink-0 ml-2">✓</span>
+              <span className="text-cyan-500 text-xs font-bold flex-shrink-0 ml-2">✓</span>
             )}
           </div>
         );
@@ -380,7 +380,7 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
         disabled={disabled}
         className={
           (cls ??
-            "w-full bg-white dark:bg-gray-800 text-slate-800 dark:text-white px-3 py-1.5 rounded-lg border outline-none text-xs shadow-sm border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
+            "w-full bg-white dark:bg-gray-800 text-slate-800 dark:text-white px-3 py-1.5 rounded-lg border outline-none text-xs shadow-sm border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition"
           ) + " px-3 py-1.5"}
       />
 
@@ -391,7 +391,7 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
           {currentUserId && (
             <div
               onClick={assignToMe}
-              className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 cursor-pointer border-b border-gray-100 dark:border-gray-700 transition"
+              className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/20 hover:bg-cyan-100 dark:hover:bg-cyan-900/40 cursor-pointer border-b border-gray-100 dark:border-gray-700 transition"
             >
               {t("assign_to_me")}
             </div>
