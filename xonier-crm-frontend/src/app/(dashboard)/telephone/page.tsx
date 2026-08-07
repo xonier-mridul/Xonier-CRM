@@ -450,7 +450,7 @@ const Page = () => {
                             {(hasPermission(PERMISSIONS.telephoneAssign)) && phone.status !== PHONE_NUMBER_STATUS.DELETED && (
                               <button
                                 onClick={() => openAssignModal(phone)}
-                                className="h-9 w-9 flex items-center justify-center rounded-md bg-purple-200/80 dark:bg-purple-100 hover:bg-purple-300/70 dark:hover:bg-purple-200 text-purple-500 hover:scale-104 transition-transform cursor-pointer"
+                                className="h-9 w-9 flex items-center justify-center rounded-md bg-cyan-200/80 dark:bg-cyan-100 hover:bg-cyan-300/70 dark:hover:bg-cyan-200 text-cyan-500 hover:scale-104 transition-transform cursor-pointer"
                                 title={t("assign_to_user")}
                               >
                                 <HiUserAdd className="text-xl" />
@@ -476,7 +476,7 @@ const Page = () => {
                       key={i}
                       className={`${isEven
                         ? "bg-white dark:bg-transparent"
-                        : "bg-cyan-100/50 dark:bg-slate-500"
+                        : "bg-slate-100/50 dark:bg-slate-500"
                         } w-full`}
                     >
                       <td className="p-4">
@@ -598,7 +598,7 @@ const Page = () => {
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-linear-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                    <div className="w-10 h-10 bg-linear-to-br from-indigo-500 to-cyan-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
                       {typeof selectedPhone.createdBy === "string"
                         ? "?"
                         : `${selectedPhone.createdBy.firstName?.[0] ?? ""}${selectedPhone.createdBy.lastName?.[0] ?? ""}`}
@@ -944,14 +944,14 @@ const Page = () => {
       {showAssignModal && assignPhone && (
         <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col">
-            <div className="bg-linear-to-r from-purple-600 to-purple-300 px-6 py-5 rounded-t-2xl flex items-center justify-between shrink-0">
+            <div className="bg-linear-to-r from-cyan-600 to-cyan-300 px-6 py-5 rounded-t-2xl flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                   <HiUserAdd className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-white">{t("assign_phone_number")}</h3>
-                  <p className="text-sm text-purple-100 font-mono">{assignPhone.phoneNumber}</p>
+                  <p className="text-sm text-cyan-100 font-mono">{assignPhone.phoneNumber}</p>
                 </div>
               </div>
               <button
@@ -995,7 +995,7 @@ const Page = () => {
                           ? "border-transparent bg-slate-50 dark:bg-gray-700/50 opacity-80 cursor-not-allowed"
                           : isSelected
                             ? "border-cyan-500 bg-cyan-50 dark:bg-cyan-900/20 cursor-pointer"
-                            : "border-transparent bg-slate-50 dark:bg-gray-700/50 hover:border-purple-200 hover:bg-cyan-50/50 dark:hover:bg-cyan-900/10 cursor-pointer"
+                            : "border-transparent bg-slate-50 dark:bg-gray-700/50 hover:border-cyan-200 hover:bg-cyan-50/50 dark:hover:bg-cyan-900/10 cursor-pointer"
                           }`}
                       >
                         <div
@@ -1047,7 +1047,7 @@ const Page = () => {
             <div className="px-6 py-4 bg-slate-50 dark:bg-gray-700/30 border-t border-slate-100 dark:border-gray-700 rounded-b-2xl flex items-center justify-between gap-3 shrink-0">
               <div className="text-sm text-gray-500 dark:text-gray-400">
                 {selectedUser ? (
-                  <span className="text-purple-600 dark:text-purple-400 font-medium">
+                  <span className="text-cyan-600 dark:text-cyan-400 font-medium">
                     {t("selected_4")} {selectedUser.firstName} {selectedUser.lastName ?? ""}
                   </span>
                 ) : (
@@ -1065,7 +1065,7 @@ const Page = () => {
                 <button
                   onClick={handleAssign}
                   disabled={!selectedUser || isAssigning}
-                  className="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-purple-200 dark:shadow-purple-900/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-5 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-cyan-200 dark:shadow-cyan-900/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {isAssigning ? (
                     <>

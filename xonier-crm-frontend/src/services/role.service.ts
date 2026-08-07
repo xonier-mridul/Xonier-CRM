@@ -4,7 +4,30 @@ import { GetAllRolesPayload, UserRolePayload } from "../types/roles/roles.types"
 
 
 export const RoleService = {
-    getRoles : (data: GetAllRolesPayload)=> api.get(`/user-role/all?${`page=${data.currentPage}`}&${`limit=${data.pageLimit}`}`),
+    getRoles: (data?: GetAllRolesPayload) => {
+  const params = new URLSearchParams();
+
+  params.set("page", String(data?.currentPage ?? 1));
+  params.set("limit", String(data?.pageLimit ?? 10));
+
+  if (data?.filter?.search) {
+    params.set("search", data.filter.search);
+  }
+
+  if (data?.filter?.name) {
+    params.set("name", data.filter.name);
+  }
+
+  if (data?.filter?.code) {
+    params.set("code", data.filter.code);
+  }
+
+  if (data?.filter?.action) {
+    params.set("action", data.filter.action);
+  }
+
+  return api.get(`/user-role/all?${params.toString()}`);
+},
     getRolesWithoutPagination: ()=> api.get("/user-role/all/active/without-pagination"),
     getRoleById: (id: ParamValue)=> api.get(`/user-role/get-by-id/${id}`),
     update: (id: ParamValue,payload:UserRolePayload)=>api.put(`/user-role/update/${id}`, payload),

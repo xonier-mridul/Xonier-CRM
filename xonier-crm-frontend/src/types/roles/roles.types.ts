@@ -2,10 +2,14 @@ import { Dispatch, SetStateAction } from "react";
 import { User, UserRole } from "../auth/auth.types";
 
 export interface GetAllRolesPayload {
-    currentPage: number,
-    pageLimit: number,
-    // filter:string,
-    
+  currentPage?: number;
+  pageLimit?: number;
+  filter?: {
+    search?: string;
+    name?: string;
+    code?: string;
+    action?: string;
+  };
 }
 
 export interface Permissions{

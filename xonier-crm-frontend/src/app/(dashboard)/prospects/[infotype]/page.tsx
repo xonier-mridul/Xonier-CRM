@@ -519,6 +519,7 @@ const LeadContent = (): JSX.Element => {
           {/* Header */}
           <div className="flex w-full items-center gap-12 justify-between">
             <h2 className="text-2xl font-bold dark:text-white text-slate-900">{t("prospect")}</h2>
+      
 
             <div className="flex items-center gap-6 flex-wrap">
               {/* Search */}

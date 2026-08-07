@@ -3094,7 +3094,200 @@
   "status_col": "Status",
   "created_date_col": "Created Date",
   "created_by_col": "Created By",
-  "actions_col": "Actions"
+  "actions_col": "Actions",
+
+
+  
+  "appbar": {
+    "brandSuffix": "Referral",
+    "partnerPortal": "Partner portal",
+    "adminConsole": "Admin console",
+    "financeAdmin": "Finance admin"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "myClients": "My clients",
+    "commissions": "Commissions",
+    "forecast": "Forecast",
+    "payouts": "Payouts",
+    "settings": "Settings",
+    "partners": "Partners",
+    "commissionTiers": "Commission tiers",
+    "approvalQueue": "Approval queue",
+    "payoutBatches": "Payout batches"
+  },
+  "common": {
+    "overview": "Overview",
+    "thisMonth": "This month",
+    "ytd": "YTD",
+    "lifetime": "Lifetime",
+    "viewAll": "View all",
+    "current": "current",
+    "saveChanges": "Save changes",
+    "remove": "Remove",
+    "approve": "Approve",
+    "hold": "Hold",
+    "review": "Review",
+    "view": "View"
+  },
+  "badge": {
+    "active": "Active",
+    "trial": "Trial",
+    "paid": "Paid",
+    "accrued": "Accrued",
+    "pending": "Pending",
+    "churned": "Churned",
+    "onboarding": "Onboarding"
+  },
+  "table": {
+    "client": "Client",
+    "activeUsers": "Active users",
+    "mrr": "MRR",
+    "tier": "Tier",
+    "status": "Status",
+    "period": "Period",
+    "revenue": "Revenue",
+    "commission": "Commission",
+    "amount": "Amount",
+    "reference": "Reference",
+    "partner": "Partner",
+    "clients": "Clients",
+    "referredMrr": "Referred MRR",
+    "agreement": "Agreement",
+    "minUsers": "Min users",
+    "maxUsers": "Max users",
+    "commissionPct": "Commission %",
+    "effectiveFrom": "Effective from",
+    "batch": "Batch",
+    "total": "Total"
+  },
+  "calc": {
+    "howCalculated": "How this is calculated"
+  },
+  "tier": {
+    "band1": "1–99",
+    "band2": "100–499",
+    "band3": "500–999",
+    "band4": "1000+"
+  },
+  "partner": {
+    "dashboard": {
+      "hero": {
+        "eyebrow": "Earning ladder",
+        "title": "Commission grows with every client you bring in.",
+        "subtitle": "Your rate is set by each client's active user count — not a fixed percentage. As they grow, you move up automatically."
+      },
+      "thisMonth": "This month",
+      "metric": {
+        "activeClients": "Active clients",
+        "activeClientsDelta": "{{count}} this month",
+        "referredMrr": "Referred MRR",
+        "commissionMonth": "Commission (mo.)",
+        "lifetimeEarned": "Lifetime earned",
+        "since2023": "since 2023"
+      },
+      "referredClients": "Referred clients",
+      "revenueForecast": "Revenue forecast",
+      "openForecast": "Open forecast"
+    },
+    "clients": {
+      "eyebrow": "Portfolio",
+      "searchPlaceholder": "Search clients",
+      "tierProgress": "tier progress",
+      "note": {
+        "clientA": "Client A has {{count}} active users — 40 more to reach the 100 band, which raises commission to 25%.",
+        "clientB": "Client B has {{count}} active users — 360 more to reach the 1000+ band, which raises commission to 35% automatically. No action needed on your end; the tier is re-evaluated every billing cycle.",
+        "clientC": "Client C has {{count}} active users — 40 more to reach the 100 band, which raises commission to 25%.",
+        "clientD": "Churned — no further accrual."
+      }
+    },
+    "commissions": {
+      "eyebrow": "Earnings",
+      "calcExplainer": "commission = client revenue for the period × the commission tier matching that client's active user count."
+    },
+    "forecast": {
+      "eyebrow": "Projections",
+      "title": "Revenue forecast",
+      "model": {
+        "linear": "Growth model: linear",
+        "flat": "Growth model: flat",
+        "historical": "Growth model: historical average",
+        "manual": "Growth model: manual"
+      },
+      "oneYear": "1 year",
+      "fiveYear": "5 years",
+      "tenYear": "10 years",
+      "twentyYear": "20 years",
+      "expected": "Expected",
+      "conservative": "Conservative",
+      "calcExplainer": "current MRR is grown forward at the selected model's annual rate; projected active users are re-mapped to the commission tier for each future year; commission = projected revenue × the tier applicable that year.",
+      "note": {
+        "linear": "Linear model applies a constant annual growth rate to both users and MRR — a reasonable middle-ground assumption for a growing client.",
+        "flat": "Flat model holds current MRR and user count constant — the conservative floor for the projection.",
+        "historical": "Historical average uses this client's own trailing 12-month growth rate, projected forward.",
+        "manual": "Manual override lets an admin or partner enter a custom growth rate for scenario planning."
+      },
+      "footnote": "Shown as expected vs. conservative scenarios — this is a projection, not a guarantee."
+    },
+    "payouts": {
+      "eyebrow": "History",
+      "statement": "Statement"
+    },
+    "settings": {
+      "eyebrow": "Account",
+      "profile": "Profile",
+      "referralCode": "Referral code",
+      "contactEmail": "Contact email",
+      "phone": "Phone",
+      "payoutDetails": "Payout details",
+      "accountHolderName": "Account holder name",
+      "accountHolderPlaceholder": "As per bank records",
+      "accountNumber": "Account number",
+      "notifications": "Notifications",
+      "notif": {
+        "newClient": "New client attributed",
+        "tierUpgrade": "Tier upgrade",
+        "payoutCompleted": "Payout completed",
+        "clientChurn": "Client churn"
+      }
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "title": "All partners",
+      "metric": {
+        "activePartners": "Active partners",
+        "referredClients": "Referred clients",
+        "mrrUnderReferral": "MRR under referral",
+        "accruedLiability": "Accrued liability"
+      },
+      "liabilityChartTitle": "Commission liability — accrued vs. paid",
+      "pendingApproval": "Pending approval",
+      "pendingApprovalSummary": "{{count}} ledger entries awaiting approval — {{total}} total."
+    },
+    "partners": {
+      "eyebrow": "Directory",
+      "newPartner": "New partner",
+      "expires": "Exp. {{date}}"
+    },
+    "tiers": {
+      "eyebrow": "Configuration",
+      "addTier": "Add tier",
+      "saveTierTable": "Save tier table",
+      "footnote": "Changing a tier's rate does not rewrite past ledger entries — new rates apply from the effective date forward. Maps to the commission_tiers schema table."
+    },
+    "queue": {
+      "eyebrow": "Finance",
+      "approveAll": "Approve all → batch payout",
+      "footnote": "\"Hold\" needs a defined destination (dispute reason, reviewer, resolution state) before this queue ships — see Section 9 of the PRD."
+    },
+    "batches": {
+      "eyebrow": "Finance",
+      "markPaid": "Mark paid"
+    }
+  
+}
+
 
 
 

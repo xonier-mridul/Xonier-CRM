@@ -31,6 +31,7 @@ import { TeamCategoryService } from "@/src/services/teamCategory.service";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import Skeleton from "react-loading-skeleton";
 import { useTranslation } from "react-i18next";
+import Pagination from "@/src/components/common/pagination";
 
 
 const page = (): JSX.Element => {
@@ -807,25 +808,26 @@ getCategoryData();
                                {item.firstName} {item.lastName}{" "}
                               </Link>
                             ))}</td>
+
+
                         <td className="p-4">
                           <div className="flex gap-2 flex-wrap text-slate-400">
                             {item.name}
                           </div>
                         </td>
-                        <td className="first-letter:uppercase p-4">
-                          <div className="flex gap-2 flex-wrap">
+
+                        <td className="flex max-w-50 overflow-scroll p-4">
                             {item?.members?.map((item, index) => (
                               ( item.firstName ) && (
                                 <Link
                                 href={`/users/${item.id}`}
                                 key={index}
-                                className="bg-cyan-100 hover:bg-cyan-200 hover:scale-105 dark:bg-cyan-200   text-cyan-700 border border-cyan-200 text-[13px] px-3 py-1 rounded-full transition-all capitalize duration"
+                                className="bg-cyan-500 hover:bg-cyan-600 hover:scale-105 dark:bg-cyan-500   text-white border border-cyan-200 text-[13px] px-4 py-1.5 rounded-full text-nowrap capitalize"
                               >
                                 {" "}
                                 {item.firstName} {item.lastName}{" "}
                               </Link>)
                             ))}
-                          </div>
                         </td>
                         {/* <td className="p-4">
                           {" "}
@@ -934,7 +936,15 @@ getCategoryData();
               )}
             </tbody>
           </table>
+          <div className="px-6 pb-6">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={(page) => setCurrentPage(page)}
+                />
+              </div>
         </div>
+          
       </div>
     </>
   );

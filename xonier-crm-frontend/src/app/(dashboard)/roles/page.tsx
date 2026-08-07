@@ -49,36 +49,69 @@ const page = (): JSX.Element => {
 
   const {hasPermission} = usePermissions()
 
-  const getAllRoles = async () => {
-    setErr(null);
-    setIsLoading(true);
-    try {
-        // const filters: Record<string, string> = {};
-        // if (search && search.trim()) filters.search = search.trim();
-      const result = await RoleService.getRoles({
-        currentPage: currentPage,
-        pageLimit: pageLimit,
-      });
-      if (result.status === 200) {
-        const data = result.data.data;
-        console.log("role:",data)
-        setRoleData(data.data);
-        // setCurrentPage(Number(data.page));
-        // setPageLimit(Number(data.limit));
-        setTotalPages(Number(data.totalPages))
-      }
-    } catch (error) {
-      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
-      if (axios.isAxiosError(error)) {
-        const messages = extractErrorMessages(error);
-        setErr(messages);
-        toast.error(`${messages}`);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // const getAllRoles = async (search?:string) => {
+  //   setErr(null);
+  //   setIsLoading(true);
+  //   try {
+  //       const filters: Record<string, string> = {};
+  //       if (search && search.trim()) filters.search = search.trim();
+  //     const result = await RoleService.getRoles({
+  //       currentPage: currentPage,
+  //       pageLimit: pageLimit,
+  //       filter:filters
+  //     });
+  //     if (result.status === 200) {
+  //       const data = result.data.data;
+  //       console.log("role:",data)
+  //       setRoleData(data.data);
+    
+  //       setTotalPages(Number(data.totalPages))
+  //     }
+  //   } catch (error) {
+  //     process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+  //     if (axios.isAxiosError(error)) {
+  //       const messages = extractErrorMessages(error);
+  //       setErr(messages);
+  //       toast.error(`${messages}`);
+  //     }
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
+  const getAllRoles = async (search = "") => {
+  setErr(null);
+  setIsLoading(true);
+
+  try {
+    const result = await RoleService.getRoles({
+      currentPage,
+      pageLimit,
+      filter: {
+        search: search.trim(),
+      },
+    });
+
+    if (result.status === 200) {
+      const data = result.data.data;
+
+      setRoleData(data.data);
+      setTotalPages(Number(data.totalPages));
+    }
+  } catch (error) {
+    if (process.env.NEXT_PUBLIC_ENV === "development") {
+      console.error(error);
+    }
+
+    if (axios.isAxiosError(error)) {
+      const messages = extractErrorMessages(error);
+      setErr(messages);
+      toast.error(`${messages}`);
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
   const getAllPermissions = async () => {
     try {
       const result = await PermissionsService.getAll();
@@ -151,19 +184,22 @@ const page = (): JSX.Element => {
 
   
 
+const handleSearch = (val: string) => {
+  setSearchVal(val);
 
-    const handleSearch = (val: string) => {
-    setSearchVal(val);
-    if (searchTimer.current) clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(() => {
-      setCurrentPage(1);
-      // getAllRoles(val);
-    }, 400);
-  };
+  if (searchTimer.current) {
+    clearTimeout(searchTimer.current);
+  }
 
-  useEffect(() => {
-    getAllRoles();
-  }, [currentPage, pageLimit]);
+  searchTimer.current = setTimeout(() => {
+    setCurrentPage(1);
+  }, 400);
+};
+
+
+useEffect(() => {
+  getAllRoles(searchVal);
+}, [currentPage, pageLimit, searchVal]);
 
   useEffect(() => {
     getAllPermissions();
