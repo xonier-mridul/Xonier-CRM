@@ -789,6 +789,14 @@ class AuthServices:
             else:
                 companyId = userModel.companyId if userModel.companyId else None
 
+            
+
+            company = await self.companyRepo.find_company_by_companyId(companyId=companyId, populate=["subscription"])
+
+            if not company:
+                raise AppException(400, "Company not found")
+
+            
            
 
             new_user = await self.repo.create(
@@ -954,7 +962,7 @@ class AuthServices:
             hashed_mail = hash_value(data["email"])
             encrypt_email = self.crypto.encrypt_data(data["email"])
 
-            print("Data: ", data)
+            
             
             with system_query():
                 company = await self.companyRepo.find_one(filter={"companyId": data.get("companyId")}, populate=["subscription"], session=session)

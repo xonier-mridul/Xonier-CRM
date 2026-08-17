@@ -1,14 +1,14 @@
 from typing import Dict, Any
 from app.utils.custom_exception import AppException
 from app.repositories.user_role_repository import UserRoleRepository
-from app.utils.code_generator import code_generator
+from app.utils.code_generator import code_generator, validate_role_name
 from app.db.db import Client
 from beanie import PydanticObjectId
 from app.repositories.user_repository import UserRepository
 from bson import ObjectId
 from app.utils.validate_admin import validate_admin
 
-
+from pydantic import ValidationError
 
 class UserRoleService:
     def __init__(self):
@@ -46,9 +46,9 @@ class UserRoleService:
 
      
      
-            result = await self.repository.get_all(page, limit, filters=query, populate=["createdBy", "permissions"])
+            result = await self.repository.get_all(page, limit, filters=query, populate=["createdBy", "permissions"],sort=[("createdAt", -1)],)
 
-  
+
 
             if not result:
                 raise AppException(404, "Roles data not found")
@@ -64,10 +64,9 @@ class UserRoleService:
     
     async def get_all_active(self):
         try:
-           
+        
             
-            
-            result = await self.repository.get_all_without_pagination(filters={"status": True}, populate=["createdBy", "permissions"])
+            result = await self.repository.get_all_without_pagination(filters={"status": True}, populate=["createdBy", "permissions"], sort=[("createdAt", -1)])
 
             if not result:
                 raise AppException(status_code=404, message="No active roles found")
@@ -99,12 +98,14 @@ class UserRoleService:
 
 
 
-    async def create_role(self, user: Dict[str, any], data:Dict[str, Any]):
+    async def create_role(self, user: Dict[str, any], data: Dict[str, Any]):
         session = await self.client.start_session()
         try:
             session.start_transaction()
-            payload = {**data}
 
+            validate_role_name(data["name"])  # ✅ validate BEFORE generating code / hitting DB
+
+            payload = {**data}
             code = code_generator(data["name"])
             payload.update(code=code, createdBy=user["_id"])
 
@@ -112,16 +113,21 @@ class UserRoleService:
 
             if not new_role:
                 raise AppException(400, "Role creation failed")
-            
+
             await session.commit_transaction()
             return new_role.model_dump(mode="json")
 
-        except AppException:
+        except AppException as e:
             await session.abort_transaction()
-            raise 
+            raise e
+        except ValidationError as e:
+            # ✅ catch any remaining pydantic validation errors explicitly
+            await session.abort_transaction()
+            raise AppException(400, f"Invalid role data: {e.errors()}")
+        
         except Exception as e:
             await session.abort_transaction()
-            raise AppException(status_code=500, message="internal server error")
+            raise AppException(status_code=500, message=f"internal server error: {e}")
         finally:
             await session.end_session()
 
