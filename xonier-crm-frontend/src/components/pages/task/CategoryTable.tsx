@@ -12,6 +12,7 @@ import CategoryModal from "@/src/components/pages/task/createModal";
 import { FaRegEye } from "react-icons/fa6";
 import { MdDeleteOutline, MdOutlineEdit } from "react-icons/md";
 import { useTranslation } from "react-i18next";
+import BlurryBackground from "../../common/BlurryBackground";
 
 
 function getColorOption(hex: string | null): ColorOption {
@@ -71,6 +72,7 @@ const CategoryTable = ({
     handleClosePopup,
     hasPermissions,
     totalPages,
+    isBlur,
     handlepagechange,
     handleSearch,
     err,
@@ -105,6 +107,7 @@ const CategoryTable = ({
                     err={err}
                 />
             )}
+          
 
             {/* Page Header */}
             <div className="flex items-start justify-between mb-8">

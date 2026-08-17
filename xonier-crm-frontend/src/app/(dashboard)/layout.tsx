@@ -4,6 +4,7 @@ import "../../app/globals.css";
 import SideBar from "@/src/components/layouts/SideBar";
 import NavBar from "@/src/components/layouts/NavBar";
 import { MARGIN_TOP, SIDEBAR_WIDTH } from "@/src/constants/constants";
+import ReduxProvider from "@/src/store/providers";
 
 
 
@@ -23,10 +24,11 @@ export default function RootLayout({
       <body
         className={`mt-${MARGIN_TOP} p-6 bg-stone-50 dark:bg-gray-800`}
       >
-
+        {/* <ReduxProvider> */}
         <SideBar/>
         <NavBar/>
         {children}
+        {/* </ReduxProvider> */}
         
       </body>
     </html>

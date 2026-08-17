@@ -1,0 +1,154 @@
+"use client";
+
+import React, { ChangeEvent, ChangeEventHandler, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { MdOutlineMailOutline } from "react-icons/md";
+import { useTranslation } from "react-i18next";
+import { toast } from "react-toastify";
+import { AuthService } from "@/src/services/auth.service";
+
+
+export interface forgotPasswordPayload{
+  email:string;
+  companyId:string
+}
+
+const Page = () => {
+  const { t } = useTranslation();
+  const router = useRouter();
+  
+  const [formData, setFormData] = useState<forgotPasswordPayload>({
+    email:"",
+    companyId:""
+  });
+
+  const [loading, setLoading] = useState(false);
+
+const handelChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const { name, value } = e.target;
+
+  setFormData((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
+};
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!formData.email.trim()) return;
+
+  setLoading(true);
+  
+const payload: forgotPasswordPayload = {
+  email: formData.email,
+  companyId: formData.companyId,
+};
+
+try {
+
+  const result = await AuthService.emailVerify(payload);
+
+  if (result.status === 200) {
+    sessionStorage.setItem("forgotPasswordEmail", formData.email);
+    sessionStorage.setItem("forgotPasswordCompanyId", formData.companyId);
+
+    toast.success(t("otp_sent_successfully"));
+
+    setFormData({
+      email:"",
+      companyId:""
+    })
+
+    router.push("/change-password");
+  }
+} catch (error) {
+  console.error(error);
+  toast.error(t("something_went_wrong"));
+} finally {
+  setLoading(false);
+}
+};
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cyan-50 dark:from-cyan-900 to-blue-50 dark:to-blue-900  px-4">
+      <div className="w-full max-w-md rounded-3xl  bg-white dark:bg-slate-900  shadow-2xl border border-slate-200 dark:border-slate-600  p-8">
+
+        <div className="flex justify-center">
+          <div className="h-16 w-16 rounded-full bg-cyan-100 flex items-center justify-center">
+            <MdOutlineMailOutline className="text-3xl text-cyan-600" />
+          </div>
+        </div>
+
+        <h1 className="mt-6 text-center text-3xl dark:text-white font-bold text-slate-800">
+          {t("forgot_password")}
+        </h1>
+
+        <p className="mt-2 text-center dark:text-stone-200 text-sm text-slate-500">
+          {t("enter_registered_email_for_otp")}
+        </p>
+
+        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+          <div>
+            <label className="mb-2 block text-sm font-semibold dark:text-gray-200 text-slate-700">
+              {t("email_address")}
+            </label>
+
+            <input
+              type="email"
+              name="email"
+              placeholder={t("enter_email")}
+              value={formData.email}
+              onChange={handelChange}
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition
+               focus:ring-2 
+    focus:outline-none focus:border-cyan-400 dark:focus:border-cyan-500 text-slate-600  focus:ring-teal-400/20"
+            />
+          </div>
+           <div>
+            <label className="mb-2 block text-sm dark:text-gray-200 font-semibold text-slate-700">
+              {t("company_id")}
+            </label>
+
+            <input
+              type="text"
+              name="companyId"
+              placeholder={t("COMP6-2026.........")}
+              value={formData.companyId}
+              onChange={handelChange}
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition  focus:ring-2 
+    focus:outline-none focus:border-cyan-400 dark:focus:border-cyan-500 text-slate-600  focus:ring-teal-400/20"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading || !formData.email.trim() || !formData.companyId.trim()}
+            className="flex w-full items-center justify-center rounded-xl bg-cyan-600 py-3 text-white font-semibold transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {loading ? (
+              <>
+                <span className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                {t("sending")}
+              </>
+            ) : (
+              t("send_otp")
+            )}
+          </button>
+        </form>
+
+        <div className="mt-8 text-center">
+          <Link
+            href="/login"
+            className="text-sm font-medium text-cyan-600 hover:text-cyan-700"
+          >
+            ← {t("back_to_login")}
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Page;

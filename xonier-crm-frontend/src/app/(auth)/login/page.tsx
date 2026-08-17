@@ -9,9 +9,11 @@ import FormButton from "@/src/components/ui/FormButton";
 import { AuthService } from "@/src/services/auth.service";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import extractErrorMessages from "../../utils/error.utils";
 import { useTranslation } from "react-i18next";
+import ThemeToggle from "@/src/components/common/ThemeToggle";
+import { useTheme } from "next-themes";
 
 const page = () => {
   const { t } = useTranslation();
@@ -20,26 +22,41 @@ const page = () => {
   const [formData, setFormData] = useState<LoginPayload>({
     email: "",
     password: "",
+    companyId:""
   });
 
   const router = useRouter();
+  const {resolvedTheme} = useTheme()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
+useEffect(() => {
+  const companyId = localStorage.getItem("companyId");
+
+  if (companyId) {
+    setFormData((prev) => ({
+      ...prev,
+      companyId,
+    }));
+  }
+}, []);
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     setErr(null);
     try {
-      let result = await AuthService.login(formData);
+      const result = await AuthService.login(formData);
       if (result.status === 200) {
         router.push("/login/verify-otp");
         sessionStorage.setItem("loginMail", formData.email);
+        sessionStorage.setItem("companyId", formData.companyId);
+        localStorage.setItem("companyId", formData.companyId);
         sessionStorage.setItem("loginPassword", formData.password);
-        setFormData({ email: "", password: "" });
+        setFormData({ email: "", password: "" ,companyId:""});
         toast.success(result.data.message);
       }
     } catch (error) {
@@ -56,11 +73,12 @@ const page = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-start justify-center bg-violet-50">
+    <div className="min-h-screen flex items-start justify-center dark:bg-cyan-900 bg-cyan-50">
       <div className="w-[65%] mt-7 mx-11 flex flex-col justify-center ">
         <nav>
+
           <Image
-            src={"/images/trakeroo.png"}
+            src={ resolvedTheme === "dark" ? '/images/trakeroo-light.png' : '/images/trakeroo.png' }
             height={200}
             width={200}
             alt={t("xonier_logo")}
@@ -76,8 +94,12 @@ const page = () => {
           />
         </div>
       </div>
-      <div className="w-[35%] bg-white h-screen flex items-start justify-center flex-col gap-5 p-14">
-        <h1 className="text-2xl text-black font-medium">{t("welcome_back_admin")}</h1>
+      <div className="w-[35%] relative bg-white h-screen rounded-l-4xl dark:bg-slate-900 flex items-start justify-center flex-col gap-5 p-14">
+        <div className="absolute top-2 right-4">
+
+        <ThemeToggle/>
+        </div>
+        <h1 className="text-2xl text-black dark:text-white font-medium">{t("welcome_back_admin")}</h1>
         {/* <div className="flex flex-col gap-2 text-gray-500">
           Continue with
           <div className="flex items-center justify-between gap-3 w-full">
@@ -127,11 +149,22 @@ const page = () => {
               onChange={handleChange}
               placeholder="*********"
             />
+            
+             <Input
+              label={t("company_id")}
+              name="companyId"
+              type="text"
+              link={true}
+              value={formData.companyId}
+              onChange={handleChange}
+              placeholder="COMP6-2026........."
+            />
             <div className="flex items-center justify-end">
-              <Link href={"/"} className="text-gray-500 font-semibold text-sm">
+              <Link href={"/forgot-password"} className="text-gray-500 font-semibold text-sm">
                 {t("forgot_password")}
               </Link>
             </div>
+             
             {err && (
               <div className="flex justify-end items-center">
                 {" "}

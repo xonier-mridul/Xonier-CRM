@@ -27,13 +27,14 @@ class OTP_TYPE(str, Enum):
 
     PASSWORD_RESET = "password_reset"
     CHANGE_PASSWORD = "change_password"
-
+    FORGOT_PASSWORD = "forgot_password"
     ACCOUNT_RECOVERY = "account_recovery"
 
     TRANSACTION = "transaction"
     PAYMENT_CONFIRMATION = "payment_confirmation"
 
     INVITE_ACCEPTANCE = "invite_acceptance"
+    EMAIL_VERIFICATION_AND_FORGOT_PASSWORD = "email_verification_and_forgot_password"
 
 class OTP_EXPIRY(int, Enum):
     TEN_MINUTS = 10
@@ -91,6 +92,11 @@ class SALES_STATUS(str, Enum):
     WON = "won"
     LOST = "lost"
     DELETE = "delete"
+
+
+class MEETING_SCHEDULED(str, Enum):
+    YES="yes"
+    NO="no"
 
 class PRIORITY(str, Enum):
     LOW = "low"
@@ -631,6 +637,8 @@ class ACTIVITY_ACTION(str, Enum):
     VERIFY = "verify"
     REGISTER = "register"
 
+    FORGOT_PASSWORD = "forgot_password"
+
 
 class LEAD_SOURCE_TYPE(str, Enum):
     SELF_CREATED = "self_created"
@@ -1059,3 +1067,30 @@ class PAYMENT_METHOD(str, Enum):
 class BILLING_CYCLE(str, Enum):
     MONTHLY = "monthly"
     YEARLY = "yearly"
+
+
+
+class DATE_FILTER(str, Enum):
+    ALL = "all"
+    TODAY = "today"
+    WEEK = "week"
+    MONTH = "month"
+    YEAR = "year"
+    CUSTOM = "custom"
+
+
+class RATING_FILTER(str, Enum):
+    ALL = "all"
+    RATED = "rated"
+    UNRATED = "unrated"
+    ONE = "1"
+    TWO = "2"
+    THREE = "3"
+    FOUR = "4"
+    FIVE = "5"
+
+
+class ON_TIME_FILTER(str, Enum):
+    ALL = "all"
+    ON_TIME = "onTime"
+    OVERDUE = "overdue"

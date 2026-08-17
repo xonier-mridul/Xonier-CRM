@@ -26,6 +26,7 @@ const page = () => {
   const [resendLoading, setResetLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [email, setEmail] = useState("");
+  const [companyId, setCompanyId] = useState("");
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState<string>("");
   const [timeLeft, setTimeLeft] = useState<number>(OTP_TIMER);
@@ -35,7 +36,9 @@ const page = () => {
   useEffect(() => {
     const userEmail = sessionStorage.getItem("loginMail");
     const userPassword = sessionStorage.getItem("loginPassword");
+    const companyId = sessionStorage.getItem("companyId")
     if (userEmail) setEmail(userEmail);
+    if (companyId) setCompanyId(companyId);
     if (userPassword) setPassword(userPassword);
   }, []);
 
@@ -109,6 +112,7 @@ const page = () => {
         email,
         otp: Number(otp),
         password,
+        companyId
       };
 
       const result = await AuthService.verifyLoginOtp(payload);
@@ -117,6 +121,7 @@ const page = () => {
         toast.success("Logged in successfully");
         sessionStorage.removeItem("loginMail");
         sessionStorage.removeItem("loginPassword");
+        sessionStorage.removeItem("companyId");
         
         dispatch(login(result.data.data))
         // setTimeout(() => {
@@ -150,6 +155,7 @@ const page = () => {
       const payload: ResendLoginOtpPayload = {
         email,
         password,
+        companyId
       };
 
       const result = await AuthService.resendOTP(payload);
@@ -170,15 +176,15 @@ const page = () => {
   };
 
   return (
-    <div className="flex items-center justify-center bg-violet-50 min-h-screen">
+    <div className="flex items-center justify-center bg-gradient-to-br from-cyan-50 to-blue-50 min-h-screen">
       <div className="bg-white p-8 rounded-xl w-[600px] flex flex-col gap-5">
-        <h1 className="text-2xl font-semibold text-blue-800">
+        <h1 className="text-2xl font-semibold text-cyan-800">
           {t("verify_login_otp")}
         </h1>
 
         <p className="text-sm text-gray-500">
           {t("otp_is_sent_to")}{" "}
-          <span className="font-medium text-blue-500">{email}</span>
+          <span className="font-medium text-cyan-500">{email}</span>
         </p>
 
         <form onSubmit={verifyOtp} className="flex flex-col gap-7">
@@ -198,8 +204,9 @@ const page = () => {
                 onPaste={handlePaste}
                 className="
                   w-16 h-14 text-center text-lg font-semibold
+                  outline-none
                   border border-slate-400 text-slate-800
-                  rounded-md focus:ring-2 focus:ring-blue-500
+                  rounded-md focus:ring-2 focus:ring-cyan-500
                 "
               />
             ))}
@@ -220,21 +227,21 @@ const page = () => {
           {timeLeft > 0 ? (
             <p>
               {t("resend_otp_in")}{" "}
-              <span className="font-semibold text-blue-600">{timeLeft}s</span>
+              <span className="font-semibold text-cyan-600">{timeLeft}s</span>
             </p>
           ) : (
             <button
               onClick={resendOtp}
-              className="text-blue-600 font-medium hover:underline"
+              className="text-cyan-600 font-medium hover:underline"
             >
-              {resendLoading ? "Sending..." : "Resend OTP"}
+              {resendLoading ? t("sending_3") : t("resend_otp")}
             </button>
           )}
         </div>
 
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-1.5 text-slate-700 font-medium cursor-pointer hover:text-blue-400 tracking-wide"
+          className="flex items-center gap-1.5 text-slate-700 font-medium cursor-pointer hover:text-cyan-400 tracking-wide"
         >
           <IoChevronBack /> {t("step_back")}
         </button>

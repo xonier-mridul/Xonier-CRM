@@ -44,6 +44,7 @@ import { QuotationHistory } from '@/src/types/quotations/quoteHistory.types';
 import { QuoteHistoryService } from '@/src/services/quoteHistory.service';
 import Skeleton from 'react-loading-skeleton';
 import { useTranslation } from "react-i18next";
+import { CiFileOn } from 'react-icons/ci';
 
 const CURRENCY_SYMBOLS: Record<QuotationCurrency, string> = {
   [QuotationCurrency.USD]: '$',
@@ -472,6 +473,61 @@ const Page = (): JSX.Element => {
                   )}
                 </div>
               </div>
+              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
+                <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
+                  <CiFileOn className="w-5 h-5 text-cyan-500" />
+                  {t("custom_quotation")}
+                </h2>
+
+                {quoteData.attachments && quoteData.attachments.length > 0 ? (
+                  <div className="space-y-3">
+                    {quoteData.attachments.map((attachment, index) => {
+                      // Extract filename from URL
+                      const fileName = attachment.split('/').pop() || `Attachment ${index + 1}`;
+                      const fileExtension = fileName.split('.').pop()?.toUpperCase() || 'FILE';
+                      
+                      return (
+                        <div 
+                          key={index}
+                          className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-700/40 rounded-xl border border-gray-200 dark:border-gray-600 hover:border-cyan-300 dark:hover:border-cyan-600 transition-colors"
+                        >
+                          <div className="w-10 h-10 rounded-lg bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center shrink-0">
+                            <IoDocumentTextOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                              {decodeURIComponent(fileName)}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                              {fileExtension}
+                            </p>
+                          </div>
+                          <a
+                            href={attachment}
+                            download
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-medium rounded-lg transition-colors"
+                          >
+                            <IoDownloadOutline className="w-4 h-4" />
+                            {t("download")}
+                          </a>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-3">
+                      <CiFileOn className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {t("no_attachments")}
+                    </p>
+                  </div>
+                )}
+              </div>
+
 
               {(quoteData.notes || quoteData.termsAndConditions) && (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 space-y-4">
@@ -668,7 +724,6 @@ const Page = (): JSX.Element => {
               {quoteHistoryData && quoteHistoryData.length > 0 ? (
                 <div className="space-y-4">
                   {quoteHistoryData.map((history, index) => {
-  const { t } = useTranslation();
                     const isLast = index === quoteHistoryData.length - 1;
 
                     const getEventStyle = (eventType: string) => {

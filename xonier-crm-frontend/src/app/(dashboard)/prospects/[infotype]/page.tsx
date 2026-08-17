@@ -96,7 +96,7 @@ const BulkCallModal = ({
     <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="bg-linear-to-r from-cyan-600 to-indigo-600 px-6 py-5 rounded-t-2xl flex items-center justify-between shrink-0">
+        <div className="bg-linear-to-r from-cyan-600 to-cyan-600 px-6 py-5 rounded-t-2xl flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center">
               <MdCall className="w-5 h-5 text-white" />
@@ -519,6 +519,7 @@ const LeadContent = (): JSX.Element => {
           {/* Header */}
           <div className="flex w-full items-center gap-12 justify-between">
             <h2 className="text-2xl font-bold dark:text-white text-slate-900">{t("prospect")}</h2>
+      
 
             <div className="flex items-center gap-6 flex-wrap">
               {/* Search */}
@@ -1007,10 +1008,10 @@ const LeadContent = (): JSX.Element => {
             {/* Left */}
             <div className="flex items-center gap-3 min-w-0">
               <div className="relative shrink-0">
-                <div className="w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
-                  <HiOutlineUserGroup className="text-indigo-600 dark:text-indigo-400 text-lg" />
+                <div className="w-9 h-9 rounded-full bg-cyan-100 dark:bg-cyan-900/40 flex items-center justify-center">
+                  <HiOutlineUserGroup className="text-cyan-600 dark:text-cyan-400 text-lg" />
                 </div>
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-indigo-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-cyan-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
                   {commSelectedIds.size}
                 </span>
               </div>
@@ -1022,7 +1023,7 @@ const LeadContent = (): JSX.Element => {
               </div>
               <div className="hidden sm:flex items-center -space-x-2 ml-1">
                 {commSelectedLeads.slice(0, 5).map((lead, i) => (
-                  <div key={lead.id} className="w-7 h-7 rounded-full bg-linear-to-br from-indigo-400 to-purple-500 border-2 border-white dark:border-gray-800 flex items-center justify-center text-white text-[10px] font-bold shrink-0" title={lead.fullName} style={{ zIndex: 5 - i }}>
+                  <div key={lead.id} className="w-7 h-7 rounded-full bg-linear-to-br from-cyan-400 to-cyan-500 border-2 border-white dark:border-gray-800 flex items-center justify-center text-white text-[10px] font-bold shrink-0" title={lead.fullName} style={{ zIndex: 5 - i }}>
                     {lead.fullName?.[0]?.toUpperCase() ?? "?"}
                   </div>
                 ))}

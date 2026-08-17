@@ -57,6 +57,22 @@ class AuthController:
         except AppException as e:
             raise e
 
+
+    async def admin_login(self, request: Request, data: Dict[str, Any]):
+        try:
+           
+           
+            result = await self.service.admin_login(data=data)
+
+            user_name= f"{result.get("firstName")} {result.get("lastName", "")}"
+            
+            return successResponse(200, f"{user_name} Credential accepted, verification otp send successfully")
+
+        except AppException as e:
+
+           raise e
+
+        
     async def login(self, request: Request, data: Dict[str, Any]):
         try:
            
@@ -71,6 +87,16 @@ class AuthController:
 
            raise e
         
+    async def resend_admin_verification_otp(self, data: Dict[str, Any]):
+        try:
+            
+            result = await self.service.resend_verification_otp_for_admin(data)
+            return successResponse(200, f"Verification otp send successfully")
+
+        except AppException as e:
+           
+           raise e
+
     async def resend_verification_otp(self, data: Dict[str, Any]):
         try:
             
@@ -81,6 +107,31 @@ class AuthController:
            
            raise e
 
+
+        
+    async def verify_admin_login_otp(self, request: Request, response: Response, data: dict[str, Any]):
+        try:
+            ip = request.client.host
+
+            user_agent = request.headers.get("user-agent")
+            result = await self.service.verify_admin_login_otp(data=data, ip=ip, agent=user_agent)
+
+            access_token_expiry = int(self.settings.ACCESS_TOKEN_EXPIRY) * 24 * 60 * 60
+            # access_token_expiry = int(self.settings.ACCESS_TOKEN_EXPIRY) * 60
+            refresh_token_expiry = int(self.settings.REFRESH_TOKEN_EXPIRY) * 24 * 60 * 60
+
+            
+            response.set_cookie(key="accessToken", value=result["access_token"], max_age=access_token_expiry, **JWT_OPTIONS)
+            response.set_cookie(key="refreshToken", value=result["refresh_token"], max_age=refresh_token_expiry, **JWT_OPTIONS)
+
+            user_name = f"{result['user']["firstName"]} {result['user']["lastName"]}"
+
+            return successResponse(200, f"{user_name} logged in successfully", {**result["user"], "accessToken": result["access_token"], "refreshToken": result["refresh_token"]})
+
+
+        except AppException as e:
+
+           raise e
 
         
     async def verify_login_otp(self, request: Request, response: Response, data: dict[str, Any]):
@@ -184,21 +235,36 @@ class AuthController:
         
 
     async def get_user_rating_data(
-    self,
-    request: Request,
-    id: str,
-    page: int = 1,
-    limit: int = 20,
-):
+        self,
+        request: Request,
+        id: str,
+        page: int = 1,
+        limit: int = 20,
+        date_filter: str = "all",
+        start_date: str = None,
+        end_date: str = None,
+        rating_filter: str = "all",
+        on_time_filter: str = "all",
+        trend_months: int = 6,
+    ):
         try:
             user = request.state.user
-            result = await self.service.get_user_rating_data(id, user, page, limit)
+            result = await self.service.get_user_rating_data(
+                id,
+                user,
+                page,
+                limit,
+                date_filter=date_filter,
+                start_date_str=start_date,
+                end_date_str=end_date,
+                rating_filter=rating_filter,
+                on_time_filter=on_time_filter,
+                trend_months=trend_months,
+            )
             return successResponse(200, "User rating data fetched successfully", result)
 
         except AppException as e:
             raise e
-        
-        
     async def get_user_profile(self, request:Request ):
         try:
            
@@ -322,6 +388,9 @@ class AuthController:
         
         except Exception as e:
             raise e
+
+
+    
         
     async def reset_user_password(self, request: Request, userId:str, data:Dict[str, Any]):
         try:
@@ -335,6 +404,31 @@ class AuthController:
     
             raise e
         
+
+
+
+    async def forgot_password(self, request: Request, payload: Dict[str, Any] ):
+        try:
+            await self.service.forgot_password(payload=payload)
+
+            return successResponse(200, "Email verified, confirmation OTP send to your email")
+
+
+        except AppException as e: 
+            raise e
+
+        
+
+    async def verify_forgot_pass_otp(self, request: Request, payload: Dict[str, Any]):
+        try:
+            clientIp = request.client.host
+            user_agent = request.headers.get("user-agent")
+            
+            await self.service.verify_forgot_pass_otp(payload=payload, userIp=clientIp, userAgent=user_agent)
+            return successResponse(200, "OTP Verified")
+
+        except AppException as e: 
+            raise e
 
     
     async def permanent_delete(self, request: Request, userId: str):
@@ -452,6 +546,24 @@ class AuthController:
             response.delete_cookie(key="accessToken", **JWT_OPTIONS)
             response.delete_cookie(key="refreshToken", **JWT_OPTIONS)
             raise AppException(500, f"Internal server error: {e}")
+
+
+    async def find_my_company_id(self, request: Request, payload: Dict[str, Any]):
+        try:
+
+            result = await self.service.find_my_company_id(payload=payload)
+
+            return successResponse(status_code=200, message="Company ID fetched successfully", data=result)
+
+
+        except AppException as e:
+            return AppException(e.status_code, e.message)
+        
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+        
+        
+    
     
             
             

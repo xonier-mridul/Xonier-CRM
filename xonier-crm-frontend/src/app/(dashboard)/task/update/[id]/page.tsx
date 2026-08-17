@@ -62,10 +62,10 @@ const PRIORITY_CFG: Record<
 };
 
 const inputCls =
-  "w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition";
+  "w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-400 transition";
 
 const selectCls =
-  "w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition";
+  "w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-400 transition";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -427,7 +427,7 @@ const UpdateTaskPage = (): JSX.Element => {
       <div className="ml-72 mt-14 p-6 min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <svg
-            className="animate-spin h-10 w-10 text-blue-500"
+            className="animate-spin h-10 w-10 text-cyan-500"
             viewBox="0 0 24 24"
             fill="none"
           >
@@ -531,7 +531,7 @@ const UpdateTaskPage = (): JSX.Element => {
                     <option value="" >{t("select_category_2")}</option>
                     {categories.map((c) => (
                       <option key={c.id} value={c.id}>
-                        {c.icon} {t("nbsp")} {c.name}
+                        {c.icon} {c.name}
                       </option>
                     ))}
                   </select>
@@ -617,7 +617,7 @@ const UpdateTaskPage = (): JSX.Element => {
               {/* Recurring toggle */}
               <div
                 className={`flex items-start gap-3 p-4 rounded-xl border transition-colors cursor-pointer ${form.isRecurring
-                  ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700"
+                  ? "bg-cyan-50 dark:bg-cyan-900/20 border-cyan-200 dark:border-cyan-700"
                   : "bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-700"
                   }`}
                 onClick={() => {
@@ -633,7 +633,7 @@ const UpdateTaskPage = (): JSX.Element => {
               >
                 <div
                   className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${form.isRecurring
-                    ? "bg-blue-600 border-blue-600"
+                    ? "bg-cyan-600 border-cyan-600"
                     : "border-gray-300 dark:border-gray-500"
                     }`}
                 >
@@ -652,7 +652,7 @@ const UpdateTaskPage = (): JSX.Element => {
               </div>
 
               {form.isRecurring && (
-                <div className="grid grid-cols-2 gap-4 pl-3 border-l-2 border-blue-300 dark:border-blue-600 ml-1">
+                <div className="grid grid-cols-2 gap-4 pl-3 border-l-2 border-cyan-300 dark:border-cyan-600 ml-1">
                   <Field label={t("recurrence_type")} required>
                     <select
                       value={form.recurrenceType ?? ""}
@@ -745,7 +745,7 @@ const UpdateTaskPage = (): JSX.Element => {
                 <button
                   type="button"
                   onClick={addTag}
-                  className="px-4 py-2.5 rounded-xl text-sm font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-400 transition whitespace-nowrap"
+                  className="px-4 py-2.5 rounded-xl text-sm font-semibold text-cyan-600 bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 dark:bg-cyan-900/30 dark:border-cyan-700 dark:text-cyan-400 transition whitespace-nowrap"
                 >
                   {t("add")}
                 </button>
@@ -755,13 +755,13 @@ const UpdateTaskPage = (): JSX.Element => {
                   {form.tags?.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-700"
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-50 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 border border-cyan-100 dark:border-cyan-700"
                     >
                       #{tag}
                       <button
                         type="button"
                         onClick={() => removeTag(tag)}
-                        className="text-blue-400 hover:text-blue-700 dark:hover:text-blue-200 transition leading-none"
+                        className="text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-200 transition leading-none"
                       >
                         ×
                       </button>
@@ -826,10 +826,10 @@ const UpdateTaskPage = (): JSX.Element => {
                         onClick={() => myId && toggleAssignee(myId)}
                         className={`w-full mb-2 px-3 py-2 text-xs font-semibold rounded-lg border transition ${isMeAssigned
                           ? "bg-green-50 text-green-600 border-green-200"
-                          : "bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100"
+                          : "bg-cyan-50 text-cyan-600 border-cyan-200 hover:bg-cyan-100"
                           }`}
                       >
-                        {isMeAssigned ? "✅ Assigned to Me" : "⚡ Assign to Me"}
+                        {isMeAssigned ?   t("assigned_to_me"):t("assign_to_me")}
                       </button>
                     );
                   })()}
@@ -841,12 +841,11 @@ const UpdateTaskPage = (): JSX.Element => {
                           placeholder={t("search_users")}
                           value={userSearch}
                           onChange={(e) => setUserSearch(e.target.value)}
-                          className="w-full px-3 py-2 text-xs rounded-lg border bg-white dark:bg-gray-800 text-gray-800 dark:text-white outline-none"
+                          className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-white dark:bg-gray-800 text-gray-800 dark:text-white outline-none"
                         />
                       </div>
                       <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
                         {userData.map((u) => {
-  const { t } = useTranslation();
                           const checked = (form.assignedTo ?? []).includes(u.id);
                           const isMe =
                             u.id === (auth.user?._id || auth.user?.id);
@@ -856,7 +855,7 @@ const UpdateTaskPage = (): JSX.Element => {
                               className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${isMe
                                 ? "border-green-200 bg-green-50 dark:bg-green-900/20"
                                 : checked
-                                  ? "border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20"
+                                  ? "border-cyan-200 dark:border-cyan-700 bg-cyan-50 dark:bg-cyan-900/20"
                                   : "border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
                                 }`}
                             >
@@ -864,9 +863,9 @@ const UpdateTaskPage = (): JSX.Element => {
                                 type="checkbox"
                                 checked={checked}
                                 onChange={() => toggleAssignee(u.id)}
-                                className="w-4 h-4 accent-blue-600 shrink-0"
+                                className="w-4 h-4 accent-cyan-600 shrink-0"
                               />
-                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
                                 {(getUserName(u)[0] || "U").toUpperCase()}
                               </div>
                               <div className="min-w-0 flex-1">
@@ -895,7 +894,6 @@ const UpdateTaskPage = (): JSX.Element => {
               {(form.assignedTo?.length ?? 0) > 0 && (
                 <div className="flex flex-wrap gap-2 pt-3">
                   {form.assignedTo?.map((id) => {
-  const { t } = useTranslation();
                     const user = users.find((u) => u.id === id);
                     const isMe = id === (auth.user?._id || auth.user?.id);
                     return (
@@ -903,10 +901,10 @@ const UpdateTaskPage = (): JSX.Element => {
                         key={id}
                         className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold ${isMe
                           ? "bg-green-100 text-green-700"
-                          : "bg-blue-100 text-blue-700"
+                          : "bg-cyan-100 text-cyan-700"
                           }`}
                       >
-                        <span className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center text-[10px] font-bold">
+                        <span className="w-5 h-5 rounded-full bg-cyan-500 text-white flex items-center justify-center text-[10px] font-bold">
                           {(user?.name?.[0] || "U").toUpperCase()}
                         </span>
                         {user?.name || "User"}
@@ -924,7 +922,7 @@ const UpdateTaskPage = (): JSX.Element => {
               )}
 
               {(form.assignedTo?.length ?? 0) > 0 && (
-                <p className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+                <p className="text-xs font-semibold text-cyan-600 dark:text-cyan-400">
                   ✓ {form.assignedTo!.length} {t("user_2")}
                   {form.assignedTo!.length > 1 ? "s" : ""} {t("selected_2")}
                 </p>
@@ -972,7 +970,7 @@ const UpdateTaskPage = (): JSX.Element => {
                       <div className="space-y-1.5 flex flex-wrap gap-2">
                         {original.assignedTo.map((u) => (
                           <div key={u.id} className="flex items-center gap-2">
-                            <div className="px-3 py-1 rounded-full capitalize bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white text-[12px] font-bold shrink-0">
+                            <div className="px-3 py-1 rounded-full capitalize bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white text-[12px] font-bold shrink-0">
                               {getUserName(u)}
                             </div>
                           </div>
@@ -1005,7 +1003,7 @@ const UpdateTaskPage = (): JSX.Element => {
               type="button"
               disabled={isLoading}
               onClick={handleSubmit}
-              className="w-[200px] flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.98] transition-all shadow-lg shadow-blue-200 dark:shadow-blue-900/40 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-[200px] flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-white bg-cyan-600 hover:bg-cyan-700 active:scale-[0.98] transition-all shadow-lg shadow-cyan-200 dark:shadow-cyan-900/40 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>

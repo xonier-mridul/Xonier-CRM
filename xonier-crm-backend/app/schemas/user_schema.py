@@ -87,13 +87,67 @@ class UpdateUserSchema(BaseModel):
 
         return v
 
-class UserLoginSchema(BaseModel):
+
+class AdminLoginSchema(BaseModel):
+    
     email: EmailStr
     password: Password
+
+    @model_validator(mode="before")
+    @classmethod
+    def verify_fields(cls, value):
+       
+        email = value.get("email")
+
+        if not email:
+            raise AppException(422, "Email field is required")
+
+        return value
+
 
     @field_validator("password")
     @classmethod
     def strong_password2(cls, v: str):
+
+        rules = {
+            "lowercase": any(c.islower() for c in v),
+            "uppercase": any(c.isupper() for c in v),
+            "digit": any(c.isdigit() for c in v),
+            "special": any(c in "@$!%*?&#" for c in v),
+            "length": len(v) >= 8,
+        }
+
+        if not all(rules.values()):
+            raise ValueError(
+                "Password must contain uppercase, lowercase, digit, special character and be at least 8 characters long"
+            )
+
+        return v
+
+class UserLoginSchema(BaseModel):
+    companyId: str
+    email: EmailStr
+    password: Password
+
+    @model_validator(mode="before")
+    @classmethod
+    def verify_fields(cls, value):
+        companyId = value.get("companyId")
+        email = value.get("email")
+
+        if not companyId:
+            raise AppException(422, "Company Id required")
+
+        if not email:
+            raise AppException(422, "Email field is required")
+
+        return value
+
+
+    @field_validator("password")
+    @classmethod
+    def strong_password2(cls, v: str):
+
         rules = {
             "lowercase": any(c.islower() for c in v),
             "uppercase": any(c.isupper() for c in v),
@@ -113,7 +167,8 @@ class UserLoginSchema(BaseModel):
 class UpdateUserStatusSchema(BaseModel):
     status: USER_STATUS
     
-class ResendOTPSchema(BaseModel):
+class ResendAdminOTPSchema(BaseModel):
+    
     email: EmailStr
     password: Password
 
@@ -135,7 +190,55 @@ class ResendOTPSchema(BaseModel):
 
         return v
     
+class ResendOTPSchema(BaseModel):
+    companyId: str
+    email: EmailStr
+    password: Password
+
+    @field_validator("password")
+    @classmethod
+    def strong_password33(cls, v: str):
+        rules = {
+            "lowercase": any(c.islower() for c in v),
+            "uppercase": any(c.isupper() for c in v),
+            "digit": any(c.isdigit() for c in v),
+            "special": any(c in "@$!%*?&#" for c in v),
+            "length": len(v) >= 8,
+        }
+
+        if not all(rules.values()):
+            raise ValueError(
+                "Password must contain uppercase, lowercase, digit, special character and be at least 8 characters long"
+            )
+
+        return v
+    
+class VerifyAdminLoginOtpSchema(BaseModel):
+    
+    email: EmailStr
+    otp: Otp
+    password: Password
+
+    @field_validator("password")
+    @classmethod
+    def strong_password3(cls, v: str):
+        rules = {
+            "lowercase": any(c.islower() for c in v),
+            "uppercase": any(c.isupper() for c in v),
+            "digit": any(c.isdigit() for c in v),
+            "special": any(c in "@$!%*?&#" for c in v),
+            "length": len(v) >= 8,
+        }
+
+        if not all(rules.values()):
+            raise ValueError(
+                "Password must contain uppercase, lowercase, digit, special character and be at least 8 characters long"
+            )
+
+        return v
+    
 class VerifyLoginOtpSchema(BaseModel):
+    companyId: str
     email: EmailStr
     otp: Otp
     password: Password
@@ -175,12 +278,73 @@ class ResetPasswordSchema(BaseModel):
         }
 
         if not all(rules.values()):
-            raise ValueError(
+            raise AppException(422,
                 "Password must contain uppercase, lowercase, digit, special character and be at least 8 characters long"
             )
 
         return v
     
+
+class ForgotPasswordSchema(BaseModel):
+    companyId: str
+    email: EmailStr
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v:str):
+        if not v:
+            raise AppException(422, "Email is required")
+
+        return v
+
+    @field_validator("companyId")
+    @classmethod
+    def validate_companyId(cls, v:str):
+        if not v:
+            raise AppException(422, "Company Id field is required")
+
+        return v
+
+class ForgotPassOtpSchema(BaseModel):
+    email: EmailStr
+    companyId: str
+    otp: str
+    password: str
+    confirmPassword: str
+
+    @model_validator(mode="before")
+    @classmethod
+    def verify_forgot_pass_schema(cls, values):
+        email = values.get("email")
+        companyId = values.get("companyId")
+        otp = values.get("otp")
+        password = values.get("password")
+        confirmPassword = values.get("confirmPassword")
+
+        if not email or not companyId or not otp:
+            raise AppException(422, f"{"Email" if not email else "companyId" if not companyId else "OTP" if not otp else "Password" if not password else "Confirm Password"} field is missing")
+
+        if len(otp) < 6:
+            raise AppException(422, "OTP should be 6 numbers")
+
+        if password != confirmPassword:
+            raise AppException(422, "Password and Confirm Password is not same, Please try again")
+
+        rules = {
+            "lowercase": any(c.islower() for c in password),
+            "uppercase": any(c.isupper() for c in password),
+            "digit": any(c.isdigit() for c in password),
+            "special": any(c in "@$!%*?&#" for c in password),
+            "length": len(password) >= 8,
+        }
+        
+        if not all(rules.values()):
+            raise AppException(422,
+                "Password must contain uppercase, lowercase, digit, special character and be at least 8 characters long"
+            )
+
+        return values
+
 
 class ResetPasswordByAdminSchema(BaseModel):
     password: Password
@@ -203,6 +367,8 @@ class ResetPasswordByAdminSchema(BaseModel):
             )
 
         return v
+
+    
     @field_validator("confirmPassword")
     @classmethod
     def strong_password6(cls, v: str):
@@ -257,4 +423,19 @@ class BulkRestoreUsersSchema(BaseModel):
         if not v:
             raise ValueError("userIds cannot be empty")
         return v
- 
+
+
+class FindMyCompanyId(BaseModel):
+    email: EmailStr
+    companyName: str
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_fields(cls, item):
+        email = item.get("email")
+        companyName = item.get("companyName")
+
+        if not email or not companyName:
+            raise AppException(422, f"{"email" if not email else "companyName"} field required")
+    
+        return item

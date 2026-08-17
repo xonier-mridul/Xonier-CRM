@@ -2,10 +2,11 @@ from fastapi import APIRouter, Depends, Response, Request, Query
 
 
 from app.middlewares.auth_middleware import AuthMiddleware
-from app.schemas.user_schema import UserLoginSchema, VerifyLoginOtpSchema, RegisterUserSchema, ResendOTPSchema, UpdateUserSchema, ResetPasswordSchema, UpdateUserStatusSchema, ResetPasswordByAdminSchema, AssignPhoneNumberSchema, BulkPermanentDeleteSchema, BulkRestoreUsersSchema
+from app.schemas.user_schema import UserLoginSchema, VerifyLoginOtpSchema, RegisterUserSchema, ResendOTPSchema, UpdateUserSchema, ResetPasswordSchema, UpdateUserStatusSchema, ResetPasswordByAdminSchema, AssignPhoneNumberSchema, BulkPermanentDeleteSchema, BulkRestoreUsersSchema, ForgotPasswordSchema, ForgotPassOtpSchema, AdminLoginSchema, ResendAdminOTPSchema,VerifyAdminLoginOtpSchema, FindMyCompanyId
 from app.controllers.auth_controller import AuthController
 from app.core.dependencies import Dependencies
 from beanie import PydanticObjectId
+from app.core.enums import DATE_FILTER, RATING_FILTER, ON_TIME_FILTER
 
 router = APIRouter()
 
@@ -61,20 +62,50 @@ async def get_user_rating_data(
     request: Request,
     page: int = Query(default=1, ge=1, description="Page number"),
     limit: int = Query(default=20, ge=1, le=100, description="Items per page"),
+    dateFilter: DATE_FILTER = Query(default=DATE_FILTER.ALL, description="Date range preset"),
+    startDate: str = Query(default=None, description="Required if dateFilter=custom (YYYY-MM-DD)"),
+    endDate: str = Query(default=None, description="Required if dateFilter=custom (YYYY-MM-DD)"),
+    ratingFilter: RATING_FILTER = Query(default=RATING_FILTER.ALL, description="Filter by rating"),
+    onTimeFilter: ON_TIME_FILTER = Query(default=ON_TIME_FILTER.ALL, description="Filter by timeliness"),
+    trendMonths: int = Query(default=6, ge=3, le=12, description="Months for trend chart"),
 ):
-    return await auth_controller.get_user_rating_data(request, id, page, limit)
+    return await auth_controller.get_user_rating_data(
+        request,
+        id,
+        page,
+        limit,
+        date_filter=dateFilter.value,
+        start_date=startDate,
+        end_date=endDate,
+        rating_filter=ratingFilter.value,
+        on_time_filter=onTimeFilter.value,
+        trend_months=trendMonths,
+    )
+
 
 @router.get("/profile", status_code=200, dependencies=[Depends(dependencies.authorized),Depends(dependencies.company_active), Depends(dependencies.company_context), Depends(dependencies.permissions(["user:read"]))])
 async def get_user_profiles( request: Request):
     return await auth_controller.get_user_profile(request)
 
+@router.post("/admin-login", status_code=200)
+async def admin_login( request:Request, data: AdminLoginSchema):
+    return await auth_controller.admin_login( request,  data.model_dump())
+
 @router.post("/login", status_code=200)
-async def register_users( request:Request, data: UserLoginSchema):
+async def user_login( request:Request, data: UserLoginSchema):
     return await auth_controller.login( request,  data.model_dump())
 
 @router.post("/resend-login-otp", status_code=200)
 async def resend_login_otp(data: ResendOTPSchema):
     return await auth_controller.resend_verification_otp(data.model_dump())
+
+@router.post("/resend-admin-login-otp", status_code=200)
+async def resend_login_otp(data: ResendAdminOTPSchema):
+    return await auth_controller.resend_admin_verification_otp(data.model_dump())
+
+@router.post("/verify-admin-login-otp", status_code=200)
+async def verify_admin_login_otp(request: Request, response: Response, data: VerifyAdminLoginOtpSchema):
+    return await auth_controller.verify_admin_login_otp(request, response, data.model_dump())
 
 @router.post("/verify-login-otp", status_code=200)
 async def verify_login_otp(request: Request, response: Response, data: VerifyLoginOtpSchema):
@@ -116,6 +147,17 @@ async def clear_phone_number(request: Request, id:str):
 async def reset_password(request: Request, data: ResetPasswordSchema):
     return await auth_controller.reset_password(request, data.model_dump(exclude_unset=True))
 
+
+@router.post("/forgot-password", status_code=200, dependencies=[])
+async def forgot_password(request: Request, data: ForgotPasswordSchema):
+    return await auth_controller.forgot_password(request, data.model_dump(exclude_unset=True))
+
+
+@router.post("/verify-forgot-pass-otp", status_code=200, dependencies=[])
+async def verify_forgot_pass_otp(request: Request, data: ForgotPassOtpSchema):
+    return await auth_controller.verify_forgot_pass_otp(request, data.model_dump(exclude_unset=True))
+
+
 @router.patch("/reset-user-password/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context), Depends(dependencies.permissions(["user:update"]))])
 async def reset_user_password(request:Request, id:str, payload: ResetPasswordByAdminSchema):
     return await auth_controller.reset_user_password(request, id, payload.model_dump())
@@ -139,6 +181,9 @@ Depends(dependencies.company_context), Depends(dependencies.permissions(["user:u
 async def bulk_restore_users(request: Request, payload: BulkRestoreUsersSchema):
     return await auth_controller.bulk_restore_users(request=request, payload=payload.model_dump(mode="json"))
 
+@router.post("/find-company-id", status_code=200)
+async def find_my_company_id(request: Request, payload: FindMyCompanyId):
+    return await auth_controller.find_my_company_id(request, payload.model_dump(mode="json"))
 
 @router.post("/refresh", status_code=200)
 async def refresh_access_token(

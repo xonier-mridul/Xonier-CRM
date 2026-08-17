@@ -17,7 +17,7 @@ from app.core.constants import (
     
 )
 from app.db.models.lead_model import LeadsModel 
-from app.core.enums import SALES_STATUS, ACTIVITY_ENTITY_TYPE, ACTIVITY_ACTION, LEAD_SOURCE_TYPE
+from app.core.enums import SALES_STATUS, ACTIVITY_ENTITY_TYPE, ACTIVITY_ACTION, LEAD_SOURCE_TYPE, MEETING_SCHEDULED
 from app.utils.cache_key_generator import (
     cache_key_generator,
     cache_key_generator_with_id
@@ -31,6 +31,8 @@ from app.db.db import Client
 from app.utils.activity_payload import activity_payload
 from app.utils.validate_admin import validate_admin, validate_admin_company_admin
 from app.repositories.user_repository import UserRepository
+from app.repositories.event_repository import EventRepository
+from app.utils.event_payload_generator import EventPayloadGenerator
 
 
 class LeadService:
@@ -41,6 +43,7 @@ class LeadService:
         self.activityRepo = ActivityRepository()
         self.client = Client
         self.userRepo = UserRepository()
+        self.calenderRepo = EventRepository()
 
     async def create(self, payload: Dict[str, Any], user: Dict[str, Any]):
         async with await self.client.start_session() as session:
@@ -67,6 +70,9 @@ class LeadService:
 
                     lead_id = generate_enquiry_id("LEAD")
 
+                    
+
+
                     new_payload = {
                         **payload,
                         "lead_id": lead_id,
@@ -79,6 +85,12 @@ class LeadService:
 
                     if not new_lead:
                         raise AppException(400, "Lead creation failed, please try again")
+
+                    if payload.get("meetingScheduled").strip() == MEETING_SCHEDULED.YES.value:
+                        payload = EventPayloadGenerator(title=payload.get("meetingTitle"), description=payload.get("meetingDescription", None), start=payload.get(" meetingStart"), end=payload.get("meetingEnd"), meetingLink=payload.get("meetingLink"), priority=payload.get("meetingPriority"), createdBy=user["_id"], entityId=new_lead.id)
+                        isEventCreated = await self.calenderRepo.create(data=payload, session=session)
+                        if not isEventCreated:
+                            raise AppException(400, "Meeting event creation failed")
                     
                     activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD, entityId=PydanticObjectId(new_lead.id), action=ACTIVITY_ACTION.CREATED, title="create lead", metadata={"leadId": new_lead.lead_id, "leadName": new_lead.fullName})
 
@@ -711,6 +723,8 @@ class LeadService:
             is_admin = validate_admin_company_admin(user["userRole"])
             is_manager = False
 
+        
+
             # for item in user["userRole"]:
             #     if item["code"] == SUPER_ADMIN_CODE:
             #         is_admin = True
@@ -783,8 +797,8 @@ class LeadService:
             if "assignee" in filters:
                 query.update({"assignedTo.$id": PydanticObjectId(filters["assignee"])})
 
-            if "search" in filters and filters["search"].strip():
-                regex = {"$regex": filters["search"].strip(), "$options": "i"}
+            if "search" in filters and filters["search"]:
+                regex = {"$regex": filters["search"], "$options": "i"}
 
                 search_query = {"$or" : [
                     {"fullName" : regex},
@@ -796,7 +810,7 @@ class LeadService:
 
                 query.update(search_query)
 
-
+            print("jagdamba")
             if "fromDate" in filters or "toDate" in filters:
                 date_filter = {}
                 if "fromDate" in filters:
@@ -817,7 +831,7 @@ class LeadService:
 
                 if date_filter:
                     query.update({"createdAt": date_filter})
-
+            print("jagbamba 2")
             if is_admin or is_manager:
                 if "userid" in filters:
                     if not ObjectId.is_valid(filters["userid"]):
@@ -825,7 +839,7 @@ class LeadService:
                     query.update({
                         "createdBy.$id": PydanticObjectId(filters["userid"])
                     })
-
+            print("jagdamba 3")
             if "isAssigned" in filters:
                 is_assigned_val = filters["isAssigned"]
 
@@ -860,7 +874,7 @@ class LeadService:
 
             if cache:
                 return json.loads(cache)      
-            
+            print("jagdamba 3.5: ", page, limit, query)
             result = await self.repo.get_all(
                 page=int(page),
                 limit=int(limit),
@@ -872,7 +886,7 @@ class LeadService:
             if not result:
                 raise AppException(404, "Leads data not found")
 
-
+            print("jagdamba 4")
             result = jsonable_encoder(result, exclude={"hashedEmail", "hashedPhone"})
 
             for item in result["data"]:

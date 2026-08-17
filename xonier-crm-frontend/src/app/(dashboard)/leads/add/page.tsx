@@ -44,10 +44,10 @@ const KNOWN_LEAD_KEYS = new Set([
 const REQUIRED_FIELDS: (keyof LeadPayload)[] = [
   "fullName",
   "email",
-  
-  
+
+
   "source",
-  
+
   "status",
 ];
 
@@ -69,6 +69,90 @@ const EMPTY_FORM: Record<string, string | number | null> = {
   employeeSeniority: null,
   message: null,
   membershipNotes: null,
+};
+
+const MEETING_TRIGGER_KEY = "meetingScheduled";
+
+/**
+ * SECTION CONFIG
+ * ----------------------------------------------------
+ * Add new sections here as your form grows.
+ * `match` decides which fields belong to this section (based on key).
+ * `showWhen` (optional) decides whether the whole section's fields
+ * should render at all — useful for conditional sections like "meeting".
+ *
+ * Order in this array = order sections render on the page.
+ * Any field that doesn't match any section falls into DEFAULT_SECTION ("basic_details").
+ */
+type SectionConfig = {
+  id: string;
+  titleKey: string;
+  match: (key: string) => boolean;
+  showWhen?: (formData: Record<string, string | number | null>) => boolean;
+};
+
+const DEFAULT_SECTION: SectionConfig = {
+  id: "basic",
+  titleKey: "basic_details",
+  match: () => true,
+};
+
+const SPECIAL_SECTIONS: SectionConfig[] = [
+  {
+    id: "meeting",
+    titleKey: "meeting_details",
+    match: (key) => key === MEETING_TRIGGER_KEY || key.startsWith("meeting"),
+    showWhen: (formData) => formData[MEETING_TRIGGER_KEY] === "yes",
+  },
+  // Example for future extension:
+  // {
+  //   id: "company",
+  //   titleKey: "company_details",
+  //   match: (key) => key.startsWith("company"),
+  // },
+];
+
+// Order sections should appear in. Unlisted sections fall to the end.
+const SECTION_ORDER = ["basic", "meeting"];
+
+type GroupedSection = {
+  id: string;
+  titleKey: string;
+  fields: CustomField[];
+  showWhen?: SectionConfig["showWhen"];
+};
+
+/**
+ * Groups fields into sections based on SPECIAL_SECTIONS config.
+ * Fields not matching any special section go into DEFAULT_SECTION.
+ * The meeting trigger field itself is ALWAYS shown (its `showWhen` only
+ * hides sections other than itself — handled during render).
+ */
+const groupFieldsBySection = (fields: CustomField[]): GroupedSection[] => {
+  const sectionMap = new Map<string, GroupedSection>();
+
+  for (const field of fields) {
+    const matched = SPECIAL_SECTIONS.find((s) => s.match(field.key));
+    const config = matched ?? DEFAULT_SECTION;
+
+    if (!sectionMap.has(config.id)) {
+      sectionMap.set(config.id, {
+        id: config.id,
+        titleKey: config.titleKey,
+        fields: [],
+        showWhen: config.showWhen,
+      });
+    }
+    sectionMap.get(config.id)!.fields.push(field);
+  }
+
+  return Array.from(sectionMap.values()).sort((a, b) => {
+    const aIndex = SECTION_ORDER.indexOf(a.id);
+    const bIndex = SECTION_ORDER.indexOf(b.id);
+    const safeA = aIndex === -1 ? SECTION_ORDER.length : aIndex;
+    const safeB = bIndex === -1 ? SECTION_ORDER.length : bIndex;
+    return safeA - safeB;
+  });
 };
 
 const page = (): JSX.Element => {
@@ -141,6 +225,56 @@ const page = (): JSX.Element => {
     (key) => !flatFormData[key]
   );
 
+  // Determines whether an individual field should render.
+  // Currently: meeting fields (except the trigger) only show when meetingScheduled === "yes"
+  const shouldShowField = (item: CustomField): boolean => {
+    const matched = SPECIAL_SECTIONS.find((s) => s.match(item.key));
+    if (matched?.showWhen && item.key !== MEETING_TRIGGER_KEY) {
+      return matched.showWhen(flatFormData);
+    }
+    return true;
+  };
+
+  const renderField = (item: CustomField) => {
+    const fieldValue = flatFormData[item.key] ?? "";
+
+    if (
+      item.type === "text" ||
+      item.type === "email" ||
+      item.type === "number"
+    ) {
+      return (
+        <Input
+          key={item.id}
+          name={item.key}
+          type={item.type}
+          label={item.name}
+          placeholder={item.placeholder ? t(item.placeholder) : ""}
+          value={fieldValue as string}
+          onChange={handleChange}
+          required={item.required}
+        />
+      );
+    }
+
+    if (item.type === "select") {
+      return (
+        <Select
+          key={item.id}
+          name={item.key}
+          label={item.name}
+          options={item.options ?? []}
+          placeholder={item.placeholder ? t(item.placeholder) : t("select")}
+          value={fieldValue as string}
+          onChange={handleChange}
+          required={item.required}
+        />
+      );
+    }
+
+    return null;
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setLoading(true);
@@ -151,7 +285,7 @@ const page = (): JSX.Element => {
       const result = await LeadService.create(payload);
 
       if (result.status === 201) {
-        toast.success(`${flatFormData.fullName} lead created successfully`);
+        toast.success(`${flatFormData.fullName} ${t('lead_created_successfully')}`);
 
         // Reset: clear known fields + any dynamic extra fields
         setFlatFormData((prev) => {
@@ -180,6 +314,8 @@ const page = (): JSX.Element => {
     }
   };
 
+  const sections = groupFieldsBySection(userFormField ?? []);
+
   return (
     <div className={`ml-72 mt-14 p-6`}>
       <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm flex flex-col gap-8 p-6 rounded-xl border-[1px] border-slate-900/10 w-full">
@@ -194,58 +330,37 @@ const page = (): JSX.Element => {
           </div>
 
           <PrimaryButton
-            text={userFormData.length <= 0 ? "Create form first" : "Edit Form Fields"}
+            text={userFormData.length <= 0 ? t("create_form_first") : t("edit_form_fields")}
             link="/leads/update-form"
             icon={<GrDocumentUpdate />}
           />
         </div>
 
         {isMissingRequiredFields && (
-          <InformationComponent message="Full Name, Email, Phone, Source, Priority, Project Type and Status fields are mandatory" />
+          <InformationComponent message={t("mandatory_fields_message")} />
         )}
         {err && <ErrorComponent error={err} />}
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-8">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-10">
           {!isLoading ? (
             userFormField && userFormField.length > 0 ? (
-              userFormField.map((item) => {
-                const fieldValue = flatFormData[item.key] ?? "";
+              sections.map((section) => {
+                const visibleFields = section.fields.filter(shouldShowField);
 
-                if (
-                  item.type === "text" ||
-                  item.type === "email" ||
-                  item.type === "number"
-                ) {
-                  return (
-                    <Input
-                      key={item.id}
-                      name={item.key}
-                      type={item.type}
-                      label={item.name}
-                      placeholder={item.placeholder ?? ""}
-                      value={fieldValue as string}
-                      onChange={handleChange}
-                      required={item.required}
-                    />
-                  );
-                }
+                // If a whole section has no visible fields (e.g. meeting section
+                // when meetingScheduled !== "yes"), skip rendering it entirely.
+                if (visibleFields.length === 0) return null;
 
-                if (item.type === "select") {
-                  return (
-                    <Select
-                      key={item.id}
-                      name={item.key}
-                      label={item.name}
-                      options={item.options ?? []}
-                      placeholder={item.placeholder ?? "Select"}
-                      value={fieldValue as string}
-                      onChange={handleChange}
-                      required={item.required}
-                    />
-                  );
-                }
-
-                return null;
+                return (
+                  <div key={section.id} className="flex flex-col gap-4">
+                    <h3 className="text-lg font-semibold text-slate-800 dark:text-white border-b border-slate-200 dark:border-slate-600 pb-2">
+                      {t(section.titleKey)}
+                    </h3>
+                    <div className="grid grid-cols-2 gap-8 items-end">
+                      {visibleFields.map(renderField)}
+                    </div>
+                  </div>
+                );
               })
             ) : (
               <div className="flex items-center flex-col justify-center col-span-2 py-5">
@@ -259,18 +374,18 @@ const page = (): JSX.Element => {
               </div>
             )
           ) : (
-            <>
+            <div className="grid grid-cols-2 gap-8">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="flex flex-col gap-2">
                   <Skeleton height={18} width={100} borderRadius={10} className="animate-pulse" />
                   <Skeleton height={38} width={500} borderRadius={14} className="animate-pulse" />
                 </div>
               ))}
-            </>
+            </div>
           )}
 
           <FormButton
-            className="col-span-2"
+            className="w-full"
             isLoading={loading}
             disabled={isMissingRequiredFields || loading}
           >

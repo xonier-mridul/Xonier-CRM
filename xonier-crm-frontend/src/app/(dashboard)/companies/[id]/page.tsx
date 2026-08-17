@@ -36,6 +36,7 @@ import Skeleton from "react-loading-skeleton";
 import { useSelector } from "react-redux";
 import { RootState } from "@/src/store";
 import { useTranslation } from "react-i18next";
+import { FaBuildingUser } from "react-icons/fa6";
 
 const statusConfig: Record<
   string,
@@ -272,10 +273,10 @@ export default function CompanyDetailPage() {
 
         {/* Breadcrumb + Back */}
         <div className="flex items-center gap-2 text-sm text-slate-400 dark:text-gray-500">
-         
-          
+         <span className="text-xl"><FaBuildingUser /></span>
+          <span>{t("company")}</span>
           <span>/</span>
-          <span className="text-slate-700 dark:text-gray-300 font-medium truncate max-w-xs">
+          <span className="text-slate-500 dark:text-gray-300 font-medium truncate max-w-xs">
             {isLoading ? <Skeleton width={120} /> : company?.companyName}
           </span>
         </div>

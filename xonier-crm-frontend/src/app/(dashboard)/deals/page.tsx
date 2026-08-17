@@ -1,4 +1,3 @@
-// page.tsx
 "use client" 
 import { Suspense } from "react";
 import DealContent from "@/src/components/pages/deal/DealContent";

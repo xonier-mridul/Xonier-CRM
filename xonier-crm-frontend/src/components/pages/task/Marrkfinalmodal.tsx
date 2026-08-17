@@ -173,7 +173,7 @@ export function MarkFinalModal({
               onChange={(e) => setRemark(e.target.value)}
               rows={3}
               placeholder={t("describe_what_was_done_any_blockers")}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition resize-none"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition resize-none"
             />
           </div>
 
@@ -202,7 +202,7 @@ export function MarkFinalModal({
                 value={actualHours}
                 onChange={(e) => setActualHours(e.target.value)}
                 placeholder={t("e_g_3_5")}
-                className="w-full pl-3.5 pr-14 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
+                className="w-full pl-3.5 pr-14 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition"
               />
               <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-gray-500 font-semibold pointer-events-none">
                 {t("hrs")}
@@ -219,7 +219,7 @@ export function MarkFinalModal({
                 value={actualDays}
                 onChange={(e) => setActualDays(e.target.value)}
                 placeholder={t("e_g_0_5")}
-                className="w-full pl-3.5 pr-14 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
+                className="w-full pl-3.5 pr-14 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition"
               />
               <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-gray-500 font-semibold pointer-events-none">
                 {t("days")}
@@ -252,7 +252,7 @@ export function MarkFinalModal({
             type="button"
             onClick={handleConfirm}
             disabled={submitting}
-            className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 cursor-pointer px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-600 cursor-pointer px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             
           >
             {submitting ? "Saving…" : "✓ Confirm & Mark Final"}

@@ -9,19 +9,36 @@ export interface AuthState {
   isAdmin: boolean,
   user: User | null;
 }
+export interface AdminLogin{
+  email:string;
+  password:string;
+}
 
 export interface LoginPayload {
   email: string;
   password: string;
+  companyId:string
 }
 
 export interface VerifyLoginOtpPayload {
   email: string;
   otp: number;
   password: string;
+  companyId:string;
+}
+export interface VerifyAdminLoginOtpPayload{
+   email: string;
+  otp: number;
+  password: string;
+
 }
 
 export interface ResendLoginOtpPayload {
+  email: string;
+  password: string;
+  companyId?:string
+}
+export interface ResendAdminLoginOtpPayload {
   email: string;
   password: string;
 }
@@ -30,6 +47,13 @@ export interface changePasswordPayload {
   oldPassword: string,
   newPassword: string
 }
+
+export interface changePassword{
+  email: string;
+  otp:string;
+  password: string
+}
+
 
 export interface OtpInputProps {
   length?: number;
@@ -278,4 +302,101 @@ export interface UserSelectProps {
 export interface countryCode {
   code: string;
   label: string;
+}
+
+
+// auth.types.ts — ADD these
+
+export interface MonthlyTrendItem {
+  month: string; // "2025-06"
+  tasksCompleted: number;
+  onTimeRate: number;
+  avgRating: number | null;
+}
+
+export interface UserRatingStats {
+  totalTasksDone: number;
+  ratedTasksCount: number;
+  unratedTasksCount: number;
+  onTimeTasksCount: number;
+  overdueTasksCount: number;
+  onTimeRate: number;
+  ratingRate: number;
+  overallRating: number | null;
+  avgActualHours: number;
+  efficiencyRate: number | null;
+  ratingDistribution: Record<"1" | "2" | "3" | "4" | "5", number>;
+  monthlyTrend: MonthlyTrendItem[];
+}
+
+
+export interface UserRatingParams {
+  page?: number;
+  limit?: number;
+  dateFilter?: DateFilterType;
+  startDate?: string;
+  endDate?: string;
+  ratingFilter?: RatingFilterType;
+  onTimeFilter?: OnTimeFilterType;
+  trendMonths?: number;
+}
+
+// UPDATE existing User interface
+export interface User {
+  // ...existing fields
+  stats?: UserRatingStats | null;
+}
+
+
+// ADD to your existing auth.types.ts
+
+export interface MonthlyTrendItem {
+  month: string; // "2025-06"
+  tasksCompleted: number;
+  onTimeRate: number;
+  avgRating: number | null;
+}
+
+export interface RatingDistribution {
+  "1": number;
+  "2": number;
+  "3": number;
+  "4": number;
+  "5": number;
+}
+
+export interface UserRatingStats {
+  totalTasksDone: number;
+  ratedTasksCount: number;
+  unratedTasksCount: number;
+  onTimeTasksCount: number;
+  overdueTasksCount: number;
+  onTimeRate: number;
+  ratingRate: number;
+  overallRating: number | null;
+  avgActualHours: number;
+  efficiencyRate: number | null;
+  ratingDistribution: RatingDistribution;
+  monthlyTrend: MonthlyTrendItem[];
+}
+
+export type DateFilterType = "all" | "today" | "week" | "month" | "year" | "custom";
+export type RatingFilterType = "all" | "rated" | "unrated" | "1" | "2" | "3" | "4" | "5";
+export type OnTimeFilterType = "all" | "onTime" | "overdue";
+
+export interface UserRatingParams {
+  page?: number;
+  limit?: number;
+  dateFilter?: DateFilterType;
+  startDate?: string;
+  endDate?: string;
+  ratingFilter?: RatingFilterType;
+  onTimeFilter?: OnTimeFilterType;
+  trendMonths?: number;
+}
+
+// UPDATE your existing User interface — add this field
+export interface User {
+  // ...keep all existing fields
+  stats?: UserRatingStats | null;
 }

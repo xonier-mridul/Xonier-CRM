@@ -2,9 +2,14 @@ import { Dispatch, SetStateAction } from "react";
 import { User, UserRole } from "../auth/auth.types";
 
 export interface GetAllRolesPayload {
-    currentPage: number,
-    pageLimit: number,
-    
+  currentPage?: number;
+  pageLimit?: number;
+  filter?: {
+    search?: string;
+    name?: string;
+    code?: string;
+    action?: string;
+  };
 }
 
 export interface Permissions{
@@ -39,6 +44,13 @@ export interface RoleTableProps {
   handleSubmit: () => Promise<void>;
   hasPermissions: (permission: string)=>boolean
   isAdmin: boolean
+
+ searchVal: string;
+  onSearch: (val: string) => void;
+
+  totalPages:number,
+  setCurrentPage: Dispatch<SetStateAction<number>>;
+  setPageLimit: Dispatch<SetStateAction<number>>;
 }
 
 

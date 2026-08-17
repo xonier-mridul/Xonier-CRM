@@ -123,6 +123,7 @@
   "todo": "Todo",
   "update_event": "Update Event",
   "updating": "Updating…",
+    "lead_created_successfully": "Lead created successfully",
   "week": "Week",
   "you_do_not_have_permission_to": "You do not have permission to create event",
   "you_do_not_have_permission_to_2": "You do not have permission to update events",
@@ -164,6 +165,17 @@
   "search_users": "Search users...",
   "companies": "Companies",
   "a_verification_code_was_sent_when": "A verification code was sent when the company was created. Check the admin's inbox or resend above.",
+ "welcome_back_user": "Welcome Back!",
+  "welcome_back_admin": "Welcome Back, Admin!",
+  "login_subtitle": "Sign in to access the admin dashboard",
+    "assigned_to_me": "✅ Assigned to Me",
+  "assign_to_me": "⚡ Assign to Me",
+ 
+  "login_failed_message": "Login failed. Please check your credentials and try again.",
+  "manage_your_platform": "Manage your platform with ease",
+  "admin_panel_subtitle": "Secure access for administrators to monitor, control, and configure the system.",
+  "secure_admin_access": "This is a restricted area. Unauthorized access is prohibited.",
+  
   "active_period": "Active Period",
   "admin_account": "Admin Account",
   "admin_company_io": "admin@company.io",
@@ -1032,7 +1044,6 @@
   "verification_otp_send_successfully": "Verification OTP send successfully",
   "verify_login_otp": "Verify Login OTP",
   "verify_otp": "Verify OTP",
-  "welcome_back_admin": "Welcome back Admin",
   "message": "Message",
   "all_statuses": "All Statuses",
   "channel": "Channel",
@@ -1290,6 +1301,7 @@
   "select_a_field": "Select a field…",
   "select_new_user": "Select New User",
   "sending": "Sending…",
+  "sending_3": "Sending…",
   "sent": "Sent",
   "series_a": "Series A",
   "series_b": "Series B",
@@ -1394,7 +1406,6 @@
   "our_team_will_be_in_touch": "Our team will be in touch with you shortly regarding next steps.",
   "please_read_and_agree_to_the": "Please read and agree to the terms before confirming.",
   "quotation_confirmed": "Quotation Confirmed!",
-  "something_went_wrong": "Something went wrong",
   "thank_you": "Thank you",
   "we_couldn't_load_your_quotation_the": "We couldn't load your quotation. The link may be invalid or this quotation may no longer exist.",
   "add_line_item": "Add Line Item",
@@ -2087,6 +2098,7 @@
   "won": "Won",
   "password_2": "Password",
   "otp_is_sent_to": "OTP is sent to",
+  
   "resend_otp_in": "Resend OTP in",
   "industry_2": "Industry",
   "plan": "Plan",
@@ -2127,6 +2139,19 @@
   "alert": "alert",
   "total_3": "total",
   "done_2": "done",
+  "company_settings": "Company Settings",
+  "manage_your_organization_information": "Manage your organization information",
+  "system_information": "System Information",
+  "company_email": "Company Email",
+  "company_phone_number": "Company Phone Number",
+  "you_have_unsaved_changes_save_them": "You have unsaved changes. Please save or discard them before leaving.",
+  "loading_company_details": "Loading company details...",
+  "enter_industry": "Enter industry",
+  "enter_company_email": "Enter company email",
+  "select_company_size": "Select company size",
+  "select_timezone": "Select timezone",
+  "enter_registration_number": "Enter registration number",
+  "enter_trade_number": "Enter trade number",
   "activity_snapshot_2": "Activity snapshot",
   "qty_2": "Qty *",
   "unit_price_2": "Unit Price *",
@@ -2136,17 +2161,20 @@
   "email_address_2": "Email Address *",
   "subtotal_2": "Subtotal *",
   "auto_calculated_from_line_items": "(auto-calculated from line items)",
-  "discount_amount": "Discount Amount (",
   "discount_2": "Discount (%)",
-  "tax_amount": "Tax Amount (",
-  "tax_rate": "Tax Rate (%)",
-  "shipping_2": "Shipping (",
+  "shipping_2": "Shipping ",
   "days": "days",
-  "nbsp_expires": "&nbsp;— expires",
+  "expires": "expires",
   "not_visible_to_customer": "(not visible to customer)",
   "lead_name": "Lead Name:",
   "lead_id_2": "Lead Id:",
   "name_2": "Name",
+    "discount_amount": "Discount Amount",
+
+  "tax_amount": "Tax Amount",
+
+  "tax_rate": "Tax Rate",
+
   "search_by_name_or_email_2": "Search by name or email…",
   "selected_2": "selected",
   "page_2": "/ page",
@@ -2176,6 +2204,7 @@
   "preview_mode": "preview mode",
   "lt": "&lt;",
   "gt": "&gt;",
+  "company_setting": "Company Setting",
   "this_is_a_template_preview_variable_placeholders_like": "This is a template preview — variable placeholders like",
   "will_be_replaced_with_real_values_on_send": "will be replaced with real values on send",
   "read_only_preview_id": "Read-only preview · ID:",
@@ -2215,6 +2244,14 @@
   "total_4": "Total:",
   "quote_id_2": "Quote ID",
   "you_can_customize_your_fields_if_you_want_then_click_edit": "You can customize your fields, if you want then click edit form field button",
+    "mandatory_fields_message": "Full Name, Email, Phone, Source, Priority, Project Type and Status fields are mandatory."
+,
+  "full name": "Full Name",
+  "company name": "Company Name",
+    "create_form_first": "Create Form First",
+  "edit_form_fields": "Edit Form Fields",
+  "project type": "Project Type"
+,
   "validation_error": "Validation Error",
   "row": "Row",
   "and": "… and",
@@ -2247,6 +2284,13 @@
   "queued_2": "queued",
   "calling_2": "Calling",
   "completed_2": "completed",
+"basic_information": "Basic Information",
+"basic_company_details_and_contact_info": "Basic company details and contact information",
+"organization_details": "Organization Details",
+"company_size_location_and_timezone_preferences": "Company size, location and timezone preferences",
+"legal_information": "Legal Information",
+"registration_and_trade_details": "Registration and trade details",
+"read_only_system_generated_information": "This is read-only system generated information",
   "locked": "locked",
   "selected_for_assignment": "selected for assignment",
   "select_a_user_first": "← Select a user first",
@@ -2255,6 +2299,101 @@
   "john_smith_example_com": "john.smith@example.com",
   "june_10_2026": "June 10, 2026",
   "09_45_am": "09:45 AM",
+  "general_settings": "General Settings",
+  "customize_your_experience_preferences": "Customize your experience and application preferences",
+  "loading_settings": "Loading settings...",
+  "settings_saved_successfully": "Settings saved successfully",
+  "you_have_unsaved_changes": "You have unsaved changes",
+  "all_changes_saved": "All changes saved",
+  "discard": "Discard",
+  "manage": "Manage",
+  "disabled": "Disabled",
+  "minutes": "minutes",
+  "setting":"Setting",
+  "appearance": "Appearance",
+  "appearance_section_desc": "Customize how the application looks and feels",
+  "theme": "Theme",
+  "theme_desc": "Choose your preferred color scheme",
+  "light": "Light",
+  "dark": "Dark",
+  "accent_color": "Accent Color",
+  "accent_color_desc": "Primary color used across buttons and highlights",
+  "font_size": "Font Size",
+  "font_size_desc": "Adjust the base text size of the interface",
+  "font_size_sm": "Small",
+  "font_size_md": "Medium",
+  "font_size_lg": "Large",
+  "display_density": "Display Density",
+  "display_density_desc": "Control the spacing between interface elements",
+  "comfortable": "Comfortable",
+  "compact": "Compact",
+  "collapse_sidebar": "Collapse Sidebar by Default",
+  "collapse_sidebar_desc": "Start with a minimized navigation sidebar",
+
+  "language_and_region": "Language & Region",
+  "language_section_desc": "Set your language, timezone and regional formats",
+  "display_language": "Display Language",
+  "display_language_desc": "The language used throughout the application",
+  "timezone_desc": "Used for displaying dates and scheduling",
+  "date_format": "Date Format",
+  "date_format_desc": "How dates are displayed across the app",
+  "time_format": "Time Format",
+  "time_format_desc": "Choose between 12-hour and 24-hour clock",
+  "12_hour": "12 Hour",
+  "24_hour": "24 Hour",
+  "first_day_of_week": "First Day of Week",
+  "first_day_of_week_desc": "Starting day used in calendars",
+  "sunday": "Sunday",
+  "monday": "Monday",
+  "currency_desc": "Default currency for amounts and invoices",
+
+  "notifications_section_desc": "Choose how and when you want to be notified",
+  "email_notifications": "Email Notifications",
+  "email_notifications_desc": "Receive important updates via email",
+  "push_notifications": "Push Notifications",
+  "push_notifications_desc": "Receive alerts on your mobile devices",
+  "desktop_notifications": "Desktop Notifications",
+  "desktop_notifications_desc": "Show browser notifications on your desktop",
+  "notification_sound": "Notification Sound",
+  "notification_sound_desc": "Play a sound when a new notification arrives",
+  "weekly_digest": "Weekly Digest",
+  "weekly_digest_desc": "Get a weekly summary of your activity",
+  "marketing_emails": "Marketing Emails",
+  "marketing_emails_desc": "Receive product news, tips and special offers",
+
+  "privacy_and_security": "Privacy & Security",
+  "privacy_section_desc": "Manage your account security and visibility",
+  "two_factor_authentication": "Two-Factor Authentication",
+  "two_factor_authentication_desc": "Add an extra layer of security to your account",
+  "session_timeout": "Session Timeout",
+  "session_timeout_desc": "Automatically log out after a period of inactivity",
+  "profile_visibility": "Profile Visibility",
+  "profile_visibility_desc": "Control who can view your profile information",
+  "everyone": "Everyone",
+  "team_only": "Team Only",
+  "private": "Private",
+  "show_online_status": "Show Online Status",
+  "show_online_status_desc": "Let others see when you are active",
+  "active_sessions": "Active Sessions",
+  "active_sessions_desc": "View and revoke devices logged into your account",
+
+  "accessibility": "Accessibility",
+  "accessibility_section_desc": "Options to make the app easier to use",
+  "reduce_motion": "Reduce Motion",
+  "reduce_motion_desc": "Minimize animations and transitions",
+  "high_contrast": "High Contrast",
+  "high_contrast_desc": "Increase contrast for better readability",
+  "underline_links": "Underline Links",
+  "underline_links_desc": "Always underline links for easier identification",
+
+  "danger_zone": "Danger Zone",
+  "danger_zone_desc": "Irreversible actions — proceed with caution",
+  "reset_all_settings": "Reset All Settings",
+  "reset_all_settings_desc": "Restore every preference back to its default value",
+  "confirm_reset_settings": "Are you sure you want to reset all settings to default?",
+  "clear_local_data": "Clear Local Data",
+  "clear_local_data_desc": "Remove all cached data stored in this browser",
+  "confirm_clear_local_data": "This will clear all locally stored data and reload the page. Continue?",
   "123_market_street_san_francisco_ca_94105_usa": "123 Market Street, San Francisco, CA 94105, USA",
   "we_are_looking_for_an_hrms_solution_to_streamline_employee": "We are looking for an HRMS solution to streamline employee management, attendance tracking, payroll processing, and performance reviews. Please share more details about your product and pricing.",
   "6a293232b5a1cdbcd3518769": "6a293232b5a1cdbcd3518769",
@@ -2290,11 +2429,15 @@
   "submitted_2": "✓ Submitted",
   "reviewed_on": "Reviewed on",
   "once_submitted_the_review_will_be_visible_to_the_team": "Once submitted, the review will be visible to the team member and the report will be marked as reviewed.",
+  "review_comment": "Review comment",
+  "write_your_review_comment": "Write your review comment",
   "completed_tasks_2": "✅ Completed Tasks (",
   "pending_tasks": "⏳ Pending Tasks (",
   "achievements": "🏆 Achievements",
   "blockers": "🚫 Blockers",
   "tomorrow_s_plan": "📅 Tomorrow's Plan",
+  "review_submitted": "Review submitted",
+  "manager_review": "Manager review",
   "yes_2": "✓ Yes",
   "planned": "planned",
   "est_3": "⏱ Est:",
@@ -2304,20 +2447,42 @@
   "selected_3": "✓ Selected",
   "user_2": "user",
   "found": "found",
-  "morning_pending_2": "🌅 Morning Pending",
-  "evening_pending_2": "🌆 Evening Pending",
-  "complete_pending_review": "⌛ Complete Pending Review",
-  "submitted_3": "✅ Submitted",
-  "reviewed_2": "💬 Reviewed",
+  "morning_pending_2": "🌅  Morning Pending",
+  "evening_pending_2": "🌆  Evening Pending",
+  "complete_pending_review": "⌛  Complete Pending Review",
+  "submitted_3": "✅  Submitted",
+  "reviewed_2": "💬  Reviewed",
+   "not_submit": "❌  Not Submitted",
   "1_least_powerful": "1 — least powerful",
   "max": "max",
+   "drag_and_drop_files": "Drag and drop files",
+  "or_click_below_to_browse": "Or click below to browse",
+  "attach_pdf_or_word_documents": "Attach PDF or Word documents",
   "maximum_power_level_reached": "Maximum power level reached (",
-  "remove_all_nbsp": "Remove All &nbsp;",
+  "remove_all": "Remove All",
+   "custom_quotation": "Custom Quotation",
+  "no_attachments": "No Attachments",
+  "search_role": "Search role",
+  "max_files": "Max Files",
+  "max_size": "Max Size",
+  "selected_files": "Selected Files",
+  "all_files_ready": "All files are ready",
+  "choose_files": "Choose Files",
+  "file": "File",
+  "failed_to_upload": "Failed to upload",
+  "please_remove_failed_files_and_try_again": "Please remove the failed files and try again.",
+   "upload_quotation": "Upload Quotation",
+
+
+  "upload_quotation_files": "Upload Quotation Files",
+  "attach_pdf_or_word_documents_to_this_deal": "Attach PDF or Word documents to this deal",
+  "upload_relevant_documents_contracts_or_proposals": "Upload relevant documents, contracts, or proposals",
+  "drag_and_drop_pdf_or_word_files": "Drag and drop PDF or Word files"
+,
   "this_month_3": "this month",
   "deals_closed": "deals closed",
   "select_category_2": "Select category…",
   "auto_default_status": "Auto (default status)",
-  "assign_to_me": "⚡ Assign to Me",
   "search_users_2": "Search users…",
   "create_task_2": "✓ Create Task",
   "events_recorded": "events recorded",
@@ -2335,12 +2500,11 @@
   "no_rater_information": "-- No rater information --",
   "active_3": "active",
   "create_first_task": "+ Create first task",
-  "nbsp": "&nbsp;",
   "you_2": "(You)",
   "done_3": "✓ Done",
   "late": "⚠ Late",
   "kanban_board": "— Kanban Board",
-  "nbsp_current_task": "★ &nbsp;current task",
+  "nbsp_current_task": "current task",
   "drag_to_move": "↔️ Drag to move",
   "select_user_3": "select user...",
   "optional_2": "(optional)",
@@ -2356,6 +2520,66 @@
   "ldquo": "&ldquo;",
   "rdquo": "&rdquo;",
   "out_of_5": "out of 5",
+  "add_at_least_one_valid_option": "Please add at least one valid option for select field",
+  "failed_to_delete_field": "Failed to delete field",
+  "delete_field_confirmation": "Are you sure to delete the field? It will be permanently deleted",
+  "add_new_field_to_form": "Add a new field to your form",
+  "option_label": "Option {{number}} Label",
+  "search_fields": "Search fields...",
+  "fields_selected": "{{count}} field selected",
+  "fields_selected_plural": "{{count}} fields selected",
+  "available_count": "{{count}} available",
+  "no_fields_found": "No fields found",
+  "required": "Required",
+  "no_custom_fields_yet": "No custom fields yet",
+  "customize_lead_capture_form": "Customize your lead capture form",
+  "select_language": "Select Language",
+  "total_fields": "Total Fields",
+  "form_preview": "Form Preview",
+  "form_preview_description": "This is how your form will appear to users",
+  "no_fields_selected": "No Fields Selected",
+  "update_fields": "Update Fields",
+ "sales_status": "Sales Status",
+  "postal code": "Postal Code",
+  "Language": "Language",
+  "get_companyId": "Get Company ID",
+  "enter_registered_email_for_otp": "Enter your registered email address and we'll send you an OTP.",
+  "send_otp": "Send OTP",
+    "forgot_companyId": "Forgot Company ID",
+  "enter_registered_email_for_find": "Enter your registered email to find your Company ID.",
+  "enter_email": "Enter your email",
+  "find_companyId": "Find Company ID",
+  "searching": "Searching...",
+  "company_id_found_successfully": "Company ID found successfully.",
+  "company_id_not_found": "Company ID not found.",
+  "copied_to_clipboard": "Copied to clipboard.",
+  "copy_failed": "Failed to copy.",
+  "copy": "Copy",
+  "copied": "Copied",
+  "something_went_wrong": "Something went wrong. Please try again.",
+  
+ "create_new_password": "Create New Password",
+  "enter_strong_password_msg": "Please enter a strong password to secure your account.",
+  "enter_new_password_placeholder": "Enter your new password",
+  "confirm_password_placeholder": "Confirm your password",
+  "all_fields_required": "All fields are required",
+  "password_mismatch": "Passwords do not match",
+  "password_strength_error": "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character.",
+  "password_changed_successfully": "Password changed successfully!",
+  "strong_password": "✓ Strong Password",
+  "weak_password": "⚠ Weak Password (8+ chars, uppercase, lowercase, number & symbol)",
+  "passwords_match": "✓ Passwords Match",
+  "passwords_do_not_match": "⚠ Passwords do not match"
+,
+  "back_to_login": "Back to Login",
+  "membership notes": "Membership Notes",
+   "top_rated_employees": "Top Rated Employees",
+  "needs_improvement": "Needs Improvement",
+  "Message": "Message",
+  "employee seniority": "Employee Seniority",
+  "employee role": "Employee Role",
+  "otp_sent_to_email": "An OTP has been sent to"
+,
   "based_on": "Based on",
   "rated_task": "rated task",
   "tasks_loaded": "tasks loaded",
@@ -2379,6 +2603,11 @@
   "secured_your_confirmation_is_encrypted_and_time_stamped": "🔒 Secured · Your confirmation is encrypted and time-stamped",
   "sorry_the_page_you_re_looking_for_doesn_t_exist_has_been": "Sorry, the page you’re looking for doesn’t exist, has been removed, or the URL might be incorrect.",
   "smart_crm_for_modern_teams": "🚀 Smart CRM for modern teams",
+  "role_based_access_desc": "Granular permissions and secure role management.",
+
+  "lead_enquiry_tracking_desc": "Track enquiries from source to conversion.",
+
+  "modern_ui_desc": "Fast, responsive, and dark-mode friendly.",
   "welcome_to": "Welcome to",
   "manage_leads_roles_users_and_permissions_with_clarity_and": "Manage leads, roles, users, and permissions with clarity and control. Built for performance, security, and scalability.",
   "trakeroo_crm_developed_by": "Trakeroo CRM. Developed by",
@@ -2473,7 +2702,7 @@
   "permissions": "Permissions",
   "viewer_1": "Viewer (1)",
   "owner_100": "Owner (100)",
-  "remove_all": "Remove All (",
+
   "no": "No",
   "d_left": "d left",
   "id_2": "ID:",
@@ -2509,12 +2738,562 @@
    "dashboard_overview": "Dashboard Overview",
   "welcome_back": "Welcome Back",
   "track_team_performance": "Track your team's performance in real time.",
-  "recent_activities": "Recent Activities",
-  "top_performers": "Top Performers",
   "sales_summary": "Sales Summary",
-  "monthly_revenue": "Monthly Revenue",
   "no_data_found": "No data found",
-  "search_users": "Search users...",
   "view_details": "View Details",
-  "create_new_lead": "Create New Lead"
+  "create_new_lead": "Create New Lead",
+ 
+  "support": {
+    "widget": {
+      "openLabel": "Open support",
+      "closeLabel": "Close support",
+      "title": "Support Center",
+      "subtitle": "We're here to help you"
+    },
+    "common": {
+      "back": "Back",
+      "close": "Close",
+      "sending": "Sending..."
+    },
+    "menu": {
+      "contact": { "title": "Contact Support", "description": "Get help from our team via email" },
+      "chat": { "title": "Live Chat", "description": "Chat with an agent in real time" },
+      "docs": { "title": "Documentation", "description": "Browse guides and articles" },
+      "bug": { "title": "Report a Bug", "description": "Let us know something's wrong" },
+      "feature": { "title": "Feature Request", "description": "Suggest an idea or improvement" },
+      "status": { "title": "System Status", "description": "Check the status of our services" }
+    },
+    "contact": {
+      "fields": {
+        "name": "Full name",
+        "email": "Email address",
+        "subject": "Subject",
+        "category": "Category",
+        "message": "Message"
+      },
+      "placeholders": {
+        "name": "John Doe",
+        "email": "john@company.com",
+        "subject": "How can we help?",
+        "message": "Describe your issue in detail..."
+      },
+      "categories": {
+        "general": "General inquiry",
+        "billing": "Billing",
+        "technical": "Technical issue",
+        "account": "Account"
+      },
+      "errors": {
+        "name": "Please enter your name",
+        "email": "Please enter a valid email address",
+        "subject": "Please enter a subject",
+        "message": "Please provide at least 10 characters"
+      },
+      "submit": "Send message",
+      "successTitle": "Message sent!",
+      "successMessage": "Our support team will get back to you within 24 hours.",
+      "sendAnother": "Send another message"
+    },
+    "bug": {
+      "fields": {
+        "subject": "Subject",
+        "description": "Description",
+        "priority": "Priority",
+        "screenshot": "Screenshot",
+        "url": "Current URL",
+        "browser": "Browser",
+        "os": "Operating system"
+      },
+      "placeholders": {
+        "subject": "Short summary of the bug",
+        "description": "Steps to reproduce, expected vs actual result..."
+      },
+      "priorities": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High",
+        "critical": "Critical"
+      },
+      "errors": {
+        "subject": "Please enter a subject",
+        "description": "Please provide at least 10 characters"
+      },
+      "uploadPlaceholder": "Upload a screenshot (optional)",
+      "submit": "Submit bug report",
+      "successTitle": "Bug reported",
+      "successMessage": "Thanks for the report! Our engineering team will investigate.",
+      "reportAnother": "Report another bug"
+    },
+    "feature": {
+      "fields": {
+        "title": "Title",
+        "description": "Description",
+        "businessImpact": "Business impact",
+        "priority": "Priority"
+      },
+      "placeholders": {
+        "title": "What would you like to see?",
+        "description": "Describe the feature in detail...",
+        "businessImpact": "How would this help you or your team?"
+      },
+      "priorities": {
+        "low": "Nice to have",
+        "medium": "Important",
+        "high": "Critical"
+      },
+      "errors": {
+        "title": "Please enter a title",
+        "description": "Please provide at least 10 characters"
+      },
+      "submit": "Submit request",
+      "successTitle": "Request submitted",
+      "successMessage": "Thanks for the suggestion! Our product team will review it.",
+      "submitAnother": "Submit another request"
+    },
+    "docs": {
+      "searchPlaceholder": "Search documentation...",
+      "noResults": "No articles match your search",
+      "articles": {
+        "gettingStarted": { "title": "Getting Started", "description": "Set up your workspace in minutes", "href": "/docs/getting-started" },
+        "projects": { "title": "Projects", "description": "Organize and manage your projects", "href": "/docs/projects" },
+        "tasks": { "title": "Tasks", "description": "Create, assign and track tasks", "href": "/docs/tasks" },
+        "users": { "title": "Users", "description": "Manage user accounts and permissions", "href": "/docs/users" },
+        "teams": { "title": "Teams", "description": "Collaborate with your team members", "href": "/docs/teams" },
+        "billing": { "title": "Billing", "description": "Manage subscriptions and invoices", "href": "/docs/billing" },
+        "api": { "title": "API", "description": "Integrate with our REST API", "href": "/docs/api" }
+      }
+    },
+    "chat": {
+      "agentName": "Alex from Support",
+      "agentInitial": "A",
+      "onlineLabel": "Online now",
+      "welcomeMessage": "Hi there! 👋 How can I help you today?",
+      "autoReply": "Thanks for your message! One of our agents will respond shortly.",
+      "inputPlaceholder": "Type your message...",
+      "sendLabel": "Send message"
+    },
+    "status": {
+      "allOperational": "All systems operational",
+      "partialOutage": "Some systems are experiencing issues",
+      "services": {
+        "api": "API",
+        "database": "Database",
+        "auth": "Authentication",
+        "storage": "Storage",
+        "email": "Email Service"
+      },
+      "labels": {
+        "operational": "Operational",
+        "maintenance": "Maintenance",
+        "outage": "Outage"
+      }
+    }
+  }
+,
+
+ "assign_tickets": "Assign Tickets",
+  "assign_selected": "Assign ({{count}})",
+  "assign_selected_count": "{{count}} ticket(s) selected",
+  "search_agents_placeholder": "Search by name or department...",
+  "no_agents_found": "No matching agents found",
+  "not_assigned": "N/A",
+  "raise_new_ticket": "Raise a New Ticket",
+  "raise_ticket_subtitle": "Fill in the details below and our support team will get back to you shortly",
+
+  "ticket_created_title": "Ticket created successfully",
+  "ticket_created_desc": "Your ticket has been submitted. Our team will respond shortly.",
+
+  "subject_placeholder": "Briefly describe the issue",
+
+  "select_placeholder": "Select an option",
+  "issue_type_bug": "Bug",
+  "issue_type_feature_request": "Feature Request",
+  "issue_type_integration_issue": "Integration Issue",
+  "issue_type_billing": "Billing",
+  "issue_type_other": "Other",
+
+  "product_trakeroo_crm": "Trakeroo CRM",
+  "product_trakeroo_mail": "Trakeroo Mail",
+  "product_trakeroo_analytics": "Trakeroo Analytics",
+
+  "module_contacts_sync": "Contacts & Sync",
+  "module_dashboard": "Dashboard",
+  "module_billing_module": "Billing",
+  "module_reports": "Reports",
+  "module_settings": "Settings",
+
+  "department_sales_operations": "Sales Operations",
+  "department_marketing": "Marketing",
+  "department_engineering": "Engineering",
+  "department_customer_success": "Customer Success",
+  "department_it_admin": "IT Admin",
+  "ticket_not_found_title": "Ticket not found",
+  "ticket_not_found_desc": "We couldn't find a ticket with ID \"{{id}}\". It may have been removed or the link is incorrect.",
+  "back_to_tickets": "Back to All Tickets",
+
+  "description_placeholder": "Provide as much detail as possible about the issue you're facing",
+
+  "upload_drag_drop": "Click to upload or drag and drop",
+  "upload_file_types": "PDF, PNG, JPG up to 10MB",
+  "remove_file": "Remove file",
+
+  "submit_ticket": "Submit Ticket",
+
+  "error_field_required": "This field is required",
+
+
+
+  "my_tickets": "My Tickets",
+  "ticket_details": "Ticket Details",
+  "track_ticket_subtitle": "Track the progress and updates of your support ticket",
+
+  "ticket_number": "Ticket Number",
+  "raised_by": "Raised By",
+  "department": "Department",
+
+  "view_conversation": "View Conversation",
+
+  "status_open": "Open",
+  "status_under_review": "Under Review",
+  "status_waiting_for_user": "Waiting for You",
+  "status_resolved": "Resolved",
+
+
+  "status_timeline": "Status Timeline",
+  "timeline_raised": "Ticket Raised",
+  "timeline_under_review": "Under Review",
+  "timeline_in_progress": "In Progress",
+  "timeline_waiting": "Waiting For You",
+  "timeline_resolved": "Resolved",
+
+  "desc_raised": "Your ticket has been successfully submitted to our support team.",
+  "desc_under_review": "Our support team has reviewed your ticket and identified the issue category.",
+  "desc_in_progress": "Our engineering team is actively investigating your issue.",
+  "desc_waiting": "We need additional information from you to proceed further.",
+  "desc_resolved": "Your issue has been resolved and the ticket will be closed.",
+
+  "estimated_response": "Estimated Response",
+
+  "ticket_information": "Ticket Information",
+  "issue_type": "Issue Type",
+  "product": "Product",
+  "module": "Module",
+ 
+  "no_attachments_2": "No attachments added to this ticket.",
+  "download_file": "Download file",
+
+  "need_help": "Need Help?",
+  "help_center": "Visit Help Center",
+  "live_chat": "Live Chat",
+  "call_support": "Call Support",
+  "email_support": "Email Support",
+
+  "receive_updates_desc": "Receive updates about this ticket via email as our team makes progress.",
+  "update_preferences": "Update Preferences",
+
+  "previous_tickets": "Previous Tickets",
+  "all_tickets": "All Tickets",
+  "all_tickets_subtitle": "View and manage all your support tickets in one place",
+  "raise_ticket": "Raise Ticket",
+  "search_tickets_placeholder": "Search by ticket ID or subject...",
+  "filter_by_status": "Filter by status",
+  "ticket_id": "Ticket ID",
+  "report_read_only": "This report has been finally submitted and is now read-only.",
+  "changing_a_task": "Changing a Task",
+  "morning_tasks_instruction": "All morning tasks are pre-loaded. Change each task's status to move it between sections.",
+
+  "view_ticket": "View ticket",
+  "no_tickets_found": "No tickets found",
+  "no_tickets_found_desc": "Try adjusting your search or filter to find what you're looking for.",
+  "showing_results": "Showing {{from}}–{{to}} of {{total}} results",
+  "previous_page": "Previous page",
+  "next_page": "Next page",
+  "page_of": "Page {{page}} of {{totalPages}}",
+  "meeting_details": "Meeting Details",
+  "basic_details": "Basic Details",
+    "lost_leads": "Lost Leads",
+    
+  "all_sources": "All Sources",
+  "by_company": "By Company",
+  "by_referral": "By Referral",
+ 
+  "all_designations": "All Designations",
+
+  "sales_person": "Sales Person",
+
+
+  "clear_all_filters": "Clear All Filters",
+  
+
+
+
+  "referral_form": "Referral Form",
+  "editing_referral_lead": "Editing Referral Lead",
+  "add_new_referral_lead": "Add New Referral Lead",
+  "enter_phone": "Enter phone number",
+
+  "employee_role": "Employee Role",
+  "enter_employee_role": "Enter employee role",
+  "select_industry": "Select industry",
+  "enter_city": "Enter city",
+  "enter_country": "Enter country",
+  "enter_postal_code": "Enter postal code",
+
+  "employee_seniority": "Employee Seniority",
+  "select_seniority": "Select seniority",
+
+  "junior": "Junior",
+  "mid": "Mid-Level",
+  "senior": "Senior",
+
+  "executive": "Executive",
+
+  "web_development": "Web Development",
+  "mobile_app": "Mobile App",
+  "software_development": "Software Development",
+  "consulting": "Consulting",
+  "design": "Design",
+  "spanish": "Spanish",
+  "french": "French",
+  "german": "German",
+  "chinese": "Chinese",
+
+  "enter_message": "Enter message",
+
+  "enter_membership_notes": "Enter membership notes",
+
+  "add_to_table": "Add to Table",
+  "update_in_table": "Update in Table",
+
+  "submit_leads": "Submit Lead",
+  "submit_all_leads": "Submit All Leads",
+
+  "referral_leads_list": "Referral Leads List",
+  "lead(s)_added": "Lead(s) Added",
+
+
+  "please_fill_required_fields": "Please fill all required fields.",
+  "no_leads_to_submit": "There are no leads to submit.",
+  "leads_submitted_successfully": "Leads submitted successfully.",
+  "error_submitting_leads": "An error occurred while submitting leads.",
+
+  "are_you_sure_?": "Are you sure?",
+  "confirm_delete_lead": "Do you want to delete this referral lead?",
+  "confirm_submitting_leads": "Do you want to submit this referral lead?",
+  "confirm_submitting_all_leads": "Do you want to submit all referral leads?",
+    "referral_leads_form": "Referral Leads Form",
+
+
+
+
+
+  "source_col": "Source",
+
+  "client_info_col": "Client Info",
+  "project_type_col": "Project Type",
+  "status_col": "Status",
+  "created_date_col": "Created Date",
+  "created_by_col": "Created By",
+  "actions_col": "Actions",
+
+
+  
+  "appbar": {
+    "brandSuffix": "Referral",
+    "partnerPortal": "Partner portal",
+    "adminConsole": "Admin console",
+    "financeAdmin": "Finance admin"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "myClients": "My clients",
+    "commissions": "Commissions",
+    "forecast": "Forecast",
+    "payouts": "Payouts",
+    "settings": "Settings",
+    "partners": "Partners",
+    "commissionTiers": "Commission tiers",
+    "approvalQueue": "Approval queue",
+    "payoutBatches": "Payout batches"
+  },
+  "common": {
+    "overview": "Overview",
+    "thisMonth": "This month",
+    "ytd": "YTD",
+    "lifetime": "Lifetime",
+    "viewAll": "View all",
+    "current": "current",
+    "saveChanges": "Save changes",
+    "remove": "Remove",
+    "approve": "Approve",
+    "hold": "Hold",
+    "review": "Review",
+    "view": "View"
+  },
+  "badge": {
+    "active": "Active",
+    "trial": "Trial",
+    "paid": "Paid",
+    "accrued": "Accrued",
+    "pending": "Pending",
+    "churned": "Churned",
+    "onboarding": "Onboarding"
+  },
+  "table": {
+    "client": "Client",
+    "activeUsers": "Active users",
+    "mrr": "MRR",
+    "tier": "Tier",
+    "status": "Status",
+    "period": "Period",
+    "revenue": "Revenue",
+    "commission": "Commission",
+    "amount": "Amount",
+    "reference": "Reference",
+    "partner": "Partner",
+    "clients": "Clients",
+    "referredMrr": "Referred MRR",
+    "agreement": "Agreement",
+    "minUsers": "Min users",
+    "maxUsers": "Max users",
+    "commissionPct": "Commission %",
+    "effectiveFrom": "Effective from",
+    "batch": "Batch",
+    "total": "Total"
+  },
+  "calc": {
+    "howCalculated": "How this is calculated"
+  },
+  "tier": {
+    "band1": "1–99",
+    "band2": "100–499",
+    "band3": "500–999",
+    "band4": "1000+"
+  },
+  "partner": {
+    "dashboard": {
+      "hero": {
+        "eyebrow": "Earning ladder",
+        "title": "Commission grows with every client you bring in.",
+        "subtitle": "Your rate is set by each client's active user count — not a fixed percentage. As they grow, you move up automatically."
+      },
+      "thisMonth": "This month",
+      "metric": {
+        "activeClients": "Active clients",
+        "activeClientsDelta": "{{count}} this month",
+        "referredMrr": "Referred MRR",
+        "commissionMonth": "Commission (mo.)",
+        "lifetimeEarned": "Lifetime earned",
+        "since2023": "since 2023"
+      },
+      "referredClients": "Referred clients",
+      "revenueForecast": "Revenue forecast",
+      "openForecast": "Open forecast"
+    },
+    "clients": {
+      "eyebrow": "Portfolio",
+      "searchPlaceholder": "Search clients",
+      "tierProgress": "tier progress",
+      "note": {
+        "clientA": "Client A has {{count}} active users — 40 more to reach the 100 band, which raises commission to 25%.",
+        "clientB": "Client B has {{count}} active users — 360 more to reach the 1000+ band, which raises commission to 35% automatically. No action needed on your end; the tier is re-evaluated every billing cycle.",
+        "clientC": "Client C has {{count}} active users — 40 more to reach the 100 band, which raises commission to 25%.",
+        "clientD": "Churned — no further accrual."
+      }
+    },
+    "commissions": {
+      "eyebrow": "Earnings",
+      "calcExplainer": "commission = client revenue for the period × the commission tier matching that client's active user count."
+    },
+    "forecast": {
+      "eyebrow": "Projections",
+      "title": "Revenue forecast",
+      "model": {
+        "linear": "Growth model: linear",
+        "flat": "Growth model: flat",
+        "historical": "Growth model: historical average",
+        "manual": "Growth model: manual"
+      },
+      "oneYear": "1 year",
+      "fiveYear": "5 years",
+      "tenYear": "10 years",
+      "twentyYear": "20 years",
+      "expected": "Expected",
+      "conservative": "Conservative",
+      "calcExplainer": "current MRR is grown forward at the selected model's annual rate; projected active users are re-mapped to the commission tier for each future year; commission = projected revenue × the tier applicable that year.",
+      "note": {
+        "linear": "Linear model applies a constant annual growth rate to both users and MRR — a reasonable middle-ground assumption for a growing client.",
+        "flat": "Flat model holds current MRR and user count constant — the conservative floor for the projection.",
+        "historical": "Historical average uses this client's own trailing 12-month growth rate, projected forward.",
+        "manual": "Manual override lets an admin or partner enter a custom growth rate for scenario planning."
+      },
+      "footnote": "Shown as expected vs. conservative scenarios — this is a projection, not a guarantee."
+    },
+    "payouts": {
+      "eyebrow": "History",
+      "statement": "Statement"
+    },
+    "settings": {
+      "eyebrow": "Account",
+      "profile": "Profile",
+      "referralCode": "Referral code",
+      "contactEmail": "Contact email",
+      "phone": "Phone",
+      "payoutDetails": "Payout details",
+      "accountHolderName": "Account holder name",
+      "accountHolderPlaceholder": "As per bank records",
+      "accountNumber": "Account number",
+      "notifications": "Notifications",
+      "notif": {
+        "newClient": "New client attributed",
+        "tierUpgrade": "Tier upgrade",
+        "payoutCompleted": "Payout completed",
+        "clientChurn": "Client churn"
+      }
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "title": "All partners",
+      "metric": {
+        "activePartners": "Active partners",
+        "referredClients": "Referred clients",
+        "mrrUnderReferral": "MRR under referral",
+        "accruedLiability": "Accrued liability"
+      },
+      "liabilityChartTitle": "Commission liability — accrued vs. paid",
+      "pendingApproval": "Pending approval",
+      "pendingApprovalSummary": "{{count}} ledger entries awaiting approval — {{total}} total."
+    },
+    "partners": {
+      "eyebrow": "Directory",
+      "newPartner": "New partner",
+      "expires": "Exp. {{date}}"
+    },
+    "tiers": {
+      "eyebrow": "Configuration",
+      "addTier": "Add tier",
+      "saveTierTable": "Save tier table",
+      "footnote": "Changing a tier's rate does not rewrite past ledger entries — new rates apply from the effective date forward. Maps to the commission_tiers schema table."
+    },
+    "queue": {
+      "eyebrow": "Finance",
+      "approveAll": "Approve all → batch payout",
+      "footnote": "\"Hold\" needs a defined destination (dispute reason, reviewer, resolution state) before this queue ships — see Section 9 of the PRD."
+    },
+    "batches": {
+      "eyebrow": "Finance",
+      "markPaid": "Mark paid"
+    }
+  
 }
+
+
+
+
+
+
+
+
+}
+

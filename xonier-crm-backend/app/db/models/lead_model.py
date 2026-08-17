@@ -1,14 +1,16 @@
 from beanie import Document, Link, before_event, Save, Insert, Replace, Indexed
 from typing import Annotated, Optional, List
-from pydantic import StringConstraints, Field, field_validator
+from pydantic import StringConstraints, Field, field_validator, model_validator
 from app.db.models.user_model import UserModel
-from app.core.enums import PROJECT_TYPES, SALES_STATUS, PRIORITY, SOURCE, LANGUAGE_CODE, COUNTRY_CODE, INDUSTRIES, EMPLOYEE_SENIORITY, LEAD_SOURCE_TYPE, CONTACT_STATUS
+from app.core.enums import PROJECT_TYPES, SALES_STATUS, PRIORITY, SOURCE, LANGUAGE_CODE, COUNTRY_CODE, INDUSTRIES, EMPLOYEE_SENIORITY, LEAD_SOURCE_TYPE, CONTACT_STATUS, MEETING_SCHEDULED
 from datetime import datetime, timezone
 from app.core.security import hash_password, hash_value
 from app.core.crypto import encryptor
 import phonenumbers
 from pymongo import IndexModel
 from app.db.models.base_model import BaseDocument
+from app.utils.custom_exception import AppException
+from app.db.models.calender_event_model import CalenderEventModel
 
 
 PhoneNumber = Annotated[
@@ -24,6 +26,7 @@ PhoneNumber = Annotated[
 class LeadsModel(BaseDocument):
     lead_id: str
     fullName: str = Field(..., min_length=1, max_length=49)
+
     email: str
     hashedEmail: str = Indexed()
     phone: Optional[str] = None
@@ -45,6 +48,15 @@ class LeadsModel(BaseDocument):
     industry: Optional[str] = None
     employeeRole: Optional[str] = None
     employeeSeniority: Optional[EMPLOYEE_SENIORITY] = None
+
+    meetingScheduled: MEETING_SCHEDULED = MEETING_SCHEDULED.NO.value
+    meetingTitle: Optional[str] = None
+    meetingDescription: Optional[str] = None
+    meetingStart: Optional[datetime] = None
+    meetingEnd: Optional[datetime] = None
+    meetingLink: Optional[str] = None
+    meetingPriority: Optional[PRIORITY] = None
+    meetingEventId: Optional[Link[CalenderEventModel]] = None
  
     message: Optional[str] = None
     membershipNotes: Optional[str] = None
@@ -106,4 +118,32 @@ class LeadsModel(BaseDocument):
             plain_phone = self.phone
             self.phone = encryptor.encrypt_data(plain_phone)
             self.hashedPhone = hash_value(plain_phone)
+
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_meeting(cls, value):
+        isMeetingScheduled = value.get("meetingScheduled")
+
+        if isMeetingScheduled != MEETING_SCHEDULED.YES.value:
+            return value
+
+        meetingTitle = value.get("meetingTitle")
+        meetingDescription = value.get("meetingDescription")
+        meetingStart = value.get("meetingStart")
+        meetingEnd = value.get("meetingEnd")
+        meetingLink = value.get("meetingLink")
+        meetingPriority = value.get("meetingPriority")
+
+        if not meetingTitle or not meetingStart or not meetingEnd or not meetingLink or not meetingPriority:
+            raise AppException(422, f"{'Meeting Title' if not meetingTitle else 'Meeting Start Date' if not meetingStart else "Meeting End Date" if not meetingEnd else "Meeting Link" if not meetingLink else "Meeting Priority" if not meetingPriority else "unknown"} field is required" )
+
+
+        return value
+
+        
+
+
+        
+
 

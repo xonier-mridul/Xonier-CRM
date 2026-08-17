@@ -478,7 +478,6 @@ const LeadViewPage = (): JSX.Element => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-6">
                     {leadData?.assignedTo?.map((item, i) => {
-  const { t } = useTranslation();
                       const isAssigned = leadData.assignedAt
                         ? formatDate(leadData.assignedAt)
                         : "-";

@@ -189,7 +189,7 @@ const  UserUpdate = ({
                     </label>
                     <select
                       onChange={handleUserRoleChange}
-                      className="w-full px-3 py-2 rounded-md border bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      className="w-full px-3 py-2 rounded-md border bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                     >
                       <option value="">{t("select_user_role")}</option>
                       {roleData.map((role: any) => (
@@ -213,7 +213,7 @@ const  UserUpdate = ({
                           return (
                             <span
                               key={roleId}
-                              className="flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm"
+                              className="flex items-center gap-2 px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-sm"
                             >
                               {role.name}
                               <button
@@ -246,7 +246,7 @@ const  UserUpdate = ({
                     <button
                       type="button"
                       onClick={() => setCompanyOpen((p) => !p)}
-                      className="w-full px-3 py-2 rounded-md border bg-white dark:bg-gray-700 text-left text-sm border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-violet-500 flex items-center justify-between"
+                      className="w-full px-3 py-2 rounded-md border bg-white dark:bg-gray-700 text-left text-sm border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-cyan-500 flex items-center justify-between"
                     >
                       <span
                         className={
@@ -293,7 +293,7 @@ const  UserUpdate = ({
                             value={companySearch}
                             onChange={(e) => setCompanySearch(e.target.value)}
                             placeholder={t("search_company")}
-                            className="w-full px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                            className="w-full px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
                           />
                         </div>
 
@@ -323,7 +323,7 @@ const  UserUpdate = ({
                                     onClick={() => handleCompanySelect(id)}
                                     className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center justify-between ${
                                       isSelected
-                                        ? "bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300"
+                                        ? "bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300"
                                         : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
                                     }`}
                                   >
@@ -337,7 +337,7 @@ const  UserUpdate = ({
                                     </div>
                                     {isSelected && (
                                       <svg
-                                        className="w-4 h-4 text-violet-500 flex-shrink-0 ml-2"
+                                        className="w-4 h-4 text-cyan-500 flex-shrink-0 ml-2"
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
@@ -449,7 +449,7 @@ const  UserUpdate = ({
                       onChange={handleStatusChange}
                       name="status"
                       value={statusData.status}
-                      className="w-full px-3 py-2 rounded-md border capitalize bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      className="w-full px-3 py-2 rounded-md border capitalize bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                     >
                       <option value="" hidden>
                         {t("select_user_status")}

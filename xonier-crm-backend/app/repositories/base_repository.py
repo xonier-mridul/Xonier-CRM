@@ -684,11 +684,11 @@ class BaseRepository:
 
                     setattr(doc, field, fetched_items)
 
-
+        print("before dump")
         count = await self.model.find(filters).count()
 
         total_pages = math.ceil(count / limit)
-
+         
         return {
             "data": [doc.model_dump(mode="json") for doc in results],
             "page": page,

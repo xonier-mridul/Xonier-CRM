@@ -1,4 +1,4 @@
-from app.core.enums import FORM_INPUT_TYPE, PRIORITY, SOURCE, PROJECT_TYPES, SALES_STATUS, COUNTRY_CODE, LANGUAGE_CODE, INDUSTRIES, EMPLOYEE_SENIORITY, FORM_FIELD_MODULES, DEAL_PIPELINE, DEAL_STAGES, DEAL_TYPE, FORECAST_CATEGORY
+from app.core.enums import FORM_INPUT_TYPE, PRIORITY, SOURCE, PROJECT_TYPES, SALES_STATUS, COUNTRY_CODE, LANGUAGE_CODE, INDUSTRIES, EMPLOYEE_SENIORITY, FORM_FIELD_MODULES, DEAL_PIPELINE, DEAL_STAGES, DEAL_TYPE, FORECAST_CATEGORY, MEETING_SCHEDULED
 
 
 FORM_FIELDS = [
@@ -155,6 +155,80 @@ FORM_FIELDS = [
         "required": False,
         "isActive": True,
         "placeholder": "Sales Status",
+        "module": [FORM_FIELD_MODULES.LEAD.value]
+    },
+    {
+        "name": "meeting scheduled",
+        "key": "meetingScheduled",
+        "type": FORM_INPUT_TYPE.SELECT.value,
+        "options": [
+            {"label": "No", "value": MEETING_SCHEDULED.NO.value},
+            {"label": "Yes", "value": MEETING_SCHEDULED.YES.value},
+           
+        ],
+        "required": True,
+        "isActive": True,
+        "placeholder": "Meeting Scheduled",
+        "module": [FORM_FIELD_MODULES.LEAD.value]
+    },
+    {
+        "name": "meeting title",
+        "key": "meetingTitle",
+        "type": FORM_INPUT_TYPE.TEXT.value,
+        "required": False,
+        "isActive": True,
+        "placeholder": "Meeting Title",
+        "module": [FORM_FIELD_MODULES.LEAD.value]
+    },
+    {
+        "name": "meeting description",
+        "key": "meetingDescription",
+        "type": FORM_INPUT_TYPE.TEXT.value,
+        "required": False,
+        "isActive": True,
+        "placeholder": "Meeting Description",
+        "module": [FORM_FIELD_MODULES.LEAD.value]
+    },
+    {
+        "name": "meeting start",
+        "key": "meetingStart",
+        "type": FORM_INPUT_TYPE.DATE.value,
+        "required": False,
+        "isActive": True,
+        "placeholder": "Meeting Start",
+        "module": [FORM_FIELD_MODULES.LEAD.value]
+    },
+    {
+        "name": "meeting end",
+        "key": "meetingEnd",
+        "type": FORM_INPUT_TYPE.DATE.value,
+        "required": False,
+        "isActive": True,
+        "placeholder": "Meeting End",
+        "module": [FORM_FIELD_MODULES.LEAD.value]
+    },
+    
+    {
+        "name": "meeting link",
+        "key": "meetingLink",
+        "type": FORM_INPUT_TYPE.TEXT.value,
+        "required": False,
+        "isActive": True,
+        "placeholder": "Meeting Link",
+        "module": [FORM_FIELD_MODULES.LEAD.value]
+    },
+    {
+        "name": "meeting priority",
+        "key": "meetingPriority",
+        "type": FORM_INPUT_TYPE.SELECT.value,
+        "options": [
+            {"label": "Low", "value": PRIORITY.LOW.value},
+            {"label": "Medium", "value": PRIORITY.MEDIUM.value},
+            {"label": "High", "value": PRIORITY.HIGH.value},
+        ],
+        "required": False,
+        "isActive": True,
+        "placeholder": "Meeting Priority",
         "module": [FORM_FIELD_MODULES.LEAD.value]
     },
     {

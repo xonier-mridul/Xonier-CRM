@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
-import "./globals.css";
+import './globals.css'
 import "../i18n/index";
 import { Suspense, ReactNode } from "react";
 
@@ -16,6 +16,8 @@ import RouteLoader from "../components/loader/RouteLoader";
 
 import "react-toastify/dist/ReactToastify.css";
 import "react-loading-skeleton/dist/skeleton.css";
+import I18nProvider from "../components/providers/I18nProvider";
+import Support from "../components/support/page";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -25,9 +27,9 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Trackeroo CRM | Smart Sales, Leads & Customer Management",
+  title: "Trakeroo CRM | Smart Sales, Leads & Customer Management",
   description:
-    "Trackeroo is a modern CRM platform to manage leads, deals, quotations, invoices, and customer relationships with powerful analytics and team collaboration.",
+    "Trakeroo is a modern CRM platform to manage leads, deals, quotations, invoices, and customer relationships with powerful analytics and team collaboration.",
 };
 
 type RootLayoutProps = {
@@ -44,6 +46,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <Providers>
           <ReduxProvider>
             <LoaderProvider>
+              <I18nProvider>
 
               <RouteLoader />
 
@@ -57,8 +60,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
 
               <ToastProvider />
 
-              {/* App content */}
-              {children}
+              
+              {children }
+              <Support hasUnread/>
+              </I18nProvider>
             </LoaderProvider>
           </ReduxProvider>
         </Providers>

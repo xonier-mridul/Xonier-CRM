@@ -22,6 +22,15 @@ class UserRoleService:
             query = {}
             is_admin = validate_admin(user.get("userRole", None))
 
+            if filters.get("search") and filters["search"].strip():
+                regex = {"$regex": filters["search"], "$options": "i"}
+
+                query = {"$or" : [
+                     {"title": regex},
+                     {"code": regex}
+                ]}
+
+
             if is_admin:
                 query["isSystemRole"] = True
 
@@ -34,6 +43,8 @@ class UserRoleService:
 
             if "action" in filters:
                 query.update("action", filters["action"])
+
+     
      
             result = await self.repository.get_all(page, limit, filters=query, populate=["createdBy", "permissions"])
 
@@ -53,6 +64,8 @@ class UserRoleService:
     
     async def get_all_active(self):
         try:
+           
+            
             
             result = await self.repository.get_all_without_pagination(filters={"status": True}, populate=["createdBy", "permissions"])
 

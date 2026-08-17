@@ -18,6 +18,7 @@ const page = (): JSX.Element => {
     const [totalPages, setTotalPages] = useState<number>(1);
     const [isPopupShow, setIsPopShow] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isBlur, setIsBlur] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
     const [err, setErr] = useState<string | string[] | null>(null);
     const [categoryData, setCategoryData] = useState<CategoryItem[]>([]);
@@ -130,6 +131,7 @@ const page = (): JSX.Element => {
     const handleDelete = async (id: string): Promise<void> => {
         setErr(null);
         setLoading(true);
+        setIsBlur(true)
         try {
             const confirm = await ConfirmPopup({
                 title: "Are you sure?",
@@ -153,6 +155,7 @@ const page = (): JSX.Element => {
                 );
             }
         } finally {
+            setIsBlur(false)
             setLoading(false);
         }
     };
@@ -189,7 +192,14 @@ const page = (): JSX.Element => {
 
     // ── Render ────────────────────────────────────────────────────────────────
     return (
-        <div className="ml-72 mt-14 ">
+        <div className="ml-72 mt-14 relative ">
+              {
+                isBlur && 
+                 <div
+                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                onClick={handleClosePopup}
+            />
+            }
             <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full ">
                 <CategoryTable
                     categoryData={categoryData}
@@ -211,6 +221,7 @@ const page = (): JSX.Element => {
                     totalPages={totalPages}
                     handlepagechange={handlepagechange}
                     handleSearch={handleSearch}
+                    isBlur={isBlur}
                     err={err}
                 />
             </div>

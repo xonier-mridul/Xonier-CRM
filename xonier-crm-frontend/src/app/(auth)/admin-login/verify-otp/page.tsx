@@ -1,0 +1,252 @@
+"use client";
+
+import React, { FormEvent, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { IoChevronBack } from "react-icons/io5";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/src/store";
+import FormButton from "@/src/components/ui/FormButton";
+import { AuthService } from "@/src/services/auth.service";
+import { ResendAdminLoginOtpPayload, VerifyAdminLoginOtpPayload} from "@/src/types";
+
+import extractErrorMessages from "@/src/app/utils/error.utils";
+import { useTranslation } from "react-i18next";
+
+const OTP_LENGTH = 6;
+const OTP_TIMER = 60;
+
+const page = () => {
+  const { t } = useTranslation();
+  const router = useRouter();
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [resendLoading, setResetLoading] = useState(false);
+  const [errors, setErrors] = useState<string[]>([]);
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [otp, setOtp] = useState<string>("");
+  const [timeLeft, setTimeLeft] = useState<number>(OTP_TIMER);
+
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+useEffect(() => {
+  const userEmail = sessionStorage.getItem("email");
+  const userPassword = sessionStorage.getItem("password");
+  console.log("User email from storage:", userEmail);
+  console.log("Password from storage:", userPassword);
+  if (userEmail) setEmail(userEmail);
+  if (userPassword) setPassword(userPassword);
+}, []);
+
+  useEffect(() => {
+    if (timeLeft === 0) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeLeft]);
+
+  // const dispatch = useDispatch<AppDispatch>()
+    
+  const handleOtpChange = (index: number, value: string) => {
+    if (!/^\d?$/.test(value)) return;
+
+    const otpArray = otp.split("");
+    otpArray[index] = value;
+
+    const newOtp = otpArray.join("").slice(0, OTP_LENGTH);
+    setOtp(newOtp);
+
+    if (value && index < OTP_LENGTH - 1) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  useEffect(() => {
+  console.log("email state is now:", email);
+}, [email]);
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pasted = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, OTP_LENGTH);
+
+    if (!pasted) return;
+
+    setOtp(pasted);
+    inputRefs.current[pasted.length - 1]?.focus();
+  };
+
+  const verifyOtp = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (otp.length !== OTP_LENGTH) {
+      toast.error("Please enter 6 digit OTP");
+      return;
+    }
+
+    setIsLoading(true);
+    setErrors([]);
+
+    try {
+      const payload: VerifyAdminLoginOtpPayload= {
+        email,
+        otp: Number(otp),
+        password,
+      };
+      
+      const result = await AuthService.verifyAdminLoginOtp(payload);
+
+      if (result.status === 200) {
+        toast.success("Logged in successfully");
+        sessionStorage.removeItem("email");
+        sessionStorage.removeItem("password");
+        
+        // dispatch(login(result.data.data))
+        // setTimeout(() => {
+        //   router.push("/dashboard")
+        // }, 300);
+        window.location.href = "/dashboard";
+        
+      }
+    } catch (error: unknown) {
+      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+      if (axios.isAxiosError(error)) {
+        const messages = extractErrorMessages(error);
+        setErrors(messages);
+      } else {
+        setErrors(["Something went wrong"]);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resendOtp = async () => {
+    setResetLoading(true);
+    try {
+      if (!email || !password) {
+        setErrors([
+          "Email and password not found, please back to login form and try again",
+        ]);
+      }
+
+      const payload: ResendAdminLoginOtpPayload = {
+        email,
+        password,
+      };
+
+      const result = await AuthService.resendAdminOTP(payload);
+      if (result.status === 200) {
+        toast.success("Verification OTP send successfully");
+      }
+    } catch (error) {
+      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+      if (axios.isAxiosError(error)) {
+        const messages = extractErrorMessages(error);
+        setErrors(messages);
+      } else {
+        setErrors(["Something went wrong"]);
+      }
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center bg-gradient-to-br from-cyan-50 to-blue-50 min-h-screen">
+      <div className="bg-white p-8 rounded-xl w-[600px] flex flex-col gap-5">
+        <h1 className="text-2xl font-semibold text-cyan-800">
+          {t("verify_login_otp")}
+        </h1>
+
+        <p className="text-sm text-gray-500">
+          {t("otp_is_sent_to")}{" "}
+          <span className="font-medium text-cyan-500">{email}</span>
+        </p>
+
+        <form onSubmit={verifyOtp} className="flex flex-col gap-7">
+          <div className="flex gap-3 justify-between">
+            {Array.from({ length: OTP_LENGTH }).map((_, index) => (
+              <input
+                key={index}
+                ref={(el) => {
+                  inputRefs.current[index] = el;
+                }}
+                type="text"
+                inputMode="numeric"
+                maxLength={1}
+                value={otp[index] || ""}
+                onChange={(e) => handleOtpChange(index, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(index, e)}
+                onPaste={handlePaste}
+                className="
+                  w-16 h-14 text-center text-lg font-semibold
+                  outline-none
+                  border border-slate-400 text-slate-800
+                  rounded-md focus:ring-2 focus:ring-cyan-500
+                "
+              />
+            ))}
+          </div>
+
+          {errors.length > 0 && (
+            <div className="text-red-500 text-sm text-center">
+              {errors.map((err, i) => (
+                <p key={i}>{err}</p>
+              ))}
+            </div>
+          )}
+
+          <FormButton isLoading={isLoading}>{t("verify_otp")}</FormButton>
+        </form>
+
+        <div className="text-center text-sm text-gray-600">
+          {timeLeft > 0 ? (
+            <p>
+              {t("resend_otp_in")}{" "}
+              <span className="font-semibold text-cyan-600">{timeLeft}s</span>
+            </p>
+          ) : (
+            <button
+              onClick={resendOtp}
+              className="text-cyan-600 font-medium hover:underline"
+            >
+              {resendLoading ? t("sending_3") : t("resend_otp")}
+            </button>
+          )}
+        </div>
+
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-1.5 text-slate-700 font-medium cursor-pointer hover:text-cyan-400 tracking-wide"
+        >
+          <IoChevronBack /> {t("step_back")}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default page;

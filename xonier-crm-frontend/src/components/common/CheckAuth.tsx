@@ -26,26 +26,26 @@ export default function CheckAuth({ children }: { children: React.ReactNode }) {
       } catch (error) {
         const pathname = window.location.pathname;
         if (error instanceof AxiosError) {
-          if (error.response?.status === 401 && pathname !== "/login") {
-            try {
+          // if (error.response?.status === 401 && (pathname !== "/login")) {
+          //   try {
               
-              const res = await AuthService.refreshAccessToken();
+          //     const res = await AuthService.refreshAccessToken();
               
              
-              dispatch(setAuthState(res.data.data));
-              const userRole: Array<UserRole> = res.data.data.userRole;
-              if (userRole.some((i) => i.code === SUPER_ADMIN_ROLE_CODE)) {
-                dispatch(setIsAdmin());
-              }
-            } catch (err) {
+          //     dispatch(setAuthState(res.data.data));
+          //     const userRole: Array<UserRole> = res.data.data.userRole;
+          //     if (userRole.some((i) => i.code === SUPER_ADMIN_ROLE_CODE)) {
+          //       dispatch(setIsAdmin());
+          //     }
+          //   } catch (err) {
                
-              dispatch(logout());
-            }
-          }
+          //     dispatch(logout());
+          //   }
+          // }
         }
         else{
 
-        dispatch(logout());
+        // dispatch(logout());
         }
       } finally {
         setIsLoading(false);

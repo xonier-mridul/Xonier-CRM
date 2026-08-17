@@ -84,7 +84,7 @@ const CreateCompanyPage = () => {
     <div className="mt-10 lg:ml-72 min-h-screen p-6">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-1">
-          <div className="h-9 w-9 rounded-xl bg-blue-600 flex items-center justify-center">
+          <div className="h-9 w-9 rounded-xl bg-cyan-600 flex items-center justify-center">
             <BsBuildings className="text-white text-base" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t("register_company")}</h1>
