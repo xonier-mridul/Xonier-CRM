@@ -791,10 +791,10 @@ class AuthServices:
 
             
 
-            company = await self.companyRepo.find_company_by_companyId(companyId=companyId, populate=["subscription"])
+            # company = await self.companyRepo.find_company_by_companyId(companyId=companyId, populate=["subscription"])
 
-            if not company:
-                raise AppException(400, "Company not found")
+            # if not company:
+            #     raise AppException(400, "Company not found")
 
             
            
@@ -866,7 +866,7 @@ class AuthServices:
             if not isUserExist:
                 raise AppException(404, "User not found, Please create account first")
             
-            print("data",isUserExist)
+   
             
             parse = isUserExist.model_dump(mode="json")
             if not validate_admin(parse["userRole"]):
