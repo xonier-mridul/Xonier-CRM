@@ -9,9 +9,9 @@ import ReduxProvider from "@/src/store/providers";
 
 
 export const metadata: Metadata = {
-  title: "Trackeroo CRM | Smart Sales, Leads & Customer Management",
+  title: "Trakeroo CRM | Smart Sales, Leads & Customer Management",
   description:
-    "Trackeroo is a modern CRM platform to manage leads, deals, quotations, invoices, and customer relationships with powerful analytics and team collaboration.",
+    "Trakeroo is a modern CRM platform to manage leads, deals, quotations, invoices, and customer relationships with powerful analytics and team collaboration.",
 };
 
 export default function RootLayout({

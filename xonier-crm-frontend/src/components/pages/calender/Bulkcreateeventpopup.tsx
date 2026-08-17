@@ -77,9 +77,14 @@ const BulkCreateEventModal: React.FC<BulkCreateEventModalProps> = ({
   };
 
   const handleSubmit = async () => {
-    const invalid = events.some((ev) => !ev.title.trim() || !ev.start);
-    if (invalid) {
-      toast.info("Please fill in title and start date for all events");
+    const invalidTitle = events.some((ev) => !ev.title.trim());
+    const invalidStartDate = events.some((ev) => !ev.start);
+    if (invalidTitle) {
+      toast.info("Please fill valid title for all events");
+      return;
+    }
+    else if(invalidStartDate){
+      toast.info("Please fill valid start date for all events");
       return;
     }
 
