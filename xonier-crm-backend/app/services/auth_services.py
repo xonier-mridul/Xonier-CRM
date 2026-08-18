@@ -789,6 +789,14 @@ class AuthServices:
             else:
                 companyId = userModel.companyId if userModel.companyId else None
 
+            
+
+            # company = await self.companyRepo.find_company_by_companyId(companyId=companyId, populate=["subscription"])
+
+            # if not company:
+            #     raise AppException(400, "Company not found")
+
+            
            
 
             new_user = await self.repo.create(
@@ -858,7 +866,7 @@ class AuthServices:
             if not isUserExist:
                 raise AppException(404, "User not found, Please create account first")
             
-            print("data",isUserExist)
+   
             
             parse = isUserExist.model_dump(mode="json")
             if not validate_admin(parse["userRole"]):
@@ -954,7 +962,7 @@ class AuthServices:
             hashed_mail = hash_value(data["email"])
             encrypt_email = self.crypto.encrypt_data(data["email"])
 
-            print("Data: ", data)
+            
             
             with system_query():
                 company = await self.companyRepo.find_one(filter={"companyId": data.get("companyId")}, populate=["subscription"], session=session)
@@ -1577,11 +1585,13 @@ class AuthServices:
             if not user_data:
                 raise AppException(404, "User not found")
 
-            user_data = user_data.model_dump(mode="json")
+            new_user_data = user_data.model_dump(mode="json")
 
-            is_admin = validate_admin(user_data["userRole"])
+            print("kk: ", user_data)
 
-            if user_data["companyId"] != payload["companyId"]:
+            is_admin = validate_admin(new_user_data["userRole"])
+
+            if new_user_data["companyId"] != payload["companyId"]:
                 raise AppException(
                     400, "You not update company, it is temporarily disabled"
                 )
@@ -1598,6 +1608,11 @@ class AuthServices:
                 role_data = await self.role_repo.find_by_id(
                     id=PydanticObjectId(role[0])
                 )
+
+                if not role_data:
+                    raise AppException(404, "Role data not")
+
+                print("rr: ", role_data)
 
                 role = role_data.code
 
@@ -1623,6 +1638,8 @@ class AuthServices:
 
         finally:
             await session.end_session()
+
+
 
     async def update_status(
         self, userId: str, updatedBy: str, payload: Dict[str, Any]

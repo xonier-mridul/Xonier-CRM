@@ -82,17 +82,20 @@ class LeadBaseSchema(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def validate_meeting(cls, value):
-            isMeetingScheduled = value.get("meetingScheduled").strip()
+            priority = value.get("priority")
+            if not priority or priority not in PRIORITY:
+                raise AppException(422, "Priority should be low, medium or high")
+            isMeetingScheduled = value.get("meetingScheduled")
     
             if isMeetingScheduled != MEETING_SCHEDULED.YES.value:
                 return value
     
-            meetingTitle = value.get("meetingTitle").strip()
-            meetingDescription = value.get("meetingDescription").strip()
-            meetingStart = value.get("meetingStart").strip()
-            meetingEnd = value.get("meetingEnd").strip()
-            meetingLink = value.get("meetingLink").strip()
-            meetingPriority = value.get("meetingPriority").strip()
+            meetingTitle = value.get("meetingTitle")
+            meetingDescription = value.get("meetingDescription")
+            meetingStart = value.get("meetingStart")
+            meetingEnd = value.get("meetingEnd")
+            meetingLink = value.get("meetingLink")
+            meetingPriority = value.get("meetingPriority")
     
             if not meetingTitle or not meetingStart or not meetingEnd or not meetingLink or not meetingPriority:
                 raise AppException(422, f"{'Meeting Title' if not meetingTitle else 'Meeting Start Date' if not meetingStart else "Meeting End Date" if not meetingEnd else "Meeting Link" if not meetingLink else "Meeting Priority" if not meetingPriority else "unknown"} field is required" )

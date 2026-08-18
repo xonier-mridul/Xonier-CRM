@@ -49,7 +49,7 @@ class Dependencies:
             user_permissions = set(user_permissions)
             required_permissions = set(permissions)
 
-            print("req permissions: ", required_permissions)
+    
 
             if not user_permissions.intersection(required_permissions):
                 raise AppException(
