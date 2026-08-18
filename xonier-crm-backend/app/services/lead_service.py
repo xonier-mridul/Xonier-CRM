@@ -810,7 +810,7 @@ class LeadService:
 
                 query.update(search_query)
 
-            print("jagdamba")
+         
             if "fromDate" in filters or "toDate" in filters:
                 date_filter = {}
                 if "fromDate" in filters:
@@ -831,7 +831,7 @@ class LeadService:
 
                 if date_filter:
                     query.update({"createdAt": date_filter})
-            print("jagbamba 2")
+    
             if is_admin or is_manager:
                 if "userid" in filters:
                     if not ObjectId.is_valid(filters["userid"]):
@@ -839,7 +839,7 @@ class LeadService:
                     query.update({
                         "createdBy.$id": PydanticObjectId(filters["userid"])
                     })
-            print("jagdamba 3")
+            
             if "isAssigned" in filters:
                 is_assigned_val = filters["isAssigned"]
 
@@ -874,7 +874,7 @@ class LeadService:
 
             if cache:
                 return json.loads(cache)      
-            print("jagdamba 3.5: ", page, limit, query)
+         
             result = await self.repo.get_all(
                 page=int(page),
                 limit=int(limit),
@@ -886,7 +886,7 @@ class LeadService:
             if not result:
                 raise AppException(404, "Leads data not found")
 
-            print("jagdamba 4")
+
             result = jsonable_encoder(result, exclude={"hashedEmail", "hashedPhone"})
 
             for item in result["data"]:
