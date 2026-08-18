@@ -724,6 +724,7 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
           {!fieldDataLoading ? (
             filteredSystemFields.length > 0 ? (
               filteredSystemFields.map((item) => {
+                console.log("system Field:",item)
                 const checked = selectedFieldsIds.includes(item.id);
                 const isRequired = requiredIds.some(req => req.id === item.id);
                 
@@ -763,17 +764,6 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
                           <FaCheck className="text-white text-[10px]" />
                         )}
                       </div>
-
-                      {/* Field Icon */}
-                      {/* <div className={`
-                        h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0
-                        ${checked 
-                          ? 'bg-cyan-100 dark:bg-cyan-900/40 text-cyan-600 dark:text-cyan-400' 
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
-                        }
-                      `}>
-                        {getFieldIcon(item.type)}
-                      </div> */}
 
                       {/* Field Info */}
                       <div className="flex-1 min-w-0 ">
@@ -876,17 +866,6 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
                           <FaCheck className="text-white text-[10px]" />
                         )}
                       </div>
-
-                      {/* Field Icon */}
-                      {/* <div className={`
-                        h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0
-                        ${checked 
-                          ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400' 
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
-                        }
-                      `}>
-                        {getFieldIcon(item.type)}
-                      </div> */}
 
                       {/* Field Info */}
                       <div className="flex-1 min-w-0">

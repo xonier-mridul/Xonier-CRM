@@ -13,7 +13,9 @@ export default function ReduxProvider({ children }: {
   const publicPaths = [
     "/login",          // Standard login page
     "/admin-login",    // Alternative admin login page (if applicable)
-    "/forgot-password" // Forgot password page
+    "/forgot-password", // Forgot password page
+    "/forgot-companyId",
+    "/change-password"
   ];
 
   // 2. Check if the current URL matches any of the public paths

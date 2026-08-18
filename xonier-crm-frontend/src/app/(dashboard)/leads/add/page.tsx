@@ -20,7 +20,6 @@ import { useRouter } from "next/navigation";
 import { SALES_STATUS } from "@/src/constants/enum";
 import { useTranslation } from "react-i18next";
 
-
 const KNOWN_LEAD_KEYS = new Set([
   "fullName",
   "email",
@@ -44,12 +43,13 @@ const KNOWN_LEAD_KEYS = new Set([
 const REQUIRED_FIELDS: (keyof LeadPayload)[] = [
   "fullName",
   "email",
-
-
   "source",
-
   "status",
 ];
+
+// Key used to trigger the "meeting" section. Declared BEFORE EMPTY_FORM
+// so we can safely reference it while building the initial form state.
+const MEETING_TRIGGER_KEY = "meetingScheduled";
 
 const EMPTY_FORM: Record<string, string | number | null> = {
   fullName: "",
@@ -69,9 +69,9 @@ const EMPTY_FORM: Record<string, string | number | null> = {
   employeeSeniority: null,
   message: null,
   membershipNotes: null,
+  // Meeting trigger always defaults to "no" until user explicitly opts in.
+  [MEETING_TRIGGER_KEY]: "no",
 };
-
-const MEETING_TRIGGER_KEY = "meetingScheduled";
 
 /**
  * SECTION CONFIG
@@ -191,10 +191,33 @@ const page = (): JSX.Element => {
     }
   };
 
+  /**
+   * Checks whether any actual "meeting detail" fields (other than the
+   * yes/no trigger itself) have been configured/selected in the form
+   * builder. If none exist, there is nothing to fill in even if the
+   * user says "yes" to a meeting — so we send them to configure the
+   * form first instead of letting them submit an incomplete lead.
+   */
+  const hasConfiguredMeetingFields = (): boolean => {
+    return userFormField.some(
+      (field) => field.key !== MEETING_TRIGGER_KEY && field.key.startsWith("meeting")
+    );
+  };
+
   const handleChange = (
     e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
+
+    // Special guard: user is turning "meeting scheduled" ON.
+    if (name === MEETING_TRIGGER_KEY && value === "yes") {
+      if (!hasConfiguredMeetingFields()) {
+        toast.info(t("please_add_meeting_fields_first"));
+        router.push("/leads/update-form");
+        return; // Don't update state — keep it as "no" until fields exist.
+      }
+    }
+
     setFlatFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -202,16 +225,27 @@ const page = (): JSX.Element => {
     getFormFields();
   }, []);
 
-  // Splits flatFormData into known LeadPayload fields and dynamic extraFields
+  // Splits flatFormData into known LeadPayload fields and dynamic extraFields.
+  // Empty/null OPTIONAL values are dropped entirely so we never send an
+  // empty string for enum-type fields (priority, language, industry, etc.)
+  // which the backend rejects — this was the cause of the create-lead error.
   const buildPayload = (): LeadPayload => {
     const knownFields: Record<string, unknown> = {};
     const extraFields: Record<string, string | number | boolean | null> = {};
 
     for (const [key, value] of Object.entries(flatFormData)) {
+      const isEmpty = value === "" || value === null || value === undefined;
+      const isRequired = REQUIRED_FIELDS.includes(key as keyof LeadPayload);
+
+      // Skip empty optional fields so we don't send invalid empty strings.
+      if (isEmpty && !isRequired) {
+        continue;
+      }
+
       if (KNOWN_LEAD_KEYS.has(key)) {
         knownFields[key] = value;
       } else {
-        extraFields[key] = value;
+        extraFields[key] = value as string | number | boolean | null;
       }
     }
 
@@ -277,6 +311,16 @@ const page = (): JSX.Element => {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
+
+    // Extra guard at submit time too: if meeting is "yes" but somehow no
+    // meeting fields exist (e.g. state was set before fields were removed),
+    // block submission and redirect instead of sending an incomplete lead.
+    if (flatFormData[MEETING_TRIGGER_KEY] === "yes" && !hasConfiguredMeetingFields()) {
+      toast.info(t("please_add_meeting_fields_first"));
+      router.push("/leads/update-form");
+      return;
+    }
+
     setLoading(true);
     setErr("");
 
@@ -291,7 +335,7 @@ const page = (): JSX.Element => {
         setFlatFormData((prev) => {
           const reset: Record<string, string | number | null> = { ...EMPTY_FORM };
           for (const key of Object.keys(prev)) {
-            if (!KNOWN_LEAD_KEYS.has(key)) {
+            if (!KNOWN_LEAD_KEYS.has(key) && key !== MEETING_TRIGGER_KEY) {
               reset[key] = "";
             }
           }
@@ -305,9 +349,11 @@ const page = (): JSX.Element => {
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) {
+         toast.error("error in creation")
         setErr(extractErrorMessages(error));
       } else {
         setErr(["Something went wrong"]);
+       
       }
     } finally {
       setLoading(false);
@@ -384,6 +430,9 @@ const page = (): JSX.Element => {
             </div>
           )}
 
+
+           {err && <ErrorComponent error={err} />}
+
           <FormButton
             className="w-full"
             isLoading={loading}
@@ -392,6 +441,7 @@ const page = (): JSX.Element => {
             {t("create_lead")}
           </FormButton>
         </form>
+          
       </div>
     </div>
   );
