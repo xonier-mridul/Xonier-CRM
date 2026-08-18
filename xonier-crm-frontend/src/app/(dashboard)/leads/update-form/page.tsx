@@ -365,7 +365,7 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
   };
 
   const renderFormField = (item: CustomField, index: number) => {
-    if (item.type === "text" || item.type === "email" || item.type === "number") {
+    if (item.type === "text" || item.type === "email" || item.type === "number" || item.type ==="date") {
       return (
         <motion.div
           key={item.id}
@@ -724,7 +724,7 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
           {!fieldDataLoading ? (
             filteredSystemFields.length > 0 ? (
               filteredSystemFields.map((item) => {
-                console.log("system Field:",item)
+                
                 const checked = selectedFieldsIds.includes(item.id);
                 const isRequired = requiredIds.some(req => req.id === item.id);
                 
