@@ -278,7 +278,7 @@ class AuthController:
     async def update(self, request: Request, userId: str, payload: UpdateUserSchema ):
         try:
            user = request.state.user
-           result = await self.service.update(PydanticObjectId(userId), PydanticObjectId(user["_id"]), payload.model_dump())
+           result = await self.service.update(userId=PydanticObjectId(userId), user=user, payload=payload.model_dump())
            return successResponse(200, "User updated successfully" )
         except AppException as e:
             raise e
