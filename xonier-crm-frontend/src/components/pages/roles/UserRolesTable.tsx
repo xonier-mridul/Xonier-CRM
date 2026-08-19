@@ -478,7 +478,7 @@ const handleAllPermissions = (checked: boolean) => {
               </div>
 
               {formData.permissions.length > 0 && (
-                <div className="bg-cyan-50 dark:bg-indigo-950/20 rounded-xl p-4 border border-cyan-100 dark:border-cyan-900/30">
+                <div className="bg-cyan-50 max-h-34 overflow-scroll dark:bg-indigo-950/20 rounded-xl p-4 border border-cyan-100 dark:border-cyan-900/30">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm font-semibold text-cyan-700 dark:text-cyan-400">
                       {t("selected_permissions")}

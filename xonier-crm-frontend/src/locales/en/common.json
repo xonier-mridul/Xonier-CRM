@@ -2911,6 +2911,7 @@
   "issue_type_integration_issue": "Integration Issue",
   "issue_type_billing": "Billing",
   "issue_type_other": "Other",
+    "add_new_client": "Add New Client",
 
   "product_trakeroo_crm": "Trakeroo CRM",
   "product_trakeroo_mail": "Trakeroo Mail",
@@ -2940,6 +2941,29 @@
   "submit_ticket": "Submit Ticket",
 
   "error_field_required": "This field is required",
+
+  
+    "new_subscription": "New Subscription",
+    "renewal": "Renewal",
+    "additional_license": "Additional License",
+    "upsell": "Upsell",
+    "ai_addon": "AI Add-on"
+  ,
+    "resume_draft": "Resume Draft",
+  "bulk_upload_csv": "Bulk Upload CSV",
+  "select_requirement": "Select Requirement",
+  "expected_deal_value": "Expected Deal Value",
+  "enter_expected_deal_value": "Enter Expected Deal Value",
+  "campaign": "Campaign",
+    "select_deal_type": "Select Deal Type",
+  "enter_campaign": "Enter Campaign",
+  "enter_requirement_notes": "Enter Requirement Notes",
+  "enter_partner_notes": "Enter Partner Notes",
+  "requirement_notes": "Requirement Notes",
+  "partner_notes": "Partner Notes",
+   "contact_details": "Contact Details",
+  "draft_saved": "Draft Saved",
+  "save_draft": "Save Draft",
 
 
 
@@ -2987,6 +3011,9 @@
   "live_chat": "Live Chat",
   "call_support": "Call Support",
   "email_support": "Email Support",
+ 
+  "csv_import_all_duplicates": "All {{count}} lead(s) in this file already exist in the table",
+  
 
   "receive_updates_desc": "Receive updates about this ticket via email as our team makes progress.",
   "update_preferences": "Update Preferences",
@@ -3082,6 +3109,26 @@
   "confirm_submitting_leads": "Do you want to submit this referral lead?",
   "confirm_submitting_all_leads": "Do you want to submit all referral leads?",
     "referral_leads_form": "Referral Leads Form",
+      "new_partner_details": "New Partner Details",
+  "add_new_partner_details": "Add details for the new partner",
+   "invalid_csv_file": "Please upload a valid .csv file",
+  "csv_no_valid_leads": "No valid leads found in this file",
+  "csv_parse_failed": "Failed to read CSV file",
+  "csv_import_added": "{{count}} lead(s) imported",
+  "csv_import_duplicates_skipped": "{{count}} duplicate(s) skipped",
+  "csv_import_invalid_skipped": "{{count}} invalid row(s) skipped",
+  "download_csv_template": "Download CSV Template",
+  "template_downloaded": "Template downloaded",
+  "processing": "Processing...",
+
+
+
+   "download_csv": "Download CSV",
+  "no_leads_to_export": "No leads to export",
+  "csv_downloaded_successfully": "CSV downloaded successfully",
+  "duplicate_company_warning": "A lead for this company may already exist",
+  "commission_rate": "Commission rate",
+  "deal_type": "Deal Type",
 
 
 
@@ -3159,7 +3206,11 @@
     "commissionPct": "Commission %",
     "effectiveFrom": "Effective from",
     "batch": "Batch",
-    "total": "Total"
+    "total": "Total",
+      "action": "Action",
+      "lastDealType":"Last Deal Type",
+        "description": "Description",
+  "dealType": "Deal Type"
   },
   "calc": {
     "howCalculated": "How this is calculated"

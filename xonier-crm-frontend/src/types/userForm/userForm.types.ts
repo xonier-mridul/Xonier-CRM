@@ -12,7 +12,8 @@ export type CustomFieldType =
   | "select"
   | "textarea"
   | "date"
-  | "checkbox";
+  | "checkbox"
+  |"datetime-local";
 
 export interface CustomField {
   id: string;              

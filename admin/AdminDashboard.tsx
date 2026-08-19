@@ -1,16 +1,16 @@
 "use client";
 
-import { useTranslation } from "react-i18next";
-import { Panel } from "@/src/types/referral/referral.type";
-import BarChart from "@/src/components/referral/barChart/page";
-import { Card, Eyebrow, GhostButton, MetricCard, MetricsGrid } from "@/src/components/referral/primitive/pages";
-import { adminOverviewMetrics, liabilityChart, pendingApproval } from "@/src/constants/referral";
+import { useTranslation } from "@/lib/i18n";
+import { adminOverviewMetrics, liabilityChart, pendingApproval } from "@/lib/mockData";
+import { Card, Eyebrow, GhostButton, MetricCard, MetricsGrid } from "@/components/shared/Primitives";
+import BarChart from "@/components/shared/BarChart";
+import { Panel } from "@/types";
 
 export default function AdminDashboard({ onNavigate }: { onNavigate: (panel: Panel) => void }) {
   const { t } = useTranslation();
 
   return (
-    <div className="max-w-7xl mx-auto mt-10">
+    <div>
       <Eyebrow>{t("common.overview")}</Eyebrow>
       <h2 className="mb-4.5 text-base">{t("admin.dashboard.title")}</h2>
 
