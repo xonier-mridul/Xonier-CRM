@@ -354,8 +354,8 @@ getCategoryData();
               />
 
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                  {t("category")}
+                <label className="text-sm  font-medium flex gap-2 text-gray-700 dark:text-gray-200">
+                  {t("category")} <span className="text-red-500 text-xl">*</span>
                 </label>
 
 
@@ -364,6 +364,7 @@ getCategoryData();
                   <button
                     type="button"
                     onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                  
                     className="w-full flex items-center justify-between rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2.5 text-sm"
                   >
                     <span>
@@ -689,7 +690,8 @@ getCategoryData();
 
                 <FormButton
                   isLoading={isLoading}
-                  disabled={
+                  disabled={ 
+                    formData.category==="" ||
                     formData.name === "" || formData.members.length <= 0
                   }
                 >

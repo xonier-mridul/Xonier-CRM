@@ -11,10 +11,13 @@ export default function ReduxProvider({ children }: {
   const pathname = usePathname();
 
   const publicPaths = [
-    "/login",          
-    "/admin-login",    
-    "/forgot-password", 
-    "/forgot-companyId" 
+
+    "/login",          // Standard login page
+    "/admin-login",    // Alternative admin login page (if applicable)
+    "/forgot-password", // Forgot password page
+    "/forgot-companyId",
+    "/change-password"
+
   ];
 
 

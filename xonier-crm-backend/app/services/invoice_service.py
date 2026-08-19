@@ -6,7 +6,7 @@ from app.repositories.invoice_repository import InvoiceRepository
 from beanie import PydanticObjectId
 from app.core.constants import SUPER_ADMIN_CODE
 from app.utils.get_team_members import GetTeamMembers
-from app.utils.validate_admin import validate_admin
+from app.utils.validate_admin import validate_admin, validate_admin_company_admin
 from app.core.crypto import Encryption
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter, A4
@@ -40,13 +40,9 @@ class InvoiceService:
             query = {}
 
 
-            is_super_admin = False
+            is_super_admin = validate_admin_company_admin(user["userRole"])
 
-            for role in user.get("userRole", []):
-                if role.get("code") == SUPER_ADMIN_CODE:
-                    is_super_admin = True
-                    break
-
+            
             if not is_super_admin:
 
                 members = await self.getTeamMem.get_team_members(user["_id"])
@@ -144,7 +140,7 @@ class InvoiceService:
             try:
                 invoice_id = PydanticObjectId(id)
 
-                is_super_admin = validate_admin(user.get("userRole", []))
+                is_super_admin = validate_admin_company_admin(user.get("userRole", []))
 
 
                 access_query = {"_id": invoice_id}
@@ -213,7 +209,7 @@ class InvoiceService:
                 try:
                     invoice_id = PydanticObjectId(id)
                     
-                    is_super_admin = validate_admin(user.get("userRole", []))
+                    is_super_admin = validate_admin_company_admin(user.get("userRole", []))
                     
                    
                     access_query = {"_id": invoice_id}

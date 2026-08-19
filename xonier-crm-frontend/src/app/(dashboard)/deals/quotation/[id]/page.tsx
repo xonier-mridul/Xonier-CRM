@@ -814,8 +814,8 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                 <div className="md:col-span-2">
                   <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700/50 rounded-xl px-4 py-3">
                     <IoCalendarOutline className="w-4 h-4 text-cyan-500" />
-                    {t("valid_for")} <span className="font-semibold text-gray-900 dark:text-white">{validityDays} {t("days")}</span>
-                    {t("nbsp_expires")} {formatDate(formData.valid ?? '')}
+                    {t("valid_for")} <span className="font-semibold text-gray-900 dark:text-white">{validityDays} {t("days,")}</span>
+                    {t("expires")} {formatDate(formData.valid ?? '')}
                   </div>
                 </div>
               )}

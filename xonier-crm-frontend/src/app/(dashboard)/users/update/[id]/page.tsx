@@ -111,8 +111,8 @@ const page = (): JSX.Element => {
       if (result.status === 200) setRoleData(result.data.data);
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
-      if (axios.isAxiosError(error)) setErr(extractErrorMessages(error));
-      else setErr(["Something went wrong"]);
+      // if (axios.isAxiosError(error)) setErr(extractErrorMessages(error));
+      // else setErr(["Something went wrong"]);
     }
   };
 

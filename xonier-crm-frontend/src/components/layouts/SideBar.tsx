@@ -1041,18 +1041,26 @@ const SideBar = () => {
               </button>
             </li>
             <li>
-              <Link
-                href={`/users/${auth?.user?.id}`}
-                className={`${isActive("/profile")
-                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
-                  : "border-l-2 border-transparent"
-                  } w-full flex items-center cursor-pointer gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all capitalize`}
-              >
-                       <span  className={`${isActive("/profile")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
-                <FaRegUser className="text-lg" />
-                </span>
-                {t("profile")}
-              </Link>
+             <div
+  onClick={() => router.push(`/users/${auth?.user?.id}`)}
+  className={`${
+    isActive("/profile")
+      ? "dark:text-cyan-300 text-cyan-700 border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+      : "border-l-2 border-transparent"
+  } w-full flex items-center cursor-pointer gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all capitalize`}
+>
+  <span
+    className={`${
+      isActive("/profile")
+        ? "bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400 w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl"
+        : ""
+    }`}
+  >
+    <FaRegUser className="text-lg" />
+  </span>
+
+  {t("profile")}
+</div>
             </li>
             <li>
               <Link

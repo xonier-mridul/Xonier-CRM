@@ -310,22 +310,62 @@ const LeadContent = (): JSX.Element => {
     getDesignationData();
   }, []);
 
+  // const assignableLeads = currentLeadData.filter(
+  //   (l) => l.leadSource === LEAD_SOURCE_TYPE.ADMIN_CREATED && !l.assignedTo?.length
+  // );
+  // const assignableLeads = currentLeadData;
   const assignableLeads = currentLeadData.filter(
-    (l) => l.leadSource === LEAD_SOURCE_TYPE.ADMIN_CREATED && !l.assignedTo?.length
-  );
-  const isAllSelected = assignableLeads.length > 0 && assignableLeads.every((l) => selectedLeadIds.has(l.id));
-  const isIndeterminate = selectedLeadIds.size > 0 && !isAllSelected;
+  (lead) => !lead.assignedTo?.length
+);
+// const isAllSelected =
+//   assignableLeads.length > 0 &&
+//   assignableLeads.every((lead) => selectedLeadIds.has(lead.id));
+
+// const isIndeterminate =
+//   selectedLeadIds.size > 0 &&
+//   selectedLeadIds.size < assignableLeads.length;
+
+  const selectedAssignableCount = assignableLeads.filter((lead) =>
+  selectedLeadIds.has(lead.id)
+).length;
+
+const isAllSelected =
+  assignableLeads.length > 0 &&
+  selectedAssignableCount === assignableLeads.length;
+
+const isIndeterminate =
+  selectedAssignableCount > 0 &&
+  selectedAssignableCount < assignableLeads.length;
+  // const isAllSelected = assignableLeads.length > 0 && assignableLeads.every((l) => selectedLeadIds.has(l.id));
+  // const isIndeterminate = selectedLeadIds.size > 0 && !isAllSelected;
   const selectAllRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (selectAllRef.current) selectAllRef.current.indeterminate = isIndeterminate;
   }, [isIndeterminate]);
-
   const handleSelectAll = () => {
-    const s = new Set(selectedLeadIds);
-    if (isAllSelected) assignableLeads.forEach((l) => s.delete(l.id));
-    else assignableLeads.forEach((l) => s.add(l.id));
-    setSelectedLeadIds(s);
-  };
+  const s = new Set(selectedLeadIds);
+
+  if (isAllSelected) {
+    // All unassigned are selected → deselect them
+    assignableLeads.forEach((lead) => {
+      s.delete(lead.id);
+    });
+  } else {
+    // Select all unassigned leads
+    assignableLeads.forEach((lead) => {
+      s.add(lead.id);
+    });
+  }
+
+  setSelectedLeadIds(s);
+};
+
+  // const handleSelectAll = () => {
+  //   const s = new Set(selectedLeadIds);
+  //   if (isAllSelected) assignableLeads.forEach((l) => s.delete(l.id));
+  //   else assignableLeads.forEach((l) => s.add(l.id));
+  //   setSelectedLeadIds(s);
+  // };
   const handleSelectOne = (id: string) => {
     const s = new Set(selectedLeadIds);
     s.has(id) ? s.delete(id) : s.add(id);
@@ -1219,8 +1259,10 @@ const LeadContent = (): JSX.Element => {
               <table className="w-full rounded-xl overflow-hidden">
                 <thead>
                   <tr className="w-full border-b-2 border-zinc-300 dark:border-zinc-400  bg-slate-200 dark:bg-gray-800">
-                    {hasPermission(PERMISSIONS.assignLead) && currentTab === TAB.ALL && (
-                      <th className="p-4 w-12">
+                   {hasPermission(PERMISSIONS.assignLead) &&
+  currentTab === TAB.ALL &&
+  assignableLeads.length > 0 && (
+    <th className="p-4 w-12">
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input ref={selectAllRef} type="checkbox" className="sr-only" checked={isAllSelected} onChange={handleSelectAll} />
                           <div
@@ -1231,8 +1273,9 @@ const LeadContent = (): JSX.Element => {
                               : "bg-white dark:bg-gray-700 border-slate-300 hover:border-cyan-400"
                           }`}
                           >
-                            {isAllSelected && <FaCheck className="text-white text-[9px]" />}
-                            {isIndeterminate && <span className="block w-2.5 h-0.5 bg-white rounded-full" />}
+                            {
+                            isIndeterminate && <FaCheck className="text-white text-[9px]" />}
+                            {isAllSelected && <span className="block w-2.5 h-0.5 bg-white rounded-full" />}
                           </div>
                         </label>
                       </th>

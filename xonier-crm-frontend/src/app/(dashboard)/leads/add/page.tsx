@@ -20,7 +20,6 @@ import { useRouter } from "next/navigation";
 import { SALES_STATUS } from "@/src/constants/enum";
 import { useTranslation } from "react-i18next";
 
-
 const KNOWN_LEAD_KEYS = new Set([
   "fullName",
   "email",
@@ -39,17 +38,86 @@ const KNOWN_LEAD_KEYS = new Set([
   "employeeSeniority",
   "message",
   "membershipNotes",
+  "meetingScheduled",
+  "meetingTitle",
+  "meetingDescription",
+  "meetingStart",
+  "meetingEnd",
+  "meetingLink",
+  "meetingPriority",
 ]);
 
+// Base required fields. Meeting start/end are added dynamically
+// (see getDynamicRequiredFields) whenever meetingScheduled === "yes".
 const REQUIRED_FIELDS: (keyof LeadPayload)[] = [
   "fullName",
   "email",
-
-
   "source",
-
   "status",
 ];
+
+// Key used to trigger the "meeting" section. Declared BEFORE EMPTY_FORM
+// so we can safely reference it while building the initial form state.
+const MEETING_TRIGGER_KEY = "meetingScheduled";
+
+// Canonical value we use internally to represent an affirmative trigger.
+const YES_VALUE = "yes";
+
+/**
+ * Normalizes any value coming from a dynamically-configured select field
+ * (which could be "yes", "Yes", "YES", " yes ", etc.) into a predictable
+ * lowercase/trimmed string so comparisons never silently fail just because
+ * of casing/whitespace differences configured in the form builder.
+ */
+const normalizeValue = (value: string | number | null | undefined): string => {
+  if (value === null || value === undefined) return "";
+  return String(value).trim().toLowerCase();
+};
+
+/**
+ * Case/whitespace-safe check for whether the meeting trigger is set to
+ * "yes". Using this everywhere (instead of a raw `=== "yes"`) fixes the
+ * bug where meeting fields (like meetingStart/meetingEnd) would silently
+ * stay hidden if the configured option value wasn't the exact lowercase
+ * string "yes".
+ */
+const isMeetingScheduledYes = (
+  formData: Record<string, string | number | null>
+): boolean => normalizeValue(formData[MEETING_TRIGGER_KEY]) === YES_VALUE;
+
+// Keys that must always render as a datetime-local input, regardless of
+// whatever `type` value was saved for them in the form builder. Compared
+// in lowercase so slight casing differences never hide the field.
+const DATE_TIME_FIELD_KEYS = new Set(["meetingstart", "meetingend"]);
+const MEETING_FIELDS_KEYS = new Set([ "meetingtitle","meetinglink","meetingpriority"])
+
+/**
+ * Returns the list of required field keys for the CURRENT form state.
+ * Meeting start/end become required the moment the user opts into a
+ * meeting, so we never send `null`/empty datetimes to the backend
+ * (which caused: "Input should be a valid datetime [type=datetime_type]").
+ */
+const getDynamicRequiredFields = (
+  formData: Record<string, string | number | null>
+): string[] => {
+  const required: string[] = [...REQUIRED_FIELDS];
+  if (isMeetingScheduledYes(formData)) {
+    required.push("meetingStart", "meetingEnd");
+  }
+  return required;
+};
+
+/**
+ * Converts a raw `datetime-local` input value (e.g. "2025-06-15T14:30")
+ * into a full ISO-8601 string (e.g. "2025-06-15T14:30:00.000Z") so the
+ * backend's Pydantic datetime validator always receives a well-formed
+ * value instead of a partial/ambiguous string.
+ */
+const toISODateTime = (value: string | number | null): string | number | null => {
+  if (value === null || value === undefined || value === "") return value;
+  const date = new Date(value as string);
+  return isNaN(date.getTime()) ? value : date.toISOString();
+};
 
 const EMPTY_FORM: Record<string, string | number | null> = {
   fullName: "",
@@ -69,9 +137,15 @@ const EMPTY_FORM: Record<string, string | number | null> = {
   employeeSeniority: null,
   message: null,
   membershipNotes: null,
+  // Meeting trigger always defaults to "no" until user explicitly opts in.
+  meetingScheduled: "no",
+  meetingTitle: null,
+  meetingDescription: null,
+  meetingStart: null,
+  meetingEnd: null,
+  meetingLink: null,
+  meetingPriority: null,
 };
-
-const MEETING_TRIGGER_KEY = "meetingScheduled";
 
 /**
  * SECTION CONFIG
@@ -102,7 +176,7 @@ const SPECIAL_SECTIONS: SectionConfig[] = [
     id: "meeting",
     titleKey: "meeting_details",
     match: (key) => key === MEETING_TRIGGER_KEY || key.startsWith("meeting"),
-    showWhen: (formData) => formData[MEETING_TRIGGER_KEY] === "yes",
+    showWhen: (formData) => isMeetingScheduledYes(formData),
   },
   // Example for future extension:
   // {
@@ -191,10 +265,32 @@ const page = (): JSX.Element => {
     }
   };
 
+  /**
+   * Checks whether any actual "meeting detail" fields (other than the
+   * yes/no trigger itself) have been configured/selected in the form
+   * builder. If none exist, there is nothing to fill in even if the
+   * user says "yes" to a meeting — so we send them to configure the
+   * form first instead of letting them submit an incomplete lead.
+   */
+  const hasConfiguredMeetingFields = (): boolean => {
+    return userFormField.some(
+      (field) => field.key !== MEETING_TRIGGER_KEY && field.key.startsWith("meeting")
+    );
+  };
+
   const handleChange = (
     e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
+
+    if (name === MEETING_TRIGGER_KEY && normalizeValue(value) === YES_VALUE) {
+      if (!hasConfiguredMeetingFields()) {
+        toast.info(t("please_add_meeting_fields_first"));
+        router.push("/leads/update-form");
+        return;
+      }
+    }
+
     setFlatFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -202,16 +298,38 @@ const page = (): JSX.Element => {
     getFormFields();
   }, []);
 
-  // Splits flatFormData into known LeadPayload fields and dynamic extraFields
+  // Splits flatFormData into known LeadPayload fields and dynamic extraFields.
+  // Empty/null OPTIONAL values are dropped entirely so we never send an
+  // empty string for enum-type fields (priority, language, industry, etc.)
+  // which the backend rejects. Meeting start/end are normalized to full
+  // ISO datetimes and treated as REQUIRED whenever meetingScheduled==="yes"
+  // so we never send `null` for them (which caused the Pydantic
+  // "Input should be a valid datetime" error).
   const buildPayload = (): LeadPayload => {
     const knownFields: Record<string, unknown> = {};
     const extraFields: Record<string, string | number | boolean | null> = {};
+    const requiredFields = getDynamicRequiredFields(flatFormData);
 
-    for (const [key, value] of Object.entries(flatFormData)) {
+    for (const [key, rawValue] of Object.entries(flatFormData)) {
+      let value = rawValue;
+
+      // Normalize meeting datetimes to full ISO strings.
+      if (key === "meetingStart" || key === "meetingEnd") {
+        value = toISODateTime(value);
+      }
+
+      const isEmpty = value === "" || value === null || value === undefined;
+      const isRequired = requiredFields.includes(key);
+
+      // Skip empty optional fields so we don't send invalid empty/null values.
+      if (isEmpty && !isRequired) {
+        continue;
+      }
+
       if (KNOWN_LEAD_KEYS.has(key)) {
         knownFields[key] = value;
       } else {
-        extraFields[key] = value;
+        extraFields[key] = value as string | number | boolean | null;
       }
     }
 
@@ -221,7 +339,7 @@ const page = (): JSX.Element => {
     };
   };
 
-  const isMissingRequiredFields = REQUIRED_FIELDS.some(
+  const isMissingRequiredFields = getDynamicRequiredFields(flatFormData).some(
     (key) => !flatFormData[key]
   );
 
@@ -235,53 +353,112 @@ const page = (): JSX.Element => {
     return true;
   };
 
-  const renderField = (item: CustomField) => {
-    const fieldValue = flatFormData[item.key] ?? "";
+ const renderField = (item: CustomField) => {
+  const fieldValue = flatFormData[item.key] ?? "";
+  const lowerKey = item.key.toLowerCase();
+  const isDateTimeField = DATE_TIME_FIELD_KEYS.has(lowerKey);
+  const isMeetingField = MEETING_FIELDS_KEYS.has(lowerKey);
 
-    if (
-      item.type === "text" ||
-      item.type === "email" ||
-      item.type === "number"
-    ) {
-      return (
-        <Input
-          key={item.id}
-          name={item.key}
-          type={item.type}
-          label={item.name}
-          placeholder={item.placeholder ? t(item.placeholder) : ""}
-          value={fieldValue as string}
-          onChange={handleChange}
-          required={item.required}
-        />
-      );
+  const inputType = isDateTimeField ? "datetime-local" : item.type;
+
+  const KNOWN_INPUT_TYPES = new Set([
+    "text",
+    "email",
+    "number",
+    "phone",
+    "date",
+    "datetime",
+    "datetime-local",
+    "time",
+    "textarea",
+  ]);
+
+  // Force ALL meeting-related fields (start, end, title, link, priority)
+  // to be required whenever a meeting is scheduled — even if the form
+  // builder didn't mark them required — to stay consistent with the
+  // backend's hard requirement + our disabled-submit logic.
+  const getRequired = () => {
+    if ((isDateTimeField || isMeetingField) && isMeetingScheduledYes(flatFormData)) {
+      return true;
     }
-
-    if (item.type === "select") {
-      return (
-        <Select
-          key={item.id}
-          name={item.key}
-          label={item.name}
-          options={item.options ?? []}
-          placeholder={item.placeholder ? t(item.placeholder) : t("select")}
-          value={fieldValue as string}
-          onChange={handleChange}
-          required={item.required}
-        />
-      );
-    }
-
-    return null;
+    return item.required;
   };
+
+  if (item.type === "select") {
+    return (
+      <Select
+        key={item.id}
+        name={item.key}
+        label={item.name}
+        options={item.options ?? []}
+        placeholder={item.placeholder ? t(item.placeholder) : t("select")}
+        value={String(fieldValue)}
+        onChange={handleChange}
+        required={getRequired()}
+      />
+    );
+  }
+
+  if (isDateTimeField || KNOWN_INPUT_TYPES.has(item.type)) {
+    return (
+      <Input
+        key={item.id}
+        name={item.key}
+        type={inputType}
+        label={item.name}
+        placeholder={item.placeholder ? t(item.placeholder) : ""}
+        value={String(fieldValue)}
+        onChange={handleChange}
+        required={getRequired()}
+      />
+    );
+  }
+
+  // Safety net: keep rendering unknown-type fields as text inputs
+  // instead of dropping them.
+  return (
+    <Input
+      key={item.id}
+      name={item.key}
+      type="text"
+      label={item.name}
+      placeholder={item.placeholder ? t(item.placeholder) : ""}
+      value={String(fieldValue)}
+      onChange={handleChange}
+      required={getRequired()}
+    />
+  );
+};
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
+
+    // Guard: meeting is "yes" but no meeting fields exist in the form
+    // config at all — block submission and redirect to configure them.
+    if (isMeetingScheduledYes(flatFormData) && !hasConfiguredMeetingFields()) {
+      toast.info(t("please_add_meeting_fields_first"));
+      router.push("/leads/update-form");
+      return;
+    }
+
+    // Guard: meeting is "yes" but start/end weren't filled in — block
+    // submission client-side instead of letting the backend 500 on a
+    // missing datetime.
+    if (
+      isMeetingScheduledYes(flatFormData) &&
+      (!flatFormData.meetingStart || !flatFormData.meetingEnd)
+    ) {
+      toast.error(t("meeting_start_end_required"));
+      return;
+    }
+
     setLoading(true);
     setErr("");
 
     try {
       const payload = buildPayload();
+      console.log("data payload", payload);
+
       const result = await LeadService.create(payload);
 
       if (result.status === 201) {
@@ -291,7 +468,7 @@ const page = (): JSX.Element => {
         setFlatFormData((prev) => {
           const reset: Record<string, string | number | null> = { ...EMPTY_FORM };
           for (const key of Object.keys(prev)) {
-            if (!KNOWN_LEAD_KEYS.has(key)) {
+            if (!KNOWN_LEAD_KEYS.has(key) && key !== MEETING_TRIGGER_KEY) {
               reset[key] = "";
             }
           }
@@ -305,6 +482,7 @@ const page = (): JSX.Element => {
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) {
+        toast.error("error in creation")
         setErr(extractErrorMessages(error));
       } else {
         setErr(["Something went wrong"]);
@@ -383,6 +561,8 @@ const page = (): JSX.Element => {
               ))}
             </div>
           )}
+
+          {err && <ErrorComponent error={err} />}
 
           <FormButton
             className="w-full"

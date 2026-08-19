@@ -47,7 +47,7 @@ class DealSchema(BaseModel):
     @classmethod
     def validate_amount(cls, value):
         if not value:
-            raise AppException(400, "Amount field must required")
+            raise AppException(400, "Amount field must required or greater then 0")
         
         if value <= 0:
             raise AppException(400, "Amount must be greater then 0")
@@ -117,7 +117,7 @@ class DealUpdateSchema(BaseModel):
         if v is None:
             return AppException(422, "Amount must required")
         
-        if v < 0:
+        if v <= 0:
             raise AppException(422, "Amount must be grater then 0")
         
         return v

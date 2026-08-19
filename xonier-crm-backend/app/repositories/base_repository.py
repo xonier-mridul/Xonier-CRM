@@ -57,6 +57,7 @@ class BaseRepository:
             if hasattr(value, "fetch"):
                 # with system_query():
                 fetched = await value.fetch()
+
                 setattr(doc, field, fetched)
 
             elif isinstance(value, list):
@@ -684,7 +685,7 @@ class BaseRepository:
 
                     setattr(doc, field, fetched_items)
 
-        print("before dump")
+    
         count = await self.model.find(filters).count()
 
         total_pages = math.ceil(count / limit)

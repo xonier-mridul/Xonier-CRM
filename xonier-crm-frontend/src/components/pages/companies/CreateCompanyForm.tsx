@@ -39,10 +39,15 @@ interface CreateCompanyFormProps {
 
 const STEPS = ["Company Details", "Select Plan", "Verify Email"];
 
-const countryOptions = Array.from(new Set(Object.values(COUNTRY_CODE))).map((val) => ({
-  label: val,
-  value: val,
-}));
+const countryOptions = Object.entries(COUNTRY_CODE).map(
+  ([name, code]) => ({
+    label: name
+      .replace(/_/g, " ")
+      .toLowerCase()
+      .replace(/\b\w/g, (char) => char.toUpperCase()),
+    value: code,
+  })
+);
 
 
 const currencySymbol: Record<string, string> = {
