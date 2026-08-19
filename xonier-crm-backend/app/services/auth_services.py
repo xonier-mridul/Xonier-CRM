@@ -1568,7 +1568,7 @@ class AuthServices:
     async def update(
         self,
         userId: PydanticObjectId,
-        updatedBy: PydanticObjectId,
+        user: Dict[str, Any],
         payload: Dict[str, Any],
     ) -> bool:
         session = await self.client.start_session()
@@ -1578,7 +1578,7 @@ class AuthServices:
             if not ObjectId.is_valid(userId):
                 raise AppException(400, "Invalid user object id")
 
-            user_data = await self.repo.find_by_id(
+            user_data = await self.repo.find_by_id_with_project(
                 id=PydanticObjectId(userId), populate=["userRole"]
             )
 
@@ -1587,9 +1587,10 @@ class AuthServices:
 
             new_user_data = user_data.model_dump(mode="json")
 
-            print("kk: ", user_data)
-
             is_admin = validate_admin(new_user_data["userRole"])
+
+            is_compnay_admin = validate_company_admin(new_user_data["userRole"])
+
 
             if new_user_data["companyId"] != payload["companyId"]:
                 raise AppException(
@@ -1598,26 +1599,22 @@ class AuthServices:
 
             payload = {
                 **payload,
-                "updatedBy": updatedBy,
+                "updatedBy": user["_id"],
                 "companyId": ObjectId(payload["companyId"]),
             }
 
-            role = payload.get("userRole")
+            is_editor_admin = validate_admin(user["userRole"])
 
-            if role:
-                role_data = await self.role_repo.find_by_id(
-                    id=PydanticObjectId(role[0])
-                )
+            is_editor_compnay_adim = validate_company_admin(user["userRole"])
 
-                if not role_data:
-                    raise AppException(404, "Role data not")
+            if (is_admin) or (is_compnay_admin and is_editor_compnay_adim) :
+                del payload["userRole"]
 
-                print("rr: ", role_data)
 
-                role = role_data.code
-
-            if is_admin and (role != SUPER_ADMIN_CODE):
-                raise AppException(400, "Operation denied, Admin role can't be changed")
+            if is_admin and not is_editor_admin:
+                raise AppException(400, "Operation denied")
+            
+          
 
             updated_user = await self.repo.update_with_encryption(
                 userId, payload, session
@@ -1778,7 +1775,7 @@ class AuthServices:
         try:
             session.start_transaction()
 
-            is_admin = validate_admin(user["userRole"])
+            is_admin = validate_admin_company_admin(user["userRole"])
 
             if not is_admin:
                 raise AppException(
@@ -1832,7 +1829,7 @@ class AuthServices:
 
             session.start_transaction()
 
-            is_admin = validate_admin(user["userRole"])
+            is_admin = validate_admin_company_admin(user["userRole"])
 
             if not is_admin:
                 raise AppException(
