@@ -177,7 +177,7 @@ const handleAllPermissions = (checked: boolean) => {
                   className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
                     viewRoleModal.code === SUPER_ADMIN_ROLE_CODE
                       ? "bg-gradient-to-br from-amber-400 to-orange-500"
-                      : "bg-gradient-to-br from-indigo-400 to-violet-500"
+                      : "bg-gradient-to-br from-cyan-400 to-cyan-500"
                   }`}
                 >
                   {viewRoleModal.code === SUPER_ADMIN_ROLE_CODE ? (
@@ -352,7 +352,7 @@ const handleAllPermissions = (checked: boolean) => {
                   viewRoleModal.code !== SUPER_ADMIN_ROLE_CODE && (
                     <Link
                       href={`/roles/update/${viewRoleModal.id}`}
-                      className="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-semibold transition-all shadow-sm hover:shadow-md flex items-center gap-2"
+                      className="px-5 py-2.5 rounded-lg bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-600 text-white font-semibold transition-all shadow-sm hover:shadow-md flex items-center gap-2"
                     >
                       <MdOutlineEdit className="w-4 h-4" />
                       {t("edit_role")}
@@ -478,7 +478,7 @@ const handleAllPermissions = (checked: boolean) => {
               </div>
 
               {formData.permissions.length > 0 && (
-                <div className="bg-cyan-50 max-h-34 overflow-scroll dark:bg-indigo-950/20 rounded-xl p-4 border border-cyan-100 dark:border-cyan-900/30">
+                <div className="bg-cyan-50 max-h-34 overflow-scroll dark:bg-cyan-950/20 rounded-xl p-4 border border-cyan-100 dark:border-cyan-900/30">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm font-semibold text-cyan-700 dark:text-cyan-400">
                       {t("selected_permissions")}
@@ -839,7 +839,7 @@ const handleAllPermissions = (checked: boolean) => {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => setViewRoleModal(role)}
-                            className="w-9 h-9 flex items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-all hover:scale-105 active:scale-95"
+                            className="w-9 h-9 flex items-center justify-center rounded-lg bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-200 dark:hover:bg-cyan-900/50 transition-all hover:scale-105 active:scale-95"
                             title={t("view_role_details")}
                           >
                             <FaEye className="w-4 h-4" />

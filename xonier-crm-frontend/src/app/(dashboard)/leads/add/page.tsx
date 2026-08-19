@@ -89,6 +89,7 @@ const isMeetingScheduledYes = (
 // whatever `type` value was saved for them in the form builder. Compared
 // in lowercase so slight casing differences never hide the field.
 const DATE_TIME_FIELD_KEYS = new Set(["meetingstart", "meetingend"]);
+const MEETING_FIELDS_KEYS = new Set([ "meetingtitle","meetinglink","meetingpriority"])
 
 /**
  * Returns the list of required field keys for the CURRENT form state.
@@ -352,80 +353,82 @@ const page = (): JSX.Element => {
     return true;
   };
 
-  const renderField = (item: CustomField) => {
-    const fieldValue = flatFormData[item.key] ?? "";
-    const lowerKey = item.key.toLowerCase();
-    const isDateTimeField = DATE_TIME_FIELD_KEYS.has(lowerKey);
+ const renderField = (item: CustomField) => {
+  const fieldValue = flatFormData[item.key] ?? "";
+  const lowerKey = item.key.toLowerCase();
+  const isDateTimeField = DATE_TIME_FIELD_KEYS.has(lowerKey);
+  const isMeetingField = MEETING_FIELDS_KEYS.has(lowerKey);
 
-    const inputType = isDateTimeField ? "datetime-local" : item.type;
+  const inputType = isDateTimeField ? "datetime-local" : item.type;
 
-    // Types that should always render as a plain <Input />.
-    const KNOWN_INPUT_TYPES = new Set([
-      "text",
-      "email",
-      "number",
-      "phone",
-      "date",
-      "datetime",
-      "datetime-local",
-      "time",
-      "textarea",
-    ]);
+  const KNOWN_INPUT_TYPES = new Set([
+    "text",
+    "email",
+    "number",
+    "phone",
+    "date",
+    "datetime",
+    "datetime-local",
+    "time",
+    "textarea",
+  ]);
 
-    if (item.type === "select") {
-      return (
-        <Select
-          key={item.id}
-          name={item.key}
-          label={item.name}
-          options={item.options ?? []}
-          placeholder={item.placeholder ? t(item.placeholder) : t("select")}
-          value={String(fieldValue)}
-          onChange={handleChange}
-          required={item.required}
-        />
-      );
+  // Force ALL meeting-related fields (start, end, title, link, priority)
+  // to be required whenever a meeting is scheduled — even if the form
+  // builder didn't mark them required — to stay consistent with the
+  // backend's hard requirement + our disabled-submit logic.
+  const getRequired = () => {
+    if ((isDateTimeField || isMeetingField) && isMeetingScheduledYes(flatFormData)) {
+      return true;
     }
+    return item.required;
+  };
 
-    if (isDateTimeField || KNOWN_INPUT_TYPES.has(item.type)) {
-      // Force meetingStart/meetingEnd to be required whenever a meeting
-      // is scheduled, even if the form builder didn't mark them required —
-      // this keeps native browser validation + our disabled-submit logic
-      // consistent with the backend's hard requirement.
-      const forceRequired =
-        isDateTimeField && isMeetingScheduledYes(flatFormData) ? true : item.required;
+  if (item.type === "select") {
+    return (
+      <Select
+        key={item.id}
+        name={item.key}
+        label={item.name}
+        options={item.options ?? []}
+        placeholder={item.placeholder ? t(item.placeholder) : t("select")}
+        value={String(fieldValue)}
+        onChange={handleChange}
+        required={getRequired()}
+      />
+    );
+  }
 
-      return (
-        <Input
-          key={item.id}
-          name={item.key}
-          type={inputType}
-          label={item.name}
-          placeholder={item.placeholder ? t(item.placeholder) : ""}
-          value={String(fieldValue)}
-          onChange={handleChange}
-          required={forceRequired}
-        />
-      );
-    }
-
-    // Safety net: never silently drop a configured field just because its
-    // saved `type` doesn't match one of the cases above. Fall back to a
-    // basic text input instead of returning null so fields never
-    // disappear from the form unexpectedly.
+  if (isDateTimeField || KNOWN_INPUT_TYPES.has(item.type)) {
     return (
       <Input
         key={item.id}
         name={item.key}
-        type="text"
+        type={inputType}
         label={item.name}
         placeholder={item.placeholder ? t(item.placeholder) : ""}
         value={String(fieldValue)}
         onChange={handleChange}
-        required={item.required}
+        required={getRequired()}
       />
     );
-  };
+  }
+
+  // Safety net: keep rendering unknown-type fields as text inputs
+  // instead of dropping them.
+  return (
+    <Input
+      key={item.id}
+      name={item.key}
+      type="text"
+      label={item.name}
+      placeholder={item.placeholder ? t(item.placeholder) : ""}
+      value={String(fieldValue)}
+      onChange={handleChange}
+      required={getRequired()}
+    />
+  );
+};
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();

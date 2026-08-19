@@ -307,7 +307,7 @@ const UpdateRolePage = (): JSX.Element => {
               )}
 
               {formData.permissions.length > 0 && (
-                <div className="bg-cyan-50 dark:bg-cyan-950/20 rounded-xl p-4 border border-cyan-100 dark:border-cyan-900/30">
+                <div className="bg-cyan-50 dark:bg-cyan-950/20 rounded-xl p-4 border border-cyan-100 dark:border-cyan-900/30 max-h-40 overflow-scroll">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm font-semibold text-cyan-700 dark:text-cyan-400">
                       {t("selected_permissions")}
@@ -317,7 +317,7 @@ const UpdateRolePage = (): JSX.Element => {
                         onClick={handleRemoveAll}
                         className="ml-1 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                       >
-                        {t("remove_all_nbsp")}{formData.permissions.length}
+                        {t("remove_all ")}({formData.permissions.length})
                       </button>
                     </span>
                   </div>

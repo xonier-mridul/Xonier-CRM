@@ -241,6 +241,8 @@
   "table_title": "शीर्षक",
   "table_category": "श्रेणी",
   "table_status": "स्थिति",
+    "team_cat": "टीम श्रेणी",
+  "remove_all": "सभी हटाएँ",
   "table_priority": "प्राथमिकता",
   "table_assigned": "असाइन किया गया",
   "table_created_by": "द्वारा बनाया गया",
