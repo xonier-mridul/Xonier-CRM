@@ -70,10 +70,10 @@ const getStatusConfig = (status: INVOICE_STATUS) => {
       label: "Draft",
     },
     [INVOICE_STATUS.SENT]: {
-      bg: "bg-blue-50 dark:bg-blue-900/20",
-      text: "text-blue-700 dark:text-blue-300",
-      border: "border-blue-200 dark:border-blue-700",
-      dot: "bg-blue-500",
+      bg: "bg-cyan-50 dark:bg-cyan-900/20",
+      text: "text-cyan-700 dark:text-cyan-300",
+      border: "border-cyan-200 dark:border-cyan-700",
+      dot: "bg-cyan-500",
       label: "Sent",
     },
     [INVOICE_STATUS.PAID]: {
@@ -206,7 +206,7 @@ const InvoiceViewPage = (): JSX.Element => {
           </p>
           <button
             onClick={() => router.back()}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-sm font-medium transition-colors"
           >
             <IoArrowBack className="w-4 h-4" /> {t("go_back")}
           </button>
@@ -240,7 +240,7 @@ const InvoiceViewPage = (): JSX.Element => {
               <div className="flex items-center gap-2.5 flex-wrap mb-2">
                 
                 <h1
-                  className="text-xl font-bold text-gray-900 dark:text-white font-mono cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  className="text-xl font-bold text-gray-900 dark:text-white font-mono cursor-pointer hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
                   onClick={() => handleCopy(invoiceData.invoiceId)}
                   title={t("click_to_copy")}
                 >
@@ -279,7 +279,7 @@ const InvoiceViewPage = (): JSX.Element => {
               {invoiceData.status === INVOICE_STATUS.DRAFT && (
                 <button
                   onClick={() => toast.info("Send invoice coming soon")}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-sm font-medium transition-colors"
                 >
                   <FaRegPaperPlane className="w-3.5 h-3.5" />
                   {t("send_invoice")}
@@ -322,7 +322,7 @@ const InvoiceViewPage = (): JSX.Element => {
         {/* ── Stat cards ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "Total Amount", value: fmt(invoiceData.total, invoiceData.currency), icon: <IoCashOutline className="w-5 h-5" />, color: "bg-blue-600" },
+            { label: "Total Amount", value: fmt(invoiceData.total, invoiceData.currency), icon: <IoCashOutline className="w-5 h-5" />, color: "bg-cyan-600" },
             { label: "Paid Amount", value: fmt(invoiceData.paidAmount || 0, invoiceData.currency), icon: <IoCheckmarkCircle className="w-5 h-5" />, color: "bg-emerald-600" },
             { label: "Balance Due", value: fmt(balance, invoiceData.currency), icon: <IoCardOutline className="w-5 h-5" />, color: balance > 0 ? "bg-red-500" : "bg-gray-400" },
             { label: "Due Date", value: formatDate(invoiceData.dueDate) || "—", icon: <IoCalendarOutline className="w-5 h-5" />, color: isOverdue ? "bg-red-500" : "bg-violet-600" },
@@ -372,7 +372,7 @@ const InvoiceViewPage = (): JSX.Element => {
                 onClick={() => setActiveTab(tab.key)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                   activeTab === tab.key
-                    ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                    ? "bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400"
                     : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50"
                 }`}
               >
@@ -392,7 +392,7 @@ const InvoiceViewPage = (): JSX.Element => {
                 {/* Customer info */}
                 <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
                   <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2 uppercase tracking-wider">
-                    <IoPersonOutline className="w-4 h-4 text-blue-500" />
+                    <IoPersonOutline className="w-4 h-4 text-cyan-500" />
                     {t("customer_information")}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -421,7 +421,7 @@ const InvoiceViewPage = (): JSX.Element => {
                   <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                     <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
                       <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2 uppercase tracking-wider">
-                        <IoReceiptOutline className="w-4 h-4 text-blue-500" />
+                        <IoReceiptOutline className="w-4 h-4 text-cyan-500" />
                         {t("line_items")}
                       </h3>
                     </div>
@@ -508,7 +508,7 @@ const InvoiceViewPage = (): JSX.Element => {
                           )}
                           <div className="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-600">
                             <span className="font-bold text-gray-900 dark:text-white">{t("total_2")}</span>
-                            <span className="font-extrabold text-blue-600 dark:text-blue-400 text-lg">{fmt(invoiceData.total, invoiceData.currency)}</span>
+                            <span className="font-extrabold text-cyan-600 dark:text-cyan-400 text-lg">{fmt(invoiceData.total, invoiceData.currency)}</span>
                           </div>
                           <div className="flex justify-between text-sm">
                             <span className="text-gray-500 dark:text-gray-400">{t("paid")}</span>
@@ -530,9 +530,9 @@ const InvoiceViewPage = (): JSX.Element => {
                 {(invoiceData.notes || invoiceData.termsAndConditions || invoiceData.paymentTerms) && (
                   <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 space-y-4">
                     {invoiceData.paymentTerms && (
-                      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-blue-500 mb-1.5">{t("payment_terms")}</p>
-                        <p className="text-sm text-blue-800 dark:text-blue-200">{invoiceData.paymentTerms}</p>
+                      <div className="p-4 bg-cyan-50 dark:bg-cyan-900/20 rounded-xl border border-cyan-100 dark:border-cyan-800">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-cyan-500 mb-1.5">{t("payment_terms")}</p>
+                        <p className="text-sm text-cyan-800 dark:text-cyan-200">{invoiceData.paymentTerms}</p>
                       </div>
                     )}
                     {invoiceData.notes && (
@@ -553,7 +553,7 @@ const InvoiceViewPage = (): JSX.Element => {
                 {/* Invoice meta */}
                 <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
                   <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2 uppercase tracking-wider">
-                    <IoDocumentText className="w-4 h-4 text-blue-500" />
+                    <IoDocumentText className="w-4 h-4 text-cyan-500" />
                     {t("invoice_details")}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -581,12 +581,12 @@ const InvoiceViewPage = (): JSX.Element => {
                   <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
                     <div className="flex items-center justify-between mb-5">
                       <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2 uppercase tracking-wider">
-                        <IoFunnelOutline className="w-4 h-4 text-blue-500" />
+                        <IoFunnelOutline className="w-4 h-4 text-cyan-500" />
                         {t("associated_deal")}
                       </h3>
                       <Link
                         href={`/deals/view/${invoiceData.deal.id}`}
-                        className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 font-medium"
+                        className="text-xs text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-1 font-medium"
                       >
                         {t("view_deal")} <IoArrowBack className="w-3 h-3 rotate-180" />
                       </Link>
@@ -600,7 +600,7 @@ const InvoiceViewPage = (): JSX.Element => {
                     <div className="grid grid-cols-3 gap-3 mb-4">
                       {[
                         { label: "Amount", value: `$${invoiceData.deal.amount?.toLocaleString("en-US")}`, icon: <IoCashOutline className="w-3.5 h-3.5" />, color: "violet" },
-                        { label: "Stage", value: invoiceData.deal.dealStage, icon: <IoTrendingUpOutline className="w-3.5 h-3.5" />, color: "blue" },
+                        { label: "Stage", value: invoiceData.deal.dealStage, icon: <IoTrendingUpOutline className="w-3.5 h-3.5" />, color: "cyan" },
                         { label: "Type", value: invoiceData.deal.dealType?.replace("_", " "), icon: <MdCategory className="w-3.5 h-3.5" />, color: "orange" },
                       ].map((s) => (
                         <div key={s.label} className={`bg-${s.color}-50 dark:bg-${s.color}-900/20 rounded-xl p-4 border border-${s.color}-100 dark:border-${s.color}-800`}>
@@ -625,12 +625,12 @@ const InvoiceViewPage = (): JSX.Element => {
                   <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
                     <div className="flex items-center justify-between mb-5">
                       <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2 uppercase tracking-wider">
-                        <IoDocumentText className="w-4 h-4 text-blue-500" />
+                        <IoDocumentText className="w-4 h-4 text-cyan-500" />
                         {t("source_quotation")}
                       </h3>
                       <Link
                         href={`/quotations/view/${invoiceData.quotation.id}`}
-                        className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 font-medium"
+                        className="text-xs text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-1 font-medium"
                       >
                         {t("view_quotation")} <IoArrowBack className="w-3 h-3 rotate-180" />
                       </Link>
@@ -664,12 +664,12 @@ const InvoiceViewPage = (): JSX.Element => {
             {activeTab === "payment" && (
               <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
                 <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-5 flex items-center gap-2 uppercase tracking-wider">
-                  <MdPayment className="w-4 h-4 text-blue-500" />
+                  <MdPayment className="w-4 h-4 text-cyan-500" />
                   {t("payment_information")}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   {[
-                    { label: "Total Amount", value: fmt(invoiceData.total, invoiceData.currency), color: "blue", icon: <IoCashOutline className="w-4 h-4" /> },
+                    { label: "Total Amount", value: fmt(invoiceData.total, invoiceData.currency), color: "cyan", icon: <IoCashOutline className="w-4 h-4" /> },
                     { label: "Paid Amount", value: fmt(invoiceData.paidAmount || 0, invoiceData.currency), color: "emerald", icon: <IoCheckmarkCircle className="w-4 h-4" /> },
                     { label: "Balance Due", value: fmt(balance, invoiceData.currency), color: balance > 0 ? "red" : "gray", icon: <IoCardOutline className="w-4 h-4" /> },
                     { label: "Payment Progress", value: `${paymentPct.toFixed(1)}%`, color: "violet", icon: <FaPercent className="w-3.5 h-3.5" /> },
@@ -705,7 +705,7 @@ const InvoiceViewPage = (): JSX.Element => {
               <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
                 <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">{t("created_by")}</h3>
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
                     {getInitials(invoiceData.createdBy)}
                   </div>
                   <div className="min-w-0">
