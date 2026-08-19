@@ -203,6 +203,7 @@ const page = (): JSX.Element => {
       if (result.status === 200) {
         const data = result.data.data;
         setQuoteData(data.data);
+        console.log(data.data)
         setCurrentPage(data.page);
         setPageLimit(data.limit);
         setTotalPages(data.totalPages);

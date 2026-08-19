@@ -102,6 +102,31 @@ const UpdateRolePage = (): JSX.Element => {
     getRoleData(id);
   }, [id]);
 
+  const isModuleSelected = (perms: any[]) => {
+  return perms.every((perm) => isSelected(perm.id));
+};
+
+
+const handleModulePermission = (perms:any[],
+  checked:boolean)=>{
+    if(checked){
+      perms.forEach((perm)=>{
+        if(!isSelected(perm.id)){
+          addPermission(perm.id)
+        }
+      }
+    
+    )
+    }
+    else{
+        perms.forEach((perm)=>{
+          if(isSelected(perm.id)){
+            removePermission(perm.id)
+          }
+        })
+      }
+  }
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErr("");
@@ -133,10 +158,17 @@ const UpdateRolePage = (): JSX.Element => {
     if (confirm) setFormData((prev) => ({ ...prev, permissions: [] }));
   };
 
-  const addPermission = (permId: string) => {
-    if (isSelected(permId)) removePermission(permId);
-    else setFormData((prev) => ({ ...prev, permissions: [...prev.permissions, permId] }));
+   const addPermission = (permissionId: string) => {
+    if (formData.permissions.includes(permissionId)) {
+      removePermission(permissionId);
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        permissions: [...prev.permissions, permissionId],
+      }));
+    }
   };
+
 
   const removePermission = (permId: string) => {
     setFormData((prev) => ({
@@ -147,10 +179,19 @@ const UpdateRolePage = (): JSX.Element => {
 
   const isSelected = (permId: string) => formData.permissions.includes(permId.toString());
 
+ const allPermissions = Object.values(groupedPermissions).flat();
+
+  const isAllSelected = allPermissions.every((perm) =>
+  isSelected(perm.id)
+);
+
   const handlePowerChange = (value: number) => {
     const clamped = Math.min(Math.max(1, value), MAX_POWER);
     setFormData((prev) => ({ ...prev, power: clamped }));
   };
+
+
+  
 
   const powerPercent = ((formData.power ?? 1) / MAX_POWER) * 100;
   const powerColor =
@@ -159,6 +200,23 @@ const UpdateRolePage = (): JSX.Element => {
       : powerPercent >= 50
       ? "bg-amber-500"
       : "bg-emerald-500";
+
+
+  const handleAllPermissions = (checked: boolean) => {
+  if (checked) {
+    allPermissions.forEach((perm) => {
+      if (!isSelected(perm.id)) {
+        addPermission(perm.id);
+      }
+    });
+  } else {
+    allPermissions.forEach((perm) => {
+      if (isSelected(perm.id)) {
+        removePermission(perm.id);
+      }
+    });
+  }
+};
 
   return (
     <div className="ml-72 mt-14">
@@ -317,7 +375,7 @@ const UpdateRolePage = (): JSX.Element => {
                         onClick={handleRemoveAll}
                         className="ml-1 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                       >
-                        {t("remove_all ")}({formData.permissions.length})
+                        {t("remove_all")}{" "} ({formData.permissions.length})
                       </button>
                     </span>
                   </div>
@@ -351,6 +409,7 @@ const UpdateRolePage = (): JSX.Element => {
                   <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                     {t("available_permissions")}
                   </span>
+                  <div className="flex gap-5 items-center">
                   <div className="relative">
                     <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
@@ -359,8 +418,50 @@ const UpdateRolePage = (): JSX.Element => {
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter") e.preventDefault(); }}
-                      className="pl-9 pr-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 focus:border-transparent w-56"
+                      className="pl-9 pr-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 focus:border-transparent w-56"
                     />
+
+                  </div>
+                    <div className=" bg-white text-sm rounded-lg dark:bg-gray-800 border border-gray-200 dark:border-gray-600 px-4 py-2">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isAllSelected}
+                      onChange={(e) => handleAllPermissions(e.target.checked)}
+                      className="hidden"
+                    />
+
+                      <div
+                        className={`
+                          w-5 h-5 rounded border-2 flex items-center justify-center transition-all
+                          ${
+                            isAllSelected
+                              ? "bg-cyan-500 border-cyan-500"
+                              : "border-slate-300 bg-white"
+                          }
+                        `}
+                      >
+                        {isAllSelected && (
+                          <svg
+                            className="w-3 h-3 text-white"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={3}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        )}
+                      </div>
+                      <span className="font-semibold text-sm text-slate-700 dark:text-slate-200 whitespace-nowrap">
+                        {isAllSelected? 'Deselect All Permissions':'Select All Permissions'}
+                      </span>
+                    </label>
+                  </div>
                   </div>
                 </div>
 
@@ -370,8 +471,42 @@ const UpdateRolePage = (): JSX.Element => {
                   <div className="max-h-80 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700/50">
                     {Object.entries(groupedPermissions).map(([module, perms]) => (
                       <div key={module} className="border-b border-gray-200 dark:border-gray-600 last:border-0">
-                        <div className="sticky top-0 bg-gray-100 dark:bg-gray-700 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400 z-10">
-                          {module}
+                        <div className="sticky top-0 bg-gray-100 flex justify-between dark:bg-gray-700 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400 z-10">
+                           <span>{t(module)}</span>
+                        <label className="flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isModuleSelected(perms)}
+                        onChange={(e) =>
+                          handleModulePermission(perms, e.target.checked)
+                        }
+                        className="hidden"
+                      />
+
+                      <div
+                        className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                          isModuleSelected(perms)
+                            ? "bg-cyan-500 border-cyan-500"
+                            : "bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-500"
+                        }`}
+                      >
+                        {isModuleSelected(perms) && (
+                          <svg
+                            className="w-3 h-3 text-white"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={3}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        )}
+                      </div>
+                    </label>
                         </div>
                         <div className="p-2">
                           {perms.map((permission) => {

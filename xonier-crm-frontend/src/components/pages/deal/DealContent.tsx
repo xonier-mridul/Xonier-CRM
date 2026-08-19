@@ -793,7 +793,7 @@ const DealContent = (): JSX.Element => {
           )}
         </div>
 
-        <div>
+       
           {currentTab === 1 && (
             <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={(page) => setCurrentPage(page)} className="w-full" />
           )}
@@ -813,7 +813,7 @@ const DealContent = (): JSX.Element => {
               className="w-full"
             />
           )}
-        </div>
+        
       </div>
     </div>
   );

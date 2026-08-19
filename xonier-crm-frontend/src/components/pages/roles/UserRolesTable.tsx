@@ -577,7 +577,7 @@ const handleAllPermissions = (checked: boolean) => {
                       className="border-b border-gray-200 dark:border-gray-600 last:border-0"
                     >
                       <div className="sticky top-0 bg-gray-100 dark:bg-gray-700 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400 z-10 flex justify-between items-center">
-                        <span>{module}</span>
+                        <span>{t(module)}</span>
                         <label className="flex items-center cursor-pointer">
                       <input
                         type="checkbox"
