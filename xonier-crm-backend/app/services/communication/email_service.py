@@ -171,7 +171,7 @@ class EmailService:
         try:
             page = filters.get("page") or 1
             limit = filters.get("limit") or 10
-
+            print("one")
             query: Dict[str, Any] = {
                 "sent_by.$id": PydanticObjectId(user["_id"])
             }
@@ -191,6 +191,7 @@ class EmailService:
             if "quotation_id" in filters:
                 query["quotation_id"] = filters["quotation_id"]
 
+            print("two")
             result = await self.history_repo.get_all(
                 page=int(page),
                 limit=int(limit),
@@ -201,7 +202,7 @@ class EmailService:
 
             if not result:
                 raise AppException(404, "No email history found")
-
+            print('three')
             return jsonable_encoder(result)
 
         except AppException:

@@ -59,6 +59,7 @@ class EmailTemplateService:
     
     async def get_all(self, filters: Dict[str, Any], user: Dict[str, Any]):
         try:
+            
             page = filters.get("page") or 1
             limit = filters.get("limit") or 10
 

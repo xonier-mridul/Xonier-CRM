@@ -41,7 +41,6 @@ from app.db.models.notification_model import NotificationModel
 from app.db.models.payment_model import PaymentModel
 
 
-
 settings = get_setting()
 
 Client = AsyncIOMotorClient(settings.MONGO_URI) 

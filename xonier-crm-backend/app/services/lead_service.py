@@ -49,9 +49,11 @@ class LeadService:
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
-                    is_admin = validate_admin(user["userRole"])
+                    
+                    is_admin = validate_admin_company_admin(user["userRole"])
                     hashed_mail = hash_value(payload["email"])
-                    hashed_phone = hash_value(payload["phone"])
+                    
+                    hashed_phone = hash_value(payload["phone"]) if payload.get("phone") else None
                     is_exist = await self.repo.find_one(
                         {
                             "fullName": payload["fullName"],
@@ -61,7 +63,7 @@ class LeadService:
                         }
                     )
 
-                
+         
                     if is_exist:
                         raise AppException(
                             400,
@@ -69,8 +71,6 @@ class LeadService:
                         )
 
                     lead_id = generate_enquiry_id("LEAD")
-
-                    
 
 
                     new_payload = {
@@ -85,13 +85,14 @@ class LeadService:
 
                     if not new_lead:
                         raise AppException(400, "Lead creation failed, please try again")
-
+               
                     if payload.get("meetingScheduled").strip() == MEETING_SCHEDULED.YES.value:
-                        payload = EventPayloadGenerator(title=payload.get("meetingTitle"), description=payload.get("meetingDescription", None), start=payload.get(" meetingStart"), end=payload.get("meetingEnd"), meetingLink=payload.get("meetingLink"), priority=payload.get("meetingPriority"), createdBy=user["_id"], entityId=new_lead.id)
-                        isEventCreated = await self.calenderRepo.create(data=payload, session=session)
+                        meeting_payload = EventPayloadGenerator(title=payload.get("meetingTitle"), description=payload.get("meetingDescription", None), start=payload.get("meetingStart"), end=payload.get("meetingEnd"), meetingLink=payload.get("meetingLink"), priority=payload.get("meetingPriority"), createdBy=user["_id"], entityId=new_lead.id).to_json()
+                        
+                        isEventCreated = await self.calenderRepo.create(data=meeting_payload, session=session)
                         if not isEventCreated:
                             raise AppException(400, "Meeting event creation failed")
-                    
+                 
                     activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD, entityId=PydanticObjectId(new_lead.id), action=ACTIVITY_ACTION.CREATED, title="create lead", metadata={"leadId": new_lead.lead_id, "leadName": new_lead.fullName})
 
                     
@@ -788,7 +789,7 @@ class LeadService:
             if "priority" in filters:
                 query.update({"priority": filters["priority"]})
 
-            if "source" in filters:
+            if "source" in filters and filters["source"] != "all":
                 query.update({"source": {"$regex": filters["source"], "$options": "i"}})
 
             if "type" in filters:
@@ -874,6 +875,8 @@ class LeadService:
 
             if cache:
                 return json.loads(cache)      
+
+           
          
             result = await self.repo.get_all(
                 page=int(page),
@@ -885,8 +888,8 @@ class LeadService:
 
             if not result:
                 raise AppException(404, "Leads data not found")
-            
-            
+
+           
 
             result = jsonable_encoder(result, exclude={"hashedEmail", "hashedPhone"})
 
@@ -1030,16 +1033,17 @@ class LeadService:
 
     async def get_by_id(self, id: str, user: Dict[str, Any]):
         try:
-
+            
             if not ObjectId.is_valid(id):
                 raise AppException(400, "Invalid lead object id")
-
+           
             result = await self.repo.find_by_id(
                 id=id, populate=["createdBy", "updatedBy", "assignedTo"]
             )
 
             if not result:
                 raise AppException(404, "Lead data not found")
+            
 
             is_admin = validate_admin_company_admin(user["userRole"])
             is_creator = False
@@ -1057,7 +1061,7 @@ class LeadService:
             result = result.model_dump(
                 mode="json", exclude={"hashedEmail"}
             )
-
+            
             if str(result["createdBy"]["id"]) == str(user["_id"]):
                 is_creator = True
 
@@ -1310,13 +1314,10 @@ class LeadService:
                     if not ObjectId.is_valid(leadId):
                         raise AppException(400, "Invalid lead id")
 
-                    is_admin = False
+                    is_admin = validate_admin_company_admin(user["userRole"])
                     is_creator = False
 
-                    for item in user["userRole"]:
-                        if item["code"] == SUPER_ADMIN_CODE:
-                            is_admin = True
-                            break
+                    
 
                     result = await self.repo.find_by_id(
                         id=PydanticObjectId(leadId), populate=["createdBy", "updatedBy"]
