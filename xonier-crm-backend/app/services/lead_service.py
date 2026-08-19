@@ -788,7 +788,7 @@ class LeadService:
             if "priority" in filters:
                 query.update({"priority": filters["priority"]})
 
-            if "source" in filters:
+            if "source" in filters and filters["source"] != "all":
                 query.update({"source": {"$regex": filters["source"], "$options": "i"}})
 
             if "type" in filters:
@@ -874,6 +874,8 @@ class LeadService:
 
             if cache:
                 return json.loads(cache)      
+
+           
          
             result = await self.repo.get_all(
                 page=int(page),
@@ -886,6 +888,7 @@ class LeadService:
             if not result:
                 raise AppException(404, "Leads data not found")
 
+           
 
             result = jsonable_encoder(result, exclude={"hashedEmail", "hashedPhone"})
 
@@ -1029,16 +1032,17 @@ class LeadService:
 
     async def get_by_id(self, id: str, user: Dict[str, Any]):
         try:
-
+            
             if not ObjectId.is_valid(id):
                 raise AppException(400, "Invalid lead object id")
-
+           
             result = await self.repo.find_by_id(
                 id=id, populate=["createdBy", "updatedBy", "assignedTo"]
             )
 
             if not result:
                 raise AppException(404, "Lead data not found")
+            
 
             is_admin = validate_admin_company_admin(user["userRole"])
             is_creator = False
@@ -1056,7 +1060,7 @@ class LeadService:
             result = result.model_dump(
                 mode="json", exclude={"hashedEmail"}
             )
-
+            
             if str(result["createdBy"]["id"]) == str(user["_id"]):
                 is_creator = True
 
@@ -1309,13 +1313,10 @@ class LeadService:
                     if not ObjectId.is_valid(leadId):
                         raise AppException(400, "Invalid lead id")
 
-                    is_admin = False
+                    is_admin = validate_admin_company_admin(user["userRole"])
                     is_creator = False
 
-                    for item in user["userRole"]:
-                        if item["code"] == SUPER_ADMIN_CODE:
-                            is_admin = True
-                            break
+                    
 
                     result = await self.repo.find_by_id(
                         id=PydanticObjectId(leadId), populate=["createdBy", "updatedBy"]

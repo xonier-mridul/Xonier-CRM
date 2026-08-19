@@ -16,7 +16,7 @@ import json
 from app.core.enums import SALES_STATUS, DEAL_STATUS, DEAL_STAGES, ACTIVITY_ACTION, ACTIVITY_ENTITY_TYPE, DEAL_PIPELINE
 
 from app.utils.get_team_members import GetTeamMembers
-from app.utils.validate_admin import validate_admin
+from app.utils.validate_admin import validate_admin, validate_admin_company_admin
 from datetime import datetime, timezone
 from app.repositories.activity_repository import ActivityRepository
 
@@ -102,12 +102,9 @@ class DealService:
             page = filters.get("page") or 1
             limit = filters.get("limit") or 10
  
-            is_admin = False
+            is_admin = validate_admin_company_admin(user["userRole"])
  
-            for item in user["userRole"]:
-                if item["code"] == SUPER_ADMIN_CODE:
-                    is_admin = True
-                    break
+            
  
             query = {"status": DEAL_STATUS.ACTIVE.value}
  
@@ -178,7 +175,7 @@ class DealService:
  
             if cache:
                 return json.loads(cache)
- 
+           
             result = await self.repo.get_all(
                 page=int(page),
                 limit=int(limit),
@@ -216,16 +213,13 @@ class DealService:
             if not ObjectId.is_valid(dealId):
                 raise AppException(400, "Invalid deal object id")
             
-            isAdmin = False
+            isAdmin = validate_admin_company_admin(user["userRole"])
             isCreator = False
             isManager = False
            
             userRole = user["userRole"]
 
-            for item in userRole:
-                if item["code"] == SUPER_ADMIN_CODE:
-                   isAdmin = True
-                   break
+            
 
             if not isAdmin:
                 members = await self.getTeamMem.get_team_members(user["_id"])
@@ -281,7 +275,7 @@ class DealService:
                         raise ValueError(400, "Invalid deal id")
                     
 
-                    isAdmin:bool = False
+                    isAdmin:bool = validate_admin_company_admin(user["userRole"])
                     isCreator:bool = False
                     isManager:bool = False
 
@@ -294,13 +288,7 @@ class DealService:
                     if deal["dealStage"] == DEAL_STAGES.DELETE.value and deal["status"] == DEAL_STATUS.DELETE.value:
                         raise AppException(400, f"Update operation failed, {deal["dealName"]} deal deleted")
 
-                    userRole = user["userRole"]
-
-        
-                    for item in userRole:
-                        if item["code"] == SUPER_ADMIN_CODE:
-                            isAdmin = True
-                            break
+                    
 
                     if not isAdmin:
 
@@ -355,7 +343,7 @@ class DealService:
                     if not ObjectId.is_valid(id):
                         raise AppException(400, "Invalid Deal object id")
                     
-                    is_admin = validate_admin(user["userRole"])
+                    is_admin = validate_admin_company_admin(user["userRole"])
                     is_creator = False
 
                     result = await self.repo.find_by_id(id=PydanticObjectId(id), populate=["createdBy", "lead_id"])

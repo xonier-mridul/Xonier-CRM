@@ -57,7 +57,7 @@ class BaseRepository:
             if hasattr(value, "fetch"):
                 # with system_query():
                 fetched = await value.fetch()
-                print(f"DEBUG: fetching {field} link ref={item.ref if hasattr(item,'ref') else item} -> {fetched}")
+
                 setattr(doc, field, fetched)
 
             elif isinstance(value, list):
