@@ -36,7 +36,7 @@ class RegisterUserSchema(BaseModel):
             if not phonenumbers.is_valid_number(phone_number):
                 raise ValueError()
         except Exception:
-            raise ValueError("Invalid phone number format. Use country code, e.g. +919876543210")
+            raise AppException(422, "Invalid phone number format")
 
         return v
 
@@ -83,7 +83,7 @@ class UpdateUserSchema(BaseModel):
             if not phonenumbers.is_valid_number(phone_number):
                 raise ValueError()
         except Exception:
-            raise ValueError("Invalid phone number format. Use country code, e.g. +919876543210")
+            raise AppException(422, "Invalid phone number format")
 
         return v
 

@@ -37,7 +37,7 @@ from app.repositories.activity_repository import ActivityRepository
 from app.utils.activity_payload import activity_payload
 from app.utils.jwt_token_generator import create_token, verify_token
 from app.core.config import get_setting
-from app.utils.validate_admin import validate_admin
+from app.utils.validate_admin import validate_admin, validate_admin_company_admin
 
 CURRENCY_SYMBOLS = {
     "USD": "$",
@@ -99,7 +99,7 @@ class QuotationService:
                     isCreator = False
                     isManager = False
 
-                    isAdmin = validate_admin(user["userRole"])
+                    isAdmin = validate_admin_company_admin(user["userRole"])
 
                     if not isAdmin:
 
@@ -236,7 +236,7 @@ class QuotationService:
             page = filters.get("page") or 1
             limit = filters.get("limit") or 10
 
-            isAdmin = validate_admin(user["userRole"])
+            isAdmin = validate_admin_company_admin(user["userRole"])
 
             query = {
                 "quotationStatus": {
@@ -578,7 +578,7 @@ class QuotationService:
     async def get_by_id(self, quoteId: str, user: Dict[str, Any]):
         try:
 
-            isAdmin = validate_admin(user["userRole"])
+            isAdmin = validate_admin_company_admin(user["userRole"])
 
             quotation = await self.repo.find_by_id(
                 id=PydanticObjectId(quoteId),
@@ -669,7 +669,7 @@ class QuotationService:
                     
 
 
-                    isAdmin = validate_admin(user["userRole"])
+                    isAdmin = validate_admin_company_admin(user["userRole"])
 
                     if not isAdmin:
                         isCreator = str(quotation.createdBy.id) == str(user["_id"])
@@ -769,7 +769,7 @@ class QuotationService:
                     if quotation.quotationStatus == QuotationStatus.ACCEPTED:
                         raise AppException(400, "Quotation already accepted, quotation updation failed")
 
-                    isAdmin = validate_admin(user["userRole"])
+                    isAdmin = validate_admin_company_admin(user["userRole"])
 
                     if not isAdmin:
                         isCreator = str(quotation.createdBy.id) == str(user["_id"])
@@ -929,7 +929,7 @@ class QuotationService:
                     if quotation.quotationStatus == QuotationStatus.DELETE:
                         raise AppException(400, "Quotation deleted, quotation resending failed")
 
-                    isAdmin = validate_admin(user["userRole"])
+                    isAdmin = validate_admin_company_admin(user["userRole"])
 
                     if not isAdmin:
                         isCreator = str(quotation.createdBy.id) == str(user["_id"])
@@ -1073,7 +1073,7 @@ class QuotationService:
                     if not quotation:
                         raise AppException(404, "Quotation not found")
 
-                    isAdmin = validate_admin(user["userRole"])
+                    isAdmin = validate_admin_company_admin(user["userRole"])
 
                     if not isAdmin:
                         isCreator = str(quotation.createdBy.id) == str(user["_id"])
