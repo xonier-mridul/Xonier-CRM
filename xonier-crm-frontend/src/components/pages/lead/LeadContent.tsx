@@ -1259,12 +1259,14 @@ const isIndeterminate =
               <table className="w-full rounded-xl overflow-hidden">
                 <thead>
                   <tr className="w-full border-b-2 border-zinc-300 dark:border-zinc-400  bg-slate-200 dark:bg-gray-800">
+                    <div>
                    {hasPermission(PERMISSIONS.assignLead) &&
-  currentTab === TAB.ALL &&
-  assignableLeads.length > 0 && (
-    <th className="p-4 w-12">
+                    currentTab === TAB.ALL &&
+                    assignableLeads.length > 0 && (
+                      <th className="p-4 w-12">
                         <label className="relative inline-flex items-center cursor-pointer">
-                          <input ref={selectAllRef} type="checkbox" className="sr-only" checked={isAllSelected} onChange={handleSelectAll} />
+                          <input ref={selectAllRef} type="checkbox" className="sr-only" 
+                          checked={isAllSelected} onChange={handleSelectAll} />
                           <div
                             className={`w-4.5 h-4.5 rounded-sm border-2 flex items-center justify-center transition-all duration-150
                           ${
@@ -1280,6 +1282,7 @@ const isIndeterminate =
                         </label>
                       </th>
                     )}
+                    </div>
                     {[
                       "client_info",
                       "phone",
