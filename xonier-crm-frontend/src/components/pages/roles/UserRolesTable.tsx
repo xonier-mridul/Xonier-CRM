@@ -5,7 +5,7 @@ import React, { useState } from "react";
 import { MdOutlineEdit, MdDeleteOutline, MdAdminPanelSettings } from "react-icons/md";
 import { FaPlus, FaXmark, FaShieldHalved, FaEye, FaBolt } from "react-icons/fa6";
 import { HiOutlineSearch, HiOutlineUserGroup } from "react-icons/hi";
-import { IoShieldCheckmarkOutline, IoCheckmarkCircle, IoCloseCircle } from "react-icons/io5";
+import { IoShieldCheckmarkOutline, IoCheckmarkCircle, IoCloseCircle, IoSearch } from "react-icons/io5";
 import BlurryBackground from "../../common/BlurryBackground";
 import FormButton from "../../ui/FormButton";
 import Input from "../../ui/Input";
@@ -72,6 +72,8 @@ const UserRolesTable: React.FC<RoleTableProps> = ({
 }) => {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = React.useState("");
+  const [searchP, setSearchP] = React.useState("");
+
 
   const [viewRoleModal, setViewRoleModal] = React.useState<UserRole | null>(null);
   
@@ -125,6 +127,11 @@ const handleModulePermission = (perms:any[],
       }
   }
 
+    const search = searchP.trim().toLowerCase();
+
+  // First filter permissions based on search
+ 
+
   const groupedPermissions = React.useMemo(() => {
     if (!permissionData) return {};
     const filtered = permissionData.filter((p) =>
@@ -169,7 +176,9 @@ const handleAllPermissions = (checked: boolean) => {
     <>
       {viewRoleModal && (
         <>
-          <BlurryBackground onClick={() => setViewRoleModal(null)} />
+          <BlurryBackground onClick={() => {setViewRoleModal(null);
+          setSearchP("")}
+          } />
           <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-2xl w-[680px] max-h-[90vh] z-[200] shadow-2xl flex flex-col">
             <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
               <div className="flex items-center gap-3">
@@ -204,7 +213,9 @@ const handleAllPermissions = (checked: boolean) => {
                 </div>
               </div>
               <button
-                onClick={() => setViewRoleModal(null)}
+                onClick={() =>{ setViewRoleModal(null);
+                  setSearchP("")
+                }}
                 className="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center transition-colors group"
               >
                 <FaXmark className="text-lg text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-200 group-hover:rotate-90 transition-all duration-200" />
@@ -271,11 +282,37 @@ const handleAllPermissions = (checked: boolean) => {
                 <>
                   <div className="flex items-center justify-between mb-1">
                     <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                      {t("permissions")}{viewRoleModal.permissions.length})
+                      {t("permissions")}{" "}({viewRoleModal.permissions.length})
                     </h3>
+
+                     <div className="relative flex gap-2">
+                    <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder={t("search_permissions")}
+                      value={searchP}
+                      onChange={(e) => setSearchP(e.target.value)}
+                      className="pl-9 pr-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 focus:border-transparent w-56"
+                    />
+                   
+                 
+                
+                  </div>
                   </div>
                   {(() => {
-                    const grouped = viewRoleModal.permissions.reduce((acc, perm) => {
+
+                     const filteredPermissions = viewRoleModal.permissions.filter((perm) =>
+    [
+      perm.title,
+      perm.description,
+      perm.action,
+      perm.code,
+      perm.module,
+    ].some((value) =>
+      value?.toString().toLowerCase().includes(search)
+    )
+  );
+                    const grouped = filteredPermissions.reduce((acc, perm) => {
                       if (!acc[perm.module]) acc[perm.module] = [];
                       acc[perm.module].push(perm);
                       return acc;
@@ -343,7 +380,9 @@ const handleAllPermissions = (checked: boolean) => {
               </div>
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => setViewRoleModal(null)}
+                  onClick={() =>{ setViewRoleModal(null);
+                    setSearchP("");}
+                  }
                   className="px-5 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 text-slate-700 dark:text-slate-200 font-medium transition-colors"
                 >
                   {t("close")}
@@ -352,6 +391,7 @@ const handleAllPermissions = (checked: boolean) => {
                   viewRoleModal.code !== SUPER_ADMIN_ROLE_CODE && (
                     <Link
                       href={`/roles/update/${viewRoleModal.id}`}
+                        onClick={() => setSearchP("")}
                       className="px-5 py-2.5 rounded-lg bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-600 text-white font-semibold transition-all shadow-sm hover:shadow-md flex items-center gap-2"
                     >
                       <MdOutlineEdit className="w-4 h-4" />

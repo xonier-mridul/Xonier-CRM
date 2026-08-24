@@ -317,11 +317,11 @@ const LeadViewPage = (): JSX.Element => {
                 </div>
               </div> */}
               
-                <div className=" border border-slate-200 py-2 hover:border-red-400  text-red-600 dark:text-red-400 hover:bg-red-50  rounded-xl bg-white/60 right-0 top-full w-30  transition-all  duration-300">
+                <div className=" border border-slate-200 py-2 hover:border-red-400  text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-400 dark:bg-red-400 dark:text-white rounded-xl bg-white/60 right-0 top-full w-30  transition-all  duration-300 cursor-pointer">
                   {hasPermission(PERMISSIONS.deleteLead) && (
                     <button
                       onClick={() => handleDelete(leadData.id)}
-                      className="w-full flex items-center gap-2 px-4  dark:hover:bg-red-900/20 transition-colors cursor-pointer"
+                      className="w-full flex items-center gap-2 px-4 transition-colors cursor-pointer"
                     >
                       <MdDeleteOutline className="w-4 h-4" />
                       {t("delete")}

@@ -441,14 +441,14 @@ const page = (): JSX.Element => {
                               placeholder={t("field_name")}
                               value={field.key}
                               onChange={(e) => handleNewFieldKeyChange(field.tempId, e.target.value)}
-                              className="w-2/5 px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-gray-500 bg-white dark:bg-gray-600 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="w-2/5 px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-gray-500 bg-white dark:bg-gray-600 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                             />
                             <input
                               type="text"
                               placeholder={t("value")}
                               value={field.value}
                               onChange={(e) => handleNewFieldValueChange(field.tempId, e.target.value)}
-                              className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-gray-500 bg-white dark:bg-gray-600 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-gray-500 bg-white dark:bg-gray-600 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                             />
                             <button
                               type="button"
@@ -467,7 +467,7 @@ const page = (): JSX.Element => {
                     <button
                       type="button"
                       onClick={handleAddNewField}
-                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 border border-dashed border-blue-400 dark:border-blue-500 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-cyan-600 dark:text-cyan-400 border border-dashed border-cyan-400 dark:border-cyan-500 rounded-lg hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-colors"
                     >
                       <Plus size={16} />
                       {t("add_more_field")}

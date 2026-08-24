@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 import QuotationFileUploadModal from "@/src/components/common/QuotationFileUploadModal";
 import { useAdvancedFilters } from "@/src/hooks/useAdvanceFilter";
 import AdvancedFilters from "@/src/components/common/AdvanceFilter";
+import Pagination from "@/src/components/common/pagination";
 
 const STATUS_CONFIG = {
   [QuotationStatus.DRAFT]: { label: "Draft", color: "bg-gray-600" },
@@ -863,7 +864,9 @@ const page = (): JSX.Element => {
             </tbody>
           </table>
         )}
+         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={(page) => setCurrentPage(page)} className="w-full" />
       </div>
+      
     </div>
   );
 };

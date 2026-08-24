@@ -890,6 +890,11 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
             </div>
           </Section>
 
+            <div className="mb-4">
+        <ErrorComponent error={err} />
+        <SuccessComponent message={success} />
+      </div>
+
           {/* ── Action Buttons ── */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 px-6 py-5">
             <div className="flex flex-col sm:flex-row gap-3 justify-end">

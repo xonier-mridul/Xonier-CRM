@@ -28,6 +28,7 @@ import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 import CreatedAt from "@/src/components/common/CreatedAt";
 import StatusBadge from "@/src/components/common/Status";
 import { useTranslation } from "react-i18next";
+import Pagination from "@/src/components/common/pagination";
 
 const page = (): JSX.Element => {
   const { t } = useTranslation();
@@ -39,6 +40,7 @@ const page = (): JSX.Element => {
   const [searchVal, setSearchVal] = useState<string>("");
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const [dateFilter, setDateFilter] = useState<DateFilter>({ fromDate: "", toDate: "" });
+  const [totalPages,setTotalPages]=useState<number>(1)
 
   const { hasPermission } = usePermissions();
 
@@ -51,6 +53,7 @@ const page = (): JSX.Element => {
         setInvoiceData(data.data)
         setCurrentPage(Number(data.page))
         setPageLimit(Number(data.limit))
+        setTotalPages(Number(data.totalPages))
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
@@ -307,6 +310,7 @@ const page = (): JSX.Element => {
             </tbody>
 
           </table>
+             <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={(page) => setCurrentPage(page)} className="w-full" />
         </div>
       </div>
     </div>
