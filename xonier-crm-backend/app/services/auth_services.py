@@ -759,6 +759,8 @@ class AuthServices:
             session.start_transaction()
             hashed_email = hash_value(data["email"])
             is_admin = validate_admin(user["userRole"])
+            is_company_admin = validate_company_admin(user["userRole"])
+
 
             is_user_exist = await self.repo.find_user_by_hashMail(
                 hashMail=hashed_email, populate=["userRole"], session=session
@@ -786,18 +788,27 @@ class AuthServices:
 
             if is_admin:
                 companyId = data["companyId"] if data.get("companyId") else None
+            
             else:
+                
                 companyId = userModel.companyId if userModel.companyId else None
 
-            
 
-            # company = await self.companyRepo.find_company_by_companyId(companyId=companyId, populate=["subscription"])
+            company = await self.companyRepo.find_by_id(id=companyId, populate=["subscription"])
 
-            # if not company:
-            #     raise AppException(400, "Company not found")
+            if not company:
+                raise AppException(400, "Company not found")
 
-            
-           
+
+            if company.status == COMPANY_STATUS.DELETED or company.status == COMPANY_STATUS.INACTIVE or company.status == COMPANY_STATUS.SUSPENDED or company.status == COMPANY_STATUS.PENDING_VERIFICATION:
+                raise AppException(status_code=400, message=f"Company status is {"Deleted" if company.status == COMPANY_STATUS.DELETED else "Inactive" if company.status == COMPANY_STATUS.INACTIVE else "Suspended" if company.status == COMPANY_STATUS.SUSPENDED else "Pending Verification" }")
+
+            user_count = await self.repo.get_user_count_by_company_id(companyId=company.id)
+
+
+            if int(user_count) >= int(company.userLimit):
+                raise AppException(400, "User limit exceeded")
+
 
             new_user = await self.repo.create(
                 data={**data, "createdBy": userModel.id, "companyId": companyId},
@@ -1719,15 +1730,18 @@ class AuthServices:
     async def soft_delete(self, userId: PydanticObjectId, user: Dict[str, Any]):
         session = await self.client.start_session()
         try:
-            session.start_transaction()
+            is_admin=  validate_admin(user["userRole"])
+            is_company_admin = validate_company_admin(user["userRole"])
 
+            session.start_transaction()
+            print("one")
             user = await self.repo.find_by_id(userId, ["userRole"], session=session)
 
             if not user:
                 raise AppException(404, "User not found")
-
+            print("two", user)
             roles = jsonable_encoder(user.userRole)
-
+            print("three: ", roles)
             for item in roles:
                 if item["code"] == SUPER_ADMIN_CODE:
                     raise AppException(400, "Super Admin user deletion not allowed")
@@ -1740,6 +1754,8 @@ class AuthServices:
 
             if user.status == USER_STATUS.DELETED.value:
                 raise AppException(400, "User already deleted")
+
+     
 
             updatedUser = await self.repo.update(
                 userId,
@@ -1759,13 +1775,13 @@ class AuthServices:
 
             return jsonable_encoder(obj=user, exclude={"password", "refreshToken"})
 
-        except AppException:
+        except AppException as e:
             await session.abort_transaction()
-            raise
+            raise e
 
         except Exception as e:
             await session.abort_transaction()
-            raise AppException(status_code=500, message="internal server error")
+            raise AppException(status_code=500, message=f"internal server error: {e}")
 
         finally:
             await session.end_session()
@@ -2479,15 +2495,16 @@ class AuthServices:
             email = payload.get("email", "").strip().lower()
             company_name_input = payload.get("companyName", "").strip()
 
+
             hash_mail = hash_value(email)
 
-            
-            
 
             with system_query(): 
-                user = await UserModel.find_one(UserModel.hashedEmail == hash_mail)
+                user = await self.repo.find_user_by_hashMail(hashMail=hash_mail)
                 if not user:
                     raise AppException(404, "No account found with this email")
+
+           
                             
                 companies = await CompanyModel.find(
                     Or(
@@ -2499,6 +2516,7 @@ class AuthServices:
                 if not companies:
                     raise AppException(404, "No company associated with this account")
 
+               
       
             best_match = None
             best_score = 0.0
