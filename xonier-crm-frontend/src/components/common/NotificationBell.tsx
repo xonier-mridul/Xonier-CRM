@@ -8,6 +8,7 @@ import { useNotifications } from "@/src/hooks/useNotifications";
 import { getNotificationIcon, formatTimeAgo } from "@/src/app/utils/notification.utils";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
+import { useRouter } from "next/navigation";
 
 interface NotificationBellProps {
   calOpen: boolean;
@@ -15,6 +16,7 @@ interface NotificationBellProps {
 
 const NotificationBell: React.FC<NotificationBellProps> = ({ calOpen }) => {
   const { t } = useTranslation();
+  const router = useRouter()
   const [notifOpen, setNotifOpen] = useState(false);
   const {
     notifications,
@@ -70,6 +72,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ calOpen }) => {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
             className="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50"
+            onClick={()=>router.push('/notifications')}
           >
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700">
               <div className="flex items-center gap-2">
