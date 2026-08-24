@@ -43,3 +43,9 @@ class UserRepository(BaseRepository):
               return {"success": True, "user": user}
             
         return {"success": False, "user": user}
+
+
+    async def get_user_count_by_company_id(self, companyId:str)->int:
+        count = await self.count(filter={"companyId": PydanticObjectId(companyId)})
+
+        return count
