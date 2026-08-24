@@ -57,6 +57,9 @@ const [searchManager, setSearchManager] = useState<string>("");
 const categoryDropdownRef = useRef<HTMLDivElement>(null);
 const userDropdownRef = useRef<HTMLDivElement>(null);
 const managerDropdownRef = useRef<HTMLDivElement>(null);
+const managerRef = useRef<HTMLTableCellElement | null >(null);
+const [expandedManager, setExpandedManager] = useState<string | null>(null);
+const [expandedMember, setExpandedMember] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<TeamCreatePayload>({
     name: "",
@@ -134,26 +137,44 @@ const managerDropdownRef = useRef<HTMLDivElement>(null);
     }
   };
 
-
- useEffect(() => {
+useEffect(() => {
   const handleClickOutside = (event: MouseEvent) => {
+    const target = event.target as Node;
+
     if (
       categoryDropdownRef.current &&
-      !categoryDropdownRef.current.contains(event.target as Node)
+      !categoryDropdownRef.current.contains(target)
     ) {
       setIsCategoryOpen(false);
     }
 
     if (
       userDropdownRef.current &&
-      !userDropdownRef.current.contains(event.target as Node)
+      !userDropdownRef.current.contains(target)
     ) {
       setIsUserOpen(false);
     }
-    if(managerDropdownRef.current &&
-      !managerDropdownRef.current.contains(event.target as Node)
+
+    if (
+      managerDropdownRef.current &&
+      !managerDropdownRef.current.contains(target)
     ) {
       setIsManagerOpen(false);
+    }
+
+    // Manager table cell
+    const managerCell = (event.target as HTMLElement).closest(
+      "[data-manager-cell]"
+    );
+
+    if (!managerCell) {
+      setExpandedManager(null);
+    }
+
+    const memberCell = (event.target as HTMLElement).closest("[data-member-cell]");
+
+    if (!memberCell) {
+      setExpandedMember(null);
     }
   };
 
@@ -163,7 +184,6 @@ const managerDropdownRef = useRef<HTMLDivElement>(null);
     document.removeEventListener("mousedown", handleClickOutside);
   };
 }, []);
-
 
   useEffect(() => {
     if (debounceRef.current) {
@@ -781,18 +801,9 @@ getCategoryData();
               {!isLoading ? (
                 teamData && teamData?.length > 0 ? (
                   teamData?.map((item, index) => {
-                    let rr = index % 2 == 0;
+                    const rr = index % 2 == 0;
 
-                    let date = new Date(item.createdAt).toLocaleDateString(
-                      "en-IN",
-                      {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                        timeZone: "Asia/Kolkata",
-                      },
-                    );
-
+                
                     return (
                       <tr key={index}
                         className={`${
@@ -800,16 +811,43 @@ getCategoryData();
                             ? "bg-white dark:bg-transparent" : "bg-slate-100/50 dark:bg-slate-800"
                         } w-full`}
                       >
-                        <td className="p-4 flex max-w-50 overflow-scroll">{item?.manager?.map((item, index) => (
-                              <Link
-                                href={`/users/${item.id}`}
-                                key={index}
-                                className="bg-cyan-500 hover:bg-cyan-600 hover:scale-105 dark:bg-cyan-500   text-white border border-cyan-200 text-[13px] px-4 py-1.5 rounded-full text-nowrap capitalize"
-                              >
-                          
-                               {item.firstName} {item.lastName}{" "}
-                              </Link>
-                            ))}</td>
+                       <td
+                            data-manager-cell
+                          className={`p-4 flex gap-1 max-w-60 flex-wrap relative cursor-pointer`}
+                          onClick={() =>
+                            setExpandedManager((prev) =>
+                              prev === item.id ? null : item.id
+                            )
+                          }
+                        >
+                          {(expandedManager === item.id
+                            ? item?.manager
+                            : item?.manager?.slice(0, 3)
+                          )?.map((manager, index) => (
+                            <Link
+                              href={`/users/${manager.id}`}
+                              key={manager.id ?? index}
+                              onClick={(e) => e.stopPropagation()}
+                              className="bg-cyan-500 hover:bg-cyan-600 hover:scale-105
+                                        dark:bg-cyan-500 text-white border border-cyan-200
+                                        text-[13px] px-2 py-1.5 rounded-full text-nowrap
+                                        capitalize z-30"
+                            >
+                              {manager.firstName} {manager.lastName}
+                            </Link>
+                          ))}
+
+                          {item?.manager?.length > 3 && expandedManager !== item.id && (
+                            <>
+                            <span className="flex items-end">...</span>
+                            <span className="  text-gray-700
+                                            dark:text-gray-200 text-[13px] flex items-end  
+                                            ">
+                              +{item.manager.length - 3} more
+                            </span>
+                            </>
+                          )}
+                        </td>
 
 
                         <td className="p-4">
@@ -818,19 +856,44 @@ getCategoryData();
                           </div>
                         </td>
 
-                        <td className="flex max-w-50 overflow-scroll p-4">
-                            {item?.members?.map((item, index) => (
-                              ( item.firstName ) && (
-                                <Link
-                                href={`/users/${item.id}`}
-                                key={index}
-                                className="bg-cyan-500 hover:bg-cyan-600 hover:scale-105 dark:bg-cyan-500   text-white border border-cyan-200 text-[13px] px-4 py-1.5 rounded-full text-nowrap capitalize"
-                              >
-                                {" "}
-                                {item.firstName} {item.lastName}{" "}
-                              </Link>)
-                            ))}
-                        </td>
+                      <td
+  data-member-cell
+  onClick={() => {
+    setExpandedMember((prev) =>
+      prev === item.id ? null : item.id
+    );
+  }}
+  className="p-4 flex gap-1 max-w-60 flex-wrap relative cursor-pointer"
+>
+  {(expandedMember === item.id
+    ? item?.members
+    : item?.members?.slice(0, 3)
+  )?.map((member, index) => (
+    <Link
+      href={`/users/${member.id}`}
+      key={member.id ?? index}
+      onClick={(e) => e.stopPropagation()}
+      className="bg-cyan-500 hover:bg-cyan-600
+                 hover:scale-105 dark:bg-cyan-500
+                 text-white border border-cyan-200
+                 text-[13px] px-4 py-1.5 rounded-full
+                 text-nowrap capitalize"
+    >
+      {member.firstName} {member.lastName}
+    </Link>
+  ))}
+
+  {item?.members?.length > 3 &&
+    expandedMember !== item.id && (
+      <>
+        <span>...</span>
+
+        <span className="text-gray-700 dark:text-gray-200">
+          +{item.members.length - 3} more
+        </span>
+      </>
+    )}
+</td>
                         {/* <td className="p-4">
                           {" "}
                           <span className="bg-cyan-500 text-white px-3 py-1 rounded-full text-[14px]">
