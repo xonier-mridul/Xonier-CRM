@@ -839,8 +839,8 @@ getCategoryData();
 
                           {item?.manager?.length > 3 && expandedManager !== item.id && (
                             <>
-                            <span className="flex items-end">...</span>
-                            <span className="  text-gray-700
+                            <span className="flex items-end  text-slate-400">...</span>
+                            <span className="  text-slate-400
                                             dark:text-gray-200 text-[13px] flex items-end  
                                             ">
                               +{item.manager.length - 3} more
@@ -857,43 +857,44 @@ getCategoryData();
                         </td>
 
                       <td
-  data-member-cell
-  onClick={() => {
-    setExpandedMember((prev) =>
-      prev === item.id ? null : item.id
-    );
-  }}
-  className="p-4 flex gap-1 max-w-60 flex-wrap relative cursor-pointer"
->
-  {(expandedMember === item.id
-    ? item?.members
-    : item?.members?.slice(0, 3)
-  )?.map((member, index) => (
-    <Link
-      href={`/users/${member.id}`}
-      key={member.id ?? index}
-      onClick={(e) => e.stopPropagation()}
-      className="bg-cyan-500 hover:bg-cyan-600
-                 hover:scale-105 dark:bg-cyan-500
-                 text-white border border-cyan-200
-                 text-[13px] px-4 py-1.5 rounded-full
-                 text-nowrap capitalize"
-    >
-      {member.firstName} {member.lastName}
-    </Link>
-  ))}
+                          data-member-cell
+                          onClick={() => {
+                            setExpandedMember((prev) =>
+                              prev === item.id ? null : item.id
+                            );
+                          }}
+                          className="p-4 flex gap-1 max-w-60 flex-wrap relative cursor-pointer"
+                        >
+                          {(expandedMember === item.id
+                            ? item?.members
+                            : item?.members?.slice(0, 3)
+                          )?.map((member, index) => (
+                            <Link
+                              href={`/users/${member.id}`}
+                              key={member.id ?? index}
+                              onClick={(e) => e.stopPropagation()}
+                              className="bg-cyan-500 hover:bg-cyan-600
+                                        hover:scale-105 dark:bg-cyan-500
+                                        text-white border border-cyan-200
+                                        text-[13px] px-2 py-1.5 rounded-full
+                                        text-nowrap capitalize"
+                            >
+                              {member.firstName} {member.lastName}
+                            </Link>
+                          ))}
 
-  {item?.members?.length > 3 &&
-    expandedMember !== item.id && (
-      <>
-        <span>...</span>
-
-        <span className="text-gray-700 dark:text-gray-200">
-          +{item.members.length - 3} more
-        </span>
-      </>
-    )}
-</td>
+                          {item?.members?.length > 3 &&
+                            expandedMember !== item.id && (
+                              <>
+                                 <span className="flex items-end text-slate-400">...</span>
+                            <span className="  
+                                            dark:text-gray-200 text-[13px]  text-slate-400 flex items-end  
+                                            ">
+                                  +{item.members.length - 3} more
+                                </span>
+                              </>
+                            )}
+                        </td>
                         {/* <td className="p-4">
                           {" "}
                           <span className="bg-cyan-500 text-white px-3 py-1 rounded-full text-[14px]">

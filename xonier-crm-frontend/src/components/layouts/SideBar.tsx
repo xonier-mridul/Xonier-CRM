@@ -91,7 +91,7 @@ const SideBar = () => {
       setOpenMenu("company");
     }
     if (pathname.startsWith("/roles")) {
-      setOpenMenu("team");
+      setOpenMenu("user");
     }
     
     if (pathname.startsWith("/enquiry")) {
@@ -147,9 +147,9 @@ const SideBar = () => {
   const isMenuActive = (menu: string) => {
     switch (menu) {
       case "team":
-        return pathname.startsWith("/teams") ||
+        return pathname.startsWith("/teams")
           
-          pathname.startsWith("/roles");
+         
         case "plans":
           return pathname.startsWith("/plans") ||
           pathname.startsWith("/subscriptions")
@@ -167,7 +167,7 @@ const SideBar = () => {
           pathname.startsWith("/deals") ||
           pathname.startsWith("/quotations") ||
           pathname.startsWith("/invoice");
-      case "user": return pathname.startsWith("/users") || pathname.startsWith("/deleteduser")
+      case "user": return pathname.startsWith("/users") || pathname.startsWith("/deleteduser") || pathname.startsWith("/roles");
       case "prospects":
         return pathname.startsWith("/prospects");
       case "emailManagement":
@@ -183,6 +183,12 @@ const SideBar = () => {
   const handleClick =()=>{
     setActiveDashboard(!activeDashboard)
   }
+
+console.log("new",auth.user);
+console.log("second",auth.isAdmin);
+const isCompanyAdmin = auth.user?.userRole?.some(
+  (role) => role.code === "COMPANY_ADMIN"
+);
 
   return (
     <div className={`fixed top-0 left-0 w-72 p-6 z-100  ${activeDashboard ?'translate-x-0':'-translate-x-70 lg:translate-x-0'}   transition-all duration-300 bg-slate-50 h-screen dark:bg-gray-800 flex flex-col gap-6 border border-slate-900/15 dark:border-gray-700 `}>
@@ -629,6 +635,17 @@ const SideBar = () => {
                         {t("users")}
                       </Link>
                     </li>}
+                    {hasPermission(PERMISSIONS.readRole) && <li>
+                      <Link
+                        href="/roles"
+                        className={`${isActive("/roles")
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          : "border-l-2 border-transparent"
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                      >
+                        {t("roles")}
+                      </Link>
+                    </li>}
                     {
                       hasPermission(PERMISSIONS.deletedUserView) && <li>
                         <Link
@@ -678,17 +695,7 @@ const SideBar = () => {
                     transition={{ duration: 0.25 }}
                     className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
                   >
-                    {hasPermission(PERMISSIONS.readRole) && <li>
-                      <Link
-                        href="/roles"
-                        className={`${isActive("/roles")
-                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
-                          : "border-l-2 border-transparent"
-                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
-                      >
-                        {t("roles")}
-                      </Link>
-                    </li>}
+                    
                     {(hasPermission(PERMISSIONS.readTeamCategory) && !auth.isAdmin ) && <li>
                       <Link
                         href="/teams/categories"
@@ -995,9 +1002,14 @@ const SideBar = () => {
           <h2 className=" text-xs text-gray-500 dark:text-gray-400 pl-3">
             {t("setting")}
           </h2>
-
-            <Link
-                href="/companySetting"
+          {
+            (isCompanyAdmin) &&(
+                  <Link
+                  href={`/companySetting/${
+    typeof auth.user?.companyId === "string"
+      ? auth.user.companyId
+      : auth.user?.companyId?.id
+  }`}
                 className={`${isActive("/companySetting")
                   ? " dark:text-cyan-300 text-cyan-700   border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"
@@ -1010,6 +1022,11 @@ const SideBar = () => {
                {t("company_setting")}
 
               </Link>
+
+            )
+          }
+
+        
               <Link
                 href="/setting"
                 className={`${isActive("/setting")
@@ -1042,25 +1059,25 @@ const SideBar = () => {
             </li>
             <li>
              <div
-  onClick={() => router.push(`/users/${auth?.user?.id}`)}
-  className={`${
-    isActive("/profile")
-      ? "dark:text-cyan-300 text-cyan-700 border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
-      : "border-l-2 border-transparent"
-  } w-full flex items-center cursor-pointer gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all capitalize`}
->
-  <span
-    className={`${
-      isActive("/profile")
-        ? "bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400 w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl"
-        : ""
-    }`}
-  >
-    <FaRegUser className="text-lg" />
-  </span>
+                  onClick={() => router.push(`/users/${auth?.user?.id}`)}
+                  className={`${
+                    isActive("/profile")
+                      ? "dark:text-cyan-300 text-cyan-700 border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                      : "border-l-2 border-transparent"
+                  } w-full flex items-center cursor-pointer gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all capitalize`}
+                >
+                  <span
+                    className={`${
+                      isActive("/profile")
+                        ? "bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400 w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl"
+                        : ""
+                    }`}
+                  >
+                    <FaRegUser className="text-lg" />
+                  </span>
 
-  {t("profile")}
-</div>
+                  {t("profile")}
+                </div>
             </li>
             <li>
               <Link

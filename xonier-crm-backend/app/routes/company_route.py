@@ -72,7 +72,7 @@ async def get_by_id(request: Request, company_id: str):
     return await controller.get_by_id(request=request, company_id=company_id)
 
 
-@router.patch("/{company_id}", dependencies=admin_only)
+@router.patch("/{company_id}", dependencies=authorized)
 async def update(request: Request, company_id: str, payload: CompanyUpdateSchema):
     return await controller.update(request=request, company_id=company_id, payload=payload)
 
