@@ -20,17 +20,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`mt-${MARGIN_TOP} p-6 bg-stone-50 dark:bg-gray-800`}
-      >
-        {/* <ReduxProvider> */}
-        <SideBar/>
-        <NavBar/>
-        {children}
-        {/* </ReduxProvider> */}
-        
-      </body>
-    </html>
+    <div
+      className={`mt-${MARGIN_TOP} p-6 bg-stone-50 dark:bg-gray-800`}
+    >
+      {/* <ReduxProvider> */}
+      <SideBar/>
+      <NavBar/>
+      {children}
+      {/* </ReduxProvider> */}
+      
+    </div>
   );
 }

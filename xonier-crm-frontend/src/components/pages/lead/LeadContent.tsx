@@ -101,6 +101,8 @@ const LeadContent = (): JSX.Element => {
   const [assignedTotalPages, setAssignedTotalPages] = useState<number>(1);
   const [searchVal, setSearchVal] = useState<string>("");
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const isFilterFetchReady = useRef<boolean>(false);
+  const filterFetchReadyTimer = useRef<NodeJS.Timeout | null>(null);
   const [dateFilter, setDateFilter] = useState<DateFilter>({ fromDate: "", toDate: "" });
   const [assignFilter, setAssignFilter] = useState<string>("");
 
@@ -175,8 +177,8 @@ const LeadContent = (): JSX.Element => {
     ? baseLeadData
     : baseLeadData.filter((item) => item.createdBy?.id === salesPersonFilter);
 
-  const getLeadData = async (): Promise<void> => {
-    setIsLoading(true);
+  const getLeadData = async (showLoading = true): Promise<void> => {
+    if (showLoading) setIsLoading(true);
     try {
       const result = await LeadService.getAll(currentPage, pageLimit, getLeadFilters());
       if (result.status === 200) {
@@ -191,12 +193,12 @@ const LeadContent = (): JSX.Element => {
       if (axios.isAxiosError(error)) setErr(extractErrorMessages(error));
       else setErr(["Something went wrong"]);
     } finally {
-      setIsLoading(false);
+      if (showLoading) setIsLoading(false);
     }
   };
 
-  const getWonLeadData = async (): Promise<void> => {
-    setIsLoading(true);
+  const getWonLeadData = async (showLoading = true): Promise<void> => {
+    if (showLoading) setIsLoading(true);
     try {
       const result = await LeadService.getAll(currentWonPage, wonPageLimit, {
         ...getLeadFilters(),
@@ -214,12 +216,12 @@ const LeadContent = (): JSX.Element => {
       if (axios.isAxiosError(error)) setErr(extractErrorMessages(error));
       else setErr(["Something went wrong"]);
     } finally {
-      setIsLoading(false);
+      if (showLoading) setIsLoading(false);
     }
   };
 
-  const getLostLeadData = async (): Promise<void> => {
-    setIsLoading(true);
+  const getLostLeadData = async (showLoading = true): Promise<void> => {
+    if (showLoading) setIsLoading(true);
     try {
       const result = await LeadService.getAll(currentLostPage, lostPageLimit, {
         ...getLeadFilters(),
@@ -237,12 +239,12 @@ const LeadContent = (): JSX.Element => {
       if (axios.isAxiosError(error)) setErr(extractErrorMessages(error));
       else setErr(["Something went wrong"]);
     } finally {
-      setIsLoading(false);
+      if (showLoading) setIsLoading(false);
     }
   };
 
-  const getAssignedLeadData = async (): Promise<void> => {
-    setIsLoading(true);
+  const getAssignedLeadData = async (showLoading = true): Promise<void> => {
+    if (showLoading) setIsLoading(true);
     try {
       const result = await LeadService.getAll(currentAssignedPage, assignedPageLimit, {
         ...getLeadFilters(),
@@ -261,7 +263,7 @@ const LeadContent = (): JSX.Element => {
       if (axios.isAxiosError(error)) setErr(extractErrorMessages(error));
       else setErr(["Something went wrong"]);
     } finally {
-      setIsLoading(false);
+      if (showLoading) setIsLoading(false);
     }
   };
 
@@ -292,18 +294,31 @@ const LeadContent = (): JSX.Element => {
     }
   };
 
+  // Load only the active table. The previous eager approach issued four lead
+  // queries on mount; a slow background query could leave the visible table in
+  // its skeleton state even when its own data was ready.
   useEffect(() => {
-    getLeadData();
-  }, [currentPage, pageLimit]);
-  useEffect(() => {
-    getWonLeadData();
-  }, [currentWonPage, wonPageLimit]);
-  useEffect(() => {
-    getLostLeadData();
-  }, [currentLostPage, lostPageLimit]);
-  useEffect(() => {
-    getAssignedLeadData();
-  }, [currentAssignedPage, assignedPageLimit, assignFilter]);
+    if (currentTab === TAB.ALL) {
+      getLeadData(true);
+    } else if (currentTab === TAB.WON) {
+      getWonLeadData(true);
+    } else if (currentTab === TAB.LOST) {
+      getLostLeadData(true);
+    } else {
+      getAssignedLeadData(true);
+    }
+  }, [
+    currentTab,
+    currentPage,
+    pageLimit,
+    currentWonPage,
+    wonPageLimit,
+    currentLostPage,
+    lostPageLimit,
+    currentAssignedPage,
+    assignedPageLimit,
+    assignFilter,
+  ]);
   useEffect(() => {
     getUserData();
     getTeamData();
@@ -396,7 +411,7 @@ const isIndeterminate =
           console.info("Skipped:", skippedRecords);
         }
         clearAssignSelection();
-        await Promise.all([getLeadData(), getAssignedLeadData()]);
+        await Promise.all([getLeadData(true), getAssignedLeadData(false)]);
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
@@ -554,9 +569,6 @@ const isIndeterminate =
     setCurrentTab(no);
     clearAssignSelection();
     clearReassignSelection();
-    if (no === TAB.WON) await getWonLeadData();
-    if (no === TAB.LOST) await getLostLeadData();
-    if (no === TAB.ASSIGNED) await getAssignedLeadData();
   };
 
   const handlePageLimit = (val: number): void => {
@@ -643,6 +655,21 @@ const isIndeterminate =
 
   // ✅ SINGLE effect — refetch whenever any filter changes
   useEffect(() => {
+    // Page-specific effects load the initial data. Defer filter fetching until
+    // after mount so React Strict Mode cannot create a duplicate active-table
+    // request before the first table response settles.
+    if (!isFilterFetchReady.current) {
+      filterFetchReadyTimer.current = setTimeout(() => {
+        isFilterFetchReady.current = true;
+      }, 0);
+
+      return () => {
+        if (filterFetchReadyTimer.current) {
+          clearTimeout(filterFetchReadyTimer.current);
+        }
+      };
+    }
+
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
@@ -1259,7 +1286,6 @@ const isIndeterminate =
               <table className="w-full rounded-xl overflow-hidden">
                 <thead>
                   <tr className="w-full border-b-2 border-zinc-300 dark:border-zinc-400  bg-slate-200 dark:bg-gray-800">
-                    <div>
                    {hasPermission(PERMISSIONS.assignLead) &&
                     currentTab === TAB.ALL &&
                     assignableLeads.length > 0 && (
@@ -1282,7 +1308,6 @@ const isIndeterminate =
                         </label>
                       </th>
                     )}
-                    </div>
                     {[
                       "client_info",
                       "phone",
