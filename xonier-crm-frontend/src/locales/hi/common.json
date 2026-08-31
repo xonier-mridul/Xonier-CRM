@@ -242,6 +242,9 @@
   "table_category": "श्रेणी",
   "table_status": "स्थिति",
     "team_cat": "टीम श्रेणी",
+
+  "no_notifications_match_filters": "कोई भी सूचना आपके फ़िल्टर से मेल नहीं खाती",
+  "clear_filters_to_see_all": "सभी सूचनाएँ देखने के लिए फ़िल्टर साफ़ करें",
   "remove_all": "सभी हटाएँ",
   "table_priority": "प्राथमिकता",
   "table_assigned": "असाइन किया गया",

@@ -187,7 +187,7 @@ function CategoryModal({
                                     type="button"
                                     onClick={() => setFormData((prev) => ({ ...prev, icon: ic }))}
                                     className={`w-9 h-9 rounded-lg border ${selectedIcon === ic
-                                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30"
+                                        ? "border-cyan-500 bg-cyan-50 dark:bg-cyan-900/30"
                                         : "border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700"
                                         }`}
                                 >
@@ -233,7 +233,7 @@ function CategoryModal({
                     <button
                         disabled={isLoading}
                         onClick={isEdit ? handleUpdate : handleSubmit}
-                        className="px-5 py-2 rounded-xl text-sm text-white bg-blue-600 disabled:opacity-50"
+                        className="px-5 py-2 rounded-xl text-sm text-white bg-cyan-600 disabled:opacity-50"
                     >
                         {isLoading ? "Loading..." : isEdit ? "Save" : "Create"}
                     </button>

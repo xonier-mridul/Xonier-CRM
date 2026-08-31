@@ -98,7 +98,7 @@ await CompanyService.softDelete(companyId);
   };
 
   return (
-    <div className="mt-10 lg:ml-72 min-h-screen p-6">
+    <div className="mt-10 lg:ml-72 min-h-screen p-6 overflow-scroll">
       <CompanyViewTable
         companyData={companiesData}
         isLoading={isLoading}

@@ -888,20 +888,20 @@ const handleEveningSubmit = async () => {
               </h1>
             </div>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-  {new Date().toLocaleDateString(
-    i18n.language === "hi"
-      ? "hi-IN"
-      : i18n.language === "pt" || i18n.language === "po"
-      ? "pt-BR" // Use Brazilian Portuguese instead of Portugal Portuguese
-      : "en-GB",
-    {
-      weekday: "long",
-      day: "2-digit", 
-      month: "long",
-      year: "numeric",
-    }
-  )}
-</p>
+              {new Date().toLocaleDateString(
+                i18n.language === "hi"
+                  ? "hi-IN"
+                  : i18n.language === "pt" || i18n.language === "po"
+                  ? "pt-BR" // Use Brazilian Portuguese instead of Portugal Portuguese
+                  : "en-GB",
+                {
+                  weekday: "long",
+                  day: "2-digit", 
+                  month: "long",
+                  year: "numeric",
+                }
+              )}
+            </p>
           </div>
         </div>
 
@@ -1299,7 +1299,7 @@ const handleEveningSubmit = async () => {
                 />
               </div>
               <div className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
-                <FieldLabel>{t("tomorrow_apos_s_plan")}</FieldLabel>
+                <FieldLabel>{t("tomorrow_s_plan")}</FieldLabel>
                 <TextArea
                   value={tomorrowPlan}
                   onChange={setTomorrowPlan}

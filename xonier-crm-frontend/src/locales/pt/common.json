@@ -2293,6 +2293,8 @@
   "all_actions": "Todas as Ações",
   "all_companies": "Todas as Empresas",
    "team_cat": "Categoria da Equipe",
+   "no_notifications_match_filters": "Nenhuma notificação corresponde aos seus filtros",
+  "clear_filters_to_see_all": "Limpe os filtros para ver todas as notificações",
   "remove_all": "Remover tudo",
   "all_companies_loaded": "Todas as empresas carregadas",
   "all_entities": "Todas as Entidades",

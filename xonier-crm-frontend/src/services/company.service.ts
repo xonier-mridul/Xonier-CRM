@@ -67,6 +67,8 @@ const CompanyService = {
   softDelete: (companyId: string): Promise<ApiResponse<MessageResponse>> =>
     api.delete(`/companies/${companyId}`),
 
+  Delete:(companyId:string):Promise<ApiResponse<MessageResponse>> => api.delete(`/companies/${companyId}`),
+
   restore: (companyId: string): Promise<ApiResponse<MessageResponse>> =>
     api.patch(`/companies/${companyId}/restore`),
 

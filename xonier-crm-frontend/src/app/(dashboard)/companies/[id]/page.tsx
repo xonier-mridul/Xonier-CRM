@@ -269,7 +269,7 @@ export default function CompanyDetailPage() {
 
   return (
     <div className="mt-10 ml-72 min-h-screen p-6 bg-slate-50 dark:bg-gray-900">
-      <div className="max-w-6xl mx-auto flex flex-col gap-6">
+      <div className="w-full mx-auto flex flex-col gap-6">
 
         {/* Breadcrumb + Back */}
         <div className="flex items-center gap-2 text-sm text-slate-400 dark:text-gray-500">

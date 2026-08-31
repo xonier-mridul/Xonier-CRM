@@ -87,7 +87,8 @@ const SideBar = () => {
     if (pathname.startsWith("/plans") || pathname.startsWith("/subscriptions")) {
       setOpenMenu("plans");
     }
-    if (pathname.startsWith("/companies") || pathname.startsWith("/companies/create")) {
+    if (pathname.startsWith("/companies") || pathname.startsWith("/companies/create") || 
+    pathname.startsWith("deletedCompanies"))  {
       setOpenMenu("company");
     }
     if (pathname.startsWith("/roles")) {
@@ -159,7 +160,8 @@ const SideBar = () => {
 
           case "company":
           return pathname.startsWith("/companies") ||
-          pathname.startsWith("/companies/create")
+          pathname.startsWith("/companies/create") || 
+    pathname.startsWith("deletedCompanies")
 
       case "sales":
         return pathname.startsWith("/enquiry") ||
@@ -310,11 +312,11 @@ const isCompanyAdmin = auth.user?.userRole?.some(
                       <Link
                         href="/prospects/people"
                         className={`${isActive("/prospects/people")
-                          ? "text-cyan-700 dark:text-cyan-300 bg-cyan-600/5 border-l-2 border-cyan-600 dark:border-cyan-400"
+                          ? "dark:text-cyan-300 text-cyan-700   border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                                                         {t("people")}
+                         {t("people")}
 
                         
                       </Link>
@@ -325,11 +327,11 @@ const isCompanyAdmin = auth.user?.userRole?.some(
                         <Link
                           href="/prospects/company"
                           className={`${isActive("/prospects/company")
-                            ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                            ? "dark:text-cyan-300 text-cyan-700  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                             : "border-l-2 border-transparent"
                             } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                         >
-                                                                                   {t("company")}
+                         {t("company")}
 
                           
                         </Link>
@@ -487,6 +489,17 @@ const isCompanyAdmin = auth.user?.userRole?.some(
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
                         {t("create_companies")}
+                      </Link>
+                    </li>}
+                    { <li>
+                      <Link
+                        href="/deletedCompanies"
+                        className={`${isActive("/deletedCompanies")
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          : "border-l-2 border-transparent"
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                      >
+                        {t("deleted_companies")}
                       </Link>
                     </li>}
                     
