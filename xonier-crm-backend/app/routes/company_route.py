@@ -8,6 +8,7 @@ from app.schemas.company_schema import (
     CompanyFilterSchema,
     VerifyCompanyOtpSchema,
     ResendOtpSchema,
+    CompanyUserFilterSchema,
 )
 from app.core.enums import COMPANY_STATUS, COUNTRY_CODE, NUMBER_OF_EMPLOYEES
 from app.core.dependencies import Dependencies
@@ -17,11 +18,18 @@ router = APIRouter()
 dependencies = Dependencies()
 controller = CompanyController()
 
-admin_only = [Depends(dependencies.authorized), Depends(dependencies.onlyForAdmin), Depends(dependencies.company_context)]
+admin_only = [
+    Depends(dependencies.authorized),
+    Depends(dependencies.onlyForAdmin),
+    Depends(dependencies.company_context),
+]
 
-authorized = [Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context)]
+authorized = [
+    Depends(dependencies.authorized),
+    Depends(dependencies.company_active),
+    Depends(dependencies.company_context),
+]
 public = []
-
 
 
 @router.post("/register", status_code=201, dependencies=public)
@@ -37,7 +45,6 @@ async def verify_otp(request: Request, payload: VerifyCompanyOtpSchema):
 @router.post("/resend-otp", dependencies=public)
 async def resend_otp(request: Request, payload: ResendOtpSchema):
     return await controller.resend_otp(request=request, payload=payload)
-
 
 
 @router.post("/", status_code=201, dependencies=admin_only)
@@ -61,10 +68,61 @@ async def get_all(
     companySize: Optional[NUMBER_OF_EMPLOYEES] = Query(None),
 ):
     filters = CompanyFilterSchema(
-        page=page, limit=limit, search=search,
-        status=status, country=country, companySize=companySize,
+        page=page,
+        limit=limit,
+        search=search,
+        status=status,
+        country=country,
+        companySize=companySize,
     )
     return await controller.get_all(request=request, filters=filters)
+
+
+@router.get(
+    "/{company_id}/users",
+    dependencies=[
+        Depends(dependencies.authorized),
+        Depends(dependencies.permissions(["company_user:read"])),
+        Depends( dependencies.company_active),
+        Depends(dependencies.company_context),
+    ],
+)
+async def get_all_companies_users(
+    request: Request,
+    company_id: str,
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100),
+    search: Optional[str] = Query(None),
+    status: Optional[COMPANY_STATUS] = Query(None),
+):
+    filters = CompanyUserFilterSchema(
+        page=page, limit=limit, search=search, status=status
+    )
+
+    return await controller.get_all_companies_users(
+        request=request, companyId=company_id, filters=filters
+    )
+
+
+@router.get("/deleted", dependencies=admin_only)
+async def get_all_deleted(
+    request: Request,
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100),
+    search: Optional[str] = Query(None),
+    status: Optional[COMPANY_STATUS] = Query(None),
+    country: Optional[COUNTRY_CODE] = Query(None),
+    companySize: Optional[NUMBER_OF_EMPLOYEES] = Query(None),
+):
+    filters = CompanyFilterSchema(
+        page=page,
+        limit=limit,
+        search=search,
+        status=status,
+        country=country,
+        companySize=companySize,
+    )
+    return await controller.get_all_deleted(request=request, filters=filters)
 
 
 @router.get("/{company_id}", dependencies=authorized)
@@ -74,15 +132,20 @@ async def get_by_id(request: Request, company_id: str):
 
 @router.patch("/{company_id}", dependencies=admin_only)
 async def update(request: Request, company_id: str, payload: CompanyUpdateSchema):
-    return await controller.update(request=request, company_id=company_id, payload=payload)
+    return await controller.update(
+        request=request, company_id=company_id, payload=payload
+    )
 
 
 @router.patch("/{company_id}/status", dependencies=admin_only)
 async def update_status(
-    request: Request, company_id: str,
+    request: Request,
+    company_id: str,
     status: COMPANY_STATUS = Query(...),
 ):
-    return await controller.update_status(request=request, company_id=company_id, status=status)
+    return await controller.update_status(
+        request=request, company_id=company_id, status=status
+    )
 
 
 @router.delete("/{company_id}", dependencies=admin_only)

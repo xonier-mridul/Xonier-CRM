@@ -7,6 +7,7 @@ from difflib import SequenceMatcher
 from beanie.operators import Or
 from typing import Dict, Any, List
 from app.utils.otp_manager import generate_otp
+from app.utils.get_team_members import GetTeamMembers
 
 
 
@@ -55,7 +56,7 @@ from app.utils.validate_admin import (
     validate_company_admin,
     validate_admin_company_admin,
 )
-from app.utils.get_team_members import GetTeamMembers
+
 from app.utils.activity_payload import activity_payload
 from app.core.tenant import system_query
 from app.utils.validate_admin import validate_admin
@@ -305,13 +306,28 @@ class AuthServices:
         try:
             is_admin = validate_admin(user["userRole"])
             is_com_admin = validate_company_admin(user["userRole"])
-
-            if not is_admin and not is_com_admin:
-                raise AppException(
-                    403, "Unauthorized, only admin can access deleted users"
-                )
+            is_manager = False
 
             query = {"status": USER_STATUS.DELETED.value}
+
+            if not is_admin and not is_com_admin:
+            
+                
+                members = await self.get_team_members.get_team_members(user["_id"])
+                
+                obj_members = [PydanticObjectId(item) for item in members]
+                
+                if members:
+                    query.update({
+                            "$or": [
+                                {"_id": {"$in": obj_members}},
+                                {"id": PydanticObjectId(user["_id"])},
+                            ]
+                        })
+                    is_manager = True
+
+            
+
 
             if "search" in filters and filters["search"].strip():
                 search_regex = {"$regex": filters["search"].strip(), "$options": "i"}
@@ -365,6 +381,12 @@ class AuthServices:
 
                 if date_filter:
                     query["deletedAt"] = date_filter
+
+            if not is_admin and not is_com_admin and not is_manager:
+                raise AppException(
+                    403, "Unauthorized, only Company admin and manager can access deleted users"
+                )
+
 
             result = await self.repo.get_all(
                 page=page,
@@ -761,7 +783,7 @@ class AuthServices:
             is_admin = validate_admin(user["userRole"])
             is_company_admin = validate_company_admin(user["userRole"])
 
-
+            is_new_company_admin = False
             is_user_exist = await self.repo.find_user_by_hashMail(
                 hashMail=hashed_email, populate=["userRole"], session=session
             )
@@ -781,6 +803,16 @@ class AuthServices:
                         "Super admin user creation is invalid, please use different role",
                     )
 
+                if not is_admin and get_role.code == COMPANY_ADMIN_CODE:
+                    raise AppException(
+                        400,
+                        "Company admin user only created by super admin"
+                    )
+
+                if get_role.code == COMPANY_ADMIN_CODE:
+                    is_new_company_admin = True
+
+
             userModel = await self.repo.find_by_id(id=user["_id"], session=session)
 
             if not userModel:
@@ -794,10 +826,15 @@ class AuthServices:
                 companyId = userModel.companyId if userModel.companyId else None
 
 
-            company = await self.companyRepo.find_by_id(id=companyId, populate=["subscription"])
+            company = await self.companyRepo.find_by_id(id=companyId, populate=["subscription", "primary_admin"])
 
             if not company:
                 raise AppException(400, "Company not found")
+
+
+
+            if company.primary_admin.id and is_new_company_admin:
+                raise AppException(400, "Company admin role already exist")
 
 
             if company.status == COMPANY_STATUS.DELETED or company.status == COMPANY_STATUS.INACTIVE or company.status == COMPANY_STATUS.SUSPENDED or company.status == COMPANY_STATUS.PENDING_VERIFICATION:
@@ -806,7 +843,7 @@ class AuthServices:
             user_count = await self.repo.get_user_count_by_company_id(companyId=company.id)
 
 
-            if int(user_count) >= int(company.userLimit):
+            if company.userLimit and int(user_count or 0) >= int(company.userLimit or 0):
                 raise AppException(400, "User limit exceeded")
 
 
@@ -960,8 +997,6 @@ class AuthServices:
 
         finally:
             await session.end_session()
-
-
 
 
     async def login(self, data: Dict[str, Any]):
@@ -1730,18 +1765,24 @@ class AuthServices:
     async def soft_delete(self, userId: PydanticObjectId, user: Dict[str, Any]):
         session = await self.client.start_session()
         try:
-            is_admin=  validate_admin(user["userRole"])
+            is_admin =  validate_admin(user["userRole"])
             is_company_admin = validate_company_admin(user["userRole"])
+            is_manager = False
+            is_own = False
 
             session.start_transaction()
-            print("one")
-            user = await self.repo.find_by_id(userId, ["userRole"], session=session)
 
-            if not user:
+            db_user = await self.repo.find_by_id_with_project(userId, ["userRole"], session=session)
+
+            if not db_user:
                 raise AppException(404, "User not found")
-            print("two", user)
-            roles = jsonable_encoder(user.userRole)
-            print("three: ", roles)
+
+            # if not db_user
+
+            roles = jsonable_encoder(db_user.userRole)
+
+
+
             for item in roles:
                 if item["code"] == SUPER_ADMIN_CODE:
                     raise AppException(400, "Super Admin user deletion not allowed")
@@ -1752,17 +1793,31 @@ class AuthServices:
                         "Company Admin user deletion not allowed, please delete company direct",
                     )
 
-            if user.status == USER_STATUS.DELETED.value:
+            if db_user.status == USER_STATUS.DELETED.value:
                 raise AppException(400, "User already deleted")
 
-     
+            if not is_admin or not is_company_admin:
+                is_manager =  await self.get_team_members.get_team_members(user["_id"])
+
+
+                if is_manager and ObjectId(db_user.id) in is_manager:
+                    print("manager")
+                    is_manager = True
+
+                elif(ObjectId(db_user.id) == ObjectId(user["_id"])): 
+                    is_own = True
+
+            if not is_admin and not is_company_admin and not is_manager and not is_own:
+                raise AppException(400, "Operation denied, you are not authorized person for delete this user")
+
+            
 
             updatedUser = await self.repo.update(
                 userId,
                 {
                     "status": USER_STATUS.DELETED,
-                    "updatedBy": user,
-                    "deletedBy": user,
+                    "updatedBy": DBRef(collection="users", id=ObjectId(user["_id"])),
+                    "deletedBy": DBRef(collection="users", id=ObjectId(user["_id"])),
                     "deletedAt": datetime.now(timezone.utc),
                 },
                 session=session,
@@ -1773,7 +1828,7 @@ class AuthServices:
 
             await session.commit_transaction()
 
-            return jsonable_encoder(obj=user, exclude={"password", "refreshToken"})
+            return jsonable_encoder(obj=db_user, exclude={"password", "refreshToken"})
 
         except AppException as e:
             await session.abort_transaction()
@@ -2121,8 +2176,6 @@ class AuthServices:
 
             raise AppException(status_code=500, message="internal server error")
 
-
-
     async def forgot_password(self, payload: Dict[str,Any])->bool:
         try:
             hash_mail = hash_value(payload.get("email"))
@@ -2184,7 +2237,6 @@ class AuthServices:
         except Exception as e:
         
             raise AppException(status_code=500, message=f"internal server error: {e}")
-
 
     async def verify_forgot_pass_otp(self, payload:  Dict[str, Any], userIp: str = None, userAgent: str = None)->bool:
         async with await self.client.start_session() as session:
@@ -2254,16 +2306,19 @@ class AuthServices:
                         
                     raise AppException(status_code=500, message=f"internal server error: {e}")
         
-
     async def restore_user(self, userId: PydanticObjectId, user: Dict[str, Any]):
         session = await self.client.start_session()
         try:
             session.start_transaction()
 
             is_admin = validate_admin_company_admin(user["userRole"])
+            is_manager = False
 
             if not is_admin:
-                raise AppException(403, "Unauthorized, only admin can restore users")
+                members = await self.get_team_members.get_team_members(user["_id"])
+            
+                if userId in members:
+                    is_manager = True
 
             target_user = await self.repo.find_by_id(
                 userId, ["userRole"], session=session
@@ -2277,13 +2332,16 @@ class AuthServices:
                     400, "User is not deleted, only deleted users can be restored"
                 )
 
+            if not is_admin and not is_manager:
+                raise AppException(403, "Unauthorized, You are unauthorized person to perform this task")
+
             updated = await self.repo.update(
                 userId,
                 {
                     "status": USER_STATUS.ACTIVE,
                     "deletedBy": None,
                     "deletedAt": None,
-                    "updatedBy": DBRef(collection="users", id=user["_id"]),
+                    "updatedBy": DBRef(collection="users", id=ObjectId(user["_id"])),
                     "updatedAt": datetime.now(timezone.utc),
                 },
                 session=session,
@@ -2336,13 +2394,10 @@ class AuthServices:
         try:
             session.start_transaction()
 
-            is_admin = validate_admin(user["userRole"])
-
-            if not is_admin:
-                raise AppException(403, "Unauthorized, only admin can restore users")
+            is_admin = validate_admin_company_admin(user["userRole"])
+            is_manager = False
 
             user_ids = payload.get("userIds", [])
-
             if not user_ids:
                 raise AppException(400, "userIds are required")
 
@@ -2351,6 +2406,16 @@ class AuthServices:
                     raise AppException(400, f"Invalid user ObjectId: {uid}")
 
             user_object_ids = [PydanticObjectId(uid) for uid in user_ids]
+
+            if not is_admin:
+                members = await self.get_team_members.get_team_members(user["_id"])
+
+                if any(i in user_object_ids for i in members):
+                    
+                    is_manager = True
+
+            
+
 
             users = await self.repo.find_many(
                 filters={"_id": {"$in": user_object_ids}}, populate=["userRole"]
@@ -2380,6 +2445,9 @@ class AuthServices:
 
             restored_count = 0
 
+            if not is_admin and not is_manager:
+                raise AppException(403, "Unauthorized, you are unauthorized to perform this action")
+            
             if eligible_users:
                 eligible_ids = [PydanticObjectId(u.id) for u in eligible_users]
 
@@ -2389,7 +2457,7 @@ class AuthServices:
                         "status": USER_STATUS.ACTIVE,
                         "deletedBy": None,
                         "deletedAt": None,
-                        "updatedBy": DBRef(collection="users", id=user["_id"]),
+                        "updatedBy": DBRef(collection="users", id=ObjectId(user["_id"])),
                         "updatedAt": datetime.now(timezone.utc),
                     },
                     session=session,
@@ -2548,6 +2616,5 @@ class AuthServices:
 
     @staticmethod
     def _similarity(a: str, b: str) -> float:
-        """Returns similarity ratio between 0 and 1 (case-insensitive)."""
         return SequenceMatcher(None, a.lower().strip(), b.lower().strip()).ratio()
 

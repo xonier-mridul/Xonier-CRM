@@ -28,6 +28,7 @@ from app.core.enums import (
     PLAN_VISIBILITY,
     ACTIVITY_ENTITY_TYPE,
     ACTIVITY_ACTION,
+    USER_STATUS
 )
 from app.utils.activity_payload import activity_payload
 from app.utils.otp_manager import generate_otp
@@ -43,6 +44,7 @@ from app.utils.subscription_utils import calculate_price, calculate_subscription
 from app.utils.enquiry_id_generator import generate_enquiry_id
 from app.core.crypto import encryptor
 from app.core.tenant import system_query
+from app.utils.validate_admin import validate_admin
 
 
 class CompanyService:
@@ -552,27 +554,28 @@ class CompanyService:
                         data={"is_used": True},
                         session=session,
                     )
-
+                    
                     await self._issue_otp(
                         user=user,
                         plain_email=plain_email,
                         session=session,
                     )
-
-                    await self.activityRepo.create(
-                        activity_payload(
-                            userId=user_id,
-                            entityType=ACTIVITY_ENTITY_TYPE.OTP.value,
-                            entityId=user_id,
-                            action=ACTIVITY_ACTION.RESEND.value,
-                            title="Verification OTP resent",
-                            description=f"New OTP dispatched for '{user.firstName}'",
-                            ipAddress=ip_address,
-                            userAgent=user_agent,
-                        ),
-                        session=session,
-                    )
-
+                   
+                    with system_query():
+                        await self.activityRepo.create(
+                            activity_payload(
+                                userId=user_id,
+                                entityType=ACTIVITY_ENTITY_TYPE.OTP.value,
+                                entityId=user_id,
+                                action=ACTIVITY_ACTION.RESEND.value,
+                                title="Verification OTP resent",
+                                description=f"New OTP dispatched for '{user.firstName}'",
+                                ipAddress=ip_address,
+                                userAgent=user_agent,
+                            ),
+                            session=session,
+                        )
+                    
                     return {"message": "A new OTP has been sent to your email"}
 
                 except AppException:
@@ -630,21 +633,143 @@ class CompanyService:
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
 
+        
+    async def get_all_companies_users(
+        self, filters: CompanyFilterSchema, company_id:str, actor: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        try:
+            query: Dict[str, Any] = { }
+            
+            is_admin = False
+
+            if actor.get("userRole"):
+                is_admin = validate_admin(actor.get("userRole"))
+
+            if is_admin:
+                query.update({"companyId": ObjectId(company_id)})
+
+
+
+            if filters.search and filters.search.strip():
+                regex = {"$regex": filters.search.strip(), "$options": "i"}
+                query["$or"] = [
+          
+                    {"firstName": regex},
+                    {"lastName": regex}
+
+             
+                ]
+            if filters.status:
+                query["status"] = filters.status
+
+
+            result = await self.userRepo.get_all_nested(
+                page=filters.page,
+                limit=filters.limit,
+                filters=query,
+                populate=["userRole"],
+                sort=["-createdAt"]
+            )
+
+            if not result:
+                raise AppException(404, "Companies data not found")
+
+            result = jsonable_encoder(result)
+
+            for item in result["data"]:
+
+                if "email" in item:
+                    item["email"] = self.encryptor.decrypt_data(item["email"])
+
+                if "number" in item:
+                    item["number"] = self.encryptor.decrypt_data(item["number"])
+
+            return result
+
+        except AppException:
+            raise
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+
+        
+    async def get_all_deleted(
+        self, filters: CompanyFilterSchema, actor: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        try:
+            query: Dict[str, Any] = {"deletedAt": {"$ne": None }}
+
+            if filters.search and filters.search.strip():
+                regex = {"$regex": filters.search.strip(), "$options": "i"}
+                query["$or"] = [
+                    {"companyId": regex},
+                    {"slug": regex},
+                    {"companyName": regex},
+                    {"subDomain": regex},
+                ]
+            if filters.status:
+                query["status"] = filters.status
+            if filters.country:
+                query["country"] = filters.country
+            if filters.companySize:
+                query["companySize"] = filters.companySize
+
+            result = await self.repo.get_all(
+                page=filters.page,
+                limit=filters.limit,
+                filters=query,
+                populate=["primary_admin", "subscription"],
+                sort=["-createdAt"]
+            )
+
+            if not result:
+                raise AppException(404, "Companies data not found")
+
+            result = jsonable_encoder(result)
+
+            for item in result["data"]:
+
+                if "email" in item:
+                    item["email"] = self.encryptor.decrypt_data(item["email"])
+
+                if "number" in item:
+                    item["number"] = self.encryptor.decrypt_data(item["number"])
+
+            return result
+
+        except AppException:
+            raise
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+
     async def get_by_id(self, company_id: str, actor: Dict[str, Any]) -> Dict[str, Any]:
         try:
             if not ObjectId.is_valid(company_id):
                 raise AppException(400, "Invalid company Object ID")
+
+            is_admin = validate_admin(actor["userRole"])
+
+            if not is_admin:
+                if str(actor["companyId"]) != str(company_id):
+                    raise AppException(400, "Unauthorized")
+
+
          
             company = await self.repo.find_one(
                 filter={"_id": PydanticObjectId(company_id), "deletedAt": None},
                 populate=["subscription", "primary_admin"]
             )
 
-           
             if not company:
                 raise AppException(404, "Company not found")
+
+            
             
             result = company.model_dump(mode="json")
+
+
+            companies_users_count = await self.userRepo.count(filter={"companyId": ObjectId(company_id)})
+
+            result["userCount"] = companies_users_count or 0
             
             if "email" in result:
                 result["email"] = self.encryptor.decrypt_data(result["email"])
@@ -682,7 +807,7 @@ class CompanyService:
                 setattr(company, field, value)
 
             company.updatedAt = datetime.now(timezone.utc)
-            # company.updatedBy = DBRef(collection="users", id=PydanticObjectId(actor["_id"]))
+            company.updatedBy = UserModel.link_from_id(actor["_id"])
             await company.save()
 
             await self.activityRepo.create(
@@ -780,7 +905,7 @@ class CompanyService:
                     company.status = COMPANY_STATUS.DELETED
                     await company.save(session=session)
 
-                    await self.userRepo.bulk_update(
+                    deleted_user = await self.userRepo.bulk_update(
                         filters={
                             "companyId": PydanticObjectId(company_id),
                             "deletedAt": None,
@@ -789,9 +914,12 @@ class CompanyService:
                             "deletedAt": now,
                             "deletedBy": actor_id,
                             "isActive": False,
+                            "status": USER_STATUS.DELETED
                         },
                         session=session,
                     )
+
+
 
                     await self.activityRepo.create(
                         activity_payload(
@@ -808,7 +936,7 @@ class CompanyService:
                     )
 
                     return {
-                        "message": "Company and associated users have been deactivated"
+                        "message": f"Company and associated {deleted_user} users have been deactivated"
                     }
                 except AppException:
                     raise
@@ -822,38 +950,56 @@ class CompanyService:
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None,
     ) -> Dict[str, Any]:
-        try:
-            company = await self.repo.find_one(
-                filter={"_id": PydanticObjectId(company_id), "deletedAt": {"$ne": None}}
-            )
-            if not company:
-                raise AppException(404, "Company not found or is not deleted")
+        async with await self.client.start_session() as session:
+            async with session.start_transaction():
+                try:
 
-            company.deletedAt = None
-            company.deletedBy = None
-            company.status = COMPANY_STATUS.ACTIVE
-            company.updatedAt = datetime.now(timezone.utc)
-            company.updatedBy = PydanticObjectId(actor["_id"])
-            await company.save()
+                    company = await self.repo.find_one(
+                        filter={"_id": PydanticObjectId(company_id), "deletedAt": {"$ne": None}}
+                    )
+                    if not company:
+                        raise AppException(404, "Company not found or is not deleted")
 
-            await self.activityRepo.create(
-                activity_payload(
-                    userId=PydanticObjectId(actor["_id"]),
-                    entityType=ACTIVITY_ENTITY_TYPE.COMPANY.value,
-                    entityId=PydanticObjectId(company_id),
-                    action=ACTIVITY_ACTION.RESTORE.value,
-                    title="Company restored",
-                    description=f"Company '{company.companyName}' was restored",
-                    ipAddress=ip_address,
-                    userAgent=user_agent,
-                )
-            )
+                    company.deletedAt = None
+                    company.deletedBy = None
+                    company.status = COMPANY_STATUS.ACTIVE
+                    company.updatedAt = datetime.now(timezone.utc)
+                    company.updatedBy = UserModel.link_from_id(actor["_id"])
+                    await company.save(session=session)
 
-            return {"message": "Company restored successfully"}
-        except AppException:
-            raise
-        except Exception as e:
-            raise AppException(500, f"Internal server error: {e}")
+     
+                    restore_user = await self.userRepo.bulk_update(
+                                            filters={
+                                                "companyId": PydanticObjectId(company_id),
+                                                "deletedAt": {"$ne":None},
+                                            },
+                                            data={
+                                                "deletedAt": None,
+                                                "deletedBy": None,
+                                                "isActive": True,
+                                                "status": USER_STATUS.ACTIVE
+                                            },
+                                            session=session,
+                                        )
+                
+                    await self.activityRepo.create(
+                        activity_payload(
+                            userId=PydanticObjectId(actor["_id"]),
+                            entityType=ACTIVITY_ENTITY_TYPE.COMPANY.value,
+                            entityId=PydanticObjectId(company_id),
+                            action=ACTIVITY_ACTION.RESTORE.value,
+                            title="Company restored",
+                            description=f"Company '{company.companyName}' was restored",
+                            ipAddress=ip_address,
+                            userAgent=user_agent,
+                        )
+                    )
+
+                    return {"message": f"Company with {restore_user} users restored successfully"}
+                except AppException:
+                    raise
+                except Exception as e:
+                    raise AppException(500, f"Internal server error: {e}")
 
     async def get_stats(self, actor: Dict[str, Any]) -> Dict[str, Any]:
         try:
@@ -866,6 +1012,7 @@ class CompanyService:
             return {"total": sum(stats.values()), "byStatus": stats}
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+
 
 
 def _extract_duplicate_key(error: DuplicateKeyError) -> str:

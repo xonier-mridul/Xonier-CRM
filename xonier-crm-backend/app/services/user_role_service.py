@@ -103,11 +103,15 @@ class UserRoleService:
         try:
             session.start_transaction()
 
-            validate_role_name(data["name"])  # ✅ validate BEFORE generating code / hitting DB
-
+            validate_role_name(data["name"])  
             payload = {**data}
             code = code_generator(data["name"])
             payload.update(code=code, createdBy=user["_id"])
+
+            is_exist = await self.repository.find_one(filter={"name": data.get("name", "")}, session=session)
+
+            if is_exist:
+                raise AppException(400, "Roles already exist with the same name, please use different name")
 
             new_role = await self.repository.create(data=payload, session=session)
 
@@ -142,11 +146,18 @@ class UserRoleService:
             
             if not is_exist:
                 raise AppException(404, "Role data not found")
+
+            code = code_generator(data["name"])
+
+            is_role_name_same = await self.repository.find_one({"$or": [{"name": data.get("name")}, {"code": code}]})
+                        
+            if is_role_name_same:
+                raise AppException(400, "Roles already exist with the same name, please use different name or delete them")
             
             if not validate_admin(updatedBy["userRole"]) and is_exist.isSystemRole:
-                raise AppException(403, "You can't update system role, fuck you")
+                raise AppException(403, "You can't update system role")
             
-            code = code_generator(data["name"])
+            
             
             new_payload: Dict[str, Any] = {
                  **data,
@@ -197,4 +208,4 @@ class UserRoleService:
             raise
 
         except Exception as e:
-                    raise AppException(status_code=500, message="internal server error")
+            raise AppException(status_code=500, message="internal server error")

@@ -80,6 +80,24 @@ class CompanyController:
             raise
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+        
+    async def get_all_companies_users(self, request: Request, companyId:str, filters: CompanyFilterSchema):
+        try:
+            result = await self.service.get_all_companies_users(filters=filters, company_id=companyId, actor=request.state.user)
+            return successResponse(200, "Companies Users fetched successfully", result)
+        except AppException:
+            raise
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+        
+    async def get_all_deleted(self, request: Request, filters: CompanyFilterSchema):
+        try:
+            result = await self.service.get_all_deleted(filters=filters, actor=request.state.user)
+            return successResponse(200, "Deleted companies fetched successfully", result)
+        except AppException:
+            raise
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
 
     async def get_by_id(self, request: Request, company_id: str):
         try:
@@ -123,7 +141,7 @@ class CompanyController:
                 company_id=company_id, actor=request.state.user,
                 ip_address=ip, user_agent=ua,
             )
-            return successResponse(200, "Company deleted successfully", result)
+            return successResponse(200, f"{result.get("message", "Company deleted successfully")}", result)
         except AppException:
             raise
         except Exception as e:
