@@ -629,6 +629,8 @@ const isPasswordValid = checks.every((check) => check.valid);
           {!isLoading ? (
             userData && userData?.length > 0 ? (
               userData?.map((item, index) => {
+
+                console.log("user data :",item.userRole)
                 const rr = index % 2 == 0;
 
                 const date = new Date(item.createdAt).toLocaleDateString(

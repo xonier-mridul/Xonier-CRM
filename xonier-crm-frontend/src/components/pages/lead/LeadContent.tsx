@@ -1259,30 +1259,42 @@ const isIndeterminate =
               <table className="w-full rounded-xl overflow-hidden">
                 <thead>
                   <tr className="w-full border-b-2 border-zinc-300 dark:border-zinc-400  bg-slate-200 dark:bg-gray-800">
-                    <div>
-                   {hasPermission(PERMISSIONS.assignLead) &&
-                    currentTab === TAB.ALL &&
-                    assignableLeads.length > 0 && (
-                      <th className="p-4 w-12">
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input ref={selectAllRef} type="checkbox" className="sr-only" 
-                          checked={isAllSelected} onChange={handleSelectAll} />
-                          <div
-                            className={`w-4.5 h-4.5 rounded-sm border-2 flex items-center justify-center transition-all duration-150
-                          ${
-                            isAllSelected || isIndeterminate
-                              ? "bg-cyan-600 border-cyan-600"
-                              : "bg-white dark:bg-gray-700 border-slate-300 hover:border-cyan-400"
-                          }`}
-                          >
-                            {
-                            isIndeterminate && <FaCheck className="text-white text-[9px]" />}
-                            {isAllSelected && <span className="block w-2.5 h-0.5 bg-white rounded-full" />}
-                          </div>
-                        </label>
-                      </th>
-                    )}
-                    </div>
+                   <th className="p-4 w-12 text-center align-middle">
+  <div className="flex items-center justify-center w-full h-full">
+    {hasPermission(PERMISSIONS.assignLead) &&
+      currentTab === TAB.ALL &&
+      assignableLeads.length > 0 && (
+        <label className="relative flex items-center justify-center cursor-pointer">
+          <input
+            ref={selectAllRef}
+            type="checkbox"
+            className="sr-only"
+            checked={isAllSelected}
+            onChange={handleSelectAll}
+          />
+
+          <div
+            className={`w-[18px] h-[18px] rounded-sm border-2
+              flex items-center justify-center
+              transition-all duration-150
+              ${
+                isAllSelected || isIndeterminate
+                  ? "bg-cyan-600 border-cyan-600"
+                  : "bg-white dark:bg-gray-700 border-slate-300 hover:border-cyan-400"
+              }`}
+          >
+            {isAllSelected && (
+              <FaCheck className="text-white text-[9px]" />
+            )}
+
+            {isIndeterminate && (
+              <span className="block w-2.5 h-0.5 bg-white rounded-full" />
+            )}
+          </div>
+        </label>
+      )}
+      </div>
+</th>
                     {[
                       "client_info",
                       "phone",
