@@ -122,6 +122,25 @@ class CompanyFilterSchema(BaseModel):
     def cap_limit(cls, v: int) -> int:
         return min(v, 100)
     
+class CompanyUserFilterSchema(BaseModel):
+    page: int = 1
+    limit: int = 10
+    search: Optional[str] = None
+    status: Optional[COMPANY_STATUS] = None
+
+
+    @field_validator("page", "limit", mode="before")
+    @classmethod
+    def must_be_positive(cls, v: int) -> int:
+        if v < 1:
+            raise ValueError("Must be a positive integer")
+        return v
+
+    @field_validator("limit", mode="before")
+    @classmethod
+    def cap_limit(cls, v: int) -> int:
+        return min(v, 100)
+    
 
 
 class CompanySelfRegisterSchema(BaseModel):
