@@ -149,7 +149,7 @@ class UserRoleService:
 
             code = code_generator(data["name"])
 
-            is_role_name_same = await self.repository.find_one({"$or": [{"name": data.get("name")}, {"code": code}]})
+            is_role_name_same = await self.repository.find_one({"_id": {"$ne": PydanticObjectId(roleId)}, "$or": [{"name": data.get("name")}, {"code": code}, ]})
                         
             if is_role_name_same:
                 raise AppException(400, "Roles already exist with the same name, please use different name or delete them")

@@ -108,6 +108,16 @@ class CompanyController:
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
 
+        
+    async def get_by_id_deleted(self, request: Request, company_id: str):
+        try:
+            result = await self.service.get_by_id_deleted(company_id=company_id, actor=request.state.user)
+            return successResponse(200, "Company fetched successfully", result)
+        except AppException:
+            raise
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+
     async def update(self, request: Request, company_id: str, payload: CompanyUpdateSchema):
         try:
             ip, ua = _extract_meta(request)
