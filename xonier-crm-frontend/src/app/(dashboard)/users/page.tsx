@@ -22,6 +22,7 @@ const page = (): JSX.Element => {
   const [roleData, setRoleData] = useState<UserRole[]>([]);
   const [companyLoading, setCompanyLoading] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isRoleLoading, setIsRoleLoading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPages] = useState<number>(1);
   const [pageLimit, setPageLimit] = useState<number>(10);
@@ -108,6 +109,7 @@ const page = (): JSX.Element => {
   }, [companyHasMore, companyLoading, companyPage, getCompanyData]);
 
   const getRoleData = async () => {
+    setIsRoleLoading(true)
     try {
       const result = await RoleService.getRolesWithoutPagination();
       if (result.status === 200) setRoleData(result.data.data);
@@ -115,6 +117,8 @@ const page = (): JSX.Element => {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) setErr(extractErrorMessages(error));
       else setErr(["Something went wrong"]);
+    }finally{
+      setIsRoleLoading(false)
     }
   };
 
@@ -268,6 +272,7 @@ const page = (): JSX.Element => {
         userData={userData}
         handleDelete={handleDelete}
         isLoading={isLoading}
+        isRoleLoading={isRoleLoading}
         isPopupShow={isPopupShow}
         setIsPopupShow={setIsPopupShow}
         formData={formData}

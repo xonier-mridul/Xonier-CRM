@@ -1,12 +1,11 @@
 "use client"
+import extractErrorMessages from "@/src/app/utils/error.utils"
 import DeletedTable from "@/src/components/pages/companies/DeletedTable"
 import CompanyService from "@/src/services/company.service"
 import { Company, CompanyFilterParams } from "@/src/types/company/company.types"
 import axios from "axios"
-import { number } from "framer-motion"
 import { useEffect, useState } from "react"
 import { toast } from "react-toastify"
-import extractErrorMessages from "../../utils/error.utils"
 
 
 const page = () => {
@@ -28,15 +27,15 @@ const page = () => {
     const getCompaniesData = async()=>{
         setIsLoading(true)
         try{
-            const result = await CompanyService.getAll({
+            const result = await CompanyService.getAllDeleted({
                 page:currentPage,
                 limit: pageLimit,
                 search:searchVal ||undefined,
                 ...filters
             })
-
+            console.log("data of deleted data ",result.data.data.data)
             const data = result.data.data
-            setCompaniesData(data)
+            setCompaniesData(data.data)
             setTotalPages(data.totalPages)
            
         }
@@ -52,26 +51,9 @@ const page = () => {
 
     useEffect(()=>{
 getCompaniesData()
-    },[])
+    },[currentPage, pageLimit, searchVal, filters])
    
-    const handleDelete = async(id:string)=>{
-        setIsLoading(true)
-        try{
-           await CompanyService.Delete(id)
-            
-            toast.success("company_deleted_successfully")
-          
-            getCompaniesData()
-
-        }catch(error){
-            console.log("error in company delete",error)
-        }
-        finally{
-            
-            setIsLoading(true)
-
-        }
-    }
+   
 
     const handleSearch = (val:string)=>{
         setSearchVal(val)
@@ -110,7 +92,7 @@ getCompaniesData()
         pageLimit={pageLimit}
         totalPages={totalPages}
         setPageLimit={handlePageLimit}
-        onDelete={handleDelete}
+      
         onRestore={handleRestore}
         searchVal={searchVal}
         onSearch={handleSearch}

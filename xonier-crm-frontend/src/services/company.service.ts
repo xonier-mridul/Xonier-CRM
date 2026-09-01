@@ -15,6 +15,7 @@ import {
   Company,
   CompanyUpdatePayload,
   MessageResponse,
+  CompanyDeletedFilterParams,
 } from "../types/company/company.types";
 
 import { COMPANY_STATUS } from "../constants/enum";
@@ -46,6 +47,11 @@ const CompanyService = {
   ) =>
     api.get("/companies/", { params }),
 
+  getAllDeleted: (
+    params?: CompanyDeletedFilterParams,
+  ) =>
+    api.get("/companies/deleted", { params }),
+
   getStats: (): Promise<ApiResponse<CompanyStats>> =>
     api.get("/companies/stats"),
 
@@ -67,7 +73,6 @@ const CompanyService = {
   softDelete: (companyId: string): Promise<ApiResponse<MessageResponse>> =>
     api.delete(`/companies/${companyId}`),
 
-  Delete:(companyId:string):Promise<ApiResponse<MessageResponse>> => api.delete(`/companies/${companyId}`),
 
   restore: (companyId: string): Promise<ApiResponse<MessageResponse>> =>
     api.patch(`/companies/${companyId}/restore`),

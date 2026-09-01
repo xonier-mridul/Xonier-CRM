@@ -36,6 +36,7 @@ export const UsersTable = ({
   userData,
   handleDelete,
   isLoading,
+  isRoleLoading,
   isPopupShow,
   setIsPopupShow,
   formData,
@@ -366,29 +367,47 @@ const isPasswordValid = checks.every((check) => check.valid);
                 value={formData.email}
                 onChange={handleChange}
               />
-              <div className="flex flex-col gap-1 w-full">
+              <div className="flex relative flex-col gap-1 w-full">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
                   {t("user_role")}
                 </label>
 
-                <select
-                  onChange={handleUserRoleChange}
-                  className="w-full px-3 py-2 rounded-md border text-[16px]
-      bg-white dark:bg-gray-700 text-black dark:text-white
-      border-gray-300 dark:border-gray-300/30 outline-none"
-                >
-                  <option value="">{t("select_user_role")}</option>
-                  {roleData.map((role) => (
-                    <option
-                      key={role.id}
-                      value={role.id}
-                      hidden={role.code === SUPER_ADMIN_ROLE_CODE}
-                      disabled={role.code === SUPER_ADMIN_ROLE_CODE}
+               {isRoleLoading ? (
+                    <div
+                      className="w-full px-3 py-2 rounded-md border text-[16px]
+                      bg-white dark:bg-gray-700
+                      border-gray-300 dark:border-gray-300/30
+                      flex items-center justify-between"
                     >
-                      {role.name}
-                    </option>
-                  ))}
-                </select>
+                      <span className="text-gray-400 dark:text-gray-300">
+                        {t("loading")}
+                      </span>
+
+                      <div className="w-4 h-4 border-2 border-gray-300 border-t-cyan-500 rounded-full animate-spin" />
+                    </div>
+                  ) : (
+                    <select
+                      onChange={handleUserRoleChange}
+                      className="w-full px-3 py-2 rounded-md border text-[16px]
+                      bg-white dark:bg-gray-700 text-black dark:text-white
+                      border-gray-300 dark:border-gray-300/30 outline-none"
+                    >
+                      <option value="">
+                        {t("select_user_role")}
+                      </option>
+
+                      {roleData.map((role) => (
+                        <option
+                          key={role.id}
+                          value={role.id}
+                          hidden={role.code === SUPER_ADMIN_ROLE_CODE}
+                          disabled={role.code === SUPER_ADMIN_ROLE_CODE}
+                        >
+                          {role.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 {formData.userRole.length > 0 && (
                   <div className="col-span-1 flex flex-wrap gap-2 mt-2">
                     {formData.userRole.map((roleId) => {

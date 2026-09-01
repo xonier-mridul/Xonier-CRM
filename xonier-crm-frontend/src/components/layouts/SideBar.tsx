@@ -88,7 +88,7 @@ const SideBar = () => {
       setOpenMenu("plans");
     }
     if (pathname.startsWith("/companies") || pathname.startsWith("/companies/create") || 
-    pathname.startsWith("deletedCompanies"))  {
+    pathname.startsWith("/companies/deleted-companies"))  {
       setOpenMenu("company");
     }
     if (pathname.startsWith("/roles")) {
@@ -161,7 +161,7 @@ const SideBar = () => {
           case "company":
           return pathname.startsWith("/companies") ||
           pathname.startsWith("/companies/create") || 
-    pathname.startsWith("deletedCompanies")
+    pathname.startsWith("/companies/deleted-companies")
 
       case "sales":
         return pathname.startsWith("/enquiry") ||
@@ -186,11 +186,14 @@ const SideBar = () => {
     setActiveDashboard(!activeDashboard)
   }
 
-console.log("new",auth.user);
-console.log("second",auth.isAdmin);
 const isCompanyAdmin = auth.user?.userRole?.some(
   (role) => role.code === "COMPANY_ADMIN"
 );
+
+const isSuperAdmin = auth.user?.userRole?.some(
+  (role) => role.code === "SUPER_ADMIN"
+);
+
 
   return (
     <div className={`fixed top-0 left-0 w-72 p-6 z-100  ${activeDashboard ?'translate-x-0':'-translate-x-70 lg:translate-x-0'}   transition-all duration-300 bg-slate-50 h-screen dark:bg-gray-800 flex flex-col gap-6 border border-slate-900/15 dark:border-gray-700 `}>
@@ -493,8 +496,8 @@ const isCompanyAdmin = auth.user?.userRole?.some(
                     </li>}
                     { <li>
                       <Link
-                        href="/deletedCompanies"
-                        className={`${isActive("/deletedCompanies")
+                        href="/companies/deleted-companies"
+                        className={`${isActive("/companies/deleted-companies")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
@@ -676,7 +679,7 @@ const isCompanyAdmin = auth.user?.userRole?.some(
                 )}
               </AnimatePresence>
             </li>}
-            {(hasPermission(PERMISSIONS.readRole) || hasPermission(PERMISSIONS.createTeam) || hasPermission(PERMISSIONS.readTeamCategory) || hasPermission(PERMISSIONS.readTeam)) && <li>
+            { !isSuperAdmin && ( hasPermission(PERMISSIONS.readRole) || hasPermission(PERMISSIONS.createTeam) || hasPermission(PERMISSIONS.readTeamCategory) || hasPermission(PERMISSIONS.readTeam)) && <li>
               <button
                 onClick={() => toggleMenu("team")}
                 className={`${isMenuActive("team")
@@ -695,7 +698,7 @@ const isCompanyAdmin = auth.user?.userRole?.some(
 
                 <IoChevronDown
                   className={`transition-transform ${openMenu === "team" ? "rotate-180" : ""
-                    }`}
+ }`}
                 />
               </button>
 
@@ -1019,10 +1022,10 @@ const isCompanyAdmin = auth.user?.userRole?.some(
             (isCompanyAdmin) &&(
                   <Link
                   href={`/companySetting/${
-    typeof auth.user?.companyId === "string"
-      ? auth.user.companyId
-      : auth.user?.companyId?.id
-  }`}
+                  typeof auth.user?.companyId === "string"
+                    ? auth.user.companyId
+                    : auth.user?.companyId?.id
+                }`}
                 className={`${isActive("/companySetting")
                   ? " dark:text-cyan-300 text-cyan-700   border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"

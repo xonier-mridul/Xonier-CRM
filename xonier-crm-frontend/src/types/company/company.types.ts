@@ -96,6 +96,14 @@ export interface CompanyFilterParams {
   companySize?: NUMBER_OF_EMPLOYEES;
 }
 
+export interface CompanyDeletedFilterParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  country?: COUNTRY_CODE;
+  companySize?: NUMBER_OF_EMPLOYEES;
+}
+
 export interface VerifyOtpPayload {
   userId: string;
   email:string;

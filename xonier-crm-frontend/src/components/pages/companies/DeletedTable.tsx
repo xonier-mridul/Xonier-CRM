@@ -2,13 +2,15 @@
 import { COMPANY_STATUS, NUMBER_OF_EMPLOYEES } from '@/src/constants/enum';
 import { Company, CompanyFilterParams } from '@/src/types/company/company.types';
 import Link from 'next/link';
-import React from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import { IoIosSearch } from 'react-icons/io';
 import { IoEyeOutline, IoRefreshOutline, IoTrash } from 'react-icons/io5';
 import { MdOutlineEdit } from 'react-icons/md';
 import Skeleton from 'react-loading-skeleton';
 import Pagination from '../../common/pagination';
+import { useRouter } from 'next/navigation'
+
 interface CompanyDeleteTableProps {
   companyData: Company[];
   isLoading: boolean;
@@ -18,7 +20,7 @@ interface CompanyDeleteTableProps {
   totalPages: number;
   setPageLimit: (limit: number) => void;
   // onEdit: (company: Company) => void;
-  onDelete: (id: string) => void;
+
   onRestore: (id: string) => void;
   searchVal: string;
   onSearch: (val: string) => void;
@@ -46,44 +48,35 @@ const DeletedTable: React.FC<CompanyDeleteTableProps>= ({  companyData,
         pageLimit,
         totalPages,
         setPageLimit,
-        onDelete,
+       
         onRestore,
         searchVal,
         onSearch,
         filters,
         onFilterChange}) => {
+          const [restorePopup,setRestorePopup] = useState<boolean>(false)
+
+          const router = useRouter()
 
           const {t}= useTranslation()
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-900/10 dark:border-gray-700 w-full flex flex-col gap-6 overflow-hidden">
        <div className="flex flex-wrap items-center gap-4 justify-between p-6 border-b border-slate-900/10 dark:border-gray-700">
+     
         <div className="flex flex-col gap-1">
           <h2 className="text-xl font-bold dark:text-white text-slate-900">
             {t("deleted_companies")}
           </h2>
+
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {t("manage_companies")}
+          {t("manage_companies")} — {t("view_and_restore_deleted_companies")}
           </p>
         </div>
 
+
         <div className="flex items-center gap-3 md:justify-between w-full flex-wrap ">
           <div className="grid grid-cols-3  gap-3">
-          <select
-            value={filters.status ?? ""}
-            onChange={(e) =>
-              onFilterChange({
-                status: (e.target.value as COMPANY_STATUS) || undefined,
-              })
-            }
-            className="bg-slate-50 dark:bg-gray-700 px-3 py-2 rounded-lg border border-slate-900/10 dark:border-gray-600 text-sm dark:text-white"
-          >
-            <option value="">{t("all_status")}</option>
-            {Object.values(COMPANY_STATUS).map((s) => (
-              <option key={s} value={s}>
-                {s.replace(/_/g, " ")}
-              </option>
-            ))}
-          </select>
+       
 
           <select
             value={filters.companySize ?? ""}
@@ -92,12 +85,12 @@ const DeletedTable: React.FC<CompanyDeleteTableProps>= ({  companyData,
                 companySize: (e.target.value as NUMBER_OF_EMPLOYEES) || undefined,
               })
             }
-            className="bg-slate-50 dark:bg-gray-700 px-3 py-2 rounded-lg border border-slate-900/10 dark:border-gray-600 text-sm dark:text-white"
+            className="bg-slate-50 outline-none dark:bg-gray-700 px-3 py-2 rounded-lg border border-slate-900/10 dark:border-gray-600 text-sm dark:text-white"
           >
             <option value="">{t("all_sizes")}</option>
             {Object.entries(sizeLabel).map(([val, label]) => (
               <option key={val} value={val}>
-                {label} {t("employees_2")}
+                {label} {t("employees")}
               </option>
             ))}
           </select>
@@ -105,7 +98,7 @@ const DeletedTable: React.FC<CompanyDeleteTableProps>= ({  companyData,
           <select
             value={pageLimit}
             onChange={(e) => setPageLimit(Number(e.target.value))}
-            className="bg-slate-50 dark:bg-gray-700 px-3 py-2 rounded-lg border border-slate-900/10 dark:border-gray-600 text-sm dark:text-white"
+            className="bg-slate-50 dark:bg-gray-700 outline-none px-3 py-2 rounded-lg border border-slate-900/10 dark:border-gray-600 text-sm dark:text-white"
           >
             {[10, 20, 30, 50].map((n) => (
               <option key={n} value={n}>
@@ -159,10 +152,13 @@ const DeletedTable: React.FC<CompanyDeleteTableProps>= ({  companyData,
               companyData && companyData.length > 0 ? (
                 companyData.map((company) => (
                   <tr
+                   
                     key={company.id}  // ← _id not id
-                    className="group hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors"
+                    className="group hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors "
                   >
-                    <td className="py-4 pr-4 p-2">
+                    <td 
+                    onClick={()=>router.push(`/companies/${company.id}`)}
+                    className="py-4 pr-4 p-2 cursor-pointer">
                       <div className="flex flex-col">
                         <span className="font-semibold text-sm text-nowrap text-slate-900 dark:text-white capitalize">
                           {company.companyName}
@@ -207,7 +203,7 @@ const DeletedTable: React.FC<CompanyDeleteTableProps>= ({  companyData,
                     <td className="py-4 pr-4">
                       <span
                         className={`text-xs font-medium px-2.5 py-1 text-nowrap rounded-md capitalize ${
-                          statusStyles[company.status] ??
+                          // statusStyles[company.status] ??
                           "bg-gray-100 text-gray-600"
                         }`}
                       >
@@ -219,7 +215,7 @@ const DeletedTable: React.FC<CompanyDeleteTableProps>= ({  companyData,
                       {company.subscription ? (
                         <Link
                           href={`/subscriptions/${company.id}`}
-                          className="text-xs text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-md"
+                          className="text-xs text-cyan-500 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/20 px-2.5 py-1 rounded-md"
                         >
                           {company.subscriptionCount} {t("active_3")}
                         </Link>
@@ -255,8 +251,8 @@ const DeletedTable: React.FC<CompanyDeleteTableProps>= ({  companyData,
 
                         {company.status === COMPANY_STATUS.DELETED ? (
                           <button
-                            onClick={() => onRestore(company.id)}
-                            className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 transition-colors"
+                            onClick={() => restorePopup(true)}
+                            className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 hover:bg-cyan-100 hover:text-cyan-600 dark:hover:bg-cyan-900/30 dark:hover:text-cyan-400 transition-colors"
                           >
                             <IoRefreshOutline className="text-base" />
                           </button>

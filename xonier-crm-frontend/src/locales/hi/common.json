@@ -219,6 +219,7 @@
   "notes": "नोट्स",
   "notifications": "सूचनाएं",
   "otp": "ओटीपी",
+  "manage_companies": "कंपनियों का प्रबंधन करें",
   "page.tsx": "मुख्य पृष्ठ ",
   "plans": "योजनाएं",
   "prospect": "संभावित ग्राहक",
@@ -242,6 +243,9 @@
   "table_category": "श्रेणी",
   "table_status": "स्थिति",
     "team_cat": "टीम श्रेणी",
+     "view_and_restore_deleted_companies": "हटाई गई कंपनियों को देखें और पुनर्स्थापित करें",
+  "deleted_companies": "हटाई गई कंपनियाँ",
+  "restore_deleted_companies": "हटाई गई कंपनियों को पुनर्स्थापित करें",
 
   "no_notifications_match_filters": "कोई भी सूचना आपके फ़िल्टर से मेल नहीं खाती",
   "clear_filters_to_see_all": "सभी सूचनाएँ देखने के लिए फ़िल्टर साफ़ करें",
