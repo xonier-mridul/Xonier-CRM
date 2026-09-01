@@ -130,6 +130,11 @@ async def get_by_id(request: Request, company_id: str):
     return await controller.get_by_id(request=request, company_id=company_id)
 
 
+@router.get("/{company_id}/deleted", dependencies=admin_only)
+async def get_by_id(request: Request, company_id: str):
+    return await controller.get_by_id_deleted(request=request, company_id=company_id)
+
+
 @router.patch("/{company_id}", dependencies=authorized)
 async def update(request: Request, company_id: str, payload: CompanyUpdateSchema):
     return await controller.update(

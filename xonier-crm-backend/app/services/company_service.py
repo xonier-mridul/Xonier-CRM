@@ -781,6 +781,42 @@ class CompanyService:
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
 
+        
+    async def get_by_id_deleted(self, company_id: str, actor: Dict[str, Any]) -> Dict[str, Any]:
+        try:
+            if not ObjectId.is_valid(company_id):
+                raise AppException(400, "Invalid company Object ID")
+
+
+
+         
+            company = await self.repo.find_one(
+                filter={"_id": PydanticObjectId(company_id), "deletedAt": {"$ne":None}},
+                populate=["subscription", "primary_admin"]
+            )
+
+            if not company:
+                raise AppException(404, "Company not found, may be company not deleted")
+
+            
+            result = company.model_dump(mode="json")
+
+
+            companies_users_count = await self.userRepo.count(filter={"companyId": ObjectId(company_id)})
+
+            result["userCount"] = companies_users_count or 0
+            
+            if "email" in result:
+                result["email"] = self.encryptor.decrypt_data(result["email"])
+            if "number" in result:
+                result["number"] = self.encryptor.decrypt_data(result["number"])
+            return result
+        except AppException:
+            raise
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+        
+
     async def update(
         self,
         company_id: str,
