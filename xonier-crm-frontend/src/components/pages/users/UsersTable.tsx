@@ -29,83 +29,6 @@ import { useTranslation } from "react-i18next";
 
 
 
-
-export const UsersTable = ({
-  currentPage,
-  pageLimit,
-  userData,
-  handleDelete,
-  isLoading,
-  isRoleLoading,
-  isPopupShow,
-  setIsPopupShow,
-  formData,
-  roleData,
-  handleChange,
-  handleUserRoleChange,
-  handleRemoveRole,
-  handleSubmit,
-  setPageLimit,
-  totalPage,
-  setFormData,
-  err,
-  loading,
-  setCurrentPages,
-  setSearchFilter,
-  isAdmin,
-  handleCompanyFilter,
-  companyHasMore,
-  companyLoading,
-  onCompanyScrollEnd,
-  selectedCompanyId,
-  companyData,
-  handleCompanyChange,
-  checks
-}: UserTableComponentProps): JSX.Element => {
-  const { t } = useTranslation();
-  const [selectedcountryCode, setCountryCode] = useState("+91");
-  const { hasPermission } = usePermissions();
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
-  const [search, setSearch] = useState<string>("");
-  const [phoneNumber, setPhoneNumber] = useState<string>("");
-  const [company, setCompany] = useState("");
-
-
-
-
-const isPasswordValid = checks.every((check) => check.valid);
-
-  console.log("is Admin :", isAdmin);
-
-  const handleLimit = (n: string) => {
-    setPageLimit(Number(n));
-    setCurrentPages(1);
-  };
-
-  useEffect(() => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-    debounceRef.current = setTimeout(() => {
-      setSearchFilter(search);
-    }, 500);
-  }, [search]);
-
-  useEffect(() => {
-    setFormData((p) => ({
-      ...p,
-      phone: `${selectedcountryCode}${phoneNumber}`,
-    }));
-  }, [selectedcountryCode, phoneNumber]);
-
-  // Add these to your UserTableComponentProps type:
-  // companyLoading: boolean
-  // companyHasMore: boolean
-  // onCompanyScrollEnd: () => void
-  // selectedCompanyId: string
-
-  // Replace the CompanySelect component and the filter section in the table header:
-
   const CompanySelect: React.FC<
     CompanySelectProps & {
       onScrollEnd?: () => void;
@@ -326,6 +249,82 @@ const isPasswordValid = checks.every((check) => check.valid);
       </div>
     );
   };
+
+export const UsersTable = ({
+  currentPage,
+  pageLimit,
+  userData,
+  handleDelete,
+  isLoading,
+  isRoleLoading,
+  isPopupShow,
+  setIsPopupShow,
+  formData,
+  roleData,
+  handleChange,
+  handleUserRoleChange,
+  handleRemoveRole,
+  handleSubmit,
+  setPageLimit,
+  totalPage,
+  setFormData,
+  err,
+  loading,
+  setCurrentPages,
+  setSearchFilter,
+  isAdmin,
+  handleCompanyFilter,
+  companyHasMore,
+  companyLoading,
+  onCompanyScrollEnd,
+  selectedCompanyId,
+  companyData,
+  handleCompanyChange,
+  checks
+}: UserTableComponentProps): JSX.Element => {
+  const { t } = useTranslation();
+  const [selectedcountryCode, setCountryCode] = useState("+91");
+  const { hasPermission } = usePermissions();
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const [search, setSearch] = useState<string>("");
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const [company, setCompany] = useState("");
+
+
+
+const isPasswordValid = checks.every((check) => check.valid);
+
+
+  const handleLimit = (n: string) => {
+    setPageLimit(Number(n));
+    setCurrentPages(1);
+  };
+
+  useEffect(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      setSearchFilter(search);
+    }, 500);
+  }, [search]);
+
+  useEffect(() => {
+    setFormData((p) => ({
+      ...p,
+      phone: `${selectedcountryCode}${phoneNumber}`,
+    }));
+  }, [selectedcountryCode, phoneNumber]);
+
+  // Add these to your UserTableComponentProps type:
+  // companyLoading: boolean
+  // companyHasMore: boolean
+  // onCompanyScrollEnd: () => void
+  // selectedCompanyId: string
+
+  // Replace the CompanySelect component and the filter section in the table header:
+
+
 
   return (
     <>
@@ -619,7 +618,7 @@ const isPasswordValid = checks.every((check) => check.valid);
       <div className="overflow-x-auto rounded-xl">
       <table className="w-full rounded-xl overflow-hidden text-slate-500 ">
         <thead className="">
-          <tr className="w-full border-b-2 border-zinc-300 bg-slate-200 dark:bg-gray-800">
+          <tr className="w-full border-b-2 border-zinc-300 bg-slate-200 dark:bg-gray-900">
             <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
               {t("s_no")}
             </th>
@@ -649,7 +648,7 @@ const isPasswordValid = checks.every((check) => check.valid);
             userData && userData?.length > 0 ? (
               userData?.map((item, index) => {
 
-                console.log("user data :",item.userRole)
+                
                 const rr = index % 2 == 0;
 
                 const date = new Date(item.createdAt).toLocaleDateString(
@@ -676,9 +675,9 @@ const isPasswordValid = checks.every((check) => check.valid);
                   <tr
                     className={`${
                       rr
-                        ? "bg-white dark:bg-transparent"
-                        : "bg-slate-100/50 dark:bg-slate-500"
-                    } w-full`}
+                        ? "bg-white dark:bg-transparent hover:bg-cyan-50 dark:hover:bg-gray-700/50"
+                        : "bg-slate-100/50 dark:bg-slate-900/30 hover:bg-cyan-50 dark:hover:bg-gray-700/50"
+                    } w-full group transition-colors `}
                     key={item.id}
                   >
                     <td className="p-4">{index + 1}</td>
@@ -694,9 +693,9 @@ const isPasswordValid = checks.every((check) => check.valid);
                       {item.userRole.map((item) => (
                         <span
                           key={item.id}
-                          className="bg-green-500 px-3.5 py-1.5 rounded-lg text-white text-xs tracking-wide md:mx-0   mx-3 whitespace-nowrap "
+                          className="bg-green-500 dark:bg-green-600  px-3.5 py-1.5 rounded-lg text-white text-xs tracking-wide md:mx-0   mx-3 whitespace-nowrap "
                         >
-                          {item.name}
+                          {item.name ? item.name : "Company Admin"}
                         </span>
                       ))}
                     </td>

@@ -51,7 +51,7 @@ const NoteCard = ({
   return (
     <div
       onClick={() => onClick(note)}
-      className="relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 hover:scale-105 transition-all hover:shadow-[0_0_20px_#00000020] duration-300 cursor-pointer group overflow-hidden"
+      className="relative bg-white dark:bg-gray-900/30 border border-gray-200 dark:border-gray-700 rounded-lg p-5 hover:scale-105 transition-all hover:shadow-[0_0_20px_#00000020] duration-300 cursor-pointer group overflow-hidden"
     >
       {note.byAdmin && (
         <div className="absolute -right-10 top-6 w-40 bg-cyan-600 text-white text-xs font-semibold py-1 text-center transform rotate-45 shadow-md z-10">
@@ -644,7 +644,7 @@ const Page = (): JSX.Element => {
           </p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 flex items-center justify-between gap-4 flex-wrap">
+        <div className="bg-white dark:bg-gray-900/30 border border-gray-200 dark:border-gray-700 rounded-xl p-5 flex items-center justify-between gap-4 flex-wrap">
           <ul className="flex items-center gap-3">
             <li
               className={`${

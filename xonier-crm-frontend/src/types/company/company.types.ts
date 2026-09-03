@@ -96,6 +96,8 @@ export interface CompanyFilterParams {
   companySize?: NUMBER_OF_EMPLOYEES;
 }
 
+
+
 export interface CompanyDeletedFilterParams {
   page?: number;
   limit?: number;

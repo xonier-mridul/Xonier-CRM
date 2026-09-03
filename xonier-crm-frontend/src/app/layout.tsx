@@ -38,7 +38,7 @@ type RootLayoutProps = {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${dmSans.variable} antialiased bg-stone-100 dark:bg-gray-800   min-h-screen custom-scrollbar `}
       >

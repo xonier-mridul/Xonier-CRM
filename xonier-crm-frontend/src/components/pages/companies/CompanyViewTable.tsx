@@ -16,6 +16,7 @@ import { MdOutlineEdit } from "react-icons/md";
 import { IoTrash, IoEyeOutline, IoRefreshOutline } from "react-icons/io5";
 import {
   COMPANY_STATUS,
+  COUNTRY_CODE,
   NUMBER_OF_EMPLOYEES,
 } from "@/src/constants/enum";
 import Link from "next/link";
@@ -49,6 +50,15 @@ const statusStyles: Record<string, string> = {
     "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400",
   [COMPANY_STATUS.DELETED]:
     "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400",
+};
+
+const getCountryName = (code?: string) => {
+  if (!code) return "—";
+
+  const country = Object.entries(COUNTRY_CODE).find(
+    ([, value]) => value === code);
+
+  return country? country[0].replace(/_/g, " "): code;
 };
 
 const sizeLabel: Record<string, string> = {
@@ -184,10 +194,14 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
           <tbody className="divide-y divide-slate-100 dark:divide-gray-700">
             {!isLoading ? (
               companyData && companyData.length > 0 ? (
-                companyData.map((company) => (
+                companyData.map((company,index) => (
                   <tr
                     key={company.id}  // ← _id not id
-                    className="group hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors"
+                      className={`${
+                      (index % 2 == 0)
+                        ? "bg-white dark:bg-transparent hover:bg-cyan-50 dark:hover:bg-gray-700/50"
+                        : "bg-slate-100/50 dark:bg-slate-900/30 hover:bg-cyan-50 dark:hover:bg-gray-700/50"
+                    } w-full group transition-colors `}
                   >
                     <td className="py-4 pr-4 p-2">
                       <div className="flex flex-col">
@@ -227,7 +241,7 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
 
                     <td className="py-4 pr-4">
                       <span className="text-xs text-gray-600 dark:text-gray-300 text-nowrap uppercase">
-                        {company.country ?? "—"}
+                        {getCountryName(company.country)}
                       </span>
                     </td>
 

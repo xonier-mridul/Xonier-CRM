@@ -87,10 +87,7 @@ const SideBar = () => {
     if (pathname.startsWith("/plans") || pathname.startsWith("/subscriptions")) {
       setOpenMenu("plans");
     }
-    if (pathname.startsWith("/companies") || pathname.startsWith("/companies/create") || 
-    pathname.startsWith("/companies/deleted-companies"))  {
-      setOpenMenu("company");
-    }
+   if ( pathname === "/companies" || pathname.startsWith("/companies/create") || pathname.startsWith("/companies/deleted-companies") ) 
     if (pathname.startsWith("/roles")) {
       setOpenMenu("user");
     }
@@ -158,10 +155,8 @@ const SideBar = () => {
         case "notifications":
           return pathname.startsWith("/notifications")
 
-          case "company":
-          return pathname.startsWith("/companies") ||
-          pathname.startsWith("/companies/create") || 
-    pathname.startsWith("/companies/deleted-companies")
+        case "company": // Parent menu is active for all company-related pages 
+          return ( pathname === "/companies" || pathname.startsWith("/companies/create") || pathname.startsWith("/companies/deleted-companies") );
 
       case "sales":
         return pathname.startsWith("/enquiry") ||
@@ -475,7 +470,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     { <li>
                       <Link
                         href="/companies"
-                        className={`${isActive("/companies")
+                        className={`${pathname === "/companies"
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 px-3 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent px-4"
                           } block  py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}

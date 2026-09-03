@@ -46,6 +46,12 @@ const CompanyService = {
     params?: CompanyFilterParams,
   ) =>
     api.get("/companies/", { params }),
+  
+ getAllByCompanyId: (
+  companyId: string,
+  params?: CompanyFilterParams
+) => api.get(`/companies/${companyId}/users`, { params }),
+
 
   getAllDeleted: (
     params?: CompanyDeletedFilterParams,
@@ -57,6 +63,9 @@ const CompanyService = {
 
   getById: (companyId: string) =>
     api.get(`/companies/${companyId}`),
+
+  getDeletedCompanyById: (companyId: string) =>
+    api.get(`/companies/${companyId}/deleted`),
 
   update: (
     companyId: string,

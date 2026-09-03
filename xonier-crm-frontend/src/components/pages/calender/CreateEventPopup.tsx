@@ -134,7 +134,7 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
 
   return (
-    <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/50 dark:bg-white/30 backdrop-blur-sm">
       <div className="w-full max-w-2xl rounded-xl bg-white dark:bg-gray-900 shadow-xl">
     
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-400 dark:border-gray-700">

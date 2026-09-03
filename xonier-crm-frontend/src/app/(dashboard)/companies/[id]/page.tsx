@@ -33,7 +33,7 @@ import { Company } from "@/src/types/company/company.types";
 import { COMPANY_STATUS } from "@/src/constants/enum";
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import Skeleton from "react-loading-skeleton";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/src/store";
 import { useTranslation } from "react-i18next";
 import { FaBuildingUser } from "react-icons/fa6";
@@ -192,6 +192,9 @@ export default function CompanyDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const auth = useSelector((state: RootState) => state.auth);
+
+
 
   
 
@@ -200,7 +203,18 @@ export default function CompanyDetailPage() {
     setIsLoading(true);
     if(!id) return;
     try {
-      const res = await CompanyService.getById(id as string);
+        const companyId = id as string;
+        let res;
+
+        try {
+            res = await CompanyService.getById(companyId);
+          } catch (error) {
+            if (auth?.isAdmin) {
+              res = await CompanyService.getDeletedCompanyById(companyId);
+            } else {
+              throw error;
+            }
+          }
       setCompany(res.data.data);
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -212,6 +226,9 @@ export default function CompanyDetailPage() {
       setIsLoading(false);
     }
   }, [id]);
+
+
+
 
   useEffect(() => { 
     fetchCompany();
@@ -759,7 +776,7 @@ export default function CompanyDetailPage() {
               <Card title={t("quick_actions")} icon={<IoShieldCheckmarkOutline />}>
                 <div className="py-3 flex flex-col gap-2">
                   <Link
-                    href={`/companies/${company.id}`}
+                    href={`/companies/${company.id}/users`}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors group"
                   >
                     <div className="h-8 w-8 rounded-lg bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center flex-shrink-0">

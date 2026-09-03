@@ -104,10 +104,10 @@ const SubscriptionTable: React.FC<ExtendedSubscriptionTableProps> = ({
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-200 dark:border-gray-700">
-              {COLUMNS.map((col) => (
+              {COLUMNS.map((col,index) => (
                 <th
                   key={col}
-                  className="pb-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 pr-4 whitespace-nowrap"
+                  className={`${index ==0 ? 'pl-2':''} pb-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 pr-4 whitespace-nowrap`}
                 >
                   {col}
                 </th>
@@ -118,21 +118,26 @@ const SubscriptionTable: React.FC<ExtendedSubscriptionTableProps> = ({
           <tbody className="divide-y divide-slate-100 dark:divide-gray-700">
             {!isLoading ? (
               subScriptionData && subScriptionData.length > 0 ? (
-                subScriptionData.map((item) => {
+                subScriptionData.map((item,index) => {
                   const symbol = (item.planId &&  item.planId instanceof Object) ? currencySymbol[item.planId?.currency] ?? "" : "";
                   const startDate = new Date(item.startSubscriptionDate).toLocaleDateString(
                     "en-IN",
                     { day: "numeric", month: "long", year: "numeric" }
                   );
                   const statusKey = item.status?.toLowerCase() ?? "";
+                  const rr = index % 2 == 0
 
                   return (
                     <tr
                       key={item.id}
-                      className="group hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors"
+                       className={`${
+                      rr
+                        ? "bg-white dark:bg-transparent hover:bg-cyan-50 dark:hover:bg-gray-700/50"
+                        : "bg-slate-100/50 dark:bg-slate-900/30 hover:bg-cyan-50 dark:hover:bg-gray-700/50"
+                    } w-full group transition-colors `}
                     >
                       {/* Subscription ID */}
-                      <td className="py-4 pr-4">
+                      <td className="py-4 pr-4 pl-2">
                         <span className="text-xs font-mono text-slate-600 dark:text-slate-300">
                           {item.subscriptionId}
                         </span>
@@ -167,7 +172,7 @@ const SubscriptionTable: React.FC<ExtendedSubscriptionTableProps> = ({
 
                       {/* Billing Cycle */}
                       <td className="py-4 pr-4">
-                        <span className="text-xs font-medium px-2.5 py-1 rounded-md capitalize bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
+                        <span className="text-xs font-medium px-2.5 py-1 rounded-md capitalize bg-blue-50 text-blue-600 dark:bg-blue-900 dark:text-blue-400">
                           {item.billingCycle}
                         </span>
                       </td>
@@ -184,7 +189,7 @@ const SubscriptionTable: React.FC<ExtendedSubscriptionTableProps> = ({
                         <div className="flex items-center gap-2">
                           <Link
                             href={`/subscriptions/${item.id}`}
-                            className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900/30 dark:hover:text-green-400 transition-colors"
+                            className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 hover:bg-teal-100 hover:text-teal-600 dark:hover:bg-teal-900 dark:hover:text-teal-400 transition-colors"
                           >
                             <IoEyeOutline className="text-base" />
                           </Link>
