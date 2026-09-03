@@ -300,6 +300,12 @@ const page = (): JSX.Element => {
     }
   };
 
+  console.log("auth :",auth.user?.userRole[0].code)
+  
+ const isCompanyAdmin = auth.user?.userRole?.some(
+  (role) => role.code === "COMPANY_ADMIN"
+);
+
   return (
     <div className="ml-72 mt-14 p-6">
       <UserUpdate
@@ -323,6 +329,7 @@ const page = (): JSX.Element => {
         passErr={passErr}
         isPassLoading={isPassLoading}
         isAdmin={auth.isAdmin}
+        isCompanyAdmin={isCompanyAdmin}
         companyData={companyData}
         companyLoading={companyLoading}
         companyHasMore={companyHasMore}
