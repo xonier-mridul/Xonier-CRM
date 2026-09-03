@@ -11,6 +11,7 @@ from app.core.constants import SUPER_ADMIN_CODE
 from app.core.tenant import current_company, is_admin_context
 from app.core.enums import COMPANY_STATUS
 from app.core.tenant import system_query
+from app.core.constants import JWT_OPTIONS
 
 
 
@@ -62,6 +63,8 @@ class Dependencies:
     async def authorized(self,request: Request, response: Response):
         try:
            token = None
+
+           
   
            auth_header = request.headers.get("Authorization")
            if auth_header and auth_header.startswith("Bearer "):
@@ -70,14 +73,17 @@ class Dependencies:
                 token = request.cookies.get("accessToken")
 
            if not token:
+               
                raise AppException(401, "You are logged out, please logged in again")
            payload = verify_access_token(token)
 
            
            
            if not payload:
+               response.delete_cookie(key="accessToken", **JWT_OPTIONS)
+               response.delete_cookie(key="refreshToken", **JWT_OPTIONS)
                
-               raise AppException(401, "Invalid or expired Tokens")
+               return AppException(401, "Invalid or expired Tokens")
            with system_query():
                 user = await self.userRepo.find_by_id(PydanticObjectId(payload["_id"]), populate=["userRole"])
            
@@ -86,11 +92,11 @@ class Dependencies:
            
            user = user.model_dump(mode="json")
 
-           if user["status"] == USER_STATUS.DELETED.value:
-               raise AppException(400, "Bad request, Your account is deleted")
+           user_status = user["status"]
+
+           if user_status and (user_status == USER_STATUS.INACTIVE.value or user_status == USER_STATUS.DELETED.value or user_status == USER_STATUS.SUSPENDED.value):
+               return AppException(400, f"User status is {"inactive" if user_status == USER_STATUS.INACTIVE else "suspended" if user_status == USER_STATUS.SUSPENDED else "deleted" if user_status == USER_STATUS.DELETED else "unknown"}")
            
-           if user["status"] == USER_STATUS.SUSPENDED.value:
-               raise AppException(400, "Your account is suspended, please contact with the admin")
       
            return True
 
