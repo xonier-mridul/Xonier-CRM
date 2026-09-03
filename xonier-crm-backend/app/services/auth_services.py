@@ -1581,8 +1581,19 @@ class AuthServices:
                     project=USER_GET_ME_PROJECT,
                 )
 
-            if not user:
-                raise AppException(400, "User not found")
+                if not user:
+                    raise AppException(400, "User not found")
+
+
+
+                user_status = user.get("status")
+
+                if not user_status:
+                    raise AppException(404, "User status not found")
+
+                if user_status and (user_status == USER_STATUS.INACTIVE or user_status == USER_STATUS.SUSPENDED or user_status == USER_STATUS.DELETED):
+                    raise AppException(400, f"User status is {"inactive" if user_status == USER_STATUS.INACTIVE else "suspended" if user_status == USER_STATUS.SUSPENDED else "deleted" if user_status == USER_STATUS.DELETED else "unknown"}")
+                
 
             user["email"] = encryptor.decrypt_data(user["email"])
             user["phone"] = encryptor.decrypt_data(user["phone"])
