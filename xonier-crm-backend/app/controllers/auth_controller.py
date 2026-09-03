@@ -161,6 +161,8 @@ class AuthController:
     async def getMe(self, request: Request, response: Response):
         try:
            user = request.state.user
+
+
                
            
            result = await self.service.getMe(user["_id"])

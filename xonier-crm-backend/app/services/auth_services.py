@@ -1812,7 +1812,7 @@ class AuthServices:
 
 
                 if is_manager and ObjectId(db_user.id) in is_manager:
-                    print("manager")
+                    
                     is_manager = True
 
                 elif(ObjectId(db_user.id) == ObjectId(user["_id"])): 
