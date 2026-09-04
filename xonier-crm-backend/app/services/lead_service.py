@@ -1184,9 +1184,10 @@ class LeadService:
                     if not ObjectId.is_valid(leadId):
                         raise AppException(400, "Invalid lead object id")
                     
-                    is_admin = validate_admin(user["userRole"])
+                    is_admin = validate_admin_company_admin(user["userRole"])
                     is_creator = False
-
+                    is_assigner = False
+                   
                     lead = await self.repo.find_by_id(
                         PydanticObjectId(leadId), populate=["createdBy", "assignedTo"]
                     )
@@ -1251,8 +1252,9 @@ class LeadService:
                         raise AppException(400, "Invalid lead object id")
                     
                     
-                    is_admin = validate_admin(user["userRole"])
+                    is_admin = validate_admin_company_admin(user["userRole"])
                     is_creator = False
+                    is_assigner = False
 
                     lead = await self.repo.find_by_id(
                         PydanticObjectId(leadId), populate=["createdBy", "assignedTo"]
