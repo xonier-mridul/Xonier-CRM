@@ -30,7 +30,7 @@ function CategoryBadge({
     name: string;
 }) {
     return (
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${color.bg} ${color.text}`}>
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ${color.bg} ${color.text} border border-current/15`}>
             <span>{icon}</span>
             {name}
         </span>

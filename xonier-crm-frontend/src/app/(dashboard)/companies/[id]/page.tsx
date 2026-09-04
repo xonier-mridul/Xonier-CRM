@@ -268,7 +268,7 @@ export default function CompanyDetailPage() {
   const isDeleted = company?.status === COMPANY_STATUS.DELETED;
 
   return (
-    <div className="mt-10 ml-72 min-h-screen p-6 bg-slate-50 dark:bg-gray-900">
+    <div className="mt-10 min-h-screen p-6 bg-slate-50 dark:bg-gray-900">
       <div className="max-w-6xl mx-auto flex flex-col gap-6">
 
         {/* Breadcrumb + Back */}

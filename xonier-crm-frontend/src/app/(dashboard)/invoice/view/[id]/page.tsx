@@ -178,7 +178,7 @@ const InvoiceViewPage = (): JSX.Element => {
 
   if (isLoading) {
     return (
-      <div className="ml-72 mt-14 p-6 space-y-4">
+      <div className="p-6 space-y-4">
         <Skeleton height={100} borderRadius={16} />
         <Skeleton height={60} borderRadius={16} />
         <div className="grid grid-cols-4 gap-4">
@@ -197,7 +197,7 @@ const InvoiceViewPage = (): JSX.Element => {
 
   if (!invoiceData) {
     return (
-      <div className="ml-72 mt-14 p-6 flex items-center justify-center min-h-[70vh]">
+      <div className="p-6 flex items-center justify-center min-h-[70vh]">
         <div className="text-center">
           <IoReceiptOutline className="w-20 h-20 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t("invoice_not_found")}</h2>
@@ -230,7 +230,7 @@ const InvoiceViewPage = (): JSX.Element => {
   const lineItems = invoiceData.lineItems ?? invoiceData.quotation?.lineItems ?? [];
 
   return (
-    <div className="ml-72 mt-14 min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="p-6 space-y-5">
 
         {/* ── Header ── */}

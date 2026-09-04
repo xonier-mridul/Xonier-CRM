@@ -272,7 +272,7 @@ const [searchManager, setSearchManager] = useState<string>("");
   
    
   return (
-   <div className={`ml-72 mt-14 p-6`}>
+   <div>
          <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm flex flex-col gap-5 p-6 rounded-xl border-[1px] border-slate-900/10 w-full"> 
          <h2 className="text-xl font-bold dark:text-white">{t("update_team")}</h2>
 

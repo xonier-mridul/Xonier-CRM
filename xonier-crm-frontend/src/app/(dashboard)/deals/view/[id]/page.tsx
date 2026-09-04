@@ -182,7 +182,7 @@ const DealViewPage = (): JSX.Element => {
 
   if (isLoading) {
     return (
-      <div className="ml-72 mt-14 p-6 flex flex-col gap-6 animate-pulse">
+      <div className="p-6 flex flex-col gap-6 animate-pulse">
         <Skeleton
           height={120}
           borderRadius={12}
@@ -220,7 +220,7 @@ const DealViewPage = (): JSX.Element => {
 
   if (!dealData) {
     return (
-      <div className="ml-72 mt-14 p-6">
+      <div>
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <IoDocumentText className="w-20 h-20 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
@@ -247,7 +247,7 @@ const DealViewPage = (): JSX.Element => {
   const date = formatDate(dealData?.createDate);
 
   return (
-    <div className="mt-14 ml-72 p-6 min-h-screen">
+    <div className="min-h-screen">
       {/* Global print styles: fixes gap-based whitespace at page breaks */}
       <style>{`
         @media print {
@@ -661,6 +661,38 @@ const DealViewPage = (): JSX.Element => {
                 </p>
               )}
             </div>
+
+            {/* Assigned To Information */}
+            {dealData.assignedTo && (
+              <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 p-6 rounded-xl border border-indigo-400 shadow-lg break-inside-avoid">
+                <div className="flex items-center gap-2 mb-4">
+                  <FaRegUser className="text-xl text-white" />
+                  <h2 className="text-white font-semibold text-xl">
+                    Assigned To
+                  </h2>
+                </div>
+                <div className="border-b border-white/30 w-full mb-4"></div>
+                <div className="space-y-4">
+                  <ProfileField
+                    icon={<IoPersonOutline className="w-4 h-4" />}
+                    label={t("name_2")}
+                    value={`${dealData.assignedTo.firstName} ${
+                      dealData.assignedTo.lastName ?? ""
+                    }`}
+                  />
+                  <ProfileField
+                    icon={<IoMailOutline className="w-4 h-4" />}
+                    label={t("email")}
+                    value={dealData.assignedTo.email}
+                  />
+                  <ProfileField
+                    icon={<IoCallOutline className="w-4 h-4" />}
+                    label={t("phone")}
+                    value={dealData.assignedTo.phone}
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Quick Stats */}
             <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700 break-inside-avoid">

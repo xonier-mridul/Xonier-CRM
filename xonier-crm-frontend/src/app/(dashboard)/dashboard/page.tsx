@@ -362,26 +362,26 @@ const ROLE_CONFIG: Record<
   super_admin: {
     label: "Super Admin",
     icon: Shield,
-    gradient: "from-red-500 to-rose-600",
-    badge: "border-red-500/30 text-red-400 bg-red-500/10",
+    gradient: "from-rose-500 to-rose-600",
+    badge: "border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40",
   },
   company_admin: {
     label: "Company Admin",
     icon: Building2,
-    gradient: "from-amber-500 to-orange-600",
-    badge: "border-amber-500/30 text-amber-400 bg-amber-500/10",
+    gradient: "from-amber-500 to-amber-600",
+    badge: "border-amber-200 dark:border-amber-900/60 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40",
   },
   manager: {
     label: "Manager",
     icon: UserCheck,
-    gradient: "from-indigo-500 to-violet-600",
-    badge: "border-indigo-500/30 text-indigo-400 bg-indigo-500/10",
+    gradient: "from-indigo-500 to-indigo-600",
+    badge: "border-indigo-200 dark:border-indigo-900/60 text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40",
   },
   user: {
     label: "User",
     icon: Users,
-    gradient: "from-emerald-500 to-teal-600",
-    badge: "border-emerald-500/30 text-emerald-400 bg-emerald-500/10",
+    gradient: "from-emerald-500 to-emerald-600",
+    badge: "border-emerald-200 dark:border-emerald-900/60 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40",
   },
 };
 
@@ -436,16 +436,16 @@ function useCountUp(target: number, duration = 1000) {
 const Tooltip_ = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 shadow-2xl text-xs">
+    <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700/80 rounded-xl px-3.5 py-2.5 shadow-xl text-xs text-white">
       <p className="font-semibold text-slate-200 mb-1.5">{label}</p>
       {payload.map((p: any) => (
-        <div key={p.name} className="flex items-center gap-2 text-slate-400">
+        <div key={p.name} className="flex items-center gap-2 text-slate-300">
           <span
             className="w-2 h-2 rounded-full flex-shrink-0"
             style={{ backgroundColor: p.color }}
           />
-          <span className="capitalize">{p.name}:</span>
-          <span className="font-bold text-slate-200">
+          <span className="capitalize text-slate-400">{p.name}:</span>
+          <span className="font-bold text-white tabular-nums">
             {typeof p.value === "number" ? p.value.toLocaleString() : p.value}
           </span>
         </div>
@@ -456,7 +456,7 @@ const Tooltip_ = ({ active, payload, label }: any) => {
 
 const Sk = ({ className }: { className?: string }) => (
   <div
-    className={`animate-pulse rounded-2xl bg-slate-800/60 ${className ?? ""}`}
+    className={`animate-pulse rounded-xl bg-slate-200/70 dark:bg-slate-800/60 ${className ?? ""}`}
   />
 );
 
@@ -483,12 +483,14 @@ function Ring({
   pct,
   color,
   size = 80,
+  strokeWidth = 7,
 }: {
   pct: number;
   color: string;
   size?: number;
+  strokeWidth?: number;
 }) {
-  const r = (size - 12) / 2;
+  const r = (size - strokeWidth - 4) / 2;
   const circ = 2 * Math.PI * r;
   const offset = circ - (Math.min(pct, 100) / 100) * circ;
   return (
@@ -498,8 +500,8 @@ function Ring({
         cy={size / 2}
         r={r}
         fill="none"
-        stroke="#E5E7EB"
-        strokeWidth="8"
+        className="stroke-slate-100 dark:stroke-slate-800"
+        strokeWidth={strokeWidth}
       />
       <circle
         cx={size / 2}
@@ -507,7 +509,7 @@ function Ring({
         r={r}
         fill="none"
         stroke={color}
-        strokeWidth="8"
+        strokeWidth={strokeWidth}
         strokeDasharray={circ}
         strokeDashoffset={offset}
         strokeLinecap="round"
@@ -538,25 +540,25 @@ function MetricRow({
       <div className="flex items-center justify-between mb-1.5">
         <div className="flex items-center gap-2">
           <span
-            className="w-1.5 h-1.5 rounded-full"
+            className="w-2 h-2 rounded-full ring-2 ring-transparent group-hover:ring-slate-200 dark:group-hover:ring-slate-700 transition-all"
             style={{ backgroundColor: color }}
           />
-          <span className="text-xs text-slate-400 capitalize group-hover:text-slate-300 transition-colors">
+          <span className="text-xs text-slate-600 dark:text-slate-400 capitalize group-hover:text-slate-900 dark:group-hover:text-slate-200 transition-colors font-medium">
             {label}
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-mono font-bold text-slate-300">
+          <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 tabular-nums">
             {v}
           </span>
-          <span className="text-xs text-slate-500 w-9 text-right">
+          <span className="text-xs text-slate-500 dark:text-slate-500 w-10 text-right tabular-nums">
             {p.toFixed(1)}%
           </span>
         </div>
       </div>
-      <div className="h-1 rounded-full bg-slate-200 dark:bg-slate-700/60">
+      <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800/80 overflow-hidden">
         <div
-          className="h-1 rounded-full transition-all duration-1000"
+          className="h-full rounded-full transition-all duration-1000"
           style={{ width: `${Math.min(p, 100)}%`, backgroundColor: color }}
         />
       </div>
@@ -585,99 +587,67 @@ function StatCard({
 }) {
   const { t } = useTranslation();
   const v = useCountUp(value);
-  const gradientId = `gradient-${label.replace(/\s+/g, "-")}`;
-  const trendPaths = [
-    "M0 42 C25 15, 55 55, 85 28 C115 8, 145 52, 175 30 C205 10, 235 40, 265 25 C285 18, 295 32, 300 28",
-    "M0 35 C30 50, 60 10, 90 40 C120 60, 150 15, 180 35 C210 55, 240 20, 300 30",
-    "M0 30 C40 5, 80 55, 120 20 C130 0, 200 50, 240 15 C270 5, 290 35, 300 25",
-  ];
-  const trendPath = trendPaths[Math.floor(Math.random() * trendPaths.length)];
 
   return (
     <div
       className="
         relative overflow-hidden
-        rounded-3xl
-        border border-slate-200/80 hover:border-slate-200 dark:hover:border-slate-500 dark:border-slate-700/50
-        bg-white dark:bg-slate-900
-        p-6
-        hover:-translate-y-1
-        transition-all duration-300
+        rounded-2xl
+        border border-slate-200/80 dark:border-slate-800
+        bg-white dark:bg-slate-900/90
+        p-5
+        shadow-xs hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700
+        transition-all duration-200
         group cursor-default
-        min-h-[150px]
+        flex flex-col justify-between
       "
     >
-      <div
-        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        style={{
-          background: `radial-gradient(circle at top right, ${color}12, transparent 70%)`,
-        }}
-      />
-      <div
-        className="absolute top-0 left-0 md:w-20 w-15 h-15 md:h-20 rounded-br-full opacity-5 group-hover:opacity-10 group-hover:w-25 group-hover:h-25 transition-opacity duration-500"
-        style={{ backgroundColor: color }}
-      />
-
-      <div className="relative z-10 flex gap-6 mb-4">
-        <div>
-          <div
-            className="md:w-12 md:h-12 h-9 w-9 rounded-xl flex items-center justify-center text-white flex-shrink-0"
-            style={{ backgroundColor: color }}
-          >
-            <Icon className="md:w-6 md:h-6 h-4 w-4" />
-          </div>
-        </div>
-        <div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="flex-1 min-w-0">
+          <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
             {label}
           </p>
-          <p className="text-3xl md:text-4xl font-black tracking-tight text-slate-800 dark:text-white mb-1">
+          <p className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mt-1 tabular-nums">
             {prefix}
             {v.toLocaleString()}
             {suffix}
           </p>
-          {sub && (
-            <p className="text-xs text-slate-500 mt-1 leading-relaxed">{sub}</p>
-          )}
-          {trend && (
-            <div
-              className={`flex items-center gap-1 mt-3 text-xs font-semibold ${trend.up ? "text-emerald-400" : "text-red-400"}`}
-            >
-              {trend.up ? (
-                <ArrowUpRight className="w-3.5 h-3.5" />
-              ) : (
-                <ArrowDownRight className="w-3.5 h-3.5" />
-              )}
-              {trend.val}
-              {t("vs_last_period")}
-            </div>
-          )}
+        </div>
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-105"
+          style={{
+            backgroundColor: `${color}14`,
+            color: color,
+          }}
+        >
+          <Icon className="w-5 h-5" />
         </div>
       </div>
-      <div className="absolute bottom-0 left-0 w-full h-14 pointer-events-none overflow-hidden">
-        <svg
-          viewBox="0 0 300 60"
-          preserveAspectRatio="none"
-          className="w-full h-full"
-        >
-          <defs>
-            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity="0.2" />
-              <stop offset="100%" stopColor={color} stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          <path
-            d={trendPath}
-            fill="none"
-            stroke={color}
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-          <path
-            d={`${trendPath} L300 60 L0 60 Z`}
-            fill={`url(#${gradientId})`}
-          />
-        </svg>
+
+      <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 text-xs">
+        {sub ? (
+          <span className="text-slate-500 dark:text-slate-400 truncate text-[11px]">
+            {sub}
+          </span>
+        ) : (
+          <span />
+        )}
+        {trend && (
+          <span
+            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium flex-shrink-0 ${
+              trend.up
+                ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60"
+                : "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200/60 dark:border-rose-800/60"
+            }`}
+          >
+            {trend.up ? (
+              <ArrowUpRight className="w-3 h-3" />
+            ) : (
+              <ArrowDownRight className="w-3 h-3" />
+            )}
+            {trend.val}%
+          </span>
+        )}
       </div>
     </div>
   );
@@ -689,42 +659,46 @@ function Card({
   icon: Icon,
   children,
   className = "",
+  action,
 }: {
   title: string;
   sub?: string;
   icon?: any;
   children: React.ReactNode;
   className?: string;
+  action?: React.ReactNode;
 }) {
   return (
     <div
-      className={`dark:bg-slate-800/80 bg-white border h-full border-slate-200 rounded-2xl p-5 hover:border-slate-200 dark:hover:border-slate-500 dark:border-slate-700/50 hover:-translate-y-1 transition-all duration-200 ${className}`}
+      className={`bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200 flex flex-col justify-between ${className}`}
     >
       {(title || Icon) && (
-        <div className="flex items-start justify-between mb-6 relative z-10">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between mb-5 relative z-10">
+          <div className="flex items-center gap-3 min-w-0">
             {Icon && (
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#16c2cf] to-[#0fb8a5] flex items-center justify-center">
-                <Icon className="w-5 h-5 text-white" />
+              <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-center flex-shrink-0 shadow-2xs">
+                <Icon className="w-4.5 h-4.5" />
               </div>
             )}
-            <div>
-              <h3 className="text-sm font-bold text-slate-800 dark:text-white tracking-tight whitespace-nowrap">
+            <div className="min-w-0">
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white tracking-tight truncate">
                 {title}
               </h3>
               {sub && (
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 whitespace-nowrap">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
                   {sub}
                 </p>
               )}
             </div>
           </div>
-          <button className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-            <span className="text-slate-500">↗</span>
-          </button>
+          {action ? (
+            action
+          ) : (
+            <div className="w-1.5 h-1.5 rounded-full bg-slate-200 dark:bg-slate-800" />
+          )}
         </div>
       )}
-      {children}
+      <div>{children}</div>
     </div>
   );
 }
@@ -732,8 +706,10 @@ function Card({
 function EmptyState({ icon: Icon, message }: { icon: any; message: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-8 gap-2">
-      <Icon className="w-8 h-8 text-slate-600 opacity-40" />
-      <p className="text-xs text-slate-600">{message}</p>
+      <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+        <Icon className="w-5 h-5 opacity-60" />
+      </div>
+      <p className="text-xs text-slate-500 dark:text-slate-400">{message}</p>
     </div>
   );
 }
@@ -747,20 +723,23 @@ function FilterBar({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="flex items-center gap-0.5 bg-slate-50 border-slate-200 dark:bg-slate-800/60 border dark:border-slate-700/50 rounded-xl p-1">
-      {FILTER_OPTIONS.map((o) => (
-        <button
-          key={o.value}
-          onClick={() => onChange(o.value as DashboardFilter)}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
-            current === o.value
-              ? "bg-cyan-600 text-white shadow-lg"
-              : "text-slate-500 hover:text-slate-300"
-          }`}
-        >
-          {t(o.label)}
-        </button>
-      ))}
+    <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/60 rounded-xl p-1 shadow-2xs">
+      {FILTER_OPTIONS.map((o) => {
+        const isSelected = current === o.value;
+        return (
+          <button
+            key={o.value}
+            onClick={() => onChange(o.value as DashboardFilter)}
+            className={`px-3 py-1.5 rounded-lg text-xs transition-all duration-150 cursor-pointer ${
+              isSelected
+                ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-semibold"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium"
+            }`}
+          >
+            {t(o.label)}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -776,17 +755,17 @@ function LeadsCard({ leads }: { leads: LeadStats }) {
       sub={t("status_and_conversion")}
       icon={Target}
     >
-      <div className="flex items-center gap-4 mb-4">
+      <div className="flex items-center gap-5 mb-5">
         <div className="relative flex-shrink-0">
-          <Ring pct={wonPct} color="#10b981" size={72} />
+          <Ring pct={wonPct} color="#10b981" size={76} strokeWidth={6} />
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-mono text-slate-500 text-xs font-bold dark:text-white">
+            <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums">
               {wonPct.toFixed(0)}%
             </span>
-            <span className="text-[9px] text-slate-400">{t("won_2")}</span>
+            <span className="text-[10px] text-slate-400 font-medium">{t("won_2")}</span>
           </div>
         </div>
-        <div className="flex-1 flex flex-col gap-1.5">
+        <div className="flex-1 flex flex-col gap-2">
           <MetricRow
             label={t("won")}
             value={leads.won}
@@ -817,38 +796,35 @@ function LeadsCard({ leads }: { leads: LeadStats }) {
           )}
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-2 pt-3 border-t border-slate-200 dark:border-slate-700/40">
+      <div className="grid grid-cols-3 gap-2 pt-3.5 border-t border-slate-100 dark:border-slate-800/80">
         {[
           {
             label: t("total"),
             value: leads.total,
             color: "#6366f1",
-            style: `bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/40 dark:to-slate-900 border border-indigo-200 dark:border-indigo-800/50 hover:border-indigo-400 dark:hover:border-indigo-500 hover:-translate-y-1 transition-all duration-300`,
           },
           {
             label: t("in_deal"),
             value: leads.inDeal,
             color: "#8b5cf6",
-            style: `bg-gradient-to-br from-violet-50 to-violet-100 dark:from-violet-950/40 dark:to-slate-900 border border-violet-200 dark:border-violet-800/50 hover:border-violet-400 dark:hover:border-violet-500 hover:-translate-y-1 transition-all duration-300`,
           },
           {
             label: t("this_period"),
             value: leads.inRange,
-            color: "#06b6d4",
-            style: `bg-gradient-to-br from-cyan-50 to-cyan-100 dark:from-cyan-950/40 dark:to-slate-900 border border-cyan-200 dark:border-cyan-800/50 hover:border-cyan-400 dark:hover:border-cyan-500 hover:-translate-y-1 transition-all duration-300`,
+            color: "#0284c7",
           },
         ].map((i) => (
           <div
             key={i.label}
-            className={`text-center rounded-xl p-2 border ${i.style} dark:bg-slate-700/30`}
+            className="text-center rounded-xl p-2.5 bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800/70 transition-colors hover:bg-slate-100/70 dark:hover:bg-slate-800/70"
           >
-            <p
-              className="font-mono text-base font-bold"
-              style={{ color: i.color }}
-            >
+            <p className="text-base font-bold text-slate-900 dark:text-white tabular-nums">
               <AnimNum value={i.value} />
             </p>
-            <p className="text-[10px] text-slate-500 mt-0.5">{i.label}</p>
+            <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 mt-0.5 uppercase tracking-wider flex items-center justify-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: i.color }} />
+              {i.label}
+            </p>
           </div>
         ))}
       </div>
@@ -866,71 +842,67 @@ function DealsCard({ deals }: { deals: DealStats }) {
       sub={t("financial_performance")}
       icon={DollarSign}
     >
-      <div className="mb-4">
-        <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">
+      <div className="mb-5">
+        <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
           {t("total_revenue")}
         </p>
-        <p className="font-mono text-4xl font-bold text-emerald-400">
+        <p className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">
           {fmtMoney(deals.totalRevenue ?? 0)}
         </p>
-        <p className="text-xs text-slate-500 mt-1">
-          {t("period")}{" "}
-          <span className="text-emerald-400 font-semibold">
+        <div className="flex items-center gap-2 mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+          <span>{t("period")}:</span>
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60 tabular-nums">
             {fmtMoney(periodRevenue)}
           </span>
-        </p>
+        </div>
       </div>
-      <div className="grid grid-cols-4 rounded-xl py-2 border border-slate-200 mb-3 dark:border-slate-700">
+      <div className="grid grid-cols-4 rounded-xl overflow-hidden bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800/70 divide-x divide-slate-200/60 dark:divide-slate-800 mb-4">
         {[
           {
             label: t("active"),
             value: deals.active,
             color: "#6366f1",
-            border: "border-none",
           },
           {
             label: t("closed"),
             value: deals.closed,
             color: "#10b981",
-            border: "border-l border-slate-200",
           },
           {
             label: t("total"),
             value: deals.total,
             color: "#8b5cf6",
-            border: "border-l border-slate-200",
           },
           {
             label: t("this_period"),
             value: deals.inRange,
-            color: "#06b6d4",
-            border: "border-l border-slate-200",
+            color: "#0284c7",
           },
         ].map((i) => (
           <div
             key={i.label}
-            className={`flex flex-col justify-center ${i.border} items-center px-2.5 border-slate-200/40 dark:border-slate-700/40 hover:-translate-y-1`}
+            className="flex flex-col justify-center items-center py-2.5 px-2 text-center transition-colors hover:bg-slate-100/70 dark:hover:bg-slate-800/70"
           >
-            <p
-              className="font-mono text-lg font-bold"
-              style={{ color: i.color }}
-            >
+            <p className="text-sm md:text-base font-bold text-slate-900 dark:text-white tabular-nums">
               <AnimNum value={i.value} />
             </p>
-            <p className="text-[10px] text-slate-500">{i.label}</p>
+            <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 mt-0.5 uppercase tracking-wider flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: i.color }} />
+              {i.label}
+            </p>
           </div>
         ))}
       </div>
-      <div className="pt-3 border-t border-slate-200/40 dark:border-slate-700/40">
-        <div className="flex justify-between text-xs mb-1.5">
-          <span className="text-slate-500">{t("close_rate")}</span>
-          <span className="font-mono text-emerald-400">
+      <div className="pt-3.5 border-t border-slate-100 dark:border-slate-800/80">
+        <div className="flex justify-between items-center text-xs mb-2">
+          <span className="text-slate-500 dark:text-slate-400 font-medium">{t("close_rate")}</span>
+          <span className="font-semibold text-slate-900 dark:text-white tabular-nums">
             {closedPct.toFixed(1)}%
           </span>
         </div>
-        <div className="h-1.5 rounded-full bg-white dark:bg-slate-700/60">
+        <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
           <div
-            className="h-1.5 rounded-full bg-emerald-500"
+            className="h-full rounded-full bg-emerald-500 transition-all duration-1000"
             style={{ width: `${Math.min(closedPct, 100)}%` }}
           />
         </div>
@@ -955,36 +927,36 @@ function PipelineChart({ pipeline }: { pipeline: PipelineStage[] }) {
       sub={t("stage_distribution")}
       icon={Layers}
     >
-      <div className="flex flex-col gap-2.5 mb-4">
+      <div className="flex flex-col gap-3 mb-5">
         {pipeline.map((s) => {
           const color = PIPELINE_COLORS[s.pipeline] ?? "#6366f1";
           return (
             <div key={s.pipeline} className="group">
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center justify-between mb-1.5">
                 <div className="flex items-center gap-2">
                   <span
-                    className="w-2 h-2 rounded-sm"
+                    className="w-2 h-2 rounded-full"
                     style={{ backgroundColor: color }}
                   />
-                  <span className="text-xs text-slate-400 capitalize group-hover:text-slate-300 transition-colors">
+                  <span className="text-xs font-medium text-slate-700 dark:text-slate-300 capitalize group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
                     {translatePipeline(s.pipeline)}
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-600">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
                     {fmtMoney(s.totalAmount)}
                   </span>
-                  <span className="text-xs font-mono font-bold text-slate-300">
+                  <span className="text-xs font-bold text-slate-900 dark:text-white tabular-nums">
                     {s.count}
                   </span>
-                  <span className="text-xs text-slate-600 w-9 text-right">
+                  <span className="text-xs text-slate-400 w-10 text-right tabular-nums">
                     {s.percentage.toFixed(1)}%
                   </span>
                 </div>
               </div>
-              <div className="h-1.5 rounded-full bg-white dark:bg-slate-700/60">
+              <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                 <div
-                  className="h-1.5 rounded-full"
+                  className="h-full rounded-full transition-all duration-1000"
                   style={{
                     width: `${Math.min(s.percentage, 100)}%`,
                     backgroundColor: color,
@@ -996,7 +968,7 @@ function PipelineChart({ pipeline }: { pipeline: PipelineStage[] }) {
         })}
       </div>
       {hasData ? (
-        <ResponsiveContainer width="100%" height={100}>
+        <ResponsiveContainer width="100%" height={110}>
           <BarChart
             data={pipeline.map((s) => ({
               name: translatePipeline(s.pipeline).split(" ")[0],
@@ -1006,20 +978,21 @@ function PipelineChart({ pipeline }: { pipeline: PipelineStage[] }) {
           >
             <CartesianGrid
               strokeDasharray="3 3"
-              stroke="#334155"
+              stroke="#e2e8f0"
+              strokeOpacity={0.6}
               vertical={false}
             />
             <XAxis
               dataKey="name"
-              tick={{ fontSize: 9, fill: "#64748b" }}
+              tick={{ fontSize: 10, fill: "#94a3b8" }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
-              tick={{ fontSize: 9, fill: "#64748b" }}
+              tick={{ fontSize: 10, fill: "#94a3b8" }}
               axisLine={false}
               tickLine={false}
-              width={20}
+              width={22}
             />
             <Tooltip content={<Tooltip_ />} />
             <Bar dataKey="count" radius={[4, 4, 0, 0]}>
@@ -1031,7 +1004,7 @@ function PipelineChart({ pipeline }: { pipeline: PipelineStage[] }) {
         </ResponsiveContainer>
       ) : (
         <div className="h-24 flex items-center justify-center">
-          <p className="text-xs text-slate-600">{t("no_deal_data_yet")}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{t("no_deal_data_yet")}</p>
         </div>
       )}
     </Card>
@@ -1062,51 +1035,52 @@ function MonthlyTrendChart({
       icon={BarChart3}
     >
       {hasData ? (
-        <ResponsiveContainer width="100%" height={200}>
+        <ResponsiveContainer width="100%" height={210}>
           <AreaChart
             data={merged}
-            margin={{ top: 5, right: 5, bottom: 0, left: 0 }}
+            margin={{ top: 8, right: 8, bottom: 0, left: 0 }}
           >
             <defs>
               <linearGradient id="gL" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.18} />
                 <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="gD" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                <stop offset="5%" stopColor="#10b981" stopOpacity={0.18} />
                 <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid
               strokeDasharray="3 3"
-              stroke="#334155"
+              stroke="#e2e8f0"
+              strokeOpacity={0.5}
               vertical={false}
             />
             <XAxis
               dataKey="month"
-              tick={{ fontSize: 10, fill: "#64748b" }}
+              tick={{ fontSize: 11, fill: "#94a3b8" }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
-              tick={{ fontSize: 10, fill: "#64748b" }}
+              tick={{ fontSize: 11, fill: "#94a3b8" }}
               axisLine={false}
               tickLine={false}
-              width={24}
+              width={26}
             />
             <Tooltip content={<Tooltip_ />} />
             <Legend
               wrapperStyle={{
-                fontSize: "11px",
-                paddingTop: "8px",
-                color: "#94a3b8",
+                fontSize: "12px",
+                paddingTop: "10px",
+                color: "#64748b",
               }}
             />
             <Area
               type="monotone"
               dataKey="leads"
               stroke="#6366f1"
-              strokeWidth={2.5}
+              strokeWidth={2}
               fill="url(#gL)"
               dot={false}
               activeDot={{ r: 4, fill: "#6366f1", strokeWidth: 0 }}
@@ -1115,7 +1089,7 @@ function MonthlyTrendChart({
               type="monotone"
               dataKey="deals"
               stroke="#10b981"
-              strokeWidth={2.5}
+              strokeWidth={2}
               fill="url(#gD)"
               dot={false}
               activeDot={{ r: 4, fill: "#10b981", strokeWidth: 0 }}
@@ -1979,47 +1953,40 @@ function UsersCard({ users }: { users: UserStats }) {
   const { t } = useTranslation();
   return (
     <Card title={t("team_overview")} sub={t("user_distribution")} icon={Users}>
-      <div className="grid grid-cols-4 gap-2 mb-4">
+      <div className="grid grid-cols-4 gap-2 mb-5">
         {[
           {
             label: t("total"),
             value: users.total,
             color: "#6366f1",
-            style: `bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/40 dark:to-slate-900 border border-indigo-200 dark:border-indigo-800/50 hover:border-indigo-400 dark:hover:border-indigo-500 hover:-translate-y-1 transition-all duration-300`,
           },
           {
             label: t("active"),
             value: users.active,
             color: "#10b981",
-            style: `bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/40 dark:to-slate-900 border border-green-200 dark:border-green-800/50 hover:border-green-400 dark:hover:border-green-500 hover:-translate-y-1 transition-all duration-300`,
           },
           {
             label: t("inactive"),
             value: users.inactive,
             color: "#f59e0b",
-            style: `bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/40 dark:to-slate-900 border border-amber-200 dark:border-amber-800/50 hover:border-amber-400 dark:hover:border-amber-500 hover:-translate-y-1 transition-all duration-300`,
           },
           {
             label: t("not_verified"),
             value: users.notVerified ?? 0,
             color: "#ef4444",
-            style: `bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950/40 dark:to-slate-900 border border-red-200 dark:border-red-800/50 hover:border-red-400 dark:hover:border-red-500 hover:-translate-y-1 transition-all duration-300`,
           },
         ].map((i) => (
           <div
             key={i.label}
-            className={`rounded-xl p-3 border flex flex-col justify-center ${i.style} items-center text-center`}
-            style={{
-              background: `linear-gradient(135deg, ${i.color}12, ${i.color}05)`,
-            }}
+            className="rounded-xl p-2.5 bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800/70 text-center transition-colors hover:bg-slate-100/70 dark:hover:bg-slate-800/70 flex flex-col justify-center items-center"
           >
-            <p
-              className="font-mono text-xl font-bold"
-              style={{ color: i.color }}
-            >
+            <p className="text-base md:text-lg font-bold text-slate-900 dark:text-white tabular-nums">
               <AnimNum value={i.value} />
             </p>
-            <p className="text-[10px] text-slate-500 mt-0.5">{i.label}</p>
+            <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 mt-0.5 uppercase tracking-wider flex items-center justify-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: i.color }} />
+              {i.label}
+            </p>
           </div>
         ))}
       </div>
@@ -2043,9 +2010,9 @@ function UsersCard({ users }: { users: UserStats }) {
           color="#ef4444"
         />
       </div>
-      <div className="mt-3 pt-3 border-t border-slate-700/40 flex justify-between text-xs">
-        <span className="text-slate-500">{t("this_month_2")}</span>
-        <span className="font-bold text-indigo-400">
+      <div className="mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800/80 flex justify-between items-center text-xs">
+        <span className="text-slate-500 dark:text-slate-400 font-medium">{t("this_month_2")}</span>
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-800/60 tabular-nums">
           +{users.thisMonth ?? 0} {t("new")}
         </span>
       </div>
@@ -2063,12 +2030,12 @@ function ConversionCard({ conv }: { conv: ConversionRate }) {
     >
       <div className="flex items-center justify-center mb-5">
         <div className="relative">
-          <Ring pct={conv.conversionRate} color="#6366f1" size={110} />
+          <Ring pct={conv.conversionRate} color="#6366f1" size={105} strokeWidth={8} />
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-mono text-slate-400 text-2xl font-bold dark:text-white">
+            <span className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">
               {conv.conversionRate.toFixed(1)}%
             </span>
-            <span className="text-[10px] text-slate-500">
+            <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider mt-0.5">
               {t("conversion_2")}
             </span>
           </div>
@@ -2097,16 +2064,18 @@ function ConversionCard({ conv }: { conv: ConversionRate }) {
         ].map((i) => (
           <div
             key={i.label}
-            className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-slate-200/30 dark:bg-slate-700/30 border border-slate-200/40 dark:border-slate-700/40"
+            className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800/70 transition-colors hover:bg-slate-100/70 dark:hover:bg-slate-800/70 text-center"
           >
-            <i.icon className="w-4 h-4" style={{ color: i.color }} />
-            <span
-              className="font-mono text-xl font-bold"
-              style={{ color: i.color }}
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center mb-0.5"
+              style={{ backgroundColor: `${i.color}14`, color: i.color }}
             >
+              <i.icon className="w-3.5 h-3.5" />
+            </div>
+            <span className="text-base font-bold text-slate-900 dark:text-white tabular-nums">
               <AnimNum value={i.value} />
             </span>
-            <span className="text-[10px] text-slate-500">{i.label}</span>
+            <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">{i.label}</span>
           </div>
         ))}
       </div>
@@ -3520,7 +3489,7 @@ export default function UnifiedDashboardPage() {
 
   if (loading) {
     return (
-      <div className="mt-10 lg:ml-72 min-h-screen dark:bg-slate-900 p-6">
+      <div className="mt-10 min-h-screen dark:bg-slate-900 p-6">
         <div className="flex items-center gap-3 mb-6">
           <Sk className="h-10 w-10" />
           <Sk className="h-8 w-48" />
@@ -3552,7 +3521,7 @@ export default function UnifiedDashboardPage() {
 
   if (error) {
     return (
-      <div className="mt-10 md:ml-72 min-h-screen dark:bg-slate-900 flex items-center justify-center">
+      <div className="mt-10 min-h-screen dark:bg-slate-900 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
             <AlertCircle className="w-8 h-8 text-red-400" />
@@ -3576,40 +3545,40 @@ export default function UnifiedDashboardPage() {
   const RoleIcon = rc.icon;
 
   return (
-    <div className="relative mt-10 lg:ml-72 min-h-screen">
-      <div className="p-6 flex flex-col gap-5">
-        <div className="flex flex-col lg:flex-row items-center justify-center">
-          <div className="flex w-full items-center gap-3 mb-4">
+    <div className="relative min-h-screen">
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex items-center gap-3">
             <div
-              className={`w-10 h-10 rounded-xl bg-gradient-to-br ${rc.gradient} flex items-center justify-center shadow-lg`}
+              className={`w-10 h-10 rounded-xl bg-gradient-to-br ${rc.gradient} flex items-center justify-center shadow-xs flex-shrink-0`}
             >
               <RoleIcon className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold dark:text-white tracking-tight">
-                {t("dashboard")}
-              </h1>
-              <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+                  {t("dashboard")}
+                </h1>
                 <span
-                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-widest ${rc.badge}`}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-[11px] font-semibold ${rc.badge}`}
                 >
                   <RoleIcon className="w-3 h-3" />
                   {t(rc.label)}
                 </span>
-                <span>·</span>
-                <span>
-                  {t("generated")}{" "}
-                  {formatDate(data.period.generatedAt, i18n.language)}
-                </span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                {t("generated")}{" "}
+                {formatDate(data.period.generatedAt, i18n.language)}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3 w-full justify-end">
+          <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
             <FilterBar current={filter} onChange={(f) => setFilter(f)} />
             <button
               onClick={() => load(true)}
               disabled={refreshing}
-              className="w-9 h-9 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-indigo-400 hover:border-indigo-500/50 transition-all disabled:opacity-50 flex items-center justify-center"
+              aria-label="Refresh stats"
+              className="w-9 h-9 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-slate-700 transition-all shadow-2xs disabled:opacity-50 flex items-center justify-center cursor-pointer"
             >
               <RefreshCw
                 className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}

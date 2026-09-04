@@ -17,35 +17,42 @@ const AVAILABLE_STATUSES: LeadEngagementStatus[] = [
 
 export const STATUS_CONFIG: Record<
   LeadEngagementStatus,
-  { label: string; color: string }
+  { label: string; color: string; textColor: string }
 > = {
   [LeadEngagementStatus.INTERESTED]: {
     label: "Interested",
-    color: "bg-green-500",
+    color: "bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-700/40",
+    textColor: "text-teal-600 dark:text-teal-400",
   },
   [LeadEngagementStatus.NOT_INTERESTED]: {
     label: "Not Interested",
-    color: "bg-red-500",
+    color: "bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-700/40",
+    textColor: "text-rose-500 dark:text-rose-400",
   },
   [LeadEngagementStatus.CONNECTED]: {
     label: "Connected",
-    color: "bg-blue-500",
+    color: "bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-700/40",
+    textColor: "text-sky-600 dark:text-sky-400",
   },
   [LeadEngagementStatus.NOT_CONNECTED]: {
     label: "Not Connected",
-    color: "bg-yellow-500",
+    color: "bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/40",
+    textColor: "text-amber-600 dark:text-amber-400",
   },
   [LeadEngagementStatus.NOT_REACHED]: {
     label: "Not Reached",
-    color: "bg-gray-500",
+    color: "bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600",
+    textColor: "text-slate-500 dark:text-slate-400",
   },
   [LeadEngagementStatus.WRONG_NUMBER]: {
     label: "Wrong Number",
-    color: "bg-red-900",
+    color: "bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-700/40",
+    textColor: "text-rose-500 dark:text-rose-400",
   },
   [LeadEngagementStatus.MEETING_SCHEDULED]: {
     label: "Meeting Scheduled",
-    color: "bg-green-900",
+    color: "bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-700/40",
+    textColor: "text-violet-600 dark:text-violet-400",
   },
 };
 
@@ -137,22 +144,21 @@ export default function StatusDropdown({
 
   return (
     <>
-      {/* 🔹 Button */}
-      <div className="inline-block  " ref={buttonRef}>
+      {/* Button */}
+      <div className="inline-block" ref={buttonRef}>
         <button
           onClick={handleToggle}
           disabled={isUpdating}
           className={`${
             STATUS_CONFIG[currentStatus].color
-          } text-white px-4 py-1.5 text-sm rounded-md flex items-center gap-2 justify-between min-w-[140px]`}
+          } ${STATUS_CONFIG[currentStatus].textColor} px-3 py-1.5 text-[13px] font-semibold rounded-md flex items-center gap-2 justify-between min-w-[130px] transition-all`}
         >
           <span>{STATUS_CONFIG[currentStatus].label}</span>
-
           {isUpdating ? (
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
           ) : (
             <FaChevronDown
-              className={`text-xs transition-transform ${
+              className={`text-[10px] opacity-60 transition-transform ${
                 isOpen ? "rotate-180" : ""
               }`}
             />
@@ -196,7 +202,7 @@ export default function StatusDropdown({
                     }`}
                   />
 
-                  <span className="text-sm text-gray-800 dark:text-white">
+                  <span className="text-[13px] text-gray-800 dark:text-white">
                     {STATUS_CONFIG[status].label}
                   </span>
                 </button>

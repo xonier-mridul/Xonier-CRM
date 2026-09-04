@@ -109,7 +109,7 @@ const EditCompanyPage = () => {
   };
 
   return (
-    <div className="mt-10 ml-72 min-h-screen p-6">
+    <div className="mt-10 min-h-screen p-6">
       <div className="mb-8">
        
         <div className="flex items-center gap-3 mb-1">

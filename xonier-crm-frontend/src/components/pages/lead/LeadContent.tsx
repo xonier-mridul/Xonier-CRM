@@ -5,9 +5,9 @@ import Link from "next/link";
 import { MdOutlineEdit } from "react-icons/md";
 import { FaRegEye } from "react-icons/fa";
 import { FaPlus, FaXmark, FaCheck } from "react-icons/fa6";
-import { FiFilter } from "react-icons/fi";
+import { FiFilter, FiActivity, FiUser, FiCalendar, FiUserPlus, FiX, FiTag, FiPhone, FiTarget, FiHash, FiMessageCircle, FiSettings, FiUserCheck } from "react-icons/fi";
 import { usePermissions } from "@/src/hooks/usePermissions";
-import { LEAD_SOURCE_TYPE, PERMISSIONS, SALES_STATUS } from "@/src/constants/enum";
+import { LEAD_SOURCE_TYPE, PERMISSIONS, SALES_STATUS, PROJECT_TYPES } from "@/src/constants/enum";
 import axios from "axios";
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import { toast } from "react-toastify";
@@ -41,10 +41,12 @@ import CreatedAt from "@/src/components/common/CreatedAt";
 import DateFilterButton from "@/src/components/common/dateFilter";
 import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 import TagBadge from "@/src/components/common/tagBadge";
-import StatusDropdown from "@/src/components/pages/lead/StatusDropdown";
+import StatusDropdown, { STATUS_CONFIG } from "@/src/components/pages/lead/StatusDropdown";
 import { LeadEngagementStatus } from "@/src/constants/enum";
 import UserSelect from "@/src/components/common/userselect";
 import { useTranslation } from "react-i18next";
+import { HiOutlineViewBoards, HiOutlineTable } from "react-icons/hi";
+import LeadKanbanBoard from "./LeadKanbanBoard";
 
 const TAB = { ALL: 1, WON: 2, LOST: 3, ASSIGNED: 4 } as const;
 
@@ -81,11 +83,9 @@ const LeadContent = (): JSX.Element => {
   const [assignedLeadData, setAssignedLeadData] = useState<Lead[]>([]);
   const [err, setErr] = useState<string[] | string>("");
   const [currentTab, setCurrentTab] = useState<number>(TAB.ALL);
-  const [userData, setUserData] = useState<User[]>([]);
-
+  const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
   // Advanced filter data sources
-  const [teamData, setTeamData] = useState<Team[]>([]);
-  const [designationData, setDesignationData] = useState<any[]>([]);
+  const [userData, setUserData] = useState<User[]>([]);
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [currentWonPage, setWonCurrentPage] = useState<number>(1);
@@ -108,10 +108,6 @@ const LeadContent = (): JSX.Element => {
 
   // ✅ SINGLE SOURCE OF TRUTH for all advanced filters (Team, Designation, Sales Person, Source)
   const {
-    teamFilter,
-    setTeamFilter,
-    designationFilter,
-    setDesignationFilter,
     salesPersonFilter,
     setSalesPersonFilter,
     sourceFilter,
@@ -144,10 +140,16 @@ const LeadContent = (): JSX.Element => {
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [isAssigning, setIsAssigning] = useState<boolean>(false);
+  const [assignDropdownOpen, setAssignDropdownOpen] = useState<boolean>(false);
+  const [assignSearchVal, setAssignSearchVal] = useState<string>("");
+  const assignDropdownRef = useRef<HTMLDivElement>(null);
 
   const [selectedReassignIds, setSelectedReassignIds] = useState<Set<string>>(new Set());
   const [selectedReassignUserId, setSelectedReassignUserId] = useState<string>("");
   const [isReassigning, setIsReassigning] = useState<boolean>(false);
+  const [reassignDropdownOpen, setReassignDropdownOpen] = useState<boolean>(false);
+  const [reassignSearchVal, setReassignSearchVal] = useState<string>("");
+  const reassignDropdownRef = useRef<HTMLDivElement>(null);
 
   const { hasPermission } = usePermissions();
   const searchParams = useSearchParams();
@@ -159,8 +161,6 @@ const LeadContent = (): JSX.Element => {
     ...filters,
     ...query,
     ...dateFilter,
-    team: teamFilter || undefined,
-    designation: designationFilter || undefined,
     source: sourceFilter || undefined,
     createdBy: salesPersonFilter || undefined,
   });
@@ -180,7 +180,8 @@ const LeadContent = (): JSX.Element => {
   const getLeadData = async (showLoading = true): Promise<void> => {
     if (showLoading) setIsLoading(true);
     try {
-      const result = await LeadService.getAll(currentPage, pageLimit, getLeadFilters());
+      const fetchLimit = viewMode === "kanban" ? 200 : pageLimit;
+      const result = await LeadService.getAll(currentPage, fetchLimit, getLeadFilters());
       if (result.status === 200) {
         const data = result.data.data;
         setLeadData(data.data);
@@ -200,7 +201,8 @@ const LeadContent = (): JSX.Element => {
   const getWonLeadData = async (showLoading = true): Promise<void> => {
     if (showLoading) setIsLoading(true);
     try {
-      const result = await LeadService.getAll(currentWonPage, wonPageLimit, {
+      const fetchLimit = viewMode === "kanban" ? 200 : wonPageLimit;
+      const result = await LeadService.getAll(currentWonPage, fetchLimit, {
         ...getLeadFilters(),
         status: SALES_STATUS.WON,
       });
@@ -223,7 +225,8 @@ const LeadContent = (): JSX.Element => {
   const getLostLeadData = async (showLoading = true): Promise<void> => {
     if (showLoading) setIsLoading(true);
     try {
-      const result = await LeadService.getAll(currentLostPage, lostPageLimit, {
+      const fetchLimit = viewMode === "kanban" ? 200 : lostPageLimit;
+      const result = await LeadService.getAll(currentLostPage, fetchLimit, {
         ...getLeadFilters(),
         status: SALES_STATUS.LOST,
       });
@@ -246,7 +249,8 @@ const LeadContent = (): JSX.Element => {
   const getAssignedLeadData = async (showLoading = true): Promise<void> => {
     if (showLoading) setIsLoading(true);
     try {
-      const result = await LeadService.getAll(currentAssignedPage, assignedPageLimit, {
+      const fetchLimit = viewMode === "kanban" ? 200 : assignedPageLimit;
+      const result = await LeadService.getAll(currentAssignedPage, fetchLimit, {
         ...getLeadFilters(),
         isAssigned: true,
         assignee: assignFilter || undefined,
@@ -276,23 +280,7 @@ const LeadContent = (): JSX.Element => {
     }
   };
 
-  const getTeamData = async (): Promise<void> => {
-    try {
-      // const result = await TeamService.getAllWithoutPagination();
-      // if (result.status === 200) setTeamData(result.data.data);
-    } catch (error) {
-      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
-    }
-  };
 
-  const getDesignationData = async (): Promise<void> => {
-    try {
-      // const result = await DesignationService.getAllWithoutPagination();
-      // if (result.status === 200) setDesignationData(result.data.data);
-    } catch (error) {
-      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
-    }
-  };
 
   // Load only the active table. The previous eager approach issued four lead
   // queries on mount; a slow background query could leave the visible table in
@@ -313,17 +301,32 @@ const LeadContent = (): JSX.Element => {
     pageLimit,
     currentWonPage,
     wonPageLimit,
-    currentLostPage,
-    lostPageLimit,
     currentAssignedPage,
     assignedPageLimit,
     assignFilter,
+    viewMode,
   ]);
   useEffect(() => {
     getUserData();
-    getTeamData();
-    getDesignationData();
   }, []);
+
+  // Close assign dropdowns on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (assignDropdownRef.current && !assignDropdownRef.current.contains(e.target as Node)) {
+        setAssignDropdownOpen(false);
+      }
+      if (reassignDropdownRef.current && !reassignDropdownRef.current.contains(e.target as Node)) {
+        setReassignDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  // Clear search when dropdowns close
+  useEffect(() => { if (!assignDropdownOpen) setAssignSearchVal(""); }, [assignDropdownOpen]);
+  useEffect(() => { if (!reassignDropdownOpen) setReassignSearchVal(""); }, [reassignDropdownOpen]);
 
   // const assignableLeads = currentLeadData.filter(
   //   (l) => l.leadSource === LEAD_SOURCE_TYPE.ADMIN_CREATED && !l.assignedTo?.length
@@ -544,23 +547,28 @@ const isIndeterminate =
     try {
       const result = await LeadService.updateEngagementStatus(id, { status: newStatus });
 
-      if (result.status === 200) {
-        toast.success(`Lead status updated to ${newStatus} successfully`);
+      if (result.status === 200 && result.data?.success !== false) {
+        const label = STATUS_CONFIG[newStatus]?.label ?? newStatus;
+        toast.success(result.data?.message || `Lead status updated to "${label}" successfully`);
 
         setLeadData((prevData) =>
           prevData.map((lead) =>
             lead.id === id ? { ...lead, connectStatus: newStatus } : lead
           )
         );
+      } else {
+        const msg = result.data?.message || "Failed to update lead status";
+        toast.error(msg);
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) {
         const messages = extractErrorMessages(error);
         setErr(messages);
-        toast.error(`${messages}`);
+        toast.error(Array.isArray(messages) ? messages[0] : `${messages}`);
       } else {
         setErr(["Something went wrong"]);
+        toast.error("Something went wrong while updating lead status");
       }
     }
   };
@@ -588,15 +596,6 @@ const isIndeterminate =
   };
 
   // ✅ Updated handlers for advanced filters
-  const handleTeamFilter = (value: string): void => {
-    setTeamFilter(value);
-    setFilters((prev) => ({ ...prev, team: value }));
-  };
-
-  const handleDesignationFilter = (value: string): void => {
-    setDesignationFilter(value);
-    setFilters((prev) => ({ ...prev, designation: value }));
-  };
 
   const handleSalesPersonFilter = (value: string): void => {
     setSalesPersonFilter(value);
@@ -612,11 +611,16 @@ const isIndeterminate =
     resetAdvancedFilters();
     setFilters((prev) => ({
       ...prev,
+      type: "",
+      status: "",
+      tag: "",
+      engagementStatus: "",
       team: "",
       designation: "",
       source: "",
       createdBy: "",
     }));
+    setAssignFilter("");
   };
 
   // ✅ Fixed search handler to use 'search' field
@@ -694,7 +698,7 @@ const isIndeterminate =
         clearTimeout(debounceRef.current);
       }
     };
-  }, [filters, dateFilter, teamFilter, designationFilter, sourceFilter, salesPersonFilter, assignFilter]);
+  }, [filters, dateFilter, sourceFilter, salesPersonFilter, assignFilter]);
 
   // ✅ SINGLE effect — reset everything when switching tabs
   useEffect(() => {
@@ -746,29 +750,31 @@ const isIndeterminate =
     ));
 
   const RowActions = ({ item }: { item: Lead }) => (
-    <div className="flex items-center gap-2 p-4">
+    <div className="flex items-center gap-1 px-4 py-3.5">
       {hasPermission(PERMISSIONS.readLead) ? (
         <Link
           href={`/leads/view/${item.id}`}
-          className="h-9 w-9 flex items-center justify-center rounded-md bg-green-100/80 dark:bg-green-50 hover:bg-green-200/70 text-green-500 hover:scale-105 transition-transform"
+          className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-colors"
+          title="View"
         >
-          <FaRegEye className="text-lg" />
+          <FaRegEye size={15} />
         </Link>
       ) : (
-        <span className="h-9 w-9 flex items-center justify-center rounded-md bg-green-100/80 text-green-500 opacity-50 cursor-not-allowed">
-          <FaRegEye className="text-lg" />
+        <span className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-300 cursor-not-allowed">
+          <FaRegEye size={15} />
         </span>
       )}
       {hasPermission(PERMISSIONS.updateLead) && item.status !== SALES_STATUS.DELETE ? (
         <Link
           href={`/leads/update/${item.id}`}
-          className="h-9 w-9 flex items-center justify-center rounded-md bg-yellow-200/80 dark:bg-yellow-100 hover:bg-yellow-300/70 text-yellow-500 hover:scale-105 transition-transform"
+          className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+          title="Edit"
         >
-          <MdOutlineEdit className="text-lg" />
+          <MdOutlineEdit size={16} />
         </Link>
       ) : (
-        <span className="h-9 w-9 flex items-center justify-center rounded-md bg-yellow-100 text-yellow-400 opacity-50 cursor-not-allowed">
-          <MdOutlineEdit className="text-lg" />
+        <span className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-300 cursor-not-allowed">
+          <MdOutlineEdit size={16} />
         </span>
       )}
       {item.status !== SALES_STATUS.LOST && hasPermission(PERMISSIONS.createDeal) ? (
@@ -776,30 +782,42 @@ const isIndeterminate =
           item.inDeal === false ? (
             <Link
               href={`/leads/make-deal/${item.id}`}
-              className="h-9 w-9 flex items-center justify-center rounded-md bg-cyan-100 text-cyan-500 hover:bg-cyan-200 hover:scale-105 transition-transform"
+              className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-colors"
+              title="Create Deal"
             >
-              <FaRegHandshake className="text-lg" />
+              <FaRegHandshake size={15} />
             </Link>
           ) : (
-            <span
-              className="h-9 w-9 flex items-center justify-center rounded-md bg-cyan-900 text-white dark:bg-cyan-600 cursor-default"
-              title={t("already_on_deal")}
-            >
-              <FaHandshake className="text-lg" />
+            <span title={t("already_on_deal")} className="h-8 w-8 flex items-center justify-center rounded-lg text-cyan-400">
+              <FaHandshake size={15} />
             </span>
           )
         ) : (
-          <span className="h-9 w-9 flex items-center justify-center rounded-md bg-cyan-100 text-cyan-500 opacity-50 cursor-not-allowed">
-            <FaHandshake className="text-lg" />
+          <span className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-300 cursor-not-allowed">
+            <FaHandshake size={15} />
           </span>
         )
       ) : (
-        <span className="h-9 w-9 flex items-center justify-center rounded-md bg-cyan-100 text-cyan-500 opacity-50 cursor-not-allowed">
-          <FaHandshake className="text-lg" />
+        <span className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-300 cursor-not-allowed">
+          <FaHandshake size={15} />
         </span>
       )}
     </div>
   );
+
+  const handleStatusChange = async (leadId: string, newStatus: SALES_STATUS) => {
+    try {
+      const result = await LeadService.updateStatus(leadId, { status: newStatus });
+      if (result.status === 200) {
+        toast.success(result.data.message || "Status updated successfully");
+        return true;
+      }
+      return false;
+    } catch (error) {
+      toast.error("Failed to update status");
+      return false;
+    }
+  };
 
   const renderLeadRows = (data: Lead[]) => {
     if (!isLoading && data.length === 0)
@@ -820,13 +838,11 @@ const isIndeterminate =
           className={`${
             isChecked
               ? "bg-slate-50 dark:bg-slate-900/20 border-l-[3px] border-l-cyan-500"
-              : i % 2 === 0
-              ? "bg-white dark:bg-transparent"
-              : "bg-slate-100/50 dark:bg-slate-800"
+              : "border-b border-slate-100 dark:border-gray-700/60 hover:bg-slate-50 dark:hover:bg-gray-700/30"
           } w-full transition-colors duration-150 text-nowrap`}
         >
           {hasPermission(PERMISSIONS.assignLead) && currentTab === TAB.ALL && (
-            <td className="p-4 text-center">
+            <td className="px-4 py-3.5 text-center">
               {!item.assignedTo?.length ? (
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only" checked={isChecked} onChange={() => handleSelectOne(item.id)} />
@@ -843,10 +859,10 @@ const isIndeterminate =
                 </label>
               ) : item.assignedTo?.length ? (
                 <span
-                  className="inline-flex items-center justify-center w-4.5 h-4.5 rounded-full bg-green-100 dark:bg-green-900/30"
+                  className="inline-flex items-center justify-center w-4.5 h-4.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30"
                   title={t("already_assigned")}
                 >
-                  <FaCheck className="text-green-500 text-[8px]" />
+                  <FaCheck className="text-emerald-500 text-[8px]" />
                 </span>
               ) : (
                 <span className="inline-flex items-center justify-center w-4.5 h-4.5" title={t("self_created_leads_cannot_be_assigned")}>
@@ -856,34 +872,38 @@ const isIndeterminate =
             </td>
           )}
 
-          <td className="flex gap-1 flex-col p-4">
-            <h4 className="capitalize font-medium text-sm  text-slate-500 dark:text-white/70">{item.fullName}</h4>
-            <SensitiveField value={item.email} link={`mailto:${item.email}`} maskedValue={maskEmail(item.email)} fontSize="sm" />
+          <td className="px-4 py-3.5">
+            <p className="capitalize font-semibold text-[13px] text-slate-700 dark:text-slate-200">{item.fullName}</p>
+            <SensitiveField value={item.email} link={`mailto:${item.email}`} maskedValue={maskEmail(item.email)} fontSize="[13px]" />
           </td>
-          <td className="p-4">
-            <SensitiveField value={item.phone} link={`tel:${item.phone}`} maskedValue={maskPhone(item.phone)} fontSize="sm" />
+          <td className="px-4 py-3.5">
+            <SensitiveField value={item.phone} link={`tel:${item.phone}`} maskedValue={maskPhone(item.phone)} fontSize="[13px]" />
           </td>
-          <td className="p-4">
-            <span className="px-2.5 py-1 rounded-full bg-green-100 text-green-600 text-xs font-medium">
-              {item.projectType || "N/A"}
+          <td className="px-4 py-3.5">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[13px] font-medium bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 capitalize">
+              {(item.projectType || "N/A").replace(/_/g, " ")}
             </span>
           </td>
-          <td className="p-4">
-            <span className="bg-yellow-400 text-white px-2.5 py-1 text-xs font-medium rounded-md">{item.source}</span>
+          <td className="px-4 py-3.5">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[13px] font-medium bg-cyan-50 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400 capitalize">
+              {(item.source || "N/A").replace(/_/g, " ")}
+            </span>
           </td>
-          <td className="p-4">
+          <td className="px-4 py-3.5">
             <StatusBadge status={item.status} />
           </td>
-          <td className="p-4">
+          <td className="px-4 py-3.5">
             <TagBadge tag={item.dataTag || "N/A"} />
           </td>
-          <td className="p-4">
+          <td className="px-4 py-3.5">
             <CreatedAt timestamp={item.createdAt} />
           </td>
-          <td className="p-4 capitalize text-[16px] text-slate-500 dark:text-white/70">
-            {item.createdBy?.firstName + " " + item.createdBy?.lastName}
+          <td className="px-4 py-3.5">
+            <span className="text-[13px] text-slate-500 dark:text-slate-400 capitalize">
+              {item.createdBy?.firstName + " " + item.createdBy?.lastName}
+            </span>
           </td>
-          <td className="p-4">
+          <td className="px-4 py-3.5">
             {hasPermission(PERMISSIONS.updateLead) ? (
               <StatusDropdown currentStatus={item.connectStatus as LeadEngagementStatus} Id={item.id} onStatusUpdate={updateLeadStatus} />
             ) : (
@@ -926,13 +946,11 @@ const isIndeterminate =
           className={`${
             isChecked
               ? "bg-amber-50 dark:bg-amber-900/10 border-l-[3px] border-l-amber-500"
-              : i % 2 === 0
-              ? "bg-white dark:bg-transparent"
-              : "bg-amber-50/40 dark:bg-slate-500/30"
+              : "border-b border-slate-100 dark:border-gray-700/60 hover:bg-slate-50 dark:hover:bg-gray-700/30"
           } w-full transition-colors duration-150 text-nowrap`}
         >
           {hasPermission(PERMISSIONS.reassignLead) && (
-            <td className="p-4 text-center">
+            <td className="px-4 py-3.5 text-center">
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" className="sr-only" checked={isChecked} onChange={() => handleReassignSelectOne(item.id)} />
                 <div
@@ -949,73 +967,77 @@ const isIndeterminate =
             </td>
           )}
 
-          <td className="flex gap-1 flex-col p-4">
-            <h4 className="capitalize font-medium text-slate-600 text-[16px] dark:text-white/70">{item.fullName}</h4>
-            <SensitiveField value={item.email} link={`mailto:${item.email}`} maskedValue={maskEmail(item.email)} fontSize="sm" />
+          <td className="px-4 py-3.5">
+            <p className="capitalize font-semibold text-[13px] text-slate-700 dark:text-slate-200">{item.fullName}</p>
+            <SensitiveField value={item.email} link={`mailto:${item.email}`} maskedValue={maskEmail(item.email)} fontSize="[13px]" />
           </td>
-          <td className="p-4">
-            <SensitiveField value={item.phone} link={`tel:${item.phone}`} maskedValue={maskPhone(item.phone)} fontSize="sm" />
+          <td className="px-4 py-3.5">
+            <SensitiveField value={item.phone} link={`tel:${item.phone}`} maskedValue={maskPhone(item.phone)} fontSize="[13px]" />
           </td>
-          <td className="p-4">
-            <span className="px-2.5 py-1 rounded-full bg-green-100 text-green-600 text-xs font-medium">
-              {item.projectType || "N/A"}
+          <td className="px-4 py-3.5">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[13px] font-medium bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 capitalize">
+              {(item.projectType || "N/A").replace(/_/g, " ")}
             </span>
           </td>
-          <td className="p-4">
-            <span className="px-2.5 py-1 rounded-full bg-yellow-100 text-yellow-600 text-xs font-medium">
-              {item.source || "N/A"}
+          <td className="px-4 py-3.5">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[13px] font-medium bg-cyan-50 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400 capitalize">
+              {(item.source || "N/A").replace(/_/g, " ")}
             </span>
           </td>
-          <td className="p-4">
+          <td className="px-4 py-3.5">
             <StatusBadge status={item.status || "N/A"} />
           </td>
-          <td className="p-4">
+          <td className="px-4 py-3.5">
             <TagBadge tag={item.dataTag || "N/A"} />
           </td>
-          <td className="p-4">
+          <td className="px-4 py-3.5">
             <CreatedAt timestamp={item.createdAt} />
           </td>
-          <td className="p-4 text-slate-400 capitalize text-[16px] dark:text-white/70">
-            {item.createdBy?.firstName + " " + item.createdBy?.lastName}
+          <td className="px-4 py-3.5">
+            <span className="text-[13px] text-slate-500 dark:text-slate-400 capitalize">
+              {item.createdBy?.firstName + " " + item.createdBy?.lastName}
+            </span>
           </td>
           {hasPermission(PERMISSIONS.updateLead) ? (
-            <td>
+            <td className="px-4 py-3.5">
               <StatusDropdown currentStatus={item.connectStatus as LeadEngagementStatus} Id={item.id} onStatusUpdate={updateLeadStatus} />
             </td>
           ) : (
-            <td className="p-4">
+            <td className="px-4 py-3.5">
               <StatusBadge status={item.connectStatus || "N/A"} />
             </td>
           )}
-          <td className="p-4">
+          <td className="px-4 py-3.5">
             <Link href={`/users/${assignedUserId?.id}`}>
               <AssignedToPill user={assignedUser} />
             </Link>
           </td>
-          <td className="p-4">
-            <div className="flex items-center gap-2">
+          <td className="px-4 py-3.5">
+            <div className="flex items-center gap-1">
               {hasPermission(PERMISSIONS.readLead) ? (
                 <Link
                   href={`/leads/view/${item.id}`}
-                  className="h-9 w-9 flex items-center justify-center rounded-md bg-green-100/80 dark:bg-green-50 hover:bg-green-200/70 text-green-500 hover:scale-105 transition-transform"
+                  className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-colors"
+                  title="View"
                 >
-                  <FaRegEye className="text-lg" />
+                  <FaRegEye size={15} />
                 </Link>
               ) : (
-                <span className="h-9 w-9 flex items-center justify-center rounded-md bg-green-100/80 text-green-500 opacity-50 cursor-not-allowed">
-                  <FaRegEye className="text-lg" />
+                <span className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-300 cursor-not-allowed">
+                  <FaRegEye size={15} />
                 </span>
               )}
               {hasPermission(PERMISSIONS.updateLead) && item.status !== SALES_STATUS.DELETE ? (
                 <Link
                   href={`/leads/update/${item.id}`}
-                  className="h-9 w-9 flex items-center justify-center rounded-md bg-yellow-200/80 dark:bg-yellow-100 hover:bg-yellow-300/70 text-yellow-500 hover:scale-105 transition-transform"
+                  className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  title="Edit"
                 >
-                  <MdOutlineEdit className="text-lg" />
+                  <MdOutlineEdit size={16} />
                 </Link>
               ) : (
-                <span className="h-9 w-9 flex items-center justify-center rounded-md bg-yellow-100 text-yellow-400 opacity-50 cursor-not-allowed">
-                  <MdOutlineEdit className="text-lg" />
+                <span className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-300 cursor-not-allowed">
+                  <MdOutlineEdit size={16} />
                 </span>
               )}
             </div>
@@ -1027,8 +1049,8 @@ const isIndeterminate =
 
   return (
     <>
-      <div className="ml-72 mt-14 p-6 ">
-        <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm gap-5 p-6 rounded-xl border border-slate-900/10 w-full flex items-center justify-between">
+      <div>
+        <div className="bg-white mb-4 dark:bg-gray-700 dark:backdrop-blur-sm gap-5 p-6 rounded-xl border border-slate-900/10 w-full flex items-center justify-between">
           <div className="flex flex-col gap-2">
             <h2 className="text-2xl font-bold dark:text-white text-slate-900">{t("add_bulk_leads")}</h2>
             <p className="text-gray-500 dark:text-gray-400">{t("create_bulk_leads_via_csv_file")}</p>
@@ -1073,9 +1095,7 @@ const isIndeterminate =
                   value={searchVal}
                 />
               </div>
-              <div>
-                <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
-              </div>
+
               {hasPermission(PERMISSIONS.createLead) ? (
                 <Link
                   href="/leads/add"
@@ -1144,260 +1164,378 @@ const isIndeterminate =
                 </button>
               )}
             </div>
-            {/* <button
-              onClick={() => setShowAdvancedFilters((prev) => !prev)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-all cursor-pointer
-                  ${
-                    showAdvancedFilters
-                      ? "bg-cyan-600 border-cyan-600 text-white shadow-md shadow-cyan-200/50 dark:shadow-cyan-900/30"
-                      : "bg-slate-50 dark:bg-gray-600 border-slate-900/10 text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-gray-500"
+            
+            {/* View Mode Toggle & Advanced Filters */}
+            <div className="flex items-center gap-3">
+              <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
+                <button
+                  onClick={() => setViewMode("table")}
+                  className={`p-1.5 rounded-md transition-all flex items-center justify-center ${
+                    viewMode === "table"
+                      ? "bg-white dark:bg-slate-700 text-cyan-600 shadow-sm"
+                      : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                   }`}
-            >
-              <FiFilter className={`text-base transition-transform duration-300 ${showAdvancedFilters ? "rotate-180" : ""}`} />
-              {t("filters")}
-              {activeAdvancedFilterCount > 0 && (
-                <span
-                  className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold
-                    ${showAdvancedFilters ? "bg-white text-cyan-600" : "bg-cyan-600 text-white"}`}
+                  title="Table View"
                 >
-                  {activeAdvancedFilterCount}
-                </span>
-              )}
-            </button> */}
+                  <HiOutlineTable size={18} />
+                </button>
+                <button
+                  onClick={() => setViewMode("kanban")}
+                  className={`p-1.5 rounded-md transition-all flex items-center justify-center ${
+                    viewMode === "kanban"
+                      ? "bg-white dark:bg-slate-700 text-cyan-600 shadow-sm"
+                      : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                  }`}
+                  title="Kanban Board View"
+                >
+                  <HiOutlineViewBoards size={18} />
+                </button>
+              </div>
+            </div>
           </div>
 
-          {/* ✅ Common Advanced Filters component — reused across Leads/Enquiry/Deals/Quotations */}
-       
-            <AdvancedFilters
-              teamData={teamData}
-              designationData={designationData}
-              userData={userData}
-              teamFilter={teamFilter}
-              designationFilter={designationFilter}
-              salesPersonFilter={salesPersonFilter}
-              sourceFilter={sourceFilter}
-              onTeamChange={handleTeamFilter}
-              onDesignationChange={handleDesignationFilter}
-              onSalesPersonChange={handleSalesPersonFilter}
-              onSourceChange={handleSourceFilter}
-              onReset={clearAllAdvancedFilters}
-              activeCount={activeAdvancedFilterCount}
-            />
+          {/* ✅ Leads Premium Filter Bar */}
+          <div className="w-full flex flex-wrap items-end gap-3 p-4 bg-white dark:bg-gray-700/50 rounded-xl border border-slate-200/80 dark:border-gray-600/50">
 
-          {selectedLeadIds.size > 0 && currentTab === TAB.ALL && (
-            <div className="w-full bg-cyan-600 dark:bg-cyan-700 rounded-xl px-5 py-3.5 flex items-center justify-between gap-4 shadow-lg shadow-cyan-200/60 dark:shadow-cyan-900/30 animate-in slide-in-from-top-2 duration-200">
-              <div className="flex items-center gap-3">
-                <div className="bg-white/20 rounded-lg px-3 py-1.5 flex items-center gap-2">
-                  <HiOutlineUserGroup className="text-white text-lg" />
-                  <span className="text-white text-sm font-semibold">
-                    {selectedLeadIds.size} {t("lead_2")}
-                    {selectedLeadIds.size > 1 ? "s" : ""} {t("selected_2")}
+            {/* Project Type */}
+            <div className="flex flex-col gap-1">
+              <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider">
+                <FiTag className="text-violet-500" /> {t("project_type")}
+              </label>
+              <select
+                value={filters.type}
+                onChange={(e) => handleProjectType(e.target.value)}
+                className="bg-slate-50 dark:bg-gray-600 px-3 py-2 rounded-lg border border-slate-200 dark:border-gray-500 text-[13px] text-slate-600 dark:text-white/80 outline-none focus:ring-2 focus:ring-cyan-500/30 transition-all cursor-pointer min-w-[155px]"
+              >
+                <option value="">{t("all")}</option>
+                {Object.values(PROJECT_TYPES).map((pt) => (
+                  <option key={pt} value={pt}>
+                    {pt.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Status (All Leads tab only) */}
+            {currentTab === TAB.ALL && (
+              <div className="flex flex-col gap-1">
+                <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider">
+                  <FiActivity className="text-indigo-400" /> {t("status")}
+                </label>
+                <select
+                  value={filters.status}
+                  onChange={(e) => handleStatus(e.target.value)}
+                  className="bg-slate-50 dark:bg-gray-600 px-3 py-2 rounded-lg border border-slate-200 dark:border-gray-500 text-[13px] text-slate-600 dark:text-white/80 outline-none focus:ring-2 focus:ring-cyan-500/30 transition-all cursor-pointer min-w-[155px]"
+                >
+                  <option value="">{t("all")}</option>
+                  {Object.values(SALES_STATUS).map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Engagement Status */}
+            <div className="flex flex-col gap-1">
+              <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider">
+                <FiUser className="text-teal-500" /> {t("engagement_status")}
+              </label>
+              <select
+                value={filters.engagementStatus}
+                onChange={(e) => setFilters((prev) => ({ ...prev, engagementStatus: e.target.value }))}
+                className="bg-slate-50 dark:bg-gray-600 px-3 py-2 rounded-lg border border-slate-200 dark:border-gray-500 text-[13px] text-slate-600 dark:text-white/80 outline-none focus:ring-2 focus:ring-cyan-500/30 transition-all cursor-pointer min-w-[170px]"
+              >
+                <option value="">{t("all")}</option>
+                {Object.values(LeadEngagementStatus).map((s) => (
+                  <option key={s} value={s}>
+                    {s.replace(/_/g, " ").charAt(0).toUpperCase() + s.replace(/_/g, " ").slice(1)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Assigned To (Assigned tab only) */}
+            {currentTab === TAB.ASSIGNED && (
+              <div className="flex flex-col gap-1">
+                <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider">
+                  <FiUserPlus className="text-slate-400" /> {t("assigned_to")}
+                </label>
+                <UserSelect mode="single" value={assignFilter} onChange={setAssignFilter} placeholder={t("search_select_user")} />
+              </div>
+            )}
+
+            {/* Created By */}
+            <div className="flex flex-col gap-1">
+              <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider">
+                <FiUser className="text-rose-400" /> Created By
+              </label>
+              <UserSelect
+                mode="single"
+                value={salesPersonFilter}
+                onChange={handleSalesPersonFilter}
+                placeholder="All users"
+              />
+            </div>
+
+            {/* Date Range */}
+            <div className="flex flex-col gap-1">
+              <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider">
+                <FiCalendar className="text-emerald-500" /> {t("date")}
+              </label>
+              <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
+            </div>
+
+            {/* Clear Filters */}
+            {(filters.type || filters.status || filters.engagementStatus || assignFilter || salesPersonFilter || dateFilter.fromDate || dateFilter.toDate) && (
+              <button
+                onClick={() => {
+                  setFilters((prev) => ({ ...prev, type: "", status: "", engagementStatus: "" }));
+                  setAssignFilter("");
+                  handleSalesPersonFilter("");
+                  setDateFilter({ fromDate: "", toDate: "" });
+                }}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-rose-200 dark:border-rose-700 text-rose-500 dark:text-rose-400 text-[12px] font-medium hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors self-end"
+              >
+                <FiX size={13} /> Clear Filters
+              </button>
+            )}
+
+            {/* ── Assign Toolbar (All Leads tab) ── */}
+            {selectedLeadIds.size > 0 && currentTab === TAB.ALL && (
+              <div className="flex items-center gap-3 px-4 py-2 bg-cyan-50/50 dark:bg-cyan-900/20 rounded-xl border border-cyan-200 dark:border-cyan-800 self-end ml-auto">
+                <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-cyan-700 dark:text-cyan-300">
+                  <span className="w-5 h-5 rounded-full bg-cyan-500 text-white text-[10px] flex items-center justify-center font-bold">
+                    {selectedLeadIds.size}
                   </span>
+                  selected
+                </span>
+                <div className="w-px h-5 bg-cyan-200 dark:bg-cyan-800" />
+                <div className="relative" ref={assignDropdownRef}>
+                  <button
+                    onClick={() => setAssignDropdownOpen((v) => !v)}
+                    disabled={isAssigning}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white text-[12px] font-semibold rounded-lg transition-colors disabled:opacity-60"
+                  >
+                    <FiUserCheck size={14} />
+                    {isAssigning ? "Assigning..." : "Assign To"}
+                    <svg className={`w-3.5 h-3.5 transition-transform ${assignDropdownOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
+                  </button>
+                  {assignDropdownOpen && (
+                    <div className="absolute top-full mt-2 right-0 w-64 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-xl shadow-xl overflow-hidden z-50">
+                      <div className="p-2 border-b border-slate-100 dark:border-gray-700">
+                        <div className="relative">
+                          <IoIosSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                          <input
+                            type="text"
+                            placeholder="Search users..."
+                            autoFocus
+                            value={assignSearchVal}
+                            onChange={(e) => setAssignSearchVal(e.target.value)}
+                            className="w-full pl-8 pr-3 py-1.5 bg-slate-50 dark:bg-gray-700/50 border border-slate-200 dark:border-gray-600 rounded-lg text-[13px] text-slate-700 dark:text-slate-200 outline-none focus:border-cyan-500 transition-colors"
+                          />
+                        </div>
+                      </div>
+                      <ul className="max-h-52 overflow-y-auto">
+                        {userData.filter(u => `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase().includes(assignSearchVal.toLowerCase())).length === 0 ? (
+                          <li className="px-4 py-3 text-[13px] text-slate-400 text-center">No users found</li>
+                        ) : (
+                          userData.filter(u => `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase().includes(assignSearchVal.toLowerCase())).map((u: any) => (
+                            <li key={u.id || u._id}>
+                              <button
+                                onClick={async () => {
+                                  setSelectedUserId(u.id || u._id);
+                                  setAssignDropdownOpen(false);
+                                  setIsAssigning(true);
+                                  try {
+                                    const result = await LeadService.assignBulkLead(u.id || u._id, Array.from(selectedLeadIds));
+                                    if (result.status === 200) {
+                                      const { assigned, skipped } = result.data.data;
+                                      toast.success(`${assigned} lead(s) assigned successfully`);
+                                      if (skipped > 0) toast.info(`${skipped} lead(s) were skipped`);
+                                      clearAssignSelection();
+                                      await Promise.all([getLeadData(true), getAssignedLeadData(false)]);
+                                    }
+                                  } catch (error) {
+                                    const m = extractErrorMessages(error);
+                                    toast.error(Array.isArray(m) ? m[0] : m || "Failed to assign leads");
+                                  } finally {
+                                    setIsAssigning(false);
+                                  }
+                                }}
+                                className="w-full text-left px-4 py-2.5 text-[13px] text-slate-700 dark:text-slate-200 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 hover:text-cyan-700 transition-colors flex items-center gap-2"
+                              >
+                                <span className="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-400 to-indigo-500 flex items-center justify-center text-white text-[11px] font-bold shrink-0">
+                                  {(u.firstName?.[0] || "").toUpperCase()}{(u.lastName?.[0] || "").toUpperCase()}
+                                </span>
+                                <span className="capitalize truncate">{u.firstName} {u.lastName}</span>
+                              </button>
+                            </li>
+                          ))
+                        )}
+                      </ul>
+                    </div>
+                  )}
                 </div>
                 <button
                   onClick={clearAssignSelection}
-                  className="text-cyan-200 group cursor-pointer hover:text-white text-xs underline underline-offset-2 flex items-center gap-1 transition-colors"
+                  className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[12px] font-medium text-cyan-700 dark:text-cyan-400 hover:bg-cyan-100 dark:hover:bg-cyan-900/40 transition-colors"
+                  title="Clear selection"
                 >
-                  <FaXmark className="text-xs group-hover:rotate-90" /> {t("clear")}
+                  <FiX size={14} />
                 </button>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="flex flex-col gap-0.5">
-                  {!selectedUserId && <span className="text-cyan-200 text-[11px] ml-1">{t("select_a_user_first")}</span>}
-                  <UserSelect mode="single" value={selectedUserId} onChange={setSelectedUserId} placeholder={t("search_select_user")} />
-                </div>
-                <button
-                  onClick={handleAssignLeads}
-                  disabled={!selectedUserId || isAssigning}
-                  className="bg-white text-cyan-600 hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed px-5 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all shadow-sm"
-                >
-                  {isAssigning ? (
-                    <>
-                      <Spinner color="text-cyan-600" /> {t("assigning")}
-                    </>
-                  ) : (
-                    <>
-                      <MdOutlinePersonAdd className="text-lg" /> {t("assign_leads")}
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          )}
+            )}
 
-          {selectedReassignIds.size > 0 && currentTab === TAB.ASSIGNED && (
-            <div
-              className="w-full rounded-xl px-5 py-3.5 flex items-center justify-between gap-4 shadow-lg shadow-amber-200/60 dark:shadow-amber-900/30 animate-in slide-in-from-top-2 duration-200"
-              style={{ background: "linear-gradient(135deg, #f59e0b 0%, #f97316 100%)" }}
-            >
-              <div className="flex items-center gap-3">
-                <div className="bg-white/20 rounded-lg px-3 py-1.5 flex items-center gap-2">
-                  <TbArrowsExchange className="text-white text-lg" />
-                  <span className="text-white text-sm font-semibold">
-                    {selectedReassignIds.size} {t("lead_2")}
-                    {selectedReassignIds.size > 1 ? "s" : ""} {t("ready_to_reassign")}
+            {/* ── Reassign Toolbar (Assigned Leads tab) ── */}
+            {selectedReassignIds.size > 0 && currentTab === TAB.ASSIGNED && (
+              <div className="flex items-center gap-3 px-4 py-2 bg-amber-50/60 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800 self-end ml-auto">
+                <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-amber-700 dark:text-amber-300">
+                  <span className="w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] flex items-center justify-center font-bold">
+                    {selectedReassignIds.size}
                   </span>
-                </div>
-                <button
-                  onClick={clearReassignSelection}
-                  className="text-amber-100 group cursor-pointer hover:text-white text-xs underline underline-offset-2 flex items-center gap-1 transition-colors"
-                >
-                  <FaXmark className="text-xs group-hover:rotate-90" /> {t("clear")}
-                </button>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="flex flex-col gap-0.5">
-                  {!selectedReassignUserId && <span className="text-amber-100 text-[11px] ml-1">{t("pick_the_new_assignee")}</span>}
-                  <UserSelect
-                    mode="single"
-                    value={selectedReassignUserId}
-                    onChange={setSelectedReassignUserId}
-                    placeholder={t("search_select_user")}
-                  />
-                </div>
-                <button
-                  onClick={handleReassignLeads}
-                  disabled={!selectedReassignUserId || isReassigning || !hasPermission("lead:reassign")}
-                  className="bg-white text-amber-600 hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed px-5 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all shadow-sm"
-                >
-                  {isReassigning ? (
-                    <>
-                      <Spinner color="text-amber-500" /> {t("reassigning")}
-                    </>
-                  ) : (
-                    <>
-                      <TbArrowsExchange className="text-lg" /> {t("reassign_leads")}
-                    </>
+                  selected
+                </span>
+                <div className="w-px h-5 bg-amber-200 dark:bg-amber-800" />
+                <div className="relative" ref={reassignDropdownRef}>
+                  <button
+                    onClick={() => setReassignDropdownOpen((v) => !v)}
+                    disabled={isReassigning}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-[12px] font-semibold rounded-lg transition-colors disabled:opacity-60"
+                  >
+                    <FiUserCheck size={14} />
+                    {isReassigning ? "Reassigning..." : "Reassign To"}
+                    <svg className={`w-3.5 h-3.5 transition-transform ${reassignDropdownOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
+                  </button>
+                  {reassignDropdownOpen && (
+                    <div className="absolute top-full mt-2 right-0 w-64 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-xl shadow-xl overflow-hidden z-50">
+                      <div className="p-2 border-b border-slate-100 dark:border-gray-700">
+                        <div className="relative">
+                          <IoIosSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                          <input
+                            type="text"
+                            placeholder="Search users..."
+                            autoFocus
+                            value={reassignSearchVal}
+                            onChange={(e) => setReassignSearchVal(e.target.value)}
+                            className="w-full pl-8 pr-3 py-1.5 bg-slate-50 dark:bg-gray-700/50 border border-slate-200 dark:border-gray-600 rounded-lg text-[13px] text-slate-700 dark:text-slate-200 outline-none focus:border-amber-500 transition-colors"
+                          />
+                        </div>
+                      </div>
+                      <ul className="max-h-52 overflow-y-auto">
+                        {userData.filter(u => `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase().includes(reassignSearchVal.toLowerCase())).length === 0 ? (
+                          <li className="px-4 py-3 text-[13px] text-slate-400 text-center">No users found</li>
+                        ) : (
+                          userData.filter(u => `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase().includes(reassignSearchVal.toLowerCase())).map((u: any) => (
+                            <li key={u.id || u._id}>
+                              <button
+                                onClick={async () => {
+                                  setSelectedReassignUserId(u.id || u._id);
+                                  setReassignDropdownOpen(false);
+                                  setIsReassigning(true);
+                                  try {
+                                    const result = await LeadService.reassignBulkLead({
+                                      userId: u.id || u._id,
+                                      leadsId: Array.from(selectedReassignIds),
+                                    });
+                                    if (result.status === 200) {
+                                      const { reassigned, skipped } = result.data.data;
+                                      toast.success(`${reassigned} lead(s) reassigned successfully`);
+                                      if (skipped > 0) toast.info(`${skipped} lead(s) skipped`);
+                                      clearReassignSelection();
+                                      await getAssignedLeadData();
+                                    }
+                                  } catch (error) {
+                                    const m = extractErrorMessages(error);
+                                    toast.error(Array.isArray(m) ? m[0] : m || "Failed to reassign leads");
+                                  } finally {
+                                    setIsReassigning(false);
+                                  }
+                                }}
+                                className="w-full text-left px-4 py-2.5 text-[13px] text-slate-700 dark:text-slate-200 hover:bg-amber-50 dark:hover:bg-amber-900/20 hover:text-amber-700 transition-colors flex items-center gap-2"
+                              >
+                                <span className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-[11px] font-bold shrink-0">
+                                  {(u.firstName?.[0] || "").toUpperCase()}{(u.lastName?.[0] || "").toUpperCase()}
+                                </span>
+                                <span className="capitalize truncate">{u.firstName} {u.lastName}</span>
+                              </button>
+                            </li>
+                          ))
+                        )}
+                      </ul>
+                    </div>
                   )}
-                </button>
+                </div>
                 <button
                   onClick={handleRevokeLeads}
-                  disabled={!hasPermission("deal:reassign")}
-                  className="bg-white text-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed px-5 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all shadow-sm"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-800 text-red-500 dark:text-red-400 text-[12px] font-semibold hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  title="Revoke leads"
                 >
                   {t("revoke")}
                 </button>
+                <button
+                  onClick={clearReassignSelection}
+                  className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[12px] font-medium text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
+                  title="Clear selection"
+                >
+                  <FiX size={14} />
+                </button>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
-          {currentTab !== TAB.ASSIGNED ? (
+
+
+          {viewMode === "kanban" ? (
+            <div className="mt-4 w-full min-w-0 overflow-x-hidden">
+              <LeadKanbanBoard leads={currentLeadData} onStatusChange={handleStatusChange} />
+            </div>
+          ) : currentTab !== TAB.ASSIGNED ? (
             <div className="overflow-x-scroll custom-scrollbar">
               <table className="w-full rounded-xl overflow-hidden">
                 <thead>
-                  <tr className="w-full border-b-2 border-zinc-300 dark:border-zinc-400  bg-slate-200 dark:bg-gray-800">
+                <tr className="w-full border-b border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800">
                    {hasPermission(PERMISSIONS.assignLead) &&
-                    currentTab === TAB.ALL &&
-                    assignableLeads.length > 0 && (
-                      <th className="p-4 w-12">
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input ref={selectAllRef} type="checkbox" className="sr-only" 
-                          checked={isAllSelected} onChange={handleSelectAll} />
-                          <div
-                            className={`w-4.5 h-4.5 rounded-sm border-2 flex items-center justify-center transition-all duration-150
-                          ${
-                            isAllSelected || isIndeterminate
-                              ? "bg-cyan-600 border-cyan-600"
-                              : "bg-white dark:bg-gray-700 border-slate-300 hover:border-cyan-400"
-                          }`}
-                          >
-                            {
-                            isIndeterminate && <FaCheck className="text-white text-[9px]" />}
-                            {isAllSelected && <span className="block w-2.5 h-0.5 bg-white rounded-full" />}
-                          </div>
-                        </label>
+                    currentTab === TAB.ALL && (
+                      <th className="px-4 py-3 w-12">
+                        {assignableLeads.length > 0 && (
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input ref={selectAllRef} type="checkbox" className="sr-only" 
+                            checked={isAllSelected} onChange={handleSelectAll} />
+                            <div
+                              className={`w-4.5 h-4.5 rounded-sm border-2 flex items-center justify-center transition-all duration-150
+                            ${
+                              isAllSelected || isIndeterminate
+                                ? "bg-cyan-600 border-cyan-600"
+                                : "bg-white dark:bg-gray-700 border-slate-300 hover:border-cyan-400"
+                            }`}
+                            >
+                              {
+                              isIndeterminate && <FaCheck className="text-white text-[9px]" />}
+                              {isAllSelected && <span className="block w-2.5 h-0.5 bg-white rounded-full" />}
+                            </div>
+                          </label>
+                        )}
                       </th>
                     )}
                     {[
-                      "client_info",
-                      "phone",
-                      "project_type",
-                      "source",
-                      "status",
-                      "data_tag",
-                      "created_date",
-                      "created_by",
-                      "engagement_status",
-                      "actions",
-                    ].map((h) => {
-                      const filterConfig = h != "Status" ? options[h] : currentTab === TAB.ALL && options[h];
-
-                      return (
-                        <th
-                          key={h}
-                          className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide"
-                        >
-                          {t(h)}
-                          {filterConfig && (
-                            <>
-                              <br />
-                              <select
-                                onChange={(e) => filterConfig.handlefunction(e.target.value)}
-                                className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20 outline-none"
-                              >
-                                <option value="">{t("all")}</option>
-
-                                {filterConfig.value.map((option) => (
-                                  <option key={option} value={option}>
-                                    {option}
-                                  </option>
-                                ))}
-                              </select>
-                            </>
-                          )}
-                          {h == "project_type" && (
-                            <>
-                              <br />
-                              <input
-                                type="text"
-                                className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20 outline-none"
-                                placeholder={t("search_2")}
-                                onChange={(e) => handleProjectType(e.target.value)}
-                              />
-                            </>
-                          )}
-                          {h == "source" && (
-                            <>
-                              <br />
-                              <input
-                                type="text"
-                                className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20 outline-none"
-                                placeholder={t("search_2")}
-                                onChange={(e) => handleSource(e.target.value)}
-                              />
-                            </>
-                          )}
-                          {h == "data_tag" && (
-                            <>
-                              <br />
-                              <input
-                                type="text"
-                                className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20 outline-none"
-                                placeholder={t("search_2")}
-                                onChange={(e) => handleDataTag(e.target.value)}
-                              />
-                            </>
-                          )}
-                          {h == "engagement_status" && (
-                            <>
-                              <br />
-                              <select
-                                value={filters["engagementStatus"]}
-                                onChange={(e) => setFilters((prev) => ({ ...prev, engagementStatus: e.target.value }))}
-                                className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm outline-none"
-                              >
-                                <option value="">{t("all")}</option>
-                                {Object.values(LeadEngagementStatus).map((s) => (
-                                  <option key={s} value={s}>
-                                    {s.replace(/_/g, " ").charAt(0).toUpperCase() + s.replace(/_/g, " ").slice(1)}
-                                  </option>
-                                ))}
-                              </select>
-                            </>
-                          )}
-                        </th>
-                      );
-                    })}
+                      { key: "client_info", icon: <FiUser className="text-[13px] text-sky-500" />, label: t("client_info") },
+                      { key: "phone", icon: <FiPhone className="text-[13px] text-emerald-500" />, label: t("phone") },
+                      { key: "project_type", icon: <FiTag className="text-[13px] text-violet-500" />, label: t("project_type") },
+                      { key: "source", icon: <FiTarget className="text-[13px] text-rose-400" />, label: t("source") },
+                      { key: "status", icon: <FiActivity className="text-[13px] text-indigo-400" />, label: t("status") },
+                      { key: "data_tag", icon: <FiHash className="text-[13px] text-amber-500" />, label: t("data_tag") },
+                      { key: "created_date", icon: <FiCalendar className="text-[13px] text-teal-500" />, label: t("created_date") },
+                      { key: "created_by", icon: <FiUserPlus className="text-[13px] text-slate-400" />, label: t("created_by") },
+                      { key: "engagement_status", icon: <FiMessageCircle className="text-[13px] text-blue-400" />, label: t("engagement_status") },
+                      { key: "actions", icon: <FiSettings className="text-[13px] text-slate-400" />, label: t("actions") },
+                    ].map((col) => (
+                      <th
+                        key={col.key}
+                        className="px-4 py-3 uppercase text-[11px] text-start text-slate-400 dark:text-slate-500 font-semibold text-nowrap tracking-wider"
+                      >
+                        <div className="flex items-center gap-1.5">{col.icon} {col.label}</div>
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>{renderLeadRows(currentLeadData)}</tbody>
@@ -1407,9 +1545,9 @@ const isIndeterminate =
             <div className="overflow-x-scroll custom-scrollbar">
               <table className="w-full rounded-xl ">
                 <thead>
-                  <tr className="w-full border-b-2 border-amber-200 dark:border-amber-800/40 bg-amber-50 dark:bg-amber-900/20">
+                  <tr className="w-full border-b border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800">
                     {hasPermission(PERMISSIONS.reassignLead) && (
-                      <th className="p-4 w-12 rounded-tl-xl">
+                      <th className="px-4 py-3 w-12 rounded-tl-xl">
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input
                             ref={reassignSelectAllRef}
@@ -1433,103 +1571,30 @@ const isIndeterminate =
                       </th>
                     )}
                     {[
-                      "Client Info",
-                      "Phone",
-                      "Project Type",
-                      "Source",
-                      "Status",
-                      "Data Tag",
-                      "Created Date",
-                      "Created By",
-                      "Engagement Status",
-                    ].map((h) => {
-                      const filterConfig = options[h];
-                      return (
-                        <th
-                          key={h}
-                          className="field p-4 uppercase text-xs text-start text-nowrap text-slate-500 dark:text-slate-300 font-semibold tracking-wide "
-                        >
-                          {h}
-                          {filterConfig && (
-                            <>
-                              <br />
-                              <select
-                                onChange={(e) => filterConfig.handlefunction(e.target.value)}
-                                className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm outline-none"
-                              >
-                                <option value="">{t("all")}</option>
-
-                                {filterConfig.value.map((option) => (
-                                  <option key={option} value={option}>
-                                    {option}
-                                  </option>
-                                ))}
-                              </select>
-                            </>
-                          )}
-
-                          {h == "Project Type" && (
-                            <>
-                              <br />
-                              <input
-                                type="text"
-                                className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20 outline-none "
-                                placeholder={t("search_2")}
-                                onChange={(e) => handleProjectType(e.target.value)}
-                              />
-                            </>
-                          )}
-                          {h == "Source" && (
-                            <>
-                              <br />
-                              <input
-                                type="text"
-                                className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20 outline-none "
-                                placeholder={t("search_2")}
-                                onChange={(e) => handleSource(e.target.value)}
-                              />
-                            </>
-                          )}
-                          {h == "Data Tag" && (
-                            <>
-                              <br />
-                              <input
-                                type="text"
-                                className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20 outline-none "
-                                placeholder={t("search_2")}
-                                onChange={(e) => handleDataTag(e.target.value)}
-                              />
-                            </>
-                          )}
-                          {h == "Engagement Status" && (
-                            <>
-                              <br />
-                              <select
-                                value={filters["engagementStatus"]}
-                                onChange={(e) => setFilters((prev) => ({ ...prev, engagementStatus: e.target.value }))}
-                                className="field outline-none  bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm   "
-                              >
-                                <option value="">{t("all")}</option>
-                                {Object.values(LeadEngagementStatus).map((s) => (
-                                  <option key={s} value={s}>
-                                    {s.replace(/_/g, " ").charAt(0).toUpperCase() + s.replace(/_/g, " ").slice(1)}
-                                  </option>
-                                ))}
-                              </select>
-                            </>
-                          )}
-                        </th>
-                      );
-                    })}
-                    <th className="p-4 uppercase text-xs text-start text-amber-600 dark:text-amber-400 font-semibold tracking-wide">
+                      { key: "Client Info", icon: <FiUser className="text-[13px] text-sky-500" />, label: "Client Info" },
+                      { key: "Phone", icon: <FiPhone className="text-[13px] text-emerald-500" />, label: "Phone" },
+                      { key: "Project Type", icon: <FiTag className="text-[13px] text-violet-500" />, label: "Project Type" },
+                      { key: "Source", icon: <FiTarget className="text-[13px] text-rose-400" />, label: "Source" },
+                      { key: "Status", icon: <FiActivity className="text-[13px] text-indigo-400" />, label: "Status" },
+                      { key: "Data Tag", icon: <FiHash className="text-[13px] text-amber-500" />, label: "Data Tag" },
+                      { key: "Created Date", icon: <FiCalendar className="text-[13px] text-teal-500" />, label: "Created Date" },
+                      { key: "Created By", icon: <FiUserPlus className="text-[13px] text-slate-400" />, label: "Created By" },
+                      { key: "Engagement Status", icon: <FiMessageCircle className="text-[13px] text-blue-400" />, label: "Engagement Status" },
+                    ].map((col) => (
+                      <th
+                        key={col.key}
+                        className="px-4 py-3 uppercase text-[11px] text-start text-nowrap text-slate-400 dark:text-slate-500 font-semibold tracking-wider"
+                      >
+                        <div className="flex items-center gap-1.5">{col.icon} {col.label}</div>
+                      </th>
+                    ))}
+                    <th className="px-4 py-3 uppercase text-[11px] text-start text-amber-500 dark:text-amber-400 font-semibold tracking-wider">
                       <span className="flex items-center gap-1.5">
-                        <RiUserSharedLine /> {t("assigned_to")}
+                        <RiUserSharedLine /> <div className="flex items-center gap-1.5"><FiUserPlus className="text-[13px] text-slate-400"/> {t("assigned_to")}</div>
                       </span>
-                      <br />
-                      <UserSelect mode="single" value={assignFilter} onChange={setAssignFilter} placeholder={t("search_select_user")} />
                     </th>
-                    <th className="p-4 rounded-tr-xl uppercase text-xs text-start text-amber-600 dark:text-amber-400 font-semibold tracking-wide">
-                      {t("actions")}
+                    <th className="px-4 py-3 rounded-tr-xl uppercase text-[11px] text-start text-slate-400 dark:text-slate-500 font-semibold tracking-wider">
+                      <div className="flex items-center gap-1.5"><FiSettings className="text-[13px] text-slate-400"/> {t("actions")}</div>
                     </th>
                   </tr>
                 </thead>
@@ -1538,10 +1603,14 @@ const isIndeterminate =
             </div>
           )}
 
-          {currentTab === TAB.ALL && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={(p) => setCurrentPage(p)} className="w-full" />}
-          {currentTab === TAB.WON && <Pagination currentPage={currentWonPage} totalPages={wonTotalPages} onPageChange={(p) => setWonCurrentPage(p)} className="w-full" />}
-          {currentTab === TAB.LOST && <Pagination currentPage={currentLostPage} totalPages={lostTotalPages} onPageChange={(p) => setLostCurrentPage(p)} className="w-full" />}
-          {currentTab === TAB.ASSIGNED && <Pagination currentPage={currentAssignedPage} totalPages={assignedTotalPages} onPageChange={(p) => setAssignedCurrentPage(p)} className="w-full" />}
+          {viewMode === "table" && (
+            <>
+              {currentTab === TAB.ALL && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={(p) => setCurrentPage(p)} className="w-full" />}
+              {currentTab === TAB.WON && <Pagination currentPage={currentWonPage} totalPages={wonTotalPages} onPageChange={(p) => setWonCurrentPage(p)} className="w-full" />}
+              {currentTab === TAB.LOST && <Pagination currentPage={currentLostPage} totalPages={lostTotalPages} onPageChange={(p) => setLostCurrentPage(p)} className="w-full" />}
+              {currentTab === TAB.ASSIGNED && <Pagination currentPage={currentAssignedPage} totalPages={assignedTotalPages} onPageChange={(p) => setAssignedCurrentPage(p)} className="w-full" />}
+            </>
+          )}
         </div>
       </div>
     </>

@@ -325,7 +325,7 @@ const handleDatesSet = useCallback((dateInfo: any) => {
         onSuccess={handleUpdateSuccess}
       />
 
-      <div className="mt-14 lg:ml-72 p-1 md:p-6 transition-all">
+      <div className="p-1 md:p-6 transition-all">
         <AnimatePresence>
           {isLoading && (
             <motion.div

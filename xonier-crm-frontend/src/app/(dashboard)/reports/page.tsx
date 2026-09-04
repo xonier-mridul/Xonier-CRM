@@ -21,46 +21,64 @@ import { IoIosSearch } from "react-icons/io";
 import { MdClose } from "react-icons/md";
 import { RoleService } from "@/src/services/role.service";
 import { IoChevronDown } from "react-icons/io5";
+import {
+  FileBarChart,
+  CheckCircle2,
+  CheckSquare,
+  TrendingUp,
+  Search,
+  RefreshCw,
+  Inbox,
+  ChevronDown,
+  FileText,
+  Send,
+} from "lucide-react";
 
 const STATUS_META: Record<
   string,
-  { label: string; dot: string; bg: string; text: string }
+  { label: string; dot: string; bg: string; text: string; border: string }
 > = {
   morning_pending: {
     label: "Morning Pending",
     dot: "bg-amber-400",
-    bg: "bg-amber-50 dark:bg-amber-900/20",
-    text: "text-amber-700 dark:text-amber-400",
+    bg: "bg-amber-50 dark:bg-amber-950/40",
+    text: "text-amber-700 dark:text-amber-300",
+    border: "border-amber-200/70 dark:border-amber-800/60",
   },
   morning_submitted: {
     label: "Morning Done",
     dot: "bg-blue-500",
-    bg: "bg-blue-50 dark:bg-blue-900/20",
-    text: "text-blue-700 dark:text-blue-400",
+    bg: "bg-blue-50 dark:bg-blue-950/40",
+    text: "text-blue-700 dark:text-blue-300",
+    border: "border-blue-200/70 dark:border-blue-800/60",
   },
   evening_pending: {
     label: "Evening Pending",
     dot: "bg-orange-400",
-    bg: "bg-orange-50 dark:bg-orange-900/20",
-    text: "text-orange-700 dark:text-orange-400",
+    bg: "bg-orange-50 dark:bg-orange-950/40",
+    text: "text-orange-700 dark:text-orange-300",
+    border: "border-orange-200/70 dark:border-orange-800/60",
   },
   evening_submitted: {
     label: "Evening Done",
     dot: "bg-emerald-500",
-    bg: "bg-emerald-50 dark:bg-emerald-900/20",
-    text: "text-emerald-700 dark:text-emerald-400",
+    bg: "bg-emerald-50 dark:bg-emerald-950/40",
+    text: "text-emerald-700 dark:text-emerald-300",
+    border: "border-emerald-200/70 dark:border-emerald-800/60",
   },
   submitted: {
     label: "Submitted",
     dot: "bg-emerald-500",
-    bg: "bg-emerald-50 dark:bg-emerald-900/20",
-    text: "text-emerald-700 dark:text-emerald-400",
+    bg: "bg-emerald-50 dark:bg-emerald-950/40",
+    text: "text-emerald-700 dark:text-emerald-300",
+    border: "border-emerald-200/70 dark:border-emerald-800/60",
   },
   reviewed: {
     label: "Reviewed",
     dot: "bg-purple-500",
-    bg: "bg-purple-50 dark:bg-purple-900/20",
-    text: "text-purple-700 dark:text-purple-400",
+    bg: "bg-purple-50 dark:bg-purple-950/40",
+    text: "text-purple-700 dark:text-purple-300",
+    border: "border-purple-200/70 dark:border-purple-800/60",
   },
 };
 
@@ -82,13 +100,14 @@ const PRIORITY_BADGE: Record<string, string> = {
 function StatusBadge({ status }: { status: string }) {
   const m = STATUS_META[status] ?? {
     label: status,
-    dot: "bg-gray-400",
-    bg: "bg-gray-50 dark:bg-gray-700",
-    text: "text-gray-600 dark:text-gray-400",
+    dot: "bg-slate-400",
+    bg: "bg-slate-50 dark:bg-slate-800",
+    text: "text-slate-600 dark:text-slate-400",
+    border: "border-slate-200 dark:border-slate-700",
   };
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${m.bg} ${m.text}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold ${m.bg} ${m.text} border ${m.border || "border-current/15"}`}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${m.dot}`} />
       {m.label}
@@ -170,35 +189,35 @@ function ExpandableRow({
   return (
     <>
       <tr
-        className="text-nowrap border-b border-gray-50 dark:border-gray-700/60 hover:bg-slate-50/60 dark:hover:bg-gray-700/30 transition-colors cursor-pointer group"
+        className="text-nowrap border-b border-slate-100 dark:border-slate-700/60 hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors cursor-pointer group"
         onClick={() => router.push(`/report/detail/${report.id}`)}
       >
-        <td className="px-5 py-4">
+        <td className="px-5 py-3.5">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#16c2cf] to-[#0fb8a5] flex items-center justify-center text-white text-xs font-extrabold shrink-0 shadow-sm">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-600 to-cyan-500 flex items-center justify-center text-white text-xs font-bold shrink-0 ring-2 ring-white dark:ring-slate-800 shadow-2xs">
               {initials}
             </div>
             <div>
-              <p className="text-sm font-bold text-gray-900 dark:text-white leading-tight">
+              <p className="text-xs font-bold text-slate-900 dark:text-white leading-tight group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
                 {user?.firstName} {user?.lastName}
               </p>
-              <p className="text-[11px] text-gray-400 dark:text-gray-500 font-mono">
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-0.5">
                 {user?.company ?? "—"}
               </p>
             </div>
           </div>
         </td>
 
-        <td className="px-5 py-4">
+        <td className="px-5 py-3.5">
           <div className="flex flex-col">
-            <span className="text-sm font-bold text-gray-900 dark:text-white">
+            <span className="text-xs font-bold text-slate-900 dark:text-white">
               {new Date(report.reportDate).toLocaleDateString("en-GB", {
                 day: "2-digit",
                 month: "short",
                 year: "numeric",
               })}
             </span>
-            <span className="text-[10px] text-gray-400 font-medium">
+            <span className="text-[10px] text-slate-400 font-medium">
               {new Date(report.reportDate).toLocaleDateString("en-GB", {
                 weekday: "long",
               })}
@@ -206,126 +225,109 @@ function ExpandableRow({
           </div>
         </td>
 
-        <td className="px-5 py-4">
+        <td className="px-5 py-3.5">
           <StatusBadge status={report.status} />
         </td>
 
-        <td className="px-5 py-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-extrabold text-gray-900 dark:text-white">
+        <td className="px-5 py-3.5">
+          <div className="flex items-center gap-1.5 text-xs">
+            <span className="font-bold text-slate-900 dark:text-white tabular-nums">
               {morningItems.length}
             </span>
-            <span className="text-xs text-gray-400">{t("planned")}</span>
-            <span className="text-gray-200 dark:text-gray-600">|</span>
-            <span className="text-sm font-extrabold text-emerald-600">
+            <span className="text-[11px] text-slate-400 font-medium">{t("planned")}</span>
+            <span className="text-slate-200 dark:text-slate-700">|</span>
+            <span className="font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
               {completedItems.length}
             </span>
-            <span className="text-xs text-gray-400">{t("done_2")}</span>
+            <span className="text-[11px] text-slate-400 font-medium">{t("done_2")}</span>
           </div>
         </td>
 
-        <td className="px-5 py-4">
-          <div className="flex flex-col gap-0.5">
+        <td className="px-5 py-3.5">
+          <div className="flex flex-col gap-1 min-w-[130px]">
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-gray-400 w-12">{t("est")}</span>
-              <div className="h-1.5 w-24 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+              <span className="text-[10px] text-slate-400 font-medium w-9">{t("est")}</span>
+              <div className="h-1.5 flex-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-blue-400 rounded-full"
+                  className="h-full bg-cyan-500 rounded-full"
                   style={{ width: `${Math.min((totalEst / 8) * 100, 100)}%` }}
                 />
               </div>
-              <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 tabular-nums w-10 text-right">
                 {totalEst.toFixed(1)}h
               </span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-gray-400 w-12">
+              <span className="text-[10px] text-slate-400 font-medium w-9">
                 {t("actual")}
               </span>
-              <div className="h-1.5 w-24 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div className="h-1.5 flex-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-emerald-400 rounded-full"
+                  className="h-full bg-emerald-500 rounded-full"
                   style={{
                     width: `${Math.min((totalActual / 8) * 100, 100)}%`,
                   }}
                 />
               </div>
-              <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 tabular-nums w-10 text-right">
                 {totalActual.toFixed(1)}h
               </span>
             </div>
           </div>
         </td>
 
-        <td className="px-5 py-4">
+        <td className="px-5 py-3.5">
           {report.eveningReport?.overallMood ? (
-            <span className="text-xl" title={report.eveningReport.overallMood}>
-              {MOOD_EMOJI[report.eveningReport.overallMood] ?? "—"}
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60 capitalize">
+              <span>{MOOD_EMOJI[report.eveningReport.overallMood] ?? "•"}</span>
+              <span className="text-[11px]">{report.eveningReport.overallMood}</span>
             </span>
           ) : (
-            <span className="text-gray-300 dark:text-gray-600 text-sm">—</span>
+            <span className="text-slate-400 dark:text-slate-500 text-xs">—</span>
           )}
         </td>
 
-        <td className="px-5 py-4">
+        <td className="px-5 py-3.5">
           {report.isReviewed ? (
-            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 border border-purple-200/60 dark:border-purple-800/60">
               <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />{" "}
               {t("reviewed")}
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-gray-50 text-gray-400 dark:bg-gray-700 dark:text-gray-500">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 border border-slate-200/60 dark:border-slate-700/60">
               {t("pending")}
             </span>
           )}
         </td>
 
-        <td className="px-5 py-4">
+        <td className="px-3 py-3.5 text-center">
           <button
             type="button"
-            className="w-7 h-7 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-950/40 transition cursor-pointer"
             onClick={(e) => {
               setOpen((o) => !o);
               e.stopPropagation();
             }}
+            title="Toggle Details"
           >
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 12 12"
-              fill="none"
-              style={{
-                transform: open ? "rotate(180deg)" : "",
-                transition: "transform .2s",
-              }}
-            >
-              <path
-                d="M2 4l4 4 4-4"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <ChevronDown
+              size={15}
+              className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+            />
           </button>
         </td>
 
-        <td className="justify-center px-5 py-4 text-center">
+        <td className="px-5 py-3.5 text-center">
           <button
             onClick={(e) => {
               e.stopPropagation();
               handleDelete(report.id, report.reportDate);
             }}
             disabled={!canDelete}
-            className="inline-flex items-center justify-center p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+            title={t("delete") || "Delete Report"}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition disabled:opacity-30 cursor-pointer"
           >
-            <MdDelete
-              className={`w-5 h-5 transition-colors ${
-                canDelete
-                  ? "text-red-500 cursor-pointer hover:text-red-700"
-                  : "text-red-200 cursor-not-allowed"
-              }`}
-            />
+            <MdDelete className="text-base" />
           </button>
         </td>
       </tr>
@@ -1012,96 +1014,95 @@ const STATUS_OPTIONS = [
   };
 
   return (
-    <div className="ml-72 mt-14">
-      <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full mb-10">
+    <div className="">
+      <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xs w-full mb-10">
         {/* Header */}
-        <div className="flex items-start justify-between mb-8">
-          <div>
-            <div className="flex items-center gap-2.5 mb-1">
-              <span className="text-2xl">📋</span>
-              <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+        <div className="flex items-start justify-between gap-4 mb-6">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-cyan-50 dark:bg-cyan-950/50 border border-cyan-200/60 dark:border-cyan-800/60 flex items-center justify-center text-cyan-600 dark:text-cyan-400 shrink-0">
+              <FileBarChart size={20} />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
                 {t("task_reports")}
               </h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                {t("daily_task_reports_morning_agendas_evening_progress")}
+              </p>
             </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {t("daily_task_reports_morning_agendas_evening_progress")}
-            </p>
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={fetchReports}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-white text-sm font-bold transition-all active:scale-95"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/60 text-slate-700 dark:text-slate-200 text-xs font-semibold transition shadow-2xs cursor-pointer"
             >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 14 14"
-                fill="none"
-                className={isLoading ? "animate-spin" : ""}
-              >
-                <path
-                  d="M13 7A6 6 0 1 1 7 1"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M10 1h3v3"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              {t("refresh")}
+              <RefreshCw
+                size={13}
+                className={isLoading ? "animate-spin text-cyan-600" : "text-slate-400"}
+              />
+              <span>{t("refresh")}</span>
             </button>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-4 gap-4 mb-7">
-          {[
-            {
-              label: t("total_page"),
-              value: totalReports,
-              icon: "📋",
-              bg: "bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800",
-            },
-            {
-              label: t("evening_submitted"),
-              value: eveningDone,
-              icon: "🌆",
-              bg: "bg-emerald-50 border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800",
-            },
-            {
-              label: t("reviewed"),
-              value: reviewed,
-              icon: "✅",
-              bg: "bg-purple-50 border-purple-100 dark:bg-purple-900/20 dark:border-purple-800",
-            },
-            {
-              label: t("avg_completion"),
-              value: `${avgCompletion}%`,
-              icon: "📊",
-              bg: "bg-amber-50 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800",
-            },
-          ].map((s) => (
-            <div
-              key={s.label}
-              className={`flex items-center gap-3 p-4 rounded-2xl border ${s.bg}`}
-            >
-              <span className="text-xl">{s.icon}</span>
-              <div>
-                <div className="text-xl font-extrabold text-gray-900 dark:text-white">
-                  {s.value}
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                  {s.label}
-                </div>
+        {/* Top 4 KPI Summary Metric Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/50 p-4 shadow-2xs flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/50 border border-blue-200/60 dark:border-blue-800/60 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+              <FileText size={18} />
+            </div>
+            <div>
+              <div className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">
+                {totalReports}
+              </div>
+              <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                {t("total_page")}
               </div>
             </div>
-          ))}
+          </div>
+
+          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/50 p-4 shadow-2xs flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/60 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+              <CheckCircle2 size={18} />
+            </div>
+            <div>
+              <div className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">
+                {eveningDone}
+              </div>
+              <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                {t("evening_submitted")}
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/50 p-4 shadow-2xs flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/50 border border-purple-200/60 dark:border-purple-800/60 flex items-center justify-center text-purple-600 dark:text-purple-400 shrink-0">
+              <CheckSquare size={18} />
+            </div>
+            <div>
+              <div className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">
+                {reviewed}
+              </div>
+              <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                {t("reviewed")}
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/50 p-4 shadow-2xs flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200/60 dark:border-amber-800/60 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+              <TrendingUp size={18} />
+            </div>
+            <div>
+              <div className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">
+                {avgCompletion}%
+              </div>
+              <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                {t("avg_completion")}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Filters */}
@@ -1117,7 +1118,7 @@ const STATUS_OPTIONS = [
                   : "border-gray-200 dark:border-gray-600"
               }`}
             >
-              <span className="text-gray-400 text-sm flex-shrink-0">🔍</span>
+              <Search className="text-slate-400 w-4 h-4 flex-shrink-0 pointer-events-none" />
               <input
                 type="text"
                 value={searchInput}
@@ -1500,11 +1501,11 @@ const STATUS_OPTIONS = [
 
 
         {/* Table */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[900px]">
+            <table className="w-full text-xs min-w-[900px]">
               <thead>
-                <tr className="bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
+                <tr className="bg-slate-50/80 dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800">
                   {[
                     "employee",
                     "date",
@@ -1518,23 +1519,23 @@ const STATUS_OPTIONS = [
                   ].map((col) => (
                     <th
                       key={col}
-                      className="px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-left"
+                      className="px-5 py-3 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-left"
                     >
                       {col ? t(col) : ""}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
                 {isLoading ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <SkeletonRow key={i} />
                   ))
                 ) : filteredReports.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="text-center py-20">
-                      <div className="text-5xl mb-3">📭</div>
-                      <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">
+                    <td colSpan={9} className="text-center py-20 text-slate-400 dark:text-slate-500">
+                      <Inbox className="w-10 h-10 mb-2 mx-auto text-slate-300 dark:text-slate-600" />
+                      <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
                         {t("no_task_reports_found")}
                       </p>
                     </td>
@@ -1554,14 +1555,14 @@ const STATUS_OPTIONS = [
           </div>
 
           {/* Pagination */}
-          <div className="px-5 py-3.5 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
-            <span className="text-xs text-gray-400 dark:text-gray-500">
+          <div className="px-5 py-3.5 bg-slate-50/80 dark:bg-slate-900 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
+            <span className="text-xs text-slate-500 dark:text-slate-400">
               {t("page")}{" "}
-              <span className="font-semibold text-gray-600 dark:text-gray-300">
+              <span className="font-semibold text-slate-800 dark:text-slate-200">
                 {currentPage}
               </span>{" "}
               {t("of")}{" "}
-              <span className="font-semibold text-gray-600 dark:text-gray-300">
+              <span className="font-semibold text-slate-800 dark:text-slate-200">
                 {totalPages}
               </span>
             </span>
@@ -1570,18 +1571,18 @@ const STATUS_OPTIONS = [
                 type="button"
                 disabled={currentPage <= 1 || isLoading}
                 onClick={() => setCurrentPage((p) => p - 1)}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/60 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-2xs cursor-pointer"
               >
                 {t("prev")}
               </button>
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 px-1">
+              <span className="text-xs font-medium text-slate-600 dark:text-slate-400 px-1 tabular-nums">
                 {currentPage}
               </span>
               <button
                 type="button"
                 disabled={currentPage >= totalPages || isLoading}
                 onClick={() => setCurrentPage((p) => p + 1)}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/60 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-2xs cursor-pointer"
               >
                 {t("next")}
               </button>

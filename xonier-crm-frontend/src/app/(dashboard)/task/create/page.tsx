@@ -346,7 +346,7 @@ const CreateTaskPage = (): JSX.Element => {
 
   // ────────────────────────────────────────────────────────────────────────────
   return (
-    <div className="ml-72 mt-14 min-h-screen">
+    <div className="min-h-screen">
       <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full mb-10">
 
         {/* Header */}

@@ -99,7 +99,7 @@ const page = (): JSX.Element => {
 
   if (isLoading) {
     return (
-      <div className="ml-72 mt-14 p-6">
+      <div>
         <div className=" flex flex-col gap-6">
           <div className="flex items-center gap-4">
             <Skeleton width={36} height={36} borderRadius={10} />
@@ -118,7 +118,7 @@ const page = (): JSX.Element => {
   }
 
   return (
-    <div className="ml-72 mt-14 p-6">
+    <div>
       <div className=" flex flex-col gap-6">
 
 

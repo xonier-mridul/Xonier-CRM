@@ -3,10 +3,7 @@ import type { Metadata } from "next";
 import "../../app/globals.css";
 import SideBar from "@/src/components/layouts/SideBar";
 import NavBar from "@/src/components/layouts/NavBar";
-import { MARGIN_TOP, SIDEBAR_WIDTH } from "@/src/constants/constants";
-import ReduxProvider from "@/src/store/providers";
-
-
+import { SIDEBAR_WIDTH } from "@/src/constants/constants";
 
 export const metadata: Metadata = {
   title: "Trakeroo CRM | Smart Sales, Leads & Customer Management",
@@ -20,15 +17,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div
-      className={`mt-${MARGIN_TOP} p-6 bg-stone-50 dark:bg-gray-800`}
-    >
-      {/* <ReduxProvider> */}
-      <SideBar/>
-      <NavBar/>
-      {children}
-      {/* </ReduxProvider> */}
-      
+    <div className="flex min-h-screen bg-slate-50/60 dark:bg-slate-950">
+      {/* Fixed Sidebar */}
+      <SideBar />
+
+      {/* Main content area — offset by sidebar width */}
+      <div
+        className="flex flex-col flex-1 min-w-0"
+        style={{ marginLeft: SIDEBAR_WIDTH }}
+      >
+        {/* Fixed Navbar */}
+        <NavBar />
+
+        {/* Page content — offset by navbar height (h-14 = 56px) + spacing */}
+        <main className="flex-1 mt-16 p-6 overflow-auto">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

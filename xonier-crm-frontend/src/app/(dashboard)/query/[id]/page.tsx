@@ -45,7 +45,7 @@ const QueryDetail = () => {
     },[])
 
   return (
-  <div className="ml-72 mt-14 p-6 flex flex-col gap-10">
+  <div className="p-6 flex flex-col gap-10">
 
   <div className="w-full flex flex-col justify-between ">
     <Link href="/query">

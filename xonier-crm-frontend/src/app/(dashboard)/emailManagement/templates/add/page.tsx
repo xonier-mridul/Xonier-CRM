@@ -533,7 +533,7 @@ const Page = (): JSX.Element => {
       )}
 
       {/* ── Page ────────────────────────────────────────────────────── */}
-      <div className="ml-72 mt-14 p-6">
+      <div>
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
 
           {/* ── Card Header ─────────────────────────────────────────── */}
