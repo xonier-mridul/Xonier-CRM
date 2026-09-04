@@ -77,9 +77,9 @@ function CategoryModal({
       <div className="fixed inset-0 z-150 flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                className="absolute inset-0 bg-black/40 dark:bg-white/20 backdrop-blur-sm"
                 onClick={handleClosePopup}
-            />
+            />  
 
             {/* Modal */}
             <div className="relative z-50 w-full max-w-lg my-auto bg-white dark:bg-gray-800 max-h-[80vh] overflow-y-auto rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700">
@@ -126,7 +126,7 @@ function CategoryModal({
                     {/* Name */}
                     <div>
                         <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">
-                            {t("category_name_3")}
+                            {t("category_name")}
                         </label>
                         <input
                             type="text"
@@ -142,7 +142,7 @@ function CategoryModal({
                     {/* Description */}
                     <div>
                         <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">
-                            {t("description_2")}
+                            {t("description")}
                         </label>
                         <textarea
                             value={formData.description}
@@ -150,7 +150,7 @@ function CategoryModal({
                                 setFormData((prev) => ({ ...prev, description: e.target.value }))
                             }
                             rows={2}
-                            placeholder={t("description_2")}
+                            placeholder={t("description")}
                             className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-600 text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-700"
                         />
                     </div>
@@ -169,7 +169,7 @@ function CategoryModal({
                         >
                             {Object.values(TASK_VISIBILITY).map((v) => (
                                 <option key={v} value={v}>
-                                    {v.toUpperCase()}
+                                    {t(v)}
                                 </option>
                             ))}
                         </select>
@@ -235,7 +235,7 @@ function CategoryModal({
                         onClick={isEdit ? handleUpdate : handleSubmit}
                         className="px-5 py-2 rounded-xl text-sm text-white bg-cyan-600 disabled:opacity-50"
                     >
-                        {isLoading ? "Loading..." : isEdit ? "Save" : "Create"}
+                        {isLoading ? "Loading..." : isEdit ? t("save") : t("create")}
                     </button>
                 </div>
             </div>

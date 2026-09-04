@@ -64,12 +64,12 @@ export function StatusModal({
                 <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 bg-gray-50">
                     <div>
                         <h2 className="text-lg font-bold text-gray-900 tracking-tight">
-                            {isEdit ? "Edit Status" : "Create New Status"}
+                            {isEdit ? t("editStatus") : t("createNewStatus")}
                         </h2>
                         <p className="text-xs text-gray-500 mt-0.5">
                             {isEdit
-                                ? "Update the status details below"
-                                : "Define a new task status for your project"}
+                                ? t("updateStatusDetailsBelow")
+                                : t("defineNewTaskStatus")}
                         </p>
                     </div>
                     <button
@@ -270,7 +270,7 @@ export function StatusModal({
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                             </svg>
                         )}
-                        {isEdit ? "Save Changes" : "Create Status"}
+                        {isEdit ? t("saveChanges") : t("createStatus")}
                     </button>
                 </div>
             </div>

@@ -35,7 +35,7 @@ import { MdSwapHoriz } from "react-icons/md"; // For reassign icon
 import ReassignModal from "@/src/components/pages/prospect/ReassignModal";
 import  UserSelect from "@/src/components/common/userselect";
 import { useTranslation } from "react-i18next";
-const PAGE_LIMIT = 10;
+import Pagination from "@/src/components/common/pagination";
 
 type CallStatus = "queued" | "in_progress" | "completed" | "failed";
 type MergedFilters = FilterValues & DateFilter;
@@ -200,11 +200,10 @@ const LeadContent = (): JSX.Element => {
 
   // ── State ──────────────────────────────────────────────────────────────────
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isFetchingMore, setIsFetchingMore] = useState<boolean>(false);
   const [leadData, setLeadData] = useState<Prospect[]>([]);
   const [err, setErr] = useState<string[] | string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [totalPage, setTotalPage] = useState<number>(1); // ⬅️ NEW
   const [searchVal, setSearchVal] = useState<string>("");
   const [activeColumns, setActiveColumns] = useState<ActiveColumns>(DEF_ACTIVE[info]);
   const [showColumnPicker, setShowColumnPicker] = useState<boolean>(false);
@@ -228,13 +227,12 @@ const LeadContent = (): JSX.Element => {
   const [showReassignModal, setShowReassignModal] = useState(false);
   const [singleReassignLead, setSingleReassignLead] = useState<Prospect | null>(null);
 
+  const [pageLimit, setPageLimit] = useState<number>(10);
+
+
   // ── Refs ───────────────────────────────────────────────────────────────────
   const isFetchingRef = useRef<boolean>(false);
-  const pageRef = useRef<number>(1);
-  const hasMoreRef = useRef<boolean>(true);
   const filtersRef = useRef<MergedFilters>({ fullName: "", fromDate: "", toDate: "" });
-  const bottomRef = useRef<HTMLTableRowElement | null>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
   const selectAllRef = useRef<HTMLInputElement>(null);
@@ -270,94 +268,59 @@ const LeadContent = (): JSX.Element => {
     setActiveColumns(DEF_ACTIVE[infoType]);
   }, [infoType]);
 
-  // ── fetchData ─────────────────────────────────────────────────────────────
+  // ── fetchData (page-based, replaces data instead of appending) ────────────
   // API response shape:
   // { success, status_code, message, data: Prospect[] }
-  // No totalPages — we infer hasMore from whether a full page was returned
+  // No totalPages returned — we infer whether a next page exists based on
+  // whether a full page (limit items) was returned.
   const fetchData = useCallback(async (
     page: number,
     currentFilters: MergedFilters,
-    reset = false
+    limit: number
   ) => {
     if (isFetchingRef.current) return;
     isFetchingRef.current = true;
-
-    if (reset) setIsLoading(true);
-    else setIsFetchingMore(true);
+    setIsLoading(true);
 
     try {
-      const result: any = await prospectService.getAll(page, PAGE_LIMIT, currentFilters);
+      const result: any = await prospectService.getAll(page, limit, currentFilters);
 
       if (result.status === 200) {
-        // API returns: { data: Prospect[] } — flat array, no pagination wrapper
         const newLeads: Prospect[] = result.data.data ?? [];
+        const newHasMore = newLeads.length >= limit;
 
-        // Since the API doesn't return totalPages, infer:
-        // if we got a full page (PAGE_LIMIT items) → there might be more
-        // if we got fewer → we've reached the end
-        const newHasMore = newLeads.length >= PAGE_LIMIT;
-
-        setLeadData((prev) => (reset ? newLeads : [...prev, ...newLeads]));
+        setLeadData(newLeads);
+        setAssignableLeads(newLeads.filter((item) => !item.assignTo?.id));
         setCurrentPage(page);
-        setAssignableLeads((prev) =>
-          reset
-            ? newLeads.filter((item) => !item.assignTo?.id)
-            : [...prev, ...newLeads.filter((item) => !item.assignTo?.id)]
-        );
-
-        // Update state AND ref synchronously so the observer
-        // never reads a stale value before the next render
-        setHasMore(newHasMore);
-        hasMoreRef.current = newHasMore;
-        pageRef.current = page;
+        setTotalPage(newHasMore ? page + 1 : page);
       }
     } catch (error) {
       if (axios.isAxiosError(error)) setErr(extractErrorMessages(error));
       else setErr(["Something went wrong"]);
     } finally {
       setIsLoading(false);
-      setIsFetchingMore(false);
       isFetchingRef.current = false;
     }
   }, []);
 
-  // ── Initial load ──────────────────────────────────────────────────────────
+  // ── One-time setup (assignable users list) ────────────────────────────────
   useEffect(() => {
-    const merged: MergedFilters = { ...filters, ...filterQuery, ...dateFilter };
-    filtersRef.current = merged;
-    fetchData(1, merged, true);
     getAssignableUsers();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Re-fetch on filter / dateFilter / filterQuery change ──────────────────
+  // ── Re-fetch on filter / dateFilter / filterQuery / pageLimit change ──────
+  // Always resets to page 1 whenever any of these change.
   useEffect(() => {
     const merged: MergedFilters = { ...filters, ...filterQuery, ...dateFilter };
     filtersRef.current = merged;
-    fetchData(1, merged, true);
-  }, [filters, filterQuery, dateFilter]); // eslint-disable-line react-hooks/exhaustive-deps
+    fetchData(1, merged, pageLimit);
+  }, [filters, filterQuery, dateFilter, pageLimit]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Infinite scroll observer ──────────────────────────────────────────────
-  // Set up ONCE with empty deps.
-  // All runtime values are read through refs → no stale closures.
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (
-          entries[0].isIntersecting &&
-          hasMoreRef.current &&        // is there a next page?
-          !isFetchingRef.current       // are we not already fetching?
-        ) {
-          fetchData(pageRef.current + 1, filtersRef.current);
-        }
-      },
-      { root: null, rootMargin: "200px", threshold: 0 }
-    );
-
-    observerRef.current = observer;
-    if (bottomRef.current) observer.observe(bottomRef.current);
-
-    return () => observer.disconnect();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // ── Page change handler (used by Pagination component) ───────────────────
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page === currentPage) return;
+    fetchData(page, filtersRef.current, pageLimit);
+  };
 
   // ── Helpers ───────────────────────────────────────────────────────────────
   const handleSearch = (val: string) => {
@@ -425,7 +388,7 @@ const LeadContent = (): JSX.Element => {
       if (result.status === 200) {
         toast.success(result.data.message);
         clearAssignSelection();
-        await fetchData(1, filtersRef.current, true);
+        await fetchData(currentPage, filtersRef.current, pageLimit);
       }
     } catch (error) {
       if (axios.isAxiosError(error)) { const m = extractErrorMessages(error); setErr(m); toast.error(`${m}`); }
@@ -497,7 +460,7 @@ const LeadContent = (): JSX.Element => {
       if (result.status === 200) {
         toast.success("Leads reassigned successfully!");
         setCommSelectedIds(new Set()); // Clear the selection after reassignment
-        await fetchData(1, filtersRef.current, true);
+        await fetchData(currentPage, filtersRef.current, pageLimit);
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -580,6 +543,17 @@ const LeadContent = (): JSX.Element => {
               {/* Export */}
               <button className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-full flex items-center gap-2 text-sm font-medium transition-colors">⬇</button>
 
+              {/* Page limit */}
+              <select
+                value={pageLimit}
+                onChange={(e) => setPageLimit(Number(e.target.value))}
+                className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm outline-none"
+              >
+                {[10, 20, 30, 40, 50].map((col) => (
+                  <option key={col} value={col}>{col}</option>
+                ))}
+              </select>
+
               {/* Date Filter */}
               <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
 
@@ -610,12 +584,6 @@ const LeadContent = (): JSX.Element => {
               <div className="flex items-center gap-3">
                 <div className="flex flex-col gap-0.5">
                   {!selectedUserId && <span className="text-cyan-200 text-[11px] ml-1">{t("select_a_user_first")}</span>}
-                  {/* <UserSelect
-                    users={assignableUsers}
-                    selectedUserId={selectedUserId}
-                    setSelectedUserId={setSelectedUserId}
-                    placeholder="Search & select user..."
-                    /> */}
                   <UserSelect
                     mode="single"
                     value={selectedUserId}
@@ -706,7 +674,7 @@ const LeadContent = (): JSX.Element => {
         return (
           <tr 
             key={item.id} 
-            className="hover:bg-slate-50 dark:hover:bg-gray-750 transition-colors group"
+            className="hover:bg-slate-50 dark:hover:bg-gray-900/30 transition-colors group"
           >
             {hasPermission(PERMISSIONS.assignEnquiry) && (
               <td className="p-4 text-center w-12">
@@ -746,7 +714,7 @@ const LeadContent = (): JSX.Element => {
               let content;
               
               if (key === "status") {
-                content = <StatusBadge status={value ?? "-"} />;
+                content = <StatusBadge status={t(value) ?? "-"} />;
               } 
               else if (key === "fullName") {
                 content = (
@@ -758,7 +726,7 @@ const LeadContent = (): JSX.Element => {
                       className="font-medium text-slate-800 dark:text-slate-200 truncate block" 
                       title={value || "-"}
                     >
-                      {value || "-"}
+                      {t(value) || "-"}
                     </span>
                   </div>
                 );
@@ -907,27 +875,6 @@ const LeadContent = (): JSX.Element => {
           </tr>
         );
       })}
-
-      {/* Fetching-more skeletons */}
-      {isFetchingMore && Array.from({ length: 3 }).map((_, i) => (
-        <tr 
-          key={`more-${i}`} 
-          className="hover:bg-slate-50 dark:hover:bg-gray-750 transition-colors animate-pulse"
-        >
-          {hasPermission(PERMISSIONS.assignEnquiry) && (
-            <td className="p-4 w-12">
-              <Skeleton width={18} height={18} borderRadius={4} />
-            </td>
-          )}
-          {Object.entries(activeColumns).map(([key, isActive]) =>
-            isActive ? (
-              <td key={key} className="p-4">
-                <Skeleton borderRadius={6} height={20} />
-              </td>
-            ) : null
-          )}
-        </tr>
-      ))}
     </>
   ) : (
     <tr>
@@ -945,19 +892,19 @@ const LeadContent = (): JSX.Element => {
       </td>
     </tr>
   )}
-
-  {/* Sentinel row — watched by IntersectionObserver */}
-  <tr ref={bottomRef}>
-    <td colSpan={visibleCols.length + (hasPermission(PERMISSIONS.assignEnquiry) ? 1 : 0)} />
-  </tr>
 </tbody>
               </table>
             </div>
 
-            {!hasMore && !isLoading && leadData.length > 0 && (
-              <p className="p-4 text-center text-xs text-slate-400">
-                {t("all_leads_loaded")}{leadData.length} {t("total_5")}
-              </p>
+          
+            {!isLoading && leadData.length > 0 && (
+             
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPage}
+                  onPageChange={handlePageChange}
+                />
+           
             )}
           </div>
         </div>

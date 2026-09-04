@@ -60,7 +60,11 @@ const SideBar = () => {
   const handleLogout = async (): Promise<void> => {
     try {
 
-      const isConfirmed = await ConfirmPopup({ title: "Logout", text: "Are you want to logout", btnTxt: "Yes, Logout" });
+      const isConfirmed = await ConfirmPopup({
+  title: t("logout"),
+  text: t("are_you_sure_you_want_to_logout"),
+  btnTxt: t("yes_logout")
+});
 
       if (isConfirmed) {
         const isLogout = await AuthService.logout()
@@ -818,7 +822,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        {t("Invoice")}
+                        {t("invoice")}
                       </Link>
                     </li>}
                   </motion.ul>
@@ -954,7 +958,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                 )}
               </AnimatePresence>
             </li>}
-
+{/* 
               <li>
               <Link
                 href="/support"
@@ -968,7 +972,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                 </span>
                 {t("supports")}
               </Link>
-            </li>
+            </li> */}
             {(auth.isAdmin)  && <li>
               <Link
                 href="/query"
@@ -984,7 +988,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
               </Link>
             </li>}
            
-            {
+            {/* {
               hasPermission(PERMISSIONS.readOTP) && <li>
                 
                 <Link
@@ -1005,11 +1009,11 @@ const isSuperAdmin = auth.user?.userRole?.some(
                   </span>
                 </Link>
               </li>
-            }
+            } */}
           </ul>
         </div>
     
-        <div className="flex flex-col gap-3">
+        {/* <div className="flex flex-col gap-3">
           <h2 className=" text-xs text-gray-500 dark:text-gray-400 pl-3">
             {t("setting")}
           </h2>
@@ -1052,7 +1056,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                {t("setting")}
 
               </Link>
-        </div>
+        </div> */}
 
         <div className="flex flex-col gap-3">
           <h2 className="uppercase text-xs text-gray-500 dark:text-gray-400 pl-3">

@@ -509,8 +509,7 @@ const handleAllPermissions = (checked: boolean) => {
                       </p>
                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                         {formData.canManageBelow
-                          ? "Can manage users with lower power"
-                          : "Read-only, no user management"}
+                          ? t("can_manage_users_with_lower_power") : t("read_only_no_user_management")}
                       </p>
                     </div>
                   </button>
@@ -604,7 +603,7 @@ const handleAllPermissions = (checked: boolean) => {
                         )}
                       </div>
                       <span className="font-semibold text-sm text-slate-700 dark:text-slate-200 whitespace-nowrap">
-                        {isAllSelected? 'Deselect All Permissions':'Select All Permissions'}
+                        {isAllSelected? t("deselect_all_permissions"):t("select_all_permissions")}
                       </span>
                     </label>
                   </div>

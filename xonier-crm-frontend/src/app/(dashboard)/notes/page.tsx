@@ -20,6 +20,7 @@ import Select from "@/src/components/ui/Select";
 import { RiGitRepositoryPrivateLine, RiGitRepositoryPrivateFill } from "react-icons/ri";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import { useTranslation } from "react-i18next";
+import { FormatDate } from "@/src/components/common/FormateDate";
 
 enum ACTIVE {
   ALL = "all",
@@ -39,14 +40,7 @@ const NoteCard = ({
   onClick: (note: Note) => void;
 }) => {
   const { t } = useTranslation();
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
+ 
 
   return (
     <div
@@ -77,8 +71,8 @@ const NoteCard = ({
         <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700">
           <div className="flex flex-col gap-1">
             <span className="text-xs text-gray-500 dark:text-gray-400">
-              {formatDate(note.createdAt)}
-            </span>
+  {FormatDate(note.createdAt)}
+</span>
             <span className="text-xs text-gray-400 dark:text-gray-500">
               {t("by")} {note.createdBy.firstName} {note.createdBy.lastName}
             </span>
@@ -567,7 +561,7 @@ const Page = (): JSX.Element => {
     
 
     try {
-      const confirm = await ConfirmPopup({title: "Are you sure", text: `Are sure sure to delete ${name}`, btnTxt: "Yes, delete"})
+      const confirm = await ConfirmPopup({title: t("are_you_sure"),  text: t("deleteConfirmation", { name }), btnTxt: t("yes_delete")})
       if (confirm){
         const result = await NoteService.softDelete(id)
         if(result.status === 200){

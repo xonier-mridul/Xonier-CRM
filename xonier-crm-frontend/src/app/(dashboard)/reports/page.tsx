@@ -21,6 +21,7 @@ import { IoIosSearch } from "react-icons/io";
 import { MdClose } from "react-icons/md";
 import { RoleService } from "@/src/services/role.service";
 import { IoChevronDown } from "react-icons/io5";
+import { FormatDate, FormatWeekday } from "@/src/components/common/FormateDate";
 
 const STATUS_META: Record<
   string,
@@ -86,12 +87,13 @@ function StatusBadge({ status }: { status: string }) {
     bg: "bg-gray-50 dark:bg-gray-700",
     text: "text-gray-600 dark:text-gray-400",
   };
+  const {t} = useTranslation()
   return (
     <span
       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${m.bg} ${m.text}`}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${m.dot}`} />
-      {m.label}
+      {t(m.label.toLowerCase())}
     </span>
   );
 }
@@ -190,20 +192,16 @@ function ExpandableRow({
         </td>
 
         <td className="px-5 py-4">
-          <div className="flex flex-col">
-            <span className="text-sm font-bold text-gray-900 dark:text-white">
-              {new Date(report.reportDate).toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              })}
-            </span>
-            <span className="text-[10px] text-gray-400 font-medium">
-              {new Date(report.reportDate).toLocaleDateString("en-GB", {
-                weekday: "long",
-              })}
-            </span>
-          </div>
+         
+<div className="flex flex-col">
+  <span className="text-sm font-bold text-gray-900 dark:text-white">
+    {FormatDate(report.reportDate)}
+  </span>
+
+  <span className="text-[10px] text-gray-400 font-medium">
+    {FormatWeekday(report.reportDate)}
+  </span>
+</div>
         </td>
 
         <td className="px-5 py-4">
@@ -220,7 +218,7 @@ function ExpandableRow({
             <span className="text-sm font-extrabold text-emerald-600">
               {completedItems.length}
             </span>
-            <span className="text-xs text-gray-400">{t("done_2")}</span>
+            <span className="text-xs text-gray-400">{t("done")}</span>
           </div>
         </td>
 

@@ -26,6 +26,7 @@ import { CompanySelectProps } from "@/src/types/company/company.types";
 import { IoCheckmarkCircle } from "react-icons/io5";
 import { FaRegCircle } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
+import {FormatDate, FormatDateTime} from "../../common/FormateDate"
 
 
 
@@ -651,26 +652,6 @@ const isPasswordValid = checks.every((check) => check.valid);
                 
                 const rr = index % 2 == 0;
 
-                const date = new Date(item.createdAt).toLocaleDateString(
-                  "en-IN",
-                  {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                    timeZone: "Asia/Kolkata",
-                  },
-                );
-                const lastLoginDate = item?.lastLogin
-                  ? new Date(item?.lastLogin).toLocaleDateString("en-IN", {
-                      timeZone: "Asia/Kolkata",
-                      year: "numeric",
-                      month: "short",
-                      day: "2-digit",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: true,
-                    })
-                  : "Not found";
                 return (
                   <tr
                     className={`${
@@ -699,7 +680,7 @@ const isPasswordValid = checks.every((check) => check.valid);
                         </span>
                       ))}
                     </td>
-                    <td className="whitespace-nowrap ">{date}</td>
+                    <td className="whitespace-nowrap ">{FormatDate(item.createdAt)}</td>
                     <td>
                       <span
                         className={`${
@@ -715,10 +696,10 @@ const isPasswordValid = checks.every((check) => check.valid);
                         }  rounded-full text-sm font-medium py-1 px-3 flex items-center gap-1 w-fit mx-3 md:mx-0 capitalize`}
                       >
                         {" "}
-                        <GoDotFill /> {item.status}
+                        <GoDotFill /> {t(item.status)}
                       </span>
                     </td>
-                    <td className='min-w-30'>{lastLoginDate}</td>
+                    <td className='min-w-30'>{FormatDateTime(item?.lastLogin)}</td>
                     <td>
                       <div className="flex items-center gap-2 mx-3 md:mx-0">
                         <Link
