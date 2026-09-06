@@ -4,7 +4,6 @@ import { UsersTable } from "@/src/components/pages/users/UsersTable";
 import { passwordCheck, RegisterPayload, User, UserRole } from "@/src/types";
 import axios from "axios";
 import React, { JSX, useState, useEffect, ChangeEvent, FormEvent, useCallback } from "react";
-import extractErrorMessages from "../../utils/error.utils";
 import { AuthService } from "@/src/services/auth.service";
 import { toast } from "react-toastify";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
@@ -13,6 +12,8 @@ import CompanyService from "@/src/services/company.service";
 import { Company } from "@/src/types/company/company.types";
 import { useSelector } from "react-redux";
 import { RootState } from "@/src/store";
+import { useParams } from "next/navigation";
+import extractErrorMessages from "@/src/app/utils/error.utils";
 
 const COMPANY_PAGE_LIMIT = 10;
 
@@ -46,16 +47,21 @@ const page = (): JSX.Element => {
     companyId: "",
   });
 
+  // useParams can return string | string[] — normalize it
+  const params = useParams<{ id: string }>();
+  const companyId = Array.isArray(params.id) ? params.id[0] : params.id;
+
   const isAdmin = useSelector((state: RootState) => state.auth.isAdmin);
 
   const fetchUsers = useCallback(async () => {
+    if (!companyId) return;
+
     setIsLoading(true);
     try {
-      const result = await AuthService.getAll({
+      const result = await CompanyService.getAllByCompanyId(companyId, {
         page: currentPage,
         limit: pageLimit || 10,
         search: search || undefined,
-        companyId: selectedCompanyId || undefined,
       });
       if (result.status === 200) {
         const resultData = result.data.data;
@@ -71,7 +77,7 @@ const page = (): JSX.Element => {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, pageLimit, search, selectedCompanyId]);
+  }, [companyId, currentPage, pageLimit, search]);
 
   const getCompanyData = useCallback(
     async (page: number) => {
@@ -109,7 +115,7 @@ const page = (): JSX.Element => {
   }, [companyHasMore, companyLoading, companyPage, getCompanyData]);
 
   const getRoleData = async () => {
-    setIsRoleLoading(true)
+    setIsRoleLoading(true);
     try {
       const result = await RoleService.getRolesWithoutPagination();
       if (result.status === 200) setRoleData(result.data.data);
@@ -117,8 +123,8 @@ const page = (): JSX.Element => {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) setErr(extractErrorMessages(error));
       else setErr(["Something went wrong"]);
-    }finally{
-      setIsRoleLoading(false)
+    } finally {
+      setIsRoleLoading(false);
     }
   };
 
@@ -191,41 +197,24 @@ const page = (): JSX.Element => {
 
   useEffect(() => {
     fetchUsers();
-  }, [currentPage, pageLimit, search, selectedCompanyId]);
+  }, [fetchUsers]);
 
-
-     const checks:passwordCheck[]=[
-        {label:'At least 8 characters',
-          valid: formData.password.length>=8,
-        },
-        {
-          label:'At least One uppercase letter',
-          valid: /[A-Z]/.test(formData.password),
-  
-        },
-         {
-          label:'At least One lowercase letter',
-          valid:/[a-z]/.test(formData.password),
-  
-        },
-         {
-          label:'At least One number',
-          valid:/[0-9]/.test(formData.password),
-  
-        },
-         {
-          label:'At least One special character',
-          valid: /[!@#$%^&*(),.?":{}|<>]/.test(formData.password),
-  
-        },
-      ]
-
+  const checks: passwordCheck[] = [
+    { label: "At least 8 characters", valid: formData.password.length >= 8 },
+    { label: "At least One uppercase letter", valid: /[A-Z]/.test(formData.password) },
+    { label: "At least One lowercase letter", valid: /[a-z]/.test(formData.password) },
+    { label: "At least One number", valid: /[0-9]/.test(formData.password) },
+    {
+      label: "At least One special character",
+      valid: /[!@#$%^&*(),.?":{}|<>]/.test(formData.password),
+    },
+  ];
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErr("");
     setLoading(true);
-   
+
     if (formData.password !== formData.confirmPassword) {
       setErr("Password not matching, please try again");
       setLoading(false);
@@ -297,7 +286,6 @@ const page = (): JSX.Element => {
         onCompanyScrollEnd={handleCompanyScrollEnd}
         selectedCompanyId={selectedCompanyId}
         checks={checks}
-
       />
     </div>
   );

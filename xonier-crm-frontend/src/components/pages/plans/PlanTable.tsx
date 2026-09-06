@@ -25,7 +25,7 @@ const statusStyles: Record<string, string> = {
 };
 
 const visibilityStyles: Record<string, string> = {
-  [PLAN_VISIBILITY.PUBLIC]: "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
+  [PLAN_VISIBILITY.PUBLIC]: "bg-cyan-100 text-cyan-600 dark:bg-cyan-900 dark:text-cyan-400",
   [PLAN_VISIBILITY.PRIVATE]: "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400",
 };
 
@@ -85,10 +85,10 @@ const PlanTable: React.FC<ExtendedPlanTableProps> = ({
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-200 dark:border-gray-700">
-              {["Plan", "Price", "Discount", "Status", "Visibility", "Trial", "Created By", "Actions"].map((col) => (
+              {["Plan", "Price", "Discount", "Status", "Visibility", "Trial", "Created By", "Actions"].map((col,index) => (
                 <th
                   key={col}
-                  className="pb-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 pr-4"
+                  className={` ${index==0 ?'pl-2' :" "} pb-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 pr-4`}
                 >
                   {col}
                 </th>
@@ -99,7 +99,7 @@ const PlanTable: React.FC<ExtendedPlanTableProps> = ({
             {!isLoading ? 
             (
               planData && planData.length > 0 ? (
-                planData.map((plan) => {
+                planData.map((plan,index) => {
                   const sym = currencySymbol[plan.currency] ?? "";
                   const isDeleted = plan.status === PLAN_STATUS.DELETED;
                   const createdBy =
@@ -108,8 +108,14 @@ const PlanTable: React.FC<ExtendedPlanTableProps> = ({
                       : `${plan.createdBy?.firstName ?? ""} ${plan.createdBy?.lastName ?? ""}`.trim();
 
                   return (
-                    <tr key={plan.id} className="group hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors">
-                      <td className="py-4 pr-4">
+                    <tr key={plan.id} 
+                    className={`${
+                      (index % 2== 0)
+                        ? "bg-white dark:bg-transparent hover:bg-cyan-50 dark:hover:bg-gray-700/50"
+                        : "bg-slate-100/50 dark:bg-slate-900/30 hover:bg-cyan-50 dark:hover:bg-gray-700/50"
+                    } w-full group transition-colors `}
+                    >
+                      <td className="py-4 pr-4 pl-2">
                         <div className="flex flex-col">
                           <span className="font-semibold text-sm text-slate-500 dark:text-white capitalize">{plan.name}</span>
                           <span className="text-xs text-gray-400 mt-0.5 line-clamp-1 max-w-40">{plan.description}</span>
@@ -156,7 +162,7 @@ const PlanTable: React.FC<ExtendedPlanTableProps> = ({
                       </td>
 
                       <td className="py-4 pr-4">
-                        <Link href={`/users/${plan.createdBy.id}`} className="text-xs text-green-500 dark:text-gray-300 capitalize bg-green-50 px-3 py-1 border border-green-400 cursor-pointer rounded-full whitespace-nowrap">{createdBy || "—"}</Link>
+                        <Link href={`/users/${plan.createdBy.id}`} className="text-xs text-green-500 dark:text-gray-300 capitalize bg-green-50 dark:bg-green-700 px-3 py-1 border border-green-400 cursor-pointer rounded-full whitespace-nowrap">{createdBy || "—"}</Link>
                       </td>
 
                       <td className="py-4">
@@ -168,7 +174,7 @@ const PlanTable: React.FC<ExtendedPlanTableProps> = ({
                           ) : (
                             <Link
                               href={`/plans/${plan.id}`}
-                              className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900/30 dark:hover:text-green-400 transition-colors"
+                              className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 hover:bg-teal-100 hover:text-teal-600 dark:hover:bg-teal-900 dark:hover:text-teal-400 transition-colors"
                             >
                               <IoEyeOutline className="text-base" />
                             </Link>

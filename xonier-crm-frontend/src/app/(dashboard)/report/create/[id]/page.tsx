@@ -38,11 +38,11 @@ const PRIORITY_DOT: Record<string, string> = {
 };
 
 const MOODS: { value: WorkMood; emoji: string; label: string; color: string }[] = [
-  { value: "excellent" as WorkMood, emoji: "🚀", label: "Excellent", color: "border-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 dark:border-emerald-500" },
-  { value: "good" as WorkMood, emoji: "😊", label: "Good", color: "border-blue-400 bg-blue-50 dark:bg-blue-900/30 dark:border-blue-500" },
-  { value: "neutral" as WorkMood, emoji: "😐", label: "Neutral", color: "border-gray-400 bg-gray-50 dark:bg-gray-700 dark:border-gray-500" },
-  { value: "tired" as WorkMood, emoji: "😴", label: "Tired", color: "border-amber-400 bg-amber-50 dark:bg-amber-900/30 dark:border-amber-500" },
-  { value: "stressed" as WorkMood, emoji: "😰", label: "Stressed", color: "border-red-400 bg-red-50 dark:bg-red-900/30 dark:border-red-500" },
+  { value: "excellent" as WorkMood, emoji: "🚀", label: "excellent", color: "border-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 dark:border-emerald-500" },
+  { value: "good" as WorkMood, emoji: "😊", label: "good", color: "border-blue-400 bg-blue-50 dark:bg-blue-900/30 dark:border-blue-500" },
+  { value: "neutral" as WorkMood, emoji: "😐", label: "neutral", color: "border-gray-400 bg-gray-50 dark:bg-gray-700 dark:border-gray-500" },
+  { value: "tired" as WorkMood, emoji: "😴", label: "tired", color: "border-amber-400 bg-amber-50 dark:bg-amber-900/30 dark:border-amber-500" },
+  { value: "stressed" as WorkMood, emoji: "😰", label: "stressed", color: "border-red-400 bg-red-50 dark:bg-red-900/30 dark:border-red-500" },
 ];
 
 const PENDING_STATUSES: TaskItemStatus[] = [
@@ -61,7 +61,7 @@ const STATUS_OPTIONS: { value: TaskItemStatus; label: string; icon: string }[] =
   { value: "in_progress" as TaskItemStatus, label: "In Progress", icon: "🔄" },
   { value: "carried_forward" as TaskItemStatus, label: "Carried Forward", icon: "⏭" },
   { value: "blocked" as TaskItemStatus, label: "Blocked", icon: "🚧" },
-  { value: "pending" as TaskItemStatus, label: "Pending", icon: "⏳" },
+  { value: "pending" as TaskItemStatus, label: "pending", icon: "⏳" },
 ];
 
 const EMPTY_MORNING_ITEM = (): Omit<TaskReportItem, "status"> & { status?: string } => ({
@@ -316,7 +316,7 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
             {index + 1}
           </div>
           <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-            {isCompleted ? "✅ Completed" : "⏳ Pending"}
+            {isCompleted ? `✅ ${t("completed")}` : `⏳ ${t("pending")}`}
           </span>
         </div>
 
@@ -339,12 +339,12 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
           <TextInput
             value={item.title}
             onChange={v => onChange("title", v)}
-            placeholder={isCompleted ? "What did you complete?" : "What is still pending?"}
+            placeholder={ isCompleted ? t("what_did_you_complete") : t("what_is_still_pending")}
             disabled={readOnly}
           />
         </div>
         <div>
-          <FieldLabel>{t("description_2")}</FieldLabel>
+          <FieldLabel>{t("description")}</FieldLabel>
           <TextArea
             value={item.description ?? ""}
             onChange={v => onChange("description", v)}
@@ -394,7 +394,7 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
                         : "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700"
                       }`}
                   >
-                    <span>{opt.icon}</span> {opt.label}
+                    <span>{opt.icon}</span> {t(opt.label)}
                   </span>
                 ) : null;
               })()}
@@ -888,20 +888,20 @@ const handleEveningSubmit = async () => {
               </h1>
             </div>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-  {new Date().toLocaleDateString(
-    i18n.language === "hi"
-      ? "hi-IN"
-      : i18n.language === "pt" || i18n.language === "po"
-      ? "pt-BR" // Use Brazilian Portuguese instead of Portugal Portuguese
-      : "en-GB",
-    {
-      weekday: "long",
-      day: "2-digit", 
-      month: "long",
-      year: "numeric",
-    }
-  )}
-</p>
+              {new Date().toLocaleDateString(
+                i18n.language === "hi"
+                  ? "hi-IN"
+                  : i18n.language === "pt" || i18n.language === "po"
+                  ? "pt-BR" // Use Brazilian Portuguese instead of Portugal Portuguese
+                  : "en-GB",
+                {
+                  weekday: "long",
+                  day: "2-digit", 
+                  month: "long",
+                  year: "numeric",
+                }
+              )}
+            </p>
           </div>
         </div>
 
@@ -1159,9 +1159,9 @@ const handleEveningSubmit = async () => {
                   <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">{t("evening_report_locked_final_submission_complete")}</p>
                   <p className="text-xs text-emerald-600/80 dark:text-emerald-500/80">
                     {existingReport?.eveningReport?.submittedAt
-                      ? `Submitted at ${new Date(existingReport.eveningReport.submittedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`
-                      : "Already submitted"
-                    } {t("this_report_is_read_only_and_cannot_be_edited")}
+                      ? `${t("submitted_at")}${new Date(existingReport.eveningReport.submittedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`
+                       : t("already_submitted")}{" "}
+                     {t("this_report_is_read_only_and_cannot_be_edited")}
                   </p>
                 </div>
               </div>
@@ -1299,7 +1299,7 @@ const handleEveningSubmit = async () => {
                 />
               </div>
               <div className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
-                <FieldLabel>{t("tomorrow_apos_s_plan")}</FieldLabel>
+                <FieldLabel>{t("tomorrow_s_plan")}</FieldLabel>
                 <TextArea
                   value={tomorrowPlan}
                   onChange={setTomorrowPlan}
@@ -1324,7 +1324,7 @@ const handleEveningSubmit = async () => {
                         }`}
                     >
                       <span className="text-2xl">{m.emoji}</span>
-                      <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400">{m.label}</span>
+                      <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400">{t(m.label)}</span>
                     </button>
                   ))}
                 </div>

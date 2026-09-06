@@ -134,7 +134,7 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
 
   return (
-    <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/50 dark:bg-white/30 backdrop-blur-sm">
       <div className="w-full max-w-2xl rounded-xl bg-white dark:bg-gray-900 shadow-xl">
     
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-400 dark:border-gray-700">
@@ -172,11 +172,11 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             value={form.eventType}
             onChange={handleSelectChange}
             options={[
-              { label: "Meeting", value: "meeting" },
-              { label: "Todo", value: "todo" },
-              { label: "Note", value: "note" },
-              { label: "Task", value: "task" },
-              { label: "Reminder", value: "reminder"}
+              { label: "meeting", value: "meeting" },
+              { label: "todo", value: "todo" },
+              { label: "note", value: "note" },
+              { label: "task", value: "task" },
+              { label: "reminder", value: "reminder"}
             ]}
           />
 
@@ -210,9 +210,9 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             value={form.priority}
             onChange={handleSelectChange}
             options={[
-              { label: "Low", value: "low" },
-              { label: "Medium", value: "medium" },
-              { label: "High", value: "high" },
+              { label: "low", value: "low" },
+              { label: "medium", value: "medium" },
+              { label: "high", value: "high" },
             ]}
           />
             {form.eventType === EventType.MEETING &&

@@ -60,7 +60,11 @@ const SideBar = () => {
   const handleLogout = async (): Promise<void> => {
     try {
 
-      const isConfirmed = await ConfirmPopup({ title: "Logout", text: "Are you want to logout", btnTxt: "Yes, Logout" });
+      const isConfirmed = await ConfirmPopup({
+  title: t("logout"),
+  text: t("are_you_sure_you_want_to_logout"),
+  btnTxt: t("yes_logout")
+});
 
       if (isConfirmed) {
         const isLogout = await AuthService.logout()
@@ -87,9 +91,7 @@ const SideBar = () => {
     if (pathname.startsWith("/plans") || pathname.startsWith("/subscriptions")) {
       setOpenMenu("plans");
     }
-    if (pathname.startsWith("/companies") || pathname.startsWith("/companies/create")) {
-      setOpenMenu("company");
-    }
+   if ( pathname === "/companies" || pathname.startsWith("/companies/create") || pathname.startsWith("/companies/deleted-companies") ) 
     if (pathname.startsWith("/roles")) {
       setOpenMenu("user");
     }
@@ -157,9 +159,8 @@ const SideBar = () => {
         case "notifications":
           return pathname.startsWith("/notifications")
 
-          case "company":
-          return pathname.startsWith("/companies") ||
-          pathname.startsWith("/companies/create")
+        case "company": // Parent menu is active for all company-related pages 
+          return ( pathname === "/companies" || pathname.startsWith("/companies/create") || pathname.startsWith("/companies/deleted-companies") );
 
       case "sales":
         return pathname.startsWith("/enquiry") ||
@@ -184,11 +185,14 @@ const SideBar = () => {
     setActiveDashboard(!activeDashboard)
   }
 
-console.log("new",auth.user);
-console.log("second",auth.isAdmin);
 const isCompanyAdmin = auth.user?.userRole?.some(
   (role) => role.code === "COMPANY_ADMIN"
 );
+
+const isSuperAdmin = auth.user?.userRole?.some(
+  (role) => role.code === "SUPER_ADMIN"
+);
+
 
   return (
     <div className={`fixed top-0 left-0 w-72 p-6 z-100  ${activeDashboard ?'translate-x-0':'-translate-x-70 lg:translate-x-0'}   transition-all duration-300 bg-slate-50 h-screen dark:bg-gray-800 flex flex-col gap-6 border border-slate-900/15 dark:border-gray-700 `}>
@@ -310,11 +314,11 @@ const isCompanyAdmin = auth.user?.userRole?.some(
                       <Link
                         href="/prospects/people"
                         className={`${isActive("/prospects/people")
-                          ? "text-cyan-700 dark:text-cyan-300 bg-cyan-600/5 border-l-2 border-cyan-600 dark:border-cyan-400"
+                          ? "dark:text-cyan-300 text-cyan-700   border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                                                         {t("people")}
+                         {t("people")}
 
                         
                       </Link>
@@ -325,11 +329,11 @@ const isCompanyAdmin = auth.user?.userRole?.some(
                         <Link
                           href="/prospects/company"
                           className={`${isActive("/prospects/company")
-                            ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                            ? "dark:text-cyan-300 text-cyan-700  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                             : "border-l-2 border-transparent"
                             } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                         >
-                                                                                   {t("company")}
+                         {t("company")}
 
                           
                         </Link>
@@ -470,7 +474,7 @@ const isCompanyAdmin = auth.user?.userRole?.some(
                     { <li>
                       <Link
                         href="/companies"
-                        className={`${isActive("/companies")
+                        className={`${pathname === "/companies"
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 px-3 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent px-4"
                           } block  py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
@@ -487,6 +491,17 @@ const isCompanyAdmin = auth.user?.userRole?.some(
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
                         {t("create_companies")}
+                      </Link>
+                    </li>}
+                    { <li>
+                      <Link
+                        href="/companies/deleted-companies"
+                        className={`${isActive("/companies/deleted-companies")
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          : "border-l-2 border-transparent"
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                      >
+                        {t("deleted_companies")}
                       </Link>
                     </li>}
                     
@@ -663,7 +678,7 @@ const isCompanyAdmin = auth.user?.userRole?.some(
                 )}
               </AnimatePresence>
             </li>}
-            {(hasPermission(PERMISSIONS.readRole) || hasPermission(PERMISSIONS.createTeam) || hasPermission(PERMISSIONS.readTeamCategory) || hasPermission(PERMISSIONS.readTeam)) && <li>
+            { !isSuperAdmin && ( hasPermission(PERMISSIONS.readRole) || hasPermission(PERMISSIONS.createTeam) || hasPermission(PERMISSIONS.readTeamCategory) || hasPermission(PERMISSIONS.readTeam)) && <li>
               <button
                 onClick={() => toggleMenu("team")}
                 className={`${isMenuActive("team")
@@ -682,7 +697,7 @@ const isCompanyAdmin = auth.user?.userRole?.some(
 
                 <IoChevronDown
                   className={`transition-transform ${openMenu === "team" ? "rotate-180" : ""
-                    }`}
+ }`}
                 />
               </button>
 
@@ -807,7 +822,7 @@ const isCompanyAdmin = auth.user?.userRole?.some(
                           : "border-l-2 border-transparent"
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
-                        {t("Invoice")}
+                        {t("invoice")}
                       </Link>
                     </li>}
                   </motion.ul>
@@ -943,7 +958,7 @@ const isCompanyAdmin = auth.user?.userRole?.some(
                 )}
               </AnimatePresence>
             </li>}
-
+{/* 
               <li>
               <Link
                 href="/support"
@@ -957,7 +972,7 @@ const isCompanyAdmin = auth.user?.userRole?.some(
                 </span>
                 {t("supports")}
               </Link>
-            </li>
+            </li> */}
             {(auth.isAdmin)  && <li>
               <Link
                 href="/query"
@@ -973,7 +988,7 @@ const isCompanyAdmin = auth.user?.userRole?.some(
               </Link>
             </li>}
            
-            {
+            {/* {
               hasPermission(PERMISSIONS.readOTP) && <li>
                 
                 <Link
@@ -994,11 +1009,11 @@ const isCompanyAdmin = auth.user?.userRole?.some(
                   </span>
                 </Link>
               </li>
-            }
+            } */}
           </ul>
         </div>
     
-        <div className="flex flex-col gap-3">
+        {/* <div className="flex flex-col gap-3">
           <h2 className=" text-xs text-gray-500 dark:text-gray-400 pl-3">
             {t("setting")}
           </h2>
@@ -1006,10 +1021,10 @@ const isCompanyAdmin = auth.user?.userRole?.some(
             (isCompanyAdmin) &&(
                   <Link
                   href={`/companySetting/${
-    typeof auth.user?.companyId === "string"
-      ? auth.user.companyId
-      : auth.user?.companyId?.id
-  }`}
+                  typeof auth.user?.companyId === "string"
+                    ? auth.user.companyId
+                    : auth.user?.companyId?.id
+                }`}
                 className={`${isActive("/companySetting")
                   ? " dark:text-cyan-300 text-cyan-700   border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"
@@ -1041,7 +1056,7 @@ const isCompanyAdmin = auth.user?.userRole?.some(
                {t("setting")}
 
               </Link>
-        </div>
+        </div> */}
 
         <div className="flex flex-col gap-3">
           <h2 className="uppercase text-xs text-gray-500 dark:text-gray-400 pl-3">

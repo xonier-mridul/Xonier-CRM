@@ -18,12 +18,14 @@ interface ExtendedUserUpdatePageProps extends UserUpdatePageProps {
   onCompanyScrollEnd: () => void;
   companyHasMore: boolean;
   isAdmin: boolean;
+  isCompanyAdmin:boolean | undefined;
   formData: any;
   handleChange: any;
   checks:passwordCheck[]
 }
 
 const  UserUpdate = ({
+  isCompanyAdmin,
   formData,
   isLoading,
   handleChange,
@@ -425,7 +427,7 @@ const  UserUpdate = ({
           </div>
         </div>
 
-        {isAdmin && (
+        {(isAdmin || isCompanyAdmin) && (
           <div className="flex flex-col gap-5">
             <h2 className="text-slate-900 dark:text-white font-medium text-3xl capitalize">
               {t("update_user_status")}

@@ -26,84 +26,9 @@ import { CompanySelectProps } from "@/src/types/company/company.types";
 import { IoCheckmarkCircle } from "react-icons/io5";
 import { FaRegCircle } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
+import {FormatDate, FormatDateTime} from "../../common/FormateDate"
 
 
-
-
-export const UsersTable = ({
-  currentPage,
-  pageLimit,
-  userData,
-  handleDelete,
-  isLoading,
-  isPopupShow,
-  setIsPopupShow,
-  formData,
-  roleData,
-  handleChange,
-  handleUserRoleChange,
-  handleRemoveRole,
-  handleSubmit,
-  setPageLimit,
-  totalPage,
-  setFormData,
-  err,
-  loading,
-  setCurrentPages,
-  setSearchFilter,
-  isAdmin,
-  handleCompanyFilter,
-  companyHasMore,
-  companyLoading,
-  onCompanyScrollEnd,
-  selectedCompanyId,
-  companyData,
-  handleCompanyChange,
-  checks
-}: UserTableComponentProps): JSX.Element => {
-  const { t } = useTranslation();
-  const [selectedcountryCode, setCountryCode] = useState("+91");
-  const { hasPermission } = usePermissions();
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
-  const [search, setSearch] = useState<string>("");
-  const [phoneNumber, setPhoneNumber] = useState<string>("");
-  const [company, setCompany] = useState("");
-
-
-
-
-const isPasswordValid = checks.every((check) => check.valid);
-
-  console.log("is Admin :", isAdmin);
-
-  const handleLimit = (n: string) => {
-    setPageLimit(Number(n));
-    setCurrentPages(1);
-  };
-
-  useEffect(() => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-    debounceRef.current = setTimeout(() => {
-      setSearchFilter(search);
-    }, 500);
-  }, [search]);
-
-  useEffect(() => {
-    setFormData((p) => ({
-      ...p,
-      phone: `${selectedcountryCode}${phoneNumber}`,
-    }));
-  }, [selectedcountryCode, phoneNumber]);
-
-  // Add these to your UserTableComponentProps type:
-  // companyLoading: boolean
-  // companyHasMore: boolean
-  // onCompanyScrollEnd: () => void
-  // selectedCompanyId: string
-
-  // Replace the CompanySelect component and the filter section in the table header:
 
   const CompanySelect: React.FC<
     CompanySelectProps & {
@@ -173,13 +98,13 @@ const isPasswordValid = checks.every((check) => check.valid);
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className={`w-full flex items-center justify-between overflow-hidden rounded-xl border px-4 py-2.5 text-sm  transition-all hover:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-300 ${
+          className={`w-full flex items-center justify-between overflow-hidden rounded-xl border px-4 py-2.5 text-sm  transition-all dark:bg-gray-500/30 hover:border-cyan-400 focus:outline-none  ${
             selectedCompany
               ? "border-cyan-400 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300"
               : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-white"
           }`}
         >
-          <span className="truncate text-sm">
+          <span className="truncate text-sm ">
             {selectedCompany
               ? selectedCompany.companyName
               : isFilter
@@ -326,12 +251,88 @@ const isPasswordValid = checks.every((check) => check.valid);
     );
   };
 
+export const UsersTable = ({
+  currentPage,
+  pageLimit,
+  userData,
+  handleDelete,
+  isLoading,
+  isRoleLoading,
+  isPopupShow,
+  setIsPopupShow,
+  formData,
+  roleData,
+  handleChange,
+  handleUserRoleChange,
+  handleRemoveRole,
+  handleSubmit,
+  setPageLimit,
+  totalPage,
+  setFormData,
+  err,
+  loading,
+  setCurrentPages,
+  setSearchFilter,
+  isAdmin,
+  handleCompanyFilter,
+  companyHasMore,
+  companyLoading,
+  onCompanyScrollEnd,
+  selectedCompanyId,
+  companyData,
+  handleCompanyChange,
+  checks
+}: UserTableComponentProps): JSX.Element => {
+  const { t } = useTranslation();
+  const [selectedcountryCode, setCountryCode] = useState("+91");
+  const { hasPermission } = usePermissions();
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const [search, setSearch] = useState<string>("");
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const [company, setCompany] = useState("");
+
+
+
+const isPasswordValid = checks.every((check) => check.valid);
+
+
+  const handleLimit = (n: string) => {
+    setPageLimit(Number(n));
+    setCurrentPages(1);
+  };
+
+  useEffect(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      setSearchFilter(search);
+    }, 500);
+  }, [search]);
+
+  useEffect(() => {
+    setFormData((p) => ({
+      ...p,
+      phone: `${selectedcountryCode}${phoneNumber}`,
+    }));
+  }, [selectedcountryCode, phoneNumber]);
+
+  // Add these to your UserTableComponentProps type:
+  // companyLoading: boolean
+  // companyHasMore: boolean
+  // onCompanyScrollEnd: () => void
+  // selectedCompanyId: string
+
+  // Replace the CompanySelect component and the filter section in the table header:
+
+
+
   return (
     <>
       {isPopupShow && (
         <>
           <BlurryBackground onClick={() => setIsPopupShow(false)} />
-         <div className="fixed top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 p-6 rounded-xl  z-[200] flex flex-col gap-5 shadow-xl w-150 min-h-140 ">
+         <div className="fixed top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 p-6 rounded-xl  z-[200] flex flex-col gap-5 shadow-xl w-150 min-h-140 ">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold dark:text-white">{t("create_user")}</h2>
               <button
@@ -366,29 +367,47 @@ const isPasswordValid = checks.every((check) => check.valid);
                 value={formData.email}
                 onChange={handleChange}
               />
-              <div className="flex flex-col gap-1 w-full">
+              <div className="flex relative flex-col gap-1 w-full">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
                   {t("user_role")}
                 </label>
 
-                <select
-                  onChange={handleUserRoleChange}
-                  className="w-full px-3 py-2 rounded-md border text-[16px]
-      bg-white dark:bg-gray-700 text-black dark:text-white
-      border-gray-300 dark:border-gray-300/30 outline-none"
-                >
-                  <option value="">{t("select_user_role")}</option>
-                  {roleData.map((role) => (
-                    <option
-                      key={role.id}
-                      value={role.id}
-                      hidden={role.code === SUPER_ADMIN_ROLE_CODE}
-                      disabled={role.code === SUPER_ADMIN_ROLE_CODE}
+               {isRoleLoading ? (
+                    <div
+                      className="w-full px-3 py-2 rounded-md border text-[16px]
+                      bg-white dark:bg-gray-700
+                      border-gray-300 dark:border-gray-300/30
+                      flex items-center justify-between"
                     >
-                      {role.name}
-                    </option>
-                  ))}
-                </select>
+                      <span className="text-gray-400 dark:bg-gray-900/30">
+                        {t("loading")}
+                      </span>
+
+                      <div className="w-4 h-4 border-2 border-gray-300 border-t-cyan-500 rounded-full animate-spin" />
+                    </div>
+                  ) : (
+                    <select
+                      onChange={handleUserRoleChange}
+                      className="w-full px-3 py-2 rounded-md border text-[16px]
+                      bg-white dark:bg-gray-700 text-black dark:text-white
+                      border-gray-300 dark:border-gray-900/30 outline-none"
+                    >
+                      <option value="" className="dark:bg-gray-900/30">
+                        {t("select_user_role")}
+                      </option>
+
+                      {roleData.map((role) => (
+                        <option
+                          key={role.id}
+                          value={role.id}
+                          hidden={role.code === SUPER_ADMIN_ROLE_CODE}
+                          disabled={role.code === SUPER_ADMIN_ROLE_CODE}
+                        >
+                          {role.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 {formData.userRole.length > 0 && (
                   <div className="col-span-1 flex flex-wrap gap-2 mt-2">
                     {formData.userRole.map((roleId) => {
@@ -426,7 +445,7 @@ const isPasswordValid = checks.every((check) => check.valid);
                   <select
                     value={selectedcountryCode}
                     onChange={(e) => setCountryCode(e.target.value)}
-                    className="px-3 py-2 text-sm w-30  rounded-lg border outline-none border-gray-300 dark:border-gray-300/30 bg-white dark:bg-gray-800 text-black dark:text-white"
+                    className="px-3 py-2 text-sm w-30  rounded-lg border outline-none border-gray-300 dark:border-gray-300/30 bg-white dark:bg-gray-900/30 text-black dark:text-white"
                   >
                     {countryCodes.map((c: countryCode) => (
                       <option key={c.code} value={c.code}>
@@ -442,7 +461,7 @@ const isPasswordValid = checks.every((check) => check.valid);
                     placeholder={t("phone_number")}
                     value={`${phoneNumber}`}
                     onChange={(e) => setPhoneNumber(e.target.value)}
-                    className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-300/30 bg-white dark:bg-gray-800 text-black dark:text-white outline-none"
+                    className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-300/30 bg-white dark:bg-gray-900/30 text-black dark:text-white outline-none"
                   />
                 </div>
               </div>
@@ -463,7 +482,7 @@ const isPasswordValid = checks.every((check) => check.valid);
                 onChange={handleChange}
               />
               <div className="space-y-2 ">
-                <span className="text-sm text-slate-500">{t("password_criteria")}</span>
+                <span className="text-sm text-slate-500 dark:text-slate-200">{t("password_criteria")}</span>
                     {checks.map((check, index) => (
                       <div
                         key={index}
@@ -526,7 +545,7 @@ const isPasswordValid = checks.every((check) => check.valid);
         </>
       )}
 
-      <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm flex flex-col gap-5 p-6 mb-8 rounded-xl border border-slate-900/10 w-full ">
+      <div className="bg-white dark:bg-gray-900/50 dark:backdrop-blur-sm flex flex-col gap-5 p-6 mb-8 rounded-xl border border-slate-900/10 dark: w-full ">
         <div className="flex items-center gap-12 justify-between">
           <div className="flex flex-col gap-2">
             <h2 className="text-xl font-bold  dark:text-white text-slate-900 capitalize">
@@ -566,7 +585,7 @@ const isPasswordValid = checks.every((check) => check.valid);
           <select
             name="limit"
             id="limit"
-            className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10"
+            className="bg-slate-50 outline-none dark:bg-gray-500/30 px-3 py-2.5 rounded-lg border border-slate-900/10"
             onChange={(e) => handleLimit(e.target.value)}
           >
             <option value="10">10</option>
@@ -574,7 +593,7 @@ const isPasswordValid = checks.every((check) => check.valid);
             <option value="30">30</option>
             <option value="40">50</option>
           </select>
-          <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2">
+          <div className="bg-slate-50 dark:bg-gray-500/30 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2">
             <IoIosSearch className="text-xl" />
             <input
               type="text"
@@ -600,7 +619,7 @@ const isPasswordValid = checks.every((check) => check.valid);
       <div className="overflow-x-auto rounded-xl">
       <table className="w-full rounded-xl overflow-hidden text-slate-500 ">
         <thead className="">
-          <tr className="w-full border-b-2 border-zinc-300 bg-slate-200 dark:bg-gray-800">
+          <tr className="w-full border-b-2 border-zinc-300 bg-slate-200 dark:bg-gray-900">
             <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
               {t("s_no")}
             </th>
@@ -630,36 +649,16 @@ const isPasswordValid = checks.every((check) => check.valid);
             userData && userData?.length > 0 ? (
               userData?.map((item, index) => {
 
-                console.log("user data :",item.userRole)
+                
                 const rr = index % 2 == 0;
 
-                const date = new Date(item.createdAt).toLocaleDateString(
-                  "en-IN",
-                  {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                    timeZone: "Asia/Kolkata",
-                  },
-                );
-                const lastLoginDate = item?.lastLogin
-                  ? new Date(item?.lastLogin).toLocaleDateString("en-IN", {
-                      timeZone: "Asia/Kolkata",
-                      year: "numeric",
-                      month: "short",
-                      day: "2-digit",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: true,
-                    })
-                  : "Not found";
                 return (
                   <tr
                     className={`${
                       rr
-                        ? "bg-white dark:bg-transparent"
-                        : "bg-slate-100/50 dark:bg-slate-500"
-                    } w-full`}
+                        ? "bg-white dark:bg-transparent hover:bg-cyan-50 dark:hover:bg-gray-700/50"
+                        : "bg-slate-100/50 dark:bg-slate-900/30 hover:bg-cyan-50 dark:hover:bg-gray-700/50"
+                    } w-full group transition-colors `}
                     key={item.id}
                   >
                     <td className="p-4">{index + 1}</td>
@@ -675,13 +674,13 @@ const isPasswordValid = checks.every((check) => check.valid);
                       {item.userRole.map((item) => (
                         <span
                           key={item.id}
-                          className="bg-green-500 px-3.5 py-1.5 rounded-lg text-white text-xs tracking-wide md:mx-0   mx-3 whitespace-nowrap "
+                          className="bg-green-500 dark:bg-green-600  px-3.5 py-1.5 rounded-lg text-white text-xs tracking-wide md:mx-0   mx-3 whitespace-nowrap "
                         >
-                          {item.name}
+                          {item.name ? item.name : "Company Admin"}
                         </span>
                       ))}
                     </td>
-                    <td className="whitespace-nowrap ">{date}</td>
+                    <td className="whitespace-nowrap ">{FormatDate(item.createdAt)}</td>
                     <td>
                       <span
                         className={`${
@@ -697,10 +696,10 @@ const isPasswordValid = checks.every((check) => check.valid);
                         }  rounded-full text-sm font-medium py-1 px-3 flex items-center gap-1 w-fit mx-3 md:mx-0 capitalize`}
                       >
                         {" "}
-                        <GoDotFill /> {item.status}
+                        <GoDotFill /> {t(item.status)}
                       </span>
                     </td>
-                    <td className='min-w-30'>{lastLoginDate}</td>
+                    <td className='min-w-30'>{FormatDateTime(item?.lastLogin)}</td>
                     <td>
                       <div className="flex items-center gap-2 mx-3 md:mx-0">
                         <Link

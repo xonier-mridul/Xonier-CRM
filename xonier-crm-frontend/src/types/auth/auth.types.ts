@@ -219,6 +219,7 @@ export interface UserTableComponentProps {
   userData: Array<User> | null;
   handleDelete: (id: string) => Promise<void>;
   isLoading: boolean;
+  isRoleLoading:boolean;
   isPopupShow: boolean;
   setIsPopupShow: Dispatch<SetStateAction<boolean>>;
   formData: RegisterPayload;
