@@ -200,7 +200,7 @@ class Dependencies:
 
         if company.status == COMPANY_STATUS.PENDING_VERIFICATION:
             raise AppException(403, "Your company is pending verification.")
-
+        print("comapnyerrrrr: ", company)
         request.state.company = company
 
     def feature_access(self, feature_key: str):

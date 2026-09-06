@@ -148,7 +148,7 @@ class AuthServices:
             if "companyId" in filters:
                 query.update({"companyId": ObjectId(filters["companyId"])})
 
-            users = await self.repo.get_all(
+            users = await self.repo.get_all_nested(
                 page,
                 limit,
                 query,
@@ -1855,22 +1855,23 @@ class AuthServices:
     async def permanent_delete(self, userId: PydanticObjectId, user: Dict[str, Any]):
         session = await self.client.start_session()
         try:
+            
             session.start_transaction()
 
             is_admin = validate_admin_company_admin(user["userRole"])
 
             if not is_admin:
                 raise AppException(
-                    403, "Unauthorized, only admin can permanently delete users"
+                    403, "Unauthorized, only admins can permanently delete users"
                 )
-
+            print("err2")
             target_user = await self.repo.find_by_id(
                 userId, ["userRole"], session=session
             )
 
             if not target_user:
                 raise AppException(404, "User not found")
-
+            print("err3")
             roles = jsonable_encoder(target_user.userRole)
 
             for item in roles:
@@ -1882,7 +1883,7 @@ class AuthServices:
                     400,
                     "Only soft-deleted users can be permanently deleted. Please soft delete the user first.",
                 )
-
+            print("err4")
             deleted = await self.repo.delete_by_id(userId, session=session)
 
             if not deleted:
