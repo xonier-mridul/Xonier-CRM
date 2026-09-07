@@ -302,16 +302,16 @@ const handleAllPermissions = (checked: boolean) => {
                   {(() => {
 
                      const filteredPermissions = viewRoleModal.permissions.filter((perm) =>
-    [
-      perm.title,
-      perm.description,
-      perm.action,
-      perm.code,
-      perm.module,
-    ].some((value) =>
-      value?.toString().toLowerCase().includes(search)
-    )
-  );
+                      [
+                        perm.title,
+                        perm.description,
+                        perm.action,
+                        perm.code,
+                        perm.module,
+                      ].some((value) =>
+                        value?.toString().toLowerCase().includes(search)
+                      )
+                    );
                     const grouped = filteredPermissions.reduce((acc, perm) => {
                       if (!acc[perm.module]) acc[perm.module] = [];
                       acc[perm.module].push(perm);
