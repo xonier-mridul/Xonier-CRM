@@ -36,9 +36,6 @@ class BaseDocument(Document):
 
         cid = cls._get_company_id()
 
-        print("company id: ", cid)
-        print("user filter: ", user_filter)
-       
 
         if cid is None:
             raise AppException(403, "Company context missing")

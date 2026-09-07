@@ -1864,14 +1864,14 @@ class AuthServices:
                 raise AppException(
                     403, "Unauthorized, only admins can permanently delete users"
                 )
-            print("err2")
+           
             target_user = await self.repo.find_by_id(
                 userId, ["userRole"], session=session
             )
 
             if not target_user:
                 raise AppException(404, "User not found")
-            print("err3")
+            
             roles = jsonable_encoder(target_user.userRole)
 
             for item in roles:
@@ -1883,7 +1883,7 @@ class AuthServices:
                     400,
                     "Only soft-deleted users can be permanently deleted. Please soft delete the user first.",
                 )
-            print("err4")
+            
             deleted = await self.repo.delete_by_id(userId, session=session)
 
             if not deleted:

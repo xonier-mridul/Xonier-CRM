@@ -179,7 +179,6 @@ class Dependencies:
         if user["userRole"][0]["code"] == SUPER_ADMIN_CODE:
             return
 
-        # await user.fetch_link("companyId")
         with system_query():
             company = await self.companyRepo.find_by_id(PydanticObjectId(user["companyId"]))
 
@@ -200,7 +199,7 @@ class Dependencies:
 
         if company.status == COMPANY_STATUS.PENDING_VERIFICATION:
             raise AppException(403, "Your company is pending verification.")
-        print("comapnyerrrrr: ", company)
+       
         request.state.company = company
 
     def feature_access(self, feature_key: str):
