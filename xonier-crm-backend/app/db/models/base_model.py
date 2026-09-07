@@ -21,6 +21,7 @@ class BaseDocument(Document):
     @classmethod
     def _get_company_id(cls) -> Optional[ObjectId]:
         cid = current_company.get()
+        
         return ObjectId(cid) if cid else None
 
     @classmethod
@@ -34,6 +35,7 @@ class BaseDocument(Document):
 
 
         cid = cls._get_company_id()
+
 
         if cid is None:
             raise AppException(403, "Company context missing")
