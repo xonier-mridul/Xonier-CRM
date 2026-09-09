@@ -1,6 +1,6 @@
 "use client";
 import ResetPassword from "@/src/components/pages/reset-password/ResetPassword";
-import { MARGIN_TOP, SIDEBAR_WIDTH } from "@/src/constants/constants";
+import { SIDEBAR_WIDTH } from "@/src/constants/constants";
 import React, { useState, useEffect, JSX, FormEvent } from "react";
 import extractErrorMessages from "../../utils/error.utils";
 import axios from "axios";
