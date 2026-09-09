@@ -15,7 +15,7 @@ const labelBase =
   "block text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1.5";
 
 const FetchingSkeleton = () => (
-  <div className="ml-72 mt-14 p-8 min-h-screen" style={{ background: "#F8F7FF" }}>
+  <div className="p-8 min-h-screen" style={{ background: "#F8F7FF" }}>
     <div className="mb-7 flex items-start justify-between">
       <div className="flex flex-col gap-2">
         <div className="h-3.5 w-40 rounded-lg bg-slate-200 dark:bg-gray-700 animate-pulse" />
@@ -307,7 +307,7 @@ export default function Page() {
                   " at " + now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
 
   return (
-    <div className="ml-72 mt-14 p-8 min-h-screen" style={{ background: "#F8F7FF" }}>
+    <div className="p-8 min-h-screen" style={{ background: "#F8F7FF" }}>
 
       {/* ── Page Header ─────────────────────────────────────────── */}
       <div className="mb-7 flex items-start justify-between gap-4">

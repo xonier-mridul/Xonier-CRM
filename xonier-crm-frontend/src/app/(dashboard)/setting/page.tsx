@@ -393,7 +393,7 @@ const page = () => {
   ];
 
   return (
-    <div className="px-4 py-6 mx-auto ml-72 mt-10 max-w-7xl h-screen pb-32">
+    <div className="px-4 py-6 mx-auto mt-10 max-w-7xl h-screen pb-32">
       {/* ============ HEADER ============ */}
       <header className="mb-8 flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">

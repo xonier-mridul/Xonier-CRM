@@ -307,7 +307,7 @@ const page = (): JSX.Element => {
 );
 
   return (
-    <div className="ml-72 mt-14 p-6">
+    <div>
       <UserUpdate
         formData={formData}
         isLoading={isLoading}

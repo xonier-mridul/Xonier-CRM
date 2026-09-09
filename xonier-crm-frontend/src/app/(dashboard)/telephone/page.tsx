@@ -304,7 +304,7 @@ const Page = () => {
 
   return (
     <>
-      <div className="ml-72 mt-14 p-6">
+      <div>
         <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full flex flex-col gap-7 items-center justify-between">
           <div className="flex w-full items-center gap-12 justify-between">
             <div className="flex flex-col gap-1.5">

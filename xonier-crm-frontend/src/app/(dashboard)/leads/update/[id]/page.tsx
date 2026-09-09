@@ -330,7 +330,7 @@ const page = (): JSX.Element => {
   };
 
   return (
-    <div className={`ml-72 mt-14 p-6 `}>
+    <div className={`p-6 `}>
       <div className="flex flex-col w-full gap-6">
         <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm flex flex-col gap-8 p-6 rounded-xl border border-slate-900/10 w-full">
           <div className="flex items-center gap-5 justify-between">

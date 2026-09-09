@@ -1,6 +1,6 @@
 "use client";
 
-import { MARGIN_TOP, SIDEBAR_WIDTH, SUPER_ADMIN_ROLE_CODE } from "@/src/constants/constants";
+import { SIDEBAR_WIDTH, SUPER_ADMIN_ROLE_CODE } from "@/src/constants/constants";
 import React, { JSX, useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -207,8 +207,8 @@ const page = (): JSX.Element => {
 
   
   return (
-    <div className="ml-72 mt-14 ">
-      <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full ">
+    <div className="">
+      <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xs w-full mb-10">
         <StatusTable
           statusData={statusData}
           currentPage={currentPage}

@@ -63,9 +63,7 @@ export const useNotifications = (autoFetch = true) => {
 
         if (currentCount > previousCountRef.current) {
           toast.info(`You have ${currentCount} unread notifications`, {
-            position: "top-right",
             autoClose: 4000,
-          
           });
         }
 

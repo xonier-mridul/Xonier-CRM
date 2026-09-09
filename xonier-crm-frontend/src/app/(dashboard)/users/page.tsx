@@ -258,7 +258,7 @@ const checks:passwordCheck[]=[
   };
 
   return (
-    <div className="lg:ml-72 mt-16 p-6">
+    <div>
       <UserMonitor />
       <UsersTable
         emptyForm ={Empty_form}

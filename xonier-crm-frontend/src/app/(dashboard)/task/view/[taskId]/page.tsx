@@ -24,7 +24,6 @@ interface AssignedUser {
   id: string;
   firstName: string;
   lastName?: string;
-
   email?: string;
 }
 
@@ -822,7 +821,7 @@ export default function TaskViewPage() {
 
   if (loadingTask) {
     return (
-      <div className="ml-72 mt-14 p-6">
+      <div>
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-8 animate-pulse space-y-4">
           <div className="h-7 w-48 bg-gray-100 dark:bg-gray-700 rounded-xl" />
           <div className="h-4 w-80 bg-gray-100 dark:bg-gray-700 rounded-lg" />
@@ -845,7 +844,7 @@ export default function TaskViewPage() {
   const displayCategory = boardCategory ?? focusedTask.category;
 
   return (
-    <div className="ml-72 mt-14 p-6 min-h-screen bg-gray-50/40 dark:bg-gray-900/20">
+    <div className="p-6 min-h-screen bg-gray-50/40 dark:bg-gray-900/20">
       {/* <div className="flex items-center gap-2 mb-5">
         <button
           onClick={() => router.back()}

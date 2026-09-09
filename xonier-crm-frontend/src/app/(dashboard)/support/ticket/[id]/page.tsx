@@ -19,7 +19,7 @@ export default async function TicketDetailsPage({ params }: TicketDetailsPagePro
 
   if (!ticket) {
     return (
-      <div className="min-h-screen lg:ml-72 p-6">
+      <div className="min-h-screen p-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
           <TicketNotFound ticketId={id} />
         </div>
@@ -30,7 +30,7 @@ export default async function TicketDetailsPage({ params }: TicketDetailsPagePro
   const previousTickets = getPreviousTickets(ticket.id);
 
   return (
-    <div className="min-h-screen lg:ml-72 p-6">
+    <div className="min-h-screen p-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 space-y-8">
         <TicketHeader />
         <TicketSummary ticket={ticket} />

@@ -38,5 +38,6 @@ export const EnquiryService = {
     create: (payload: CreateEnquiryPayload)=> api.post("/enquiry/create", payload),
     bulkCreate: (payload: BulkCreateEnquiryPayload)=> api.post("/enquiry/create/bulk", payload),
     update: (id:ParamValue, payload: UpdateEnquiryPayload)=> api.put(`/enquiry/update/${id}`, payload),
+    bulkAssign: (enquiryIds: string[], assignedTo: string) => api.post(`/enquiry/bulk-assign`, { enquiryIds, assignedTo }),
     delete: (id:string)=> api.delete(`/enquiry/delete/${id}`)
 }

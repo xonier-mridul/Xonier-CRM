@@ -32,7 +32,7 @@ const SkeletonField = ({ wide = false }: { wide?: boolean }) => (
 );
 
 const FetchingSkeleton = () => (
-  <div className="ml-72 mt-14 p-8 min-h-screen" style={{ background: "#F8F7FF" }}>
+  <div className="p-8 min-h-screen" style={{ background: "#F8F7FF" }}>
     <div className="mb-7 flex items-start justify-between">
       <div className="flex flex-col gap-2">
         <div className="h-7 w-64 rounded-xl bg-slate-200 dark:bg-gray-700 animate-pulse" />
@@ -360,7 +360,7 @@ const Page = (): JSX.Element => {
         />
       )}
 
-      <div className="ml-72 mt-14 p-8 min-h-screen dark:bg-black rounded-2xl bg-gray-100">
+      <div className="p-8 min-h-screen dark:bg-black rounded-2xl bg-gray-100">
 
         {/* ── Page Header ─────────────────────────────────────────── */}
         <div className="mb-7 flex items-start justify-between">

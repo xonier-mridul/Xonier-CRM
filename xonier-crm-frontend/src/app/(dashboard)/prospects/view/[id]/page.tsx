@@ -148,7 +148,7 @@ const ProspectViewPage = (): JSX.Element => {
 
     if (isLoading) {
         return (
-            <div className="ml-72 mt-14 p-6 flex flex-col gap-6 animate-pulse">
+            <div className="p-6 flex flex-col gap-6 animate-pulse">
                 <Skeleton
                     height={120}
                     borderRadius={12}
@@ -186,7 +186,7 @@ const ProspectViewPage = (): JSX.Element => {
 
     if (!ProspectData) {
         return (
-            <div className="ml-72 mt-14 p-6">
+            <div>
                 <div className="flex items-center justify-center min-h-[60vh]">
                     <div className="text-center">
                         <IoPersonOutline className="w-20 h-20 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
@@ -260,7 +260,7 @@ const ProspectViewPage = (): JSX.Element => {
 
     return (
         <>
-            <div className="ml-72 mt-14 p-6 min-h-screen">
+            <div className="p-6 min-h-screen">
                 {/* Header Section */}
                 <div className="mb-6">
                     <div className="bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-700 p-6">

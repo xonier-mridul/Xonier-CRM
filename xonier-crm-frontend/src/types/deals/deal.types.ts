@@ -38,6 +38,7 @@ export interface Deal {
   status: DEAL_STATUS;
   createdBy: User;            
   updatedBy?:  null | User;    
+  assignedTo?: null | User;   // ✅ Assigned user via bulk-assign
   
   createdAt: string;            
   updatedAt: string;            
