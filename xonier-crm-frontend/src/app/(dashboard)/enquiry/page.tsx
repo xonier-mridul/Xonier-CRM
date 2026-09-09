@@ -455,9 +455,11 @@ const page = (): JSX.Element => {
                         <td className="px-4 py-3.5"><StatusBadge status={item.status} /></td>
                         <td className="px-4 py-3.5"><CreatedAt timestamp={item.createdAt} /></td>
                         <td className="px-4 py-3.5">
-                          <span className="text-[13px] text-slate-500 dark:text-slate-400 capitalize">
-                            {item.createdBy?.firstName + " " + item.createdBy?.lastName}
-                          </span>
+                        <span className="text-[13px] text-slate-500 dark:text-slate-400 capitalize">
+                          {(!item.createdBy?.firstName || !item.createdBy?.lastName)
+                            ? t("not_found")
+                            : `${item.createdBy.firstName} ${item.createdBy.lastName}`}
+                        </span>
                         </td>
                         {/* Assigned To column */}
                         <td className="px-4 py-3.5">
