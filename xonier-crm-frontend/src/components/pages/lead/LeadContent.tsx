@@ -1164,7 +1164,7 @@ const isIndeterminate =
                 </button>
               )}
             </div>
-            
+
             {/* View Mode Toggle & Advanced Filters */}
             <div className="flex items-center gap-3">
               <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
@@ -1493,121 +1493,49 @@ const isIndeterminate =
             <div className="overflow-x-scroll custom-scrollbar">
               <table className="w-full rounded-xl overflow-hidden">
                 <thead>
-                  <tr className="w-full border-b-2 border-zinc-300 dark:border-zinc-400  bg-slate-200 dark:bg-gray-800">
-                    <div>
+                <tr className="w-full border-b border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800">
                    {hasPermission(PERMISSIONS.assignLead) &&
-                    currentTab === TAB.ALL &&
-                    assignableLeads.length > 0 && (
-                      <th className="p-4 w-12">
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input ref={selectAllRef} type="checkbox" className="sr-only" 
-                          checked={isAllSelected} onChange={handleSelectAll} />
-                          <div
-                            className={`w-4.5 h-4.5 rounded-sm border-2 flex items-center justify-center transition-all duration-150
-                          ${
-                            isAllSelected || isIndeterminate
-                              ? "bg-cyan-600 border-cyan-600"
-                              : "bg-white dark:bg-gray-700 border-slate-300 hover:border-cyan-400"
-                          }`}
-                          >
-                            {
-                            isIndeterminate && <FaCheck className="text-white text-[9px]" />}
-                            {isAllSelected && <span className="block w-2.5 h-0.5 bg-white rounded-full" />}
-                          </div>
-                        </label>
+                    currentTab === TAB.ALL && (
+                      <th className="px-4 py-3 w-12">
+                        {assignableLeads.length > 0 && (
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input ref={selectAllRef} type="checkbox" className="sr-only"
+                            checked={isAllSelected} onChange={handleSelectAll} />
+                            <div
+                              className={`w-4.5 h-4.5 rounded-sm border-2 flex items-center justify-center transition-all duration-150
+                            ${
+                              isAllSelected || isIndeterminate
+                                ? "bg-cyan-600 border-cyan-600"
+                                : "bg-white dark:bg-gray-700 border-slate-300 hover:border-cyan-400"
+                            }`}
+                            >
+                              {
+                              isIndeterminate && <FaCheck className="text-white text-[9px]" />}
+                              {isAllSelected && <span className="block w-2.5 h-0.5 bg-white rounded-full" />}
+                            </div>
+                          </label>
+                        )}
                       </th>
                     )}
-                    </div>
                     {[
-                      "client_info",
-                      "phone",
-                      "project_type",
-                      "source",
-                      "status",
-                      "data_tag",
-                      "created_date",
-                      "created_by",
-                      "engagement_status",
-                      "actions",
-                    ].map((h) => {
-                      const filterConfig = h != "Status" ? options[h] : currentTab === TAB.ALL && options[h];
-
-                      return (
-                        <th
-                          key={h}
-                          className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold text-nowrap tracking-wide"
-                        >
-                          {t(h)}
-                          {filterConfig && (
-                            <>
-                              <br />
-                              <select
-                                onChange={(e) => filterConfig.handlefunction(e.target.value)}
-                                className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20 outline-none"
-                              >
-                                <option value="">{t("all")}</option>
-
-                                {filterConfig.value.map((option) => (
-                                  <option key={option} value={option}>
-                                    {option}
-                                  </option>
-                                ))}
-                              </select>
-                            </>
-                          )}
-                          {h == "project_type" && (
-                            <>
-                              <br />
-                              <input
-                                type="text"
-                                className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20 outline-none"
-                                placeholder={t("search_2")}
-                                onChange={(e) => handleProjectType(e.target.value)}
-                              />
-                            </>
-                          )}
-                          {h == "source" && (
-                            <>
-                              <br />
-                              <input
-                                type="text"
-                                className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20 outline-none"
-                                placeholder={t("search_2")}
-                                onChange={(e) => handleSource(e.target.value)}
-                              />
-                            </>
-                          )}
-                          {h == "data_tag" && (
-                            <>
-                              <br />
-                              <input
-                                type="text"
-                                className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm max-w-20 outline-none"
-                                placeholder={t("search_2")}
-                                onChange={(e) => handleDataTag(e.target.value)}
-                              />
-                            </>
-                          )}
-                          {h == "engagement_status" && (
-                            <>
-                              <br />
-                              <select
-                                value={filters["engagementStatus"]}
-                                onChange={(e) => setFilters((prev) => ({ ...prev, engagementStatus: e.target.value }))}
-                                className="field bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm outline-none"
-                              >
-                                <option value="">{t("all")}</option>
-                                {Object.values(LeadEngagementStatus).map((s) => (
-                                  <option key={s} value={s}>
-                                    {s.replace(/_/g, " ").charAt(0).toUpperCase() + s.replace(/_/g, " ").slice(1)}
-                                  </option>
-                                ))}
-                              </select>
-                            </>
-                          )}
-                        </th>
-                      );
-                    })}
+                      { key: "client_info", icon: <FiUser className="text-[13px] text-sky-500" />, label: t("client_info") },
+                      { key: "phone", icon: <FiPhone className="text-[13px] text-emerald-500" />, label: t("phone") },
+                      { key: "project_type", icon: <FiTag className="text-[13px] text-violet-500" />, label: t("project_type") },
+                      { key: "source", icon: <FiTarget className="text-[13px] text-rose-400" />, label: t("source") },
+                      { key: "status", icon: <FiActivity className="text-[13px] text-indigo-400" />, label: t("status") },
+                      { key: "data_tag", icon: <FiHash className="text-[13px] text-amber-500" />, label: t("data_tag") },
+                      { key: "created_date", icon: <FiCalendar className="text-[13px] text-teal-500" />, label: t("created_date") },
+                      { key: "created_by", icon: <FiUserPlus className="text-[13px] text-slate-400" />, label: t("created_by") },
+                      { key: "engagement_status", icon: <FiMessageCircle className="text-[13px] text-blue-400" />, label: t("engagement_status") },
+                      { key: "actions", icon: <FiSettings className="text-[13px] text-slate-400" />, label: t("actions") },
+                    ].map((col) => (
+                      <th
+                        key={col.key}
+                        className="px-4 py-3 uppercase text-[11px] text-start text-slate-400 dark:text-slate-500 font-semibold text-nowrap tracking-wider"
+                      >
+                        <div className="flex items-center gap-1.5">{col.icon} {col.label}</div>
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>{renderLeadRows(currentLeadData)}</tbody>
