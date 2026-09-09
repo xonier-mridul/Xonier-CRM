@@ -305,7 +305,7 @@ const page = (): JSX.Element => {
   };
 
   return (
-    <div className="lg:ml-72 mt-14 p-6 space-y-6">
+    <div className="p-6 space-y-6">
 
       {/* ── Designation Modal ── */}
       {/* <DesignationModal

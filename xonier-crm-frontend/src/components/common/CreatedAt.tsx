@@ -18,7 +18,7 @@ const CreatedAt: React.FC<CreatedAtProps> = ({ timestamp , time = false}) => {
 
   const formattedDate = `${day} ${month} ${year}` + (time ? ` ${hour}:${minute}` : "");
 
-  return <span className="px-4 py-1.5 rounded-md bg-cyan-200 text-sm text-cyan-600 font-medium whitespace-nowrap ">{formattedDate}</span>;
+  return <span className="text-[13px] text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">{formattedDate}</span>;
 };
 
 export default CreatedAt;

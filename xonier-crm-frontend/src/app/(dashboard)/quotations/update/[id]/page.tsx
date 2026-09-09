@@ -294,7 +294,7 @@ const formatDate = (s: string) =>
 
   if (isInitialLoading) {
     return (
-      <div className="ml-72 mt-14 p-6">
+      <div>
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="flex flex-col items-center gap-4">
             <div className="w-10 h-10 border-4 border-cyan-600 border-t-transparent rounded-full animate-spin" />
@@ -307,7 +307,7 @@ const formatDate = (s: string) =>
 
   if (!original) {
     return (
-      <div className="ml-72 mt-14 p-6">
+      <div>
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <IoDocumentText className="w-20 h-20 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
@@ -329,7 +329,7 @@ const formatDate = (s: string) =>
   }
 
   return (
-    <div className="ml-72 mt-14 p-6 min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="p-6 min-h-screen bg-gray-50 dark:bg-gray-900">
 
       <div className="mb-5 flex items-start justify-between">
         <div>

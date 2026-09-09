@@ -47,7 +47,7 @@ const SubscriptionViewPage = () => {
   }, [id]);
 
   return (
-    <div className="ml-72 mt-14 p-6 flex flex-col gap-6">
+    <div className="p-6 flex flex-col gap-6">
       {errMessage && !isLoading && !subscriptionData && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-6 text-center">
           <p className="text-sm font-semibold text-red-600 dark:text-red-400 mb-3">

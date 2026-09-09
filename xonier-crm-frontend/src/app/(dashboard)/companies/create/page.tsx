@@ -81,7 +81,7 @@ const CreateCompanyPage = () => {
   };
 
   return (
-    <div className="mt-10 lg:ml-72 min-h-screen p-6">
+    <div className="mt-10 min-h-screen p-6">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-1">
           <div className="h-9 w-9 rounded-xl bg-cyan-600 flex items-center justify-center">

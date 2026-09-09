@@ -488,7 +488,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
-    <div className="ml-72 mt-14 p-6 min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="p-6 min-h-screen bg-gray-50 dark:bg-gray-900">
 
       {/* ── Header ── */}
       <div className="mb-6 flex items-start justify-between">

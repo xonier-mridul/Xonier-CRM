@@ -213,7 +213,7 @@ useEffect(() => {
   
 
   return (
-    <div className={`lg:ml-72 mt-14 p-6`}>
+    <div>
       <UserRolesTable
         roleData={roleData}
         permissionData={permissionData}

@@ -175,7 +175,7 @@ const SkeletonBlock = ({ className }: { className?: string }) => (
 );
 
 const TaskDetailSkeleton = () => (
-  <div className="ml-72 mt-14 p-6 space-y-6">
+  <div className="p-6 space-y-6">
     <SkeletonBlock className="h-10 w-2/3" />
     <div className="grid grid-cols-3 gap-6">
       <div className="col-span-2 space-y-4">
@@ -874,7 +874,7 @@ setTaskData(result.data.data);
 
   if (!taskData) {
     return (
-      <div className="ml-72 mt-14 p-6 flex items-center justify-center h-64">
+      <div className="p-6 flex items-center justify-center h-64">
         <div className="text-center space-y-3">
           <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto">
             <AlertCircle size={28} className="text-gray-300 dark:text-gray-600" />
@@ -943,7 +943,7 @@ console.log("taskStatus:",taskData.status.name)
           "from-gray-300 to-gray-400";
   const statusColor = getColorOption(taskData.status.color);
   return (
-    <div className="ml-72 mt-14">
+    <div className="">
       <div className=" dark:bg-transparent dark:backdrop-blur-sm   w-full mb-10">
         <div className=" max-w-[1400px] space-y-5">
 

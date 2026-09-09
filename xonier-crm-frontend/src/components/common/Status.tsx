@@ -1,28 +1,34 @@
-import { stat } from "fs"
+const StatusBadge = ({ status }: { status: string }) => {
+  const map: Record<string, string> = {
+    new:            "bg-sky-50     text-sky-600     dark:bg-sky-900/20     dark:text-sky-400",
+    contacted:      "bg-violet-50  text-violet-600  dark:bg-violet-900/20  dark:text-violet-400",
+    qualified:      "bg-teal-50    text-teal-600    dark:bg-teal-900/20    dark:text-teal-400",
+    proposal:       "bg-amber-50   text-amber-600   dark:bg-amber-900/20   dark:text-amber-400",
+    won:            "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400",
+    lost:           "bg-rose-50    text-rose-500    dark:bg-rose-900/20    dark:text-rose-400",
+    deleted:        "bg-slate-100  text-slate-500   dark:bg-slate-700      dark:text-slate-400",
+    accepted:       "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400",
+    rejected:       "bg-rose-50    text-rose-500    dark:bg-rose-900/20    dark:text-rose-400",
+    expired:        "bg-orange-50  text-orange-500  dark:bg-orange-900/20  dark:text-orange-400",
+    draft:          "bg-slate-100  text-slate-500   dark:bg-slate-700      dark:text-slate-400",
+    viewed:         "bg-violet-50  text-violet-600  dark:bg-violet-900/20  dark:text-violet-400",
+    sent:           "bg-sky-50     text-sky-600     dark:bg-sky-900/20     dark:text-sky-400",
+    connected:      "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400",
+    not_connected:  "bg-rose-50    text-rose-500    dark:bg-rose-900/20    dark:text-rose-400",
+    interested:     "bg-teal-50    text-teal-600    dark:bg-teal-900/20    dark:text-teal-400",
+    not_interested: "bg-rose-50    text-rose-500    dark:bg-rose-900/20    dark:text-rose-400",
+    not_reached:    "bg-amber-50   text-amber-600   dark:bg-amber-900/20   dark:text-amber-400",
+    updated:        "bg-sky-50     text-sky-600     dark:bg-sky-900/20     dark:text-sky-400",
+    resend:         "bg-violet-50  text-violet-600  dark:bg-violet-900/20  dark:text-violet-400",
+  };
 
-const StatusBadge = ({ status }: { status: string }) => (
-  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium capitalize justify-center text-center
-      ${status === "new" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
-      : status === "contacted" ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300"
-        : status === "qualified" ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
-          : status === "proposal" ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
-            : status === "won" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
-              : status === "lost" ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
-                : status === "deleted" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
-                  : status === "accepted" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
-                    : status === "rejected" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
-                      : status === "expired" ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
-                        : status === "draft" ? "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300"
-                          : status === "viewed" ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
-                            : status === "sent" ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300"
-                              : status === "connected" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
-                                : status === "not_connected" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
-                                  : status === "interested" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
-                                    : status === "not_interested" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
-                                      : status === "not_reached" ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
-                                        : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300"}`}>
-    {status}
-  </span>
+  const cls = map[status] ?? "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400";
 
-);
+  return (
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[13px] font-semibold capitalize tracking-wide ${cls}`}>
+      {status?.replace(/_/g, " ")}
+    </span>
+  );
+};
+
 export default StatusBadge;

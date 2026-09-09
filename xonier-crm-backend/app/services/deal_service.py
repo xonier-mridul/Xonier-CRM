@@ -129,6 +129,18 @@ class DealService:
             if "stage" in filters:
                 query.update({"dealStage": filters["stage"]})
  
+            # createdBy filter (admin-only, filter by user who created the deal)
+            if is_admin and "createdBy" in filters:
+                if not ObjectId.is_valid(filters["createdBy"]):
+                    raise AppException(400, "Invalid createdBy userId")
+                query.update({"createdBy.$id": PydanticObjectId(filters["createdBy"])})
+
+            # assignedTo filter — filter deals assigned to a specific user
+            if "assignedTo" in filters:
+                if not ObjectId.is_valid(filters["assignedTo"]):
+                    raise AppException(400, "Invalid assignedTo userId")
+                query.update({"assignedTo.$id": PydanticObjectId(filters["assignedTo"])})
+
             if is_admin:
                 if "userid" in filters:
                     if not ObjectId.is_valid(filters["userid"]):
@@ -180,7 +192,7 @@ class DealService:
                 page=int(page),
                 limit=int(limit),
                 filters=query,
-                populate=["createdBy", "lead_id", "updatedBy"],
+                populate=["createdBy", "lead_id", "updatedBy", "assignedTo"],
                 sort=["-createdAt"]
             )
  
@@ -192,6 +204,7 @@ class DealService:
                 exclude={
                     "createdBy": {"password"},
                     "updatedBy": {"password"},
+                    "assignedTo": {"password"},
                 },
             )
  
@@ -227,7 +240,7 @@ class DealService:
                     isManager = True
 
             
-            result = await self.repo.find_by_id(id=PydanticObjectId(dealId), populate=["createdBy", "lead_id", "updatedBy"])
+            result = await self.repo.find_by_id(id=PydanticObjectId(dealId), populate=["createdBy", "lead_id", "updatedBy", "assignedTo"])
             if not result:
                 raise AppException(404, "Deal not found against this id")
             
@@ -265,6 +278,8 @@ class DealService:
             
             raise AppException(500, "Internal server error")
         
+
+
 
 
     async def update(self, id:str, user: Dict[str, Any], payload: Dict[str, Any])->bool:
@@ -410,8 +425,53 @@ class DealService:
                     raise AppException(500, f"Internal server error {e}")
 
 
-                
+    async def bulk_assign(self, deal_ids: list, assigned_to_id: str, user: Dict[str, Any]) -> Dict[str, Any]:
+        """Bulk assign multiple deals to a specific user. Uses batch update for efficiency."""
+        try:
+            if not ObjectId.is_valid(assigned_to_id):
+                raise AppException(400, "Invalid assignedTo user id")
 
-            
+            is_admin = validate_admin_company_admin(user["userRole"])
+            if not is_admin:
+                raise AppException(403, "Only admins can bulk-assign deals")
 
-                
+            if not deal_ids:
+                raise AppException(400, "No deal IDs provided")
+
+            # Validate all IDs first
+            valid_object_ids = []
+            failed_ids = []
+            for deal_id in deal_ids:
+                if not ObjectId.is_valid(deal_id):
+                    failed_ids.append(deal_id)
+                else:
+                    valid_object_ids.append(PydanticObjectId(deal_id))
+
+            if not valid_object_ids:
+                raise AppException(400, "No valid deal IDs provided")
+
+            from bson import DBRef
+            assigned_to_obj = DBRef(collection="users", id=PydanticObjectId(assigned_to_id))
+            update_payload = {
+                "assignedTo": assigned_to_obj,
+                "updatedBy": DBRef(collection="users", id=PydanticObjectId(user["_id"])),
+            }
+
+            # Use bulk update for efficiency
+            updated_count = await self.repo.bulk_update_by_ids(
+                ids=valid_object_ids,
+                data=update_payload,
+            )
+
+            await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE)
+            await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE_BY_ID)
+
+            return {
+                "updated_count": updated_count,
+                "failed_ids": failed_ids,
+            }
+
+        except AppException as e:
+            raise
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")

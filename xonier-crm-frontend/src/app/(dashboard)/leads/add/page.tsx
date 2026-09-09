@@ -495,7 +495,7 @@ const page = (): JSX.Element => {
   const sections = groupFieldsBySection(userFormField ?? []);
 
   return (
-    <div className={`ml-72 mt-14 p-6`}>
+    <div>
       <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm flex flex-col gap-8 p-6 rounded-xl border-[1px] border-slate-900/10 w-full">
         <div className="flex items-center gap-5 justify-between">
           <div className="flex flex-col gap-2">
