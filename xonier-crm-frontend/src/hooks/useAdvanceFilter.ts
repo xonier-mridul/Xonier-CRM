@@ -7,13 +7,13 @@ export function useAdvancedFilters() {
   const [teamFilter, setTeamFilter] = useState<string>("");
   const [designationFilter, setDesignationFilter] = useState<string>("");
   const [salesPersonFilter, setSalesPersonFilter] = useState<string>("");
-  const [sourceFilter, setSourceFilter] = useState<SourceFilterValue>("all");
+  const [sourceFilter, setSourceFilter] = useState<SourceFilterValue>("");
 
   const reset = useCallback(() => {
     setTeamFilter("");
     setDesignationFilter("");
     setSalesPersonFilter("");
-    setSourceFilter("all");
+    setSourceFilter("");
   }, []);
 
   const activeCount = [
