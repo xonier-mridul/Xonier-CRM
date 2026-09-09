@@ -151,8 +151,9 @@ const page = (): JSX.Element => {
       .filter((i) => !salesPersonFilter || i.createdBy?.id === salesPersonFilter)
       .filter((i) => !statusFilter || i.status === statusFilter)
       .filter((i) => !projectTypeFilter || i.projectType === projectTypeFilter)
-      .filter((i) => !assigneeFilter || i.assignTo?.id === assigneeFilter);
-  }, [enquiryData, salesPersonFilter, statusFilter, projectTypeFilter, assigneeFilter]);
+      .filter((i) => !assigneeFilter || i.assignTo?.id === assigneeFilter)
+      .filter((i) => !sourceFilter || i.source === sourceFilter);
+  }, [enquiryData, salesPersonFilter, statusFilter, projectTypeFilter, assigneeFilter, sourceFilter]);
 
   // KPIs
   const allEnquiries = Array.isArray(enquiryData) ? enquiryData : [];
