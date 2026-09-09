@@ -541,10 +541,10 @@ const TaskListPage = (): JSX.Element => {
 
           <div className="grid grid-cols-4 gap-4 mb-7">
             {[
-              { label: t("total_tasks"), value: totalCount, icon: "📋", bg: "bg-cyan-50 border-cyan-100", priority: "" },
-              { label: t("priority_high"), value: taskData.filter((t) => t.priority === TASK_PRIORITY.HIGH).length, icon: "🟠", bg: "bg-orange-50 border-orange-100", priority: TASK_PRIORITY.HIGH },
-              { label: t("priority_urgent"), value: taskData.filter((t) => t.priority === TASK_PRIORITY.URGENT).length, icon: "🔴", bg: "bg-rose-50 border-rose-100", priority: TASK_PRIORITY.URGENT },
-              { label: t("this_page"), value: taskData.length, icon: "📄", bg: "bg-emerald-50 border-emerald-100", priority: "" },
+              { label: t("total_tasks"), value: totalCount, icon: "📋", bg: "bg-cyan-50 border-cyan-100 dark:bg-cyan-700 dark:border-cyan-500", priority: "" },
+              { label: t("priority_high"), value: taskData.filter((t) => t.priority === TASK_PRIORITY.HIGH).length, icon: "🟠", bg: "bg-orange-50 border-orange-100 dark:bg-orange-700 dark:border-orange-500", priority: TASK_PRIORITY.HIGH },
+              { label: t("priority_urgent"), value: taskData.filter((t) => t.priority === TASK_PRIORITY.URGENT).length, icon: "🔴", bg: "bg-rose-50 border-rose-100 dark:bg-rose-500 dark:border-rose-500", priority: TASK_PRIORITY.URGENT },
+              { label: t("this_page"), value: taskData.length, icon: "📄", bg: "bg-emerald-50 border-emerald-100 dark:bg-emerald-700 dark:border-emerald-500", priority: "" },
             ].map((s) => (
               <div
                 key={s.label}
@@ -553,8 +553,8 @@ const TaskListPage = (): JSX.Element => {
               >
                 <span className="text-xl">{s.icon}</span>
                 <div>
-                  <div className="text-xl font-extrabold text-gray-900 dark:text-black">{s.value}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1">
+                  <div className="text-xl font-extrabold text-gray-900 dark:text-white/90">{s.value}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-200 font-medium flex items-center gap-1">
                     {s.label}
                     {s.priority && filterPriority === s.priority && (
                       <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-900/40 text-cyan-600 dark:text-cyan-400">{t("active_3")}</span>

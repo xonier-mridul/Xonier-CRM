@@ -802,6 +802,10 @@
   "can_manage_users_with_lower_power": "Can manage users with lower power",
   "read_only_no_user_management": "Read-only, no user management",
   "new_company_added": "New company added",
+   "update_the_category_details_below": "Update the category details below",
+    "define_a_new_task_category": "Define a new task category",
+    "edit_category": "Edit Category",
+    "create_new_category": "Create New Category",
 
   "deselect_all_permissions": "Deselect All Permissions",
   "select_all_permissions": "Select All Permissions",

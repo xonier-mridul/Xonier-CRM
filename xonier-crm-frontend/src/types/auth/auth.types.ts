@@ -215,6 +215,7 @@ export interface passwordCheck{
 
 export interface UserTableComponentProps {
   currentPage: number;
+  emptyForm:RegisterPayload;
   pageLimit: number;
   userData: Array<User> | null;
   handleDelete: (id: string) => Promise<void>;

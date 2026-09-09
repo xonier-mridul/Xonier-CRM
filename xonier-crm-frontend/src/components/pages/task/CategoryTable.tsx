@@ -138,16 +138,16 @@ const CategoryTable = ({
             <div className="grid grid-cols-2 gap-4 mb-7">
                 {[
                     {
-                        label: "Total Categories",
+                        label: "total_categories",
                         value: categoryData.length,
                         icon: "🗂️",
-                        color: "bg-cyan-50 border-cyan-100",
+                        color: "bg-cyan-50 border-cyan-100  dark:border-cyan-700  dark:bg-cyan-900 dark:text-white",
                     },
                     {
-                        label: "Active",
+                        label: "active",
                         value: categoryData.length,
                         icon: "🟢",
-                        color: "bg-emerald-50 border-emerald-100",
+                        color: "bg-emerald-50 border-emerald-100 dark:bg-emerald-900 dark:border-emerald-700",
                     },
                 ].map((s) => (
                     <div
@@ -156,10 +156,10 @@ const CategoryTable = ({
                     >
                         <span className="text-2xl">{s.icon}</span>
                         <div>
-                            <div className="text-xl font-extrabold text-gray-900">
+                            <div className="text-xl font-extrabold text-gray-900  dark:text-white">
                                 {s.value}
                             </div>
-                            <div className="text-xs text-gray-500 font-medium">{s.label}</div>
+                            <div className="text-xs text-gray-500 font-medium  dark:text-white">{t(s.label)}</div>
                         </div>
                     </div>
                 ))}
@@ -184,7 +184,7 @@ const CategoryTable = ({
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
                 <table className="w-full text-sm">
                     <thead>
-                        <tr className="bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
+                        <tr className="bg-gray-50 dark:bg-gray-900/30 border-b border-gray-100 dark:border-gray-700">
                             <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-8">
                                 #
                             </th>
@@ -315,7 +315,7 @@ const CategoryTable = ({
                 </table>
 
                 {/* Footer */}
-                <div className="px-5 py-3.5 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                <div className="px-5 py-3.5 bg-gray-50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
               <span className="text-xs text-gray-400 dark:text-gray-500">
                 {t("showing")}{" page "} 
                 <span className="font-semibold text-gray-600 dark:text-gray-300">

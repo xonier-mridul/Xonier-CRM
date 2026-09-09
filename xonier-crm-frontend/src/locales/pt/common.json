@@ -1924,6 +1924,10 @@
   "view_creator_profile": "Ver Perfil do Criador",
   "yearly_rate": "Taxa Anual",
   "acknowledged": "Reconhecido",
+   "update_the_category_details_below": "Atualize os detalhes da categoria abaixo",
+    "define_a_new_task_category": "Defina uma nova categoria de tarefa",
+
+    "create_new_category": "Criar Nova Categoria",
    "viewer_1": "Visualizador (1)",
   "owner_100": "Proprietário (100)",
   "deselect_all_permissions": "Desmarcar Todas as Permissões",

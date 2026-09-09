@@ -1978,6 +1978,10 @@
     "create_role": "भूमिका बनाएं",
     "viewer_1": "दर्शक (1)",
   "owner_100": "मालिक (100)",
+   "update_the_category_details_below": "नीचे दिए गए श्रेणी विवरण को अपडेट करें",
+    "define_a_new_task_category": "एक नई कार्य श्रेणी परिभाषित करें",
+
+    "create_new_category": "नई श्रेणी बनाएं",
     "create_your_first_role_to_get": "आरंभ करने के लिए अपनी पहली भूमिका बनाएं",
     "define_a_new_role_with_custom": "कस्टम अनुमतियों और पावर स्तर के साथ एक नई भूमिका परिभाषित करें",
     "delete_role": "भूमिका हटाएं",

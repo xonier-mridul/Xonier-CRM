@@ -255,6 +255,7 @@ export const UsersTable = ({
   currentPage,
   pageLimit,
   userData,
+  emptyForm,
   handleDelete,
   isLoading,
   isRoleLoading,
@@ -331,13 +332,19 @@ const isPasswordValid = checks.every((check) => check.valid);
     <>
       {isPopupShow && (
         <>
-          <BlurryBackground onClick={() => setIsPopupShow(false)} />
+          <BlurryBackground onClick={() =>
+          {setIsPopupShow(false);
+          setFormData({...emptyForm});
+          } } />
          <div className="fixed top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 p-6 rounded-xl  z-[200] flex flex-col gap-5 shadow-xl w-150 min-h-140 ">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold dark:text-white">{t("create_user")}</h2>
               <button
                 className="text-2xl text-gray-500 hover:text-red-500 cursor-pointer hover:rotate-90 transition-all duration-300"
-                onClick={() => setIsPopupShow(false)}
+                onClick={() => {setIsPopupShow(false);
+                    setFormData({...emptyForm});
+
+                }}
               >
                 <FaXmark />
               </button>
@@ -388,11 +395,12 @@ const isPasswordValid = checks.every((check) => check.valid);
                   ) : (
                     <select
                       onChange={handleUserRoleChange}
+                       value={formData.userRole[0] || ""}
                       className="w-full px-3 py-2 rounded-md border text-[16px]
                       bg-white dark:bg-gray-700 text-black dark:text-white
                       border-gray-300 dark:border-gray-900/30 outline-none"
                     >
-                      <option value="" className="dark:bg-gray-900/30">
+                      <option value={t("select_user_role")} className="dark:bg-gray-900/30">
                         {t("select_user_role")}
                       </option>
 
@@ -408,7 +416,7 @@ const isPasswordValid = checks.every((check) => check.valid);
                       ))}
                     </select>
                   )}
-                {formData.userRole.length > 0 && (
+                {/* {formData.userRole.length > 0 && (
                   <div className="col-span-1 flex flex-wrap gap-2 mt-2">
                     {formData.userRole.map((roleId) => {
                       const role = roleData.find((r) => r.id === roleId);
@@ -433,7 +441,7 @@ const isPasswordValid = checks.every((check) => check.valid);
                       );
                     })}
                   </div>
-                )}
+                )} */}
               </div>
               <div className="col-span-2 flex flex-col gap-1">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-200">

@@ -82,16 +82,16 @@ function CategoryModal({
             />  
 
             {/* Modal */}
-            <div className="relative z-50 w-full max-w-lg my-auto bg-white dark:bg-gray-800 max-h-[80vh] overflow-y-auto rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700">
+            <div className="relative z-50 w-full max-w-lg my-auto bg-white dark:bg-gray-900/90 max-h-[80vh] overflow-y-auto rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700">
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-900/30 bg-gray-50 dark:bg-gray-900">
                     <div>
                         <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-                            {isEdit ? "Edit Category" : "Create New Category"}
+                            {isEdit ? t("edit_category") : t("create_new_category")}
                         </h2>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            {isEdit ? "Update the category details below" : "Define a new task category"}
+                            {isEdit ? t("update_the_category_details_below") : t("define_a_new_task_category")}
                         </p>
                     </div>
 
@@ -107,8 +107,8 @@ function CategoryModal({
                 <div className="px-6 py-5 space-y-5">
 
                     {/* Preview */}
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700">
-                        <span className="text-sm text-gray-500 dark:text-gray-400">{t("preview")}</span>
+                    <div className="flex items-center gap-3 p-3  rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700">
+                        <span className="text-sm text-gray-500 dark:text-gray-100">{t("preview")}</span>
                         <CategoryBadge
                             color={selectedColor}
                             icon={selectedIcon}
@@ -222,7 +222,7 @@ function CategoryModal({
                 </div>
 
                 {/* Footer */}
-                <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30">
                     <button
                         onClick={handleClosePopup}
                         className="px-4 py-2 rounded-xl text-sm border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700"

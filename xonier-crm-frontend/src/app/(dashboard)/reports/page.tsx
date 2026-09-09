@@ -1064,25 +1064,25 @@ const STATUS_OPTIONS = [
               label: t("total_page"),
               value: totalReports,
               icon: "📋",
-              bg: "bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800",
+              bg: "bg-blue-50  border-blue-100 dark:bg-blue-900/50 dark:border-blue-800",
             },
             {
               label: t("evening_submitted"),
               value: eveningDone,
               icon: "🌆",
-              bg: "bg-emerald-50 border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800",
+              bg: "bg-emerald-50 border-emerald-100 dark:bg-emerald-900/50 dark:border-emerald-800",
             },
             {
               label: t("reviewed"),
               value: reviewed,
               icon: "✅",
-              bg: "bg-purple-50 border-purple-100 dark:bg-purple-900/20 dark:border-purple-800",
+              bg: "bg-purple-50 border-purple-100 dark:bg-purple-900/50 dark:border-purple-800",
             },
             {
               label: t("avg_completion"),
               value: `${avgCompletion}%`,
               icon: "📊",
-              bg: "bg-amber-50 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800",
+              bg: "bg-amber-50 border-amber-100 dark:bg-amber-900/50 dark:border-amber-800",
             },
           ].map((s) => (
             <div

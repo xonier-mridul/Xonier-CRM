@@ -119,15 +119,15 @@ const StatusTable = ({
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 mb-7">
         {[
-          { label: t("total_statuses"), value: statusData.length, icon: "📋", color: "bg-cyan-50 border-cyan-100" },
-          { label: t("active"), value: statusData.length, icon: "🟢", color: "bg-emerald-50 border-emerald-100" },
+          { label: t("total_statuses"), value: statusData.length, icon: "📋", color: "bg-cyan-50 dark:text-cyan-200 dark:bg-cyan-700  border-cyan-100 dark:border-cyan-500" },
+          { label: t("active"), value: statusData.length, icon: "🟢", color: "bg-emerald-50 dark:bg-emerald-700 border-emerald-100 dark:border-emerald-500" },
           //   { label: "Your Role",      value: isAdmin ? "Admin" : "Member", icon: "🔑", color: "bg-violet-50 border-violet-100" },
         ].map(s => (
           <div key={s.label} className={`flex items-center gap-4 p-4 rounded-2xl border ${s.color}`}>
             <span className="text-2xl">{s.icon}</span>
             <div>
-              <div className="text-xl font-extrabold text-gray-900">{s.value}</div>
-              <div className="text-xs text-gray-500 font-medium">{s.label}</div>
+              <div className="text-xl font-extrabold text-gray-900 dark:text-white/60  ">{s.value}</div>
+              <div className="text-xs text-gray-500 font-medium dark:text-white/80">{s.label}</div>
             </div>
           </div>
         ))}
@@ -141,7 +141,7 @@ const StatusTable = ({
           type="text"
           onChange={e => handleSearch(e.target.value)}
           placeholder={t("search_statuses")}
-          className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition bg-white"
+          className="w-full pl-9 pr-4  py-2.5 rounded-xl border border-gray-200 dark:bg-slate-800 dark:text-white/70 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition bg-white"
         />
         <select
           onChange={(e) => { handleCategory(e.target.value); }}

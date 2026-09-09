@@ -34,17 +34,20 @@ const page = (): JSX.Element => {
   const [companyData, setCompanyData] = useState<Company[]>([]);
   const [companyPage, setCompanyPage] = useState<number>(1);
   const [companyHasMore, setCompanyHasMore] = useState<boolean>(true);
+    const Empty_form:RegisterPayload={
+          firstName: "",
+          lastName: "",
+          email: "",
+          phone: "",
+          password: "",
+          confirmPassword: "",
+          userRole: [],
+          companyId: "",
+        }
 
-  const [formData, setFormData] = useState<RegisterPayload>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    password: "",
-    confirmPassword: "",
-    userRole: [],
-    companyId: "",
-  });
+
+  const [formData, setFormData] = useState<RegisterPayload>(Empty_form);
+
 
   const isAdmin = useSelector((state: RootState) => state.auth.isAdmin);
 
@@ -156,12 +159,12 @@ const page = (): JSX.Element => {
 
   const handleUserRoleChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const roleId = e.target.value;
-    if (formData.userRole.includes(roleId)) return;
-    if (formData.userRole.length >= 1) {
-      toast.info("Currently only one user role allowed");
-      return;
-    }
-    setFormData((prev) => ({ ...prev, userRole: [...prev.userRole, roleId] }));
+    if (!roleId) return;
+    // if (formData.userRole.length >= 1) {
+    //   toast.info("Currently only one user role allowed");
+    //   return;
+    // }
+    setFormData((prev) => ({ ...prev, userRole: [roleId] }));
     e.target.value = "";
   };
 
@@ -194,31 +197,31 @@ const page = (): JSX.Element => {
   }, [currentPage, pageLimit, search, selectedCompanyId]);
 
 
-     const checks:passwordCheck[]=[
-        {label:'At least 8 characters',
-          valid: formData.password.length>=8,
-        },
-        {
-          label:'At least One uppercase letter',
-          valid: /[A-Z]/.test(formData.password),
-  
-        },
-         {
-          label:'At least One lowercase letter',
-          valid:/[a-z]/.test(formData.password),
-  
-        },
-         {
-          label:'At least One number',
-          valid:/[0-9]/.test(formData.password),
-  
-        },
-         {
-          label:'At least One special character',
-          valid: /[!@#$%^&*(),.?":{}|<>]/.test(formData.password),
-  
-        },
-      ]
+const checks:passwordCheck[]=[
+  {label:'At least 8 characters',
+    valid: formData.password.length>=8,
+  },
+  {
+    label:'At least One uppercase letter',
+    valid: /[A-Z]/.test(formData.password),
+
+  },
+    {
+    label:'At least One lowercase letter',
+    valid:/[a-z]/.test(formData.password),
+
+  },
+    {
+    label:'At least One number',
+    valid:/[0-9]/.test(formData.password),
+
+  },
+    {
+    label:'At least One special character',
+    valid: /[!@#$%^&*(),.?":{}|<>]/.test(formData.password),
+
+  },
+]
 
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -238,16 +241,7 @@ const page = (): JSX.Element => {
         toast.success(`${formData.firstName} ${formData.lastName} created successfully`);
         setIsPopupShow(false);
         await fetchUsers();
-        setFormData({
-          firstName: "",
-          lastName: "",
-          email: "",
-          phone: "",
-          password: "",
-          confirmPassword: "",
-          userRole: [],
-          companyId: "",
-        });
+        setFormData(Empty_form);
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
@@ -267,6 +261,7 @@ const page = (): JSX.Element => {
     <div className="lg:ml-72 mt-16 p-6">
       <UserMonitor />
       <UsersTable
+        emptyForm ={Empty_form}
         currentPage={Number(currentPage)}
         pageLimit={Number(pageLimit)}
         userData={userData}
