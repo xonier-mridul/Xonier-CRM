@@ -51,6 +51,7 @@ const DealContent = (): JSX.Element => {
   const [totalLostPages, setTotalLostPages] = useState<number>(1);
   const [currentTab, setCurrentTab] = useState<number>(1);
   const [searchVal, setSearchVal] = useState<string>("");
+  const [inputVal, setInputVal] = useState<string>("");
   const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const [dateFilter, setDateFilter] = useState<DateFilter>({ fromDate: "", toDate: "" });
@@ -281,10 +282,10 @@ const DealContent = (): JSX.Element => {
   };
 
   const handleSearch = (val: string) => {
-    setSearchVal(val);
+    setInputVal(val);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      // Search will trigger re-fetch via useEffect
+      setSearchVal(val);
     }, 300);
   };
 
@@ -306,21 +307,24 @@ const DealContent = (): JSX.Element => {
     getUserData();
   }, []);
 
-  // ✅ SINGLE effect — refetch whenever any filter changes (search, date, stage)
+  // ✅ SINGLE effect — refetch whenever any filter changes (search, date, stage, createdBy, assignedTo)
   useEffect(() => {
-    setCurrentPage(1); // Reset to first page when filters change
+    setCurrentPage(1);
     if (currentTab === 1) getDealData();
     else if (currentTab === 2) getWonDealData();
     else if (currentTab === 3) getLostDealData();
-  }, [searchVal, dateFilter, stageFilter]);
+  }, [searchVal, dateFilter, stageFilter, salesPersonFilter, assignedToFilter]);
 
   // ✅ SINGLE effect — reset everything when switching tabs
   useEffect(() => {
     setSearchVal("");
+    setInputVal("");
     setStageFilter("");
     setSalesPersonFilter("");
+    setAssignedToFilter("");
     setDateFilter({ fromDate: "", toDate: "" });
   }, [currentTab]);
+
 
   // Base data for the active tab
   const baseDealData = currentTab === 1 ? dealData : currentTab === 2 ? wonDealData : lostDealData;
@@ -343,13 +347,8 @@ const DealContent = (): JSX.Element => {
     return false;
   };
 
-  // Client-side filter: salesPersonFilter filters by createdBy name (case-insensitive)
-  const currentDealData = !salesPersonFilter
-    ? baseDealData
-    : baseDealData.filter((item: any) => {
-        const fullName = ((item.createdBy?.firstName || "") + " " + (item.createdBy?.lastName || "")).toLowerCase();
-        return fullName.includes(salesPersonFilter.toLowerCase());
-      });
+  // Server-side filters handle salesPersonFilter and assignedToFilter via API
+  const currentDealData = baseDealData;
 
   return (
     <div>
@@ -379,7 +378,7 @@ const DealContent = (): JSX.Element => {
                 type="text"
                 className="outline-none "
                 placeholder={t("search_2")}
-                value={searchVal}
+                value={inputVal}
                 onChange={(e) => handleSearch(e.target.value)}
               />
             </div>
@@ -467,13 +466,15 @@ const DealContent = (): JSX.Element => {
               className="bg-slate-50 dark:bg-gray-600 px-3 py-2 rounded-lg border border-slate-200 dark:border-gray-500 text-[13px] text-slate-600 dark:text-white/80 outline-none focus:ring-2 focus:ring-cyan-500/30 transition-all cursor-pointer min-w-[160px]"
             >
               <option value="">All Stages</option>
-              <option value="Requirement_Analysis">Requirement Analysis</option>
-              <option value="Qualification">Qualification</option>
-              <option value="Proposal">Proposal</option>
-              <option value="Negotiation">Negotiation</option>
-              <option value="Won">Won</option>
-              <option value="Lost">Lost</option>
+              {Object.values(DEAL_STAGES)
+                .filter((s) => s !== DEAL_STAGES.DELETE)
+                .map((s) => (
+                  <option key={s} value={s}>
+                    {s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                  </option>
+                ))}
             </select>
+
           </div>
 
           {/* Created By */}
