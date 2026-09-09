@@ -2637,9 +2637,17 @@ const language = i18n.resolvedLanguage ?? "en";
                         </span>
                       </div>
                       <div className="flex items-center gap-3 flex-wrap text-xs text-gray-400">
-                        <span className="font-mono">
+                        <button
+                onClick={() => handleCopy(companyData.companyId)}
+                className="flex items-center gap-1.5 hover:text-cyan-600 dark:hover:text-cyan-400 cursor-pointer transition-colors group"
+              >
+               
+                 {companyData.companyId}
+                <MdOutlineContentCopy className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+                        {/* <span className="font-mono">
                           {companyData.companyId}
-                        </span>
+                        </span> */}
                         {companyData.industry && (
                           <>
                             <span className="text-slate-300 dark:text-gray-600">

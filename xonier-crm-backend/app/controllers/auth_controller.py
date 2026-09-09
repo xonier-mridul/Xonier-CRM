@@ -161,6 +161,8 @@ class AuthController:
     async def getMe(self, request: Request, response: Response):
         try:
            user = request.state.user
+
+
                
            
            result = await self.service.getMe(user["_id"])
@@ -170,8 +172,10 @@ class AuthController:
            return successResponse(200,  f"{name} logged in successfully",result)
            
         except AppException as e:
-            
-            raise e
+          
+            response.delete_cookie(key="accessToken", **JWT_OPTIONS)
+            response.delete_cookie(key="refreshToken", **JWT_OPTIONS)
+            return AppException(status_code=e.status_code, message=e.message)
         
     async def get_all_for_frontend(self, request: Request, response: Response):
         try:

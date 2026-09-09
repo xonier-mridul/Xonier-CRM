@@ -1,8 +1,7 @@
 import { TASK_PRIORITY } from "../types/task/task.types";
 import { CURRENCY, NUMBER_OF_EMPLOYEES } from "./enum";
 
-export const SIDEBAR_WIDTH = "280px"
-export const MARGIN_TOP = "12"
+export const SIDEBAR_WIDTH = "288px"
 export const SUPER_ADMIN_ROLE_CODE:string = "SUPER_ADMIN"
 export const STOP_DISPLAY_MS = 4000;
 

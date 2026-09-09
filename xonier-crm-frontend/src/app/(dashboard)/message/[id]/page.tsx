@@ -71,7 +71,7 @@ export default function Page() {
   // ── Loading ──
   if (isLoading) {
     return (
-      <div className="ml-72 mt-14 p-6">
+      <div>
         <div className="animate-pulse space-y-4">
           <div className="h-28 rounded-xl bg-gray-100 dark:bg-gray-700" />
           <div className="grid md:grid-cols-2 gap-4">
@@ -87,7 +87,7 @@ export default function Page() {
   // ── Not found ──
   if (!isLoading && !data) {
     return (
-      <div className="ml-72 mt-14 p-6 flex justify-center items-center min-h-[60vh]">
+      <div className="p-6 flex justify-center items-center min-h-[60vh]">
         <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl p-8 shadow-xl border border-gray-100 dark:border-gray-700 text-center">
           <div className="w-14 h-14 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <MessageSquareX size={26} className="text-red-500" />
@@ -112,7 +112,7 @@ export default function Page() {
   const statusCfg = getStatus(data!.status);
 
   return (
-    <div className="ml-72 mt-14 p-6 space-y-6">
+    <div className="space-y-6">
 
       {/* ── Header ── */}
       <div className="bg-white dark:bg-gray-700 rounded-xl border border-gray-100 dark:border-gray-600 p-6 shadow-sm">

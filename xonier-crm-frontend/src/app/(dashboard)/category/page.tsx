@@ -192,15 +192,15 @@ const page = (): JSX.Element => {
 
     // ── Render ────────────────────────────────────────────────────────────────
     return (
-        <div className="ml-72 mt-14 relative ">
+        <div className="relative ">
               {
                 isBlur && 
                  <div
-                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                className="absolute inset-0 bg-black/40 dark:bg-white/50 backdrop-blur-sm"
                 onClick={handleClosePopup}
             />
             }
-            <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full ">
+            <div className="bg-white mb-10 dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs w-full">
                 <CategoryTable
                     categoryData={categoryData}
                     currentPage={currentPage}

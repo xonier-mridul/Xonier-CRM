@@ -91,6 +91,12 @@ interface SearchDetail {
   permission: string | null;
 }
 
+const getInitials = (firstName?: string, lastName?: string) => {
+  const f = firstName?.trim()?.[0] || "";
+  const l = lastName?.trim()?.[0] || "";
+  return (f + l).toUpperCase() || "U";
+};
+
 const NavBar = () => {
   const { t } = useTranslation();
   const auth = useSelector((state: RootState) => state.auth);
@@ -306,11 +312,11 @@ const results = searchableData.filter((item) =>
   : auth?.user?.companyId;
 
   return (
-    <div className="h-14 z-99 fixed top-0 left-0 lg:left-74 bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl right-0 px-4 flex justify-between items-center my-2 border border-gray-200/50 dark:border-gray-700/50 rounded-xl mx-2 shadow-sm">
+    <div className="h-14 z-99 fixed top-0 right-0 left-[288px] bg-white/85 dark:bg-slate-900/85 backdrop-blur-md px-4 flex justify-between items-center my-2 border border-slate-200/80 dark:border-slate-800 rounded-2xl mx-3 shadow-2xs">
       
        {
         calOpen &&(
-      <div className='absolute h-[100vh] w-full top-0 right-0 bg-white/60 dark:bg-black/60 '></div>
+      <div className='absolute h-[100vh] w-full top-0 right-0 bg-black/30 backdrop-blur-xs'></div>
 
 
         )
@@ -318,15 +324,15 @@ const results = searchableData.filter((item) =>
       {/* LEFT SIDE — Search Bar */}
       <div
       ref={searchRef}
-       className="flex relative  items-center gap-3 flex-1 max-w-md">
+       className="flex relative items-center gap-3 flex-1 max-w-md">
         <form onSubmit={handleSearch} className="relative w-full group">
-          <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-cyan-600 transition-colors" />
+          <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-700 dark:group-focus-within:text-slate-200 transition-colors" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t("search_menu")}
-            className="md:w-full pl-10 pr-16 py-2 text-sm bg-slate-100/60 dark:bg-gray-800/60 border border-transparent focus:border-cyan-500/30 focus:bg-white dark:focus:bg-gray-800 rounded-lg outline-none transition-all placeholder:text-gray-400 text-slate-500 dark:text-white"
+            className="w-full pl-10 pr-12 py-1.5 text-xs bg-slate-100/70 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 focus:border-slate-300 dark:focus:border-slate-600 focus:bg-white dark:focus:bg-slate-900 rounded-xl outline-none transition-all placeholder:text-slate-400 text-slate-800 dark:text-white shadow-2xs"
           />
           
         </form>
@@ -398,19 +404,23 @@ onClick={() => i18n.changeLanguage("po")}>
 
 
       {/* RIGHT SIDE — Actions */}
-      <div className="flex items-center gap-2 md:gap-3">
-         <button 
-                    onClick={()=>router.back()} 
-                    className="h-10 w-10 flex items-center text-slate-600 justify-center text-xl border rounded-full dark:bg-[#1a2432] bg-slate-50 hover:text-cyan-600 hover:border-cyan-600/20 group border-[#ecf0f2] dark:border-gray-700 cursor-pointer hover:scale-103"
-                  >
-                    <FaArrowLeftLong className="group-hover:scale-105 transition-all"/>
-                  </button>
-                  <button 
-                    onClick={()=>router.forward()} 
-                    className="h-10 w-10 flex items-center justify-center text-slate-600 text-xl border rounded-full dark:bg-[#1a2432] bg-slate-50 hover:text-cyan-600 hover:border-cyan-600/20 group border-[#ecf0f2] dark:border-gray-700 cursor-pointer hover:scale-103"
-                  >
-                    <FaArrowRightLong className="group-hover:scale-105 transition-all"/>
-                  </button>
+      <div className="flex items-center gap-2 md:gap-2.5">
+        <div className="flex items-center gap-1">
+          <button 
+            onClick={()=>router.back()} 
+            aria-label="Back"
+            className="h-8.5 w-8.5 flex items-center justify-center text-slate-500 dark:text-slate-400 border rounded-xl dark:bg-slate-800/80 bg-white hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:border-slate-700/80 cursor-pointer shadow-2xs transition-all"
+          >
+            <FaArrowLeftLong className="text-xs"/>
+          </button>
+          <button 
+            onClick={()=>router.forward()} 
+            aria-label="Forward"
+            className="h-8.5 w-8.5 flex items-center justify-center text-slate-500 dark:text-slate-400 border rounded-xl dark:bg-slate-800/80 bg-white hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:border-slate-700/80 cursor-pointer shadow-2xs transition-all"
+          >
+            <FaArrowRightLong className="text-xs"/>
+          </button>
+        </div>
         
         {/* Theme Toggle */}
         <ThemeToggle />
@@ -418,17 +428,14 @@ onClick={() => i18n.changeLanguage("po")}>
         {/* Notification Bell */}
         <NotificationBell calOpen={calOpen} />
 
-
-
         <div 
         ref={calRef} 
         className="relative">
-          
-        
           <button 
-          onClick={()=>setCalOpen(!calOpen)}
-          className="relative h-10 w-10 flex items-center justify-center rounded-full bg-slate-100/60 dark:bg-gray-800/60 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 hover:text-cyan-600 transition-all group cursor-pointer">
-            <LuCalculator  className="text-xl group-hover:scale-110 transition-transform" />  
+            onClick={()=>setCalOpen(!calOpen)}
+            aria-label="Calculator"
+            className="relative h-8.5 w-8.5 flex items-center justify-center rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 shadow-2xs transition-all cursor-pointer">
+            <LuCalculator className="text-base" />  
           </button>
 
           <AnimatePresence >
@@ -439,36 +446,33 @@ onClick={() => i18n.changeLanguage("po")}>
                 animate={{ opacity: 1, y: 8 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
-                className="absolute right-0 mt-2 w-80 bg-white  dark:bg-gray-800 rounded-xl shadow-xl flex justify-center border-gray-100 dark:border-gray-700 "
+                className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-xl shadow-xl flex justify-center border border-slate-200/80 dark:border-slate-800"
               >
                 <Calculator setCalOpen={setCalOpen}/>
-
-
             </motion.div>
               )
             }
-            
           </AnimatePresence>
         </div>
-          <div className="relative">
-        <button
-          ref={buttonRef}
-          onClick={() => setIsOpen(!isOpen)}
-          className="relative h-10 w-10 flex items-center justify-center rounded-full bg-slate-100/60 dark:bg-gray-800/60 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 hover:text-cyan-600 transition-all group cursor-pointer"
-          aria-label="Select Language"
-        >
-          <IoLanguage className="w-5 h-5" />
-        </button>
 
-        <LanguageSelector
-          isOpen={isOpen}
-          setIsOpen={setIsOpen}
-          dropdownRef={dropdownRef}
-        />
-      </div>
+        <div className="relative">
+          <button
+            ref={buttonRef}
+            onClick={() => setIsOpen(!isOpen)}
+            className="relative h-8.5 w-8.5 flex items-center justify-center rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 shadow-2xs transition-all cursor-pointer"
+            aria-label="Select Language"
+          >
+            <IoLanguage className="w-4 h-4" />
+          </button>
 
+          <LanguageSelector
+            isOpen={isOpen}
+            setIsOpen={setIsOpen}
+            dropdownRef={dropdownRef}
+          />
+        </div>
 
-        <span className="border-r border-gray-200 dark:border-gray-700 h-8" />
+        <span className="border-r border-slate-200 dark:border-slate-800 h-6 mx-1" />
 
         {/* User Profile */}
         {auth.isAuthenticated && (
@@ -477,18 +481,11 @@ onClick={() => i18n.changeLanguage("po")}>
             onMouseEnter={() => setProfileOpen(true)}
             onMouseLeave={() => setProfileOpen(false)}
           >
-            <div className="flex items-center gap-2 cursor-pointer group">
-              <span className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-cyan-500/30 transition-all">
-                <Image
-                  src="/images/user-1.png"
-                  height={200}
-                  width={200}
-                  alt={t("profile_image")}
-                  className="group-hover:scale-110 duration-300"
-                  quality={100}
-                />
+            <div className="flex items-center gap-2.5 cursor-pointer group">
+              <span className="h-8.5 w-8.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center text-xs font-bold tracking-tight shadow-xs ring-2 ring-slate-100 dark:ring-slate-800 group-hover:ring-slate-300 dark:group-hover:ring-slate-600 transition-all">
+                {getInitials(auth.user?.firstName, auth.user?.lastName)}
               </span>
-              <span className="group-hover:text-cyan-700 dark:group-hover:text-cyan-500 capitalize text-sm font-medium hidden md:block">
+              <span className="text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white capitalize text-sm font-medium hidden md:block">
                 {auth.user?.firstName} {auth.user?.lastName}
               </span>
             </div>
@@ -500,31 +497,23 @@ onClick={() => i18n.changeLanguage("po")}>
                   animate={{ opacity: 1, y: 8 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2, ease: "easeOut" }}
-                  className="absolute right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden w-65 p-4 pt-4 flex flex-col gap-3"
+                  className="absolute right-0 mt-2 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200/80 dark:border-slate-800 overflow-hidden w-68 p-4 flex flex-col gap-3"
                 >
-                  {/* <h2 className="font-bold text-xl text-slate-900 dark:text-cyan-50">
-                    User Profile
-                  </h2> */}
-                  <div className="flex items-center gap-4">
-                    <div className="w-1/3 border border-slate-200 hover:border-cyan-400 rounded-full">
-                      <Image
-                        src={"/images/user-1.png"}
-                        className="rounded-full"
-                        height={250}
-                        width={250}
-                        alt={t("user_profile_image")}
-                      />
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center text-sm font-bold shadow-xs flex-shrink-0">
+                      {getInitials(auth?.user?.firstName, auth?.user?.lastName)}
                     </div>
-                    <div className="w-2/3 flex flex-col gap-1">
-                      <h3 className="text-slate-900 dark:text-white text-sm capitalize">
+                    <div className="flex-1 flex flex-col min-w-0">
+                      <h3 className="text-slate-900 dark:text-white text-sm font-semibold capitalize truncate">
                         {auth?.user?.firstName} {auth?.user?.lastName}
                       </h3>
-                      <span>{auth?.user?.userRole?.map((i,ind)=>(
-                        <div key={ind} className="text-xs text-slate-400">
-                          {i.name}
-
-                        </div>
-                      ))}</span>
+                      <div className="flex flex-wrap gap-1 mt-0.5">
+                        {auth?.user?.userRole?.map((i, ind) => (
+                          <span key={ind} className="text-[10px] text-slate-500 dark:text-slate-400">
+                            {i.name}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
                   <div className="w-full border-b border-gray-200 dark:border-gray-700"></div>

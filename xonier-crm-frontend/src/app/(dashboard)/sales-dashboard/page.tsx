@@ -124,7 +124,7 @@ const SectionTitle = ({ title, sub }: { title: string; sub?: string }) => (
 function UnauthorizedView() {
   const { t } = useTranslation();
   return (
-    <div className="mt-10 ml-72 min-h-screen">
+    <div className="mt-10 min-h-screen">
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full">
         <div className="p-10 flex flex-col items-center text-center">
           <div className="relative mb-8">
@@ -235,7 +235,7 @@ const dealTrendData: TrendData[] =
 
   if (loading) {
     return (
-      <div className="mt-10 ml-72 flex flex-col gap-6 p-6 bg-gray-50 dark:bg-gray-700 min-h-screen">
+      <div className="mt-10 flex flex-col gap-6 p-6 bg-gray-50 dark:bg-gray-700 min-h-screen">
         <div className="grid grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32" />)}
         </div>
@@ -262,7 +262,7 @@ const dealTrendData: TrendData[] =
 
   if (error) {
     return (
-      <div className="mt-10 ml-72 flex items-center justify-center h-96">
+      <div className="mt-10 flex items-center justify-center h-96">
         <div className="flex flex-col items-center gap-3 text-center">
           <AlertCircle className="w-10 h-10 text-red-400" />
           <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{error}</p>
@@ -397,7 +397,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
 
   return (
     
-    <div className="mt-10 ml-72">
+    <div className="mt-10">
       
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full flex flex-col gap-5">
 

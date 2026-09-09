@@ -26,6 +26,7 @@ interface AdvancedFiltersProps extends AdvancedFiltersValues, AdvancedFiltersVis
 
   activeCount?: number;
   className?: string;
+  extraFilters?: React.ReactNode;
 }
 
 const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
@@ -51,6 +52,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
 
   activeCount,
   className = "",
+  extraFilters,
 }) => {
   const { t } = useTranslation();
 
@@ -129,6 +131,8 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
             />
           </div>
         )}
+        
+        {extraFilters}
       </div>
 
       {/* RIGHT SIDE — Source filter + Clear button */}

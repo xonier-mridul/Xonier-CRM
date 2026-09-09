@@ -21,21 +21,23 @@ import DateFilterButton from "@/src/components/common/dateFilter";
 import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 import StatusBadge from "@/src/components/common/Status";
 import { useTranslation } from "react-i18next";
+import { FiUser, FiCalendar, FiFileText, FiActivity, FiSettings, FiUserPlus, FiX } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import QuotationFileUploadModal from "@/src/components/common/QuotationFileUploadModal";
 import { useAdvancedFilters } from "@/src/hooks/useAdvanceFilter";
 import AdvancedFilters from "@/src/components/common/AdvanceFilter";
+import Pagination from "@/src/components/common/pagination";
 
-const STATUS_CONFIG = {
-  [QuotationStatus.DRAFT]: { label: "Draft", color: "bg-gray-600" },
-  [QuotationStatus.SENT]: { label: "Sent", color: "bg-cyan-600" },
-  [QuotationStatus.UPDATED]: { label: "Updated", color: "bg-amber-500" },
-  [QuotationStatus.RESEND]: { label: "Resend", color: "bg-indigo-600" },
-  [QuotationStatus.VIEWED]: { label: "Viewed", color: "bg-purple-600" },
-  [QuotationStatus.ACCEPTED]: { label: "Accepted", color: "bg-green-600" },
-  [QuotationStatus.REJECTED]: { label: "Rejected", color: "bg-red-600" },
-  [QuotationStatus.EXPIRED]: { label: "Expired", color: "bg-orange-600" },
-  [QuotationStatus.DELETE]: { label: "Delete", color: "bg-red-800" },
+const STATUS_CONFIG: Record<string, { label: string; color: string; textColor: string }> = {
+  [QuotationStatus.DRAFT]: { label: "Draft", color: "bg-slate-100 dark:bg-slate-700/50", textColor: "text-slate-500 dark:text-slate-400" },
+  [QuotationStatus.SENT]: { label: "Sent", color: "bg-sky-50 dark:bg-sky-900/20", textColor: "text-sky-600 dark:text-sky-400" },
+  [QuotationStatus.UPDATED]: { label: "Updated", color: "bg-amber-50 dark:bg-amber-900/20", textColor: "text-amber-600 dark:text-amber-400" },
+  [QuotationStatus.RESEND]: { label: "Resend", color: "bg-indigo-50 dark:bg-indigo-900/20", textColor: "text-indigo-600 dark:text-indigo-400" },
+  [QuotationStatus.VIEWED]: { label: "Viewed", color: "bg-purple-50 dark:bg-purple-900/20", textColor: "text-purple-600 dark:text-purple-400" },
+  [QuotationStatus.ACCEPTED]: { label: "Accepted", color: "bg-emerald-50 dark:bg-emerald-900/20", textColor: "text-emerald-600 dark:text-emerald-400" },
+  [QuotationStatus.REJECTED]: { label: "Rejected", color: "bg-rose-50 dark:bg-rose-900/20", textColor: "text-rose-500 dark:text-rose-400" },
+  [QuotationStatus.EXPIRED]: { label: "Expired", color: "bg-orange-50 dark:bg-orange-900/20", textColor: "text-orange-500 dark:text-orange-400" },
+  [QuotationStatus.DELETE]: { label: "Delete", color: "bg-red-50 dark:bg-red-900/20", textColor: "text-red-600 dark:text-red-400" },
 };
 
 const AVAILABLE_STATUSES = [
@@ -98,15 +100,17 @@ const StatusDropdown = ({
         onClick={() => setIsOpen(!isOpen)}
         disabled={isUpdating}
         className={`${
-          STATUS_CONFIG[currentStatus]?.color || "bg-gray-500"
-        } text-white px-4 py-1.5 text-sm rounded-md capitalize flex items-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px] justify-between`}
+          STATUS_CONFIG[currentStatus]?.color || "bg-slate-100"
+        } ${
+          STATUS_CONFIG[currentStatus]?.textColor || "text-slate-500"
+        } px-3 py-1.5 text-[13px] font-semibold rounded-md flex items-center gap-2 justify-between min-w-[120px] hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed`}
       >
         <span>{STATUS_CONFIG[currentStatus]?.label || currentStatus}</span>
         {isUpdating ? (
-          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
         ) : (
           <FaChevronDown
-            className={`text-xs transition-transform ${isOpen ? "rotate-180" : ""}`}
+            className={`text-[10px] opacity-60 transition-transform ${isOpen ? "rotate-180" : ""}`}
           />
         )}
       </button>
@@ -122,12 +126,12 @@ const StatusDropdown = ({
               }`}
             >
               <div className="flex items-center gap-3">
-                <span className={`w-3 h-3 rounded-full ${STATUS_CONFIG[status].color}`} />
-                <span className="text-sm dark:text-gray-200 capitalize">
+                <span className={`w-2.5 h-2.5 rounded-full ${STATUS_CONFIG[status].color.split(" ")[0].replace("bg-", "bg-").replace("-50", "-500")}`} />
+                <span className="text-[13px] font-medium dark:text-gray-200 capitalize">
                   {STATUS_CONFIG[status].label}
                 </span>
               </div>
-              {status === currentStatus && <FaCheck className="text-green-600 text-xs" />}
+              {status === currentStatus && <FaCheck className="text-green-500 text-[10px]" />}
             </button>
           ))}
         </div>
@@ -156,6 +160,7 @@ const page = (): JSX.Element => {
   const [searchVal, setSearchVal] = useState<string>("");
   const [TosearchVal, setToSearchVal] = useState<string>("");
   const [dateFilter, setDateFilter] = useState<DateFilter>({ fromDate: "", toDate: "" });
+  const [statusFilter, setStatusFilter] = useState<string>("");
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const [uploadModalOpen, setUploadModalOpen] = useState<string | null>(null);
 
@@ -199,6 +204,7 @@ const page = (): JSX.Element => {
         team: teamFilter || undefined,
         designation: designationFilter || undefined,
         source: sourceFilter || undefined, // ✅ added
+        status: statusFilter || undefined,
       });
       if (result.status === 200) {
         const data = result.data.data;
@@ -381,7 +387,7 @@ const page = (): JSX.Element => {
   };
 
   return (
-    <div className={`ml-72 mt-14 p-6`}>
+    <div>
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full flex flex-col gap-7 items-center justify-between">
         <div className="flex w-full items-center gap-12 justify-between">
           <div className="flex flex-col gap-1.5">
@@ -412,9 +418,7 @@ const page = (): JSX.Element => {
                 onChange={(e) => handleSearch(e.target.value)}
               />
             </div>
-            <div>
-              <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
-            </div>
+
             {hasPermission(PERMISSIONS.readLead) && (
               <Link
                 href={"/leads"}
@@ -459,44 +463,81 @@ const page = (): JSX.Element => {
           </ul>
         </div>
 
-        {/* ✅ Common Advanced Filters component — reused across Leads/Enquiry/Deals/Quotations */}
-        <AdvancedFilters
-          teamData={teamData}
-          designationData={designationData}
-          userData={userData}
-          teamFilter={teamFilter}
-          designationFilter={designationFilter}
-          salesPersonFilter={salesPersonFilter}
-          sourceFilter={sourceFilter}
-          onTeamChange={setTeamFilter}
-          onDesignationChange={setDesignationFilter}
-          onSalesPersonChange={setSalesPersonFilter}
-          onSourceChange={setSourceFilter}
-          onReset={resetAdvancedFilters}
-          activeCount={activeAdvancedFilterCount}
-        />
+        {/* ✅ Quotations-specific Filter Bar */}
+        <div className="w-full flex flex-wrap items-end gap-3 p-4 bg-white dark:bg-gray-700/50 rounded-xl border border-slate-200/80 dark:border-gray-600/50">
+          {/* Quotation Status — only on All Quotations tab */}
+          {currentTab === 1 && (
+            <div className="flex flex-col gap-1">
+              <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider">
+                <FiActivity className="text-indigo-400" /> Quotation Status
+              </label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="bg-slate-50 dark:bg-gray-600 px-3 py-2 rounded-lg border border-slate-200 dark:border-gray-500 text-[13px] text-slate-600 dark:text-white/80 outline-none focus:ring-2 focus:ring-cyan-500/30 transition-all cursor-pointer min-w-[175px]"
+              >
+                <option value="">All Statuses</option>
+                {AVAILABLE_STATUSES.map((s) => (
+                  <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Contact Owner */}
+          <div className="flex flex-col gap-1">
+            <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider">
+              <FiUser className="text-amber-500" /> Created By
+            </label>
+            <input
+              type="text"
+              value={salesPersonFilter}
+              onChange={(e) => setSalesPersonFilter(e.target.value)}
+              placeholder="Search by owner..."
+              className="bg-slate-50 dark:bg-gray-600 px-3 py-2 rounded-lg border border-slate-200 dark:border-gray-500 text-[13px] text-slate-600 dark:text-white/80 outline-none focus:ring-2 focus:ring-cyan-500/30 transition-all min-w-[180px] placeholder:text-slate-400"
+            />
+          </div>
+
+          {/* Date Range */}
+          <div className="flex flex-col gap-1">
+            <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider">
+              <FiCalendar className="text-emerald-500" /> Date Range
+            </label>
+            <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
+          </div>
+
+          {/* Clear Filters */}
+          {(statusFilter || salesPersonFilter || dateFilter.fromDate || dateFilter.toDate) && (
+            <button
+              onClick={() => { setStatusFilter(""); setSalesPersonFilter(""); setDateFilter({ fromDate: "", toDate: "" }); }}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-rose-200 dark:border-rose-700 text-rose-500 dark:text-rose-400 text-[12px] font-medium hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors self-end"
+            >
+              <FiX size={13} /> Clear Filters
+            </button>
+          )}
+        </div>
 
         {currentTab === 1 && (
           <table className="w-full">
-            <thead className="w-full bg-slate-200">
-              <tr className="w-full border-b-2 border-zinc-300 dark:border-zinc-400 dark:bg-gray-800">
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 rounded-tl-xl ">
-                  {t("quote_title")}
+            <thead className="bg-slate-50/50 dark:bg-gray-800/50 border-b border-slate-200/80 dark:border-gray-700">
+              <tr className="w-full">
+                <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1.5"><FiFileText className="text-[13px] text-cyan-500"/> {t("quote_title")}</div>
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  {t("client_name")}
+                <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1.5"><FiUser className="text-[13px] text-amber-500"/> {t("client_name")}</div>
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  {t("quotation_status")}
+                <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1.5"><FiActivity className="text-[13px] text-indigo-400"/> {t("quotation_status")}</div>
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  {t("created_date")}
+                <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1.5"><FiCalendar className="text-[13px] text-emerald-500"/> {t("created_date")}</div>
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  {t("created_by")}
+                <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1.5"><FiUserPlus className="text-[13px] text-slate-400"/> {t("created_by")}</div>
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 rounded-tr-xl ">
-                  {t("actions")}
+                <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1.5"><FiSettings className="text-[13px] text-slate-400"/> {t("actions")}</div>
                 </th>
               </tr>
             </thead>
@@ -509,13 +550,13 @@ const page = (): JSX.Element => {
                     return (
                       <tr
                         key={item.quoteId}
-                        className={`${rr ? "bg-white dark:bg-transparent" : "bg-slate-100/50 dark:bg-slate-800"} w-full`}
+                        className="border-b border-slate-100 dark:border-gray-700/60 hover:bg-slate-50 dark:hover:bg-gray-700/30 w-full transition-colors duration-150 text-nowrap"
                       >
                         <td className="flex gap-1 flex-col p-4">
-                          <h4 className="capitalize text-[16px] text-slate-500 dark:text-white/70">{item.title}</h4>
+                          <h4 className="capitalize font-semibold text-[13px] text-slate-700 dark:text-slate-200">{item.title}</h4>
                         </td>
                         <td className="p-4">
-                          <span className="text-[12px] px-2 py-1 bg-green-50 text-green-500 rounded-lg">
+                          <span className="text-[13px] font-medium text-slate-700 dark:text-slate-300">
                             {item.customerName}
                           </span>
                         </td>
@@ -532,11 +573,11 @@ const page = (): JSX.Element => {
                           )}
                         </td>
                         <td className="p-4">
-                          <span className="px-4 py-1.5 rounded-md bg-cyan-200 text-[12px] text-nowrap text-cyan-600 font-medium ">
+                          <span className="text-[13px] text-slate-500 dark:text-slate-400 font-medium">
                             {date}
                           </span>
                         </td>
-                        <td className="p-4 capitalize text-[16px] text-slate-500 dark:text-white/70 ">
+                        <td className="p-4 capitalize text-[13px] text-slate-500 dark:text-slate-400">
                           {item.createdBy?.firstName + " " + item.createdBy?.lastName}
                         </td>
                         <td>
@@ -544,31 +585,31 @@ const page = (): JSX.Element => {
                             {hasPermission(PERMISSIONS.readQuote) ? (
                               <Link
                                 href={`/quotations/view/${item.id}`}
-                                className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-green-100/80 dark:bg-green-50 hover:bg-green-200/70 dark:hover:bg-green-100 text-green-500 hover:scale-104"
+                                className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-colors"
                               >
                                 <FaRegEye className="text-xl" />
                               </Link>
                             ) : (
-                              <span className="h-9 w-9 flex items-center justify-center rounded-md bg-green-100/80 dark:bg-green-50 text-green-500 opacity-80 cursor-not-allowed">
+                              <span className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-300 cursor-not-allowed">
                                 <FaRegEye className="text-xl" />
                               </span>
                             )}
                             {hasPermission(PERMISSIONS.updateQuote) ? (
                               <Link
                                 href={`/quotations/update/${item.id}`}
-                                className="h-9 w-9 flex items-center justify-center rounded-md bg-yellow-200/80 dark:bg-yellow-100 hover:bg-yellow-300/70 dark:hover:bg-yellow-200 text-yellow-500 hover:scale-104"
+                                className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
                               >
                                 <MdOutlineEdit className="text-xl" />
                               </Link>
                             ) : (
-                              <span className="h-9 w-9 flex items-center justify-center rounded-md bg-yellow-100 text-yellow-400 opacity-80 cursor-not-allowed">
+                              <span className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-300 cursor-not-allowed">
                                 <MdOutlineEdit className="text-xl" />
                               </span>
                             )}
                             {(!item.attachments || item.attachments.length === 0) && (
                               <button
                                 onClick={() => setUploadModalOpen(item.id)}
-                                className="h-9 w-9 flex items-center justify-center rounded-md bg-green-200/80 dark:bg-green-100 hover:bg-green-300/70 dark:hover:bg-green-200 text-green-500 hover:scale-104"
+                                className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
                               >
                                 <MdDriveFolderUpload className="text-xl" />
                               </button>
@@ -595,7 +636,7 @@ const page = (): JSX.Element => {
                 Array.from({ length: 10 }).map((item, i) => {
                   let rr = i % 2 == 0;
                   return (
-                    <tr key={i} className={`${rr ? "bg-white dark:bg-transparent" : "bg-slate-100/50 dark:bg-slate-800"} w-full`}>
+                    <tr key={i} className="border-b border-slate-100 dark:border-gray-700/60 hover:bg-slate-50 dark:hover:bg-gray-700/30 w-full transition-colors duration-150 text-nowrap">
                       <td className="text-center p-4">
                         <Skeleton width={120} height={30} borderRadius={14} />
                       </td>
@@ -630,22 +671,22 @@ const page = (): JSX.Element => {
 
         {currentTab === 2 && (
           <table className="w-full">
-            <thead>
-              <tr className="w-full border-b-2 rounded-2xl border-zinc-300 dark:border-zinc-400 bg-slate-200 dark:bg-gray-800">
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 rounded-tl-xl">
-                  {t("quote_title")}
+            <thead className="bg-slate-50/50 dark:bg-gray-800/50 border-b border-slate-200/80 dark:border-gray-700">
+              <tr className="w-full">
+                <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1.5"><FiFileText className="text-[13px] text-cyan-500"/> {t("quote_title")}</div>
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  {t("client_name")}
+                <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1.5"><FiUser className="text-[13px] text-amber-500"/> {t("client_name")}</div>
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  {t("quotation_status")}
+                <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1.5"><FiActivity className="text-[13px] text-indigo-400"/> {t("quotation_status")}</div>
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  {t("created_date")}
+                <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1.5"><FiCalendar className="text-[13px] text-emerald-500"/> {t("created_date")}</div>
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 rounded-tr-xl">
-                  {t("actions")}
+                <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1.5"><FiSettings className="text-[13px] text-slate-400"/> {t("actions")}</div>
                 </th>
               </tr>
             </thead>
@@ -656,9 +697,9 @@ const page = (): JSX.Element => {
                     let rr = i % 2 == 0;
                     const date = formatDate(item.createdAt);
                     return (
-                      <tr key={item.quoteId} className={`${rr ? "bg-white dark:bg-transparent" : "bg-slate-100/50 dark:bg-slate-800"} w-full`}>
+                      <tr key={item.quoteId} className="border-b border-slate-100 dark:border-gray-700/60 hover:bg-slate-50 dark:hover:bg-gray-700/30 w-full transition-colors duration-150 text-nowrap">
                         <td className="flex gap-1 flex-col p-4">
-                          <h4 className="capitalize text-[16px] text-slate-500 dark:text-white/70">{item.title}</h4>
+                          <h4 className="capitalize font-semibold text-[13px] text-slate-700 dark:text-slate-200">{item.title}</h4>
                         </td>
                         <td className="p-4">{item.customerName}</td>
                         {hasPermission(PERMISSIONS.updateQuote) ? (
@@ -676,20 +717,20 @@ const page = (): JSX.Element => {
                         <td>
                           <div className="flex items-center gap-2">
                             {hasPermission(PERMISSIONS.readLead) ? (
-                              <Link href={`/quotations/view/${item.id}`} className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-green-100/80 dark:bg-green-50 hover:bg-green-200/70 dark:hover:bg-green-100 text-green-500 hover:scale-104">
+                              <Link href={`/quotations/view/${item.id}`} className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-colors">
                                 <FaRegEye className="text-xl" />
                               </Link>
                             ) : (
-                              <span className="h-9 w-9 flex items-center justify-center rounded-md bg-green-100/80 dark:bg-green-50 text-green-500 opacity-80 cursor-not-allowed">
+                              <span className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-300 cursor-not-allowed">
                                 <FaRegEye className="text-xl" />
                               </span>
                             )}
                             {hasPermission(PERMISSIONS.updateLead) ? (
-                              <Link href={`/quotations/update/${item.id}`} className="h-9 w-9 flex items-center justify-center rounded-md bg-yellow-200/80 dark:bg-yellow-100 hover:bg-yellow-300/70 dark:hover:bg-yellow-200 text-yellow-500 hover:scale-104">
+                              <Link href={`/quotations/update/${item.id}`} className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors">
                                 <MdOutlineEdit className="text-xl" />
                               </Link>
                             ) : (
-                              <span className="h-9 w-9 flex items-center justify-center rounded-md bg-yellow-100 text-yellow-400 opacity-80 cursor-not-allowed">
+                              <span className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-300 cursor-not-allowed">
                                 <MdOutlineEdit className="text-xl" />
                               </span>
                             )}
@@ -709,7 +750,7 @@ const page = (): JSX.Element => {
                 Array.from({ length: 10 }).map((item, i) => {
                   let rr = i % 2 == 0;
                   return (
-                    <tr key={i} className={`${rr ? "bg-white dark:bg-transparent" : "bg-slate-100/50 dark:bg-slate-800"} w-full`}>
+                    <tr key={i} className="border-b border-slate-100 dark:border-gray-700/60 hover:bg-slate-50 dark:hover:bg-gray-700/30 w-full transition-colors duration-150 text-nowrap">
                       <td className="text-center p-4">
                         <Skeleton width={120} height={30} borderRadius={14} />
                       </td>
@@ -746,20 +787,20 @@ const page = (): JSX.Element => {
           <table className="w-full">
             <thead>
               <tr className="w-full  border-b-2 border-zinc-300 dark:border-zinc-400 bg-slate-200 dark:bg-gray-800">
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 rounded-tl-xl">
-                  {t("quote_title")}
+                <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1.5"><FiFileText className="text-[13px] text-cyan-500"/> {t("quote_title")}</div>
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  {t("client_name")}
+                <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1.5"><FiUser className="text-[13px] text-amber-500"/> {t("client_name")}</div>
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  {t("quotation_status")}
+                <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1.5"><FiActivity className="text-[13px] text-indigo-400"/> {t("quotation_status")}</div>
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300">
-                  {t("created_date")}
+                <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1.5"><FiCalendar className="text-[13px] text-emerald-500"/> {t("created_date")}</div>
                 </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 rounded-tr-xl">
-                  {t("actions")}
+                <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1.5"><FiSettings className="text-[13px] text-slate-400"/> {t("actions")}</div>
                 </th>
               </tr>
             </thead>
@@ -770,9 +811,9 @@ const page = (): JSX.Element => {
                     let rr = i % 2 == 0;
                     const date = formatDate(item.createdAt);
                     return (
-                      <tr key={item.quoteId} className={`${rr ? "bg-white dark:bg-transparent" : "bg-slate-100/50 dark:bg-slate-800"} w-full`}>
+                      <tr key={item.quoteId} className="border-b border-slate-100 dark:border-gray-700/60 hover:bg-slate-50 dark:hover:bg-gray-700/30 w-full transition-colors duration-150 text-nowrap">
                         <td className="flex gap-1 flex-col p-4">
-                          <h4 className="capitalize text-[16px] text-slate-500 dark:text-white/70">{item.title}</h4>
+                          <h4 className="capitalize font-semibold text-[13px] text-slate-700 dark:text-slate-200">{item.title}</h4>
                         </td>
                         <td className="p-4">{item.customerName}</td>
                         <td className="p-4">
@@ -784,27 +825,27 @@ const page = (): JSX.Element => {
                         <td>
                           <div className="flex items-center gap-2">
                             {hasPermission(PERMISSIONS.readLead) ? (
-                              <Link href={`/quotations/view/${item.id}`} className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-green-100/80 dark:bg-green-50 hover:bg-green-200/70 dark:hover:bg-green-100 text-green-500 hover:scale-104">
+                              <Link href={`/quotations/view/${item.id}`} className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-colors">
                                 <FaRegEye className="text-xl" />
                               </Link>
                             ) : (
-                              <span className="h-9 w-9 flex items-center justify-center rounded-md bg-green-100/80 dark:bg-green-50 text-green-500 opacity-80 cursor-not-allowed">
+                              <span className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-300 cursor-not-allowed">
                                 <FaRegEye className="text-xl" />
                               </span>
                             )}
                             {hasPermission(PERMISSIONS.updateLead) ? (
-                              <Link href={`/quotations/update/${item.id}`} className="h-9 w-9 flex items-center justify-center rounded-md bg-yellow-200/80 dark:bg-yellow-100 hover:bg-yellow-300/70 dark:hover:bg-yellow-200 text-yellow-500 hover:scale-104">
+                              <Link href={`/quotations/update/${item.id}`} className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors">
                                 <MdOutlineEdit className="text-xl" />
                               </Link>
                             ) : (
-                              <span className="h-9 w-9 flex items-center justify-center rounded-md bg-yellow-100 text-yellow-400 opacity-80 cursor-not-allowed">
+                              <span className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-300 cursor-not-allowed">
                                 <MdOutlineEdit className="text-xl" />
                               </span>
                             )}
                             {(!item.attachments || item.attachments.length === 0) && (
                               <button
                                 onClick={() => setUploadModalOpen(item.id)}
-                                className="h-9 w-9 flex items-center justify-center rounded-md bg-green-200/80 dark:bg-green-100 hover:bg-green-300/70 dark:hover:bg-green-200 text-green-500 hover:scale-104"
+                                className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
                               >
                                 <MdDriveFolderUpload className="text-xl" />
                               </button>
@@ -831,7 +872,7 @@ const page = (): JSX.Element => {
                 Array.from({ length: 10 }).map((item, i) => {
                   let rr = i % 2 == 0;
                   return (
-                    <tr key={i} className={`${rr ? "bg-white dark:bg-transparent" : "bg-slate-100/50 dark:bg-slate-800"} w-full`}>
+                    <tr key={i} className="border-b border-slate-100 dark:border-gray-700/60 hover:bg-slate-50 dark:hover:bg-gray-700/30 w-full transition-colors duration-150 text-nowrap">
                       <td className="text-center p-4">
                         <Skeleton width={120} height={30} borderRadius={14} />
                       </td>
@@ -863,7 +904,9 @@ const page = (): JSX.Element => {
             </tbody>
           </table>
         )}
+         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={(page) => setCurrentPage(page)} className="w-full" />
       </div>
+      
     </div>
   );
 };

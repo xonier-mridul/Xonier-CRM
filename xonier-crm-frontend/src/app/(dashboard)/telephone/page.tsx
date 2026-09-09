@@ -109,7 +109,7 @@ const Page = () => {
 
   useEffect(() => {
     getAllUsers();
-  }, []);
+  }, [assignPhone]);
 
   const handleSearch = (val: string) => {
     setSearchVal(val);
@@ -304,7 +304,7 @@ const Page = () => {
 
   return (
     <>
-      <div className="ml-72 mt-14 p-6">
+      <div>
         <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full flex flex-col gap-7 items-center justify-between">
           <div className="flex w-full items-center gap-12 justify-between">
             <div className="flex flex-col gap-1.5">
@@ -518,7 +518,7 @@ const Page = () => {
       {showViewModal && selectedPhone && (
         <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-linear-to-r from-cyan-600 to-indigo-600 px-6 py-5 rounded-t-2xl flex items-center justify-between">
+            <div className="sticky top-0 bg-linear-to-r from-cyan-600 to-cyan-600 px-6 py-5 rounded-t-2xl flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                   <IoPhonePortrait className="w-6 h-6 text-white" />
@@ -537,7 +537,7 @@ const Page = () => {
             </div>
 
             <div className="p-6 space-y-6">
-              <div className="bg-linear-to-br from-cyan-50 to-indigo-50 dark:from-cyan-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-cyan-100 dark:border-cyan-800">
+              <div className="bg-linear-to-br from-cyan-50 to-cyan-50 dark:from-cyan-900/20 dark:to-cyan-900/20 rounded-2xl p-6 border border-cyan-100 dark:border-cyan-800">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
@@ -591,17 +591,17 @@ const Page = () => {
                 <div className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-5 border border-slate-100 dark:border-gray-700">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-9 h-9 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                      <MdPerson className="w-5 h-5 text-indigo-500" />
+                      <MdPerson className="w-5 h-5 text-cyan-500" />
                     </div>
                     <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       {t("created_by")}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-linear-to-br from-indigo-500 to-cyan-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                    <div className="w-10 h-10 bg-linear-to-br from-cyan-500 to-cyan-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
                       {typeof selectedPhone.createdBy === "string"
                         ? "?"
-                        : `${selectedPhone.createdBy.firstName?.[0] ?? ""}${selectedPhone.createdBy.lastName?.[0] ?? ""}`}
+                        : `${selectedPhone.createdBy.firstName?.[0].toUpperCase() ?? ""}${selectedPhone.createdBy.lastName?.[0] ?? ""}`}
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -644,7 +644,8 @@ const Page = () => {
                       {t("assigned_users")}
                     </p>
                     <div className="flex items-center gap-2 ml-auto">
-                      {(hasPermission(PERMISSIONS.telephoneAssign)) && <button
+                      {(hasPermission(PERMISSIONS.telephoneAssign)) && 
+                      <button
                         onClick={() => {
                           closeViewModal();
                           openAssignModal(selectedPhone);
@@ -677,7 +678,7 @@ const Page = () => {
                               key={user.id}
                               className="flex items-center gap-3 bg-white dark:bg-gray-800 p-3 rounded-lg border-slate-300"
                             >
-                              <div className="w-9 h-9 rounded-full bg-indigo-500 text-white flex items-center justify-center text-sm font-bold">
+                              <div className="w-9 h-9 rounded-full bg-cyan-500 text-white flex items-center justify-center text-sm font-bold">
                                 {user.firstName?.[0]}
                                 {user.lastName?.[0]}
                               </div>

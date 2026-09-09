@@ -124,7 +124,8 @@ class DealUpdateSchema(BaseModel):
     
 class UpdateDealStatusSchema(BaseModel):
     status: DEAL_STATUS
-        
-       
 
 
+class BulkAssignDealsSchema(BaseModel):
+    deal_ids: list[str]
+    assigned_to: str  # User ID to assign deals to

@@ -119,9 +119,9 @@ export default function Page() {
   };
 
   return (
-    <div className="ml-72 mt-14 p-6">
+    <div>
       {/* HEADER */}
-      <div className="bg-white mb-10 dark:bg-gray-700 flex gap-5 p-6 rounded-xl border border-slate-900/10 w-full items-center justify-between">
+      <div className="bg-white mb-4 dark:bg-gray-700 flex gap-5 p-6 rounded-xl border border-slate-900/10 w-full items-center justify-between">
         <div className="flex flex-col gap-2">
           <h2 className="text-2xl font-bold dark:text-white text-slate-900">{t("message_logs")}</h2>
           <p className="text-gray-500 dark:text-gray-400">{t("monitor_inbound_and_outbound_sms_activity")}</p>

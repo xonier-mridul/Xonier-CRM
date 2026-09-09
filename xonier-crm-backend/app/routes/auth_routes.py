@@ -162,7 +162,7 @@ async def verify_forgot_pass_otp(request: Request, data: ForgotPassOtpSchema):
 async def reset_user_password(request:Request, id:str, payload: ResetPasswordByAdminSchema):
     return await auth_controller.reset_user_password(request, id, payload.model_dump())
 
-@router.delete("/permanent-delete/{userId}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["user:delete"]))])
+@router.delete("/permanent-delete/{userId}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context), Depends(dependencies.permissions(["user:delete"]))])
 async def permanent_delete_user(request: Request, userId: str):
     return await auth_controller.permanent_delete(request=request, userId=userId)
 

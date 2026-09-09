@@ -215,10 +215,12 @@ export interface passwordCheck{
 
 export interface UserTableComponentProps {
   currentPage: number;
+  emptyForm:RegisterPayload;
   pageLimit: number;
   userData: Array<User> | null;
   handleDelete: (id: string) => Promise<void>;
   isLoading: boolean;
+  isRoleLoading:boolean;
   isPopupShow: boolean;
   setIsPopupShow: Dispatch<SetStateAction<boolean>>;
   formData: RegisterPayload;

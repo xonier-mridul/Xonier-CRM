@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, Depends
-from app.schemas.deal_schema import DealSchema, DealUpdateSchema
+from app.schemas.deal_schema import DealSchema, DealUpdateSchema, BulkAssignDealsSchema
 from app.controllers.deal_controller import DealController
 from app.core.dependencies import Dependencies
 from app.core.enums import FEATURE
@@ -37,4 +37,11 @@ async def update(id: str, request: Request, payload: DealUpdateSchema):
 Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM)), Depends(dependencies.permissions(["deal:delete"]))])
 async def delete(id:str, request: Request):
     return await controller.delete(id=id, request=request)
+
+
+@router.patch("/bulk-assign", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM)), Depends(dependencies.permissions(["deal:update"]))])
+async def bulk_assign(request: Request, payload: BulkAssignDealsSchema):
+    return await controller.bulk_assign(request=request, payload=payload.model_dump())
+
 

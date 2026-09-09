@@ -15,7 +15,7 @@ const ICON_OPTIONS: string[] = [
 export function StatusBadge({ color, icon, name }: { color: ColorOption; icon?: string; name: string }) {
     if (!icon) icon = "⚡";
     return (
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${color.bg} ${color.text}`}>
+        <span className={`inline-flex bg-white/80 items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${color.bg} ${color.text}`}>
             <span>{icon}</span>
             {name}
         </span>
@@ -59,17 +59,18 @@ export function StatusModal({
             />
 
             {/* Panel */}
-            <div className="relative h-180 z-10 w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-scroll">
+            <div className="relative h-180 z-10 w-full dark:bg-gray-900 max-w-lg bg-white rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-500 overflow-scroll">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 bg-gray-50">
+                <div className="flex items-center justify-between dark:bg-gray-900/30 px-6 py-5 border-b  dark:border-gray-500   border-gray-100 
+                bg-gray-50">
                     <div>
-                        <h2 className="text-lg font-bold text-gray-900 tracking-tight">
-                            {isEdit ? "Edit Status" : "Create New Status"}
+                        <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">
+                            {isEdit ? t("editStatus") : t("createNewStatus")}
                         </h2>
-                        <p className="text-xs text-gray-500 mt-0.5">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                             {isEdit
-                                ? "Update the status details below"
-                                : "Define a new task status for your project"}
+                                ? t("updateStatusDetailsBelow")
+                                : t("defineNewTaskStatus")}
                         </p>
                     </div>
                     <button
@@ -82,7 +83,7 @@ export function StatusModal({
 
                 <div className="px-6 py-5 space-y-5">
                     {/* Live Preview */}
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
+                    <div className="flex dark:bg-gray-900/30 items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100 dark:border-gray-500 ">
                         <span className="text-sm text-gray-500 font-medium">{t("preview")}</span>
                         <StatusBadge
                             color={selectedColor}
@@ -100,7 +101,7 @@ export function StatusModal({
 
                     {/* Name */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
                             {t("status_name")} <span className="text-rose-500">*</span>
                         </label>
                         <input
@@ -110,7 +111,7 @@ export function StatusModal({
                                 setFormData(prev => ({ ...prev, name: e.target.value }))
                             }
                             placeholder={t("e_g_in_progress")}
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-400 transition"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-500 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-400 transition"
                         />
                     </div>
 
@@ -132,7 +133,7 @@ export function StatusModal({
 
                     {/* Category */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
                             {t("category")}
                         </label>
                         <select
@@ -143,7 +144,7 @@ export function StatusModal({
                                     category: e.target.value
                                 }))
                             }
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/40 "
+                            className="w-full px-3.5 py-2.5 rounded-xl border dark:border-gray-500 border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/40 "
                         >
                             <option value="" disabled>{t("select_category_3")}</option>
 
@@ -161,7 +162,7 @@ export function StatusModal({
                     {/* Is Final */}
                     {/* Is Final - Segmented Cards */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
                             {t("status_type")}
                         </label>
                         <div className="grid grid-cols-2 gap-3">
@@ -169,8 +170,8 @@ export function StatusModal({
                                 type="button"
                                 onClick={() => setFormData(prev => ({ ...prev, isFinal: false }))}
                                 className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border-2 transition-all text-sm font-medium ${!formData.isFinal
-                                    ? "border-cyan-500 bg-cyan-50 text-cyan-700 shadow-sm"
-                                    : "border-gray-100 bg-white text-gray-500 hover:border-gray-200"
+                                    ? "border-cyan-500 dark:border-cyan-600 bg-cyan-50 text-cyan-700 dark:bg-cyan-800 dark:text-cyan-200 shadow-sm"
+                                    : "border-gray-100 bg-white dark:bg-white/70 dark:text-white dark:border-white/60 text-gray-500 hover:border-gray-200"
                                     }`}
                             >
                                 <span className="text-base">🔄</span> {t("ongoing")}
@@ -179,8 +180,8 @@ export function StatusModal({
                                 type="button"
                                 onClick={() => setFormData(prev => ({ ...prev, isFinal: true }))}
                                 className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border-2 transition-all text-sm font-medium ${formData.isFinal
-                                    ? "border-green-500 bg-green-50 text-green-700 shadow-sm"
-                                    : "border-gray-100 bg-white text-gray-500 hover:border-gray-200"
+                                    ? "border-green-500 bg-green-50 dark:bg-green-700 dark:text-green-300 dark:border-green-500 text-green-700 shadow-sm"
+                                    : "border-gray-100 bg-white dark:bg-slate-500 dark:text-slate-200 dark:border-gray-300 text-gray-500 hover:border-gray-200"
                                     }`}
                             >
                                 <span className="text-base">🏁</span> {t("final")}
@@ -189,7 +190,7 @@ export function StatusModal({
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                        <label className="block text-sm font-semibold dark:text-gray-300 text-gray-700 mb-1.5">
                             {t("status_order")} <span className="text-rose-500">*</span>
                         </label>
                         <input
@@ -200,13 +201,13 @@ export function StatusModal({
                             }
                             onBlur={() => formData.order}
                             placeholder={t("eg_2")}
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-400 transition"
+                            className="w-full px-3.5 py-2.5 rounded-xl border dark:border-gray-500 border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-400 transition"
                         />
                     </div>
 
                     {/* Icon Picker */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                        <label className="block dark:text-gray-300 text-sm font-semibold text-gray-700 mb-1.5">
                             {t("icon")}
                         </label>
                         <div className="flex flex-wrap gap-2">
@@ -217,7 +218,7 @@ export function StatusModal({
                                     onClick={() => setFormData(prev => ({ ...prev, icon: ic }))}
                                     className={`w-9 h-9 rounded-lg text-lg flex items-center justify-center border-2 transition ${selectedIcon === ic
                                         ? "border-cyan-500 bg-cyan-50 shadow-sm"
-                                        : "border-gray-200 hover:border-gray-300 bg-white"
+                                        : "border-gray-200 dark:border-gray-500 dark:bg-white/50 hover:border-gray-300 bg-white"
                                         }`}
                                 >
                                     {ic}
@@ -228,7 +229,7 @@ export function StatusModal({
 
                     {/* Color Picker */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                        <label className="block text-sm font-semibold dark:text-gray-300 text-gray-700 mb-1.5">
                             {t("color")}
                         </label>
                         <div className="flex flex-wrap gap-2">
@@ -250,11 +251,12 @@ export function StatusModal({
                 </div>
 
                 {/* Footer */}
-                <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50">
+                <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-gray-600 dark:bg-gray-900/30 bg-gray-50">
                     <button
                         type="button"
                         onClick={handleClosePopup}
-                        className="px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition"
+                        className="px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 bg-white border border-gray-200 dark:border-gray-500 dark:bg-gray-400 dark:text-slate-200 dark:hover:bg-gray-300
+                        dark:hover:text-gray-500 hover:bg-gray-50 transition "
                     >
                         {t("cancel")}
                     </button>
@@ -270,7 +272,7 @@ export function StatusModal({
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                             </svg>
                         )}
-                        {isEdit ? "Save Changes" : "Create Status"}
+                        {isEdit ? t("saveChanges") : t("createStatus")}
                     </button>
                 </div>
             </div>

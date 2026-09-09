@@ -24,7 +24,7 @@ const BlurryBackground = ({ onClick }: BlurryBackgroundProps): JSX.Element => {
       onClick={onClick}
       className="
         fixed inset-0 w-full h-full
-        bg-black/30 backdrop-blur-sm
+        bg-black/30 dark:bg-white/30 backdrop-blur-sm
         z-199
         cursor-pointer
       "

@@ -24,7 +24,9 @@ const dealService = {
   },
   getById: (id:ParamValue) => api.get(`/deal/get-by-id/${id}`),
   update:(id: ParamValue, payload:DealUpdatePayload)=> api.put(`/deal/update/${id}`, payload),
-  delete:(id:string)=> api.delete(`/deal/delete/${id}`)
+  delete:(id:string)=> api.delete(`/deal/delete/${id}`),
+  bulkAssign:(deal_ids: string[], assigned_to: string)=> api.patch(`/deal/bulk-assign`, { deal_ids, assigned_to }),
+  updateStage:(id: string, dealStage: string)=> api.patch(`/deal/update/${id}/stage`, { dealStage }),
 }
 
 export default dealService

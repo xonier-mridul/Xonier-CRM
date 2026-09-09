@@ -480,7 +480,7 @@ class EnquiryService:
                         for enquiry in enquiries
                     ]
 
-                    is_activity = await self.activityRepo.bulk_create(data=activities, session=session)
+                    is_activity = await self.activityRepo.bulk_create(docs=activities, session=session)
 
                     if not is_activity:
                         raise AppException(400, "Activity log failed")

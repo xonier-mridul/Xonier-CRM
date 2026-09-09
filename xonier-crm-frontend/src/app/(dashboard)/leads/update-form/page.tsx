@@ -365,7 +365,7 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
   };
 
   const renderFormField = (item: CustomField, index: number) => {
-    if (item.type === "text" || item.type === "email" || item.type === "number" || item.type ==="date") {
+    if (item.type === "text" || item.type === "email" || item.type === "number" ||  item.type === "datetime-local") {
       return (
         <motion.div
           key={item.id}

@@ -14,6 +14,13 @@ interface ViewEventPopupProps {
   onEdit?: () => void;
 }
 
+// Map i18n language codes to proper locale strings for date formatting
+const LOCALE_MAP: Record<string, string> = {
+  en: "en-US",
+  hi: "hi-IN",
+  pt: "pt-PT",
+};
+
 const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
   open,
   event,
@@ -21,27 +28,29 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
   onDelete,
   onEdit,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { hasPermission } = usePermissions();
 
   if (!open || !event) return null;
 
+  const locale = LOCALE_MAP[i18n.language] || "en-US";
+
   // Fixed date formatting function with proper type handling
   const formatDateTime = (date: any): string => {
-    if (!date) return "N/A";
-    
+    if (!date) return t("na");
+
     let d: Date;
     if (date instanceof Date) {
       d = date;
-    } else if (typeof date === 'string') {
+    } else if (typeof date === "string") {
       d = new Date(date);
-    } else if (typeof date === 'number') {
+    } else if (typeof date === "number") {
       d = new Date(date);
     } else {
-      return "N/A";
+      return t("na");
     }
-    
-    return d.toLocaleString("en-US", {
+
+    return d.toLocaleString(locale, {
       weekday: "short",
       year: "numeric",
       month: "short",
@@ -52,20 +61,20 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
   };
 
   const formatDate = (date: any): string => {
-    if (!date) return "N/A";
-    
+    if (!date) return t("na");
+
     let d: Date;
     if (date instanceof Date) {
       d = date;
-    } else if (typeof date === 'string') {
+    } else if (typeof date === "string") {
       d = new Date(date);
-    } else if (typeof date === 'number') {
+    } else if (typeof date === "number") {
       d = new Date(date);
     } else {
-      return "N/A";
+      return t("na");
     }
-    
-    return d.toLocaleDateString("en-US", {
+
+    return d.toLocaleDateString(locale, {
       weekday: "short",
       year: "numeric",
       month: "short",
@@ -75,19 +84,19 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
 
   const formatTime = (date: any): string => {
     if (!date) return "";
-    
+
     let d: Date;
     if (date instanceof Date) {
       d = date;
-    } else if (typeof date === 'string') {
+    } else if (typeof date === "string") {
       d = new Date(date);
-    } else if (typeof date === 'number') {
+    } else if (typeof date === "number") {
       d = new Date(date);
     } else {
       return "";
     }
-    
-    return d.toLocaleTimeString("en-US", {
+
+    return d.toLocaleTimeString(locale, {
       hour: "2-digit",
       minute: "2-digit",
     });
@@ -145,16 +154,26 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
   const priorityConfig = getPriorityConfig(priority);
   const eventTypeIcon = getEventTypeIcon(event.extendedProps?.eventType);
 
+  // Translate priority label (falls back to raw value if key missing)
+  const priorityLabel = t(priority, { defaultValue: priority });
+
+  // Translate event type label; fallback to formatted raw string
+  const rawEventType = event.extendedProps?.eventType as string | undefined;
+  const eventTypeLabel = rawEventType
+    ? t(rawEventType.toLowerCase(), {
+        defaultValue: rawEventType.replace("_", " "),
+      })
+    : t("event");
+
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40 animate-fadeIn"
+    <div
+      className="fixed inset-0 z-100 flex items-center justify-center backdrop-blur-sm bg-black/40 dark:bg-white/40 animate-fadeIn"
       onClick={onClose}
     >
-      <div 
+      <div
         className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden m-4 transform transition-all animate-slideUp"
         onClick={(e) => e.stopPropagation()}
       >
-
         <div className="relative bg-gradient-to-r from-cyan-600 via-cyan-500 to-teal-600 dark:from-cyan-700 dark:via-cyan-600 dark:to-purple-700 px-8 py-6">
           <div className="flex items-start justify-between">
             <div className="flex-1 pr-4">
@@ -165,8 +184,8 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
                 </h2>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/20 backdrop-blur-sm text-white border border-white/30">
-                  {event.extendedProps?.eventType?.replace('_', ' ') || "Event"}
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/20 backdrop-blur-sm text-white border border-white/30 capitalize">
+                  {eventTypeLabel}
                 </span>
                 {event.allDay && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/20 backdrop-blur-sm text-white border border-white/30">
@@ -187,8 +206,6 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
         </div>
 
         <div className="px-8 py-6 space-y-6 overflow-y-auto max-h-[calc(90vh-220px)]">
-          
-
           <div className="bg-gradient-to-br from-cyan-50 to-indigo-50 dark:from-cyan-950/30 dark:to-indigo-950/30 rounded-xl p-5 border border-cyan-200 dark:border-cyan-800">
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 w-12 h-12 rounded-full bg-cyan-100 dark:bg-cyan-900/50 flex items-center justify-center">
@@ -198,7 +215,7 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
               </div>
               <div className="flex-1">
                 <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-                  {event.allDay ? "📅 Date" : "🕐 Schedule"}
+                  {event.allDay ? `📅 ${t("date")}` : `🕐 ${t("schedule")}`}
                 </h3>
                 {event.allDay ? (
                   <div className="space-y-1">
@@ -239,8 +256,17 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
             </div>
           </div>
 
-
-          <div className={`${priorityConfig.bg} ${(priority === PRIORITY.HIGH) ? "border-red-500" : (priority === PRIORITY.MEDIUM) ? "border-yellow-500" : (priority === PRIORITY.LOW) ? "border-green-500" : "border-gray-500" } rounded-xl p-5 border border-opacity-50`}>
+          <div
+            className={`${priorityConfig.bg} ${
+              priority === PRIORITY.HIGH
+                ? "border-red-500"
+                : priority === PRIORITY.MEDIUM
+                ? "border-yellow-500"
+                : priority === PRIORITY.LOW
+                ? "border-green-500"
+                : "border-gray-500"
+            } rounded-xl p-5 border border-opacity-50`}
+          >
             <div className="flex items-center gap-4">
               <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white/50 dark:bg-black/20 flex items-center justify-center">
                 <span className="text-2xl">{priorityConfig.icon}</span>
@@ -251,7 +277,7 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
                 </h3>
                 <div className="flex items-center gap-2">
                   <span className={`text-xl font-bold ${priorityConfig.text} capitalize`}>
-                    {priority}
+                    {priorityLabel}
                   </span>
                   <div className={`h-2 w-24 ${priorityConfig.badge} rounded-full opacity-60`}></div>
                 </div>

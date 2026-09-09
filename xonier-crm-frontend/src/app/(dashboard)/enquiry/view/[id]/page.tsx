@@ -151,7 +151,7 @@ const EnquiryViewPage = (): JSX.Element => {
   /* ── Loading skeleton ── */
   if (isLoading) {
     return (
-      <div className="ml-72 mt-14 p-6 flex flex-col gap-6 animate-pulse">
+      <div className="p-6 flex flex-col gap-6 animate-pulse">
         <Skeleton height={120} borderRadius={12} className="dark:bg-gray-700 w-full" />
         <Skeleton height={60} borderRadius={12} className="dark:bg-gray-700 w-full" />
         <div className="flex items-start gap-6">
@@ -170,7 +170,7 @@ const EnquiryViewPage = (): JSX.Element => {
   /* ── Not found ── */
   if (!isLoading && !enquiryData) {
     return (
-      <div className="ml-72 mt-14 p-6">
+      <div>
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <IoDocumentText className="w-20 h-20 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
@@ -194,7 +194,7 @@ const EnquiryViewPage = (): JSX.Element => {
   }
 
   return (
-    <div className="ml-72 mt-14 p-6 min-h-screen">
+    <div className="p-6 min-h-screen">
       <style>{`
         @media print {
           .print-col-stack { display: block !important; }

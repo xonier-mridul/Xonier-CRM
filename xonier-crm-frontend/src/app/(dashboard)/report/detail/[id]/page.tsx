@@ -714,7 +714,7 @@ const language = (i18n.resolvedLanguage ?? "en").split("-")[0];
   if (err) {
     const messages = Array.isArray(err) ? err : [err];
     return (
-      <div className="ml-72 mt-14 p-6">
+      <div>
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-6 text-center">
           <div className="text-4xl mb-3">⚠️</div>
           <h3 className="text-base font-bold text-red-700 dark:text-red-400 mb-2">
@@ -739,7 +739,7 @@ const language = (i18n.resolvedLanguage ?? "en").split("-")[0];
 
 
   return (
-    <div className="ml-72 mt-14">
+    <div className="">
       <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full mb-10">
         <div className="flex items-center justify-between mb-7">
           <div className="flex items-center gap-3">

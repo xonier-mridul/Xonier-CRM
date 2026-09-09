@@ -179,7 +179,7 @@ const LeadViewPage = (): JSX.Element => {
 
   if (isLoading) {
     return (
-      <div className="lg:ml-72 mt-14 p-6 flex flex-col gap-6 animate-pulse">
+      <div className="p-6 flex flex-col gap-6 animate-pulse">
         <Skeleton height={120} borderRadius={12} className="dark:bg-gray-700 w-full" />
         <Skeleton height={60} borderRadius={12} className="dark:bg-gray-700 w-full" />
         <div className="flex items-start gap-6">
@@ -197,7 +197,7 @@ const LeadViewPage = (): JSX.Element => {
 
   if (!leadData) {
     return (
-      <div className="ml-72 mt-14 p-6">
+      <div>
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <IoPersonOutline className="w-20 h-20 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
@@ -221,7 +221,7 @@ const LeadViewPage = (): JSX.Element => {
   }
 
   return (
-  <div className="lg:ml-72 mt-14 p-6 min-h-screen">
+  <div className="p-6 min-h-screen">
     {/* Global print styles: fixes gap-based whitespace at page breaks */}
     <style>{`
       @media print {
@@ -317,11 +317,11 @@ const LeadViewPage = (): JSX.Element => {
                 </div>
               </div> */}
               
-                <div className=" border border-slate-200 py-2 hover:border-red-400  text-red-600 dark:text-red-400 hover:bg-red-50  rounded-xl bg-white/60 right-0 top-full w-30  transition-all  duration-300">
+                <div className=" border border-slate-200 py-2 hover:border-red-400  text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-400 dark:bg-red-400 dark:text-white rounded-xl bg-white/60 right-0 top-full w-30  transition-all  duration-300 cursor-pointer">
                   {hasPermission(PERMISSIONS.deleteLead) && (
                     <button
                       onClick={() => handleDelete(leadData.id)}
-                      className="w-full flex items-center gap-2 px-4  dark:hover:bg-red-900/20 transition-colors cursor-pointer"
+                      className="w-full flex items-center gap-2 px-4 transition-colors cursor-pointer"
                     >
                       <MdDeleteOutline className="w-4 h-4" />
                       {t("delete")}

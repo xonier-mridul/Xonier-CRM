@@ -74,7 +74,7 @@ const QueryTable :React.FC<QueryTableProps>= ({queryData,
                     <tr  key={query.id} 
                     onClick={()=>onSelect(query.id)}
                    className={`group ${
-                      selected.includes(query.id) ? 'bg-red-50 text-black/70' : 'hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors'}`}
+                      selected.includes(query.id) ? 'bg-cyan-50 dark:bg-cyan-900 text-black/70' : 'hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors'}`}
                     >
 
                       <td className="py-4 pr-4">
@@ -99,7 +99,8 @@ const QueryTable :React.FC<QueryTableProps>= ({queryData,
                       </td>
                        <td className="py-4 pr-4">
                         <div className="flex ">
-                            <span className="font-medium text-xs text-slate-500 dark:text-white whitespace-nowrap">{query.industryType}</span>
+                            <span className="font-medium text-xs text-slate-500 dark:text-white whitespace-nowrap">
+                              {query.industryType}</span>
                         </div>
                       </td>
                        <td className="py-4 pr-4">
@@ -127,7 +128,7 @@ const QueryTable :React.FC<QueryTableProps>= ({queryData,
                         <Link href={`/query/${query.id}`}>
 
                           <span className={`h-8 w-8 p-2 rounded-xl ${
-                      selected.includes(query.id) ? 'bg-blue-100 text-blue-400 border border-blue-500 hover:border-sky-500':' bg-slate-200 text-gray-500'}  text-xl flex justify-center items-center  dark:text-gray-400 hover:bg-sky-100 hover:text-sky-500`} >
+                      selected.includes(query.id) ? 'bg-cyan-100 text-cyan-400 border border-cyan-500 hover:border-cyan-500':' bg-slate-200 text-gray-500'}  text-xl flex justify-center items-center  dark:text-gray-400 hover:bg-cyan-100 hover:text-cyan-500`} >
                             <FaEye />
                           </span>
                         </Link>

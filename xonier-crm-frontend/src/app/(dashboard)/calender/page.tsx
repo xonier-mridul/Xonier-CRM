@@ -325,7 +325,7 @@ const handleDatesSet = useCallback((dateInfo: any) => {
         onSuccess={handleUpdateSuccess}
       />
 
-      <div className="mt-14 lg:ml-72 p-1 md:p-6 transition-all">
+      <div className="p-1 md:p-6 transition-all">
         <AnimatePresence>
           {isLoading && (
             <motion.div
@@ -379,13 +379,13 @@ const handleDatesSet = useCallback((dateInfo: any) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-xl p-6"
+          className="bg-white dark:bg-gray-900/30 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-xl p-6"
         >
           {/* Custom Toolbar */}
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-4 ">
             {/* Month Navigation */}
             <div className="grid grid-cols-4 md:grid-cols-5 items-center gap-3">
-              <div className='flex col-span-3 md:col-span-4'>
+              <div className='flex col-span-3 md:col-span-4 items-center'>
                 <button
                   onClick={() => {
                     const api = calendarRef.current?.getApi();
@@ -421,7 +421,7 @@ const handleDatesSet = useCallback((dateInfo: any) => {
               </button>
             </div>
 
-            <div className='grid grid-cols-4 md:grid-cols-3 gap-4'>
+            <div className='grid grid-cols-4 md:grid-cols-3 gap-4 '>
               {/* View Switcher */}
               <div className="flex gap-2 col-span-3 md:col-span-2 bg-gray-100 dark:bg-gray-700 p-1 rounded-xl">
                 {viewButtons.map(({ id, label, icon: Icon }) => (
@@ -459,36 +459,36 @@ const handleDatesSet = useCallback((dateInfo: any) => {
           </div>
 
           {/* Calendar */}
-          <div className="fc-custom-theme">
+          <div className="fc-custom-theme ">
            <FullCalendar
-  ref={calendarRef}
-  plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-  initialView="dayGridMonth"
-  locale={calendarLocale}
-  events={eventData}
-  height="75vh"
-  selectable
-  editable
-  nowIndicator
-  dateClick={handleDateClick}
-  eventClick={handleEventClick}
-  dayMaxEvents={3}
-  eventColor="#6366f1"
-  eventTextColor="#ffffff"
-  datesSet={handleDatesSet}
-  headerToolbar={false}
-  views={{
-    dayGridMonth: {
-      titleFormat: { year: "numeric", month: "long" },
-    },
-    timeGridWeek: {
-      titleFormat: { year: "numeric", month: "long", day: "numeric" },
-    },
-    timeGridDay: {
-      titleFormat: { year: "numeric", month: "long", day: "numeric" },
-    },
-  }}
-/>
+              ref={calendarRef}
+              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+              initialView="dayGridMonth"
+              locale={calendarLocale}
+              events={eventData}
+              height="75vh"
+              selectable
+              editable
+              nowIndicator
+              dateClick={handleDateClick}
+              eventClick={handleEventClick}
+              dayMaxEvents={3}
+              eventColor="#6366f1"
+              eventTextColor="#ffffff"
+              datesSet={handleDatesSet}
+              headerToolbar={false}
+              views={{
+                dayGridMonth: {
+                  titleFormat: { year: "numeric", month: "long" },
+                },
+                timeGridWeek: {
+                  titleFormat: { year: "numeric", month: "long", day: "numeric" },
+                },
+                timeGridDay: {
+                  titleFormat: { year: "numeric", month: "long", day: "numeric" },
+                },
+              }}
+            />
           </div>
         </motion.div>
       </div>

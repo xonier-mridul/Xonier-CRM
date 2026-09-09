@@ -734,10 +734,10 @@ class LeadService:
             query = {
                 "status": {
                     "$in": [
-                        SALES_STATUS.CONTACTED,
-                        SALES_STATUS.NEW,
-                        SALES_STATUS.PROPOSAL,
-                        SALES_STATUS.QUALIFIED
+                        SALES_STATUS.CONTACTED.value,
+                        SALES_STATUS.NEW.value,
+                        SALES_STATUS.PROPOSAL.value,
+                        SALES_STATUS.QUALIFIED.value
                     ]
                 },
                
@@ -850,11 +850,14 @@ class LeadService:
                         "assignedTo": {"$exists": True, "$ne": []}
                     })
 
+            from enum import Enum
             def serialize_for_cache(v):
                 if isinstance(v, PydanticObjectId):
                     return str(v)
                 elif isinstance(v, datetime):
                     return v.isoformat()
+                elif isinstance(v, Enum):
+                    return v.value
                 elif isinstance(v, list):
                     return [serialize_for_cache(i) for i in v]
                 elif isinstance(v, dict):
@@ -1181,9 +1184,10 @@ class LeadService:
                     if not ObjectId.is_valid(leadId):
                         raise AppException(400, "Invalid lead object id")
                     
-                    is_admin = validate_admin(user["userRole"])
+                    is_admin = validate_admin_company_admin(user["userRole"])
                     is_creator = False
-
+                    is_assigner = False
+                   
                     lead = await self.repo.find_by_id(
                         PydanticObjectId(leadId), populate=["createdBy", "assignedTo"]
                     )
@@ -1248,8 +1252,9 @@ class LeadService:
                         raise AppException(400, "Invalid lead object id")
                     
                     
-                    is_admin = validate_admin(user["userRole"])
+                    is_admin = validate_admin_company_admin(user["userRole"])
                     is_creator = False
+                    is_assigner = False
 
                     lead = await self.repo.find_by_id(
                         PydanticObjectId(leadId), populate=["createdBy", "assignedTo"]

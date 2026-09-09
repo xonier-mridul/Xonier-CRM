@@ -63,7 +63,7 @@ const page = (): JSX.Element => {
     }
   };
   return (
-    <div className={`lg:ml-72 mt-14 p-6`}>
+    <div>
       <ResetPassword
         formData={formData}
         handleChange={handleChange}

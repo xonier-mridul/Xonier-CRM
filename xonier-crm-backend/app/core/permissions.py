@@ -750,5 +750,12 @@ PERMISSIONS = [
         "title": "delete task timer",
         "description": "permission for delete task timer",
     },
+    {
+        "code": "company_user:read",
+        "module": "company",
+        "action": "read",
+        "title": "company user read",
+        "description": "permission for read company users",
+    },
 
 ]

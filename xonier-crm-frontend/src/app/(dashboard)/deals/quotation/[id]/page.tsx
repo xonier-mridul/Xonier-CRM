@@ -488,7 +488,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
-    <div className="ml-72 mt-14 p-6 min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="p-6 min-h-screen bg-gray-50 dark:bg-gray-900">
 
       {/* ── Header ── */}
       <div className="mb-6 flex items-start justify-between">
@@ -889,6 +889,11 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
               </div>
             </div>
           </Section>
+
+            <div className="mb-4">
+        <ErrorComponent error={err} />
+        <SuccessComponent message={success} />
+      </div>
 
           {/* ── Action Buttons ── */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 px-6 py-5">

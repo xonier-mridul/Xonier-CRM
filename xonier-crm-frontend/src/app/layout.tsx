@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Sans } from "next/font/google";
+import { Poppins } from "next/font/google";
 import './globals.css'
 import "../i18n/index";
 import { Suspense, ReactNode } from "react";
@@ -19,10 +19,10 @@ import "react-loading-skeleton/dist/skeleton.css";
 import I18nProvider from "../components/providers/I18nProvider";
 import Support from "../components/support/page";
 
-const dmSans = DM_Sans({
+const poppins = Poppins({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
-  variable: "--font-dm-sans",
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-poppins",
   display: "swap",
 });
 
@@ -38,9 +38,9 @@ type RootLayoutProps = {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${dmSans.variable} antialiased bg-stone-100 dark:bg-gray-800   min-h-screen custom-scrollbar `}
+        className={`${poppins.variable} antialiased bg-stone-100 dark:bg-gray-800   min-h-screen custom-scrollbar `}
       >
 
         <Providers>

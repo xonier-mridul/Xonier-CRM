@@ -31,7 +31,7 @@ const Input: React.FC<InputProps> = ({
 
   const commonClasses = `
     w-full px-3 py-2 rounded-md border text-sm
-    bg-white dark:bg-gray-700 text-black dark:text-white
+    bg-white dark:bg-gray-900/30 text-black dark:text-white
     border-gray-300 dark:border-gray-300/30
     disabled:opacity-60 disabled:cursor-not-allowed
      focus:ring-2 

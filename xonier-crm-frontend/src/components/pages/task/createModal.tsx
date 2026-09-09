@@ -30,7 +30,7 @@ function CategoryBadge({
     name: string;
 }) {
     return (
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${color.bg} ${color.text}`}>
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ${color.bg} ${color.text} border border-current/15`}>
             <span>{icon}</span>
             {name}
         </span>
@@ -77,21 +77,21 @@ function CategoryModal({
       <div className="fixed inset-0 z-150 flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                className="absolute inset-0 bg-black/40 dark:bg-white/20 backdrop-blur-sm"
                 onClick={handleClosePopup}
-            />
+            />  
 
             {/* Modal */}
-            <div className="relative z-50 w-full max-w-lg my-auto bg-white dark:bg-gray-800 max-h-[80vh] overflow-y-auto rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700">
+            <div className="relative z-50 w-full max-w-lg my-auto bg-white dark:bg-gray-900/90 max-h-[80vh] overflow-y-auto rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700">
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-900/30 bg-gray-50 dark:bg-gray-900">
                     <div>
                         <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-                            {isEdit ? "Edit Category" : "Create New Category"}
+                            {isEdit ? t("edit_category") : t("create_new_category")}
                         </h2>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            {isEdit ? "Update the category details below" : "Define a new task category"}
+                            {isEdit ? t("update_the_category_details_below") : t("define_a_new_task_category")}
                         </p>
                     </div>
 
@@ -107,8 +107,8 @@ function CategoryModal({
                 <div className="px-6 py-5 space-y-5">
 
                     {/* Preview */}
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700">
-                        <span className="text-sm text-gray-500 dark:text-gray-400">{t("preview")}</span>
+                    <div className="flex items-center gap-3 p-3  rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700">
+                        <span className="text-sm text-gray-500 dark:text-gray-100">{t("preview")}</span>
                         <CategoryBadge
                             color={selectedColor}
                             icon={selectedIcon}
@@ -126,7 +126,7 @@ function CategoryModal({
                     {/* Name */}
                     <div>
                         <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">
-                            {t("category_name_3")}
+                            {t("category_name")}
                         </label>
                         <input
                             type="text"
@@ -142,7 +142,7 @@ function CategoryModal({
                     {/* Description */}
                     <div>
                         <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">
-                            {t("description_2")}
+                            {t("description")}
                         </label>
                         <textarea
                             value={formData.description}
@@ -150,7 +150,7 @@ function CategoryModal({
                                 setFormData((prev) => ({ ...prev, description: e.target.value }))
                             }
                             rows={2}
-                            placeholder={t("description_2")}
+                            placeholder={t("description")}
                             className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-600 text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-700"
                         />
                     </div>
@@ -169,7 +169,7 @@ function CategoryModal({
                         >
                             {Object.values(TASK_VISIBILITY).map((v) => (
                                 <option key={v} value={v}>
-                                    {v.toUpperCase()}
+                                    {t(v)}
                                 </option>
                             ))}
                         </select>
@@ -187,7 +187,7 @@ function CategoryModal({
                                     type="button"
                                     onClick={() => setFormData((prev) => ({ ...prev, icon: ic }))}
                                     className={`w-9 h-9 rounded-lg border ${selectedIcon === ic
-                                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30"
+                                        ? "border-cyan-500 bg-cyan-50 dark:bg-cyan-900/30"
                                         : "border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700"
                                         }`}
                                 >
@@ -222,7 +222,7 @@ function CategoryModal({
                 </div>
 
                 {/* Footer */}
-                <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30">
                     <button
                         onClick={handleClosePopup}
                         className="px-4 py-2 rounded-xl text-sm border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700"
@@ -233,9 +233,9 @@ function CategoryModal({
                     <button
                         disabled={isLoading}
                         onClick={isEdit ? handleUpdate : handleSubmit}
-                        className="px-5 py-2 rounded-xl text-sm text-white bg-blue-600 disabled:opacity-50"
+                        className="px-5 py-2 rounded-xl text-sm text-white bg-cyan-600 disabled:opacity-50"
                     >
-                        {isLoading ? "Loading..." : isEdit ? "Save" : "Create"}
+                        {isLoading ? "Loading..." : isEdit ? t("save") : t("create")}
                     </button>
                 </div>
             </div>

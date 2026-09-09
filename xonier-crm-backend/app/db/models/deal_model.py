@@ -32,6 +32,7 @@ class DealModel(BaseDocument):
     status: DEAL_STATUS = DEAL_STATUS.ACTIVE
     createdBy : Link[UserModel]
     updatedBy: Optional[Link[UserModel]] = None
+    assignedTo: Optional[Link[UserModel]] = None
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updatedAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     deletedAt: Optional[datetime] = None

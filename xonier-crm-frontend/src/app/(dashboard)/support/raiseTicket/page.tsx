@@ -5,7 +5,7 @@ export default function RaiseTicketPage() {
   const isAdmin = true;
 
   return (
-    <div className="min-h-screen ml-72  py-12 px-4 sm:px-6">
+    <div className="min-h-screen  py-12 px-4 sm:px-6">
       <RaiseTicketForm isAdmin={isAdmin} />
     </div>
   );

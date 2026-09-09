@@ -50,6 +50,9 @@ class DealController:
         
 
 
+
+
+
     async def update(self, id:str, request: Request, payload: Dict[str, Any]):
         try:
            user = request.state.user
@@ -65,8 +68,20 @@ class DealController:
         try:
             user = request.state.user
             result = await self.service.delete(id, user)
-            return successResponse(200, f"{result["dealName"]} deleted successfully")
+            return successResponse(200, f"{result['dealName']} deleted successfully")
 
 
+        except AppException as e:
+            raise e
+
+    async def bulk_assign(self, request: Request, payload: dict):
+        try:
+            user = request.state.user
+            result = await self.service.bulk_assign(
+                deal_ids=payload["deal_ids"],
+                assigned_to_id=payload["assigned_to"],
+                user=user,
+            )
+            return successResponse(200, f"Successfully assigned {result['updated_count']} deal(s)", result)
         except AppException as e:
             raise e
