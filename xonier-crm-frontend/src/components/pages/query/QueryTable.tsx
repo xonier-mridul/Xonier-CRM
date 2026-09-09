@@ -99,7 +99,8 @@ const QueryTable :React.FC<QueryTableProps>= ({queryData,
                       </td>
                        <td className="py-4 pr-4">
                         <div className="flex ">
-                            <span className="font-medium text-xs text-slate-500 dark:text-white whitespace-nowrap">{query.industryType}</span>
+                            <span className="font-medium text-xs text-slate-500 dark:text-white whitespace-nowrap">
+                              {query.industryType}</span>
                         </div>
                       </td>
                        <td className="py-4 pr-4">
