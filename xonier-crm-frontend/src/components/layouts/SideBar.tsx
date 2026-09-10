@@ -383,9 +383,9 @@ const isSuperAdmin = auth.user?.userRole?.some(
               <button
                 onClick={() => toggleMenu("plans")}
                 className={`${isMenuActive("plans")
-                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 px-3 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
-                  : "border-l-2 border-transparent px-4"
-                  } flex w-full items-center justify-between  py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
+                  ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200  dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                  : "border-l-2 border-transparent"
+                  } flex w-full items-center justify-between px-2 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
                 <span className="flex items-center gap-2 whitespace-nowrap">
                   <span  className={`${isMenuActive("plans")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
@@ -445,13 +445,13 @@ const isSuperAdmin = auth.user?.userRole?.some(
                 className={`${isMenuActive("company")
                   ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"
-                  } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
+                  } flex w-full items-center justify-between px-2 py-2.5 whitespace-nowrap rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
-                <span className="flex items-center gap-3">
-                  <span  className={`${isMenuActive("company")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                <span className="flex items-center gap-2">
+                  <span  className={`${isMenuActive("company")?'bg-cyan-100  dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
 
 
-                  <BsBuildingGear className="text-lg" /></span>
+                  <BsBuildingGear className="text-lg " /></span>
                   {t("company_management")}
                 </span>
 

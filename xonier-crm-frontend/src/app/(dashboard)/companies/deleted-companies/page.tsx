@@ -83,7 +83,7 @@ getCompaniesData()
     }
 
   return (
-    <div className='mt-10 lg:ml-72 min-h-screen p-6 overflow-scroll'>
+    <div className='mt-10 min-h-screen p-6 overflow-scroll'>
         <DeletedTable
         companyData={companiesData}
         isLoading={isLoading}

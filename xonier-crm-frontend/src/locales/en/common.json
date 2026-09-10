@@ -806,6 +806,10 @@
     "define_a_new_task_category": "Define a new task category",
     "edit_category": "Edit Category",
     "create_new_category": "Create New Category",
+    "otp_sent_successfully": "OTP sent successfully",
+
+
+  "enter_otp": "Enter OTP",
 
   "deselect_all_permissions": "Deselect All Permissions",
   "select_all_permissions": "Select All Permissions",

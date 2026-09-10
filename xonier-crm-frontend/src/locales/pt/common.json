@@ -1923,9 +1923,11 @@
   "trial": "Período de Teste",
   "view_creator_profile": "Ver Perfil do Criador",
   "yearly_rate": "Taxa Anual",
+  "otp_sent_successfully": "OTP enviado com sucesso",
   "acknowledged": "Reconhecido",
    "update_the_category_details_below": "Atualize os detalhes da categoria abaixo",
     "define_a_new_task_category": "Defina uma nova categoria de tarefa",
+    "enter_otp": "Digite o OTP",
 
     "create_new_category": "Criar Nova Categoria",
    "viewer_1": "Visualizador (1)",

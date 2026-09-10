@@ -160,7 +160,7 @@ useEffect(() => {
               placeholder="COMP6-2026........."
             />
             <div className="flex items-center justify-end">
-              <Link href={"/forgot-password"} className="text-gray-500 font-semibold text-sm">
+              <Link href={"/forgot-password"} className="text-gray-500 hover:text-cyan-900 dark:hover:text-cyan-50 font-semibold text-sm">
                 {t("forgot_password")}
               </Link>
             </div>
