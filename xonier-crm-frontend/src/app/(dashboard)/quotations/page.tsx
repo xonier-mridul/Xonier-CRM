@@ -27,6 +27,9 @@ import QuotationFileUploadModal from "@/src/components/common/QuotationFileUploa
 import { useAdvancedFilters } from "@/src/hooks/useAdvanceFilter";
 import AdvancedFilters from "@/src/components/common/AdvanceFilter";
 import Pagination from "@/src/components/common/pagination";
+import { AuthService } from "@/src/services/auth.service";
+import UserSelect from "@/src/components/common/userselect";
+
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; textColor: string }> = {
   [QuotationStatus.DRAFT]: { label: "Draft", color: "bg-slate-100 dark:bg-slate-700/50", textColor: "text-slate-500 dark:text-slate-400" },
@@ -188,28 +191,31 @@ const page = (): JSX.Element => {
 
   const getUserData = async (): Promise<void> => {
     try {
-      // const result = await QuoteService.getAllActiveWithoutPagination();
-      // if (result.status === 200) setUserData(result.data.data);
+      const result = await AuthService.getAllActiveWithoutPagination();
+      if (result.status === 200) setUserData(result.data.data);
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
     }
   };
 
+  // Build filter object from current state — called at fetch time to avoid stale closures
+  const buildFilters = () => ({
+    search: searchVal,
+    ...dateFilter,
+    team: teamFilter || undefined,
+    designation: designationFilter || undefined,
+    source: sourceFilter || undefined,
+    status: statusFilter || undefined,
+    createdBy: salesPersonFilter || undefined,
+  });
+
   const getQuotationData = async () => {
     setIsLoading(true);
     try {
-      const result = await QuoteService.getAll(currentPage, pageLimit, {
-        search: searchVal,
-        ...dateFilter,
-        team: teamFilter || undefined,
-        designation: designationFilter || undefined,
-        source: sourceFilter || undefined, // ✅ added
-        status: statusFilter || undefined,
-      });
+      const result = await QuoteService.getAll(currentPage, pageLimit, buildFilters());
       if (result.status === 200) {
         const data = result.data.data;
         setQuoteData(data.data);
-        console.log(data.data)
         setCurrentPage(data.page);
         setPageLimit(data.limit);
         setTotalPages(data.totalPages);
@@ -230,12 +236,8 @@ const page = (): JSX.Element => {
     setIsLoading(true);
     try {
       const result = await QuoteService.getAll(currentPage, pageLimit, {
+        ...buildFilters(),
         status: QuotationStatus.ACCEPTED,
-        search: searchVal,
-        ...dateFilter,
-        team: teamFilter || undefined,
-        designation: designationFilter || undefined,
-        source: sourceFilter || undefined, // ✅ added
       });
       if (result.status === 200) {
         const data = result.data.data;
@@ -260,12 +262,8 @@ const page = (): JSX.Element => {
     setIsLoading(true);
     try {
       const result = await QuoteService.getAll(currentPage, pageLimit, {
+        ...buildFilters(),
         status: QuotationStatus.REJECTED,
-        search: searchVal,
-        ...dateFilter,
-        team: teamFilter || undefined,
-        designation: designationFilter || undefined,
-        source: sourceFilter || undefined, // ✅ added
       });
       if (result.status === 200) {
         const data = result.data.data;
@@ -334,19 +332,8 @@ const page = (): JSX.Element => {
   };
 
   useEffect(() => {
-    getQuotationData();
-  }, [currentPage, pageLimit]);
-
-  useEffect(() => {
-    getWonQuotationData();
-  }, [wonCurrentPage, wonPageLimit]);
-
-  useEffect(() => {
     getTeamData();
     getDesignationData();
-  }, []);
-
-  useEffect(() => {
     getUserData();
   }, []);
 
@@ -358,17 +345,28 @@ const page = (): JSX.Element => {
     }, 500);
   };
 
-  // ✅ SINGLE effect — refetch whenever any filter changes (search, date, team, designation, source)
+  // ✅ Single comprehensive effect — handles filters + pagination together
+  // Prevents race condition where separate page effect fires unfiltered call after filter call
   useEffect(() => {
     if (currentTab === 1) getQuotationData();
     else if (currentTab === 2) getWonQuotationData();
     else if (currentTab === 3) getLostQuotationData();
-  }, [TosearchVal, dateFilter, teamFilter, designationFilter, sourceFilter]);
+  }, [
+    currentPage, pageLimit,
+    wonCurrentPage, wonPageLimit,
+    TosearchVal, dateFilter,
+    teamFilter, designationFilter, sourceFilter,
+    statusFilter, salesPersonFilter,
+    currentTab,
+  ]);
 
-  // ✅ SINGLE effect — reset everything when switching tabs
+  // ✅ Reset filters on tab switch (does NOT trigger fetch — currentTab in main effect handles it)
   useEffect(() => {
     setToSearchVal("");
     setSearchVal("");
+    setStatusFilter("");
+    setSalesPersonFilter("");
+    setDateFilter({ fromDate: "", toDate: "" });
     resetAdvancedFilters();
   }, [currentTab]);
 
@@ -376,10 +374,11 @@ const page = (): JSX.Element => {
   const baseQuoteData =
     currentTab === 1 ? quoteData : currentTab === 2 ? wonQuoteData : lostQuoteData;
 
-  // Client-side filter: Sales Person filter compares against quote's createdBy user
+  // Client-side filter: salesPersonFilter is a user ID from UserSelect
   const currentQuoteData = !salesPersonFilter
     ? baseQuoteData
     : baseQuoteData.filter((item: any) => item.createdBy?.id === salesPersonFilter);
+
 
   const handleUploadSuccess = () => {
     router.refresh();
@@ -484,17 +483,16 @@ const page = (): JSX.Element => {
             </div>
           )}
 
-          {/* Contact Owner */}
+          {/* Created By */}
           <div className="flex flex-col gap-1">
             <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider">
               <FiUser className="text-amber-500" /> Created By
             </label>
-            <input
-              type="text"
+            <UserSelect
+              mode="single"
               value={salesPersonFilter}
-              onChange={(e) => setSalesPersonFilter(e.target.value)}
-              placeholder="Search by owner..."
-              className="bg-slate-50 dark:bg-gray-600 px-3 py-2 rounded-lg border border-slate-200 dark:border-gray-500 text-[13px] text-slate-600 dark:text-white/80 outline-none focus:ring-2 focus:ring-cyan-500/30 transition-all min-w-[180px] placeholder:text-slate-400"
+              onChange={setSalesPersonFilter}
+              placeholder="All users"
             />
           </div>
 

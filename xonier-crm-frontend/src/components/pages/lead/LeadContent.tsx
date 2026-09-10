@@ -602,7 +602,7 @@ const isIndeterminate =
     setFilters((prev) => ({ ...prev, createdBy: value }));
   };
 
-  const handleSourceFilter = (value:"all" | "company" | "referral"): void => {
+  const handleSourceFilter = (value: "" | "all" | "company" | "referral"): void => {
     setSourceFilter(value);
     setFilters((prev) => ({ ...prev, source: value }));
   };
@@ -1040,7 +1040,33 @@ const isIndeterminate =
                   <MdOutlineEdit size={16} />
                 </span>
               )}
+              {item.status !== SALES_STATUS.LOST && hasPermission(PERMISSIONS.createDeal) ? (
+                item.status !== SALES_STATUS.DELETE ? (
+                  item.inDeal === false ? (
+                    <Link
+                      href={`/leads/make-deal/${item.id}`}
+                      className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-colors"
+                      title="Create Deal"
+                    >
+                      <FaRegHandshake size={15} />
+                    </Link>
+                  ) : (
+                    <span title={t("already_on_deal")} className="h-8 w-8 flex items-center justify-center rounded-lg text-cyan-400">
+                      <FaHandshake size={15} />
+                    </span>
+                  )
+                ) : (
+                  <span className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-300 cursor-not-allowed">
+                    <FaHandshake size={15} />
+                  </span>
+                )
+              ) : (
+                <span className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-300 cursor-not-allowed">
+                  <FaHandshake size={15} />
+                </span>
+              )}
             </div>
+
           </td>
         </tr>
       );

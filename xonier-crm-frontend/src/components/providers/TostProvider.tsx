@@ -60,21 +60,20 @@ const CustomIcon = ({ type }: { type: TypeOptions }) => {
 
 const ToastProvider = () => {
   return (
-    <ToastContainer
-      position="top-center"
-      autoClose={4000}
-      hideProgressBar={true}
-      newestOnTop
-      closeOnClick
-      pauseOnHover
-      draggable={false}
-      theme="light"
-      toastClassName="xonier-toast"
-      bodyClassName="xonier-toast-body"
-      closeButton={false}
-      icon={({ type }) => <CustomIcon type={type} />}
-      limit={4}
-    />
+   <ToastContainer
+  position="top-center"
+  autoClose={4000}
+  hideProgressBar={true}
+  newestOnTop
+  closeOnClick
+  pauseOnHover
+  draggable={false}
+  theme="light"
+  toastClassName="xonier-toast"
+  closeButton={false}
+  icon={({ type }) => <CustomIcon type={type} />}
+  limit={4}
+/>
   );
 };
 

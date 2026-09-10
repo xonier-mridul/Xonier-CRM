@@ -35,8 +35,7 @@ const page = (): JSX.Element => {
   const [companyData, setCompanyData] = useState<Company[]>([]);
   const [companyPage, setCompanyPage] = useState<number>(1);
   const [companyHasMore, setCompanyHasMore] = useState<boolean>(true);
-
-  const [formData, setFormData] = useState<RegisterPayload>({
+   const initialFormState: RegisterPayload = {
     firstName: "",
     lastName: "",
     email: "",
@@ -45,7 +44,11 @@ const page = (): JSX.Element => {
     confirmPassword: "",
     userRole: [],
     companyId: "",
-  });
+  };
+  
+  const [formData, setFormData] = useState<RegisterPayload>(initialFormState);
+
+
 
   // useParams can return string | string[] — normalize it
   const params = useParams<{ id: string }>();
@@ -286,6 +289,7 @@ const page = (): JSX.Element => {
         onCompanyScrollEnd={handleCompanyScrollEnd}
         selectedCompanyId={selectedCompanyId}
         checks={checks}
+        emptyForm={initialFormState}
       />
     </div>
   );

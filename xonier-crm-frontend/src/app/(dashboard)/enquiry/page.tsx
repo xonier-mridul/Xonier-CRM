@@ -151,8 +151,9 @@ const page = (): JSX.Element => {
       .filter((i) => !salesPersonFilter || i.createdBy?.id === salesPersonFilter)
       .filter((i) => !statusFilter || i.status === statusFilter)
       .filter((i) => !projectTypeFilter || i.projectType === projectTypeFilter)
-      .filter((i) => !assigneeFilter || i.assignTo?.id === assigneeFilter);
-  }, [enquiryData, salesPersonFilter, statusFilter, projectTypeFilter, assigneeFilter]);
+      .filter((i) => !assigneeFilter || i.assignTo?.id === assigneeFilter)
+      .filter((i) => !sourceFilter || i.source === sourceFilter);
+  }, [enquiryData, salesPersonFilter, statusFilter, projectTypeFilter, assigneeFilter, sourceFilter]);
 
   // KPIs
   const allEnquiries = Array.isArray(enquiryData) ? enquiryData : [];
@@ -310,10 +311,16 @@ const page = (): JSX.Element => {
             {/* Source */}
             <div className="flex flex-col gap-1">
               <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider"><FiTarget className="text-rose-400" /> Source</label>
-              <select value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value)} className="bg-slate-50 dark:bg-gray-600 px-3 py-2 rounded-lg border border-slate-200 dark:border-gray-500 text-[13px] text-slate-600 dark:text-white/80 outline-none focus:ring-2 focus:ring-cyan-500/30 cursor-pointer min-w-[150px]">
-                <option value="">All Sources</option>
-                {Object.values(SOURCE).map((t) => <option key={t} value={t}>{t.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}</option>)}
-              </select>
+              <select
+  value={sourceFilter}
+  onChange={(e) => setSourceFilter(e.target.value as typeof sourceFilter)}
+  className="bg-slate-50 dark:bg-gray-600 px-3 py-2 rounded-lg border border-slate-200 dark:border-gray-500 text-[13px] text-slate-600 dark:text-white/80 outline-none focus:ring-2 focus:ring-cyan-500/30 cursor-pointer min-w-[150px]"
+>
+  <option value="">All Sources</option>
+  {Object.values(SOURCE).map((t) => (
+    <option key={t} value={t}>{t.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}</option>
+  ))}
+</select>
             </div>
 
             {/* Date Range */}

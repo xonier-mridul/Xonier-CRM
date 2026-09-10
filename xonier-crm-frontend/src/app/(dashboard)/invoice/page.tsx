@@ -49,7 +49,7 @@ const page = (): JSX.Element => {
   const getInvoiceData = async () => {
     setIsLoading(true)
     try {
-      const result = await InvoiceService.getAll(currentPage, pageLimit, { fullName: searchVal, ...dateFilter, status: statusFilter || undefined })
+      const result = await InvoiceService.getAll(currentPage, pageLimit, { search: searchVal, ...dateFilter, status: statusFilter || undefined })
       if (result.status === 200) {
         const data = result.data.data
         setInvoiceData(data.data)
@@ -74,6 +74,12 @@ const page = (): JSX.Element => {
   useEffect(() => {
     getInvoiceData()
   }, [currentPage, pageLimit, searchVal, dateFilter, statusFilter]);
+
+  // Reset to page 1 when any filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchVal, dateFilter, statusFilter, pageLimit]);
+
   const handleSearch = (val: string) => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
@@ -128,8 +134,8 @@ const page = (): JSX.Element => {
                 className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 outline-none text-slate-500 rounded-lg border-[1px] border-slate-900/10 dark:text-white/70 capitalize"
               >
                 <option value="">All Statuses</option>
-                {["DRAFT", "ISSUED", "SENT", "PAID", "PARTIALLY_PAID", "OVERDUE", "CANCELLED"].map(s => (
-                  <option key={s} value={s}>{s.toLowerCase().replace("_", " ")}</option>
+                {["draft", "issued", "paid", "partially_paid", "overdue", "cancelled"].map(s => (
+                  <option key={s} value={s}>{s.replace("_", " ")}</option>
                 ))}
               </select>
               <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
@@ -206,31 +212,28 @@ const page = (): JSX.Element => {
                       <td className="p-4"> <span className="text-[13px] font-semibold text-slate-700 dark:text-slate-200"> {amount} </span> </td>
                       <td className="p-4">
                         <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[13px] font-medium border ${item.status.toUpperCase() === 'DRAFT'
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[13px] font-medium border ${item.status.toLowerCase() === 'draft'
                             ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-600'
-                            : item.status.toUpperCase() === 'ISSUED'
+                            : item.status.toLowerCase() === 'issued'
                               ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800'
-                              : item.status.toUpperCase() === 'SENT'
-                              ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400 border-cyan-200 dark:border-cyan-800'
-                              : item.status.toUpperCase() === 'PAID'
+                              : item.status.toLowerCase() === 'paid'
                                 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800'
-                                : item.status.toUpperCase() === 'PARTIALLY_PAID'
+                                : item.status.toLowerCase() === 'partially_paid'
                                   ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800'
-                                  : item.status.toUpperCase() === 'OVERDUE'
+                                  : item.status.toLowerCase() === 'overdue'
                                     ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800'
-                                    : item.status.toUpperCase() === 'CANCELLED'
+                                    : item.status.toLowerCase() === 'cancelled'
                                       ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800'
                                       : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-600'
                             }`}
                         >
-                          {item.status.toUpperCase() === 'DRAFT' && <IoDocumentText className="w-3.5 h-3.5" />}
-                          {item.status.toUpperCase() === 'ISSUED' && <IoSendOutline className="w-3.5 h-3.5" />}
-                          {item.status.toUpperCase() === 'SENT' && <IoSendOutline className="w-3.5 h-3.5" />}
-                          {item.status.toUpperCase() === 'PAID' && <IoCheckmarkCircle className="w-3.5 h-3.5" />}
-                          {item.status.toUpperCase() === 'PARTIALLY_PAID' && <IoCardOutline className="w-3.5 h-3.5" />}
-                          {item.status.toUpperCase() === 'OVERDUE' && <IoAlertCircleOutline className="w-3.5 h-3.5" />}
-                          {item.status.toUpperCase() === 'CANCELLED' && <IoCloseCircle className="w-3.5 h-3.5" />}
-                          {!['DRAFT', 'ISSUED', 'SENT', 'PAID', 'PARTIALLY_PAID', 'OVERDUE', 'CANCELLED'].includes(item.status.toUpperCase()) && (
+                          {item.status.toLowerCase() === 'draft' && <IoDocumentText className="w-3.5 h-3.5" />}
+                          {item.status.toLowerCase() === 'issued' && <IoSendOutline className="w-3.5 h-3.5" />}
+                          {item.status.toLowerCase() === 'paid' && <IoCheckmarkCircle className="w-3.5 h-3.5" />}
+                          {item.status.toLowerCase() === 'partially_paid' && <IoCardOutline className="w-3.5 h-3.5" />}
+                          {item.status.toLowerCase() === 'overdue' && <IoAlertCircleOutline className="w-3.5 h-3.5" />}
+                          {item.status.toLowerCase() === 'cancelled' && <IoCloseCircle className="w-3.5 h-3.5" />}
+                          {!['draft', 'issued', 'paid', 'partially_paid', 'overdue', 'cancelled'].includes(item.status.toLowerCase()) && (
                             <IoDocumentText className="w-3.5 h-3.5" />
                           )}
                           <span className="capitalize">
