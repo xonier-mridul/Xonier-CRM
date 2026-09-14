@@ -30,6 +30,7 @@ const page = (): JSX.Element => {
   const [passErr, setPassErr] = useState<string | string[]>("");
   const [userData, setUserData] = useState<User | null>(null);
   const [roleData, setRoleData] = useState<UserRole[]>([]);
+  const [isRoleLoading, setIsRoleLoading] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isPassLoading, setIsPassLoading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -106,6 +107,7 @@ const page = (): JSX.Element => {
   }, [companyHasMore, companyLoading, companyPage, getCompanyData]);
 
   const getRoleData = async () => {
+    setIsRoleLoading(true)
     try {
       const result = await RoleService.getRolesWithoutPagination();
       if (result.status === 200) setRoleData(result.data.data);
@@ -113,6 +115,8 @@ const page = (): JSX.Element => {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       // if (axios.isAxiosError(error)) setErr(extractErrorMessages(error));
       // else setErr(["Something went wrong"]);
+    }finally{
+      setIsRoleLoading(false)
     }
   };
 
@@ -311,6 +315,7 @@ const page = (): JSX.Element => {
       <UserUpdate
         formData={formData}
         isLoading={isLoading}
+        isRoleLoading={isRoleLoading}
         handleChange={handleChange}
         handleUserRoleChange={handleUserRoleChange}
         handleRemoveRole={handleRemoveRole}

@@ -357,6 +357,7 @@ const isPasswordValid = checks.every((check) => check.valid);
                 label={t("first_name")}
                 type="text"
                 name="firstName"
+                required 
                 placeholder={t("first_name")}
                 value={formData.firstName}
                 onChange={handleChange}
@@ -365,6 +366,7 @@ const isPasswordValid = checks.every((check) => check.valid);
                 label={t("last_name")}
                 type="text"
                 name="lastName"
+                required 
                 placeholder={t("last_name")}
                 value={formData.lastName}
                 onChange={handleChange}
@@ -373,6 +375,7 @@ const isPasswordValid = checks.every((check) => check.valid);
                 label={t("email_2")}
                 type="email"
                 name="email"
+                required 
                 placeholder={t("email_address")}
                 value={formData.email}
                 onChange={handleChange}
@@ -447,8 +450,11 @@ const isPasswordValid = checks.every((check) => check.valid);
                 )} */}
               </div>
               <div className="col-span-2 flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                <label className="text-sm font-medium 
+ text-gray-700 dark:text-gray-200 capitalize flex gap-2">
                   {t("phone")}
+  
+    <span className="text-red-500 text-xl">*</span>
                 </label>
 
                 <div className="flex gap-2">
@@ -467,7 +473,7 @@ const isPasswordValid = checks.every((check) => check.valid);
 
                   {/* Phone Input */}
                   <input
-                    type="text"
+                    type="number"
                     name="phone"
                     placeholder={t("phone_number")}
                     value={`${phoneNumber}`}
@@ -480,6 +486,7 @@ const isPasswordValid = checks.every((check) => check.valid);
                 label={t("password")}
                 type="password"
                 name="password"
+                required
                 placeholder={t("password_2")}
                 value={formData.password}
                 onChange={handleChange}
@@ -487,6 +494,7 @@ const isPasswordValid = checks.every((check) => check.valid);
               <Input
                 label={t("confirm_password_2")}
                 type="password"
+                required
                 name="confirmPassword"
                 placeholder={t("confirm_password")}
                 value={formData.confirmPassword}
@@ -514,8 +522,12 @@ const isPasswordValid = checks.every((check) => check.valid);
            
               {isAdmin && (
                 <div className="col-span-2 flex flex-col gap-1">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                    {t("company")}
+                  <label className="text-sm font-medium 
+ text-gray-700 dark:text-gray-200 capitalize flex gap-2">
+                 {t("company")}
+  
+    <span className="text-red-500 text-xl">*</span>
+                  
                   </label>
                   <CompanySelect
                     companyData={companyData}

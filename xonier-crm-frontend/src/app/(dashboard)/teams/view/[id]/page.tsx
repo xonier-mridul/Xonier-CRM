@@ -162,6 +162,7 @@ const Page = (): JSX.Element => {
     )
   }
 
+
   return (
     <div>
       
@@ -405,7 +406,7 @@ const Page = (): JSX.Element => {
                         {member.isActive ? 'Active' : 'Inactive'}
                       </span>
                       <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                        <IoEllipsisVertical className="w-5 h-5 text-gray-400" />
+                        {/* <IoEllipsisVertical className="w-5 h-5 text-gray-400" /> */}
                       </button>
                     </div>
                   </div>

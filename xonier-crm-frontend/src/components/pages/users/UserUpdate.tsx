@@ -18,6 +18,7 @@ interface ExtendedUserUpdatePageProps extends UserUpdatePageProps {
   onCompanyScrollEnd: () => void;
   companyHasMore: boolean;
   isAdmin: boolean;
+  isRoleLoading:boolean;
   isCompanyAdmin:boolean | undefined;
   formData: any;
   handleChange: any;
@@ -26,6 +27,7 @@ interface ExtendedUserUpdatePageProps extends UserUpdatePageProps {
 
 const  UserUpdate = ({
   isCompanyAdmin,
+  isRoleLoading,
   formData,
   isLoading,
   handleChange,
@@ -183,8 +185,8 @@ const  UserUpdate = ({
                 </div>
               )}
 
-              {(isAdmin || isCompanyAdmin )&&
-                (!isLoading ? (
+             {(isAdmin || isCompanyAdmin )&&
+                (!isRoleLoading ? (
                   <div className="flex flex-col gap-1 w-full">
                     <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
                       {t("user_role")}
@@ -233,11 +235,24 @@ const  UserUpdate = ({
                   </div>
                 ) : (
                   <div className="flex flex-col gap-1">
-                    <Skeleton height={14} width={80} />
-                    <Skeleton height={34} width={500} />
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                    {t("user_role")}
+                  </label>
+
+                  <div className="px-3 py-2 border border-slate-200 rounded-md flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      Loading...
+                    </span>
+                    
                   </div>
+                </div>
+
                 ))}
 
+
+              
+              
               {isAdmin && (!isLoading ? (
                 <div className="flex flex-col gap-1 w-full" ref={companyDropdownRef}>
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-200 capitalize">

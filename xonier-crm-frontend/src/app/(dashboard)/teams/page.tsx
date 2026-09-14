@@ -32,6 +32,7 @@ import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import Skeleton from "react-loading-skeleton";
 import { useTranslation } from "react-i18next";
 import Pagination from "@/src/components/common/pagination";
+import { PiMemberOf } from "react-icons/pi";
 
 
 const page = (): JSX.Element => {
@@ -346,6 +347,9 @@ getCategoryData();
       setIsLoading(false);
     }
   };
+
+
+  console.log("teamData",teamData)
   return (
     <>
       {isPopupShow && (
@@ -772,236 +776,243 @@ getCategoryData();
           </div>
           {err && <ErrorComponent error={err} />}
           {showSuccess && <SuccessComponent message={showSuccess} />}
-          <table className="w-full rounded-xl overflow-hidden">
-            <thead>
-              <tr className="w-full  border-b-2 border-zinc-300 dark:border-zinc-400  bg-slate-200 dark:bg-gray-800">
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold tracking-wide">
-                  {t("manager")}
-                </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300 font-semibold tracking-wide">
-                  {" "}
-                  {t("team")}
-                </th>
-                <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold tracking-wide">
-                  {t("members")}
-                </th>
-                {/* <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300 font-semibold tracking-wide">
-                  Created By
-                </th> */}
-                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300 font-semibold tracking-wide">
-                  {t("status")}
-                </th>
+        <table className="w-full rounded-xl overflow-hidden">
+  <thead>
+    <tr className="w-full border-b-2 border-zinc-300 dark:border-zinc-400 bg-slate-200 dark:bg-gray-800">
+      <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold tracking-wide">
+        {t("s_no")}
+      </th>
 
-                <th className="p-4 uppercase text-xs text-start text-slate-500  dark:text-slate-300 font-semibold tracking-wide">
-                  {t("actions")}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="">
-              {!isLoading ? (
-                teamData && teamData?.length > 0 ? (
-                  teamData?.map((item, index) => {
-                    const rr = index % 2 == 0;
+      <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold tracking-wide">
+        {t("team")}
+      </th>
 
-                
-                    return (
-                      <tr key={index}
-                        className={`${
-                          rr
-                            ? "bg-white dark:bg-slate-900/70" : "bg-slate-100/50 dark:bg-slate-800"
-                        } w-full`}
-                      >
-                       <td
-                            data-manager-cell
-                          className={`p-4 flex gap-1 max-w-60 flex-wrap relative cursor-pointer`}
-                          onClick={() =>
-                            setExpandedManager((prev) =>
-                              prev === item.id ? null : item.id
-                            )
-                          }
-                        >
-                          {(expandedManager === item.id
-                            ? item?.manager
-                            : item?.manager?.slice(0, 3)
-                          )?.map((manager, index) => (
-                            <Link
-                              href={`/users/${manager.id}`}
-                              key={manager.id ?? index}
-                              onClick={(e) => e.stopPropagation()}
-                              className="bg-cyan-500 hover:bg-cyan-600 hover:scale-105
-                                        dark:bg-cyan-500 text-white border border-cyan-200
-                                        text-[13px] px-2 py-1.5 rounded-full text-nowrap
-                                        capitalize z-30"
-                            >
-                              {manager.firstName} {manager.lastName}
-                            </Link>
-                          ))}
+      <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold tracking-wide">
+        {t("manager")}
+      </th>
 
-                          {item?.manager?.length > 3 && expandedManager !== item.id && (
-                            <>
-                            <span className="flex items-end  text-slate-400">...</span>
-                            <span className="  text-slate-400
-                                            dark:text-gray-200 text-[13px] flex items-end  
-                                            ">
-                              +{item.manager.length - 3} more
-                            </span>
-                            </>
-                          )}
-                        </td>
+      <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold tracking-wide">
+        {t("members")}
+      </th>
 
+      <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold tracking-wide">
+        {t("status")}
+      </th>
 
-                        <td className="p-4">
-                          <div className="flex gap-2 flex-wrap text-slate-400">
-                            {item.name}
-                          </div>
-                        </td>
+      <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-300 font-semibold tracking-wide">
+        {t("actions")}
+      </th>
+    </tr>
+  </thead>
 
-                      <td
-                          data-member-cell
-                          onClick={() => {
-                            setExpandedMember((prev) =>
-                              prev === item.id ? null : item.id
-                            );
-                          }}
-                          className="p-4 flex gap-1 max-w-60 flex-wrap relative cursor-pointer"
-                        >
-                          {(expandedMember === item.id
-                            ? item?.members
-                            : item?.members?.slice(0, 3)
-                          )?.map((member, index) => (
-                            <Link
-                              href={`/users/${member.id}`}
-                              key={member.id ?? index}
-                              onClick={(e) => e.stopPropagation()}
-                              className="bg-cyan-500 hover:bg-cyan-600
-                                        hover:scale-105 dark:bg-cyan-500
-                                        text-white border border-cyan-200
-                                        text-[13px] px-2 py-1.5 rounded-full
-                                        text-nowrap capitalize"
-                            >
-                              {member.firstName} {member.lastName}
-                            </Link>
-                          ))}
+  <tbody>
+    {!isLoading ? (
+      teamData && teamData?.length > 0 ? (
+        teamData?.map((item, index) => {
+          const rr = index % 2 == 0;
 
-                          {item?.members?.length > 3 &&
-                            expandedMember !== item.id && (
-                              <>
-                                 <span className="flex items-end text-slate-400">...</span>
-                            <span className="  
-                                            dark:text-gray-200 text-[13px]  text-slate-400 flex items-end  
-                                            ">
-                                  +{item.members.length - 3} more
-                                </span>
-                              </>
-                            )}
-                        </td>
-                        {/* <td className="p-4">
-                          {" "}
-                          <span className="bg-cyan-500 text-white px-3 py-1 rounded-full text-[14px]">
-                            {" "}
-                            {item.createdBy.firstName}{" "}
-                            {item.createdBy.lastName}{" "}
-                          </span>
-                        </td> */}
-                        <td className="p-4">
-                          <span
-                            className={`${
-                              item.isActive === true
-                                ? "bg-green-100  text-green-600"
-                                : "bg-orange-100 text-orange-500"
-                            }  rounded-full text-sm font-medium py-1 px-3 flex items-center gap-1 w-fit  capitalize`}
-                          >
-                            {" "}
-                            <GoDotFill />{" "}
-                            {item.isActive ? "Active" : "Inactive"}
-                          </span>
-                        </td>
+          return (
+           <tr
+  key={index}
+  className={`${
+    rr ? "bg-white dark:bg-slate-900/70" : "bg-slate-100/50 dark:bg-slate-800"
+  } w-full`}
+>
+  {/* S.NO */}
+  <td className="p-4">{index + 1}</td>
 
-                        <td className="p-4">
-                          <div className="flex items-center gap-2">
-                            <Link
-                              href={`/teams/view/${item.id}`}
-                              className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-green-100/80 dark:bg-green-50 hover:bg-green-200/70 dark:hover:bg-green-100 text-green-500 hover:scale-104"
-                            >
-                              <FaRegEye className="text-xl" />
-                            </Link>
-                            <Link
-                              href={`/teams/update/${item.id}`}
-                              className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-yellow-200/80 dark:bg-yellow-100 hover:bg-yellow-300/70 dark:hover:bg-yellow-200 text-yellow-500 hover:scale-104"
-                            >
-                              <MdOutlineEdit className="text-xl" />
-                            </Link>
-                            {
-                              <button
-                                onClick={() => handleDelete(item.id, item.name)}
-                                disabled={
-                                  !hasPermission(PERMISSIONS.deleteTeam)
-                                }
-                                className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-red-100 text-red-500 hover:bg-red-200 hover:scale-104 disabled:hover:scale-100 disabled:cursor-not-allowed disabled:text-red-400"
-                              >
-                                {" "}
-                                <MdDeleteOutline className="text-xl" />{" "}
-                              </button>
-                            }
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr className=" text-center ">
-                    <td colSpan={7} className="p-4">
-                      {t("user_data_not_found")}
-                    </td>
-                  </tr>
-                )
-              ) : (
-                Array.from({length: 8}).map((_, i)=>(
-                  <tr key={i} className="animate-pulse">
-                  <td className="p-4">
-                    <Skeleton height={30} width={50} className="w-full " />
-                  </td>
-                  <td className="p-4">
-                    <Skeleton height={30} width={150} className="w-full " />
-                  </td>
-                  <td className="p-4">
-                    <div className="flex gap-2">
-                      <Skeleton
-                        height={30}
-                        width={100}
-                        borderRadius={999}
-                        className="w-full "
-                      />
-                      <Skeleton
-                        height={30}
-                        width={100}
-                        borderRadius={999}
-                        className="w-full "
-                      />
-                    </div>
-                  </td>
-                  
-                  <td className="p-4">
-                    <Skeleton
-                      height={30}
-                      width={100}
-                      borderRadius={999}
-                      className="w-full "
-                    />
-                  </td>
-                  <td className="p-4">
-                    <div className="flex gap-2">
-                      <Skeleton height={32} width={32} className="w-full " />
-                      <Skeleton height={32} width={32} className="w-full " />
-                      <Skeleton height={32} width={32} className="w-full " />
-                    </div>
-                  </td>
-                </tr>
+  {/* TEAM NAME */}
+  <td className="p-4">
+    <div className="flex gap-2 flex-wrap text-slate-400">
+      {item.name}
+    </div>
+  </td>
 
-                ))
-              )}
-            </tbody>
-          </table>
+  {/* MANAGER */}
+  <td
+    data-manager-cell
+    className="p-4 max-w-60 relative cursor-pointer align-top"
+    onClick={() => {
+      const validManagers = item?.manager?.filter((m) => m.firstName) || [];
+      if (validManagers.length > 0) {
+        setExpandedManager((prev) => (prev === item.id ? null : item.id));
+      }
+    }}
+  >
+    <div className="flex gap-1 flex-wrap">
+      {(() => {
+        const validManagers = item?.manager?.filter((m) => m.firstName) || [];
+
+        if (validManagers.length === 0) {
+          return <span className="text-slate-400 text-sm">-</span>;
+        }
+
+        const visibleManagers =
+          expandedManager === item.id ? validManagers : validManagers.slice(0, 3);
+
+        return (
+          <>
+            {visibleManagers.map((manager, i) => (
+              <Link
+                href={`/users/${manager.id}`}
+                key={manager.id ?? i}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-cyan-500 hover:bg-cyan-600 hover:scale-105
+                          dark:bg-cyan-500 text-white border border-cyan-200
+                          text-[13px] px-2 py-1.5 rounded-full text-nowrap
+                          capitalize z-30"
+              >
+                {manager.firstName} {manager.lastName}
+              </Link>
+            ))}
+
+            {validManagers.length > 3 && expandedManager !== item.id && (
+              <>
+                <span className="flex items-end text-slate-400">...</span>
+                <span className="text-slate-400 dark:text-gray-200 text-[13px] flex items-end">
+                  +{validManagers.length - 3} more
+                </span>
+              </>
+            )}
+          </>
+        );
+      })()}
+    </div>
+  </td>
+
+  {/* MEMBERS */}
+  <td
+    data-member-cell
+    className="p-4 max-w-60 relative cursor-pointer align-top"
+    onClick={() => {
+      const validMembers = item?.members?.filter((m) => m.firstName) || [];
+      if (validMembers.length > 0) {
+        setExpandedMember((prev) => (prev === item.id ? null : item.id));
+      }
+    }}
+  >
+    <div className="flex gap-1 flex-wrap">
+      {(() => {
+        const validMembers = item?.members?.filter((m) => m.firstName) || [];
+
+        if (validMembers.length === 0) {
+          return <span className="text-slate-400 text-sm">-</span>;
+        }
+
+        const visibleMembers =
+          expandedMember === item.id ? validMembers : validMembers.slice(0, 3);
+
+        return (
+          <>
+            {visibleMembers.map((member, i) => (
+              <Link
+                href={`/users/${member.id}`}
+                key={member.id ?? i}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-cyan-500 hover:bg-cyan-600
+                          hover:scale-105 dark:bg-cyan-500
+                          text-white border border-cyan-200
+                          text-[13px] px-2 py-1.5 rounded-full
+                          text-nowrap capitalize"
+              >
+                {member.firstName} {member.lastName}
+              </Link>
+            ))}
+
+            {validMembers.length > 3 && expandedMember !== item.id && (
+              <>
+                <span className="flex items-end text-slate-400">...</span>
+                <span className="dark:text-gray-200 text-[13px] text-slate-400 flex items-end">
+                  +{validMembers.length - 3} more
+                </span>
+              </>
+            )}
+          </>
+        );
+      })()}
+    </div>
+  </td>
+
+  {/* STATUS */}
+  <td className="p-4">
+    <span
+      className={`${
+        item.isActive === true
+          ? "bg-green-100 text-green-600"
+          : "bg-orange-100 text-orange-500"
+      } rounded-full text-sm font-medium py-1 px-3 flex items-center gap-1 w-fit capitalize`}
+    >
+      <GoDotFill /> {item.isActive ? "Active" : "Inactive"}
+    </span>
+  </td>
+
+  {/* ACTIONS */}
+  <td className="p-4">
+    <div className="flex items-center gap-2">
+      <Link
+        href={`/teams/view/${item.id}`}
+        className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-green-100/80 dark:bg-green-50 hover:bg-green-200/70 dark:hover:bg-green-100 text-green-500 hover:scale-104"
+      >
+        <FaRegEye className="text-xl" />
+      </Link>
+      <Link
+        href={`/teams/update/${item.id}`}
+        className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-yellow-200/80 dark:bg-yellow-100 hover:bg-yellow-300/70 dark:hover:bg-yellow-200 text-yellow-500 hover:scale-104"
+      >
+        <MdOutlineEdit className="text-xl" />
+      </Link>
+      <button
+        onClick={() => handleDelete(item.id, item.name)}
+        disabled={!hasPermission(PERMISSIONS.deleteTeam)}
+        className="h-9 w-9 flex items-center justify-center rounded-md cursor-pointer bg-red-100 text-red-500 hover:bg-red-200 hover:scale-104 disabled:hover:scale-100 disabled:cursor-not-allowed disabled:text-red-400"
+      >
+        <MdDeleteOutline className="text-xl" />
+      </button>
+    </div>
+  </td>
+</tr>
+          );
+        })
+      ) : (
+        <tr className="text-center">
+          <td colSpan={6} className="p-4">
+            {t("user_data_not_found")}
+          </td>
+        </tr>
+      )
+    ) : (
+      Array.from({ length: 8 }).map((_, i) => (
+        <tr key={i} className="animate-pulse">
+          <td className="p-4">
+            <Skeleton height={30} width={50} className="w-full" />
+          </td>
+          <td className="p-4">
+            <Skeleton height={30} width={150} className="w-full" />
+          </td>
+          <td className="p-4">
+            <div className="flex gap-2">
+              <Skeleton height={30} width={100} borderRadius={999} className="w-full" />
+              <Skeleton height={30} width={100} borderRadius={999} className="w-full" />
+            </div>
+          </td>
+          <td className="p-4">
+            <Skeleton height={30} width={100} borderRadius={999} className="w-full" />
+          </td>
+          <td className="p-4">
+            <Skeleton height={30} width={100} borderRadius={999} className="w-full" />
+          </td>
+          <td className="p-4">
+            <div className="flex gap-2">
+              <Skeleton height={32} width={32} className="w-full" />
+              <Skeleton height={32} width={32} className="w-full" />
+              <Skeleton height={32} width={32} className="w-full" />
+            </div>
+          </td>
+        </tr>
+      ))
+    )}
+  </tbody>
+</table>
           <div className="px-6 pb-6">
                 <Pagination
                   currentPage={currentPage}
