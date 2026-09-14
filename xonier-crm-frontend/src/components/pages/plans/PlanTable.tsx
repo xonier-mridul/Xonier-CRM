@@ -33,7 +33,27 @@ const currencySymbol: Record<string, string> = {
   [CURRENCY.USD]: "$",
   [CURRENCY.EUR]: "€",
   [CURRENCY.GBP]: "£",
+  [CURRENCY.INR]: "₹",
+  [CURRENCY.AUD]: "$",
+  [CURRENCY.CAD]: "$",
+  [CURRENCY.CHF]: "CHF",
+  [CURRENCY.CNY]: "¥",
+  [CURRENCY.JPY]: "¥",
+  [CURRENCY.SGD]: "$",
+  [CURRENCY.HKD]: "$",
+  [CURRENCY.NZD]: "$",
+  [CURRENCY.SEK]: "kr",
+  [CURRENCY.NOK]: "kr",
+  [CURRENCY.DKK]: "kr",
+  [CURRENCY.ZAR]: "R",
+  [CURRENCY.AED]: "د.إ",
+  [CURRENCY.SAR]: "﷼",
+  [CURRENCY.BRL]: "R$",
+  [CURRENCY.MXN]: "$",
+  [CURRENCY.RUB]: "₽",
+  [CURRENCY.KRW]: "₩",
 };
+
 
 const PlanTable: React.FC<ExtendedPlanTableProps> = ({
   planData,
@@ -125,10 +145,10 @@ const PlanTable: React.FC<ExtendedPlanTableProps> = ({
                       <td className="py-4 pr-4">
                         <div className="flex flex-col gap-0.5">
                           <span className="text-xs text-gray-500 dark:text-gray-400">
-                            <span className="font-medium text-slate-700 dark:text-white">{sym}{plan.price.monthlyPrice}</span>/mo
+                            <span className="font-medium text-slate-700 dark:text-white">{sym}{" "}{plan.price.monthlyPrice}</span>/mo
                           </span>
                           <span className="text-xs text-gray-500 dark:text-gray-400">
-                            <span className="font-medium text-slate-700 dark:text-white">{sym}{plan.price.yearlyPrice}</span>/yr
+                            <span className="font-medium text-slate-700 dark:text-white">{sym}{" "}{plan.price.yearlyPrice}</span>/yr
                           </span>
                         </div>
                       </td>

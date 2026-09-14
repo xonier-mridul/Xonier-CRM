@@ -173,7 +173,7 @@ useEffect(() => {
             )}
             <FormButton
               isLoading={isLoading}
-              disabled={formData.email === "" || formData.password === ""}
+              disabled={!formData.email || !formData.password}
             >
               {t("sign_in")}
             </FormButton>

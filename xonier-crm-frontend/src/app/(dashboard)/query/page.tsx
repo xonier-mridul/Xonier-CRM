@@ -90,10 +90,10 @@ const query = () => {
 
 
   return (
-    <div className="p-6 flex flex-col gap-6">
-        <div className=''>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t("query")}</h1>
-        </div>
+    <div className=" flex flex-col gap-6">
+        {/* <div className=''>
+           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t("query")}</h1> 
+        </div> */}
         <QueryTable
         queryData={queryData}
         totalPage={totalPage}

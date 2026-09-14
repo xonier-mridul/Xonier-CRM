@@ -194,7 +194,7 @@ const CategoryTable = ({
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs overflow-hidden">
                 <table className="w-full text-xs">
                     <thead>
-                        <tr className="bg-slate-50/80 dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-700">
+                        <tr className="bg-slate-50/80 dark:bg-slate-900/70 border-b border-slate-200/80 dark:border-slate-700">
                             <th className="text-left px-5 py-3 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-10">
                                 #
                             </th>
@@ -332,9 +332,9 @@ const CategoryTable = ({
                 </table>
 
                 {/* Footer */}
-                <div className="px-5 py-3 bg-slate-50/80 dark:bg-slate-900 border-t border-slate-200/80 dark:border-slate-700 flex items-center justify-between">
+                <div className="px-5 py-3 bg-slate-50/80 dark:bg-slate-900/70 border-t border-slate-200/80 dark:border-slate-700 flex items-center justify-between">
                     <span className="text-xs text-slate-500 dark:text-slate-400">
-                        {t("showing")}{" page "}
+                        {t("showing")}{" "}{t("page")}{" "}
                         <span className="font-semibold text-slate-800 dark:text-slate-200">
                             {currentPage}
                         </span>{" "}

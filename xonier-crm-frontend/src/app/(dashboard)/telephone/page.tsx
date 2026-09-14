@@ -23,6 +23,7 @@ import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import { PERMISSIONS } from "@/src/constants/enum";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { useTranslation } from "react-i18next";
+import { FormatDate } from "@/src/components/common/FormateDate";
 
 const Page = () => {
   const { t } = useTranslation();
@@ -305,7 +306,7 @@ const Page = () => {
   return (
     <>
       <div>
-        <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full flex flex-col gap-7 items-center justify-between">
+        <div className="bg-white mb-10 dark:bg-gray-800 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full flex flex-col gap-7 items-center justify-between">
           <div className="flex w-full items-center gap-12 justify-between">
             <div className="flex flex-col gap-1.5">
               <h2 className="text-xl font-bold dark:text-white text-slate-900 capitalize">
@@ -375,14 +376,14 @@ const Page = () => {
                 telephoneData && Array.isArray(telephoneData) && telephoneData.length > 0 ? (
                   telephoneData.map((phone, i) => {
                     const isEven = i % 2 === 0;
-                    const date = formatDate(phone.createdAt);
+                    const date = FormatDate(phone.createdAt);
 
                     return (
                       <tr
                         key={phone.id}
                         className={`${isEven
                           ? "bg-white dark:bg-transparent"
-                          : "bg-slate-100/50 dark:bg-slate-500"
+                          : "bg-slate-100/50 dark:bg-gray-700"
                           } w-full`}
                       >
                         <td className="p-4">
@@ -406,7 +407,7 @@ const Page = () => {
                                 : "bg-red-500"
                               } text-white px-4 py-1.5 text-sm rounded-md capitalize`}
                           >
-                            {phone.status}
+                            {t(phone.status)}
                           </span>
                         </td>
 

@@ -17,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex min-h-screen bg-slate-50/60 dark:bg-slate-950">
+    <div className="flex min-h-screen bg-slate-50/60 dark:bg-slate-800/60">
       {/* Fixed Sidebar */}
       <SideBar />
 
@@ -30,7 +30,7 @@ export default function RootLayout({
         <NavBar />
 
         {/* Page content — offset by navbar height (h-14 = 56px) + spacing */}
-        <main className="flex-1 mt-16 p-6 overflow-auto">
+        <main className="flex-1 mt-16 p-6 overflow-auto  ">
           {children}
         </main>
       </div>

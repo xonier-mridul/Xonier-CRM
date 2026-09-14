@@ -136,8 +136,9 @@ function CategoryBoard({
     <>
       <div className="mb-10">
         {/* Category Swimlane Header Bar */}
-        <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-200/80 dark:border-slate-800 sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs z-10">
-          <div className="flex items-center gap-3 min-w-0">
+        <div className="grid grid-cols-8 h-full rounded-xl  w-full items-center gap-3 mb-4 pb-3 border-b border-slate-200/80 dark:border-slate-800 sticky top-0  dark:bg-slate-900/60 backdrop-blur-xs z-10 p-2 ">
+          <div className="flex items-center  gap-3 min-w-0 col-span-2">
+            <div className="flex gap-2 items-center">
             <span
               className="w-8.5 h-8.5 rounded-xl flex items-center justify-center text-sm shadow-2xs shrink-0"
               style={{
@@ -147,19 +148,22 @@ function CategoryBoard({
               }}
             >
               {isCategoryEmoji ? categoryIcon : <Folder size={16} />}
+              
             </span>
-            <div className="flex items-center gap-2.5 min-w-0">
               <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight truncate">
                 {categoryName}
               </h2>
+              </div>
+            <div className="flex items-center  min-w-0">
+            
               <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80 tabular-nums">
-                {tasks.length} {t("task_2")}{tasks.length !== 1 ? "s" : ""}
+                {tasks.length} {tasks.length !== 1 ? t("tasks") : t("task")}
               </span>
             </div>
           </div>
 
           {/* Status Breakdown Summary Pills */}
-          <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-wrap justify-end col-span-6 max-h-12 overflow-scroll">
             {statuses.map((s) => {
               const count = tasks.filter((t) => t?.status?.id === s.id).length;
               const dotColor = s.color && s.color.toLowerCase() !== "#ffffff" ? s.color : "#0891b2";
@@ -246,10 +250,10 @@ function CategoryBoard({
                   {/* Task Cards Container */}
                   <div className="flex-1 space-y-2.5 overflow-y-auto min-h-[140px] max-h-[640px] custom-scrollbar">
                     {columnTasks.length === 0 ? (
-                      <div className={`flex flex-col items-center justify-center py-8 rounded-xl border border-dashed transition-colors ${isDragOver ? "border-cyan-400 bg-cyan-50/50 dark:bg-cyan-950/20" : "border-slate-200 dark:border-slate-700/60"}`}>
+                      <div className={`flex flex-col items-center justify-center py-8 rounded-xl border border-dashed transition-colors ${isDragOver ? "border-cyan-400 bg-cyan-50/50 dark:bg-cyan-900/60" : "border-slate-200 dark:border-slate-700/60"}`}>
                         <Inbox className="w-5 h-5 mb-1 text-slate-300 dark:text-slate-600" />
                         <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
-                          {isDragOver ? t("drop_here") : t("no_tasks")}
+                          {isDragOver ? t("drop_here") : t("no_task")}
                         </p>
                       </div>
                     ) : (

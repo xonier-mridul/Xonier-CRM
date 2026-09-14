@@ -33,6 +33,7 @@ import {
   FileText,
   Send,
 } from "lucide-react";
+import { FormatDate, FormatWeekday } from "@/src/components/common/FormateDate";
 
 const STATUS_META: Record<
   string,
@@ -212,16 +213,11 @@ function ExpandableRow({
         <td className="px-5 py-3.5">
           <div className="flex flex-col">
             <span className="text-xs font-bold text-slate-900 dark:text-white">
-              {new Date(report.reportDate).toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              })}
+              { FormatDate(report.reportDate)}
+              
             </span>
             <span className="text-[10px] text-slate-400 font-medium">
-              {new Date(report.reportDate).toLocaleDateString("en-GB", {
-                weekday: "long",
-              })}
+              {FormatWeekday(report.reportDate)}
             </span>
           </div>
         </td>
@@ -240,12 +236,12 @@ function ExpandableRow({
             <span className="font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
               {completedItems.length}
             </span>
-            <span className="text-[11px] text-slate-400 font-medium">{t("done_2")}</span>
+            <span className="text-[11px] text-slate-400 font-medium">{t("done")}</span>
           </div>
         </td>
 
         <td className="px-5 py-3.5">
-          <div className="flex flex-col gap-1 min-w-[130px]">
+          <div className="flex flex-col gap-1 min-w-[150px]">
             <div className="flex items-center gap-1.5">
               <span className="text-[10px] text-slate-400 font-medium w-9">{t("est")}</span>
               <div className="h-1.5 flex-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -281,7 +277,7 @@ function ExpandableRow({
           {report.eveningReport?.overallMood ? (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60 capitalize">
               <span>{MOOD_EMOJI[report.eveningReport.overallMood] ?? "•"}</span>
-              <span className="text-[11px]">{report.eveningReport.overallMood}</span>
+              <span className="text-[11px]">{t(report.eveningReport.overallMood)}</span>
             </span>
           ) : (
             <span className="text-slate-400 dark:text-slate-500 text-xs">—</span>
@@ -1016,7 +1012,7 @@ const STATUS_OPTIONS = [
 
   return (
     <div className="">
-      <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xs w-full mb-10">
+      <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-6 shadow-2xs w-full mb-10">
         {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-6">
           <div className="flex items-center gap-3 min-w-0">

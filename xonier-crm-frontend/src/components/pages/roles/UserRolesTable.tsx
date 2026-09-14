@@ -19,12 +19,12 @@ import Pagination from "../../common/pagination";
 import { IoIosSearch } from "react-icons/io";
 
 const POWER_LEVELS = [
-  { value: 10, label: "Viewer", color: "bg-slate-400" },
-  { value: 30, label: "Member", color: "bg-blue-400" },
-  { value: 50, label: "Manager", color: "bg-emerald-500" },
-  { value: 70, label: "Project Manager", color: "bg-amber-500" },
-  { value: 90, label: "Admin", color: "bg-rose-500" },
-  { value: 100, label: "Owner", color: "bg-purple-600" },
+  { value: 10, label: "viewer", color: "bg-slate-400" },
+  { value: 30, label: "member", color: "bg-blue-400" },
+  { value: 50, label: "manager", color: "bg-emerald-500" },
+  { value: 70, label: "project_manager", color: "bg-amber-500" },
+  { value: 90, label: "admin", color: "bg-rose-500" },
+  { value: 100, label: "owner", color: "bg-purple-600" },
 ];
 
 function getPowerConfig(power: number) {
@@ -35,6 +35,7 @@ function getPowerConfig(power: number) {
 function PowerBar({ power }: { power: number }) {
   const pct = Math.min(100, power);
   const cfg = getPowerConfig(power);
+  
   return (
     <div className="flex items-center gap-2.5 min-w-[140px]">
       <div className="flex-1 h-1.5 bg-slate-100 dark:bg-gray-700 rounded-full overflow-hidden">
@@ -236,7 +237,7 @@ const handleAllPermissions = (checked: boolean) => {
                     <div className="flex-1">
                       <PowerBar power={viewRoleModal.power} />
                       <span className={`text-xs font-semibold mt-1 block ${getPowerConfig(viewRoleModal.power).color.replace("bg-", "text-")}`}>
-                        {getPowerConfig(viewRoleModal.power).label}
+                        {t(getPowerConfig(viewRoleModal.power).label)}
                       </span>
                     </div>
                   </div>
@@ -453,7 +454,7 @@ const handleAllPermissions = (checked: boolean) => {
                     <span
                       className={`font-semibold ${getPowerConfig(formData.power).color.replace("bg-", "text-")}`}
                     >
-                      {getPowerConfig(formData.power).label}
+                      {t(getPowerConfig(formData.power).label)}
                     </span>
                     <span>{t("owner_100")}</span>
                   </div>
@@ -717,7 +718,7 @@ const handleAllPermissions = (checked: boolean) => {
         </>
       )}
 
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="bg-white dark:bg-gray-900/50 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center">
@@ -737,7 +738,7 @@ const handleAllPermissions = (checked: boolean) => {
                       onChange={(e) => setPageLimit(Number(e.target.value))}
                     >
                       {[10, 20, 30, 40].map((n) => (
-                        <option key={n} value={n}>{n} {t("page_2")}</option>
+                        <option key={n} value={n}>{n} {t("page")}</option>
                       ))}
                     </select>
           
@@ -853,7 +854,7 @@ const handleAllPermissions = (checked: boolean) => {
                             <span
                               className={`text-xs font-bold px-2 py-0.5 rounded-md ${getPowerConfig(role.power).color} text-white`}
                             >
-                              {getPowerConfig(role.power).label}
+                              {t(getPowerConfig(role.power).label)}
                             </span>
                           </div>
                           <PowerBar power={role.power} />

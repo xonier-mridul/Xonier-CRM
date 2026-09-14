@@ -11,6 +11,7 @@ import Skeleton from 'react-loading-skeleton';
 import Pagination from '../../common/pagination';
 import { useRouter } from 'next/navigation'
 import TermsConfirmModal from '../../common/TermsConfirmModal';
+import { FormatDate } from '../../common/FormateDate';
 
 interface CompanyDeleteTableProps {
   companyData: Company[];
@@ -121,7 +122,7 @@ const DeletedTable: React.FC<CompanyDeleteTableProps> = ({
             >
               {[10, 20, 30, 50].map((n) => (
                 <option key={n} value={n}>
-                  {n} {t("page_2")}
+                  {n} {t("page")}
                 </option>
               ))}
             </select>
@@ -146,21 +147,21 @@ const DeletedTable: React.FC<CompanyDeleteTableProps> = ({
           <thead>
             <tr className="border-b border-slate-200 dark:border-gray-700">
               {[
-                "Company",
-                "Contact",
-                "Industry",
-                "Size",
-                "Country",
-                "Status",
-                "Subscription",
-                "Registered",
-                "Actions",
+                "company",
+                "contact",
+                "industry",
+                "size",
+                "country",
+                "status",
+                "subscription",
+                "registered",
+                "actions",
               ].map((col) => (
                 <th
                   key={col}
                   className="pb-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 pr-4"
                 >
-                  {col}
+                  {t(col)}
                 </th>
               ))}
             </tr>
@@ -229,9 +230,9 @@ const DeletedTable: React.FC<CompanyDeleteTableProps> = ({
 
                     <td className="py-4 pr-4">
                       <span
-                        className={`text-xs font-medium px-2.5 py-1 text-nowrap rounded-md capitalize bg-red-600 text-white `}
+                        className={`text-xs font-medium whitespace-nowrap px-2.5 py-1 text-nowrap rounded-md capitalize bg-red-600 text-white `}
                       >
-                        {company.status.replace(/_/g, " ")}
+                        {t(company.status)}
                       </span>
                     </td>
 
@@ -239,9 +240,9 @@ const DeletedTable: React.FC<CompanyDeleteTableProps> = ({
                       {company.subscription ? (
                         <Link
                           href={`/subscriptions/${company.id}`}
-                          className="text-xs text-cyan-500 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/20 px-2.5 py-1 rounded-md"
+                          className="text-xs text-cyan-500 whitespace-nowrap  dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/20 px-2.5 py-1 rounded-md"
                         >
-                          {company.subscriptionCount} {t("active_3")}
+                          {company.subscriptionCount} {t("active")}
                         </Link>
                       ) : (
                         <span className="text-xs text-gray-400">—</span>
@@ -249,11 +250,8 @@ const DeletedTable: React.FC<CompanyDeleteTableProps> = ({
                     </td>
 
                     <td className="py-4 pr-4">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {new Date(company.createdAt).toLocaleDateString(
-                          "en-GB",
-                          { day: "2-digit", month: "short", year: "numeric" }
-                        )}
+                      <span className="text-xs text-gray-500 whitespace-nowrap dark:text-gray-400">
+                        {FormatDate(company.createdAt)}
                       </span>
                     </td>
 

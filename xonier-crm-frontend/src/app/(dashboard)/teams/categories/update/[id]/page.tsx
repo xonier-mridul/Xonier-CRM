@@ -14,6 +14,7 @@ import { MdOutlineInfo } from "react-icons/md";
 import { IoArrowBack } from "react-icons/io5";
 import { GoDotFill } from "react-icons/go";
 import { useTranslation } from "react-i18next";
+import { FormatDate } from "@/src/components/common/FormateDate";
 
 type FormElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
@@ -145,7 +146,7 @@ const page = (): JSX.Element => {
                 }`}
             >
               <GoDotFill className="text-[10px]" />
-              {categoryData.isActive ? "Active" : "Inactive"}
+              {categoryData.isActive ? t("active") : t("inactive")}
             </span>
           )}
         </div>
@@ -195,7 +196,7 @@ const page = (): JSX.Element => {
               {/* Description textarea */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                  {t("description_2")}
+                  {t("description")}
                   <span className="ml-1 text-xs text-slate-400 font-normal">{t("optional_2")}</span>
                 </label>
                 <textarea
@@ -220,12 +221,7 @@ const page = (): JSX.Element => {
                       {t("created_at")}
                     </span>
                     <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">
-                      {new Date(categoryData.createdAt).toLocaleDateString("en-IN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                        timeZone: "Asia/Kolkata",
-                      })}
+                      {FormatDate(categoryData.createdAt)}
                     </span>
                   </div>
                   <div className="flex flex-col gap-1 p-3 rounded-xl bg-slate-50 dark:bg-gray-600/40 border border-slate-100 dark:border-slate-600/30">
@@ -234,12 +230,7 @@ const page = (): JSX.Element => {
                     </span>
                     <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">
                       {categoryData.updatedAt
-                        ? new Date(categoryData.updatedAt).toLocaleDateString("en-IN", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                            timeZone: "Asia/Kolkata",
-                          })
+                        ? FormatDate(categoryData.updatedAt)
                         : "—"}
                     </span>
                   </div>
@@ -257,7 +248,7 @@ const page = (): JSX.Element => {
                 text-slate-600 dark:text-slate-300
                 border border-slate-200 dark:border-slate-600
                 hover:bg-slate-100 dark:hover:bg-slate-700
-                transition-all duration-150"
+                transition-all duration-150 whitespace-nowrap"
             >
               {t("cancel")}
             </button>

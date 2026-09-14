@@ -65,31 +65,31 @@ const ITEM_STATUS_META: Record<
   { label: string; bg: string; text: string; icon: string }
 > = {
   pending: {
-    label: "Pending",
+    label: "pending",
     bg: "bg-amber-50 dark:bg-amber-900/20",
     text: "text-amber-600 dark:text-amber-400",
     icon: "⏳",
   },
   in_progress: {
-    label: "In Progress",
+    label: "in_progress",
     bg: "bg-cyan-50 dark:bg-cyan-900/20",
     text: "text-cyan-600 dark:text-cyan-400",
     icon: "🔄",
   },
   completed: {
-    label: "Completed",
+    label: "completed",
     bg: "bg-emerald-50 dark:bg-emerald-900/20",
     text: "text-emerald-600 dark:text-emerald-400",
     icon: "✅",
   },
   carried_forward: {
-    label: "Carried Forward",
+    label: "carried_forward",
     bg: "bg-cyan-50 dark:bg-cyan-900/20",
     text: "text-cyan-600 dark:text-cyan-400",
     icon: "➡️",
   },
   blocked: {
-    label: "Blocked",
+    label: "blocked",
     bg: "bg-red-50 dark:bg-red-900/20",
     text: "text-red-600 dark:text-red-400",
     icon: "🚫",
@@ -204,12 +204,12 @@ function TaskItemCard({
           <span
             className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${priorityClass}`}
           >
-            {item.priority ?? "—"}
+            {item.priority ? t(item.priority) : "—"}
           </span>
           <span
             className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusMeta.bg} ${statusMeta.text}`}
           >
-            {statusMeta.icon} {statusMeta.label}
+            {statusMeta.icon} {t(statusMeta.label)}
           </span>
         </div>
       </div>

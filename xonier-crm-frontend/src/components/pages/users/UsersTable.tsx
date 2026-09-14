@@ -338,7 +338,8 @@ const isPasswordValid = checks.every((check) => check.valid);
           {setIsPopupShow(false);
           setFormData({...emptyForm});
           } } />
-         <div className="fixed top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 p-6 rounded-xl  z-[200] flex flex-col gap-5 shadow-xl w-150 min-h-140 ">
+         <div className="fixed top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-900 p-6 rounded-xl  
+         z-[200] flex flex-col gap-5 shadow-xl w-150 min-h-140 ">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold dark:text-white">{t("create_user")}</h2>
               <button
@@ -353,7 +354,7 @@ const isPasswordValid = checks.every((check) => check.valid);
             </div>
             <form onSubmit={handleSubmit} className="md:grid gap-4 text-xs md:text-lg">
               <Input
-                label={t("firstname")}
+                label={t("first_name")}
                 type="text"
                 name="firstName"
                 placeholder={t("first_name")}
@@ -361,7 +362,7 @@ const isPasswordValid = checks.every((check) => check.valid);
                 onChange={handleChange}
               />
               <Input
-                label={t("lastname")}
+                label={t("last_name")}
                 type="text"
                 name="lastName"
                 placeholder={t("last_name")}
@@ -459,7 +460,7 @@ const isPasswordValid = checks.every((check) => check.valid);
                   >
                     {countryCodes.map((c: countryCode) => (
                       <option key={c.code} value={c.code}>
-                        {c.label} ({c.code})
+                        {c.flag} ({c.code})
                       </option>
                     ))}
                   </select>
@@ -629,7 +630,7 @@ const isPasswordValid = checks.every((check) => check.valid);
       <div className="overflow-x-auto rounded-xl">
       <table className="w-full rounded-xl overflow-hidden text-slate-500 ">
         <thead className="">
-          <tr className="w-full border-b-2 border-zinc-300 bg-slate-200 dark:bg-gray-900">
+          <tr className="w-full border-b-2 border-zinc-300 bg-slate-200 dark:bg-gray-900/50">
             <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
               {t("s_no")}
             </th>
@@ -666,8 +667,8 @@ const isPasswordValid = checks.every((check) => check.valid);
                   <tr
                     className={`${
                       rr
-                        ? "bg-white dark:bg-transparent hover:bg-cyan-50 dark:hover:bg-gray-700/50"
-                        : "bg-slate-100/50 dark:bg-slate-900/30 hover:bg-cyan-50 dark:hover:bg-gray-700/50"
+                        ? "bg-white dark:bg-gray-900/20 hover:bg-cyan-50 dark:hover:bg-gray-700/50"
+                        : "bg-slate-100/50 dark:bg-slate-900/50 hover:bg-cyan-50 dark:hover:bg-gray-700/50"
                     } w-full group transition-colors `}
                     key={item.id}
                   >

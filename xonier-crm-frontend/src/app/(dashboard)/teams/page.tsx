@@ -725,7 +725,7 @@ getCategoryData();
       )}
 
       <div>
-        <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm flex flex-col gap-5 p-6 rounded-xl border-[1px] border-slate-900/10 w-full">
+        <div className="bg-white dark:bg-gray-900/50 dark:backdrop-blur-sm flex flex-col gap-5 p-6 rounded-xl border-[1px] border-slate-900/10 w-full">
           <div className="flex items-center gap-12 justify-between">
             <div className="flex flex-col gap-2">
               <h2 className="text-xl font-bold  dark:text-white text-slate-900 capitalize">
@@ -808,7 +808,7 @@ getCategoryData();
                       <tr key={index}
                         className={`${
                           rr
-                            ? "bg-white dark:bg-transparent" : "bg-slate-100/50 dark:bg-slate-800"
+                            ? "bg-white dark:bg-slate-900/70" : "bg-slate-100/50 dark:bg-slate-800"
                         } w-full`}
                       >
                        <td

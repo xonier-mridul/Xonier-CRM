@@ -71,6 +71,8 @@
   "calender": "Calendário",
   "add_another_event": "Adicionar outro evento",
   "add_event": "Adicionar evento",
+  "add": "Adicionar",
+  "submitted_2": "✓ Enviado",
   "all_day_event": "Evento de dia inteiro",
   "all_day_event_2": "Evento de dia inteiro",
   "bulk_create_events": "Criar eventos em massa",
@@ -222,6 +224,7 @@
   "report": "Relatório",
    "max_files": "Máximo de Arquivos",
   "max_size": "Tamanho Máximo",
+  "size": "Tamanho",
   "selected_files": "Arquivos Selecionados",
   "all_files_ready": "Todos os arquivos estão prontos",
   "or_click_the_button_below_to_browse": "Ou clique no botão abaixo para procurar",
@@ -1417,7 +1420,7 @@
   "pre_seed": "Pré-Semente (Pre-Seed)",
   "preview": "Visualização",
   "preview_how_the_email_renders_per": "Visualize como o e-mail é renderizado por lead com todas as variáveis resolvidas.",
-  "priority": "Prioridade",
+  "priority_2": "Prioridade",
   "product_manager": "Gerente de Produto",
   "project_type": "Tipo de Projeto",
   "react": "React",
@@ -1928,6 +1931,126 @@
    "update_the_category_details_below": "Atualize os detalhes da categoria abaixo",
     "define_a_new_task_category": "Defina uma nova categoria de tarefa",
     "enter_otp": "Digite o OTP",
+    "daily_retrospective": "Retrospectiva diária",
+    "active_status": "Status de atividade",
+    "not_enough_rated_tasks_yet": "Ainda não há tarefas avaliadas suficientes",
+
+    
+  "page_title": "Relatório Diário de Tarefas",
+ 
+  
+  "status_badge": {
+    "done": "Concluído",
+    "pending": "Pendente"
+  },
+  
+  "priority": {
+    "low": "Baixa",
+    "medium": "Média",
+    "high": "Alta",
+    "critical": "Crítica"
+  },
+  
+ 
+   
+  
+ 
+  "blocker_reason": "Motivo do Bloqueio",
+ 
+  
+  
+    "what_are_you_working_on": "Em que você vai trabalhar?",
+    "brief_details": "Detalhes breves sobre esta tarefa...",
+    "eg_hours": "ex: 2.5",
+    "task_id": "TAREFA-101",
+    "main_focus": "Qual é o seu foco principal hoje?",
+    "what_completed": "O que você concluiu?",
+    "what_pending": "O que ainda está pendente?",
+    "details_done": "Detalhes sobre o que foi feito / o que está pendente...",
+    "blocker_reason_2": "O que está bloqueando esta tarefa?",
+    "achievements_2": "Do que você se orgulha hoje?",
+    "blockers_3": "Algum bloqueio, problema ou desafio enfrentado?",
+    "tomorrow": "O que você planeja trabalhar amanhã?"
+ ,
+  
+  "todays_goal": "Meta / Foco de Hoje",
+  "goal_help": "Defina seu objetivo ou marco principal para hoje",
+
+  "edit_plan": "Editar Plano",
+  "editing_morning": "Editando Agenda da Manhã",
+  "editing_help": "As alterações atualizarão seu plano existente",
+  
+  "plan_readonly": "Seu plano para hoje (somente leitura)",
+  "plan_editing": "Atualize seu plano - as alterações serão salvas ao clicar em Atualizar",
+  "plan_help": "Planeje seu dia - quais tarefas você vai enfrentar?",
+  
+  "no_tasks_planned": "Nenhuma tarefa planejada ainda",
+  "no_tasks_help": "Clique abaixo para adicionar sua primeira tarefa da agenda para hoje",
+  "add_task": "Adicionar Tarefa",
+
+  "goto_evening": "Ir para Relatório da Noite",
+  "update_morning": "Atualizar Agenda da Manhã",
+
+  "submit_morning": "Enviar Agenda da Manhã",
+
+  "submit_help": "Envie sua agenda da manhã para planejar seu dia. Você pode atualizá-la a qualquer momento antes do envio noturno.",
+  
+  "productivity_tips": "Dicas de Produtividade",
+  "tip1_title": "Estimativas Realistas:",
+  "tip1_text": "Mantenha as tarefas limitadas entre 1 a 3 horas para conclusão previsível.",
+  "tip2_title": "Alta Prioridade Primeiro:",
+  "tip2_text": "Enfrente tarefas críticas e de alta prioridade durante seu pico de energia matinal.",
+  "tip3_title": "Vinculação CRM:",
+  "tip3_text": "Adicione IDs de tarefas vinculadas para auto-referenciar tickets e entregas.",
+  
+  "evening_locked": "Relatório da Noite Bloqueado - Envio Final Concluído",
+  "evening_readonly": "Este relatório é somente leitura e não pode ser editado.",
+  "evening_help": "Alterar o status de uma tarefa para Concluído a move automaticamente para a seção verde. Configurá-la como Em Progresso, Pendente, Bloqueado ou Adiado a move para a seção âmbar.",
+  "status_help_text": "Alterar isso move a tarefa entre seções",
+  
+  "completed_help": "Tarefas concluídas com sucesso hoje",
+ 
+  "pending_tasks": "Pendente / Em Progresso / Bloqueado",
+  "pending_help": "Tarefas em progresso, pendentes ou adiadas para amanhã",
+  
+  "no_completed": "Nenhuma tarefa concluída ainda",
+  "no_completed_help": "Altere o status de uma tarefa para 'Concluído' ou adicione uma nova",
+  "add_completed_task": "Adicionar Tarefa Concluída",
+  
+  "all_completed": "Todas as tarefas concluídas!",
+  "all_completed_help": "Trabalho incrível hoje! 🎉",
+  "add_pending_task": "Adicionar Tarefa Pendente",
+  
+  
+  "final_submission_help": "O envio final bloqueia este relatório de edições futuras. Desmarque para salvar como rascunho.",
+  "save_evening": "Salvar Relatório da Noite",
+  "submit_evening": "Enviar Relatório da Noite",
+  "report_locked": "Relatório Bloqueado - Envio Final Concluído",
+  
+  "retrospective": "Retrospectiva Diária",
+  "achievements": "Conquistas / Destaques",
+  "tomorrows_plan": "Plano de Amanhã",
+  
+  "toast": {
+    "fill_all_titles": "Por favor, preencha todos os títulos das tarefas",
+    "morning_submitted": "Agenda da manhã enviada! ✅",
+    "no_report_id": "Não foi possível obter o ID do relatório. Por favor, atualize.",
+    "morning_failed": "Falha ao enviar agenda da manhã",
+    "report_not_found": "Relatório não encontrado",
+    "morning_updated": "Agenda da manhã atualizada! ✅",
+    "morning_update_failed": "Falha ao atualizar agenda da manhã",
+    "something_wrong": "Algo deu errado",
+    "submit_morning_first": "Por favor, envie sua agenda da manhã primeiro",
+    "add_one_task": "Por favor, adicione pelo menos uma tarefa",
+    "evening_submitted": "Relatório da noite enviado! 🌆"
+  },
+  
+
+    "save_evening_title": "Salvar Relatório da Noite?",
+    "save_evening_text": "Seu progresso será salvo como rascunho. Você pode continuar editando mais tarde.",
+    "submit_evening_title": "Enviar Relatório da Noite?",
+    "submit_evening_text": "Isso bloqueará seu relatório da noite. Você não poderá editá-lo após o envio.",
+  
 
     "create_new_category": "Criar Nova Categoria",
    "viewer_1": "Visualizador (1)",
@@ -2036,6 +2159,9 @@
    "custom_quotation": "Cotação Personalizada",
   "no_attachments": "Nenhum Anexo",
   "ongoing": "Em andamento",
+   "select_plan": "Selecionar plano",
+    "verify_email": "Verificar e-mail",
+    "no_task": "Nenhuma tarefa",
  
   "order": "Ordem",
   "organise_and_manage_task_categories_for": "Organize e gerencie categorias de tarefas para o seu projeto.",

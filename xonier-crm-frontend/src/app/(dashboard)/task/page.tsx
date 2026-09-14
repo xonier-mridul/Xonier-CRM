@@ -525,7 +525,7 @@ const TaskListPage = (): JSX.Element => {
       )}
 
       <div className="">
-        <div className="bg-white mb-10 dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs w-full">
+        <div className="bg-white mb-10 dark:bg-slate-900/60 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs w-full">
           {/* Header */}
           <div className="flex items-start justify-between mb-6">
             <div>

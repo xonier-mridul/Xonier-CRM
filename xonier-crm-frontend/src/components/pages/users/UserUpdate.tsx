@@ -183,7 +183,7 @@ const  UserUpdate = ({
                 </div>
               )}
 
-              {isAdmin &&
+              {(isAdmin || isCompanyAdmin )&&
                 (!isLoading ? (
                   <div className="flex flex-col gap-1 w-full">
                     <label className="text-sm font-medium text-gray-700 dark:text-gray-200">

@@ -804,9 +804,128 @@
   "new_company_added": "New company added",
    "update_the_category_details_below": "Update the category details below",
     "define_a_new_task_category": "Define a new task category",
-    "edit_category": "Edit Category",
     "create_new_category": "Create New Category",
     "otp_sent_successfully": "OTP sent successfully",
+    "daily_retrospective": "Daily Retrospective",
+    "active_status": "Active Status",
+
+
+    
+  "page_title": "Daily Task Report",
+
+  
+  "status_badge": {
+    "done": "Done",
+    "pending": "Pending"
+  },
+  
+
+
+
+  
+ 
+  
+    "size":"Size",
+    "what_are_you_working_on": "What are you going to work on?",
+    "brief_details": "Brief details about this task...",
+    "eg_hours": "e.g. 2.5",
+    "task_id": "TASK-101",
+    "main_focus": "What is your main focus today?",
+    "what_completed": "What did you complete?",
+    "what_pending": "What is still pending?",
+    "details_done": "Details about what was done / what's pending...",
+    "blocker_reason_2": "What is blocking this task?",
+    "achievements_2": "What are you proud of today?",
+    "blockers_3": "Any blockers, issues, or challenges faced?",
+    "tomorrow": "What do you plan to work on tomorrow?"
+  ,
+  
+    "not_enough_rated_tasks_yet": "Not enough rated tasks yet",
+   
+  
+  "todays_goal": "Today's Goal / Focus",
+  "goal_help": "Define your primary objective or milestone for today",
+
+  
+
+  "editing_morning": "Editing Morning Agenda",
+  "editing_help": "Changes will update your existing plan",
+  
+  "plan_readonly": "Your plan for today (read-only)",
+  "plan_editing": "Update your plan - changes will be saved when you click Update",
+  "plan_help": "Plan your day - what tasks will you tackle?",
+  
+  "no_tasks_planned": "No tasks planned yet",
+  "no_tasks_help": "Click below to add your first agenda task for today",
+  "add_task": "Add Task",
+  "select_plan": "Select plan",
+    "verify_email": "Verify email",
+    "no_task": "No task",
+
+  
+
+  "goto_evening": "Go to Evening Report",
+  "update_morning": "Update Morning Agenda",
+
+  "submit_morning": "Submit Morning Agenda",
+
+  "submit_help": "Submit your morning agenda to plan your day. You can update it anytime before evening submission.",
+  
+  "productivity_tips": "Productivity Tips",
+  "tip1_title": "Realistic Estimates:",
+  "tip1_text": "Keep tasks bounded between 1 to 3 hours for predictable completion.",
+  "tip2_title": "High Priority First:",
+  "tip2_text": "Tackle critical and high priority tasks during your peak morning energy.",
+  "tip3_title": "CRM Linkage:",
+  "tip3_text": "Add linked task IDs to auto-reference tickets and deliverables.",
+  
+  "evening_locked": "Evening Report Locked - Final Submission Complete",
+  "evening_readonly": "This report is read-only and cannot be edited.",
+  "evening_help": "Changing a task status to Completed automatically moves it to the green section. Setting it to In Progress, Pending, Blocked, or Carried Forward moves it to the amber section.",
+  "status_help_text": "Changing this moves the task between sections",
+  
+
+  "completed_help": "Tasks successfully finished today",
+
+  "pending_help": "Tasks in progress, pending, or carried to tomorrow",
+  
+  "no_completed": "No completed tasks yet",
+  "no_completed_help": "Change a task's status to 'Completed' or add a new one",
+
+  
+  "all_completed": "All tasks completed!",
+  "all_completed_help": "Amazing work today! 🎉",
+
+
+  "final_submission_help": "Final submission locks this report from further editing. Uncheck to save as draft.",
+  "save_evening": "Save Evening Report",
+  "submit_evening": "Submit Evening Report",
+  "report_locked": "Report Locked - Final Submission Complete",
+  
+  "retrospective": "Daily Retrospective",
+
+  "tomorrows_plan": "Tomorrow's Plan",
+  
+  "toast": {
+    "fill_all_titles": "Please fill in all task titles",
+    "morning_submitted": "Morning agenda submitted! ✅",
+    "no_report_id": "Could not get report ID. Please refresh.",
+    "morning_failed": "Failed to submit morning agenda",
+    "report_not_found": "Report not found",
+    "morning_updated": "Morning agenda updated! ✅",
+    "morning_update_failed": "Failed to update morning agenda",
+    "something_wrong": "Something went wrong",
+    "submit_morning_first": "Please submit your morning agenda first",
+    "add_one_task": "Please add at least one task",
+    "evening_submitted": "Evening report submitted! 🌆"
+  },
+  
+ 
+    "save_evening_title": "Save Evening Report?",
+    "save_evening_text": "Your progress will be saved as a draft. You can continue editing later.",
+    "submit_evening_title": "Submit Evening Report?",
+    "submit_evening_text": "This will lock your evening report. You won't be able to edit it after submission.",
+   
 
 
   "enter_otp": "Enter OTP",
@@ -1030,7 +1149,7 @@
   "only_csv_or_xlsx_files_are": "Only CSV or XLSX files are allowed",
   "optional_group_this_batch_for_easy": "Optional — group this batch for easy filtering later",
   "options": "Options",
-  "placeholder": "Placeholder",
+  "placeholder_2": "Placeholder",
   "please_add_at_least_one_valid": "Please add at least one valid option for select field",
   "select": "Select…",
   "select_status_type": "select status type",
@@ -1295,7 +1414,7 @@
   "pre_seed": "Pre-Seed",
   "preview": "Preview:",
   "preview_how_the_email_renders_per": "Preview how the email renders per lead with all variables resolved.",
-  "priority": "Priority",
+  "priority_2": "Priority",
   "product_manager": "Product Manager",
   "project_type": "Project Type",
   "react": "React",
@@ -2489,8 +2608,8 @@
   "once_submitted_the_review_will_be_visible_to_the_team": "Once submitted, the review will be visible to the team member and the report will be marked as reviewed.",
   "review_comment": "Review comment",
   "write_your_review_comment": "Write your review comment",
-  "completed_tasks_2": "✅ Completed Tasks (",
-  "pending_tasks": "⏳ Pending Tasks (",
+  "completed_tasks_2": "✅ Completed Tasks ",
+  "pending_tasks": "⏳ Pending Tasks ",
   "achievements": "🏆 Achievements",
   "blockers": "🚫 Blockers",
   "tomorrow_s_plan": "📅 Tomorrow's Plan",

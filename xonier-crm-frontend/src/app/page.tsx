@@ -58,11 +58,11 @@ export default function Home() {
             {t("go_to_dashboard")}
           </Link> */}
           <button
-  onClick={handleDashboard}
-  className="rounded-xl bg-teal-600 px-6 py-3 text-sm font-semibold text-white"
->
-  {t("go_to_dashboard")}
-</button>
+            onClick={handleDashboard}
+            className="rounded-xl bg-teal-600 px-6 py-3 text-sm font-semibold text-white"
+          >
+            {t("go_to_dashboard")}
+          </button>
 
           <button className="rounded-xl border border-gray-300 dark:border-gray-600 px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
             {t("learn_more")}
@@ -72,19 +72,19 @@ export default function Home() {
 
         <div className="mt-20 grid max-w-5xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {[
-  {
-    title: t("role_based_access"),
-    desc: t("role_based_access_desc"),
-  },
-  {
-    title: t("lead_enquiry_tracking"),
-    desc: t("lead_enquiry_tracking_desc"),
-  },
-  {
-    title: t("modern_ui"),
-    desc: t("modern_ui_desc"),
-  },
-].map((item, idx) => (
+              {
+                title: t("role_based_access"),
+                desc: t("role_based_access_desc"),
+              },
+              {
+                title: t("lead_enquiry_tracking"),
+                desc: t("lead_enquiry_tracking_desc"),
+              },
+              {
+                title: t("modern_ui"),
+                desc: t("modern_ui_desc"),
+              },
+            ].map((item, idx) => (
             <div
               key={idx}
               className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 text-left shadow-sm hover:shadow-md transition"
