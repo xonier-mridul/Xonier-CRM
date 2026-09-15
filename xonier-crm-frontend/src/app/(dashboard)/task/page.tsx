@@ -646,19 +646,19 @@ const TaskListPage = (): JSX.Element => {
               ))}
             </select>
             <CategoryMultiSelect categories={categories} isCatLoading={isCatLoading} fetchCategories={fetchCategories} selected={filtrCategory} onChange={(val) => { setFiltrCategory(val); setCurrentPage(1); }} />
-            <UserSelect
+           <UserSelect
               mode="single"
               value={filterAssigned}
               onChange={setFilterAssigned}
               placeholder={t("search_assignee")}
-              cls="rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-400 transition shadow-2xs"
+              cls="rounded-xl border  bg-white border-slate-200 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-400 transition"
             />
             <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
             {hasFilters && (
               <button
                 type="button"
                 onClick={() => { setSearch(""); setFilterStatus(""); setFilterPriority(""); setCurrentPage(1); setFilterAssigned(""); setFiltrCategory([]); setDateFilter({ fromDate: "", toDate: "" }); }}
-                className="px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                className="px-3 py-2 rounded-xl border text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800  border-slate-200/80 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
               >
                 <X size={13} /> {t("clear")}
               </button>

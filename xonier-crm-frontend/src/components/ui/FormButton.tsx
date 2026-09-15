@@ -30,10 +30,14 @@ const FormButton: React.FC<FormButtonProps> = ({
       `}
       {...props}
     >
-      {isLoading && (
-        <ImSpinner2 className="animate-spin text-lg" />
+       {isLoading ? (
+        <>
+          <ImSpinner2 className="animate-spin text-lg" />
+        </>
+      ) : (
+        children
       )}
-      {children}
+      
     </button>
   );
 };

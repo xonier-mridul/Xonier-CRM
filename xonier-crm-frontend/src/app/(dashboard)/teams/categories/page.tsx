@@ -193,7 +193,10 @@ const page = (): JSX.Element => {
                 required
               />
               <div className="flex flex-col gap-1 w-full">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-200 capitalize">{t("description_2")}</label>
+                 <label className="text-sm font-medium text-gray-700 dark:text-gray-200 capitalize flex gap-2">
+ {t("description_2")}
+    <span className="text-red-500 text-xl">*</span>
+              </label>
                 <textarea
                   name="description"
                   id="description"
@@ -209,7 +212,7 @@ const page = (): JSX.Element => {
                 />
               </div>
               {err && <div className="flex items-center justify-end w-full"><p className="text-red-500">{err}</p></div>}
-              <FormButton isLoading={loading} disabled={formData.name === "" || formData.description === ""}>{t("upload")}</FormButton>
+              <FormButton isLoading={loading} disabled={formData.name === "" || formData.description === ""}>{t("submit")}</FormButton>
             </form>
           </div>
         </>
@@ -348,14 +351,14 @@ const page = (): JSX.Element => {
               <select
                 name="limit"
                 id="limit"
-                className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10"
+                className="bg-slate-50 dark:bg-gray-700 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10"
               >
                 <option value="10">10</option>
                 <option value="20">20</option>
                 <option value="30">30</option>
                 <option value="40">50</option>
               </select>
-              <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 gap-1.5 rounded-lg border-[1px] border-slate-900/10 flex items-center">
+              <div className="bg-slate-50 dark:bg-gray-700 px-3 py-2.5 gap-1.5 rounded-lg border-[1px] border-slate-900/10 flex items-center">
                 <IoIosSearch className="text-xl" />
                 <input type="text" placeholder={t("search_by_name_2")}  onChange={(e)=>{setSearch(e.target.value)}} className="border-none bg-transparent outline-none text-sm font-medium text-slate-900 dark:text-white w-full"/>
               </div>
@@ -396,16 +399,16 @@ const page = (): JSX.Element => {
                     return (
                       <tr
                         key={item.id}
-                        className={`${rr ? "bg-white dark:bg-slate-900/60" : "bg-slate-100/50 dark:bg-slate-800"} w-full`}
+                        className={`${rr ? "bg-white  dark:bg-slate-800/50" : "bg-slate-100/50 dark:bg-slate-800"} w-full group`}
                       >
                         <td className="p-4">{index + 1}</td>
                         <td className="p-4">
-                          <Link
-                            href={`/teams/categories/${item.id}`}
-                            className="cursor-pointer hover:text-cyan-500 capitalize"
+                          <div
+                            
+                            className=" group-hover:text-cyan-500 capitalize"
                           >
                             {item.name}
-                          </Link>
+                          </div>
                         </td>
                         <td className="p-4 first-letter:uppercase max-w-80 truncate">{item.description}</td>
                         <td className="p-4 whitespace-nowrap">{date}</td>

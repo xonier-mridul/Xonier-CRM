@@ -156,10 +156,10 @@ const page = (): JSX.Element => {
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
           {/* ── Info card ── */}
-          <div className="bg-white dark:bg-gray-700 rounded-2xl border border-slate-200/80 dark:border-slate-600/50 shadow-sm overflow-hidden">
+          <div className="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200/80 dark:border-slate-600/50 shadow-sm overflow-hidden">
 
             {/* Card header strip */}
-            <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 dark:border-slate-600/50 bg-slate-50/50 dark:bg-gray-700/50">
+            <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 dark:border-slate-600/50 bg-slate-50/50 dark:bg-gray-900/50">
               <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
                 <MdOutlineInfo className="text-blue-600 dark:text-blue-400 text-base" />
               </div>
@@ -173,14 +173,14 @@ const page = (): JSX.Element => {
               </div>
 
               {/* Slug pill — read only, shows current slug */}
-              {categoryData?.slug && (
+              {/* {categoryData?.slug && (
                 <div className="ml-auto flex items-center gap-1.5 px-3 py-1 rounded-full
                   bg-slate-100 dark:bg-slate-600/50 border border-slate-200 dark:border-slate-500/50">
                   <span className="text-[10px] text-slate-400 dark:text-slate-400 font-mono">
                     /{categoryData.slug}
                   </span>
                 </div>
-              )}
+              )} */}
             </div>
 
             <div className="p-6 flex flex-col gap-5">
@@ -197,7 +197,7 @@ const page = (): JSX.Element => {
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
                   {t("description")}
-                  <span className="ml-1 text-xs text-slate-400 font-normal">{t("optional_2")}</span>
+                  <span className="ml-1 text-xs text-slate-400 font-normal">{t("optional")}</span>
                 </label>
                 <textarea
                   name="description"
@@ -206,7 +206,7 @@ const page = (): JSX.Element => {
                   onChange={handleChange}
                   placeholder={t("describe_what_this_category_is_for")}
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600
-                    bg-white dark:bg-gray-600 text-slate-700 dark:text-white
+                    bg-white dark:bg-slate-800 text-slate-700 dark:text-white
                     placeholder:text-slate-400 dark:placeholder:text-slate-500
                     focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400
                     dark:focus:border-blue-500 resize-none text-sm transition-all duration-150"
@@ -217,7 +217,7 @@ const page = (): JSX.Element => {
               {categoryData && (
                 <div className="grid grid-cols-2 gap-3 pt-1">
                   <div className="flex flex-col gap-1 p-3 rounded-xl bg-slate-50 dark:bg-gray-600/40 border border-slate-100 dark:border-slate-600/30">
-                    <span className="text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500 font-semibold">
+                    <span className="text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-200 font-semibold">
                       {t("created_at")}
                     </span>
                     <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">
@@ -225,7 +225,7 @@ const page = (): JSX.Element => {
                     </span>
                   </div>
                   <div className="flex flex-col gap-1 p-3 rounded-xl bg-slate-50 dark:bg-gray-600/40 border border-slate-100 dark:border-slate-600/30">
-                    <span className="text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500 font-semibold">
+                    <span className="text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-200 font-semibold">
                       {t("last_updated")}
                     </span>
                     <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">

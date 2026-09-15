@@ -17,20 +17,13 @@ import { UserRole } from "@/src/types";
 import { useTranslation } from "react-i18next";
 import Pagination from "../../common/pagination";
 import { IoIosSearch } from "react-icons/io";
+import { getPowerConfig, POWER_LEVELS } from "@/src/app/utils/rolePower";
+import RoleForm from "../../role/RoleForm";
 
-const POWER_LEVELS = [
-  { value: 10, label: "viewer", color: "bg-slate-400" },
-  { value: 30, label: "member", color: "bg-blue-400" },
-  { value: 50, label: "manager", color: "bg-emerald-500" },
-  { value: 70, label: "project_manager", color: "bg-amber-500" },
-  { value: 90, label: "admin", color: "bg-rose-500" },
-  { value: 100, label: "owner", color: "bg-purple-600" },
-];
 
-function getPowerConfig(power: number) {
-  const match = [...POWER_LEVELS].reverse().find((p) => power >= p.value);
-  return match ?? POWER_LEVELS[0];
-}
+
+
+
 
 function PowerBar({ power }: { power: number }) {
   const pct = Math.min(100, power);
@@ -72,7 +65,6 @@ const UserRolesTable: React.FC<RoleTableProps> = ({
   isAdmin,
 }) => {
   const { t } = useTranslation();
-  const [searchTerm, setSearchTerm] = React.useState("");
   const [searchP, setSearchP] = React.useState("");
 
 
@@ -82,95 +74,13 @@ const UserRolesTable: React.FC<RoleTableProps> = ({
   console.log("totalpage page:",totalPages)
 
 
-  const addPermission = (permissionId: string) => {
-    if (formData.permissions.includes(permissionId)) {
-      removePermission(permissionId);
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        permissions: [...prev.permissions, permissionId],
-      }));
-    }
-  };
-
-  const removePermission = (permissionId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      permissions: prev.permissions.filter((id) => id !== permissionId),
-    }));
-  };
-
-  const isSelected = (permissionId: string) =>
-    formData.permissions.includes(permissionId);
-
-  const isModuleSelected = (perms: any[]) => {
-  return perms.every((perm) => isSelected(perm.id));
-};
-
-
-const handleModulePermission = (perms:any[],
-  checked:boolean)=>{
-    if(checked){
-      perms.forEach((perm)=>{
-        if(!isSelected(perm.id)){
-          addPermission(perm.id)
-        }
-      }
-    
-    )
-    }
-    else{
-        perms.forEach((perm)=>{
-          if(isSelected(perm.id)){
-            removePermission(perm.id)
-          }
-        })
-      }
-  }
 
     const search = searchP.trim().toLowerCase();
 
-  // First filter permissions based on search
- 
-
-  const groupedPermissions = React.useMemo(() => {
-    if (!permissionData) return {};
-    const filtered = permissionData.filter((p) =>
-      searchTerm
-        ? p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          p.module.toLowerCase().includes(searchTerm.toLowerCase())
-        : true
-    );
-    return filtered.reduce((acc, perm) => {
-      if (!acc[perm.module]) acc[perm.module] = [];
-      acc[perm.module].push(perm);
-      return acc;
-    }, {} as Record<string, typeof permissionData>);
-  }, [permissionData, searchTerm]);
-
-const allPermissions = Object.values(groupedPermissions).flat();
-
-const isAllSelected = allPermissions.every((perm) =>
-  isSelected(perm.id)
-);
+  
 
 
 
-const handleAllPermissions = (checked: boolean) => {
-  if (checked) {
-    allPermissions.forEach((perm) => {
-      if (!isSelected(perm.id)) {
-        addPermission(perm.id);
-      }
-    });
-  } else {
-    allPermissions.forEach((perm) => {
-      if (isSelected(perm.id)) {
-        removePermission(perm.id);
-      }
-    });
-  }
-};
 
 
   return (
@@ -406,317 +316,59 @@ const handleAllPermissions = (checked: boolean) => {
       )}
 
       {isPopupShow && (
-        <>
-          <BlurryBackground onClick={() => setIsPopupShow(false)} />
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-2xl md:w-[720px] max-h-[90vh] z-[200] shadow-2xl flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center">
-                  <FaShieldHalved className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">{t("create_role")}</h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    {t("define_a_new_role_with_custom")}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsPopupShow(false)}
-                className="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center transition-colors group"
-              >
-                <FaXmark className="text-lg text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-200 group-hover:rotate-90 transition-all duration-200" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-6 space-y-5">
-              <Input
-                label={t("role_name")}
-                name="name"
-                placeholder={t("e_g_sales_manager_team_lead")}
-                value={formData.name}
-                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                required
-              />
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                    <FaBolt className="w-3.5 h-3.5 text-amber-500" />
-                    {t("power_level")}
-                    <span className="ml-auto text-xs font-bold text-slate-500 dark:text-slate-400 tabular-nums">
-                      {formData.power}
-                    </span>
-                  </label>
-                 
-                  <div className="flex items-center justify-between text-xs text-slate-400 dark:text-slate-500">
-                    <span>{t("viewer_1")}</span>
-                    <span
-                      className={`font-semibold ${getPowerConfig(formData.power).color.replace("bg-", "text-")}`}
-                    >
-                      {t(getPowerConfig(formData.power).label)}
-                    </span>
-                    <span>{t("owner_100")}</span>
-                  </div>
-                  <div className="w-full h-1.5 relative bg-slate-100 dark:bg-gray-700 rounded-full mt-1">
-                    <div
-                      className={`h-full rounded-full transition-all ${getPowerConfig(formData.power).color}`}
-                      style={{ width: `${formData.power}%` }}
-                    />
-                    <input
-                      type="range"
-                      min={1}
-                      max={100}
-                      step={1}
-                      value={formData.power}
-                      onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, power: Number(e.target.value) }))
-                      }
-                      className={`w-full h-2 absolute top-0 bottom-0 rounded-lg appearance-none bg-transparent cursor-pointer transition-colors ${getPowerConfig(formData.power).color.replace("bg-", "accent-")}`}
-                    />
-                  </div>
-                  
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    {t("management_access")}
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setFormData((prev) => ({ ...prev, canManageBelow: !prev.canManageBelow }))
-                    }
-                    className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left ${
-                      formData.canManageBelow
-                        ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-700"
-                        : "border-slate-200 dark:border-gray-600 bg-slate-50 dark:bg-gray-700/50 hover:border-slate-300"
-                    }`}
-                  >
-                    <div
-                      className={`w-10 h-6 rounded-full transition-colors relative flex-shrink-0 ${
-                        formData.canManageBelow ? "bg-emerald-500" : "bg-slate-300 dark:bg-gray-600"
-                      }`}
-                    >
-                      <div
-                        className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${
-                          formData.canManageBelow ? "translate-x-5" : "translate-x-1"
-                        }`}
-                      />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-slate-800 dark:text-white">
-                        {t("can_manage_below")}
-                      </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                        {formData.canManageBelow
-                          ? t("can_manage_users_with_lower_power") : t("read_only_no_user_management")}
-                      </p>
-                    </div>
-                  </button>
-                </div>
-              </div>
-
-              {formData.permissions.length > 0 && (
-                <div className="bg-cyan-50 max-h-34 overflow-scroll dark:bg-cyan-950/20 rounded-xl p-4 border border-cyan-100 dark:border-cyan-900/30">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-semibold text-cyan-700 dark:text-cyan-400">
-                      {t("selected_permissions")}
-                    </span>
-                    <button
-                      onClick={() => setFormData((prev) => ({ ...prev, permissions: [] }))}
-                      className="text-xs font-medium text-red-500 hover:text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2.5 py-1 rounded-lg transition-colors"
-                    >
-                      {t("remove_all")}{formData.permissions.length})
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {formData.permissions.map((id) => {
-                      const perm = permissionData?.find((p) => p.id === id);
-                      if (!perm) return null;
-                      return (
-                        <span
-                          key={id}
-                          className="group bg-white dark:bg-gray-700 border border-cyan-200 dark:border-cyan-800 text-cyan-700 dark:text-cyan-300 px-3 py-1.5 rounded-lg  text-sm flex items-center gap-2 capitalize hover:bg-stone-50 dark:hover:bg-cyan-900/30 transition-colors"
-                        >
-                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 flex-shrink-0" />
-                          {perm.title}
-                          <button
-                            onClick={() => removePermission(id)}
-                            className="ml-1 hover:text-red-500 cursor-pointer dark:hover:text-red-400 transition-colors"
-                          >
-                            <FaXmark className="w-3 h-3" />
-                          </button>
-                        </span>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <div className="grid md:grid-cols-3 items-center justify-between mb-3">
-                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    {t("available_permissions")}
-                  </span>
-                  <div className="relative flex gap-2">
-                    <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                      type="text"
-                      placeholder={t("search_permissions")}
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-9 pr-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 focus:border-transparent w-56"
-                    />
-                    <div className=" bg-white rounded-lg dark:bg-gray-800 border border-gray-200 dark:border-gray-600 px-4 py-3">
-                    <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={isAllSelected}
-                      onChange={(e) => handleAllPermissions(e.target.checked)}
-                      className="hidden"
-                    />
-
-                      <div
-                        className={`
-                          w-5 h-5 rounded border-2 flex items-center justify-center transition-all
-                          ${
-                            isAllSelected
-                              ? "bg-cyan-500 border-cyan-500"
-                              : "border-slate-300 bg-white"
-                          }
-                        `}
-                      >
-                        {isAllSelected && (
-                          <svg
-                            className="w-3 h-3 text-white"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={3}
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                        )}
-                      </div>
-                      <span className="font-semibold text-sm text-slate-700 dark:text-slate-200 whitespace-nowrap">
-                        {isAllSelected? t("deselect_all_permissions"):t("select_all_permissions")}
-                      </span>
-                    </label>
-                  </div>
-                  </div>
-                </div>
-                <div className="max-h-72 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700/50">
-                  {Object.entries(groupedPermissions).map(([module, perms]) => (
-                    <div
-                      key={module}
-                      className="border-b border-gray-200 dark:border-gray-600 last:border-0"
-                    >
-                      <div className="sticky top-0 bg-gray-100 dark:bg-gray-700 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400 z-10 flex justify-between items-center">
-                        <span>{t(module)}</span>
-                        <label className="flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={isModuleSelected(perms)}
-                        onChange={(e) =>
-                          handleModulePermission(perms, e.target.checked)
-                        }
-                        className="hidden"
-                      />
-
-                      <div
-                        className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
-                          isModuleSelected(perms)
-                            ? "bg-cyan-500 border-cyan-500"
-                            : "bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-500"
-                        }`}
-                      >
-                        {isModuleSelected(perms) && (
-                          <svg
-                            className="w-3 h-3 text-white"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={3}
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                        )}
-                      </div>
-                    </label>
-     
-
-                      </div>
-                      <div className="p-2">
-                        {perms.map((permission) => {
-                          const selected = isSelected(permission.id);
-                          return (
-                            <button
-                              key={permission.id}
-                              type="button"
-                              onClick={() => addPermission(permission.id)}
-                              className="w-full text-left px-3 py-2.5 rounded-lg mb-1 transition-all hover:bg-white dark:hover:bg-gray-600"
-                            >
-                              <div className="flex items-center gap-3">
-                                <div
-                                  className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0 ${
-                                    selected
-                                      ? "bg-cyan-500 border-cyan-500"
-                                      : "border-gray-300 dark:border-gray-500"
-                                  }`}
-                                >
-                                  {selected && (
-                                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                    </svg>
-                                  )}
-                                </div>
-                                <div>
-                                  <div className="font-medium text-slate-700 dark:text-slate-200 capitalize text-sm">
-                                    {permission.title}
-                                  </div>
-                                  <div className="text-xs text-slate-500 dark:text-slate-400">
-                                    {permission.action}
-                                  </div>
-                                </div>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-              <button
-                onClick={() => setIsPopupShow(false)}
-                className="px-5 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 text-slate-700 dark:text-slate-200 font-medium transition-colors"
-              >
-                {t("cancel")}
-              </button>
-              <FormButton
-                isLoading={isLoading}
-                onClick={handleSubmit}
-                disabled={formData.name === "" || formData.permissions.length <= 0}
-              >
-                <FaPlus className="w-4 h-4" />
-                {t("create_role")}
-              </FormButton>
-            </div>
+  <>
+    <BlurryBackground onClick={() => setIsPopupShow(false)} />
+    <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-2xl md:w-[720px] max-h-[90vh] z-[200] shadow-2xl flex flex-col">
+      <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center">
+            <FaShieldHalved className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
           </div>
-        </>
-      )}
+          <div>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+              {t("create_role")}
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              {t("define_a_new_role_with_custom")}
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={() => setIsPopupShow(false)}
+          className="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center transition-colors group"
+        >
+          <FaXmark className="text-lg text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-200 group-hover:rotate-90 transition-all duration-200" />
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-6">
+        <RoleForm
+          formData={formData}
+          setFormData={setFormData}
+          permissionData={permissionData}
+          maxPower={100}
+        />
+      </div>
+
+      <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+        <button
+          onClick={() => setIsPopupShow(false)}
+          className="px-5 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 text-slate-700 dark:text-slate-200 font-medium transition-colors"
+        >
+          {t("cancel")}
+        </button>
+        <FormButton
+          isLoading={isLoading}
+          onClick={handleSubmit}
+          disabled={formData.name === "" || formData.permissions.length <= 0}
+        >
+          <FaPlus className="w-4 h-4" />
+          {t("create_role")}
+        </FormButton>
+      </div>
+    </div>
+  </>
+)}
 
       <div className="bg-white dark:bg-gray-900/50 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">

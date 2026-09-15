@@ -405,9 +405,10 @@ const Page = (): JSX.Element => {
                       }`}>
                         {member.isActive ? 'Active' : 'Inactive'}
                       </span>
-                      <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                        {/* <IoEllipsisVertical className="w-5 h-5 text-gray-400" /> */}
-                      </button>
+                      {/* <button className="px-3 py-1 text-xs font-medium rounded-full bg-red-300 dark:bg-red-200 dark:text-red-600   text-red-800 hover:bg-red-200  dark:hover:bg-red-300 cursor-pointer">
+                       
+                        {t("delete")}
+                      </button> */}
                     </div>
                   </div>
                 </div>

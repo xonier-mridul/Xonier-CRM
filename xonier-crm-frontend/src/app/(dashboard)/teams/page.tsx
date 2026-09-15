@@ -457,8 +457,10 @@ getCategoryData();
               </div>
 
                <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                  {t("add_manager")}
+                <label className="text-sm font-medium 
+ text-gray-700 dark:text-gray-200 capitalize flex gap-2">
+  
+                  {t("add_manager")}<span className="text-red-500 text-xl">*</span>
                 </label>
 
                   <div className="relative w-full" ref={managerDropdownRef}>
@@ -575,8 +577,11 @@ getCategoryData();
               </div> 
 
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                  {t("add_members")}
+                <label className="text-sm font-medium 
+ text-gray-700 dark:text-gray-200 capitalize flex gap-2">
+  
+                  {t("add_members")}<span className="text-red-500 text-xl">*</span>
+                  
                 </label>
 
                 {/* <select
