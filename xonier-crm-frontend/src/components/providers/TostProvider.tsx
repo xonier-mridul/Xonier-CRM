@@ -70,7 +70,6 @@ const ToastProvider = () => {
       draggable={false}
       theme="light"
       toastClassName="xonier-toast"
-      bodyClassName="xonier-toast-body"
       closeButton={false}
       icon={({ type }) => <CustomIcon type={type} />}
       limit={4}

@@ -1,6 +1,6 @@
 // src/components/common/AdvancedFilters/AdvancedFilters.types.ts
 
-export type SourceFilterValue = "" | "all" | "company" | "referral";
+export type SourceFilterValue = string;
 
 export interface AdvancedFiltersValues {
   teamFilter: string;

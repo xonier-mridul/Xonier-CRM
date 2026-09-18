@@ -93,6 +93,10 @@ const page = (): JSX.Element => {
         fullName: searchVal,
         fromDate: dateFilter.fromDate,
         toDate: dateFilter.toDate,
+        status: statusFilter || undefined,
+        projectType: projectTypeFilter || undefined,
+        source: sourceFilter || undefined,
+        assignTo: assigneeFilter || undefined,
       });
       if (result.status === 200) {
         const data = result.data.data;
@@ -140,20 +144,14 @@ const page = (): JSX.Element => {
   }, []);
   useEffect(() => { if (!assignDropdownOpen) setAssignSearchVal(""); }, [assignDropdownOpen]);
 
+  useEffect(() => { setCurrentPage(1); }, [statusFilter, projectTypeFilter, assigneeFilter, sourceFilter, dateFilter]);
   useEffect(() => { getEnquiryData(); }, [pageLimit, currentPage]);
   useEffect(() => { getUserData(); }, []);
-  useEffect(() => { getEnquiryData(); }, [TosearchVal, dateFilter, sourceFilter]);
+  useEffect(() => { setCurrentPage(1); }, [TosearchVal]);
+  useEffect(() => { getEnquiryData(); }, [TosearchVal, dateFilter, sourceFilter, statusFilter, projectTypeFilter, assigneeFilter]);
 
-  // Client-side filters
-  const filteredEnquiryData = React.useMemo(() => {
-    if (!enquiryData || !Array.isArray(enquiryData)) return enquiryData;
-    return (enquiryData as any[])
-      .filter((i) => !salesPersonFilter || i.createdBy?.id === salesPersonFilter)
-      .filter((i) => !statusFilter || i.status === statusFilter)
-      .filter((i) => !projectTypeFilter || i.projectType === projectTypeFilter)
-      .filter((i) => !assigneeFilter || i.assignTo?.id === assigneeFilter)
-      .filter((i) => !sourceFilter || i.source === sourceFilter);
-  }, [enquiryData, salesPersonFilter, statusFilter, projectTypeFilter, assigneeFilter, sourceFilter]);
+  // No client-side filter needed — all filters are applied server-side
+  const filteredEnquiryData = enquiryData;
 
   // KPIs
   const allEnquiries = Array.isArray(enquiryData) ? enquiryData : [];
