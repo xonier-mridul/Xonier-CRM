@@ -75,7 +75,7 @@ class AuthController:
         
     async def login(self, request: Request, data: Dict[str, Any]):
         try:
-           
+          
            
             result = await self.service.login(data=data)
 

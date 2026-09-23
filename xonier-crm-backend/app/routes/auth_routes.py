@@ -119,7 +119,8 @@ async def getMe(request: Request, response: Response):
 async def update(request: Request,id: str, payload: UpdateUserSchema ):
     return await auth_controller.update(request, id, payload)
 
-@router.patch("/update-status/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.permissions(["user:update"]))])
+@router.patch("/update-status/{id}", status_code=200, dependencies=[Depends(dependencies.authorized),Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.permissions(["user:update"]))])
 async def update_status(request: Request, id: str, payload: UpdateUserStatusSchema):
     return await auth_controller.update_status(request, id, payload.model_dump())
 

@@ -1008,8 +1008,6 @@ class AuthServices:
             hashed_mail = hash_value(data["email"])
             encrypt_email = self.crypto.encrypt_data(data["email"])
 
-            
-            
             with system_query():
                 company = await self.companyRepo.find_one(filter={"companyId": data.get("companyId")}, populate=["subscription"], session=session)
 
@@ -1120,6 +1118,23 @@ class AuthServices:
 
             if not create_otp:
                 raise AppException(400, "OTP not stored in database")
+            # with system_query():
+            #     activity = activity_payload(
+            #         userId=PydanticObjectId(isUserExist.id),
+            #         entityType=ACTIVITY_ENTITY_TYPE.AUTH,
+            #         entityId=PydanticObjectId(isUserExist.id),
+            #         action=ACTIVITY_ACTION.LOGIN,
+            #         title="Login user",
+            #         metadata={
+            #             "userName": f"{isUserExist.firstName} {isUserExist.lastName}",
+            #             "email": isUserExist.email,
+            #         },
+            #         ipAddress=ip,
+            #         userAgent=agent,
+            #         )
+            
+            #     await self.activityRepo.create(data=activity, session=session)
+            
 
             await session.commit_transaction()
 

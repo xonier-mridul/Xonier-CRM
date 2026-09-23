@@ -15,6 +15,9 @@ export const EnquiryService = {
         `${data.companyName ? `companyName=${data.companyName}&` : ""}` +
         `${data.projectType ? `projectType=${data.projectType}&` : ""}` +
         `${data.priority ? `priority=${data.priority}&` : ""}`+
+        `${data.status ? `status=${data.status}&` : ""}` +
+        `${data.source ? `source=${data.source}&` : ""}` +
+        `${data.assignTo ? `assignTo=${data.assignTo}&` : ""}` +
         `${data.fromDate ? `fromDate=${data.fromDate}&` : ""}` +  
         `${data.toDate ? `toDate=${data.toDate}&` : ""}` 
     ),
