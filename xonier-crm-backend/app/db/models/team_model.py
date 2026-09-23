@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from app.db.models.team_category_model import TeamCategoryModel
 
 
-SLUG = Annotated[str, StringConstraints(pattern=r"^[a-z]+(_[a-z]+)*$", min_length=2, max_length=50)]
+SLUG = Annotated[str, StringConstraints(pattern=r"^[A-Za-z0-9 _@#$%&*()\-+.,!]+$", min_length=2, max_length=50)]
 from app.db.models.base_model import BaseDocument
 
 class TeamModel(BaseDocument):

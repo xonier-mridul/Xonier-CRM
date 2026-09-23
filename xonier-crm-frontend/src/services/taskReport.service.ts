@@ -7,12 +7,19 @@ import {
 import { ParamValue } from "next/dist/server/request/params";
 
 export const TaskReportService = {
-  getAll: (params: TaskReportListParams) =>{
-    return api.get(`/task-reports/all?${params.page ? `page=${params.page}` : ""}
-      ${params.limit ? `&limit=${params.limit}` : ""}
-      ${params.userId ? `&userId=${params.userId}` : ""}
-      ${params.search ? `&search=${params.search}` : ""}${params.status ? `&search=${params.status}` : ""}${params.fromDate ? `&fromDate=${params.fromDate}` : ""}${params.toDate ? `&toDate=${params.toDate}` : ""}`);
-  },
+ getAll: (params: TaskReportListParams) => {
+  const query = new URLSearchParams();
+
+  if (params.page) query.set("page", String(params.page));
+  if (params.limit) query.set("limit", String(params.limit));
+  if (params.userId) query.set("userId", String(params.userId));
+  if (params.search) query.set("search", params.search);
+  if (params.status) query.set("status", params.status);
+  if (params.fromDate) query.set("fromDate", params.fromDate);
+  if (params.toDate) query.set("toDate", params.toDate);
+
+  return api.get(`/task-reports/all?${query.toString()}`);
+},
   getMine: (params: TaskReportListParams) =>
     api.get(`/task-reports/my-reports?${params.page ? `page=${params.page}` : ""}${params.limit ? `&limit=${params.limit}` : ""}${params.search ? `&search=${params.search}` : ""}`),
 

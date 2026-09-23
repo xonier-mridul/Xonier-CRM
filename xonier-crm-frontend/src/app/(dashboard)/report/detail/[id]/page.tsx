@@ -65,31 +65,31 @@ const ITEM_STATUS_META: Record<
   { label: string; bg: string; text: string; icon: string }
 > = {
   pending: {
-    label: "Pending",
+    label: "pending",
     bg: "bg-amber-50 dark:bg-amber-900/20",
     text: "text-amber-600 dark:text-amber-400",
     icon: "⏳",
   },
   in_progress: {
-    label: "In Progress",
+    label: "in_progress",
     bg: "bg-cyan-50 dark:bg-cyan-900/20",
     text: "text-cyan-600 dark:text-cyan-400",
     icon: "🔄",
   },
   completed: {
-    label: "Completed",
+    label: "completed",
     bg: "bg-emerald-50 dark:bg-emerald-900/20",
     text: "text-emerald-600 dark:text-emerald-400",
     icon: "✅",
   },
   carried_forward: {
-    label: "Carried Forward",
+    label: "carried_forward",
     bg: "bg-cyan-50 dark:bg-cyan-900/20",
     text: "text-cyan-600 dark:text-cyan-400",
     icon: "➡️",
   },
   blocked: {
-    label: "Blocked",
+    label: "blocked",
     bg: "bg-red-50 dark:bg-red-900/20",
     text: "text-red-600 dark:text-red-400",
     icon: "🚫",
@@ -204,12 +204,12 @@ function TaskItemCard({
           <span
             className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${priorityClass}`}
           >
-            {item.priority ?? "—"}
+            {item.priority ? t(item.priority) : "—"}
           </span>
           <span
             className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusMeta.bg} ${statusMeta.text}`}
           >
-            {statusMeta.icon} {statusMeta.label}
+            {statusMeta.icon} {t(statusMeta.label)}
           </span>
         </div>
       </div>
@@ -740,7 +740,7 @@ const language = (i18n.resolvedLanguage ?? "en").split("-")[0];
 
   return (
     <div className="">
-      <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full mb-10">
+      <div className="bg-white dark:bg-gray-900/50 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full mb-10">
         <div className="flex items-center justify-between mb-7">
           <div className="flex items-center gap-3">
             <div>
@@ -752,22 +752,22 @@ const language = (i18n.resolvedLanguage ?? "en").split("-")[0];
               </div>
               {!isLoading && report && (
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 ml-9">
-  {new Date(report.reportDate).toLocaleDateString(
-    localeMap[language] || "en-IN",
-    {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    }
-  )}
+                {new Date(report.reportDate).toLocaleDateString(
+                  localeMap[language] || "en-IN",
+                  {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  }
+                )}
 
-  {report.user && (
-    <span className="ml-2 text-cyan-600 dark:text-cyan-400 font-semibold">
-      · {report.user.firstName} {report.user.lastName}
-    </span>
-  )}
-</p>
+                {report.user && (
+                  <span className="ml-2 text-cyan-600 dark:text-cyan-400 font-semibold">
+                    · {report.user.firstName} {report.user.lastName}
+                  </span>
+                )}
+              </p>
               )}
             </div>
           </div>
@@ -929,7 +929,7 @@ const language = (i18n.resolvedLanguage ?? "en").split("-")[0];
               {evening?.pendingItems.length ? (
                 <div className="mb-5">
                   <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
-                    {t("pending_tasks")}{evening.pendingItems.length})
+                    {t("pending_tasks")}({evening.pendingItems.length})
                   </p>
                   <div className="space-y-3">
                     {evening.pendingItems.map((item, idx) => (

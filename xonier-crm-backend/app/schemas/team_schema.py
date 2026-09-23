@@ -4,7 +4,7 @@ from app.db.models.user_model import UserModel
 from app.utils.custom_exception import AppException
 import re
 
-NAME_PATTERN = re.compile(r"^[A-Za-z\s]+$") 
+NAME_PATTERN = re.compile(r"^[A-Za-z0-9 _@#$%&*()\-+.,!]+$") 
 class TeamRegisterSchema(BaseModel):
     name: str = Field(...)
     category: str

@@ -175,15 +175,15 @@ useEffect(() => {
   };
 
   return (
-    <div className="flex items-center justify-center bg-gradient-to-br from-cyan-50 to-blue-50 min-h-screen">
-      <div className="bg-white p-8 rounded-xl w-[600px] flex flex-col gap-5">
-        <h1 className="text-2xl font-semibold text-cyan-800">
+    <div className="flex items-center justify-center bg-gradient-to-br from-cyan-50 dark:from-cyan-900 to-blue-50 dark:to-blue-900 min-h-screen">
+      <div className="bg-white  dark:bg-slate-900 dark:border-slate-600 p-8 rounded-xl w-150 flex flex-col gap-5">
+        <h1 className="text-2xl font-semibold text-cyan-800 dark:text-cyan-200">
           {t("verify_login_otp")}
         </h1>
 
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-slate-400">
           {t("otp_is_sent_to")}{" "}
-          <span className="font-medium text-cyan-500">{email}</span>
+          <span className="font-medium text-cyan-500 dark:text-cyan-500">{email}</span>
         </p>
 
         <form onSubmit={verifyOtp} className="flex flex-col gap-7">
@@ -203,7 +203,8 @@ useEffect(() => {
                 onPaste={handlePaste}
                 className="
                   w-16 h-14 text-center text-lg font-semibold
-                  outline-none
+                  dark:bg-slate-800 dark:text-slate-200
+                  outline-none dark:focus:border-cyan-500
                   border border-slate-400 text-slate-800
                   rounded-md focus:ring-2 focus:ring-cyan-500
                 "
@@ -224,7 +225,7 @@ useEffect(() => {
 
         <div className="text-center text-sm text-gray-600">
           {timeLeft > 0 ? (
-            <p>
+            <p className="dark:text-slate-400">
               {t("resend_otp_in")}{" "}
               <span className="font-semibold text-cyan-600">{timeLeft}s</span>
             </p>
@@ -240,7 +241,7 @@ useEffect(() => {
 
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-1.5 text-slate-700 font-medium cursor-pointer hover:text-cyan-400 tracking-wide"
+          className="flex items-center gap-1.5 text-slate-700 font-medium cursor-pointer dark:text-slate-400 hover:text-cyan-400 tracking-wide"
         >
           <IoChevronBack /> {t("step_back")}
         </button>

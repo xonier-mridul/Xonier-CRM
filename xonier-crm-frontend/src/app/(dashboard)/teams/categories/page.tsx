@@ -27,6 +27,7 @@ import ErrorComponent from "@/src/components/ui/ErrorComponent";
 import SuccessComponent from "@/src/components/ui/SuccessComponent";
 import Skeleton from "react-loading-skeleton";
 import { useTranslation } from "react-i18next";
+import { FormatDate } from "@/src/components/common/FormateDate";
 
 const page = (): JSX.Element => {
   const { t } = useTranslation();
@@ -135,8 +136,8 @@ const page = (): JSX.Element => {
         toast.info("category Id not found")
         return
       }
-      const isDelete = await ConfirmPopup({ title: "Are you sure", text: "are you sure", btnTxt: "Yes, delete" })
-      if (isDelete) {
+      const {isConfirmed} = await ConfirmPopup({ title: "Are you sure", text: "are you sure", btnTxt: "Yes, delete" })
+      if (isConfirmed) {
         const response = await TeamCategoryService.delete(id)
         if (response.status === 200) {
           await getTeamCategoryData()
@@ -192,7 +193,10 @@ const page = (): JSX.Element => {
                 required
               />
               <div className="flex flex-col gap-1 w-full">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-200 capitalize">{t("description_2")}</label>
+                 <label className="text-sm font-medium text-gray-700 dark:text-gray-200 capitalize flex gap-2">
+ {t("description_2")}
+    <span className="text-red-500 text-xl">*</span>
+              </label>
                 <textarea
                   name="description"
                   id="description"
@@ -208,7 +212,7 @@ const page = (): JSX.Element => {
                 />
               </div>
               {err && <div className="flex items-center justify-end w-full"><p className="text-red-500">{err}</p></div>}
-              <FormButton isLoading={loading} disabled={formData.name === "" || formData.description === ""}>{t("upload")}</FormButton>
+              <FormButton isLoading={loading} disabled={formData.name === "" || formData.description === ""}>{t("submit")}</FormButton>
             </form>
           </div>
         </>
@@ -283,12 +287,7 @@ const page = (): JSX.Element => {
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-slate-50 dark:bg-gray-600/50">
                 <span className="text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-300 font-semibold">{t("created_at")}</span>
                 <span className="text-slate-700 dark:text-white text-sm font-medium">
-                  {new Date(viewData.createdAt).toLocaleDateString("en-IN", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                    timeZone: "Asia/Kolkata",
-                  })}
+                  {FormatDate(viewData.createdAt)}
                 </span>
               </div>
 
@@ -297,12 +296,7 @@ const page = (): JSX.Element => {
                 <span className="text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-300 font-semibold">{t("updated_at")}</span>
                 <span className="text-slate-700 dark:text-white text-sm font-medium">
                   {viewData.updatedAt
-                    ? new Date(viewData.updatedAt).toLocaleDateString("en-IN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                        timeZone: "Asia/Kolkata",
-                      })
+                    ? FormatDate(viewData.updatedAt)
                     : "—"}
                 </span>
               </div>
@@ -343,7 +337,7 @@ const page = (): JSX.Element => {
       {/* ══════════════════════════════════════════════════════════ */}
 
       <div>
-        <div className="bg-white dark:bg-gray-700 dark:backdrop-blur-sm flex flex-col gap-5 p-6 rounded-xl border-[1px] border-slate-900/10 w-full">
+        <div className="bg-white dark:bg-gray-900/50 dark:backdrop-blur-sm flex flex-col gap-5 p-6 rounded-xl border-[1px] border-slate-900/10 w-full">
           <div className="flex items-center gap-12 justify-between">
             <div className="flex flex-col gap-2">
               <h2 className="text-xl font-bold dark:text-white text-slate-900 capitalize">
@@ -357,14 +351,14 @@ const page = (): JSX.Element => {
               <select
                 name="limit"
                 id="limit"
-                className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10"
+                className="bg-slate-50 dark:bg-gray-700 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10"
               >
                 <option value="10">10</option>
                 <option value="20">20</option>
                 <option value="30">30</option>
                 <option value="40">50</option>
               </select>
-              <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 gap-1.5 rounded-lg border-[1px] border-slate-900/10 flex items-center">
+              <div className="bg-slate-50 dark:bg-gray-700 px-3 py-2.5 gap-1.5 rounded-lg border-[1px] border-slate-900/10 flex items-center">
                 <IoIosSearch className="text-xl" />
                 <input type="text" placeholder={t("search_by_name_2")}  onChange={(e)=>{setSearch(e.target.value)}} className="border-none bg-transparent outline-none text-sm font-medium text-slate-900 dark:text-white w-full"/>
               </div>
@@ -399,36 +393,31 @@ const page = (): JSX.Element => {
               {!isLoading ? (
                 teamCatData && teamCatData?.length > 0 ? (
                   teamCatData?.map((item, index) => {
-                    let rr = index % 2 == 0;
-                    let date = new Date(item.createdAt).toLocaleDateString("en-IN", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                      timeZone: "Asia/Kolkata",
-                    });
+                    const rr = index % 2 == 0;
+                    const date = FormatDate(item.createdAt)
 
                     return (
                       <tr
                         key={item.id}
-                        className={`${rr ? "bg-white dark:bg-transparent" : "bg-slate-100/50 dark:bg-slate-800"} w-full`}
+                        className={`${rr ? "bg-white  dark:bg-slate-800/50" : "bg-slate-100/50 dark:bg-slate-800"} w-full group`}
                       >
                         <td className="p-4">{index + 1}</td>
                         <td className="p-4">
-                          <Link
-                            href={`/teams/categories/${item.id}`}
-                            className="cursor-pointer hover:text-cyan-500 capitalize"
+                          <div
+                            
+                            className=" group-hover:text-cyan-500 capitalize"
                           >
                             {item.name}
-                          </Link>
+                          </div>
                         </td>
-                        <td className="p-4 first-letter:uppercase">{item.description}</td>
-                        <td className="p-4">{date}</td>
+                        <td className="p-4 first-letter:uppercase max-w-80 truncate">{item.description}</td>
+                        <td className="p-4 whitespace-nowrap">{date}</td>
                         <td className="p-4">
                           <span
                             className={`${item.isActive ? "bg-green-100 text-green-600" : "bg-orange-100 text-orange-500"} rounded-full text-sm font-medium py-1 px-3 flex items-center gap-1 w-fit capitalize`}
                           >
                             <GoDotFill />
-                            {item.isActive ? "Active" : "Inactive"}
+                            {item.isActive ? t("active") : t("inactive")}
                           </span>
                         </td>
                         <td className="p-4">

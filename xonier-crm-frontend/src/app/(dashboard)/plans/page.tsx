@@ -134,13 +134,13 @@ const PlansPage = (): JSX.Element => {
 
   const handleDelete = async (id: string) => {
     try {
-      const confirm = await ConfirmPopup({
+      const {isConfirmed} = await ConfirmPopup({
         title: "Delete Plan",
         text: "This action cannot be undone. Are you sure you want to delete this plan?",
         btnTxt: "Yes, delete",
       });
 
-      if (!confirm) return;
+      if (!isConfirmed) return;
 
       const result = await PlanService.delete(id);
       if (result.status === 200) {

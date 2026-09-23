@@ -2,7 +2,7 @@ import { TASK_PRIORITY } from "../types/task/task.types";
 import { CURRENCY, NUMBER_OF_EMPLOYEES } from "./enum";
 
 export const SIDEBAR_WIDTH = "288px"
-export const MARGIN_TOP = "40px"
+export const MARGIN_TOP = "64px"
 export const SUPER_ADMIN_ROLE_CODE:string = "SUPER_ADMIN"
 export const STOP_DISPLAY_MS = 4000;
 
@@ -61,13 +61,13 @@ export const CURRENCY_SYMBOL: Record<CURRENCY, string> = {
 
 
 export const sizeOptions = [
-  { label: "< 50 employees", value: NUMBER_OF_EMPLOYEES.LESS_THAN_50 },
-  { label: "50 – 100", value: NUMBER_OF_EMPLOYEES.FROM_50_TO_100 },
-  { label: "100 – 200", value: NUMBER_OF_EMPLOYEES.FROM_100_TO_200 },
-  { label: "200 – 300", value: NUMBER_OF_EMPLOYEES.FROM_200_TO_300 },
-  { label: "300 – 400", value: NUMBER_OF_EMPLOYEES.FROM_300_TO_400 },
-  { label: "400 – 500", value: NUMBER_OF_EMPLOYEES.FROM_400_TO_500 },
-  { label: "500 – 1000", value: NUMBER_OF_EMPLOYEES.FROM_500_TO_1000 },
-  { label: "1000 – 2000", value: NUMBER_OF_EMPLOYEES.FROM_1000_TO_2000 },
-  { label: "2000 – 5000", value: NUMBER_OF_EMPLOYEES.FROM_2000_TO_5000 },
+  { label: "< 50 ", value: NUMBER_OF_EMPLOYEES.LESS_THAN_50 },
+  { label: "50 – 100 ", value: NUMBER_OF_EMPLOYEES.FROM_50_TO_100 },
+  { label: "100 – 200 ", value: NUMBER_OF_EMPLOYEES.FROM_100_TO_200 },
+  { label: "200 – 300 ", value: NUMBER_OF_EMPLOYEES.FROM_200_TO_300 },
+  { label: "300 – 400 ", value: NUMBER_OF_EMPLOYEES.FROM_300_TO_400 },
+  { label: "400 – 500 ", value: NUMBER_OF_EMPLOYEES.FROM_400_TO_500 },
+  { label: "500 – 1000 ", value: NUMBER_OF_EMPLOYEES.FROM_500_TO_1000 },
+  { label: "1000 – 2000 ", value: NUMBER_OF_EMPLOYEES.FROM_1000_TO_2000 },
+  { label: "2000 – 5000 ", value: NUMBER_OF_EMPLOYEES.FROM_2000_TO_5000 },
 ];

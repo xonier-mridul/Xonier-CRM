@@ -9,7 +9,7 @@ from app.db.models.base_model import BaseDocument
 SLUG = Annotated[
     str,
     StringConstraints(
-        pattern=r"^[a-z]+(_[a-z]+)*$",
+        pattern=r"^[A-Za-z0-9 _@#$%&*()\-+.,!]+$",
         min_length=2,
         max_length=50
     )

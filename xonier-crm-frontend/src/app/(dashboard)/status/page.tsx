@@ -162,12 +162,12 @@ const page = (): JSX.Element => {
     setErr(null);
     setLoading(true);
     try {
-      const confirm = await ConfirmPopup({
+      const {isConfirmed} = await ConfirmPopup({
         title: "Are you sure?",
         text: "Are you sure you want to delete this status?",
         btnTxt: "Yes, Delete",
       });
-      if (confirm) {
+      if (isConfirmed) {
         const result = await StatusService.delete(id);
         if (result.status === 200) {
           toast.success("Status deleted successfully")
@@ -208,7 +208,7 @@ const page = (): JSX.Element => {
   
   return (
     <div className="">
-      <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xs w-full mb-10">
+      <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-6 shadow-2xs w-full mb-10">
         <StatusTable
           statusData={statusData}
           currentPage={currentPage}

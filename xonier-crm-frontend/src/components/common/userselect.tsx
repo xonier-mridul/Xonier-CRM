@@ -361,7 +361,7 @@ const UserSelect: React.FC<UserSelectProps> = (props) => {
 
 
   return (
-    <div className={`relative ${cls ?? "min-w-52"}`} ref={dropdownRef}>
+    <div className={`relative min-w-52`} ref={dropdownRef}>
 
      
       <input

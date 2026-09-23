@@ -8,12 +8,15 @@ import { useRouter } from 'next/navigation'
 import React, { FormEvent, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Mail, Lock, ShieldCheck } from 'lucide-react'
+import ThemeToggle from '@/src/components/common/ThemeToggle'
+import { useTheme } from 'next-themes'
 
 const Page = () => {
   const { t } = useTranslation()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>("")
+    const {resolvedTheme} = useTheme()
 
   const [formData, setFormData] = useState<AdminLogin>({
     email: "",
@@ -49,19 +52,18 @@ const Page = () => {
   }
 
   return (
-    <div className="w-full min-h-screen bg-linear-to-br from-cyan-50/2 via-cyan-50 to-cyan-100 flex flex-col lg:flex-row">
+    <div className="w-full min-h-screen flex flex-col lg:flex-row dark:bg-cyan-900 bg-cyan-50">
       
       {/* Left Section - Branding & Illustration */}
       <div className="w-full lg:w-[65%] flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-10">
         <nav className="mb-6 lg:mb-0">
-          <Image
-            src={"/images/trakeroo.png"}
-            height={200}
-            width={200}
-            alt={t("xonier_logo")}
-            className="w-32 sm:w-36"
-            priority
-          />
+            <Image
+                      src={ resolvedTheme === "dark" ? '/images/trakeroo-light.png' : '/images/trakeroo.png' }
+                      height={200}
+                      width={200}
+                      alt={t("xonier_logo")}
+                      className="w-36"
+                    />
         </nav>
 
         <div className="flex-1 flex flex-col items-center justify-center gap-6 mt-6 lg:mt-0">
@@ -77,21 +79,25 @@ const Page = () => {
             <h2 className="text-xl font-semibold text-cyan-900">
               {t("manage_your_platform") || "Manage your platform with ease"}
             </h2>
-            <p className="text-cyan-700/70 mt-2 text-sm">
+            <p className="text-cyan-700/70 mt-2 text-sm dark:text-gray-200">
               {t("admin_panel_subtitle") || "Secure access for administrators to monitor, control, and configure the system."}
             </p>
           </div>
         </div>
       </div>
 
-      <div className="w-full lg:w-[35%] flex items-center justify-center bg-white px-6 sm:px-10 py-12 lg:py-0 lg:rounded-l-3xl lg:shadow-sm">
+      <div className="w-full relative lg:w-[35%] flex items-center dark:bg-slate-900 justify-center bg-white px-6 sm:px-10 py-12 lg:py-0 lg:rounded-l-3xl lg:shadow-sm">
+          <div className="absolute top-2 right-4">
+        
+                <ThemeToggle/>
+                </div>
         <div className="w-full max-w-sm">
 
           <div className="flex flex-col items-center lg:items-start mb-8">
             <div className="w-14 h-14 rounded-2xl bg-cyan-100 flex items-center justify-center mb-4">
               <ShieldCheck className="w-7 h-7 text-cyan-600" />
             </div>
-            <h1 className="text-2xl sm:text-3xl text-gray-900 font-bold text-center lg:text-left">
+            <h1 className="text-2xl sm:text-3xl dark:text-white text-gray-900 font-bold text-center lg:text-left">
               {t("welcome_back_admin")}
             </h1>
             <p className="text-sm text-gray-500 mt-2 text-center lg:text-left">
@@ -133,7 +139,7 @@ const Page = () => {
             </div>
           </form>
 
-          <p className="text-xs text-gray-400 text-center mt-10">
+          <p className="text-xs text-gray-400 text-center mt-10 ">
             {t("secure_admin_access") || "This is a restricted area. Unauthorized access is prohibited."}
           </p>
         </div>

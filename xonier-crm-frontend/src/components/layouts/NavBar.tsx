@@ -262,7 +262,7 @@ const results = searchableData.filter((item) =>
 
   const handleLogout = async (): Promise<void> => {
     try {
-      const isConfirmed = await ConfirmPopup({
+      const {isConfirmed} = await ConfirmPopup({
         title: "Logout",
         text: "Are you want to logout",
         btnTxt: "Yes, Logout",
@@ -312,7 +312,7 @@ const results = searchableData.filter((item) =>
   : auth?.user?.companyId;
 
   return (
-    <div className="h-14 z-99 fixed top-0 right-0 left-[288px] bg-white/85 dark:bg-slate-900/85 backdrop-blur-md px-4 flex justify-between items-center my-2 border border-slate-200/80 dark:border-slate-800 rounded-2xl mx-3 shadow-2xs">
+    <div className="h-14 z-99 fixed top-0 right-0 left-[288px] bg-white/85 dark:bg-slate-900/50 backdrop-blur-md px-4 flex justify-between items-center my-2 border border-slate-200/80 dark:border-slate-800 rounded-2xl mx-3 shadow-2xs">
       
        {
         calOpen &&(

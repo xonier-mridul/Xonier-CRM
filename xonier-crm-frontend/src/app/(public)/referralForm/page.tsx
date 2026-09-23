@@ -378,13 +378,13 @@ const Page = () => {
   }
 
   const handleDelete = async (id: string) => {
-    const confirm = await ConfirmPopup({
+    const {isConfirmed} = await ConfirmPopup({
       title: t("are_you_sure_?"),
       text: t("confirm_delete_lead"),
       btnTxt: t("yes,delete")
     });
 
-    if (confirm) {
+    if (isConfirmed) {
       setReferralLeads(prev => prev.filter(lead => lead.id !== id))
       if (referralLeads.length === 1) {
         setShowTable(false)
@@ -397,7 +397,7 @@ const Page = () => {
       toast.error(t("no_leads_to_submit"))
       return
     }
-    const confirm = await ConfirmPopup({
+    const {isConfirmed} = await ConfirmPopup({
       title: t("are_you_sure_?"),
       text: t("confirm_submitting_all_leads"),
       btnTxt: t("yes_submit_all")
@@ -406,7 +406,7 @@ const Page = () => {
     setIsLoading(true)
 
     try {
-      if (confirm) {
+      if (isConfirmed) {
         console.log('Submitting all leads:', referralLeads)
         // await submitAllReferrals(referralLeads)
 
@@ -428,13 +428,13 @@ const Page = () => {
     e.preventDefault()
 
     setIsLoading(true)
-    const confirm = await ConfirmPopup({
+    const {isConfirmed} = await ConfirmPopup({
       title: t("are_you_sure_?"),
       text: t("confirm_submitting_leads"),
       btnTxt: t("yes_submit")
     });
     try {
-      if (confirm) {
+      if (isConfirmed) {
         console.log("FormData:", formData)
         resetForm()
         clearDraft()

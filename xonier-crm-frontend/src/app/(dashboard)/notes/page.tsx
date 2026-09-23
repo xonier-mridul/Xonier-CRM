@@ -561,8 +561,8 @@ const Page = (): JSX.Element => {
     
 
     try {
-      const confirm = await ConfirmPopup({title: t("are_you_sure"),  text: t("deleteConfirmation", { name }), btnTxt: t("yes_delete")})
-      if (confirm){
+      const {isConfirmed} = await ConfirmPopup({title: t("are_you_sure"),  text: t("deleteConfirmation", { name }), btnTxt: t("yes_delete")})
+      if (isConfirmed){
         const result = await NoteService.softDelete(id)
         if(result.status === 200){
   setNotesData((prev) => prev.filter((note) => note.id !== id));

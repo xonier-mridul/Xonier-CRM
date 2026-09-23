@@ -132,9 +132,9 @@ const page = (): JSX.Element => {
     setErr("");
     setLoading(true)
     try {
-      const confirm =await ConfirmPopup({title: "Are you sure for delete", text:"Are you sure to delete this User role", btnTxt: "Yes, Delete"})
+      const {isConfirmed} =await ConfirmPopup({title: "Are you sure for delete", text:"Are you sure to delete this User role", btnTxt: "Yes, Delete"})
 
-      if(confirm){
+      if(isConfirmed){
          const result = await RoleService.delete(id)
          if(result.status === 200){
           toast.success("Role deleted successfully")

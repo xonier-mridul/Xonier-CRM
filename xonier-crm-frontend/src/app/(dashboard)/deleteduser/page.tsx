@@ -23,6 +23,7 @@ import {
 } from "react-icons/fi";
 import { MdOutlineDeleteForever } from "react-icons/md";
 import { useTranslation } from "react-i18next";
+import { FormatDate } from "@/src/components/common/FormateDate";
 
 // ─── Avatar helper ───────────────────────────────────────────────────────────
 
@@ -185,13 +186,13 @@ const DeletedUsersPage = (): JSX.Element => {
   // ── Restore single ───────────────────────────────────────────────────────
 
   const handleRestore = async (id: string, name: string) => {
-    const confirm = await ConfirmPopup({
+    const {isConfirmed} = await ConfirmPopup({
       title: "Restore user?",
       text: `"${name}" will be restored and gain access again.`,
       btnTxt: "Yes, restore",
     });
 
-    if (!confirm) return;
+    if (!isConfirmed) return;
 
     try {
       // Replace with your actual restore service call
@@ -213,13 +214,13 @@ const DeletedUsersPage = (): JSX.Element => {
   // ── Permanent delete single ──────────────────────────────────────────────
 
   const handlePermanentDelete = async (id: string, name: string) => {
-    const confirm = await ConfirmPopup({
+    const {isConfirmed} = await ConfirmPopup({
       title: "Permanently delete?",
       text: `This will permanently remove "${name}". This action cannot be undone.`,
       btnTxt: "Yes, delete permanently",
     });
 
-    if (!confirm) return;
+    if (!isConfirmed) return;
 
     try {
       // Replace with your actual permanent delete service call
@@ -243,13 +244,13 @@ const DeletedUsersPage = (): JSX.Element => {
   const handleBulkDelete = async () => {
     if (selected.size === 0) return;
 
-    const confirm = await ConfirmPopup({
+    const {isConfirmed} = await ConfirmPopup({
       title: `Permanently delete ${selected.size} user${selected.size > 1 ? "s" : ""}?`,
       text: "All selected users will be permanently removed. This action cannot be undone.",
       btnTxt: `Delete ${selected.size} user${selected.size > 1 ? "s" : ""}`,
     });
 
-    if (!confirm) return;
+    if (!isConfirmed) return;
 
     try {
       // Replace with your actual bulk delete service call
@@ -312,7 +313,7 @@ const DeletedUsersPage = (): JSX.Element => {
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="lg:mt-16 p-6 min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 rounded-2xl">
+    <div className=" p-6 min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 rounded-2xl">
 
       {/* ── Page header ── */}
       <div className="mb-6 bg-rose-50 dark:bg-rose-900/20 rounded-xl border border-rose-200 dark:border-rose-800 p-6">
@@ -524,7 +525,7 @@ const DeletedUsersPage = (): JSX.Element => {
                         
                         {/* Deleted date */}
                         <td className="px-4 py-3.5 text-gray-500 dark:text-gray-500 whitespace-nowrap text-xs">
-                          {deletedDate}
+                          {FormatDate(deletedDate)}
                         </td>
 
                         {/* Actions */}

@@ -193,7 +193,7 @@ const TaskDetailSkeleton = () => (
 
 const MetaRow = ({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) => (
   <div className="flex items-start gap-3 py-3.5 border-b border-gray-100 dark:border-gray-700/60 last:border-0">
-    <div className="flex items-center gap-1.5 w-32 shrink-0 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-0.5">
+    <div className="flex items-center gap-1.5 w-32 shrink-0 text-[10px] font-bold text-gray-400 dark:text-gray-300 uppercase tracking-widest mt-0.5">
       <span className="text-gray-400 dark:text-gray-600">{icon}</span>
       {label}
     </div>
@@ -206,14 +206,14 @@ const MetaRow = ({ icon, label, children }: { icon: React.ReactNode; label: stri
 const StatCard = ({ label, value, sub, icon, accent }: {
   label: string; value: React.ReactNode; sub?: string; icon: React.ReactNode; accent: string;
 }) => (
-  <div className={`relative overflow-hidden rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-transparent p-4`}>
+  <div className={`relative overflow-hidden rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-slate-900/50 p-4`}>
     <div className={`absolute top-0 right-0 w-20 h-20 rounded-full opacity-10 blur-2xl ${accent}`} />
     <div className={`inline-flex items-center justify-center w-9 h-9 rounded-xl mb-3 ${accent} bg-opacity-10`}>
       <span className="opacity-80">{icon}</span>
     </div>
-    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-0.5">{label}</p>
+    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-300 mb-0.5">{label}</p>
     <p className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">{value}</p>
-    {sub && <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">{sub}</p>}
+    {sub && <p className="text-[11px] text-gray-400 dark:text-gray-300 mt-0.5">{sub}</p>}
   </div>
 );
 
@@ -259,7 +259,7 @@ const ActivityLog = ({ activities, loading }: { activities: TaskActivity[]; load
           "from-slate-300 to-slate-400";
 
   return (
-    <div className="bg-white dark:bg-transparent rounded-2xl border border-gray-200 dark:border-gray-700 dark:shadow-none flex flex-col"
+    <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-gray-200 dark:border-gray-700 dark:shadow-none flex flex-col"
       style={{ height: "600px" }}>
 
       
@@ -550,7 +550,7 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
     
 
     try {
-      const isConfirmed = await ConfirmPopup({title: "Are you sure", text: "Are you sure to mark this subtask complete, make sure after mark completed you not able to update or reverse it", btnTxt: "Yes, Competed", cancelTxt: "Not Completed"})
+      const {isConfirmed} = await ConfirmPopup({title: "Are you sure", text: "Are you sure to mark this subtask complete, make sure after mark completed you not able to update or reverse it", btnTxt: "Yes, Competed", cancelTxt: "Not Completed"})
 
       if(isConfirmed){
       await TaskService.markSubTaskComplete(id);
@@ -571,8 +571,8 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
   const handleDelete = async (id: string) => {
     
     try {
-      const confirm = await ConfirmPopup({title: "Are you sure", text: "Are you sure to delete this subtask", btnTxt: "Yes, delete"})
-      if(confirm){
+      const {isConfirmed} = await ConfirmPopup({title: "Are you sure", text: "Are you sure to delete this subtask", btnTxt: "Yes, delete"})
+      if(isConfirmed){
         await TaskService.deleteSubTask(id);
         toast.success("Sub-task removed");
         setSubtasks((p) => p.filter((s) => s.id !== id));
@@ -611,10 +611,10 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
     "from-gray-300 to-gray-400";
 
   return (
-    <div className="bg-white dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div className="bg-white dark:bg-gray-900/50 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
 
      
-      <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-cyan-50/50 to-cyan-50/30 dark:from-cyan-900/10 dark:to-cyan-900/5">
+      <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-cyan-50/50 to-cyan-50/30 dark:from-slate-900/50 dark:to-slate-900/50">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">
             <ListChecks size={15} className="text-white" />
@@ -639,7 +639,7 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
         </button>
       </div>
 
-      <div className="p-5 space-y-4">
+      <div className="p-5 space-y-4 dark:bg-slate-900/50 ">
 
         {/* ── Progress ── */}
         {total > 0 && (
@@ -701,7 +701,7 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
 
         {/* ── Add input ── */}
         {adding && (
-          <div className="flex items-center gap-2 p-3.5 bg-cyan-50/60 dark:bg-cyan-900/10 border border-cyan-200 dark:border-cyan-800 rounded-xl">
+          <div className="flex items-center  gap-2 p-3.5 bg-cyan-50/60 dark:bg-slate-900/20 border border-cyan-200 dark:border-cyan-800 rounded-xl">
             <Circle size={16} className="text-cyan-300 dark:text-cyan-600 shrink-0" />
             <input
               autoFocus
@@ -712,7 +712,7 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
                 if (e.key === "Escape") { setAdding(false); setNewTitle(""); }
               }}
               placeholder={t("sub_task_title_enter_to_save_esc_to_cancel")}
-              className="flex-1 text-sm bg-transparent focus:outline-none text-gray-800 dark:text-gray-200 placeholder-gray-400"
+              className="flex-1 text-sm bg-transparent focus:outline-none text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-100"
             />
             <input
               type="number"
@@ -724,7 +724,7 @@ const SubTaskSection = ({ taskId }: { taskId: string }) => {
                 if (e.key === "Escape") { setAdding(false); setNewTitle(""); }
               }}
               placeholder={t("hours")}
-              className="w-20 text-sm bg-transparent focus:outline-none text-gray-800 dark:text-gray-200 placeholder-gray-400 border-l border-cyan-200 dark:border-cyan-800 pl-2"
+              className="w-20 text-sm focus:outline-none placeholder-gray-400 dark:placeholder-gray-100 text-gray-800 dark:text-gray-100 border-l border-cyan-200 dark:border-cyan-800 pl-2"
             />
             <div className="flex items-center gap-1 shrink-0">
               <button
@@ -989,9 +989,12 @@ console.log("taskStatus:",taskData.status.name)
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border border-slate-400
                           ${statusColor.bg}
                           ${statusColor.text}
+                          dark:bg-emerald-900/50
+                          dark:text-emerald-400
+                          dark:border-emerald-900
                         `}
                       >
-                        <span className={`w-2 h-2 rounded-full animate-pulse border ${statusColor.text}`} />
+                        <span className={`w-2 h-2 rounded-full animate-pulse border bg ${statusColor.text} dark:text-emerald-400`} />
                         {getStatusLabel(taskData.status?.name ?? taskData.statusName)}
                       </span>
 
@@ -1012,7 +1015,8 @@ console.log("taskStatus:",taskData.status.name)
                         {t("completed")} {formatDate(taskData.completedAt)}
                       </span>
                     )}
-                    <div className="text-sm bg-green-50 px-3 py-1 rounded text-green-500 flex items-center gap-1.5"><span className="">{taskData.task_id}</span><span className="cursor-pointer" onClick={()=>handleCopy(taskData.task_id)}><MdContentCopy /></span></div>
+                    <div className="text-sm bg-green-50 dark:bg-green-900/50 px-3 py-1 rounded text-green-500 flex items-center gap-1.5">
+                    <span className="">{taskData.task_id}</span><span className="cursor-pointer" onClick={()=>handleCopy(taskData.task_id)}><MdContentCopy /></span></div>
                   </div>
 
                   
@@ -1106,7 +1110,7 @@ console.log("taskStatus:",taskData.status.name)
 
               {/* Description */}
               {taskData.description && (
-                <div className="bg-white dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700  overflow-hidden">
+                <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-gray-200 dark:border-gray-700  overflow-hidden">
                   <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2.5">
                     <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
                       <MessageSquare size={13} className="text-slate-500 dark:text-slate-400" />
@@ -1153,7 +1157,7 @@ console.log("taskStatus:",taskData.status.name)
               )}
 
               {/* Assignees */}
-              <div className="bg-white dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700  overflow-hidden">
+              <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-gray-200 dark:border-gray-700  overflow-hidden">
                 <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2.5">
                   <div className="w-7 h-7 rounded-lg bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center">
                     <User size={13} className="text-sky-500 dark:text-sky-400" />
@@ -1191,7 +1195,7 @@ console.log("taskStatus:",taskData.status.name)
               </div>
 
               
-              <div className="bg-white dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2.5">
                   <div className="w-7 h-7 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 flex items-center justify-center">
                     <TrendingUp size={13} className="text-cyan-500 dark:text-cyan-400" />
@@ -1230,7 +1234,7 @@ console.log("taskStatus:",taskData.status.name)
                       </div>
                     </div>
                   ) : (
-                    <p className="text-xs text-gray-400 dark:text-gray-500 text-center font-medium">{t("no_estimate_set")}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-300 text-center font-medium">{t("no_estimate_set")}</p>
                   )}
                 </div>
               </div>
@@ -1259,7 +1263,7 @@ console.log("taskStatus:",taskData.status.name)
                 </div>
               )}
               {/* Details */}
-              <div className="bg-white dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2.5">
                   <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                     <Layers size={13} className="text-gray-500 dark:text-gray-400" />
@@ -1309,7 +1313,7 @@ console.log("taskStatus:",taskData.status.name)
               </div>
 
               {/* {Final Rating detail} */}
-              <div className="bg-white dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="bg-white dark:border-slate-700 rounded-2xl border border-gray-200 dark:bg-slate-900/50 overflow-hidden">
                 <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2.5">
                   <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
                     <Star size={13} className="text-amber-500 dark:text-amber-400" />

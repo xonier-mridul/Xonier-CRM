@@ -30,6 +30,7 @@ const page = (): JSX.Element => {
   const [passErr, setPassErr] = useState<string | string[]>("");
   const [userData, setUserData] = useState<User | null>(null);
   const [roleData, setRoleData] = useState<UserRole[]>([]);
+  const [isRoleLoading, setIsRoleLoading] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isPassLoading, setIsPassLoading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -106,6 +107,7 @@ const page = (): JSX.Element => {
   }, [companyHasMore, companyLoading, companyPage, getCompanyData]);
 
   const getRoleData = async () => {
+    setIsRoleLoading(true)
     try {
       const result = await RoleService.getRolesWithoutPagination();
       if (result.status === 200) setRoleData(result.data.data);
@@ -113,6 +115,8 @@ const page = (): JSX.Element => {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       // if (axios.isAxiosError(error)) setErr(extractErrorMessages(error));
       // else setErr(["Something went wrong"]);
+    }finally{
+      setIsRoleLoading(false)
     }
   };
 
@@ -238,12 +242,12 @@ const page = (): JSX.Element => {
     setStatusLoading(true);
     setStatusErr("");
     try {
-      const confirm = await ConfirmPopup({
+      const {isConfirmed} = await ConfirmPopup({
         title: "Are you sure",
         text: `Are you sure to change ${formData.firstName} ${formData.lastName} status to ${statusData.status}?`,
         btnTxt: "Yes, Change",
       });
-      if (confirm) {
+      if (isConfirmed) {
         const result = await AuthService.updateStatus(params, statusData);
         if (result.status === 200) {
           toast.success(
@@ -274,12 +278,12 @@ const page = (): JSX.Element => {
         );
         return;
       }
-      const confirm = await ConfirmPopup({
+      const {isConfirmed} = await ConfirmPopup({
         title: "Are you sure",
         text: `Are you sure to update ${formData.firstName} ${formData.lastName} password`,
         btnTxt: "Yes, Update Password",
       });
-      if (confirm) {
+      if (isConfirmed) {
         const result = await AuthService.changePasswordByAdmin(
           params,
           passwordData
@@ -311,6 +315,7 @@ const page = (): JSX.Element => {
       <UserUpdate
         formData={formData}
         isLoading={isLoading}
+        isRoleLoading={isRoleLoading}
         handleChange={handleChange}
         handleUserRoleChange={handleUserRoleChange}
         handleRemoveRole={handleRemoveRole}

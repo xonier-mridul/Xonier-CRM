@@ -54,7 +54,7 @@ export function StatusModal({
         <div className="fixed inset-0 z-150 flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                className="absolute inset-0 bg-black/40 dark:bg-white/40 backdrop-blur-sm"
                 onClick={handleClosePopup}
             />
 
@@ -111,7 +111,7 @@ export function StatusModal({
                                 setFormData(prev => ({ ...prev, name: e.target.value }))
                             }
                             placeholder={t("e_g_in_progress")}
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-500 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-400 transition"
+                            className="w-full dark:text-slate-200 px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-500 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-400 transition"
                         />
                     </div>
 
@@ -133,8 +133,9 @@ export function StatusModal({
 
                     {/* Category */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
-                            {t("category")}
+                        
+                         <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                            {t("category")} <span className="text-rose-500">*</span>
                         </label>
                         <select
                             value={formData.category || ""}
@@ -201,7 +202,7 @@ export function StatusModal({
                             }
                             onBlur={() => formData.order}
                             placeholder={t("eg_2")}
-                            className="w-full px-3.5 py-2.5 rounded-xl border dark:border-gray-500 border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-400 transition"
+                            className="w-full px-3.5 dark:text-slate-200 py-2.5 rounded-xl border dark:border-gray-500 border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-400 transition"
                         />
                     </div>
 

@@ -314,13 +314,13 @@ const TaskListPage = (): JSX.Element => {
     if (!entry) return;
 
     try {
-      const confirm = await ConfirmPopup({
+      const {isConfirmed} = await ConfirmPopup({
         title: t("are_you_sure"), 
         text: t("confirm_stop_timer"), 
         btnTxt: t("yes_stop")
       });
 
-      if(confirm){
+      if(isConfirmed){
         const res = await TimerService.stop(entry.logId);
         const log: TaskTimeLog = res.data.data;
         const finalSeconds = log.totalSeconds ?? entry.displaySeconds;
@@ -474,12 +474,12 @@ const TaskListPage = (): JSX.Element => {
   const handleDelete = async (id: string): Promise<void> => {
     setDeleting(true);
     try {
-      const confirmed = await ConfirmPopup({ 
+      const {isConfirmed} = await ConfirmPopup({ 
         title: t("delete_task_title"), 
         text: t("delete_task_message"), 
         btnTxt: t("yes_delete") 
       });
-      if (confirmed) {
+      if (isConfirmed) {
         const res = await TaskService.delete(id);
         if (res.status === 200) { 
           toast.success(t("task_deleted_successfully")); 
@@ -525,7 +525,7 @@ const TaskListPage = (): JSX.Element => {
       )}
 
       <div className="">
-        <div className="bg-white mb-10 dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs w-full">
+        <div className="bg-white mb-10 dark:bg-slate-900/60 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs w-full">
           {/* Header */}
           <div className="flex items-start justify-between mb-6">
             <div>
@@ -646,19 +646,19 @@ const TaskListPage = (): JSX.Element => {
               ))}
             </select>
             <CategoryMultiSelect categories={categories} isCatLoading={isCatLoading} fetchCategories={fetchCategories} selected={filtrCategory} onChange={(val) => { setFiltrCategory(val); setCurrentPage(1); }} />
-            <UserSelect
+           <UserSelect
               mode="single"
               value={filterAssigned}
               onChange={setFilterAssigned}
               placeholder={t("search_assignee")}
-              cls="rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-400 transition shadow-2xs"
+              cls="rounded-lg border py-2  bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-400 transition"
             />
             <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
             {hasFilters && (
               <button
                 type="button"
                 onClick={() => { setSearch(""); setFilterStatus(""); setFilterPriority(""); setCurrentPage(1); setFilterAssigned(""); setFiltrCategory([]); setDateFilter({ fromDate: "", toDate: "" }); }}
-                className="px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                className="px-3 py-2 rounded-xl border text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800  border-slate-200/80 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
               >
                 <X size={13} /> {t("clear")}
               </button>

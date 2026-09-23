@@ -18,9 +18,6 @@ import { RootState } from "@/src/store";
 import { useTranslation } from "react-i18next";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 
-
-
-
 const PRIORITIES = ["low", "medium", "high", "critical"] as const;
 
 const PRIORITY_STYLES: Record<string, string> = {
@@ -36,33 +33,6 @@ const PRIORITY_DOT: Record<string, string> = {
   high: "bg-orange-500",
   critical: "bg-rose-500",
 };
-
-const MOODS: { value: WorkMood; emoji: string; label: string; color: string }[] = [
-  { value: "excellent" as WorkMood, emoji: "🚀", label: "Excellent", color: "border-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 dark:border-emerald-500 text-emerald-700 dark:text-emerald-300" },
-  { value: "good" as WorkMood, emoji: "😊", label: "Good", color: "border-blue-400 bg-blue-50 dark:bg-blue-900/30 dark:border-blue-500 text-blue-700 dark:text-blue-300" },
-  { value: "neutral" as WorkMood, emoji: "😐", label: "Neutral", color: "border-slate-400 bg-slate-50 dark:bg-slate-700 dark:border-slate-500 text-slate-700 dark:text-slate-300" },
-  { value: "tired" as WorkMood, emoji: "😴", label: "Tired", color: "border-amber-400 bg-amber-50 dark:bg-amber-900/30 dark:border-amber-500 text-amber-700 dark:text-amber-300" },
-  { value: "stressed" as WorkMood, emoji: "😰", label: "Stressed", color: "border-rose-400 bg-rose-50 dark:bg-rose-900/30 dark:border-rose-500 text-rose-700 dark:text-rose-300" },
-];
-
-const PENDING_STATUSES: TaskItemStatus[] = [
-  TaskItemStatus.PENDING,
-  TaskItemStatus.IN_PROGRESS,
-  TaskItemStatus.CARRIED_FORWARD,
-  TaskItemStatus.BLOCKED,
-];
-
-const COMPLETED_STATUSES: TaskItemStatus[] = [
-  TaskItemStatus.COMPLETED,
-];
-
-const STATUS_OPTIONS: { value: TaskItemStatus; label: string; icon: string; activeClass: string }[] = [
-  { value: "completed" as TaskItemStatus, label: "Completed", icon: "✅", activeClass: "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700" },
-  { value: "in_progress" as TaskItemStatus, label: "In Progress", icon: "🔄", activeClass: "bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700" },
-  { value: "carried_forward" as TaskItemStatus, label: "Carried Forward", icon: "⏭", activeClass: "bg-violet-50 text-violet-700 border-violet-300 dark:bg-violet-900/30 dark:text-violet-400 dark:border-violet-700" },
-  { value: "blocked" as TaskItemStatus, label: "Blocked", icon: "🚧", activeClass: "bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-700" },
-  { value: "pending" as TaskItemStatus, label: "Pending", icon: "⏳", activeClass: "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700" },
-];
 
 const EMPTY_MORNING_ITEM = (): Omit<TaskReportItem, "status"> & { status?: string } => ({
   title: "",
@@ -88,6 +58,17 @@ const toEveningItem = (
   completionPercentage: 0,
   ...overrides,
 });
+
+const PENDING_STATUSES: TaskItemStatus[] = [
+  TaskItemStatus.PENDING,
+  TaskItemStatus.IN_PROGRESS,
+  TaskItemStatus.CARRIED_FORWARD,
+  TaskItemStatus.BLOCKED,
+];
+
+const COMPLETED_STATUSES: TaskItemStatus[] = [
+  TaskItemStatus.COMPLETED,
+];
 
 // ── Reusable UI ───────────────────────────────────────────────────────────────
 
@@ -156,14 +137,14 @@ function NumberInput({
   );
 }
 
-
 function PriorityBadge({ value }: { value: string }) {
+  const { t } = useTranslation();
   const style = PRIORITY_STYLES[value] ?? PRIORITY_STYLES.low;
   const dot = PRIORITY_DOT[value] ?? "bg-gray-400";
   return (
     <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border capitalize ${style}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />
-      {value}
+      {t(`${value}`)}
     </span>
   );
 }
@@ -190,7 +171,7 @@ function PrioritySelector({
               : "bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:text-slate-600 dark:hover:text-slate-400"
             }`}
         >
-          {t(p)}
+          {t(`${p}`)}
         </button>
       ))}
     </div>
@@ -223,7 +204,7 @@ function MorningReadonlyCard({ item, index }: {
           )}
           {item.estimatedHours && (
             <span className="inline-flex items-center gap-1.5 text-[11px] text-slate-400 font-medium bg-slate-100 dark:bg-slate-700/50 px-2.5 py-1 rounded-lg">
-              <span>⏱</span> {t("estimated_2")} <b className="text-slate-600 dark:text-slate-300">{item.estimatedHours}h</b>
+              <span>⏱</span> {t("estimated")} <b className="text-slate-600 dark:text-slate-300">{item.estimatedHours}h</b>
             </span>
           )}
         </div>
@@ -240,8 +221,7 @@ function MorningEditCard({ item, index, onChange, onRemove }: {
 }) {
   const { t } = useTranslation();
   return (
-    <div className="relative bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 p-5 shadow-sm hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-900/40 transition-all duration-300 group">
-      {/* Left accent bar */}
+    <div className="relative bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 p-5 shadow-sm hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-slate-900/40 transition-all duration-300 group">
       <div className="absolute left-0 top-4 bottom-4 w-0.5 bg-gradient-to-b from-indigo-400 to-violet-500 rounded-r-full" />
       
       <div className="flex items-center justify-between mb-4 pl-3">
@@ -264,24 +244,24 @@ function MorningEditCard({ item, index, onChange, onRemove }: {
       <div className="space-y-3.5 pl-3">
         <div>
           <FieldLabel required>{t("task_title")}</FieldLabel>
-          <TextInput value={item.title} onChange={v => onChange("title", v)} placeholder={t("what_are_you_going_to_work")} />
+          <TextInput value={item.title} onChange={v => onChange("title", v)} placeholder={t("what_are_you_working_on")} />
         </div>
         <div>
           <FieldLabel>{t("description")}</FieldLabel>
-          <TextArea value={item.description ?? ""} onChange={v => onChange("description", v)} placeholder={t("brief_details_about_this_task")} />
+          <TextArea value={item.description ?? ""} onChange={v => onChange("description", v)} placeholder={t("brief_details")} />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <FieldLabel>{t("estimated_hours")}</FieldLabel>
-            <NumberInput value={item.estimatedHours} onChange={v => onChange("estimatedHours", v)} placeholder={t("e_g_2_5")} min={0.5} max={24} />
+            <NumberInput value={item.estimatedHours} onChange={v => onChange("estimatedHours", v)} placeholder={t("eg_hours")} min={0.5} max={24} />
           </div>
           <div>
             <FieldLabel>{t("linked_task_id")}</FieldLabel>
-            <TextInput value={item.linkedTaskId ?? ""} onChange={v => onChange("linkedTaskId", v)} placeholder={t("task_101")} />
+            <TextInput value={item.linkedTaskId ?? ""} onChange={v => onChange("linkedTaskId", v)} placeholder={t("task_id")} />
           </div>
         </div>
         <div>
-          <FieldLabel>{t("priority")}</FieldLabel>
+          <FieldLabel>{t("priority_2")}</FieldLabel>
           <PrioritySelector value={item.priority ?? "medium"} onChange={v => onChange("priority", v)} />
         </div>
       </div>
@@ -300,15 +280,22 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
   const { t } = useTranslation();
   const isCompleted = bucket === "completed";
 
+  const STATUS_OPTIONS: { value: TaskItemStatus; label: string; icon: string; activeClass: string }[] = [
+    { value: "completed" as TaskItemStatus, label: t("completed"), icon: "✅", activeClass: "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700" },
+    { value: "in_progress" as TaskItemStatus, label: t("in_progress"), icon: "🔄", activeClass: "bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700" },
+    { value: "carried_forward" as TaskItemStatus, label: t("carried_forward"), icon: "⏭", activeClass: "bg-violet-50 text-violet-700 border-violet-300 dark:bg-violet-900/30 dark:text-violet-400 dark:border-violet-700" },
+    { value: "blocked" as TaskItemStatus, label: t("blocked"), icon: "🚧", activeClass: "bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-700" },
+    { value: "pending" as TaskItemStatus, label: t("pending"), icon: "⏳", activeClass: "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700" },
+  ];
+
   return (
     <div
-      className={`relative bg-white dark:bg-slate-800/90 rounded-2xl border p-5 shadow-sm hover:shadow-md transition-all duration-300 group
+      className={`relative bg-white dark:bg-slate-900/50 rounded-2xl border p-5 shadow-sm hover:shadow-md transition-all duration-300 group
         ${isCompleted
           ? "border-emerald-200/80 dark:border-emerald-800/50 hover:border-emerald-300 dark:hover:border-emerald-700/70 hover:shadow-emerald-500/5"
           : "border-amber-200/80 dark:border-amber-800/50 hover:border-amber-300 dark:hover:border-amber-700/70 hover:shadow-amber-500/5"
         }`}
     >
-      {/* Left accent bar */}
       <div className={`absolute left-0 top-4 bottom-4 w-0.5 rounded-r-full ${isCompleted ? "bg-gradient-to-b from-emerald-400 to-teal-500" : "bg-gradient-to-b from-amber-400 to-orange-500"}`} />
 
       <div className="flex items-center justify-between mb-4 pl-3">
@@ -323,7 +310,7 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
             {index + 1}
           </div>
           <span className={`text-[10px] font-bold uppercase tracking-widest ${isCompleted ? "text-emerald-600 dark:text-emerald-500" : "text-amber-600 dark:text-amber-500"}`}>
-            {isCompleted ? "✅ Completed" : "⏳ Pending"}
+            {isCompleted ? `✅ ${t("completed")}` : `⏳ ${t("pending")}`}
           </span>
         </div>
 
@@ -346,7 +333,7 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
           <TextInput
             value={item.title}
             onChange={v => onChange("title", v)}
-            placeholder={ isCompleted ? t("what_did_you_complete") : t("what_is_still_pending")}
+            placeholder={isCompleted ? t("what_completed") : t("what_pending")}
             disabled={readOnly}
           />
         </div>
@@ -355,7 +342,7 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
           <TextArea
             value={item.description ?? ""}
             onChange={v => onChange("description", v)}
-            placeholder={t("details_about_what_was_done_what's")}
+            placeholder={t("details_done")}
             disabled={readOnly}
           />
         </div>
@@ -365,7 +352,7 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
             <FieldLabel>
               {t("status")}{" "}
               <span className="normal-case text-indigo-500 dark:text-indigo-400 font-semibold text-[9px] ml-1">
-                {t("changing_this_moves_the_task_between_sections")}
+                {t("status_help_text")}
               </span>
             </FieldLabel>
             <div className="flex flex-wrap gap-1.5 mt-1">
@@ -395,7 +382,7 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
                   <span
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold border ${opt.activeClass}`}
                   >
-                    <span>{opt.icon}</span> {t(opt.label)}
+                    <span>{opt.icon}</span> {opt.label}
                   </span>
                 ) : null;
               })()}
@@ -409,7 +396,7 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
             <NumberInput
               value={item.estimatedHours}
               onChange={v => onChange("estimatedHours", v)}
-              placeholder={t("eg_2_2")}
+              placeholder={t("eg_hours")}
               min={0.5}
               max={24}
               disabled={readOnly}
@@ -420,7 +407,7 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
             <NumberInput
               value={item.actualHours}
               onChange={v => onChange("actualHours", v)}
-              placeholder={t("eg_2_2")}
+              placeholder={t("eg_hours")}
               min={0.5}
               max={24}
               disabled={readOnly}
@@ -431,7 +418,7 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
             <TextInput
               value={item.linkedTaskId ?? ""}
               onChange={v => onChange("linkedTaskId", v)}
-              placeholder={t("task_101")}
+              placeholder={t("task_id")}
               disabled={readOnly}
             />
           </div>
@@ -473,14 +460,14 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
             <TextArea
               value={item.blockerReason ?? ""}
               onChange={v => onChange("blockerReason", v)}
-              placeholder={t("what_is_blocking_this_task")}
+              placeholder={t("blocker_reason_2")}
               disabled={readOnly}
             />
           </div>
         )}
 
         <div>
-          <FieldLabel>{t("priority")}</FieldLabel>
+          <FieldLabel>{t("priority_2")}</FieldLabel>
           <PrioritySelector
             value={item.priority ?? "medium"}
             onChange={v => onChange("priority", v)}
@@ -495,11 +482,13 @@ function EveningTaskCard({ item, index, onChange, onRemove, bucket, readOnly }: 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 const TaskReportCreatePage = (): JSX.Element => {
+  const { t, i18n } = useTranslation();
+  
   const today = new Date().toLocaleDateString("en-CA", {
-  timeZone: "Asia/Kolkata",
-});
+    timeZone: "Asia/Kolkata",
+  });
 
-const router = useRouter();
+  const router = useRouter();
   const params = useParams();
   const id = params?.id as string;
   const isNew = id === "new";
@@ -509,11 +498,9 @@ const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Morning
   const [morningItems, setMorningItems] = useState<ReturnType<typeof EMPTY_MORNING_ITEM>[]>([EMPTY_MORNING_ITEM()]);
   const [morningGoals, setMorningGoals] = useState("");
 
-  // Evening
   const [eveningItems, setEveningItems] = useState<TaskReportItem[]>([]);
   const [achievements, setAchievements] = useState("");
   const [blockers, setBlockers] = useState("");
@@ -523,20 +510,22 @@ const router = useRouter();
   const [isEditingMorning, setIsEditingMorning] = useState(false);
   const [err, setErr] = useState<string | string[]>("");
 
-  // Derived buckets
   const completedItems = eveningItems.filter(i => COMPLETED_STATUSES.includes(i.status as TaskItemStatus));
   const pendingItems = eveningItems.filter(i => PENDING_STATUSES.includes(i.status as TaskItemStatus));
 
   const user = useSelector((state: RootState) => state.auth.user);
 
-  const loadReportData = useCallback((report: TaskReport) => {
-    console.log("🟢 Loading report data:", report);
-    console.log("🟢 Morning submitted:", report.morningAgenda?.isSubmitted);
-    console.log("🟢 Evening submitted:", report.eveningReport?.isSubmitted);
+  const MOODS: { value: WorkMood; emoji: string; label: string; color: string }[] = [
+    { value: "excellent" as WorkMood, emoji: "🚀", label: t("excellent"), color: "border-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 dark:border-emerald-500 text-emerald-700 dark:text-emerald-300" },
+    { value: "good" as WorkMood, emoji: "😊", label: t("good"), color: "border-blue-400 bg-blue-50 dark:bg-blue-900/30 dark:border-blue-500 text-blue-700 dark:text-blue-300" },
+    { value: "neutral" as WorkMood, emoji: "😐", label: t("neutral"), color: "border-slate-400 bg-slate-50 dark:bg-slate-700 dark:border-slate-500 text-slate-700 dark:text-slate-300" },
+    { value: "tired" as WorkMood, emoji: "😴", label: t("tired"), color: "border-amber-400 bg-amber-50 dark:bg-amber-900/30 dark:border-amber-500 text-amber-700 dark:text-amber-300" },
+    { value: "stressed" as WorkMood, emoji: "😰", label: t("stressed"), color: "border-rose-400 bg-rose-50 dark:bg-rose-900/30 dark:border-rose-500 text-rose-700 dark:text-rose-300" },
+  ];
 
+  const loadReportData = useCallback((report: TaskReport) => {
     setExistingReport(report);
 
-    // Load morning agenda
     if (report.morningAgenda?.items?.length) {
       setMorningItems(report.morningAgenda.items.map(i => ({ ...i })));
     }
@@ -544,7 +533,6 @@ const router = useRouter();
       setMorningGoals(report.morningAgenda.goals);
     }
 
-    // Load evening items
     const existingCompleted: TaskReportItem[] = report.eveningReport?.completedItems ?? [];
     const existingPending: TaskReportItem[] = report.eveningReport?.pendingItems ?? [];
     const allEvening = [...existingCompleted, ...existingPending];
@@ -565,84 +553,70 @@ const router = useRouter();
       );
     }
 
-    // Load summary fields
     if (report.eveningReport?.achievements) setAchievements(report.eveningReport.achievements);
     if (report.eveningReport?.blockers) setBlockers(report.eveningReport.blockers);
     if (report.eveningReport?.tomorrowPlan) setTomorrowPlan(report.eveningReport.tomorrowPlan);
     if (report.eveningReport?.overallMood) setOverallMood(report.eveningReport.overallMood);
 
-    // ✅ Set correct tab
     setActiveTab(report.morningAgenda?.isSubmitted ? "evening" : "morning");
     setIsFinalSubmitted(report.eveningReport?.isSubmitted ?? false);
 
     setIsLoading(false);
   }, []);
 
-  // ── Load report ────────────────────────────────────────────────────────────
-const loadReport = useCallback(async () => {
-    setIsLoading(true);
 
-    try {
-      if (isNew) {
-        // ✅ Check if today's report exists using user ID
-        if (!user?.id) {
-          setActiveTab("morning");
-          setIsLoading(false);
+
+const loadReport = useCallback(async () => {
+  setIsLoading(true);
+
+  try {
+    if (isNew) {
+      if (!user?.id) {
+        setActiveTab("morning");
+        return;
+      }
+
+      const res = await TaskReportService.getById(user.id);
+
+      if (res.status === 200) {
+        const reportsData = res.data?.data?.data;
+        const userReports = reportsData?.[0]?.reports ?? [];
+
+        const todayReport: TaskReport | undefined = userReports.find(
+          (r: TaskReport) => r.reportDate === today
+        );
+
+        if (todayReport) {
+          loadReportData(todayReport);
           return;
         }
-
-        const res = await TaskReportService.getById(user.id);
-
-        if (res.status === 200) {
-          const reportsData = res.data?.data?.data;
-          const userReports = reportsData?.[0]?.reports ?? [];
-
-          const todayReport: TaskReport | undefined = userReports.find(
-            (r: TaskReport) => r.reportDate === today
-          );
-
-          if (todayReport) {
-            loadReportData(todayReport);
-            return;
-          }
-        }
-
-        // No report for today — show empty morning form
-        setActiveTab("morning");
-        setIsLoading(false);
-        return;
-
-      } else {
-        // ✅ Real report ID — use getReportById
-        const res = await TaskReportService.getReportById(id);
-
-        console.log("🟢 getReportById response:", res.data);
-
-        if (res.status === 200) {
-          // ✅ This returns single report directly — not grouped
-          const report: TaskReport =
-            res.data?.data ||  // check your actual response structure
-            res.data;
-
-          console.log("🟢 Report:", report);
-
-          if (!report) {
-            setIsLoading(false);
-            return;
-          }
-
-          loadReportData(report);
-        }
       }
-    } catch (error) {
-      console.error("🔴 Load report error:", error);
-      setIsLoading(false);
+
+      setActiveTab("morning");
+      return;
     }
-  }, [id, isNew, today, user?.id]);
 
-  useEffect(() => { loadReport(); }, [loadReport]);
+    const res = await TaskReportService.getReportById(id);
 
-  // ── Evening item helpers ───────────────────────────────────────────────────
+    if (res.status === 200) {
+      const report: TaskReport | undefined =
+        res.data?.data || res.data;
+
+      if (report) {
+        loadReportData(report);
+      }
+    }
+  } catch (error) {
+    console.error("🔴 Load report error:", error);
+  } finally {
+    setIsLoading(false);
+  }
+}, [id, isNew, today, user, loadReportData]);
+
+
+useEffect(() => { loadReport(); }, [loadReport]);
+
+
   const updateEveningItem = (globalIdx: number, field: string, value: unknown) => {
     const isC = value === "completed";
     const isP = value === "in_progress";
@@ -686,10 +660,9 @@ const loadReport = useCallback(async () => {
     ]);
   };
 
-  // ── Submit Morning ─────────────────────────────────────────────────────────
-const submitMorning = async () => {
+  const submitMorning = async () => {
     if (morningItems.some(i => !i.title.trim())) {
-      toast.error("Please fill in all task titles");
+      toast.error(t("toast.fill_all_titles"));
       return;
     }
     setIsSubmitting(true);
@@ -715,45 +688,36 @@ const submitMorning = async () => {
 
       const res = await fn;
 
-      console.log("🟢 Morning submit response:", res.data);
-
       if (res.status === 200 || res.status === 201) {
-        toast.success("Morning agenda submitted! ✅");
+        toast.success(t("toast.morning_submitted"));
 
-        // ✅ Get report ID from response
         const reportId =
           res.data?.data?.id   ||
           res.data?.data?._id  ||
           res.data?.id         ||
           res.data?._id;
 
-        console.log("🟢 Report ID from response:", reportId);
-
         if (reportId) {
-          // ✅ Redirect to real report ID URL
           router.replace(`/report/create/${reportId}`);
-          // useEffect will trigger loadReport with real id automatically
         } else {
-          // Fallback — no id in response
-          toast.error("Could not get report ID. Please refresh.");
+          toast.error(t("toast.no_report_id"));
         }
       }
     } catch (error) {
       const err = error as AxiosError<{ message?: string }>;
-      toast.error(err.response?.data?.message || "Failed to submit morning agenda");
+      toast.error(err.response?.data?.message || t("toast.morning_failed"));
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // ── Update Morning ─────────────────────────────────────────────────────────
   const updateMorning = async () => {
     if (morningItems.some(i => !i.title.trim())) {
-      toast.error("Please fill in all task titles");
+      toast.error(t("toast.fill_all_titles"));
       return;
     }
     if (!existingReport?.id) {
-      toast.error("Report not found");
+      toast.error(t("toast.report_not_found"));
       return;
     }
     setIsSubmitting(true);
@@ -774,98 +738,94 @@ const submitMorning = async () => {
       };
       const res = await TaskReportService.updateMorningAgenda(existingReport.id, payload);
       if (res.status === 200 || res.status === 201) {
-        toast.success("Morning agenda updated! ✅");
+        toast.success(t("toast.morning_updated"));
         setIsEditingMorning(false);
         await loadReport();
       }
     } catch (error) {
       const err = error as AxiosError<{ message?: string }>;
-      toast.error(err.response?.data?.message || "Failed to update morning agenda");
+      toast.error(err.response?.data?.message || t("toast.morning_update_failed"));
     } finally {
       setIsSubmitting(false);
     }
   };
 
-const handleEveningSubmit = async () => {
+ const handleEveningSubmit = async () => {
   try {
-    const confirm = await ConfirmPopup({
-      title: !isFinalSubmitted 
-        ? t("save_evening_report_title") 
-        : t("submit_evening_report_title"),
-      text: !isFinalSubmitted
-        ? t("save_evening_report_text")
-        : t("submit_evening_report_text"),
-      btnTxt: !isFinalSubmitted 
-        ? t("yes_save") 
-        : t("yes_submit"),
-    }).catch(() => false);
+    const { isConfirmed, isChecked } = await ConfirmPopup({
+      title: t("save_evening_title"),
+      text: t("save_evening_text"),
+      btnTxt: "yes_save",
+      checkedBtnTxt: "yes_submit",
+      checkedTitle: t("submit_evening_title"),
+      checkedText: t("submit_evening_text"),
+      showCheckbox: true,
+      checkboxLabel: t("final_submission_help"),
+      checkboxDefaultChecked: isFinalSubmitted,
+    });
 
-    if (confirm){
-    await submitEvening();
+    if (isConfirmed) {
+      setIsFinalSubmitted(isChecked);
+      await submitEvening(isChecked);
     }
-
   } catch (error) {
-
-    if (error !== false && error !== "cancel" && error !== "dismiss") {
-      toast.error(t("something_went_wrong"));
-    }
+    console.error(error);
+    toast.error(t("toast.something_wrong"));
   }
 };
 
-  // ── Submit Evening ─────────────────────────────────────────────────────────
-  const submitEvening = async () => {
-    setErr("");
-    if (!existingReport?.id) {
-      toast.error("Please submit your morning agenda first");
-      return;
+const submitEvening = async (finalSubmit: boolean) => {
+  setErr("");
+  if (!existingReport?.id) {
+    toast.error(t("toast.submit_morning_first"));
+    return;
+  }
+  const valid = eveningItems.filter(i => i.title.trim());
+  if (valid.length === 0) {
+    toast.error(t("toast.add_one_task"));
+    return;
+  }
+  setIsSubmitting(true);
+  try {
+    const payload = {
+      eveningReport: {
+        completedItems: valid.filter(i => COMPLETED_STATUSES.includes(i.status as TaskItemStatus)),
+        pendingItems: valid.filter(i => PENDING_STATUSES.includes(i.status as TaskItemStatus)),
+        achievements: achievements.trim() || undefined,
+        blockers: blockers.trim() || undefined,
+        tomorrowPlan: tomorrowPlan.trim() || undefined,
+        overallMood: overallMood as WorkMood || undefined,
+        isSubmitted: finalSubmit,
+      },
+    };
+    let res = null;
+    if (!finalSubmit) {
+      res = await TaskReportService.updateEveningReport(existingReport.id, payload);
+    } else {
+      res = await TaskReportService.submitEveningReport(existingReport.id, payload);
     }
-    const valid = eveningItems.filter(i => i.title.trim());
-    if (valid.length === 0) {
-      toast.error("Please add at least one task");
-      return;
+    if (res?.status === 200) {
+      toast.success(t("toast.evening_submitted"));
+      await loadReport();
     }
-    setIsSubmitting(true);
-    try {
-      const payload = {
-        eveningReport: {
-          completedItems: valid.filter(i => COMPLETED_STATUSES.includes(i.status as TaskItemStatus)),
-          pendingItems: valid.filter(i => PENDING_STATUSES.includes(i.status as TaskItemStatus)),
-          achievements: achievements.trim() || undefined,
-          blockers: blockers.trim() || undefined,
-          tomorrowPlan: tomorrowPlan.trim() || undefined,
-          overallMood: overallMood as WorkMood || undefined,
-          isSubmitted: isFinalSubmitted,
-        },
-      };
-      let res = null;
-      if (!isFinalSubmitted) {
-        res = await TaskReportService.updateEveningReport(existingReport.id, payload);
-      } else {
-        res = await TaskReportService.submitEveningReport(existingReport.id, payload);
-      }
-      if (res?.status === 200) {
-        toast.success("Evening report submitted! 🌆");
-        await loadReport();
-      }
-    } catch (error) {
-      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
-      if (axios.isAxiosError(error)) {
-        const errM = extractErrorMessages(error);
-        toast.error(errM[0]);
-        setErr(errM);
-      } else {
-        toast.error("Something went wrong");
-      }
-    } finally {
-      setIsSubmitting(false);
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const errM = extractErrorMessages(error);
+      toast.error(errM[0]);
+      setErr(errM);
+    } else {
+      toast.error(t("toast.something_wrong"));
     }
-  };
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
-  // ── Derived flags ──────────────────────────────────────────────────────────
+
+
   const morningSubmitted = existingReport?.morningAgenda?.isSubmitted ?? false;
   const eveningSubmitted = existingReport?.eveningReport?.isSubmitted ?? false;
   const morningReadOnly = morningSubmitted && !isEditingMorning;
-  const { t, i18n } = useTranslation();
 
   const actualHour =
     Number(completedItems.reduce((s, i) => s + (i.actualHours ?? 0), 0).toFixed(1)) +
@@ -898,12 +858,10 @@ const handleEveningSubmit = async () => {
     );
   }
 
-  // ── Page ───────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen pb-16">
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="min-h-screen pb-16 ">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-6 ">
 
-        {/* ── Top Header Bar ── */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 pb-5 border-b border-slate-200/80 dark:border-slate-700/60">
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-600 flex items-center justify-center text-xl shadow-lg shadow-indigo-500/25 shrink-0">
@@ -912,10 +870,9 @@ const handleEveningSubmit = async () => {
             <div>
               <div className="flex items-center gap-2.5 flex-wrap">
                 <h1 className="text-xl sm:text-2xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">
-                  {t("daily_task_report")}
+                  {t("page_title")}
                 </h1>
                 
-                {/* Header status pills */}
                 {!isNew && existingReport && (
                   <div className="flex items-center gap-2">
                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
@@ -924,7 +881,7 @@ const handleEveningSubmit = async () => {
                         : "bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
                     }`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${morningSubmitted ? "bg-emerald-500" : "bg-amber-400 animate-pulse"}`} />
-                      {t("morning")}: {morningSubmitted ? "✓ Done" : "Pending"}
+                      {t("morning")}: {morningSubmitted ? t("status_badge.done") : t("status_badge.pending")}
                     </span>
                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
                       eveningSubmitted
@@ -934,7 +891,7 @@ const handleEveningSubmit = async () => {
                         : "bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700"
                     }`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${eveningSubmitted ? "bg-emerald-500" : morningSubmitted ? "bg-amber-400 animate-pulse" : "bg-slate-300 dark:bg-slate-600"}`} />
-                      {t("evening")}: {eveningSubmitted ? "✓ Done" : morningSubmitted ? "Pending" : "🔒"}
+                      {t("evening")}: {eveningSubmitted ? t("status_badge.done") : morningSubmitted ? t("status_badge.pending") : "🔒"}
                     </span>
                     {existingReport.isReviewed && (
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
@@ -962,7 +919,6 @@ const handleEveningSubmit = async () => {
             </div>
           </div>
 
-          {/* ── Tabs ── */}
           <div className="flex items-center gap-1.5 p-1.5 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-inner shrink-0">
             {(["morning", "evening"] as const).map(tab => {
               const isActive = activeTab === tab;
@@ -998,28 +954,22 @@ const handleEveningSubmit = async () => {
           </div>
         </div>
 
-        {/* ── 2-Column Responsive Grid ── */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-          {/* ════════════════════════════════════════════════════
-              MORNING AGENDA TAB
-          ════════════════════════════════════════════════════ */}
           {activeTab === "morning" && (
             <>
-              {/* Left Column: Tasks & Goal */}
               <div className="lg:col-span-8 space-y-6">
 
-                {/* Status Notice: Submitted & not editing */}
                 {morningSubmitted && !isEditingMorning && (
                   <div className="flex items-center justify-between gap-3 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/80 dark:border-emerald-800/60 shadow-sm">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-sm shrink-0 shadow-sm">✓</div>
                       <div>
-                        <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">{t("morning_agenda_submitted")}</p>
+                        <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">{t("morning_submitted")}</p>
                         <p className="text-[11px] text-emerald-600/80 dark:text-emerald-500/70 mt-0.5">
                           {existingReport?.morningAgenda?.submittedAt
-                            ? `Submitted at ${new Date(existingReport.morningAgenda.submittedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`
-                            : "Already submitted"
+                            ? `${t("submitted_at")} ${new Date(existingReport.morningAgenda.submittedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`
+                            : t("already_submitted")
                           }
                         </p>
                       </div>
@@ -1036,26 +986,24 @@ const handleEveningSubmit = async () => {
                   </div>
                 )}
 
-                {/* Status Notice: Editing mode */}
                 {morningSubmitted && isEditingMorning && (
                   <div className="flex items-center gap-3 p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200/80 dark:border-amber-800/60 shadow-sm">
                     <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-sm shrink-0 shadow-sm">✏️</div>
                     <div>
-                      <p className="text-sm font-bold text-amber-700 dark:text-amber-400">{t("editing_morning_agenda")}</p>
-                      <p className="text-[11px] text-amber-600/80 dark:text-amber-500/70 mt-0.5">{t("changes_will_update_your_existing_plan")}</p>
+                      <p className="text-sm font-bold text-amber-700 dark:text-amber-400">{t("editing_morning")}</p>
+                      <p className="text-[11px] text-amber-600/80 dark:text-amber-500/70 mt-0.5">{t("editing_help")}</p>
                     </div>
                   </div>
                 )}
 
-                {/* Goal / Focus Card */}
-                <div className="bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm overflow-hidden">
+                <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm overflow-hidden">
                   <div className="h-1 bg-gradient-to-r from-amber-400 to-orange-500" />
                   <div className="p-5">
                     <div className="flex items-center gap-2 mb-3">
                       <span className="text-lg">🎯</span>
                       <div>
-                        <h2 className="text-xs font-extrabold text-slate-800 dark:text-slate-100 uppercase tracking-widest">{t("Today's Goal / Focus")}</h2>
-                        <p className="text-[11px] text-slate-400">Define your primary objective or milestone for today</p>
+                        <h2 className="text-xs font-extrabold text-slate-800 dark:text-slate-100 uppercase tracking-widest">{t("todays_goal")}</h2>
+                        <p className="text-[11px] text-slate-400">{t("goal_help")}</p>
                       </div>
                     </div>
                     {morningReadOnly ? (
@@ -1068,15 +1016,14 @@ const handleEveningSubmit = async () => {
                       <TextArea
                         value={morningGoals}
                         onChange={setMorningGoals}
-                        placeholder={t("what_is_your_main_focus_today")}
+                        placeholder={t("main_focus")}
                         rows={2}
                       />
                     )}
                   </div>
                 </div>
 
-                {/* Planned Tasks Card */}
-                <div className="bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm p-5 sm:p-6">
+                <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm p-5 sm:p-6">
                   <div className="flex items-center justify-between gap-3 mb-5 pb-4 border-b border-slate-100 dark:border-slate-700/60 flex-wrap">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-base shadow-sm">
@@ -1086,18 +1033,18 @@ const handleEveningSubmit = async () => {
                         <div className="flex items-center gap-2">
                           <h2 className="text-base font-extrabold text-slate-800 dark:text-slate-100">{t("morning_agenda")}</h2>
                           <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/60">
-                            {morningItems.length} {morningItems.length === 1 ? "task" : "tasks"}
+                            {morningItems.length} {morningItems.length === 1 ? t("task") : t("tasks")}
                           </span>
                           <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
-                            {totalMorningEstHours}h est.
+                            {totalMorningEstHours}h {t("est")}
                           </span>
                         </div>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                           {morningReadOnly
-                            ? t("your_plan_for_today_read_only")
+                            ? t("plan_readonly")
                             : isEditingMorning
-                              ? t("update_your_plan_changes_will_be_saved_when_you_click_update")
-                              : t("plan_your_day_what_tasks_will_you_tackle")}
+                              ? t("plan_editing")
+                              : t("plan_help")}
                         </p>
                       </div>
                     </div>
@@ -1108,24 +1055,23 @@ const handleEveningSubmit = async () => {
                         onClick={() => setMorningItems(items => [...items, EMPTY_MORNING_ITEM()])}
                         className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-xs font-bold transition-all shadow-sm active:scale-95"
                       >
-                        <span>+</span> {t("add_task", "Add Task")}
+                        <span>+</span> {t("add_task")}
                       </button>
                     )}
                   </div>
 
-                  {/* Tasks List */}
                   {morningItems.length === 0 ? (
                     <div className="py-12 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 text-center mb-4">
                       <span className="text-3xl mb-2 block">📝</span>
-                      <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">No tasks planned yet</p>
-                      <p className="text-xs text-slate-400 mt-1 mb-4">Click below to add your first agenda task for today</p>
+                      <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">{t("no_tasks_planned")}</p>
+                      <p className="text-xs text-slate-400 mt-1 mb-4">{t("no_tasks_help")}</p>
                       {!morningReadOnly && (
                         <button
                           type="button"
                           onClick={() => setMorningItems(items => [...items, EMPTY_MORNING_ITEM()])}
                           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 text-xs font-bold"
                         >
-                          + Add Task
+                          + {t("add_task")}
                         </button>
                       )}
                     </div>
@@ -1149,7 +1095,6 @@ const handleEveningSubmit = async () => {
                     </div>
                   )}
 
-                  {/* Bottom Add Task Button */}
                   {!morningReadOnly && (
                     <button
                       type="button"
@@ -1165,27 +1110,24 @@ const handleEveningSubmit = async () => {
                 </div>
               </div>
 
-              {/* Right Column: Sticky Overview & Action Center */}
               <div className="lg:col-span-4 space-y-5 lg:sticky lg:top-6">
 
-                {/* Agenda Summary & Action Center */}
-                <div className="bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm overflow-hidden">
+                <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm overflow-hidden">
                   <div className="h-1 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500" />
                   <div className="p-5">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
-                        {t("morning_agenda")} Overview
+                        {t("overview")}
                       </h3>
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                         morningSubmitted
                           ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
                           : "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
                       }`}>
-                        {morningSubmitted ? "✓ Submitted" : "Draft"}
+                        {morningSubmitted ? `✓ ${t("submitted")}` : t("draft")}
                       </span>
                     </div>
 
-                    {/* Metrics Grid */}
                     <div className="grid grid-cols-2 gap-3 mb-5">
                       <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-700/40 text-center">
                         <div className="text-2xl font-extrabold text-slate-800 dark:text-slate-100">{morningItems.length}</div>
@@ -1197,10 +1139,9 @@ const handleEveningSubmit = async () => {
                       </div>
                     </div>
 
-                    {/* Priority Distribution */}
                     {morningItems.length > 0 && (
                       <div className="mb-5 pb-5 border-b border-slate-100 dark:border-slate-700/60">
-                        <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Priority Breakdown</div>
+                        <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">{t("priority_breakdown")}</div>
                         <div className="flex items-center gap-1.5 flex-wrap">
                           {PRIORITIES.map(p => {
                             const count = morningPriorityCounts[p] || 0;
@@ -1208,7 +1149,7 @@ const handleEveningSubmit = async () => {
                             return (
                               <span key={p} className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold border capitalize ${PRIORITY_STYLES[p]}`}>
                                 <span className={`w-1.5 h-1.5 rounded-full ${PRIORITY_DOT[p]}`} />
-                                {count} {p}
+                                {count} {t(`${p}`)}
                               </span>
                             );
                           })}
@@ -1216,13 +1157,12 @@ const handleEveningSubmit = async () => {
                       </div>
                     )}
 
-                    {/* Action Buttons */}
                     <div className="space-y-2.5">
                       {morningReadOnly ? (
                         <>
                           <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/80 dark:border-emerald-800/50 flex items-center gap-2.5 mb-2">
                             <span className="text-emerald-600 dark:text-emerald-400 font-bold text-sm">✓</span>
-                            <span className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold">{t("morning_agenda_submitted")}</span>
+                            <span className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold">{t("morning_submitted")}</span>
                           </div>
                           {!eveningSubmitted && (
                             <button
@@ -1238,7 +1178,7 @@ const handleEveningSubmit = async () => {
                             onClick={() => setActiveTab("evening")}
                             className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white font-bold text-xs transition-all shadow-md shadow-indigo-500/20 active:scale-95"
                           >
-                            {t("go_to_evening_report")} →
+                            {t("goto_evening")} 
                           </button>
                         </>
                       ) : isEditingMorning ? (
@@ -1252,7 +1192,7 @@ const handleEveningSubmit = async () => {
                             {isSubmitting ? (
                               <><div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> {t("updating")}</>
                             ) : (
-                              <>✏️ {t("update_morning_agenda")}</>
+                              <>✏️ {t("update_morning")}</>
                             )}
                           </button>
                           <button
@@ -1273,13 +1213,13 @@ const handleEveningSubmit = async () => {
                             className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-all shadow-md shadow-amber-500/25 active:scale-95"
                           >
                             {isSubmitting ? (
-                              <><div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> {t("submitting_2")}</>
+                              <><div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> {t("submitting")}</>
                             ) : (
-                              <><span>🌅</span> {t("submit_morning_agenda")}</>
+                              <><span>🌅</span> {t("submit_morning")}</>
                             )}
                           </button>
                           <p className="text-[11px] text-slate-400 text-center leading-normal mt-1">
-                            Submit your morning agenda to plan your day. You can update it anytime before evening submission.
+                            {t("submit_help")}
                           </p>
                         </>
                       )}
@@ -1287,24 +1227,23 @@ const handleEveningSubmit = async () => {
                   </div>
                 </div>
 
-                {/* Productivity Tips Guide */}
                 <div className="bg-gradient-to-br from-indigo-50/50 via-white to-violet-50/30 dark:from-slate-800/60 dark:via-slate-800/40 dark:to-slate-800/20 rounded-2xl border border-indigo-100/80 dark:border-indigo-900/40 p-5 shadow-sm">
                   <div className="flex items-center gap-2.5 mb-3">
                     <span className="text-base">💡</span>
-                    <h4 className="text-xs font-bold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider">Productivity Tips</h4>
+                    <h4 className="text-xs font-bold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider">{t("productivity_tips")}</h4>
                   </div>
                   <ul className="space-y-2.5 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                     <li className="flex items-start gap-2">
                       <span className="text-amber-500 font-bold">•</span>
-                      <span><b>Realistic Estimates:</b> Keep tasks bounded between 1 to 3 hours for predictable completion.</span>
+                      <span><b>{t("tip1_title")}</b> {t("tip1_text")}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-indigo-500 font-bold">•</span>
-                      <span><b>High Priority First:</b> Tackle critical and high priority tasks during your peak morning energy.</span>
+                      <span><b>{t("tip2_title")}</b> {t("tip2_text")}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-emerald-500 font-bold">•</span>
-                      <span><b>CRM Linkage:</b> Add linked task IDs to auto-reference tickets and deliverables.</span>
+                      <span><b>{t("tip3_title")}</b> {t("tip3_text")}</span>
                     </li>
                   </ul>
                 </div>
@@ -1312,42 +1251,35 @@ const handleEveningSubmit = async () => {
             </>
           )}
 
-          {/* ════════════════════════════════════════════════════
-              EVENING REPORT TAB
-          ════════════════════════════════════════════════════ */}
           {activeTab === "evening" && (
             <>
-              {/* Left Column: Tasks Lists */}
               <div className="lg:col-span-8 space-y-6">
 
-                {/* Evening Locked Notice */}
                 {eveningSubmitted && (
                   <div className="flex items-center gap-3 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/80 dark:border-emerald-800/60 shadow-sm">
                     <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-sm shrink-0 shadow-sm">🔒</div>
                     <div>
-                      <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">{t("evening_report_locked_final_submission_complete")}</p>
+                      <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">{t("evening_locked")}</p>
                       <p className="text-[11px] text-emerald-600/80 dark:text-emerald-500/70 mt-0.5">
                         {existingReport?.eveningReport?.submittedAt
-                          ? `Submitted at ${new Date(existingReport.eveningReport.submittedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`
-                          : "Already submitted"
-                        } {t("this_report_is_read_only_and_cannot_be_edited")}
+                          ? `${t("submitted_at")} ${new Date(existingReport.eveningReport.submittedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })} ${t("evening_readonly")}`
+                          : `${t("already_submitted")} ${t("evening_readonly")}`
+                        }
                       </p>
                     </div>
                   </div>
                 )}
 
-                {/* Helpful status tip */}
                 {!eveningSubmitted && (
                   <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/60">
                     <span className="text-base shrink-0 mt-0.5">💡</span>
                     <p className="text-xs text-blue-700 dark:text-blue-400 font-medium leading-relaxed">
-                      {t("changing_a_task")} <b>{t("status")}</b> {t("to_3")} <b>{t("completed")}</b> {t("automatically_moves_it_to_the_green_section_setting_it_to")} <b>{t("in_progress_pending_blocked_carried_forward")}</b> {t("moves_it_to_the_amber_section")}
+                      {t("evening_help")}
                     </p>
                   </div>
                 )}
 
-                {/* ── Completed Tasks Section ── */}
-                <div className="bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm p-5 sm:p-6">
+                <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm p-5 sm:p-6">
                   <div className="flex items-center justify-between gap-3 mb-5 pb-4 border-b border-slate-100 dark:border-slate-700/60 flex-wrap">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-xs font-extrabold shadow-sm">
@@ -1360,7 +1292,7 @@ const handleEveningSubmit = async () => {
                             {completedItems.length}
                           </span>
                         </div>
-                        <p className="text-[11px] text-slate-400">Tasks successfully finished today</p>
+                        <p className="text-[11px] text-slate-400">{t("completed_help")}</p>
                       </div>
                     </div>
 
@@ -1370,15 +1302,15 @@ const handleEveningSubmit = async () => {
                         onClick={() => addEveningItem("completed" as TaskItemStatus)}
                         className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-700 hover:bg-emerald-100 text-xs font-bold transition-all shadow-sm active:scale-95"
                       >
-                        <span>+</span> {t("add_task", "Add Task")}
+                        <span>+</span> {t("add_task")}
                       </button>
                     )}
                   </div>
 
                   {completedItems.length === 0 ? (
                     <div className="py-10 rounded-2xl border-2 border-dashed border-emerald-100 dark:border-emerald-900/30 text-center mb-3 bg-emerald-50/20 dark:bg-emerald-900/5">
-                      <p className="text-sm text-emerald-600 dark:text-emerald-400 font-semibold">{t("no_completed_tasks_yet")}</p>
-                      <p className="text-xs text-slate-400 mt-1">{t("change_a_task's_status_to_completed")}</p>
+                      <p className="text-sm text-emerald-600 dark:text-emerald-400 font-semibold">{t("no_completed")}</p>
+                      <p className="text-xs text-slate-400 mt-1">{t("no_completed_help")}</p>
                     </div>
                   ) : (
                     <div className="space-y-4 mb-4">
@@ -1402,16 +1334,15 @@ const handleEveningSubmit = async () => {
                     <button
                       type="button"
                       onClick={() => addEveningItem("completed" as TaskItemStatus)}
-                      className="w-full py-3 rounded-2xl border-2 border-dashed border-emerald-200 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-500 hover:border-emerald-400 hover:text-emerald-700 hover:bg-emerald-50/40 text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2"
+                      className="w-full py-3 rounded-2xl border-2 border-dashed border-emerald-200 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-500 dark:hover:text-emerald-100 hover:border-emerald-400 hover:text-emerald-700 dark:hover:bg-green-200/70  hover:bg-emerald-50/40 text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2"
                     >
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+                     
                       {t("add_completed_task")}
                     </button>
                   )}
                 </div>
 
-                {/* ── Pending & Carried Forward Section ── */}
-                <div className="bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm p-5 sm:p-6">
+                <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm p-5 sm:p-6">
                   <div className="flex items-center justify-between gap-3 mb-5 pb-4 border-b border-slate-100 dark:border-slate-700/60 flex-wrap">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-xs font-extrabold shadow-sm">
@@ -1419,12 +1350,12 @@ const handleEveningSubmit = async () => {
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="text-base font-extrabold text-slate-800 dark:text-slate-100">{t("pending_in_progress_blocked")}</h3>
+                          <h3 className="text-base font-extrabold text-slate-800 dark:text-slate-100">{t("pending_tasks")}</h3>
                           <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/60">
                             {pendingItems.length}
                           </span>
                         </div>
-                        <p className="text-[11px] text-slate-400">Tasks in progress, pending, or carried to tomorrow</p>
+                        <p className="text-[11px] text-slate-400">{t("pending_help")}</p>
                       </div>
                     </div>
 
@@ -1434,15 +1365,15 @@ const handleEveningSubmit = async () => {
                         onClick={() => addEveningItem("carried_forward" as TaskItemStatus)}
                         className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200/80 dark:border-amber-700 hover:bg-amber-100 text-xs font-bold transition-all shadow-sm active:scale-95"
                       >
-                        <span>+</span> {t("add_task", "Add Task")}
+                        <span>+</span> {t("add_task")}
                       </button>
                     )}
                   </div>
 
                   {pendingItems.length === 0 ? (
                     <div className="py-10 rounded-2xl border-2 border-dashed border-amber-100 dark:border-amber-900/30 text-center mb-3 bg-amber-50/20 dark:bg-amber-900/5">
-                      <p className="text-sm text-amber-600 dark:text-amber-400 font-semibold">{t("all_tasks_completed")}</p>
-                      <p className="text-xs text-slate-400 mt-1">{t("amazing_work_today")}</p>
+                      <p className="text-sm text-amber-600 dark:text-amber-400 font-semibold">{t("all_completed")}</p>
+                      <p className="text-xs text-slate-400 mt-1">{t("all_completed_help")}</p>
                     </div>
                   ) : (
                     <div className="space-y-4 mb-4">
@@ -1466,39 +1397,36 @@ const handleEveningSubmit = async () => {
                     <button
                       type="button"
                       onClick={() => addEveningItem("carried_forward" as TaskItemStatus)}
-                      className="w-full py-3 rounded-2xl border-2 border-dashed border-amber-200 dark:border-amber-800/60 text-amber-600 dark:text-amber-500 hover:border-amber-400 hover:text-amber-700 hover:bg-amber-50/40 text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2"
+                      className="w-full py-3 rounded-2xl border-2 border-dashed border-amber-200 dark:border-amber-800/60 text-amber-600 dark:text-amber-500 dark:hover:bg-amber-200/70 hover:border-amber-400 hover:text-amber-700 hover:bg-amber-50/40 text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2"
                     >
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+                     
                       {t("add_pending_task")}
                     </button>
                   )}
                 </div>
               </div>
 
-              {/* Right Column: Sticky Summary & Retrospective */}
-              <div className="lg:col-span-4 space-y-5 lg:sticky lg:top-6">
+              <div className="lg:col-span-4 lg:sticky top-6 right-4 self-start space-y-5">
 
-                {/* Evening Actions & Metrics */}
-                <div className="bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm overflow-hidden">
+                <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm overflow-hidden">
                   <div className="h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
                   <div className="p-5">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
-                        {t("evening_report")} Summary
+                        {t("summary")}
                       </h3>
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                         eveningSubmitted
                           ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
                           : "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800"
                       }`}>
-                        {eveningSubmitted ? "✓ Submitted" : "In Progress"}
+                        {eveningSubmitted ? `✓ ${t("submitted")}` : t("in_progress")}
                       </span>
                     </div>
 
-                    {/* Completion Meter */}
                     <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-700/40 mb-4">
                       <div className="flex items-center justify-between text-xs font-bold mb-1.5">
-                        <span className="text-slate-600 dark:text-slate-300">Completion Rate</span>
+                        <span className="text-slate-600 dark:text-slate-300">{t("completion_rate")}</span>
                         <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">{eveningCompletionRate}%</span>
                       </div>
                       <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
@@ -1509,7 +1437,6 @@ const handleEveningSubmit = async () => {
                       </div>
                     </div>
 
-                    {/* 3-Col Stats */}
                     <div className="grid grid-cols-3 gap-2 mb-5">
                       <div className="p-2.5 rounded-xl bg-emerald-50/60 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/40 text-center">
                         <div className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">{completedItems.length}</div>
@@ -1525,9 +1452,8 @@ const handleEveningSubmit = async () => {
                       </div>
                     </div>
 
-                    {/* Mood Selector */}
                     <div className="mb-5 pb-5 border-b border-slate-100 dark:border-slate-700/60">
-                      <FieldLabel>{t("overall_mood_today")}</FieldLabel>
+                      <FieldLabel>{t("overall_mood")}</FieldLabel>
                       <div className="grid grid-cols-5 gap-1.5 mt-2">
                         {MOODS.map(m => (
                           <button
@@ -1549,27 +1475,29 @@ const handleEveningSubmit = async () => {
                       </div>
                     </div>
 
-                    {/* Final Submission Lock Checkbox */}
-                    {!eveningSubmitted && (
-                      <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-700/60 flex items-start gap-2.5 mb-4">
-                        <input
-                          type="checkbox"
-                          id="finalSubmitCheck"
-                          name="isFinalSubmitted"
-                          checked={isFinalSubmitted}
-                          onChange={(e) => setIsFinalSubmitted(e.target.checked)}
-                          className="w-4 h-4 mt-0.5 rounded accent-indigo-500 cursor-pointer shrink-0"
-                        />
-                        <div>
-                          <FieldLabel>{t("final_submission")}</FieldLabel>
-                          <label htmlFor="finalSubmitCheck" className="text-[11px] text-slate-500 dark:text-slate-400 font-medium cursor-pointer leading-tight block mt-0.5">
-                            {t("final_submission_locks_this_report_from")}
-                          </label>
-                        </div>
-                      </div>
-                    )}
+                   <div className="space-y-2">
 
-                    {/* Submit Button */}
+                    {err && <p className="text-rose-500 text-xs font-medium">{err}</p>}
+                  {!eveningSubmitted && (
+                    <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-700/60 flex items-start gap-2.5 mb-4">
+                      <input
+                        type="checkbox"
+                        id="finalSubmitCheck"
+                        name="isFinalSubmitted"
+                        checked={isFinalSubmitted}
+                        onChange={(e) => setIsFinalSubmitted(e.target.checked)}
+                        className="w-4 h-4 mt-0.5 rounded accent-indigo-500 cursor-pointer shrink-0"
+                      />
+                      <div>
+                        <FieldLabel>{t("final_submission")}</FieldLabel>
+                        <label htmlFor="finalSubmitCheck" className="text-[11px] text-slate-500 dark:text-slate-400 font-medium cursor-pointer leading-tight block mt-0.5">
+                          {t("final_submission_help")}
+                        </label>
+                      </div>
+                    </div>
+                  )}
+                  </div>
+
                     <div className="space-y-2">
                       {err && <p className="text-rose-500 text-xs font-medium">{err}</p>}
                       {!eveningSubmitted ? (
@@ -1582,14 +1510,14 @@ const handleEveningSubmit = async () => {
                           {isSubmitting ? (
                             <>
                               <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                              {t("submitting_2")}
+                              {t("submitting")}
                             </>
                           ) : (
                             <>
                               <span>🌆</span>
                               {!isFinalSubmitted
-                                ? t("save_evening_report")
-                                : t("submit_evening_report")
+                                ? t("save_evening")
+                                : t("submit_evening")
                               }
                             </>
                           )}
@@ -1598,7 +1526,7 @@ const handleEveningSubmit = async () => {
                         <div className="flex items-center justify-center gap-2 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
                           <span className="text-emerald-600 dark:text-emerald-400 text-base">🔒</span>
                           <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
-                            {t("report_locked_final_submission_complete")}
+                            {t("report_locked")}
                           </span>
                         </div>
                       )}
@@ -1606,46 +1534,42 @@ const handleEveningSubmit = async () => {
                   </div>
                 </div>
 
-                {/* Daily Retrospective Fields */}
-                <div className="bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm p-5 space-y-4">
+                <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm p-5 space-y-4">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-base">📝</span>
                     <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
-                      Daily Retrospective
+                      {t("retrospective")}
                     </h3>
                   </div>
 
-                  {/* Achievements */}
                   <div className="p-3.5 rounded-xl bg-emerald-50/40 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30">
-                    <FieldLabel>{t("achievements_highlights")}</FieldLabel>
+                    <FieldLabel>{t("achievements")}</FieldLabel>
                     <TextArea
                       value={achievements}
                       onChange={setAchievements}
-                      placeholder={t("what_are_you_proud_of_today")}
+                      placeholder={t("achievements_2")}
                       rows={2}
                       disabled={eveningSubmitted}
                     />
                   </div>
 
-                  {/* Blockers */}
                   <div className="p-3.5 rounded-xl bg-rose-50/40 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/30">
                     <FieldLabel>{t("blockers_challenges")}</FieldLabel>
                     <TextArea
                       value={blockers}
                       onChange={setBlockers}
-                      placeholder={t("any_blockers_issues_or_challenges_faced")}
+                      placeholder={t("blockers_3")}
                       rows={2}
                       disabled={eveningSubmitted}
                     />
                   </div>
 
-                  {/* Tomorrow's Plan */}
                   <div className="p-3.5 rounded-xl bg-blue-50/40 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30">
-                    <FieldLabel>{t("tomorrow_apos_s_plan")}</FieldLabel>
+                    <FieldLabel>{t("tomorrows_plan")}</FieldLabel>
                     <TextArea
                       value={tomorrowPlan}
                       onChange={setTomorrowPlan}
-                      placeholder={t("what_do_you_plan_to_work")}
+                      placeholder={t("tomorrow")}
                       rows={2}
                       disabled={eveningSubmitted}
                     />

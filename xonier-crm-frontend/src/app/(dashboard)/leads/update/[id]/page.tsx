@@ -31,7 +31,7 @@ const KNOWN_LEAD_KEYS = new Set([
   "fullName",
   "email",
   "phone",
-  "priority",
+  "priority_2",
   "source",
   "projectType",
   "status",

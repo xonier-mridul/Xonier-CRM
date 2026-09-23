@@ -361,6 +361,8 @@ export default function CompanyDetailPage() {
 
               {/* Actions */}
               <div className="flex items-center gap-2 relative">
+                 {
+                  auth.isAdmin &&(<>
                 <Link
                   href={`/companies/update/${company.id}`}
                   className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl bg-slate-100 dark:bg-gray-700 text-slate-700 dark:text-gray-200 hover:bg-slate-200 dark:hover:bg-gray-600 transition-colors"
@@ -368,14 +370,19 @@ export default function CompanyDetailPage() {
                   <IoCreateOutline className="text-base" />
                   {t("edit")}
                 </Link>
-
-                <button
+               
+                   <button
                   onClick={() => setMenuOpen((p) => !p)}
                   disabled={actionLoading}
                   className="h-9 w-9 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
                 >
                   <IoEllipsisVertical />
                 </button>
+                </>
+                )
+                }
+
+               
 
                 {menuOpen && (
                   <div className="absolute right-0 top-11 z-20 bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 shadow-xl py-1.5 min-w-[200px]">
@@ -772,7 +779,9 @@ export default function CompanyDetailPage() {
             </Card>
 
             {/* Quick Actions */}
-            {!isLoading && company && (
+
+            {!isLoading && company &&
+                  auth.isAdmin  && (
               <Card title={t("quick_actions")} icon={<IoShieldCheckmarkOutline />}>
                 <div className="py-3 flex flex-col gap-2">
                   <Link

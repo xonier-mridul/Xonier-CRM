@@ -75,3 +75,15 @@ class UserRoleController:
            return successResponse(200, "Role deleted successfully", result)
         except AppException as e:
             raise e
+        
+        
+    async def get_all_rating(self, request:Request):
+            try:
+                filters = request.query_params
+                user= request.state.user
+                
+                result = await self.service.get_all_rating(int(filters["page"]), int(filters["limit"]), filters, user)
+                return successResponse(200, f"All rating fetch successfully", result)
+            except AppException as e:
+                raise e
+                

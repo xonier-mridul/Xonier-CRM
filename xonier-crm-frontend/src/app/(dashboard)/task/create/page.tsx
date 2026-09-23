@@ -29,28 +29,28 @@ const PRIORITY_CFG: Record<
   { label: string; color: string; bg: string; border: string; dot: string }
 > = {
   [TASK_PRIORITY.LOW]: {
-    label: "Low",
+    label: "low",
     color: "#64748b",
     bg: "bg-slate-50   dark:bg-slate-900/30",
     border: "border-slate-200 dark:border-slate-700",
     dot: "bg-slate-400",
   },
   [TASK_PRIORITY.MEDIUM]: {
-    label: "Medium",
+    label: "medium",
     color: "#f59e0b",
     bg: "bg-amber-50   dark:bg-amber-900/20",
     border: "border-amber-200 dark:border-amber-700",
     dot: "bg-amber-400",
   },
   [TASK_PRIORITY.HIGH]: {
-    label: "High",
+    label: "high",
     color: "#f97316",
     bg: "bg-orange-50  dark:bg-orange-900/20",
     border: "border-orange-200 dark:border-orange-700",
     dot: "bg-orange-500",
   },
   [TASK_PRIORITY.URGENT]: {
-    label: "Urgent",
+    label: "urgent",
     color: "#ef4444",
     bg: "bg-rose-50    dark:bg-rose-900/20",
     border: "border-rose-200  dark:border-rose-700",
@@ -556,7 +556,7 @@ const CreateTaskPage = (): JSX.Element => {
           {/* ── Right column (1/3) ── */}
           <div className="space-y-5">
 
-            <SectionCard icon="🎯" title={t("priority")}>
+            <SectionCard icon="🎯" title={t("priority_2")}>
               <div className="grid grid-cols-2 gap-2">
                 {Object.values(TASK_PRIORITY).map((p) => {
                   const cfg = PRIORITY_CFG[p];
@@ -570,7 +570,7 @@ const CreateTaskPage = (): JSX.Element => {
                       style={active ? { color: cfg.color } : {}}
                     >
                       <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${active ? cfg.dot : "bg-gray-300 dark:bg-gray-600"}`} />
-                      {cfg.label}
+                      {t(cfg.label)}
                     </button>
                   );
                 })}
@@ -670,7 +670,7 @@ const CreateTaskPage = (): JSX.Element => {
                     onChange={(ids) => set("assignedTo", ids)}
                     showList={true}
                     currentUserId={auth.user?._id}
-                    placeholder={t("search_users_2")}
+                    placeholder={t("search_users")}
                   />
                 )}
               </div>
@@ -713,7 +713,7 @@ const CreateTaskPage = (): JSX.Element => {
                   {t("creating")}
                 </>
               ) : (
-                <>{t("create_task_2")}</>
+                <>{t("create_task")}</>
               )}
             </button>
           ) : (

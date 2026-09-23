@@ -22,6 +22,8 @@
   "geographic_distribution": "भौगोलिक वितरण",
   "user_distribution": "उपयोगकर्ता वितरण",
     "qualification": "योग्यता",
+    "all_user":"सभी उपयोगकर्ता",
+      "no_ratings_yet":"अभी तक कोई रेटिंग नहीं है",
   "requirement_analysis": "आवश्यकता विश्लेषण",
   "proposal": "प्रस्ताव",
   "negotiation": "बातचीत",
@@ -150,6 +152,8 @@
   "attach_pdf_or_word_documents": "PDF या Word दस्तावेज़ संलग्न करें",
     "max_files": "अधिकतम फ़ाइलें",
   "max_size": "अधिकतम आकार",
+  "size": "आकार",
+  
   "selected_files": "चयनित फ़ाइलें",
   "custom_quotation": "कस्टम कोटेशन",
   "no_attachments": "कोई संलग्नक नहीं",
@@ -617,7 +621,9 @@
   "set_priority": "प्राथमिकता निर्धारित करें",
   "change_priority": "प्राथमिकता बदलें",
     "conv": "रूपांतरण%",
+    
     "conversion": "रूपांतरण",
+
     "conversion_funnel": "रूपांतरण फ़नल",
     "deal_revenue": "डील राजस्व",
     "half_yearly": "अर्धवार्षिक",
@@ -1500,7 +1506,7 @@
     "pre_seed": "प्री-सीड",
     "preview": "पूर्वावलोकन",
     "preview_how_the_email_renders_per": "पूर्वावलोकन करें कि सभी चर हल होने के साथ प्रति लीड ईमेल कैसे प्रस्तुत होता है।",
-    "priority": "प्राथमिकता",
+    "priority_2": "प्राथमिकता",
     "product_manager": "उत्पाद प्रबंधक",
     "project_type": "प्रोजेक्ट का प्रकार",
     "react": "React",
@@ -1978,8 +1984,135 @@
     "create_role": "भूमिका बनाएं",
     "viewer_1": "दर्शक (1)",
   "owner_100": "मालिक (100)",
+    "enter_otp": "OTP दर्ज करें",
+    "otp_sent_successfully": "OTP सफलतापूर्वक भेजा गया",
    "update_the_category_details_below": "नीचे दिए गए श्रेणी विवरण को अपडेट करें",
     "define_a_new_task_category": "एक नई कार्य श्रेणी परिभाषित करें",
+    "daily_retrospective": "दैनिक पूर्वावलोकन",
+    "active_status": "सक्रिय स्थिति",
+    
+  "page_title": "दैनिक कार्य रिपोर्ट",
+
+  
+  "status_badge": {
+    "done": "पूर्ण",
+    "pending": "लंबित"
+  },
+  
+  "priority": {
+    "low": "निम्न",
+    "medium": "मध्यम",
+    "high": "उच्च",
+    "critical": "महत्वपूर्ण"
+  },
+  
+
+
+  
+
+
+  "blocker_reason": "अवरोध का कारण",
+
+  
+
+    "what_are_you_working_on": "आप किस पर काम करने वाले हैं?",
+    "brief_details": "इस कार्य के बारे में संक्षिप्त विवरण...",
+    "eg_hours": "उदा. 2.5",
+    "task_id": "कार्य-101",
+    "main_focus": "आज आपका मुख्य फोकस क्या है?",
+    "what_completed": "आपने क्या पूरा किया?",
+    "what_pending": "अभी भी क्या लंबित है?",
+    "details_done": "क्या किया गया / क्या लंबित है के बारे में विवरण...",
+    "blocker_reason_2": "इस कार्य को क्या रोक रहा है?",
+    "achievements_2": "आज आपको किस बात पर गर्व है?",
+    "blockers_3": "कोई अवरोध, समस्याएं या चुनौतियां?",
+    "tomorrow": "आप कल क्या करने की योजना बना रहे हैं?"
+  ,
+   "of": "का",
+    "not_enough_rated_tasks_yet": "अभी तक पर्याप्त रेट किए गए टास्क नहीं हैं",
+    
+  
+  "todays_goal": "आज का लक्ष्य / फोकस",
+  "goal_help": "आज के लिए अपना प्राथमिक उद्देश्य या मील का पत्थर परिभाषित करें",
+
+
+  "edit_plan": "योजना संपादित करें",
+  "editing_morning": "सुबह का एजेंडा संपादित कर रहे हैं",
+  "editing_help": "परिवर्तन आपकी मौजूदा योजना को अपडेट करेंगे",
+  
+  "plan_readonly": "आज के लिए आपकी योजना (केवल पढ़ने के लिए)",
+  "plan_editing": "अपनी योजना अपडेट करें - जब आप अपडेट पर क्लिक करेंगे तो परिवर्तन सहेजे जाएंगे",
+  "plan_help": "अपने दिन की योजना बनाएं - आप कौन से कार्यों से निपटेंगे?",
+  
+  "no_tasks_planned": "अभी तक कोई कार्य नियोजित नहीं",
+  "no_tasks_help": "आज के लिए अपना पहला एजेंडा कार्य जोड़ने के लिए नीचे क्लिक करें",
+  "add_task": "कार्य जोड़ें",
+
+  
+
+  "goto_evening": "शाम की रिपोर्ट पर जाएं",
+  "update_morning": "सुबह का एजेंडा अपडेट करें",
+
+  "submit_morning": "सुबह का एजेंडा सबमिट करें",
+
+  "submit_help": "अपने दिन की योजना बनाने के लिए अपना सुबह का एजेंडा सबमिट करें। आप शाम की सबमिशन से पहले किसी भी समय इसे अपडेट कर सकते हैं।",
+  
+  "productivity_tips": "उत्पादकता युक्तियाँ",
+  "tip1_title": "यथार्थवादी अनुमान:",
+  "tip1_text": "अनुमानित पूर्णता के लिए कार्यों को 1 से 3 घंटे के बीच रखें।",
+  "tip2_title": "पहले उच्च प्राथमिकता:",
+  "tip2_text": "अपनी सुबह की चरम ऊर्जा के दौरान महत्वपूर्ण और उच्च प्राथमिकता वाले कार्यों से निपटें।",
+  "tip3_title": "CRM लिंकेज:",
+  "tip3_text": "टिकट और डिलिवरेबल्स को ऑटो-रेफरेंस करने के लिए लिंक किए गए कार्य ID जोड़ें।",
+  
+  "evening_locked": "शाम की रिपोर्ट लॉक - अंतिम सबमिशन पूर्ण",
+  "evening_readonly": "यह रिपोर्ट केवल पढ़ने के लिए है और संपादित नहीं की जा सकती।",
+  "evening_help": "किसी कार्य की स्थिति को पूर्ण में बदलने से यह स्वचालित रूप से हरे अनुभाग में चला जाता है। इसे प्रगति में, लंबित, अवरुद्ध या आगे बढ़ाया गया पर सेट करने से यह एम्बर अनुभाग में चला जाता है।",
+  "status_help_text": "इसे बदलने से कार्य अनुभागों के बीच चला जाता है",
+  
+  "completed_help": "आज सफलतापूर्वक पूर्ण किए गए कार्य",
+
+  "pending_tasks": "लंबित / प्रगति में / अवरुद्ध",
+  "pending_help": "प्रगति में, लंबित या कल के लिए आगे बढ़ाए गए कार्य",
+  
+  "no_completed": "अभी तक कोई कार्य पूर्ण नहीं",
+  "no_completed_help": "किसी कार्य की स्थिति को 'पूर्ण' में बदलें या नया जोड़ें",
+  "add_completed_task": "पूर्ण कार्य जोड़ें",
+  
+  "all_completed": "सभी कार्य पूर्ण!",
+  "all_completed_help": "आज शानदार काम! 🎉",
+  "add_pending_task": "लंबित कार्य जोड़ें",
+  
+
+  "final_submission_help": "अंतिम सबमिशन इस रिपोर्ट को आगे संपादन से लॉक कर देता है। ड्राफ्ट के रूप में सहेजने के लिए अनचेक करें।",
+  "save_evening": "शाम की रिपोर्ट सहेजें",
+  "submit_evening": "शाम की रिपोर्ट सबमिट करें",
+  "report_locked": "रिपोर्ट लॉक - अंतिम सबमिशन पूर्ण",
+  
+  "retrospective": "दैनिक पूर्वव्यापी",
+  "achievements": "उपलब्धियां / मुख्य बातें",
+  "tomorrows_plan": "कल की योजना",
+  
+  "toast": {
+    "fill_all_titles": "कृपया सभी कार्य शीर्षक भरें",
+    "morning_submitted": "सुबह का एजेंडा सबमिट किया गया! ✅",
+    "no_report_id": "रिपोर्ट ID प्राप्त नहीं हो सका। कृपया रिफ्रेश करें।",
+    "morning_failed": "सुबह का एजेंडा सबमिट करने में विफल",
+    "report_not_found": "रिपोर्ट नहीं मिली",
+    "morning_updated": "सुबह का एजेंडा अपडेट किया गया! ✅",
+    "morning_update_failed": "सुबह का एजेंडा अपडेट करने में विफल",
+    "something_wrong": "कुछ गलत हो गया",
+    "submit_morning_first": "कृपया पहले अपना सुबह का एजेंडा सबमिट करें",
+    "add_one_task": "कृपया कम से कम एक कार्य जोड़ें",
+    "evening_submitted": "शाम की रिपोर्ट सबमिट की गई! 🌆"
+  },
+
+    "save_evening_title": "शाम की रिपोर्ट सहेजें?",
+    "save_evening_text": "आपकी प्रगति ड्राफ्ट के रूप में सहेजी जाएगी। आप बाद में संपादन जारी रख सकते हैं।",
+    "submit_evening_title": "शाम की रिपोर्ट सबमिट करें?",
+    "submit_evening_text": "यह आपकी शाम की रिपोर्ट को लॉक कर देगा। सबमिशन के बाद आप इसे संपादित नहीं कर पाएंगे।",
+
+ 
 
     "create_new_category": "नई श्रेणी बनाएं",
     "create_your_first_role_to_get": "आरंभ करने के लिए अपनी पहली भूमिका बनाएं",
@@ -2031,13 +2164,13 @@
     "update_role": "भूमिका अपडेट करें",
     "user_roles": "उपयोगकर्ता भूमिकाएं",
     "view_role_details": "भूमिका विवरण देखें",
-    "viewer": "दर्शक (Viewer)",
+    "viewer": "दर्शक",
     "when_enabled_this_role_can_manage": "सक्षम होने पर, यह भूमिका निम्न शक्ति स्तर वाले उपयोगकर्ताओं और भूमिकाओं का प्रबंधन कर सकती है।",
     "yes": "हाँ",
     "yes_can_manage_lower_power_roles": "हां — निचले स्तर की भूमिकाओं को प्रबंधित कर सकते हैं"
   ,
     "access_denied": "पहुंच अस्वीकृत",
-    "active_deals": "सक्रिय सौदे (Deals)",
+    "active_deals": "सक्रिय सौदे ",
     "active_enquiries": "सक्रिय पूछताछ",
     "activity_snapshot": "गतिविधि स्नैपशॉट",
     "admin_overview": "एडमिन अवलोकन",
@@ -2087,7 +2220,7 @@
     "manage_user_subscriptions": "उपयोगकर्ता सदस्यता प्रबंधित करें",
     "monthly_rate": "मासिक दर",
     "no_subscriptions_found": "कोई सदस्यता नहीं मिली",
-    "paused": "रोका गया (Paused)",
+    "paused": "रोका गया ",
     "plan_visibility": "योजना दृश्यता",
     "record_timestamps": "रिकॉर्ड टाइमस्टैम्प",
     "ref_id": "Ref आईडी",
@@ -2096,10 +2229,10 @@
     "subscription_end": "सदस्यता का अंत",
     "subscription_start": "सदस्यता की शुरुआत",
     "subscription_timeline": "सदस्यता टाइमलाइन",
-    "trial": "परीक्षण (Trial)",
+    "trial": "परीक्षण",
     "view_creator_profile": "निर्माता प्रोफ़ाइल देखें",
     "yearly_rate": "वार्षिक दर",
-    "acknowledged": "स्वीकार किया गया (Acknowledged)",
+    "acknowledged": "स्वीकार किया गया",
     "acknowledged_by": "द्वारा स्वीकार किया गया",
     "actions_will_appear_here_as_they": "क्रियाएँ होते ही यहाँ दिखाई देंगी",
     "activities": "गतिविधियाँ",
@@ -2109,13 +2242,17 @@
     "actual_days_spent": "वास्तविक दिन बिताए",
     "actual_hours": "वास्तविक घंटे",
     "actual_hours_spent": "बिताए गए वास्तविक घंटे",
-    "add_remark": "टिप्पणी (Remark) जोड़ें",
+    "add_remark": "टिप्पणी  जोड़ें",
     "add_remark_2": "टिप्पणी जोड़ें",
+    "add":"जोड़ें",
     "add_sub_task": "उप-कार्य जोड़ें",
     "add_tag_and_press_enter": "टैग जोड़ें और Enter दबाएं…",
     "add_your_first_sub_task": "अपना पहला उप-कार्य जोड़ें",
     "all": "सभी",
+     "least_powerful": "सबसे कम शक्तिशाली",
+  "max": "अधिकतम",
     "all_categories": "सभी श्रेणियां",
+    "submitted_2": "✓ सबमिट किया गया",
     "all_priorities": "सभी प्राथमिकताएं",
     "all_sub_tasks_completed": "सभी उप-कार्य पूरे हुए! 🎉",
     "all_tasks": "सभी कार्य",
@@ -2126,7 +2263,7 @@
     "are_you_sure_to_mark_this": "क्या आप वाकई इस उपकार्य को पूरा चिह्नित करना चाहते हैं, सुनिश्चित करें कि पूरा होने के बाद आप इसे अपडेट या उलट नहीं पाएंगे",
     "assign_users": "उपयोगकर्ता असाइन करें",
     "assigned": "असाइन किया गया",
-    "attachments": "अनुलग्नक (Attachments)",
+    "attachments": "अनुलग्नक",
     "board": "बोर्ड",
     "briefly_describe_when_this_status_applies": "संक्षेप में वर्णन करें कि यह स्थिति कब लागू होती है…",
     "category": "श्रेणी",
@@ -2206,6 +2343,9 @@
     "objectid": "ObjectId…",
     "ongoing": "चल रहा है (Ongoing)",
     "order": "क्रम (Order)",
+     "select_plan": "प्लान चुनें",
+    "verify_email": "ईमेल सत्यापित करें",
+    "no_task": "कोई कार्य नहीं",
     "organise_and_manage_task_categories_for": "अपने प्रोजेक्ट के लिए कार्य श्रेणियों को व्यवस्थित और प्रबंधित करें।",
     "overdue": "अतिदेय",
     "pause": "रोकें (Pause)",
@@ -2398,6 +2538,8 @@
     "no_phone_selected": "कोई फ़ोन नहीं चुना गया",
     "no_users_assigned": "कोई उपयोगकर्ता असाइन नहीं किया गया",
     "phone_id": "फोन आईडी",
+  "are_you_sure_you_want_to_clear_all": "क्या आप वाकई सभी सूचनाएँ साफ़ करना चाहते हैं?",
+  "yes_clear_all": "हाँ, सभी साफ़ करें",
     "phone_number_cleared_successfully": "फ़ोन नंबर सफलतापूर्वक साफ़ किया गया",
     "phone_number_copied": "फोन नंबर कॉपी हो गया!",
     "phone_number_created_successfully": "फोन नंबर सफलतापूर्वक बनाया गया",

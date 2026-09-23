@@ -112,8 +112,9 @@ class UserRoleService:
 
             if is_exist:
                 raise AppException(400, "Roles already exist with the same name, please use different name")
-
+            print("err")
             new_role = await self.repository.create(data=payload, session=session)
+            print("err 2")
 
             if not new_role:
                 raise AppException(400, "Role creation failed")

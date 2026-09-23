@@ -47,7 +47,7 @@ class RegisterUserSchema(BaseModel):
             "lowercase": any(c.islower() for c in v),
             "uppercase": any(c.isupper() for c in v),
             "digit": any(c.isdigit() for c in v),
-            "special": any(c in "@$!%*?&#" for c in v),
+            "special": any(c in "@$!.%*?&#" for c in v),
             "length": len(v) >= 8,
         }
 
@@ -113,7 +113,7 @@ class AdminLoginSchema(BaseModel):
             "lowercase": any(c.islower() for c in v),
             "uppercase": any(c.isupper() for c in v),
             "digit": any(c.isdigit() for c in v),
-            "special": any(c in "@$!%*?&#" for c in v),
+            "special": any(c in "@$!%.*?&#" for c in v),
             "length": len(v) >= 8,
         }
 
@@ -152,7 +152,7 @@ class UserLoginSchema(BaseModel):
             "lowercase": any(c.islower() for c in v),
             "uppercase": any(c.isupper() for c in v),
             "digit": any(c.isdigit() for c in v),
-            "special": any(c in "@$!%*?&#" for c in v),
+            "special": any(c in "@$!%*.?&#" for c in v),
             "length": len(v) >= 8,
         }
 
@@ -179,7 +179,7 @@ class ResendAdminOTPSchema(BaseModel):
             "lowercase": any(c.islower() for c in v),
             "uppercase": any(c.isupper() for c in v),
             "digit": any(c.isdigit() for c in v),
-            "special": any(c in "@$!%*?&#" for c in v),
+            "special": any(c in "@$!%*.?&#" for c in v),
             "length": len(v) >= 8,
         }
 
@@ -202,7 +202,7 @@ class ResendOTPSchema(BaseModel):
             "lowercase": any(c.islower() for c in v),
             "uppercase": any(c.isupper() for c in v),
             "digit": any(c.isdigit() for c in v),
-            "special": any(c in "@$!%*?&#" for c in v),
+            "special": any(c in "@$!%.*?&#" for c in v),
             "length": len(v) >= 8,
         }
 
@@ -226,7 +226,7 @@ class VerifyAdminLoginOtpSchema(BaseModel):
             "lowercase": any(c.islower() for c in v),
             "uppercase": any(c.isupper() for c in v),
             "digit": any(c.isdigit() for c in v),
-            "special": any(c in "@$!%*?&#" for c in v),
+            "special": any(c in "@$!%.*?&#" for c in v),
             "length": len(v) >= 8,
         }
 
@@ -250,7 +250,7 @@ class VerifyLoginOtpSchema(BaseModel):
             "lowercase": any(c.islower() for c in v),
             "uppercase": any(c.isupper() for c in v),
             "digit": any(c.isdigit() for c in v),
-            "special": any(c in "@$!%*?&#" for c in v),
+            "special": any(c in "@$!%.*?&#" for c in v),
             "length": len(v) >= 8,
         }
 
@@ -273,7 +273,7 @@ class ResetPasswordSchema(BaseModel):
             "lowercase": any(c.islower() for c in v),
             "uppercase": any(c.isupper() for c in v),
             "digit": any(c.isdigit() for c in v),
-            "special": any(c in "@$!%*?&#" for c in v),
+            "special": any(c in "@$!%.*?&#" for c in v),
             "length": len(v) >= 8,
         }
 
@@ -334,7 +334,7 @@ class ForgotPassOtpSchema(BaseModel):
             "lowercase": any(c.islower() for c in password),
             "uppercase": any(c.isupper() for c in password),
             "digit": any(c.isdigit() for c in password),
-            "special": any(c in "@$!%*?&#" for c in password),
+            "special": any(c in "@$!%.*?&#" for c in password),
             "length": len(password) >= 8,
         }
         
@@ -357,7 +357,7 @@ class ResetPasswordByAdminSchema(BaseModel):
             "lowercase": any(c.islower() for c in v),
             "uppercase": any(c.isupper() for c in v),
             "digit": any(c.isdigit() for c in v),
-            "special": any(c in "@$!%*?&#" for c in v),
+            "special": any(c in "@$!.%*?&#" for c in v),
             "length": len(v) >= 8,
         }
 
@@ -376,7 +376,7 @@ class ResetPasswordByAdminSchema(BaseModel):
             "lowercase": any(c.islower() for c in v),
             "uppercase": any(c.isupper() for c in v),
             "digit": any(c.isdigit() for c in v),
-            "special": any(c in "@$!%*?&#" for c in v),
+            "special": any(c in "@$!%.*?&#" for c in v),
             "length": len(v) >= 8,
         }
 
@@ -439,3 +439,14 @@ class FindMyCompanyId(BaseModel):
             raise AppException(422, f"{"email" if not email else "companyName"} field required")
     
         return item
+    
+    
+class UserRatingSchema(BaseModel):
+    _id: str
+    firstName: str
+    lastName: str
+    email: str
+    totalTasks: int = 0
+    ratedTasks: int = 0
+    overallRating: float = 0
+    onTimeRate: float = 0

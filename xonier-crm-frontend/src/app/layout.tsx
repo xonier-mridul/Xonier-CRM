@@ -62,7 +62,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
 
               
               {children }
-              <Support hasUnread/>
+              {/* <Support hasUnread/> */}
               </I18nProvider>
             </LoaderProvider>
           </ReduxProvider>

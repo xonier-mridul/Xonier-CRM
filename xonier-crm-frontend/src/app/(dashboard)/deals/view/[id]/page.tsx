@@ -102,13 +102,13 @@ const DealViewPage = (): JSX.Element => {
     if (!dealData) return;
 
     try {
-      const confirm = await ConfirmPopup({
+      const {isConfirmed} = await ConfirmPopup({
         title: "Are you sure?",
         text: `Do you want to delete deal "${dealData.dealName}"?`,
         btnTxt: "Yes, delete",
       });
 
-      if (confirm) {
+      if (isConfirmed) {
         const result = await dealService.delete(dealData.id);
         if (result.status === 200) {
           toast.success("Deal deleted successfully");

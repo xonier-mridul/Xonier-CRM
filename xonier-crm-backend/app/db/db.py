@@ -39,6 +39,7 @@ from app.db.models.subscription_model import SubscriptionModel
 from app.db.models.query_model import QueryModel
 from app.db.models.notification_model import NotificationModel
 from app.db.models.payment_model import PaymentModel
+from app.db.models.rating_model import RatingModel
 
 
 settings = get_setting()
@@ -57,7 +58,7 @@ async def connect_db():
         
         await init_beanie(
             database=db,
-            document_models=[UserModel, PermissionModel, UserRoleModel, OtpModel, EnquiryModel, TeamModel, TeamCategoryModel, LeadsModel, CustomFieldModel, UserFormModel, DealModel, CalenderEventModel, QuotationModel, QuotationHistoryModel, NoteModel, UserCustomFieldModel, ActivityModel, TelephoneNumbersModel, SMSHistory, EmailTemplateModel, EmailHistoryModel, TaskCategoryModel, TaskActivityModel, TaskStatusModel, TaskModel, TaskRemarkModel, TaskReportModel, SubTaskModel, InvoiceModel, TaskTimeLogModel, FeatureModel, PlanModel, CompanyModel, SubscriptionModel, QueryModel, NotificationModel, PaymentModel]
+            document_models=[UserModel, PermissionModel, UserRoleModel, OtpModel, EnquiryModel, TeamModel, TeamCategoryModel, LeadsModel, CustomFieldModel, UserFormModel, DealModel, CalenderEventModel, QuotationModel, QuotationHistoryModel, NoteModel, UserCustomFieldModel, ActivityModel, TelephoneNumbersModel, SMSHistory, EmailTemplateModel, EmailHistoryModel, TaskCategoryModel, TaskActivityModel, TaskStatusModel, TaskModel, TaskRemarkModel, TaskReportModel, SubTaskModel, InvoiceModel, TaskTimeLogModel, FeatureModel, PlanModel, CompanyModel, SubscriptionModel, QueryModel, NotificationModel, PaymentModel,RatingModel]
         )
         print("Successfully connected to MongoDB and initialized Beanie")
     except Exception as e:
