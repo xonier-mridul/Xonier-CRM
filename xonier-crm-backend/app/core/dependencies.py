@@ -182,8 +182,6 @@ class Dependencies:
         with system_query():
             company = await self.companyRepo.find_by_id(PydanticObjectId(user["companyId"]))
 
-        
-
 
         if not company:
             raise AppException(403, "No company associated with this account")
