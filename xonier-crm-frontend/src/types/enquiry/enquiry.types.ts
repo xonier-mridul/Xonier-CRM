@@ -70,7 +70,9 @@ export interface GetEnquiryPayload {
   priority?: string
   fromDate?: string
   toDate?: string
-
+  status?: string
+  source?: string
+  assignTo?: string
 }
 
 
