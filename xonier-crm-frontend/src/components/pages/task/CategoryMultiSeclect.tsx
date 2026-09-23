@@ -46,11 +46,11 @@ export default function CategoryMultiSelect({
         type="button"
         // onClick={() => setOpen((o) => !o)}
         onClick={()=>handleOpen(open)}
-        className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition min-w-[160px] max-w-[240px]"
+        className="flex items-center gap-2 px-3.5 py-[7px] rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400 transition  min-w-[120px] max-w-[200px]"
       >
         <span className="flex-1 text-left truncate">
           {selected.length === 0 ? (
-            <span className="text-gray-400">{t("all_categories")}</span>
+            <span className="text-gray-400 text-xs ">{t("all_categories")}</span>
           ) : selected.length === 1 ? (
             <span className="flex items-center gap-1.5">
               <span>{selectedCategories[0]?.icon}</span>

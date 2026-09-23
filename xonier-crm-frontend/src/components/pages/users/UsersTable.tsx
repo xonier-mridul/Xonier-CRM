@@ -338,7 +338,8 @@ const isPasswordValid = checks.every((check) => check.valid);
           {setIsPopupShow(false);
           setFormData({...emptyForm});
           } } />
-         <div className="fixed top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 p-6 rounded-xl  z-[200] flex flex-col gap-5 shadow-xl w-150 min-h-140 ">
+         <div className="fixed top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-900 p-6 rounded-xl  
+         z-[200] flex flex-col gap-5 shadow-xl w-150 min-h-140 ">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold dark:text-white">{t("create_user")}</h2>
               <button
@@ -353,17 +354,19 @@ const isPasswordValid = checks.every((check) => check.valid);
             </div>
             <form onSubmit={handleSubmit} className="md:grid gap-4 text-xs md:text-lg">
               <Input
-                label={t("firstname")}
+                label={t("first_name")}
                 type="text"
                 name="firstName"
+                required 
                 placeholder={t("first_name")}
                 value={formData.firstName}
                 onChange={handleChange}
               />
               <Input
-                label={t("lastname")}
+                label={t("last_name")}
                 type="text"
                 name="lastName"
+                required 
                 placeholder={t("last_name")}
                 value={formData.lastName}
                 onChange={handleChange}
@@ -372,6 +375,7 @@ const isPasswordValid = checks.every((check) => check.valid);
                 label={t("email_2")}
                 type="email"
                 name="email"
+                required 
                 placeholder={t("email_address")}
                 value={formData.email}
                 onChange={handleChange}
@@ -446,8 +450,11 @@ const isPasswordValid = checks.every((check) => check.valid);
                 )} */}
               </div>
               <div className="col-span-2 flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                <label className="text-sm font-medium 
+ text-gray-700 dark:text-gray-200 capitalize flex gap-2">
                   {t("phone")}
+  
+    <span className="text-red-500 text-xl">*</span>
                 </label>
 
                 <div className="flex gap-2">
@@ -459,14 +466,14 @@ const isPasswordValid = checks.every((check) => check.valid);
                   >
                     {countryCodes.map((c: countryCode) => (
                       <option key={c.code} value={c.code}>
-                        {c.label} ({c.code})
+                        {c.flag} ({c.code})
                       </option>
                     ))}
                   </select>
 
                   {/* Phone Input */}
                   <input
-                    type="text"
+                    type="number"
                     name="phone"
                     placeholder={t("phone_number")}
                     value={`${phoneNumber}`}
@@ -479,6 +486,7 @@ const isPasswordValid = checks.every((check) => check.valid);
                 label={t("password")}
                 type="password"
                 name="password"
+                required
                 placeholder={t("password_2")}
                 value={formData.password}
                 onChange={handleChange}
@@ -486,6 +494,7 @@ const isPasswordValid = checks.every((check) => check.valid);
               <Input
                 label={t("confirm_password_2")}
                 type="password"
+                required
                 name="confirmPassword"
                 placeholder={t("confirm_password")}
                 value={formData.confirmPassword}
@@ -513,8 +522,12 @@ const isPasswordValid = checks.every((check) => check.valid);
            
               {isAdmin && (
                 <div className="col-span-2 flex flex-col gap-1">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                    {t("company")}
+                  <label className="text-sm font-medium 
+ text-gray-700 dark:text-gray-200 capitalize flex gap-2">
+                 {t("company")}
+  
+    <span className="text-red-500 text-xl">*</span>
+                  
                   </label>
                   <CompanySelect
                     companyData={companyData}
@@ -629,7 +642,7 @@ const isPasswordValid = checks.every((check) => check.valid);
       <div className="overflow-x-auto rounded-xl">
       <table className="w-full rounded-xl overflow-hidden text-slate-500 ">
         <thead className="">
-          <tr className="w-full border-b-2 border-zinc-300 bg-slate-200 dark:bg-gray-900">
+          <tr className="w-full border-b-2 border-zinc-300 bg-slate-200 dark:bg-gray-900/50">
             <th className="p-4 uppercase text-xs text-start text-slate-500 dark:text-slate-100">
               {t("s_no")}
             </th>
@@ -666,8 +679,8 @@ const isPasswordValid = checks.every((check) => check.valid);
                   <tr
                     className={`${
                       rr
-                        ? "bg-white dark:bg-transparent hover:bg-cyan-50 dark:hover:bg-gray-700/50"
-                        : "bg-slate-100/50 dark:bg-slate-900/30 hover:bg-cyan-50 dark:hover:bg-gray-700/50"
+                        ? "bg-white dark:bg-gray-900/20 hover:bg-cyan-50 dark:hover:bg-gray-700/50"
+                        : "bg-slate-100/50 dark:bg-slate-900/50 hover:bg-cyan-50 dark:hover:bg-gray-700/50"
                     } w-full group transition-colors `}
                     key={item.id}
                   >

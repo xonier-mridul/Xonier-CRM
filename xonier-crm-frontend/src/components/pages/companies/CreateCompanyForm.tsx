@@ -37,7 +37,7 @@ interface CreateCompanyFormProps {
   onResendOtp: (userId: string) => Promise<void>;
 }
 
-const STEPS = ["Company Details", "Select Plan", "Verify Email"];
+const STEPS = ["company_details", "select_plan", "verify_email"];
 
 const countryOptions = Object.entries(COUNTRY_CODE).map(
   ([name, code]) => ({
@@ -264,7 +264,7 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
                     : "text-slate-400 dark:text-gray-500"
                 }`}
               >
-                {label}
+                {t(label)}
               </span>
             </div>
             {i < STEPS.length - 1 && (
@@ -301,9 +301,10 @@ const CreateCompanyForm: React.FC<CreateCompanyFormProps> = ({
               <Input label={t("website")} placeholder="https://company.io" value={form.website ?? ""} onChange={(e) => set("website", (e.target as HTMLInputElement).value)} />
               <div className="flex flex-col gap-1 w-full">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-200">{t("company_size")}</label>
-                <select value={form.companySize ?? ""} onChange={(e) => set("companySize", (e.target.value as NUMBER_OF_EMPLOYEES) || undefined)} className="w-full px-3 py-2 rounded-md border bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm">
+                <select value={form.companySize ?? ""} onChange={(e) => set("companySize", (e.target.value as NUMBER_OF_EMPLOYEES) || undefined)} 
+                className="w-full px-3 py-2 rounded-md border bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm">
                   <option value="">{t("select_size")}</option>
-                  {sizeOptions.map((o) => (<option key={o.value} value={o.value}>{o.label}</option>))}
+                  {sizeOptions.map((o) => (<option key={o.value} value={o.value}>{t(o.label)}{t("employees")}</option>))}
                 </select>
               </div>
               <div className="flex flex-col gap-1 w-full">

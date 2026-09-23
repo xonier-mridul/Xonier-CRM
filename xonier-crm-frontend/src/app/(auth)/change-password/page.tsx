@@ -116,27 +116,27 @@ export default function SingleStepResetPage() {
   };
 
   return (
-    <div className="flex items-center justify-center bg-gradient-to-br from-cyan-50 to-blue-50 min-h-screen p-4">
-      <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 p-8 w-full max-w-[500px] flex flex-col gap-6">
+    <div className="flex items-center justify-center bg-gradient-to-br  dark:from-cyan-900 dark:to-blue-900 from-cyan-50 to-blue-50 min-h-screen p-4">
+      <div className="bg-white rounded-3xl dark:bg-slate-900 dark:border-slate-600 shadow-2xl border border-slate-200 p-8 w-full max-w-[500px] flex flex-col gap-6">
         
-        <button onClick={() => router.push("/forgot-password")} className="flex items-center gap-1.5 text-slate-700 font-medium hover:text-cyan-600 self-start">
+        <button onClick={() => router.push("/forgot-password")} className="flex items-center gap-1.5 text-slate-700 font-medium hover:text-cyan-600 self-start dark:text-cyan-200">
           <IoChevronBack size={20} /> {t("step_back")}
         </button>
 
-        <h1 className="text-2xl font-bold text-cyan-800">{t("reset_password")}</h1>
+        <h1 className="text-2xl font-bold text-cyan-800 dark:text-cyan-600">{t("reset_password")}</h1>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           
           {/* OTP Section */}
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-slate-700">{t("enter_otp")}</label>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-white">{t("enter_otp")}</label>
             <div className="flex gap-3 justify-center">
               {Array.from({ length: OTP_LENGTH }).map((_, i) => (
                 <input key={i} ref={(el) => { inputRefs.current[i] = el; }}
                   maxLength={1} value={otp[i] || ""}
                   onChange={(e) => handleOtpChange(i, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(i, e)}
-                  className="w-12 h-12 text-center text-xl font-bold border-2 border-slate-300 rounded-xl focus:border-cyan-500 outline-none"
+                  className="w-12 h-12 text-center text-xl dark:bg-gray-800 dark:text-slate-200 font-bold border-2 border-slate-300 rounded-xl focus:border-cyan-500 outline-none"
                 />
               ))}
             </div>
@@ -145,10 +145,10 @@ export default function SingleStepResetPage() {
           {/* Password Section */}
           <div className="space-y-4">
             <div className="relative">
-              <label className="block text-sm font-semibold text-slate-700 mb-1">{t("new_password")}</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-1 dark:text-white">{t("new_password")}</label>
               <input type={showPwd.new ? "text" : "password"} value={formData.newPassword}
                 onChange={(e) => setFormData({...formData, newPassword: e.target.value})}
-                className="w-full pl-4 pr-12 py-3 bg-gray-50 border border-slate-300 rounded-xl outline-none focus:border-cyan-500"
+                className="w-full pl-4 pr-12 dark:bg-gray-800 py-3 dark:text-slate-200 bg-gray-50 border border-slate-300 rounded-xl outline-none focus:border-cyan-500"
               />
               <button type="button" onClick={() => setShowPwd(s => ({...s, new: !s.new}))} className="absolute right-4 top-10 text-slate-500">
                 {showPwd.new ? <FaRegEyeSlash /> : <MdOutlineRemoveRedEye />}
@@ -156,10 +156,10 @@ export default function SingleStepResetPage() {
             </div>
 
             <div className="relative">
-              <label className="block text-sm font-semibold text-slate-700 mb-1">{t("confirm_password")}</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-1 dark:text-white">{t("confirm_password")}</label>
               <input type={showPwd.confirm ? "text" : "password"} value={formData.confirmPassword}
                 onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
-                className={`w-full pl-4 pr-12 py-3 bg-gray-50 border rounded-xl outline-none focus:border-cyan-500 ${
+                className={`w-full pl-4 pr-12 py-3 dark:text-slate-200  dark:bg-gray-800 bg-gray-50 border rounded-xl outline-none focus:border-cyan-500 dark:focus:border-cyan-500 ${
                   formData.confirmPassword && formData.newPassword !== formData.confirmPassword ? "border-red-500" : "border-slate-300"
                 }`}
               />

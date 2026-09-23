@@ -7,6 +7,7 @@ import { MdOutlineMailOutline } from "react-icons/md";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { AuthService } from "@/src/services/auth.service";
+import axios from "axios";
 
 
 export interface forgotPasswordPayload{
@@ -64,8 +65,15 @@ try {
     router.push("/change-password");
   }
 } catch (error) {
-  console.error(error);
-  toast.error(t("something_went_wrong"));
+  console.error("forget:", error);
+
+  if (axios.isAxiosError(error)) {
+    const message = error.response?.data?.message;
+
+    toast.error(message);
+  } else {
+    toast.error("Something went wrong");
+  }
 } finally {
   setLoading(false);
 }
@@ -101,7 +109,7 @@ try {
               placeholder={t("enter_email")}
               value={formData.email}
               onChange={handelChange}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition
+              className="w-full rounded-xl border dark:bg-gray-800 dark:text-slate-200 border-slate-300 px-4 py-3 text-sm outline-none transition
                focus:ring-2 
     focus:outline-none focus:border-cyan-400 dark:focus:border-cyan-500 text-slate-600  focus:ring-teal-400/20"
             />
@@ -117,7 +125,7 @@ try {
               placeholder={t("COMP6-2026.........")}
               value={formData.companyId}
               onChange={handelChange}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition  focus:ring-2 
+              className="w-full rounded-xl border dark:bg-gray-800 dark:text-slate-200 border-slate-300 px-4 py-3 text-sm outline-none transition  focus:ring-2 
     focus:outline-none focus:border-cyan-400 dark:focus:border-cyan-500 text-slate-600  focus:ring-teal-400/20"
             />
           </div>

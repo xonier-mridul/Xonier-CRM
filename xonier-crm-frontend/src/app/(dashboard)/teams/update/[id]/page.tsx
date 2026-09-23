@@ -13,7 +13,7 @@ import React, { FormEvent, JSX, useEffect, useMemo, useRef, useState } from 'rea
 import { toast } from 'react-toastify';
 import Input from '@/src/components/ui/Input';
 import FormButton from '@/src/components/ui/FormButton';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { ParamValue } from 'next/dist/server/request/params';
 import ErrorComponent from '@/src/components/ui/ErrorComponent';
 import SuccessComponent from '@/src/components/ui/SuccessComponent';
@@ -42,6 +42,8 @@ const [searchManager, setSearchManager] = useState<string>("");
     const categoryDropdownRef = useRef<HTMLDivElement>(null);
     const userDropdownRef = useRef<HTMLDivElement>(null);
     const managerDropdownRef = useRef<HTMLDivElement>(null);
+
+    const router = useRouter()
     
   
     const [formData, setFormData] = useState<TeamUpdatePayload>({
@@ -262,6 +264,7 @@ const [searchManager, setSearchManager] = useState<string>("");
       setErr(["Something went wrong"]);
     }
   } finally {
+    router.back()
     setIsLoading(false);
   }
 };

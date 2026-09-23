@@ -98,12 +98,12 @@ const Page = (): JSX.Element => {
     getTemplates();
   }, [currentPage, pageLimit, searchVal]);
 
+  console.log("data:", templates);
+
   return (
     <div>
-
       {/* HEADER */}
-      <div className="bg-white mb-4 dark:bg-gray-700 flex gap-5 p-6 rounded-xl border border-slate-900/10 w-full items-center justify-between">
-
+      <div className="bg-white mb-4 dark:bg-gray-900 flex gap-5 p-6 rounded-xl border border-slate-900/10 w-full items-center justify-between">
         <div className="flex flex-col gap-2">
           <h2 className="text-2xl font-bold dark:text-white text-slate-900">
             {t("email_templates")}
@@ -116,22 +116,20 @@ const Page = (): JSX.Element => {
 
         <Link
           href={canCreate ? "/emailManagement/templates/add" : "#"}
-          className={`bg-cyan-600 hover:bg-cyan-700 text-white px-5 py-2 rounded-md flex items-center gap-2 group ${!canCreate && "opacity-50 cursor-not-allowed pointer-events-none"
-            }`}
+          className={`bg-cyan-600 hover:bg-cyan-700 text-white px-5 py-2 rounded-md flex items-center gap-2 group ${
+            !canCreate && "opacity-50 cursor-not-allowed pointer-events-none"
+          }`}
         >
           <FaPlus className="group-hover:rotate-90 transition-all duration-300" />
           {t("create_template")}
         </Link>
-
       </div>
 
       {/* TABLE */}
       {canRead && (
-        <div className="bg-white dark:bg-gray-700 flex flex-col gap-5 p-6 rounded-xl border border-slate-900/10 w-full">
-
+        <div className="bg-white dark:bg-gray-900 flex flex-col gap-5 p-6 rounded-xl border border-slate-900/10 w-full">
           {/* TABLE HEADER */}
           <div className="flex items-center justify-between">
-
             <div>
               <h2 className="text-xl font-bold dark:text-white">
                 {t("all_email_templates")}
@@ -143,9 +141,8 @@ const Page = (): JSX.Element => {
             </div>
 
             <div className="flex items-center gap-6">
-
               <select
-                className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10"
+                className="bg-slate-50 outline-none dark:bg-gray-500 px-3 py-2.5 rounded-lg border border-slate-900/10"
                 value={pageLimit}
                 onChange={(e) => setPageLimit(Number(e.target.value))}
               >
@@ -154,137 +151,64 @@ const Page = (): JSX.Element => {
                 <option value="30">30</option>
               </select>
 
-              <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2">
-                <IoIosSearch className="text-xl text-slate-500" />
+              <div className="bg-slate-50 dark:bg-gray-500 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2">
+                <IoIosSearch className="text-xl text-slate-500 dark:text-slate-400" />
 
                 <input
                   type="text"
                   placeholder={t("search_3")}
-                  className="outline-none bg-transparent"
+                  className="outline-none bg-transparent dark:text-white"
                   onChange={(e) => handleSearch(e.target.value)}
                 />
               </div>
-
             </div>
-
           </div>
 
           {/* TABLE */}
-          <div className="w-full overflow-x-auto">
+          <div className="w-full ">
             <table className="min-w-[900px] w-full rounded-xl">
-
               <thead>
-                <tr className="border-b-2 text-slate-600 border-zinc-300 bg-slate-300 dark:bg-gray-800">
-
-                  <th className="p-4 text-xs text-start rounded-tl-2xl ">{t("name_2")}</th>
+                <tr className="border-b-2 dark:text-slate-200 text-slate-600 border-zinc-300 bg-slate-300 dark:bg-gray-800">
+                  <th className="p-4 text-xs text-start rounded-tl-2xl ">
+                    {t("name_2")}
+                  </th>
                   <th className="p-4 text-xs text-start ">{t("subject")}</th>
                   <th className="p-4 text-xs text-start ">{t("status")}</th>
-                  <th className="p-4 text-xs text-start ">{t("template")}</th>
+ 
                   <th className="p-4 text-xs text-start ">{t("tags")}</th>
-                  <th className="p-4 text-xs text-start rounded-tr-2xl ">{t("actions")}</th>
-
+                  <th className="p-4 text-xs text-start rounded-tr-2xl ">
+                    {t("actions")}
+                  </th>
                 </tr>
               </thead>
 
               <tbody>
-
                 {!isLoading ? (
                   templates.length > 0 ? (
                     templates.map((item, i) => {
-
                       const rr = i % 2 === 0;
 
                       return (
-                        <tr
+                        <TemplateRow
                           key={item.id}
-                          className={
-                            rr
-                              ? "bg-white dark:bg-transparent"
-                              : "bg-slate-100/50 dark:bg-slate-500"
-                          }
-                        >
-
-                          <td className="p-4 whitespace-nowrap">
-                            {item.name}
-                          </td>
-
-                          <td className="p-4 whitespace-nowrap">
-                            {item.subject}
-                          </td>
-
-                          <td className="p-4 whitespace-nowrap">
-                            <span
-                              className={`px-3 py-1 text-xs font-semibold rounded-full ${item.status === "draft"
-                                  ? "bg-yellow-100 text-yellow-600"
-                                  : "bg-green-100 text-green-600"
-                                }`}
-                            >
-                              {item.status}
-                            </span>
-                          </td>
-
-                          <td className="p-4 max-w-[260px] truncate whitespace-nowrap">
-                            {item.html_body}
-                          </td>
-
-                          <td className="p-4 whitespace-nowrap">
-                            <div className="flex gap-1.5 overflow-hidden">
-                              {item.tags?.map((tag, index) => (
-                                <span
-                                  key={index}
-                                  className="px-3 py-[3px] text-[11px] font-semibold rounded-full border border-cyan-200 bg-cyan-50 text-cyan-600"
-                                >
-                                  #{tag}
-                                </span>
-                              ))}
-                            </div>
-                          </td>
-
-                          <td className="p-4">
-                            <div className="flex items-center gap-2">
-
-                              <Link
-                                href={
-                                  canRead
-                                    ? `/emailManagement/templates/view/${item.id}`
-                                    : "#"
-                                }
-                                className="h-9 w-9 flex items-center justify-center rounded-md bg-green-100 hover:bg-green-200 text-green-500"
-                              >
-                                <FaRegEye className="text-xl" />
-                              </Link>
-
-                              <Link
-                                href={
-                                  canUpdate
-                                    ? `/emailManagement/templates/update/${item.id}`
-                                    : "#"
-                                }
-                                className={"h-9 w-9 flex items-center justify-center rounded-md bg-yellow-200 hover:bg-yellow-300 text-yellow-500 " + (canUpdate ? "" : "opacity-50 cursor-not-allowed")}
-                              >
-                                <MdOutlineEdit className="text-xl" />
-                              </Link>
-
-                              <button
-                                disabled={!canDelete}
-                                onClick={() => {
-                                  setSelectedId(item.id);
-                                  setShowDeleteModal(true);
-                                }}
-                                className="h-9 w-9 flex items-center justify-center rounded-md bg-red-100 hover:bg-red-200 text-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                              >
-                                <MdDeleteOutline className="text-xl" />
-                              </button>
-
-                            </div>
-                          </td>
-
-                        </tr>
+                          item={item}
+                          isEven={rr}
+                          canRead={canRead}
+                          canUpdate={canUpdate}
+                          canDelete={canDelete}
+                          onDelete={() => {
+                            setSelectedId(item.id);
+                            setShowDeleteModal(true);
+                          }}
+                        />
                       );
                     })
                   ) : (
                     <tr>
-                      <td colSpan={6} className="text-center p-4 text-slate-500">
+                      <td
+                        colSpan={6}
+                        className="text-center p-4 text-slate-500"
+                      >
                         {t("data_not_found")}
                       </td>
                     </tr>
@@ -292,11 +216,21 @@ const Page = (): JSX.Element => {
                 ) : (
                   Array.from({ length: 6 }).map((_, i) => (
                     <tr key={i}>
-                      <td className="p-4"><Skeleton width={120} height={28} /></td>
-                      <td className="p-4"><Skeleton width={160} height={28} /></td>
-                      <td className="p-4"><Skeleton width={80} height={28} /></td>
-                      <td className="p-4"><Skeleton width={200} height={28} /></td>
-                      <td className="p-4"><Skeleton width={120} height={28} /></td>
+                      <td className="p-4">
+                        <Skeleton width={120} height={28} />
+                      </td>
+                      <td className="p-4">
+                        <Skeleton width={160} height={28} />
+                      </td>
+                      <td className="p-4">
+                        <Skeleton width={80} height={28} />
+                      </td>
+                      <td className="p-4">
+                        <Skeleton width={200} height={28} />
+                      </td>
+                      <td className="p-4">
+                        <Skeleton width={120} height={28} />
+                      </td>
                       <td className="p-4">
                         <div className="flex gap-2">
                           <Skeleton width={32} height={32} />
@@ -307,9 +241,7 @@ const Page = (): JSX.Element => {
                     </tr>
                   ))
                 )}
-
               </tbody>
-
             </table>
           </div>
 
@@ -318,15 +250,12 @@ const Page = (): JSX.Element => {
             totalPages={totalPages}
             onPageChange={(page) => setCurrentPage(page)}
           />
-
         </div>
       )}
 
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-[400px]">
-
             <h2 className="text-lg font-semibold text-red-600">
               {t("delete_template")}
             </h2>
@@ -336,7 +265,6 @@ const Page = (): JSX.Element => {
             </p>
 
             <div className="flex justify-end gap-3 mt-6">
-
               <button
                 onClick={() => setShowDeleteModal(false)}
                 className="px-4 py-2 border rounded-md"
@@ -351,15 +279,153 @@ const Page = (): JSX.Element => {
               >
                 {isDeleting ? "Deleting..." : "Delete"}
               </button>
-
             </div>
-
           </div>
-
         </div>
       )}
-
     </div>
+  );
+};
+
+// ============================================
+// Separate Component for Template Row
+// ============================================
+type TemplateRowProps = {
+  item: Template;
+  isEven: boolean;
+  canRead: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
+  onDelete: () => void;
+};
+
+const TemplateRow = ({
+  item,
+  isEven,
+  canRead,
+  canUpdate,
+  canDelete,
+  onDelete,
+}: TemplateRowProps) => {
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const tagsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const checkOverflow = () => {
+      const el = tagsRef.current;
+      if (el) {
+        setIsOverflowing(el.scrollWidth > el.clientWidth);
+      }
+    };
+
+    checkOverflow();
+    window.addEventListener("resize", checkOverflow);
+    return () => window.removeEventListener("resize", checkOverflow);
+  }, [item.tags]);
+
+  return (
+    <tr
+      className={
+        isEven
+          ? "bg-white dark:bg-gray-800/30"
+          : "bg-slate-100/50 dark:bg-slate-700/30"
+      }
+    >
+      <td className="p-4 whitespace-nowrap">{item.name}</td>
+
+      <td className="p-4 whitespace-nowrap">{item.subject}</td>
+
+      <td className="p-4 whitespace-nowrap">
+        <span
+          className={`px-3 py-1 text-xs font-semibold rounded-full ${
+            item.status === "draft"
+              ? "bg-yellow-100 text-yellow-600"
+              : "bg-green-100 text-green-600"
+          }`}
+        >
+          {item.status}
+        </span>
+      </td>
+
+
+      <td className="p-4">
+        <div className="relative max-w-[400px] group">
+          <div
+            ref={tagsRef}
+            className="flex gap-1.5 overflow-hidden whitespace-nowrap"
+          >
+            {item.tags?.map((tag, index) => (
+              <span
+                key={index}
+                className="shrink-0 px-3 py-[3px] text-[11px] font-semibold rounded-full border border-cyan-200 bg-cyan-50 text-cyan-600 dark:border-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400"
+              >
+                #{tag}
+              </span>
+            ))}
+          </div>
+
+          {/* Fade overlay */}
+          {isOverflowing && (
+            <>
+              <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white dark:from-gray-700 via-white/95 dark:via-gray-700/95 to-transparent pointer-events-none flex items-center justify-end pr-1">
+                <span className="text-slate-400 dark:text-slate-500 text-xs font-bold">
+                  ...
+                </span>
+              </div>
+
+              {/* Hover to show all tags tooltip */}
+              <div className="absolute left-0 top-full mt-1 hidden group-hover:block z-50 p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg max-w-xs">
+                <div className="flex flex-wrap gap-1.5">
+                  {item.tags?.map((tag, index) => (
+                    <span
+                      key={index}
+                      className="px-2.5 py-1 text-[10px] font-semibold rounded-full border border-cyan-200 bg-cyan-50 text-cyan-600 dark:border-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400"
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </td>
+
+      <td className="p-4">
+        <div className="flex items-center gap-2">
+          <Link
+            href={
+              canRead ? `/emailManagement/templates/view/${item.id}` : "#"
+            }
+            className="h-9 w-9 flex items-center justify-center rounded-md bg-green-100 hover:bg-green-200 text-green-500"
+          >
+            <FaRegEye className="text-xl" />
+          </Link>
+
+          <Link
+            href={
+              canUpdate
+                ? `/emailManagement/templates/update/${item.id}`
+                : "#"
+            }
+            className={
+              "h-9 w-9 flex items-center justify-center rounded-md bg-yellow-200 hover:bg-yellow-300 text-yellow-500 " +
+              (canUpdate ? "" : "opacity-50 cursor-not-allowed")
+            }
+          >
+            <MdOutlineEdit className="text-xl" />
+          </Link>
+
+          <button
+            disabled={!canDelete}
+            onClick={onDelete}
+            className="h-9 w-9 flex items-center justify-center rounded-md bg-red-100 hover:bg-red-200 text-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <MdDeleteOutline className="text-xl" />
+          </button>
+        </div>
+      </td>
+    </tr>
   );
 };
 

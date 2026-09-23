@@ -33,7 +33,7 @@ const QueryTable :React.FC<QueryTableProps>= ({queryData,
             onChange={(e) => setPageLimit(Number(e.target.value))}
           >
             {[10, 20, 30, 50].map((n) => (
-              <option key={n} value={n}>{n} {t("page_2")}</option>
+              <option key={n} value={n}>{n} {t("page")}</option>
             ))}
           </select>
           { selected.length>=2 &&

@@ -21,6 +21,7 @@ import {
 } from "@/src/constants/enum";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
+import { FormatDate } from "../../common/FormateDate";
 
 interface CompanyViewTableProps {
   companyData: Company[];
@@ -117,7 +118,7 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
             <option value="">{t("all_status")}</option>
             {Object.values(COMPANY_STATUS).map((s) => (
               <option key={s} value={s}>
-                {s.replace(/_/g, " ")}
+                {t(s)}
               </option>
             ))}
           </select>
@@ -134,7 +135,7 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
             <option value="">{t("all_sizes")}</option>
             {Object.entries(sizeLabel).map(([val, label]) => (
               <option key={val} value={val}>
-                {label} {t("employees_2")}
+                {label} {t("employees")}
               </option>
             ))}
           </select>
@@ -146,7 +147,7 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
           >
             {[10, 20, 30, 50].map((n) => (
               <option key={n} value={n}>
-                {n} {t("page_2")}
+                {n} {t("page")}
               </option>
             ))}
           </select>
@@ -171,21 +172,21 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
           <thead>
             <tr className="border-b border-slate-200 dark:border-gray-700">
               {[
-                "Company",
-                "Contact",
-                "Industry",
-                "Size",
-                "Country",
-                "Status",
-                "Subscription",
-                "Registered",
-                "Actions",
+                "company",
+                "contact",
+                "industry",
+                "size",
+                "country",
+                "status",
+                "subscription",
+                "registered",
+                "actions",
               ].map((col) => (
                 <th
                   key={col}
                   className="pb-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 pr-4"
                 >
-                  {col}
+                  {t(col)}
                 </th>
               ))}
             </tr>
@@ -260,9 +261,9 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
                       {company.subscription ? (
                         <Link
                           href={`/subscriptions/${company.id}`}
-                          className="text-xs text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-md"
+                          className="text-xs text-blue-500 whitespace-nowrap dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-md"
                         >
-                          {company.subscriptionCount} {t("active_3")}
+                          {company.subscriptionCount} {t("active")}
                         </Link>
                       ) : (
                         <span className="text-xs text-gray-400">—</span>
@@ -270,11 +271,8 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
                     </td>
 
                     <td className="py-4 pr-4">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {new Date(company.createdAt).toLocaleDateString(
-                          "en-GB",
-                          { day: "2-digit", month: "short", year: "numeric" }
-                        )}
+                      <span className="text-xs text-gray-500 whitespace-nowrap dark:text-gray-400">
+                        {FormatDate(company.createdAt)}
                       </span>
                     </td>
 
