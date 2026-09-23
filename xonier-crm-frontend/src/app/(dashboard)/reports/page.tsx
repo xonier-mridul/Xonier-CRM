@@ -881,19 +881,12 @@ const STATUS_OPTIONS = [
 
   const handleDelete = async (id: string, date: string) => {
     try {
-      const confirm = await ConfirmPopup({
+      const {isConfirmed} = await ConfirmPopup({
         title: "Are you sure",
-        text: `Are you sure to delete ${new Date(date).toLocaleDateString(
-          "en-GB",
-          {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-          }
-        )} task report`,
+        text: `Are you sure to delete ${FormatDate(date)} task report`,
         btnTxt: "Yes, Delete",
-      }).catch(() => false);
-      if (confirm) {
+      })
+      if (isConfirmed) {
         const res = await TaskReportService.deleteReport(id);
         if (res.status === 200) {
           toast.success("Report deleted");

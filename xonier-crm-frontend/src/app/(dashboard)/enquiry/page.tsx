@@ -117,8 +117,8 @@ const page = (): JSX.Element => {
 
   const handleDelete = async (id: string) => {
     try {
-      const confirm = await ConfirmPopup({ title: "Are you sure", text: "Are you sure to delete this enquiry", btnTxt: "Yes, delete" });
-      if (confirm) {
+      const {isConfirmed} = await ConfirmPopup({ title: "Are you sure", text: "Are you sure to delete this enquiry", btnTxt: "Yes, delete" });
+      if (isConfirmed) {
         const result = await EnquiryService.delete(id);
         if (result.status === 200) { toast.success("Enquiry deleted successfully"); await getEnquiryData(); }
       }

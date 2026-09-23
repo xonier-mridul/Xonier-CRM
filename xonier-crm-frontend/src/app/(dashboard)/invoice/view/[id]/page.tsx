@@ -144,12 +144,12 @@ const InvoiceViewPage = (): JSX.Element => {
 
   const handleDelete = async () => {
     if (!invoiceData) return;
-    const confirm = await ConfirmPopup({
+    const {isConfirmed} = await ConfirmPopup({
       title: "Delete Invoice?",
       text: `Are you sure you want to delete "${invoiceData.invoiceId}"?`,
       btnTxt: "Yes, Delete",
     });
-    if (confirm) {
+    if (isConfirmed) {
       toast.success("Invoice deleted successfully");
       router.push("/invoice");
     }

@@ -136,8 +136,8 @@ const page = (): JSX.Element => {
         toast.info("category Id not found")
         return
       }
-      const isDelete = await ConfirmPopup({ title: "Are you sure", text: "are you sure", btnTxt: "Yes, delete" })
-      if (isDelete) {
+      const {isConfirmed} = await ConfirmPopup({ title: "Are you sure", text: "are you sure", btnTxt: "Yes, delete" })
+      if (isConfirmed) {
         const response = await TeamCategoryService.delete(id)
         if (response.status === 200) {
           await getTeamCategoryData()

@@ -22,6 +22,8 @@
   "geographic_distribution": "भौगोलिक वितरण",
   "user_distribution": "उपयोगकर्ता वितरण",
     "qualification": "योग्यता",
+    "all_user":"सभी उपयोगकर्ता",
+      "no_ratings_yet":"अभी तक कोई रेटिंग नहीं है",
   "requirement_analysis": "आवश्यकता विश्लेषण",
   "proposal": "प्रस्ताव",
   "negotiation": "बातचीत",
@@ -619,7 +621,9 @@
   "set_priority": "प्राथमिकता निर्धारित करें",
   "change_priority": "प्राथमिकता बदलें",
     "conv": "रूपांतरण%",
+    
     "conversion": "रूपांतरण",
+
     "conversion_funnel": "रूपांतरण फ़नल",
     "deal_revenue": "डील राजस्व",
     "half_yearly": "अर्धवार्षिक",
@@ -2534,6 +2538,8 @@
     "no_phone_selected": "कोई फ़ोन नहीं चुना गया",
     "no_users_assigned": "कोई उपयोगकर्ता असाइन नहीं किया गया",
     "phone_id": "फोन आईडी",
+  "are_you_sure_you_want_to_clear_all": "क्या आप वाकई सभी सूचनाएँ साफ़ करना चाहते हैं?",
+  "yes_clear_all": "हाँ, सभी साफ़ करें",
     "phone_number_cleared_successfully": "फ़ोन नंबर सफलतापूर्वक साफ़ किया गया",
     "phone_number_copied": "फोन नंबर कॉपी हो गया!",
     "phone_number_created_successfully": "फोन नंबर सफलतापूर्वक बनाया गया",

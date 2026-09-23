@@ -226,12 +226,12 @@ const formatCurrentMonth = useMemo(() => {
         toast.info(t("event_id_not_found"));
         return;
       }
-      const isConfirm = await ConfirmPopup({
+      const { isConfirmed } = await ConfirmPopup({
         title: t("are_you_sure"),
         text: t("delete_event_message").replace("{{title}}", title),
         btnTxt: t("yes_delete"),
       });
-      if (isConfirm) {
+      if (isConfirmed) {
         const result = await EventService.delete(id);
         setOpenViewModal(false);
         if (result.status === 200) {

@@ -51,6 +51,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
+
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 type DashboardFilter = "today" | "this_week" | "this_month" | "this_year";
@@ -691,6 +692,7 @@ function Card({
               )}
             </div>
           </div>
+         
           {action ? (
             action
           ) : (
@@ -1078,7 +1080,7 @@ function MonthlyTrendChart({
             />
             <Area
               type="monotone"
-              dataKey="leads"
+              dataKey={t("leads")}
               stroke="#6366f1"
               strokeWidth={2}
               fill="url(#gL)"
@@ -1087,7 +1089,7 @@ function MonthlyTrendChart({
             />
             <Area
               type="monotone"
-              dataKey="deals"
+              dataKey={t("deals")}
               stroke="#10b981"
               strokeWidth={2}
               fill="url(#gD)"
@@ -2036,7 +2038,7 @@ function ConversionCard({ conv }: { conv: ConversionRate }) {
               {conv.conversionRate.toFixed(1)}%
             </span>
             <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider mt-0.5">
-              {t("conversion_2")}
+              {t("conversion")}
             </span>
           </div>
         </div>
@@ -2204,6 +2206,7 @@ const router = useRouter();
         title={t("top_rated_employees")}
         sub={`${t("based_on")} ${leaderboard.minTasksRequired}+ ${t("rated_tasks")}`}
         icon={Award}
+        action={<div className="text-xs bg-cyan-100 cursor-pointer text-cyan-600 px-2 py-1 rounded-xl" onClick={()=>router.push("/rating")}>{t("all_user")}</div>}
       >
         {leaderboard.topRatedEmployees.length === 0 ? (
           <EmptyState icon={Award} message={t("no_top_performers_yet")} />
@@ -2972,8 +2975,8 @@ function CompanyAdminLayout({ d }: { d: DashboardData }) {
               sub={t("where_leads_come_from")}
               icon={PieIcon}
             >
-              <div className="flex items-center gap-3">
-                <ResponsiveContainer width={100} height={100}>
+              <div className="flex flex-col  gap-3 ">
+                <ResponsiveContainer width={200} height={200}>
                   <PieChart>
                     <Pie
                       data={d.leadSourceBreakdown.map((s) => ({
@@ -2982,8 +2985,8 @@ function CompanyAdminLayout({ d }: { d: DashboardData }) {
                       }))}
                       cx="50%"
                       cy="50%"
-                      innerRadius={28}
-                      outerRadius={46}
+                      innerRadius={40}
+                      outerRadius={90}
                       dataKey="value"
                       strokeWidth={0}
                       paddingAngle={2}
@@ -3005,8 +3008,8 @@ function CompanyAdminLayout({ d }: { d: DashboardData }) {
                     />
                   </PieChart>
                 </ResponsiveContainer>
-                <div className="flex-1 flex flex-col gap-1">
-                  {d.leadSourceBreakdown.slice(0, 6).map((s, i) => (
+                <div className="flex-1 flex flex-col gap-1 mt-5">
+                  {d.leadSourceBreakdown.slice(0, 5).map((s, i) => (
                     <div key={s.source} className="flex items-center gap-1.5">
                       <span
                         className="w-2 h-2 rounded-full flex-shrink-0"
@@ -3463,7 +3466,7 @@ export default function UnifiedDashboardPage() {
         if (showRefresh) setRefreshing(true);
         else setLoading(true);
         setError(null);
-        const res = await DashboardService.getDashboardStats({ filter });
+        const res = await DashboardService.getDashboardStats({filter});
         if (res.status === 200) {
           setData(res.data.data);
         } else {
@@ -3480,7 +3483,7 @@ export default function UnifiedDashboardPage() {
         setRefreshing(false);
       }
     },
-    [filter, t],
+    [filter],
   );
 
   useEffect(() => {

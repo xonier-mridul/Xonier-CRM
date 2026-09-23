@@ -224,9 +224,9 @@ const Page = () => {
     setClearingUserId(userId);
     try {
 
-      const confirm = await ConfirmPopup({ title: "Are you sure", text: `Are you sure to remove ${number} phone number from ${name} user`, btnTxt: "Yes, Remove" })
+      const {isConfirmed} = await ConfirmPopup({ title: "Are you sure", text: `Are you sure to remove ${number} phone number from ${name} user`, btnTxt: "Yes, Remove" })
 
-      if (confirm) {
+      if (isConfirmed) {
         const result = await AuthService.clearNumber(userId);
         if (result.status === 200 || result.status === 201) {
           toast.success("Phone number cleared successfully");

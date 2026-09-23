@@ -416,12 +416,12 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
 
   const handleFieldDelete = async (id: string) => {
     try {
-      const confirm = await ConfirmPopup({ 
+      const {isConfirmed} = await ConfirmPopup({ 
         title: t("are_you_sure"), 
         text: t("delete_field_confirmation"), 
         btnTxt: t("yes_delete") 
       });
-      if (!confirm) return;
+      if (!isConfirmed) return;
 
 
       const result = await CustomFormService.delete(id);

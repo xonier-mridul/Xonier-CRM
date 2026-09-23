@@ -242,12 +242,12 @@ const page = (): JSX.Element => {
     setStatusLoading(true);
     setStatusErr("");
     try {
-      const confirm = await ConfirmPopup({
+      const {isConfirmed} = await ConfirmPopup({
         title: "Are you sure",
         text: `Are you sure to change ${formData.firstName} ${formData.lastName} status to ${statusData.status}?`,
         btnTxt: "Yes, Change",
       });
-      if (confirm) {
+      if (isConfirmed) {
         const result = await AuthService.updateStatus(params, statusData);
         if (result.status === 200) {
           toast.success(
@@ -278,12 +278,12 @@ const page = (): JSX.Element => {
         );
         return;
       }
-      const confirm = await ConfirmPopup({
+      const {isConfirmed} = await ConfirmPopup({
         title: "Are you sure",
         text: `Are you sure to update ${formData.firstName} ${formData.lastName} password`,
         btnTxt: "Yes, Update Password",
       });
-      if (confirm) {
+      if (isConfirmed) {
         const result = await AuthService.changePasswordByAdmin(
           params,
           passwordData

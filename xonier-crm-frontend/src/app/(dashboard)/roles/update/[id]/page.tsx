@@ -104,13 +104,13 @@ const UpdateRolePage = (): JSX.Element => {
   };
 
   const handleRemoveAll = async () => {
-    const confirm = await ConfirmPopup({
+    const {isConfirmed} = await ConfirmPopup({
       title: "Remove all permissions?",
       text: "Are you sure you want to remove all permissions from this role? This action cannot be reverted.",
       btnTxt: "Yes, remove all",
       cancelTxt: "No, keep them",
     });
-    if (confirm) setFormData((prev) => ({ ...prev, permissions: [] }));
+    if (isConfirmed) setFormData((prev) => ({ ...prev, permissions: [] }));
   };
 
   return (

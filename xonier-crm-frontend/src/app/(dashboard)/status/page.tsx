@@ -162,12 +162,12 @@ const page = (): JSX.Element => {
     setErr(null);
     setLoading(true);
     try {
-      const confirm = await ConfirmPopup({
+      const {isConfirmed} = await ConfirmPopup({
         title: "Are you sure?",
         text: "Are you sure you want to delete this status?",
         btnTxt: "Yes, Delete",
       });
-      if (confirm) {
+      if (isConfirmed) {
         const result = await StatusService.delete(id);
         if (result.status === 200) {
           toast.success("Status deleted successfully")

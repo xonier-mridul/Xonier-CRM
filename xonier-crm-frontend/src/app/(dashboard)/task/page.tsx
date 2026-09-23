@@ -314,13 +314,13 @@ const TaskListPage = (): JSX.Element => {
     if (!entry) return;
 
     try {
-      const confirm = await ConfirmPopup({
+      const {isConfirmed} = await ConfirmPopup({
         title: t("are_you_sure"), 
         text: t("confirm_stop_timer"), 
         btnTxt: t("yes_stop")
       });
 
-      if(confirm){
+      if(isConfirmed){
         const res = await TimerService.stop(entry.logId);
         const log: TaskTimeLog = res.data.data;
         const finalSeconds = log.totalSeconds ?? entry.displaySeconds;
@@ -474,12 +474,12 @@ const TaskListPage = (): JSX.Element => {
   const handleDelete = async (id: string): Promise<void> => {
     setDeleting(true);
     try {
-      const confirmed = await ConfirmPopup({ 
+      const {isConfirmed} = await ConfirmPopup({ 
         title: t("delete_task_title"), 
         text: t("delete_task_message"), 
         btnTxt: t("yes_delete") 
       });
-      if (confirmed) {
+      if (isConfirmed) {
         const res = await TaskService.delete(id);
         if (res.status === 200) { 
           toast.success(t("task_deleted_successfully")); 
@@ -651,7 +651,7 @@ const TaskListPage = (): JSX.Element => {
               value={filterAssigned}
               onChange={setFilterAssigned}
               placeholder={t("search_assignee")}
-              cls="rounded-xl border  bg-white border-slate-200 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-400 transition"
+              cls="rounded-lg border py-2  bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-400 transition"
             />
             <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
             {hasFilters && (

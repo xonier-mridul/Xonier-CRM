@@ -19,6 +19,8 @@ interface ConfirmPopupResult {
   isChecked: boolean;
 }
 
+let popupCounter = 0;
+
 const ConfirmPopup = async ({
   title,
   text,
@@ -54,12 +56,16 @@ const ConfirmPopup = async ({
   `;
   document.head.appendChild(styleElement);
 
-  const checkboxId = `confirm-popup-checkbox-${Date.now()}`;
+  // ✅ unique, collision-free id
+  const checkboxId = `confirm-popup-checkbox-${Date.now()}-${popupCounter++}`;
+
+  const initialTitle = checkboxDefaultChecked ? (checkedTitle ?? title) : title;
+  const initialText = checkboxDefaultChecked ? (checkedText ?? text) : text;
 
   const result = await Swal.fire({
-    title,
+    title: initialTitle,
     html: `
-      ${text ? `<p id="confirm-popup-desc" style="margin:0;">${text}</p>` : ""}
+      ${initialText ? `<p id="confirm-popup-desc" style="margin:0;">${initialText}</p>` : ""}
       ${showCheckbox ? `
         <label for="${checkboxId}" class="confirm-popup-checkbox-wrapper" style="margin-top:16px; display:flex; align-items:flex-start; gap:10px; text-align:left; padding:12px 14px; border-radius:14px; border:1.5px solid ${isDark ? "#334155" : "#e2e8f0"}; background:${isDark ? "rgba(15,23,42,0.5)" : "#f8fafc"}; cursor:pointer; transition: border-color 0.2s ease;">
           <input type="checkbox" id="${checkboxId}" ${checkboxDefaultChecked ? "checked" : ""} style="margin-top:2px; width:17px; height:17px; accent-color:#6366f1; cursor:pointer; flex-shrink:0;" />
@@ -126,10 +132,14 @@ const ConfirmPopup = async ({
           }
         };
 
+        // ✅ sync immediately in case defaultChecked/html race
+        syncUI();
         checkbox?.addEventListener("change", syncUI);
       }
     },
     preConfirm: () => {
+      // NOTE: this only runs when the CONFIRM button is clicked.
+      // Cancel / outside click / esc never call this.
       const checkbox = document.getElementById(checkboxId) as HTMLInputElement | null;
       return { isChecked: checkbox ? checkbox.checked : false };
     },

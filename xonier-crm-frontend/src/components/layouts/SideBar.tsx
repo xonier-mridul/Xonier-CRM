@@ -60,7 +60,7 @@ const SideBar = () => {
   const handleLogout = async (): Promise<void> => {
     try {
 
-      const isConfirmed = await ConfirmPopup({
+      const {isConfirmed} = await ConfirmPopup({
   title: t("logout"),
   text: t("are_you_sure_you_want_to_logout"),
   btnTxt: t("yes_logout")

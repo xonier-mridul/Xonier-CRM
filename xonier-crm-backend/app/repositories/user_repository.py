@@ -49,3 +49,5 @@ class UserRepository(BaseRepository):
         count = await self.count(filter={"companyId": PydanticObjectId(companyId)})
 
         return count
+    
+

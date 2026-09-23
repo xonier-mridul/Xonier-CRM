@@ -15,6 +15,7 @@
   "subscription_financials": "Subscription financials",
 
   "total_subs": "Total Subs",
+  "no_ratings_yet":"No ratings yet",
 
   
 
@@ -2636,6 +2637,8 @@
    "not_submit": "❌  Not Submitted",
   "least_powerful": "least powerful",
   "max": "max",
+  "are_you_sure_you_want_to_clear_all": "Are you sure you want to clear all notifications?",
+  "yes_clear_all": "Yes, Clear All",
    "drag_and_drop_files": "Drag and drop files",
   "or_click_below_to_browse": "Or click below to browse",
   "attach_pdf_or_word_documents": "Attach PDF or Word documents",
@@ -3186,6 +3189,8 @@
  
   "no_attachments_2": "No attachments added to this ticket.",
   "download_file": "Download file",
+
+  "all_user":"All Users",
 
   "need_help": "Need Help?",
   "help_center": "Visit Help Center",

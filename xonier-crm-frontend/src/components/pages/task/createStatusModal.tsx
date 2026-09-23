@@ -133,8 +133,9 @@ export function StatusModal({
 
                     {/* Category */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
-                            {t("category")}
+                        
+                         <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                            {t("category")} <span className="text-rose-500">*</span>
                         </label>
                         <select
                             value={formData.category || ""}

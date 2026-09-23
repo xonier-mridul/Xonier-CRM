@@ -250,7 +250,7 @@ const StatusTable = ({
                             className="w-2.5 h-2.5 rounded-full shrink-0 ring-2 ring-slate-100 dark:ring-slate-700 shadow-2xs"
                             style={{ backgroundColor: statusDotColor }}
                           />
-                          <span className="text-xs font-semibold text-slate-900 dark:text-white capitalize">
+                          <span className="text-xs font-semibold text-slate-900 dark:text-white capitalize whitespace-nowrap truncate max-w-60">
                             {s.name}
                           </span>
                           {s.isFinal && (

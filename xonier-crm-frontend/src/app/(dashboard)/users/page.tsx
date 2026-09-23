@@ -128,12 +128,12 @@ const page = (): JSX.Element => {
   const handleDelete = async (id: string): Promise<void> => {
     setErr("");
     try {
-      const confirm = await ConfirmPopup({
+      const {isConfirmed} = await ConfirmPopup({
         title: "Are you sure",
         text: "Are you sure to delete this user",
         btnTxt: "Yes, delete",
       });
-      if (confirm) {
+      if (isConfirmed) {
         const result = await AuthService.softDelete(id);
         if (result.status === 200) {
           toast.success("User deleted successfully");

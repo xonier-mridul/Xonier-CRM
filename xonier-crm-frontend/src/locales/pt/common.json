@@ -10,6 +10,7 @@
   "latest_system_events": "Últimos eventos do sistema",
   "no_recent_activities": "Nenhuma atividade recente",
   "platform_company_status": "Status das empresas da plataforma",
+  "all_user":"Todos os usuários",
 
   "subscriptions": "Assinaturas",
   "subscription_financials": "Finanças de assinaturas",
@@ -22,6 +23,7 @@
   "subscription_health": "Saúde das assinaturas",
 
   "canceled_2": "Cancelado",
+    "no_ratings_yet":"Ainda não há avaliações",
 
   "most_recently_registered": "5 registradas mais recentemente",
   "most_active_tenants": "Inquilinos mais ativos",
@@ -73,6 +75,8 @@
   "add_event": "Adicionar evento",
   "add": "Adicionar",
     "least_powerful": "menos poderoso",
+  "are_you_sure_you_want_to_clear_all": "Tem certeza de que deseja limpar todas as notificações?",
+  "yes_clear_all": "Sim, limpar tudo",
   "max": "máximo",
   "submitted_2": "✓ Enviado",
   "all_day_event": "Evento de dia inteiro",

@@ -93,13 +93,13 @@ const Page = (): JSX.Element => {
           return setErr("Team ID not found ");
         }
   
-        const confirm = await ConfirmPopup({
+        const {isConfirmed} = await ConfirmPopup({
           title: "Are you sure",
           text: `Are you want to delete "${name}" team`,
           btnTxt: "Yes, delete",
         });
   
-        if (confirm) {
+        if (isConfirmed) {
           const result = await TeamService.delete(id);
   
           if (result.status === 200) {

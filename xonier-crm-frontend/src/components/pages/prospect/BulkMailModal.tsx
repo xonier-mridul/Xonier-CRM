@@ -378,7 +378,6 @@ const BulkMailModal = ({ leads, onClose }: { leads: Prospect[]; onClose: () => v
 
               <div className="space-y-4">
                 {extractedVariables.map((varName) => {
-  const { t } = useTranslation();
                   const config = variableConfig[varName] || { mode: "common" };
                   const isDone =
                     (config.mode === "common" && !!config.commonValue?.trim()) ||
@@ -532,7 +531,6 @@ const BulkMailModal = ({ leads, onClose }: { leads: Prospect[]; onClose: () => v
 
               <div className="space-y-4">
                 {leads.map((lead) => {
-  const { t } = useTranslation();
                   const variables: Record<string, string> = { ...CONSTANT_VARS };
                   extractedVariables.forEach((varName) => {
                     const c = variableConfig[varName];

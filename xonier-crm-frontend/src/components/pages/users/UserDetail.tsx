@@ -64,6 +64,7 @@ import ActivityDetailPopup from "./UserActivityPopup";
 import { Company } from "@/src/types/company/company.types";
 import { useTranslation } from "react-i18next";
 import { LiaStarSolid } from "react-icons/lia";
+import { FormatDate } from "../../common/FormateDate";
 
 export interface DateRangeFilter {
   from: string; // "2026-01-01"
@@ -629,6 +630,7 @@ const StatCard = ({
   icon,
   accent,
   link,
+  accent1
 }: {
   label: string;
   value: string | number;
@@ -636,6 +638,7 @@ const StatCard = ({
   icon: JSX.Element;
   accent: string;
   link: string;
+  accent1:string;
 }) => (
   <Link
     href={link}
@@ -647,16 +650,16 @@ const StatCard = ({
       {icon}
     </div>
     <div className="min-w-0">
-      <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+      <p className="text-xs font-medium text-gray-400 uppercase tracking-wider z-1">
         {label}
       </p>
-      <p className="text-2xl font-bold text-gray-900 dark:text-white mt-0.5">
+      <p className="text-2xl font-bold text-gray-900 dark:text-white mt-0.5 z-[20px]">
         {value}
       </p>
-      {sub && <p className="text-xs text-gray-500 mt-0.5 truncate">{sub}</p>}
+      {sub && <p className="text-xs text-gray-500 mt-0.5 truncate z-[20px]">{sub}</p>}
     </div>
     <div
-      className={`absolute -right-4 -bottom-4 w-20 h-20 rounded-full opacity-[0.07] ${accent}`}
+      className={`absolute -right-4 -bottom-4 w-20 h-20 rounded-full opacity-[0.2] z-[2px] ${accent1}`}
     />
   </Link>
 );
@@ -1223,7 +1226,7 @@ const language = i18n.resolvedLanguage ?? "en";
                     );
                   })()
                 : 
-                  <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-1 text-sm text-slate-500">
+                  <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 dark:bg-slate-900/50 dark:border-slate-700/20 px-4 py-1 text-sm text-slate-500">
                     <div className="flex items-center gap-0.5">
                       {Array.from({ length: 5 }).map((_, index) => (
                         <LiaStarSolid
@@ -1234,7 +1237,7 @@ const language = i18n.resolvedLanguage ?? "en";
                     </div>
                     <span className="text-slate-300">|</span>
 
-                    <span className="font-medium text-sm">No ratings yet</span>
+                    <span className="font-medium text-sm">{t("no_ratings_yet")}</span>
                   </div>
 
                 }
@@ -1267,6 +1270,7 @@ const language = i18n.resolvedLanguage ?? "en";
           sub={`${uniqueEntities} ${t("entity_types")}`}
           icon={<FiActivity />}
           accent="bg-cyan-500"
+          accent1="bg-cyan-500 dark:bg-cyan-200"
           link={`/leads?userid=${userData._id}`}
         />
         <StatCard
@@ -1291,6 +1295,7 @@ const language = i18n.resolvedLanguage ?? "en";
           }
           icon={<RiLoginCircleLine />}
           accent="bg-cyan-500"
+          accent1="bg-cyan-500 dark:bg-cyan-200"
         />
         <StatCard
           link={`/roles`}
@@ -1299,22 +1304,18 @@ const language = i18n.resolvedLanguage ?? "en";
           sub={t("access_roles")}
           icon={<IoShieldCheckmark />}
           accent="bg-violet-500"
+          accent1=" bg-violet-500 dark:bg-violet-200"
         />
  
 
 <StatCard
   label={t("member_since")}
   link=""
-  value={new Date(userData.createdAt).toLocaleDateString(
-    localeMap[language] || "en-IN",
-    {
-      day: "2-digit",
-      month: "short",
-    }
-  )}
+  value={FormatDate(userData.createdAt)}
   sub={new Date(userData.createdAt).getFullYear().toString()}
   icon={<IoCheckmarkDoneCircle />}
-  accent="bg-emerald-500"
+  accent="bg-emerald-500 "
+  accent1="bg-emerald-500 dark:bg-emerald-600"
 />
       </div>
 
@@ -2607,8 +2608,8 @@ const language = i18n.resolvedLanguage ?? "en";
                   </div>
                   <div className="px-6 pb-5 relative">
                     <div className="flex items-end justify-between -mt-6 mb-4 flex-wrap gap-3">
-                      <div className="w-14 h-14 rounded-2xl border-4 border-white dark:border-gray-800 bg-cyan-100 dark:bg-cyan-900/50 flex items-center justify-center shadow-xl">
-                        <MdBusiness className="w-7 h-7 text-cyan-600 dark:text-cyan-400" />
+                      <div className="w-14 h-14 rounded-2xl  border-4 border-white dark:border-gray-800 bg-cyan-100 dark:bg-cyan-900 flex items-center justify-center shadow-xl">
+                        <MdBusiness className="w-7 h-7 text-cyan-600  dark:text-cyan-400" />
                       </div>
                       <Link
                         href={`/companies/${companyData.id ?? (companyData as any).id}`}

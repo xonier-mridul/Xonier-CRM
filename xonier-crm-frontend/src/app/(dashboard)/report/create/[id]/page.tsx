@@ -1406,7 +1406,7 @@ const submitEvening = async (finalSubmit: boolean) => {
                 </div>
               </div>
 
-              <div className="lg:col-span-4 space-y-5 lg:sticky lg:top-6">
+              <div className="lg:col-span-4 lg:sticky top-6 right-4 self-start space-y-5">
 
                 <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm overflow-hidden">
                   <div className="h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />

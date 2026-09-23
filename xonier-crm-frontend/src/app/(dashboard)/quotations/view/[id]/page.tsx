@@ -163,12 +163,12 @@ const Page = (): JSX.Element => {
   const handleDelete = async () => {
     if (!quoteData) return;
     try {
-      const confirm = await ConfirmPopup({
+      const {isConfirmed} = await ConfirmPopup({
         title: "Are you sure?",
         text: `Do you want to delete quotation "${quoteData.quoteId}"?`,
         btnTxt: "Yes, delete",
       });
-      if (confirm) {
+      if (isConfirmed) {
         const result = await QuoteService.delete(quoteData.id);
         if (result.status === 200) {
           toast.success("Quotation deleted successfully");
@@ -308,7 +308,7 @@ const Page = (): JSX.Element => {
                 <button className="inline-flex items-center gap-2 px-3 py-2.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl transition-colors">
                   <IoEllipsisVertical className="w-4 h-4" />
                 </button>
-                <div className=" absolute border border-slate-200 bg-white rounded-xl right-0 top-10 py-2 w-40 opacity-0 invisible translate-y-2  group-hover:opacity-100  group-hover:visible  group-hover:translate-y-0 transition-all duration-300">
+                <div className=" absolute border border-slate-200 bg-white dark:bg-slate-800 rounded-xl right-0 top-10 py-2 w-40 opacity-0 invisible translate-y-2  group-hover:opacity-100  group-hover:visible  group-hover:translate-y-0 transition-all duration-300">
                   {hasPermission(PERMISSIONS.updateQuote) && quoteData.quotationStatus !== QuotationStatus.DELETE
                     ? <Link
                         href={`/quotations/update/${quoteData.id}`}

@@ -186,13 +186,13 @@ const DeletedUsersPage = (): JSX.Element => {
   // ── Restore single ───────────────────────────────────────────────────────
 
   const handleRestore = async (id: string, name: string) => {
-    const confirm = await ConfirmPopup({
+    const {isConfirmed} = await ConfirmPopup({
       title: "Restore user?",
       text: `"${name}" will be restored and gain access again.`,
       btnTxt: "Yes, restore",
     });
 
-    if (!confirm) return;
+    if (!isConfirmed) return;
 
     try {
       // Replace with your actual restore service call
@@ -214,13 +214,13 @@ const DeletedUsersPage = (): JSX.Element => {
   // ── Permanent delete single ──────────────────────────────────────────────
 
   const handlePermanentDelete = async (id: string, name: string) => {
-    const confirm = await ConfirmPopup({
+    const {isConfirmed} = await ConfirmPopup({
       title: "Permanently delete?",
       text: `This will permanently remove "${name}". This action cannot be undone.`,
       btnTxt: "Yes, delete permanently",
     });
 
-    if (!confirm) return;
+    if (!isConfirmed) return;
 
     try {
       // Replace with your actual permanent delete service call
@@ -244,13 +244,13 @@ const DeletedUsersPage = (): JSX.Element => {
   const handleBulkDelete = async () => {
     if (selected.size === 0) return;
 
-    const confirm = await ConfirmPopup({
+    const {isConfirmed} = await ConfirmPopup({
       title: `Permanently delete ${selected.size} user${selected.size > 1 ? "s" : ""}?`,
       text: "All selected users will be permanently removed. This action cannot be undone.",
       btnTxt: `Delete ${selected.size} user${selected.size > 1 ? "s" : ""}`,
     });
 
-    if (!confirm) return;
+    if (!isConfirmed) return;
 
     try {
       // Replace with your actual bulk delete service call

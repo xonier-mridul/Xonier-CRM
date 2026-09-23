@@ -60,6 +60,7 @@ from app.routes.subscription_route import router as subscription_route
 from app.routes.query_route import router as query_route
 from app.routes.payment_route import router as payment_router
 from app.routes.notification_route import router as notification_router
+from app.routes.user_route import router as rating_router
 
 settings = get_setting()
 
@@ -164,6 +165,7 @@ app.include_router(feature_route, prefix="/api/feature")
 app.include_router(company_route, prefix="/api/companies")
 app.include_router(subscription_route, prefix="/api/subscription")
 app.include_router(query_route, prefix="/api/query")
+app.include_router(rating_router, prefix="/api/rating", tags=["rating"])
 app.include_router(
     payment_router,
     prefix="/api/v1/payments",

@@ -12,7 +12,7 @@ from typing import Optional
 
 class UserRoleModel(BaseDocument):
      name:str = Field(..., unique=True)
-     code:str = Field(..., unique=True, pattern=r"^[A-Z]+(_[A-Z]+)*$", description="Role code must be uppercase and use underscores only")
+     code:str = Field(..., unique=True, pattern=r"^[A-Za-z0-9 _@#$%&*()\-+.,!]+$", description="Role code must be uppercase and use underscores only")
      permissions: List[Link["PermissionModel"]] = Field(default_factory=list)
 
      power: int = Field(default=10, ge=1, le=100)

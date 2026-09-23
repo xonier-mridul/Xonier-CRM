@@ -56,8 +56,8 @@ function CategoryBoard({
     if (!container) return;
 
     const rect = container.getBoundingClientRect();
-    const threshold = 500;
-    const speed = 10;
+    const threshold = 400;
+    const speed = 2;
     const mouseX = e.clientX;
 
     if (scrollIntervalRef.current) {
@@ -134,28 +134,27 @@ function CategoryBoard({
 
   return (
     <>
-      <div className="mb-10">
+     
+      <div className="relative">
         {/* Category Swimlane Header Bar */}
-        <div className="grid grid-cols-8 h-full rounded-xl  w-full items-center gap-3 mb-4 pb-3 border-b border-slate-200/80 dark:border-slate-800 sticky top-0  dark:bg-slate-900/60 backdrop-blur-xs z-10 p-2 ">
-          <div className="flex items-center  gap-3 min-w-0 col-span-2">
+        <div className="grid grid-cols-8 h-full  rounded-xl w-full items-center gap-3 mb-4 pb-3 border-b border-slate-200/80 dark:border-slate-800 sticky self-start top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm z-30 p-2">
+          <div className="flex items-center gap-3 min-w-0 col-span-2">
             <div className="flex gap-2 items-center">
-            <span
-              className="w-8.5 h-8.5 rounded-xl flex items-center justify-center text-sm shadow-2xs shrink-0"
-              style={{
-                backgroundColor: categoryColor ? `${categoryColor}15` : "rgba(100, 116, 139, 0.1)",
-                color: categoryColor || "#0891b2",
-                border: `1px solid ${categoryColor ? `${categoryColor}30` : "rgba(100, 116, 139, 0.2)"}`,
-              }}
-            >
-              {isCategoryEmoji ? categoryIcon : <Folder size={16} />}
-              
-            </span>
+              <span
+                className="w-8.5 h-8.5 rounded-xl flex items-center justify-center text-sm shadow-2xs shrink-0"
+                style={{
+                  backgroundColor: categoryColor ? `${categoryColor}15` : "rgba(100, 116, 139, 0.1)",
+                  color: categoryColor || "#0891b2",
+                  border: `1px solid ${categoryColor ? `${categoryColor}30` : "rgba(100, 116, 139, 0.2)"}`,
+                }}
+              >
+                {isCategoryEmoji ? categoryIcon : <Folder size={16} />}
+              </span>
               <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight truncate">
                 {categoryName}
               </h2>
-              </div>
-            <div className="flex items-center  min-w-0">
-            
+            </div>
+            <div className="flex items-center min-w-0">
               <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80 tabular-nums">
                 {tasks.length} {tasks.length !== 1 ? t("tasks") : t("task")}
               </span>
@@ -212,7 +211,7 @@ function CategoryBoard({
               return (
                 <div
                   key={status.id}
-                  className={`flex flex-col rounded-2xl transition-all duration-150 min-w-[280px] max-w-[315px] flex-shrink-0 p-2.5 ${
+                  className={`flex flex-col rounded-2xl transition-all duration-150 min-w-[280px] max-w-[315px] flex-shrink-0 p-2.5 max-h-[500px] ${
                     isDragOver
                       ? "border-2 border-cyan-500 bg-cyan-50/40 dark:bg-cyan-950/30 ring-2 ring-cyan-500/20"
                       : "bg-slate-100/70 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800"
@@ -220,74 +219,85 @@ function CategoryBoard({
                   onDragOver={(e) => handleDragOver(e, status.id)}
                   onDrop={(e) => handleDrop(e, status.id)}
                 >
-                  {/* Column Header: High Contrast, Clean, Professional */}
-                  <div className="flex items-center justify-between px-3 py-2 mb-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200/70 dark:border-slate-700/70 shadow-2xs">
-                    <div className="flex items-center gap-2 min-w-0">
-                      {isFinal ? (
-                        <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
-                      ) : (
-                        <span
-                          className="w-2.5 h-2.5 rounded-full shrink-0 shadow-2xs ring-2 ring-slate-100 dark:ring-slate-700"
-                          style={{ backgroundColor: dotColor }}
-                        />
+                  {/* Scrolling container: header sits directly inside and sticks to top-0 */}
+                  <div className="flex-1 overflow-y-auto min-h-[140px] max-h-[600px] custom-scrollbar px-0.5">
+
+                    {/* Sticky Header with non-transparent solid background */}
+                    <div className="sticky top-0 z-20 flex items-center justify-between px-3 py-2.5 mb-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs bg-white dark:bg-slate-800">
+                      <div className="flex items-center gap-2 min-w-0">
+                        {isFinal ? (
+                          <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
+                        ) : (
+                          <span
+                            className="w-2.5 h-2.5 rounded-full shrink-0 shadow-2xs ring-2 ring-slate-100 dark:ring-slate-700"
+                            style={{ backgroundColor: dotColor }}
+                          />
+                        )}
+                        <h3 className="text-xs font-bold text-slate-900 dark:text-white capitalize truncate tracking-tight">
+                          {status.name}
+                        </h3>
+                        <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full tabular-nums shrink-0">
+                          {columnTasks.length}
+                        </span>
+                      </div>
+
+                      {isFinal && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/60 shrink-0">
+                          <Check size={9} strokeWidth={3} />
+                          {t("final_2")}
+                        </span>
                       )}
-                      <h3 className="text-xs font-bold text-slate-900 dark:text-white capitalize truncate tracking-tight">
-                        {status.name}
-                      </h3>
-                      <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full tabular-nums shrink-0">
-                        {columnTasks.length}
-                      </span>
                     </div>
 
-                    {isFinal && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/60 shrink-0">
-                        <Check size={9} strokeWidth={3} />
-                        {t("final_2")}
-                      </span>
-                    )}
-                  </div>
+                    {/* Task List */}
+                    <div className="space-y-2.5 pb-1">
+                      {columnTasks.length === 0 ? (
+                        <div
+                          className={`flex flex-col items-center justify-center py-8 rounded-xl border border-dashed transition-colors ${
+                            isDragOver
+                              ? "border-cyan-400 bg-cyan-50/50 dark:bg-cyan-900/60"
+                              : "border-slate-200 dark:border-slate-700/60"
+                          }`}
+                        >
+                          <Inbox className="w-5 h-5 mb-1 text-slate-300 dark:text-slate-600" />
+                          <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+                            {isDragOver ? t("drop_here") : t("no_task")}
+                          </p>
+                        </div>
+                      ) : (
+                        columnTasks.map((task) => (
+                          <BoardCard
+                            key={task.id}
+                            task={task}
+                            handleDragEnd={handleDragEnd}
+                            canEdit={canEdit}
+                            canRemark={canRemark}
+                            canDelete={canDelete}
+                            canViewTimer={canViewTimer}
+                            canStartTimer={canStartTimer}
+                            canPauseTimer={canPauseTimer}
+                            canResumeTimer={canResumeTimer}
+                            canStopTimer={canStopTimer}
+                            deleting={deleting}
+                            taskTimerMap={taskTimerMap}
+                            activeTimerTaskId={activeTimerTaskId}
+                            liveElapsedSeconds={liveElapsedSeconds}
+                            onEdit={onEdit}
+                            onDelete={onDelete}
+                            onDragStart={handleDragStart}
+                            onRemark={onRemark}
+                            onTimer={onTimer}
+                            onStop={onStop}
+                          />
+                        ))
+                      )}
 
-                  {/* Task Cards Container */}
-                  <div className="flex-1 space-y-2.5 overflow-y-auto min-h-[140px] max-h-[640px] custom-scrollbar">
-                    {columnTasks.length === 0 ? (
-                      <div className={`flex flex-col items-center justify-center py-8 rounded-xl border border-dashed transition-colors ${isDragOver ? "border-cyan-400 bg-cyan-50/50 dark:bg-cyan-900/60" : "border-slate-200 dark:border-slate-700/60"}`}>
-                        <Inbox className="w-5 h-5 mb-1 text-slate-300 dark:text-slate-600" />
-                        <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
-                          {isDragOver ? t("drop_here") : t("no_task")}
-                        </p>
-                      </div>
-                    ) : (
-                      columnTasks.map((task) => (
-                        <BoardCard
-                          handleDragEnd={handleDragEnd}
-                          key={task.id}
-                          task={task}
-                          canEdit={canEdit}
-                          canRemark={canRemark}
-                          canDelete={canDelete}
-                          canViewTimer={canViewTimer}
-                          canStartTimer={canStartTimer}
-                          canPauseTimer={canPauseTimer}
-                          canResumeTimer={canResumeTimer}
-                          canStopTimer={canStopTimer}
-                          deleting={deleting}
-                          taskTimerMap={taskTimerMap}
-                          activeTimerTaskId={activeTimerTaskId}
-                          liveElapsedSeconds={liveElapsedSeconds}
-                          onEdit={onEdit}
-                          onDelete={onDelete}
-                          onDragStart={handleDragStart}
-                          onRemark={onRemark}
-                          onTimer={onTimer}
-                          onStop={onStop}
-                        />
-                      ))
-                    )}
-                    {columnTasks.length > 0 && isDragOver && (
-                      <div className="flex items-center justify-center py-2.5 rounded-xl border border-dashed border-cyan-400 dark:border-cyan-500 bg-cyan-50/60 dark:bg-cyan-950/20">
-                        <p className="text-xs text-cyan-600 dark:text-cyan-400 font-semibold">{t("drop_here")}</p>
-                      </div>
-                    )}
+                      {columnTasks.length > 0 && isDragOver && (
+                        <div className="flex items-center justify-center py-2.5 rounded-xl border border-dashed border-cyan-400 dark:border-cyan-500 bg-cyan-50/60 dark:bg-cyan-950/20">
+                          <p className="text-xs text-cyan-600 dark:text-cyan-400 font-semibold">{t("drop_here")}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               );

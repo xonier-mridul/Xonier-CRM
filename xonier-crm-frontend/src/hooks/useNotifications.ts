@@ -10,6 +10,8 @@ import {
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import { RootState } from "@/src/store";
+import ConfirmPopup from "../components/ui/ConfirmPopup";
+import { useTranslation } from "react-i18next";
 
 const POLL_INTERVAL_MS = 30000;
 
@@ -23,6 +25,7 @@ export const useNotifications = (autoFetch = true) => {
 
   const previousCountRef = useRef<number>(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const {t} = useTranslation()
 
   const isAuthenticated = useSelector(
     (state: RootState) => state.auth.isAuthenticated
@@ -143,16 +146,30 @@ export const useNotifications = (autoFetch = true) => {
   );
 
   const clearAll = useCallback(async () => {
+    setLoading(true)
     try {
-      const response = await NotificationService.clearAll();
+       const {isConfirmed} = await ConfirmPopup({
+  title: t("clear_all"),
+  text: t("are_you_sure_you_want_to_clear_all"),
+  btnTxt: t("yes_clear_all")
+});
+
+if(isConfirmed){
+  const response = await NotificationService.clearAll();
       if (response.success) {
         setNotifications([]);
         setUnreadCount(0);
         previousCountRef.current = 0;
         toast.success("All notifications cleared");
       }
+
+}
+      
     } catch (error) {
       toast.error("Failed to clear notifications");
+    }
+    finally{
+      setLoading(false)
     }
   }, []);
 

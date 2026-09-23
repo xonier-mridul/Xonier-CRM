@@ -56,8 +56,8 @@ const CompaniesPage = () => {
 
   const handleDelete = async (companyId: string) => {
     try {
-        const confirm = await ConfirmPopup({title: "Are you sure", text: "Are you sure to delete this company", btnTxt: "Yes, Delete"})
-        if(confirm){
+        const {isConfirmed} = await ConfirmPopup({title: "Are you sure", text: "Are you sure to delete this company", btnTxt: "Yes, Delete"})
+        if(isConfirmed){
 await CompanyService.softDelete(companyId);
       toast.success("Company deleted");
       getCompaniesData();
