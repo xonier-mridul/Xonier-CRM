@@ -2,7 +2,9 @@
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import LeadService from "@/src/services/lead.service";
 import { UserFormService } from "@/src/services/userForm.service";
+import { AuthService } from "@/src/services/auth.service";
 import { UserForm } from "@/src/types/userForm/userForm.types";
+import { User } from "@/src/types/auth/auth.types";
 import { BulkLeadPayload, LeadPayload } from "@/src/types/leads/leads.types";
 import {
   EMPLOYEE_SENIORITY,
@@ -12,16 +14,24 @@ import {
   SALES_STATUS,
 } from "@/src/constants/enum";
 import axios from "axios";
-import React, { JSX, useState, useEffect, useCallback } from "react";
+import React, { JSX, useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { toast } from "react-toastify";
-import Papa from "papaparse";
 import * as XLSX from "xlsx";
-import { FaUpload, FaFileCsv, FaTrash } from "react-icons/fa";
+import Papa from "papaparse";
+import { FaUpload, FaFileCsv, FaTrash, FaCheck } from "react-icons/fa";
 import { HiDownload } from "react-icons/hi";
 import { FiUpload } from "react-icons/fi";
 import { Tag, AlertCircle, X } from "lucide-react";
+import { CiSearch } from "react-icons/ci";
+import { MdOutlineKeyboardArrowDown } from "react-icons/md";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import FieldMappingModal, {
+  AppFieldDef,
+  GenericFieldMapping,
+} from "@/src/components/pages/enquiry/FieldMappingModal";
+
+// ─── Interfaces ───────────────────────────────────────────────────────────────
 
 interface ParsedLead {
   [key: string]: string | number;
@@ -33,29 +43,90 @@ interface ValidationError {
   message: string;
 }
 
+// ─── Constants ────────────────────────────────────────────────────────────────
+
 const ITEMS_PER_PAGE = 20;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_REGEX = /^\+?[0-9\s\-().]{7,20}$/;
 
+// ─── Helper: convert UserForm fields → AppFieldDef[] ─────────────────────────
+
+/**
+ * Converts the dynamic `userFormData.selectedFormFields` from the API
+ * into the generic `AppFieldDef[]` format that FieldMappingModal understands.
+ *
+ * Each field uses its `key` as both the field key and the primary alias,
+ * so an exact-match CSV header will be auto-detected.
+ */
+const buildLeadAppFields = (userForm: UserForm | null): AppFieldDef[] => {
+  if (!userForm?.selectedFormFields) return [];
+  return userForm.selectedFormFields.map((field) => ({
+    key: field.key,
+    label: field.name || field.key,
+    // email and fullName are always required; rest follow their form definition
+    required: field.required ?? (field.key === "email" || field.key === "fullName"),
+    // The field key itself and common lowercase variants are tried for auto-detection
+    aliases: [
+      field.key.toLowerCase(),
+      field.name?.toLowerCase() ?? "",
+      // handy aliases for common fields
+      ...(field.key === "fullName" ? ["name", "full name", "fullname", "client name"] : []),
+      ...(field.key === "email" ? ["email address", "mail", "e-mail"] : []),
+      ...(field.key === "phone" ? ["mobile", "phone number", "mobile number", "contact no"] : []),
+      ...(field.key === "companyName" ? ["company", "company name", "organization", "firm"] : []),
+      ...(field.key === "projectType" ? ["project", "project type", "service type"] : []),
+      ...(field.key === "priority" ? ["urgency", "importance"] : []),
+      ...(field.key === "source" ? ["lead source", "channel"] : []),
+    ].filter(Boolean),
+  }));
+};
+
+// ─── Page ────────────────────────────────────────────────────────────────────
+
 const BulkLeadUpload = (): JSX.Element => {
   const { t } = useTranslation();
+  const router = useRouter();
+
+  // ── Form / field config ──
   const [userFormData, setUserFormData] = useState<UserForm | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // ── File & raw rows ──
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [rawRows, setRawRows] = useState<Record<string, string>[]>([]);
+  const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
+  const [fileInputKey, setFileInputKey] = useState<number>(0);
+
+  // ── Mapping modal ──
+  const [showMappingModal, setShowMappingModal] = useState(false);
+
+  // ── Processed / validated data ──
   const [parsedData, setParsedData] = useState<ParsedLead[]>([]);
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
-  const [isUploading, setIsUploading] = useState<boolean>(false);
-  const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
+
+  // ── Batch assign-to ──
+  const [batchAssignTo, setBatchAssignTo] = useState<string | null>(null);
+  const [selectedAgent, setSelectedAgent] = useState<User | null>(null);
+  const [usersData, setUsersData] = useState<User[]>([]);
+  const [agentSearch, setAgentSearch] = useState("");
+  const [openAgentDropdown, setOpenAgentDropdown] = useState(false);
+  const agentDropdownRef = useRef<HTMLDivElement>(null);
+
+  // ── UI ──
   const [dataTag, setDataTag] = useState<string>("");
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [fileInputKey, setFileInputKey] = useState<number>(0);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
 
+  // ── Derived ──
   const totalPages = Math.ceil(parsedData.length / ITEMS_PER_PAGE);
   const invalidCount = new Set(validationErrors.map((e) => e.row)).size;
-  const router = useRouter();
 
+  /** AppFieldDef[] derived from fetched form config */
+  const leadAppFields = useMemo(() => buildLeadAppFields(userFormData), [userFormData]);
+
+  // ── Fetch form fields ──
   const getFormFields = async (): Promise<void> => {
     setIsLoading(true);
     try {
@@ -74,6 +145,42 @@ const BulkLeadUpload = (): JSX.Element => {
 
   useEffect(() => { getFormFields(); }, []);
 
+  // ── Close agent dropdown on outside click ──
+  useEffect(() => {
+    const handleOutClick = (e: MouseEvent) => {
+      if (agentDropdownRef.current && !agentDropdownRef.current.contains(e.target as Node)) {
+        setOpenAgentDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutClick);
+    return () => document.removeEventListener("mousedown", handleOutClick);
+  }, []);
+
+  // ── Fetch agents with debounced search ──
+  const fetchAgents = async (search?: string) => {
+    try {
+      const res = await AuthService.getAllTeamUsers({ search });
+      if (res.status === 200) setUsersData(res.data.data);
+    } catch (error) {
+      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => fetchAgents(agentSearch), 300);
+    return () => clearTimeout(timer);
+  }, [agentSearch]);
+
+  const filteredAgents = usersData.filter((user) => {
+    const q = agentSearch.trim().toLowerCase();
+    return (
+      user.firstName?.toLowerCase().includes(q) ||
+      user.lastName?.toLowerCase().includes(q) ||
+      `${user.firstName} ${user.lastName}`.toLowerCase().includes(q)
+    );
+  });
+
+  // ── Sample CSV download ──
   const downloadCSVTemplate = () => {
     if (!userFormData?.selectedFormFields) { toast.error("Form fields not loaded"); return; }
     const headers = userFormData.selectedFormFields.map((f) => f.key);
@@ -95,6 +202,7 @@ const BulkLeadUpload = (): JSX.Element => {
     toast.success("Template downloaded");
   };
 
+  // ── Validation (unchanged) ──
   const validateLeadData = (data: ParsedLead[], startIndex = 0): ValidationError[] => {
     const errors: ValidationError[] = [];
     const optionalFields = new Set(["phone", "priority", "projectType", "country"]);
@@ -153,48 +261,98 @@ const BulkLeadUpload = (): JSX.Element => {
     return errors;
   };
 
-  const processAndSetData = (data: ParsedLead[], headers: string[]) => {
-    setCsvHeaders(headers); setParsedData(data); setCurrentPage(1);
-    const errors = validateLeadData(data);
-    setValidationErrors(errors);
-    if (errors.length > 0) toast.warning(`Found ${errors.length} validation error${errors.length > 1 ? "s" : ""}`);
-    else toast.success(`Parsed ${data.length} lead${data.length > 1 ? "s" : ""} successfully`);
-  };
-
-  const parseCSVFile = (f: File) => {
-    Papa.parse(f, {
-      header: true, skipEmptyLines: true,
-      complete: (r) => processAndSetData(r.data as ParsedLead[], r.meta.fields || []),
-      error: (e) => { toast.error(`CSV parse error: ${e.message}`); setFile(null); },
+  // ── Raw file parsers (no schema transform; just get headers + raw rows) ──
+  const parseRawCSV = (f: File): Promise<{ headers: string[]; rows: Record<string, string>[] }> =>
+    new Promise((resolve, reject) => {
+      Papa.parse(f, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (r) => resolve({
+          headers: r.meta.fields || [],
+          rows: r.data as Record<string, string>[],
+        }),
+        error: (e) => reject(e),
+      });
     });
+
+  const parseRawXLSX = async (f: File): Promise<{ headers: string[]; rows: Record<string, string>[] }> => {
+    const buf = await f.arrayBuffer();
+    const wb = XLSX.read(buf, { type: "array" });
+    const rows = XLSX.utils.sheet_to_json<Record<string, string>>(wb.Sheets[wb.SheetNames[0]], { defval: "", raw: false });
+    return { headers: rows.length > 0 ? Object.keys(rows[0]) : [], rows };
   };
 
-  const parseXLSXFile = async (f: File) => {
-    try {
-      const buf = await f.arrayBuffer();
-      const wb = XLSX.read(buf, { type: "array" });
-      const rows = XLSX.utils.sheet_to_json<ParsedLead>(wb.Sheets[wb.SheetNames[0]], { defval: "", raw: false });
-      if (!rows.length) { toast.error("XLSX file is empty"); setFile(null); return; }
-      processAndSetData(rows, Object.keys(rows[0]));
-    } catch { toast.error("Could not parse XLSX. Check file format."); setFile(null); }
-  };
-
-  const handleFile = (f: File) => {
+  // ── Handle file pick → open mapping modal ──
+  const handleFile = async (f: File) => {
     const isCSV = f.name.endsWith(".csv") || f.type === "text/csv";
     const isXLSX = f.name.endsWith(".xlsx") || f.name.endsWith(".xls") ||
       f.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
       f.type === "application/vnd.ms-excel";
+
     if (!isCSV && !isXLSX) { toast.error("Only CSV or XLSX files are allowed"); return; }
-    setFile(f);
-    if (isXLSX) parseXLSXFile(f); else parseCSVFile(f);
+
+    try {
+      const { headers, rows } = isXLSX
+        ? await parseRawXLSX(f)
+        : await parseRawCSV(f);
+
+      if (!rows.length) { toast.error("File is empty"); return; }
+
+      setFile(f);
+      setCsvHeaders(headers);
+      setRawRows(rows);
+      setParsedData([]); // clear old preview
+      setCurrentPage(1);
+      setShowMappingModal(true);
+    } catch {
+      toast.error("Could not parse file. Check file format.");
+    }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (f) handleFile(f);
-    e.target.value = "";
+  // ── Apply mapping → produce ParsedLead[] ──
+  const applyMappingToRows = (
+    rows: Record<string, string>[],
+    mapping: GenericFieldMapping
+  ): ParsedLead[] => {
+    return rows.map((rawRow) => {
+      const lead: ParsedLead = {};
+      for (const [appKey, csvCol] of Object.entries(mapping)) {
+        if (csvCol) lead[appKey] = rawRow[csvCol] ?? "";
+      }
+      return lead;
+    });
   };
 
+  // ── Mapping confirmed ──
+  const handleMappingConfirm = (mapping: GenericFieldMapping) => {
+    setShowMappingModal(false);
+    const data = applyMappingToRows(rawRows, mapping);
+    setParsedData(data);
+    setCurrentPage(1);
+    const errors = validateLeadData(data);
+    setValidationErrors(errors);
+    if (errors.length > 0)
+      toast.warning(`Found ${errors.length} validation error${errors.length > 1 ? "s" : ""}`);
+    else
+      toast.success(`Parsed ${data.length} lead${data.length > 1 ? "s" : ""} successfully`);
+  };
+
+  // ── Mapping cancelled ──
+  const handleMappingCancel = () => {
+    setShowMappingModal(false);
+    if (parsedData.length === 0) {
+      setFile(null);
+      setCsvHeaders([]);
+      setRawRows([]);
+    }
+  };
+
+  // ── Re-open mapping for current file ──
+  const reopenMapping = () => {
+    if (csvHeaders.length > 0) setShowMappingModal(true);
+  };
+
+  // ── Drag & drop handlers ──
   const handleDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault(); e.stopPropagation();
     if (e.dataTransfer.items?.length) setIsDragging(true);
@@ -215,11 +373,13 @@ const BulkLeadUpload = (): JSX.Element => {
     e.preventDefault(); e.stopPropagation(); setIsDragging(false);
     const f = e.dataTransfer.files[0];
     if (f) handleFile(f);
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userFormData]);
 
+  // ── Reset ──
   const resetUpload = () => {
     setFile(null); setParsedData([]); setValidationErrors([]);
-    setCurrentPage(1); setDataTag(""); setCsvHeaders([]);
+    setCurrentPage(1); setDataTag(""); setCsvHeaders([]); setRawRows([]);
     setFileInputKey((k) => k + 1);
   };
 
@@ -245,6 +405,7 @@ const BulkLeadUpload = (): JSX.Element => {
 
   const getErrorsForRow = (gi: number) => validationErrors.filter((e) => e.row === gi + 2);
 
+  // ── Submit ──
   const handleBulkUpload = async () => {
     if (!parsedData.length) { toast.error("No data to upload"); return; }
     if (validationErrors.length > 0) { toast.error("Fix validation errors before uploading"); return; }
@@ -287,6 +448,11 @@ const BulkLeadUpload = (): JSX.Element => {
         if (Object.keys(extraFields).length > 0) lead.extraFields = extraFields;
         return lead;
       });
+      // Inject batch-level assignTo if set
+      if (batchAssignTo) {
+        leadsPayload.forEach((lead) => { (lead as any).assignTo = batchAssignTo; });
+      }
+
       const payload: BulkLeadPayload = {
         leads: leadsPayload,
         ...(dataTag.trim() ? { dataTag: dataTag.trim() } : {}),
@@ -310,9 +476,112 @@ const BulkLeadUpload = (): JSX.Element => {
     currentPage * ITEMS_PER_PAGE,
   );
 
+  // ── Render ─────────────────────────────────────────────────────────────────
+
+  const assignBatchNode = (
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-sm">
+          👤
+        </div>
+        <div>
+          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+            Assign Batch To <span className="text-xs font-normal text-gray-400 dark:text-gray-500">(Optional)</span>
+          </h3>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+            All leads in this import will be assigned to the selected agent
+          </p>
+        </div>
+      </div>
+      <div ref={agentDropdownRef} className="relative w-full sm:w-72">
+        <button
+          type="button"
+          onClick={() => setOpenAgentDropdown(!openAgentDropdown)}
+          className="w-full px-3 py-2.5 capitalize rounded-lg border transition-all duration-200
+            bg-white dark:bg-gray-800 text-black dark:text-white
+            border-gray-200 dark:border-gray-700
+            focus:outline-none focus:border-cyan-400 dark:focus:border-cyan-500 focus:ring-2 focus:ring-cyan-400/20
+            flex items-center justify-between text-sm"
+        >
+          <div className="flex items-center gap-2">
+            {selectedAgent ? (
+              <>
+                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                  {selectedAgent.firstName?.[0]?.toUpperCase()}
+                </div>
+                <span className="text-gray-800 dark:text-white">
+                  {selectedAgent.firstName} {selectedAgent.lastName}
+                </span>
+              </>
+            ) : (
+              <span className="text-gray-400 dark:text-gray-500">Unassigned — select an agent</span>
+            )}
+          </div>
+          <MdOutlineKeyboardArrowDown className="text-gray-400 dark:text-gray-500 text-xl flex-shrink-0" />
+        </button>
+
+        {openAgentDropdown && (
+          <div className="absolute bottom-full mb-1 left-0 w-full bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto z-[200]">
+            <div className="p-2 border-b border-slate-100 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+              <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-700 rounded-lg px-3 py-1.5">
+                <CiSearch className="text-slate-400 text-lg flex-shrink-0" />
+                <input
+                  placeholder="Search agent..."
+                  value={agentSearch}
+                  onChange={(e) => setAgentSearch(e.target.value)}
+                  className="outline-none bg-transparent text-sm text-slate-600 dark:text-white/80 w-full"
+                />
+              </div>
+            </div>
+            <div
+              className="px-4 py-2.5 cursor-pointer text-sm text-slate-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              onClick={() => { setBatchAssignTo(null); setSelectedAgent(null); setOpenAgentDropdown(false); }}
+            >
+              — Unassigned
+            </div>
+            {filteredAgents.length ? (
+              filteredAgents.map((user) => (
+                <div
+                  key={user.id}
+                  className="px-4 py-2.5 cursor-pointer flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  onClick={() => { setBatchAssignTo(user.id); setSelectedAgent(user); setOpenAgentDropdown(false); }}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0">
+                      {user.firstName?.[0]?.toUpperCase()}
+                    </div>
+                    <span className="text-sm text-slate-700 dark:text-white/80 capitalize">
+                      {user.firstName} {user.lastName}
+                    </span>
+                  </div>
+                  {selectedAgent?.id === user.id && <FaCheck className="text-emerald-500 text-xs" />}
+                </div>
+              ))
+            ) : (
+              <div className="px-4 py-3 text-sm text-gray-400">{t("no_users_found")}</div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="p-6 space-y-6">
 
+      {/* ── Field Mapping Modal (reused generically) ── */}
+      <FieldMappingModal
+        isOpen={showMappingModal}
+        csvHeaders={csvHeaders}
+        previewRows={rawRows.slice(0, 3)}
+        fileName={file?.name ?? ""}
+        appFields={leadAppFields}
+        assignBatchNode={assignBatchNode}
+        onConfirm={handleMappingConfirm}
+        onCancel={handleMappingCancel}
+      />
+
+      {/* ── Header card ── */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
         <div className="bg-gradient-to-br from-[#16c2cf] to-[#0fb8a5] dark:to-cyan-700  px-8 py-5">
           <div className="flex items-center gap-3">
@@ -348,6 +617,7 @@ const BulkLeadUpload = (): JSX.Element => {
         </div>
       </div>
 
+      {/* ── Drop Zone ── */}
       <div
         onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}
@@ -378,7 +648,7 @@ const BulkLeadUpload = (): JSX.Element => {
             key={fileInputKey}
             type="file" accept=".csv,.xlsx,.xls"
             className="hidden" id="leadFileUpload"
-            onChange={handleFileChange}
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }}
           />
           <label
             htmlFor="leadFileUpload"
@@ -391,9 +661,21 @@ const BulkLeadUpload = (): JSX.Element => {
             <div className="flex items-center gap-3 mt-1 bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 px-4 py-2.5 rounded-xl">
               <FaFileCsv className="text-cyan-500 text-lg" />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{file.name}</span>
-              <span className="text-xs bg-cyan-100 dark:bg-cyan-900/40 text-cyan-600 dark:text-cyan-300 px-2 py-0.5 rounded-full font-medium">
-                {parsedData.length} {t("rows")}
-              </span>
+              {parsedData.length > 0 && (
+                <span className="text-xs bg-cyan-100 dark:bg-cyan-900/40 text-cyan-600 dark:text-cyan-300 px-2 py-0.5 rounded-full font-medium">
+                  {parsedData.length} {t("rows")}
+                </span>
+              )}
+              {/* Re-map button */}
+              {csvHeaders.length > 0 && parsedData.length > 0 && (
+                <button
+                  type="button"
+                  onClick={reopenMapping}
+                  className="text-xs font-medium text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 bg-cyan-100 dark:bg-cyan-900/40 hover:bg-cyan-200 dark:hover:bg-cyan-900/60 border border-cyan-300 dark:border-cyan-700 px-2.5 py-1 rounded-lg transition-all"
+                >
+                  ✎ Re-map
+                </button>
+              )}
               <button
                 onClick={resetUpload}
                 className="w-6 h-6 flex items-center justify-center rounded-md bg-red-50 dark:bg-red-900/20 text-red-400 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/40 transition-all ml-1"
@@ -405,7 +687,8 @@ const BulkLeadUpload = (): JSX.Element => {
         </div>
       </div>
 
-      {file && (
+      {/* ── Data Tag (shown only after mapping confirmed) ── */}
+      {parsedData.length > 0 && (
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 px-6 py-4">
           <div className="flex items-center gap-4">
             <div className="w-9 h-9 rounded-lg bg-cyan-50 dark:bg-cyan-900/30 flex items-center justify-center shrink-0">
@@ -440,6 +723,7 @@ const BulkLeadUpload = (): JSX.Element => {
         </div>
       )}
 
+      {/* ── Validation Errors ── */}
       {validationErrors.length > 0 && (
         <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-2xl p-4">
           <div className="flex items-start gap-3">
@@ -466,6 +750,7 @@ const BulkLeadUpload = (): JSX.Element => {
         </div>
       )}
 
+      {/* ── Preview Table ── */}
       {parsedData.length > 0 && (
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
 
@@ -493,7 +778,6 @@ const BulkLeadUpload = (): JSX.Element => {
                 </span>
               )}
             </div>
-
             {invalidCount > 0 && (
               <button
                 type="button"
@@ -513,7 +797,7 @@ const BulkLeadUpload = (): JSX.Element => {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider sticky left-0 bg-gray-50 dark:bg-gray-800/60">
                     #
                   </th>
-                  {csvHeaders.map((h) => (
+                  {Object.keys(parsedData[0] || {}).map((h) => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">
                       {h}
                     </th>
@@ -528,7 +812,6 @@ const BulkLeadUpload = (): JSX.Element => {
                   const rowErrs = getErrorsForRow(globalIdx);
                   const isInvalid = rowErrs.length > 0;
                   const fieldHasError = (f: string) => rowErrs.some((e) => e.field === f);
-
                   return (
                     <tr
                       key={globalIdx}
@@ -571,8 +854,7 @@ const BulkLeadUpload = (): JSX.Element => {
                         </div>
                       </td>
 
-                      {csvHeaders.map((header) => {
-                        const value = lead[header];
+                      {Object.entries(lead).map(([header, value]) => {
                         const hasErr = fieldHasError(header);
                         const errMsg = rowErrs.find((e) => e.field === header)?.message;
 
@@ -679,6 +961,7 @@ const BulkLeadUpload = (): JSX.Element => {
         </div>
       )}
 
+      {/* ── Submit ── */}
       {parsedData.length > 0 && (
         <div className="flex justify-end items-center gap-3">
           {invalidCount > 0 && (

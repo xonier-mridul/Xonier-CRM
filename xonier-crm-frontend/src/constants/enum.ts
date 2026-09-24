@@ -224,8 +224,11 @@ export enum PERMISSIONS {
   taskTimerResume= "task_timer:resume",
   taskTimerStop= "task_timer:stop",
   taskTimerDelete= "task_timer:delete",
-
-
+  readCampaign = "campaign:read",
+  createCampaign = "campaign:create",
+  updateCampaign = "campaign:update",
+  deleteCampaign = "campaign:delete",
+  manageCampaign = "campaign:manage",
 }
 
 

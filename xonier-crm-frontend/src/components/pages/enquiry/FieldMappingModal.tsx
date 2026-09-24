@@ -5,6 +5,7 @@ import { MdOutlineSwapHoriz } from "react-icons/md";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+/** Narrow union kept for backward-compat with the enquiry page */
 export type AppFieldKey =
   | "fullName"
   | "email"
@@ -25,28 +26,40 @@ export type AppFieldKey =
   | "zipcode"
   | "message";
 
+/** Narrower type kept for backward-compat; internally the modal uses GenericFieldMapping */
 export type FieldMapping = Record<AppFieldKey, string | null>;
+
+/** Generic mapping used internally (and exported for callers with custom fields) */
+export type GenericFieldMapping = Record<string, string | null>;
+
+/**
+ * A single app-field definition.
+ * `key` is a generic string so callers outside the enquiry page can use their own field names.
+ */
+export interface AppFieldDef {
+  key: string;
+  label: string;
+  required: boolean;
+  /** Lowercase exact-match aliases for auto-detection */
+  aliases: string[];
+  hint?: string;
+}
 
 export interface FieldMappingModalProps {
   isOpen: boolean;
   csvHeaders: string[];
   previewRows: Record<string, string>[]; // first few rows for sample preview
   fileName: string;
-  onConfirm: (mapping: FieldMapping) => void;
+  /** Override the built-in enquiry field definitions with your own */
+  appFields?: AppFieldDef[];
+  assignBatchNode?: React.ReactNode;
+  onConfirm: (mapping: GenericFieldMapping) => void;
   onCancel: () => void;
 }
 
-// ─── App field definitions ────────────────────────────────────────────────────
+// ─── Default (enquiry) App field definitions ────────────────────────────────────────────────────
 
-interface AppFieldDef {
-  key: AppFieldKey;
-  label: string;
-  required: boolean;
-  aliases: string[]; // lowercase exact-match aliases for auto-detection
-  hint?: string;
-}
-
-const APP_FIELDS: AppFieldDef[] = [
+const DEFAULT_APP_FIELDS: AppFieldDef[] = [
   { key: "fullName",          label: "Full Name",           required: true,  aliases: ["fullname", "full name", "name", "client name", "contact name", "naam"] },
   { key: "email",             label: "Email",               required: true,  aliases: ["email", "email address", "mail", "e-mail"] },
   { key: "phone",             label: "Phone",               required: true,  aliases: ["phone", "mobile", "phone number", "mobile number", "contact", "mob", "number", "contact no"] },
@@ -59,7 +72,7 @@ const APP_FIELDS: AppFieldDef[] = [
   { key: "technologies",      label: "Technologies",        required: false, aliases: ["technologies", "tech", "tech stack", "stack"], hint: "Use | as separator" },
   { key: "keywords",          label: "Keywords",            required: false, aliases: ["keywords", "tags", "key terms"], hint: "Use | as separator" },
   { key: "numberOfEmployees", label: "No. of Employees",    required: false, aliases: ["numberofemployees", "employees", "employee count", "team size", "headcount"] },
-  { key: "infoType",          label: "Info Type",           required: false, aliases: ["infotype", "info type", "type of info", "category"] },
+  { key: "infoType",          label: "Info Type",           required: true,  aliases: ["infotype", "info type", "type of info", "category"] },
   { key: "country",           label: "Country",             required: false, aliases: ["country", "nation"] },
   { key: "state",             label: "State / Province",    required: false, aliases: ["state", "province", "region"] },
   { key: "city",              label: "City",                required: false, aliases: ["city", "town", "location"] },
@@ -74,12 +87,16 @@ const SKIP_VALUE = "__skip__";
 /**
  * Attempt to auto-map CSV headers to app fields via alias matching.
  * Each CSV header can only be matched once (one-to-one).
+ * Works with any AppFieldDef[], defaults to enquiry fields when none supplied.
  */
-export function autoDetectMapping(csvHeaders: string[]): FieldMapping {
-  const mapping = {} as FieldMapping;
+export function autoDetectMapping(
+  csvHeaders: string[],
+  fields: AppFieldDef[] = DEFAULT_APP_FIELDS
+): GenericFieldMapping {
+  const mapping: GenericFieldMapping = {};
   const usedCsvHeaders = new Set<string>();
 
-  for (const field of APP_FIELDS) {
+  for (const field of fields) {
     let matched: string | null = null;
     for (const alias of field.aliases) {
       const found = csvHeaders.find(
@@ -104,22 +121,30 @@ const FieldMappingModal: React.FC<FieldMappingModalProps> = ({
   csvHeaders,
   previewRows,
   fileName,
+  appFields,
+  assignBatchNode,
   onConfirm,
   onCancel,
 }) => {
-  const [mapping, setMapping] = useState<FieldMapping>(() => autoDetectMapping(csvHeaders));
-  const [autoDetected, setAutoDetected] = useState<Set<AppFieldKey>>(new Set());
+  // Use caller-provided fields or fall back to default enquiry fields
+  const FIELDS = appFields ?? DEFAULT_APP_FIELDS;
 
-  // Re-run auto-detect every time a new file is uploaded
+  const [mapping, setMapping] = useState<GenericFieldMapping>(() =>
+    autoDetectMapping(csvHeaders, FIELDS)
+  );
+  const [autoDetected, setAutoDetected] = useState<Set<string>>(new Set());
+
+  // Re-run auto-detect every time a new file is uploaded OR fields change
   useEffect(() => {
-    const detected = autoDetectMapping(csvHeaders);
+    const detected = autoDetectMapping(csvHeaders, FIELDS);
     setMapping(detected);
-    const autoKeys = new Set<AppFieldKey>();
-    for (const field of APP_FIELDS) {
+    const autoKeys = new Set<string>();
+    for (const field of FIELDS) {
       if (detected[field.key] !== null) autoKeys.add(field.key);
     }
     setAutoDetected(autoKeys);
-  }, [csvHeaders]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [csvHeaders, appFields]);
 
   // Track already-used headers so we can disable them in other dropdowns (one-to-one)
   const usedHeaders = useMemo(() => {
@@ -130,7 +155,7 @@ const FieldMappingModal: React.FC<FieldMappingModalProps> = ({
     return used;
   }, [mapping]);
 
-  const handleChange = (fieldKey: AppFieldKey, value: string) => {
+  const handleChange = (fieldKey: string, value: string) => {
     setMapping((prev) => ({
       ...prev,
       [fieldKey]: value === SKIP_VALUE ? null : value || null,
@@ -143,7 +168,7 @@ const FieldMappingModal: React.FC<FieldMappingModalProps> = ({
     });
   };
 
-  const unmetRequired = APP_FIELDS.filter((f) => f.required && !mapping[f.key]);
+  const unmetRequired = FIELDS.filter((f) => f.required && !mapping[f.key]);
   const canConfirm = unmetRequired.length === 0;
   const autoDetectedCount = autoDetected.size;
   const mappedCount = Object.values(mapping).filter(Boolean).length;
@@ -208,7 +233,7 @@ const FieldMappingModal: React.FC<FieldMappingModalProps> = ({
 
         {/* ── Scrollable Mapping List ── */}
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1.5">
-          {APP_FIELDS.map((field) => {
+          {FIELDS.map((field) => {
             const currentVal = mapping[field.key];
             const isMapped = !!currentVal;
             const isAutoDetected = autoDetected.has(field.key);
@@ -305,44 +330,53 @@ const FieldMappingModal: React.FC<FieldMappingModalProps> = ({
         </div>
 
         {/* ── Footer ── */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 flex-shrink-0">
-          <div className="flex items-center gap-4 flex-wrap">
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              <span className="font-semibold text-emerald-600 dark:text-emerald-400">{mappedCount}</span>
-              <span className="text-gray-400 dark:text-gray-500"> / {APP_FIELDS.length} mapped</span>
-            </span>
-            {!canConfirm && (
-              <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
-                <FiAlertTriangle className="text-xs flex-shrink-0" />
-                <span>
-                  Required:{" "}
-                  <span className="font-semibold">
-                    {unmetRequired.map((f) => f.label).join(", ")}
-                  </span>
-                </span>
-              </div>
-            )}
-          </div>
+        <div className="flex flex-col border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 flex-shrink-0">
+          {/* Assign Batch To Section (if provided) */}
+          {assignBatchNode && (
+            <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900/50">
+              {assignBatchNode}
+            </div>
+          )}
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onCancel}
-              className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg transition-all"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => onConfirm(mapping)}
-              disabled={!canConfirm}
-              className={`flex items-center gap-2 px-5 py-2 text-sm font-semibold rounded-lg transition-all
-                ${canConfirm
-                  ? "bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white shadow-sm shadow-cyan-500/20"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
-                }`}
-            >
-              <FiCheck className="text-base" />
-              Confirm Mapping
-            </button>
+          <div className="flex items-center justify-between px-6 py-4">
+            <div className="flex items-center gap-4 flex-wrap">
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400">{mappedCount}</span>
+                <span className="text-gray-400 dark:text-gray-500"> / {FIELDS.length} mapped</span>
+              </span>
+              {!canConfirm && (
+                <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+                  <FiAlertTriangle className="text-xs flex-shrink-0" />
+                  <span>
+                    Required:{" "}
+                    <span className="font-semibold">
+                      {unmetRequired.map((f) => f.label).join(", ")}
+                    </span>
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={onCancel}
+                className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => onConfirm(mapping)}
+                disabled={!canConfirm}
+                className={`flex items-center gap-2 px-5 py-2 text-sm font-semibold rounded-lg transition-all
+                  ${canConfirm
+                    ? "bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white shadow-sm shadow-cyan-500/20"
+                    : "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
+                  }`}
+              >
+                <FiCheck className="text-base" />
+                Confirm Mapping
+              </button>
+            </div>
           </div>
         </div>
       </div>
