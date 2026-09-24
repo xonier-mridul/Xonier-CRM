@@ -60,6 +60,7 @@ from app.routes.subscription_route import router as subscription_route
 from app.routes.query_route import router as query_route
 from app.routes.payment_route import router as payment_router
 from app.routes.notification_route import router as notification_router
+from app.routes.campaign_route import router as campaign_router
 
 settings = get_setting()
 
@@ -170,6 +171,7 @@ app.include_router(
     tags=["Payments"]
 )
 app.include_router(notification_router, prefix="/api/v1/notifications", tags=["Notifications"])
+app.include_router(campaign_router, prefix="/api/campaign", tags=["Campaign"])
 
 app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(AppException, app_exception_handler)

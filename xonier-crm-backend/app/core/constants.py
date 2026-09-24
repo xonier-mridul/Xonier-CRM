@@ -42,6 +42,10 @@ NOTE_CACHE_NAMESPACE:str = "notes:publicList"
 NOTE_PRIVATE_CACHE_NAMESPACE = "notes:privateList"
 
 
+# CAMPAIGN
+
+CAMPAIGN_CACHE_NAMESPACE: str = "campaign:list"
+
 
 
 SUPER_ADMIN_CODE:str = "SUPER_ADMIN"

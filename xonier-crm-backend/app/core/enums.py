@@ -589,6 +589,7 @@ class NOTES_ENTITIES(str, Enum):
     QUOTATION = "quotation"
     INVOICE = "invoice"
     GENERAL = "general"
+    CAMPAIGN = "campaign"
 
 
 class ACTIVITY_ENTITY_TYPE(str, Enum):
@@ -605,6 +606,7 @@ class ACTIVITY_ENTITY_TYPE(str, Enum):
     PLAN="plan"
     COMPANY = "company"
     OTP = "otp"
+    CAMPAIGN = "campaign"
     
     
 
@@ -1094,3 +1096,28 @@ class ON_TIME_FILTER(str, Enum):
     ALL = "all"
     ON_TIME = "onTime"
     OVERDUE = "overdue"
+
+
+# ─── Campaign ─────────────────────────────────────────────────────────────────
+
+class CAMPAIGN_DISTRIBUTION_MODE(str, Enum):
+    ON_DEMAND = "on_demand"
+    EQUAL = "equal"
+    CONDITIONAL = "conditional"
+
+
+class CAMPAIGN_STATUS(str, Enum):
+    DRAFT = "draft"
+    ACTIVE = "active"
+    PAUSED = "paused"
+    COMPLETED = "completed"
+    ARCHIVED = "archived"
+    DELETED = "deleted"
+
+
+class CAMPAIGN_LEAD_STATUS(str, Enum):
+    UNASSIGNED = "unassigned"
+    ASSIGNED = "assigned"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    SKIPPED = "skipped"

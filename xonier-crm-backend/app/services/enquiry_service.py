@@ -299,6 +299,15 @@ class EnquiryService:
             if "projectType" in filters:
                 query.update({"projectType": filters["projectType"]})
 
+            if "status" in filters and filters["status"]:
+                query.update({"status": filters["status"]})
+
+            if "source" in filters and filters["source"]:
+                query.update({"source": filters["source"]})
+
+            if "assignTo" in filters and filters["assignTo"] and ObjectId.is_valid(filters["assignTo"]):
+                query.update({"assignTo.$id": ObjectId(filters["assignTo"])})
+
             if "priority" in filters:
                 query.update({"priority", filters["priority"]})
 
@@ -445,7 +454,7 @@ class EnquiryService:
                         missing = [eid for eid in enquiry_ids if eid not in found_ids]
                         raise AppException(404, f"Enquiries not found for ids: {', '.join(missing)}")
 
-                    assign_dbref = DBRef(collection="users", id=str(assigned_to))
+                    assign_dbref = DBRef(collection="users", id=ObjectId(str(assigned_to)))
 
                     update_payload = {
                         "assignTo": assign_dbref,
@@ -516,7 +525,7 @@ class EnquiryService:
                 raise AppException(400, "Invalid assignTo user ObjectId")
 
             
-            newPayload: Dict[str, Any] = {**payload, "updatedBy": updatedBy, "assignTo": DBRef(collection="users", id=payload.get("assignTo")) if payload.get("assignTo") else None}
+            newPayload: Dict[str, Any] = {**payload, "updatedBy": updatedBy, "assignTo": DBRef(collection="users", id=ObjectId(payload.get("assignTo"))) if payload.get("assignTo") else None}
 
             update = await self.repo.update(id=id, data=newPayload, session=session)
 

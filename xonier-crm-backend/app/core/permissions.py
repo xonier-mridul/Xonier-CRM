@@ -750,5 +750,41 @@ PERMISSIONS = [
         "title": "delete task timer",
         "description": "permission for delete task timer",
     },
+    # CAMPAIGN
+    {
+        "code": "campaign:create",
+        "module": "campaign",
+        "action": "create",
+        "title": "create campaign",
+        "description": "permission for create campaign",
+    },
+    {
+        "code": "campaign:read",
+        "module": "campaign",
+        "action": "read",
+        "title": "read campaign",
+        "description": "permission for read campaign",
+    },
+    {
+        "code": "campaign:update",
+        "module": "campaign",
+        "action": "update",
+        "title": "update campaign",
+        "description": "permission for update campaign",
+    },
+    {
+        "code": "campaign:delete",
+        "module": "campaign",
+        "action": "delete",
+        "title": "delete campaign",
+        "description": "permission for delete campaign",
+    },
+    {
+        "code": "campaign:manage",
+        "module": "campaign",
+        "action": "manage",
+        "title": "manage campaign leads",
+        "description": "permission for manage campaign leads (import, assign, distribute)",
+    },
 
 ]

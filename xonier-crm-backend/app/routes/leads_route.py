@@ -63,7 +63,7 @@ async def get_won_lead(request: Request):
 
 @router.get("/get-by-id/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
 Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM)), Depends(dependencies.permissions(["lead:read"]))])
-async def get_all(request: Request, id: str):
+async def get_by_id(request: Request, id: str):
     return await leadController.get_by_id(request=request, id=id)
 
 
