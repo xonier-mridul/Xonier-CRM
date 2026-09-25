@@ -18,6 +18,7 @@ from app.repositories.activity_repository import ActivityRepository
 from app.repositories.user_repository import UserRepository
 from app.core.enums import ACTIVITY_ACTION, ACTIVITY_ENTITY_TYPE
 from app.utils.activity_payload import activity_payload
+from bson.errors import InvalidId
 
 
 class EnquiryService:
@@ -219,6 +220,7 @@ class EnquiryService:
         user=Dict[str, Any],
     ):
         try:
+            
             is_admin = validate_admin_company_admin(user["userRole"])
 
             is_manager = False
@@ -278,9 +280,18 @@ class EnquiryService:
                 query.update({"source": {"$regex": filters["source"], "$options": "i"}})
 
             if "assignTo" in filters:
-                query.update({"assignTo.$id": str(filters["assignTo"])})
+                raw_id = filters["assignTo"]
+                or_conditions = [{"assignTo.$id": str(raw_id)}]
 
+                try:
+                    or_conditions.append({"assignTo.$id": ObjectId(raw_id)})
+                except (InvalidId, TypeError):
+                    pass  # raw_id isn't a valid ObjectId string, skip this branch
 
+                query.update({"$or": or_conditions})
+
+            if "status" in filters:
+                query.update({"status": str(filters["status"])})
 
             if "email" in filters:
                 query.update({"email": filters["email"]})
@@ -330,7 +341,7 @@ class EnquiryService:
                 if date_filter:
                     query.update({"createdAt": date_filter})
 
-
+            
 
             
             result = await self.repo.get_all(
