@@ -274,6 +274,13 @@ class EnquiryService:
 
             if "fullName" in filters:
                 query.update({"fullName": {"$regex": filters["fullName"], "$options": "i"}})
+            if "source" in filters:
+                query.update({"source": {"$regex": filters["source"], "$options": "i"}})
+
+            if "assignTo" in filters:
+                query.update({"assignTo.$id": str(filters["assignTo"])})
+
+
 
             if "email" in filters:
                 query.update({"email": filters["email"]})
