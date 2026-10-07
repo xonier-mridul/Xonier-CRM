@@ -19,6 +19,7 @@ import Pagination from "../../common/pagination";
 import { IoIosSearch } from "react-icons/io";
 import { getPowerConfig, POWER_LEVELS } from "@/src/app/utils/rolePower";
 import RoleForm from "../../role/RoleForm";
+import PageLimit from "../../common/PageLimit";
 
 
 
@@ -76,6 +77,12 @@ const UserRolesTable: React.FC<RoleTableProps> = ({
 
 
     const search = searchP.trim().toLowerCase();
+      const [limitOpen, setLimitOpen] = useState(false);
+const limits = [10, 20, 30, 40];
+ const handleLimit = (n: number) => {
+    setPageLimit(Number(n));
+    setCurrentPage(1);
+  };
 
   
 
@@ -384,15 +391,24 @@ const UserRolesTable: React.FC<RoleTableProps> = ({
             </div>
           </div>
            <div className="flex items-center gap-3 flex-wrap">
-                    <select
+             <PageLimit
+                       setLimitOpen={setLimitOpen}
+                pageLimit={pageLimit}
+                limitOpen={limitOpen}
+                limits={limits}
+                handleLimit={handleLimit}
+            
+                     />
+
+                    {/* <select
                       value={pageLimit}
                       className="bg-slate-50 dark:bg-gray-700 px-3 py-2 rounded-lg border border-slate-900/10 dark:border-gray-600 text-sm dark:text-white outline-none"
                       onChange={(e) => setPageLimit(Number(e.target.value))}
                     >
                       {[10, 20, 30, 40].map((n) => (
-                        <option key={n} value={n}>{n} {t("page")}</option>
+                        <option key={n} value={n}>{n} </option>
                       ))}
-                    </select>
+                    </select> */}
           
                     <div className="bg-slate-50 dark:bg-gray-700 px-3 py-2 rounded-lg border border-slate-900/10 dark:border-gray-600 flex items-center gap-2">
                       <IoIosSearch className="text-lg text-gray-400" />
@@ -406,7 +422,7 @@ const UserRolesTable: React.FC<RoleTableProps> = ({
                     </div>
                     <button
             onClick={() => setIsPopupShow(true)}
-            className="bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-600 text-white px-5 py-2.5 rounded-xl flex text-sm  md:text-lg  items-center gap-2 font-semibold disabled:cursor-not-allowed disabled:opacity-50 transition-all shadow-sm hover:shadow-md"
+            className="bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-600 text-white px-5 py-2.5 rounded-xl flex text-sm  items-center gap-2 font-semibold disabled:cursor-not-allowed disabled:opacity-50 transition-all shadow-sm hover:shadow-md"
             disabled={!hasPermissions(PERMISSIONS.createRole)}
           >
             <FaPlus className="w-4 h-4" />

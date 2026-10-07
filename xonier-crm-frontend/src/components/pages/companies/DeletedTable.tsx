@@ -142,7 +142,7 @@ const DeletedTable: React.FC<CompanyDeleteTableProps> = ({
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto px-6">
+      <div className="overflow-x-auto ">
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-200 dark:border-gray-700">
@@ -159,7 +159,7 @@ const DeletedTable: React.FC<CompanyDeleteTableProps> = ({
               ].map((col) => (
                 <th
                   key={col}
-                  className="pb-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 pr-4"
+                  className="pb-3 text-left pl-5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 pr-4"
                 >
                   {t(col)}
                 </th>
@@ -187,7 +187,7 @@ const DeletedTable: React.FC<CompanyDeleteTableProps> = ({
                       onClick={() => router.push(`/companies/${company.id}`)}
                       className="py-4 pr-4 p-2 cursor-pointer"
                     >
-                      <div className="flex flex-col">
+                      <div className="flex flex-col pl-5">
                         <span className="font-semibold text-sm text-nowrap text-slate-900 dark:text-white capitalize">
                           {company.companyName}
                         </span>
@@ -198,7 +198,7 @@ const DeletedTable: React.FC<CompanyDeleteTableProps> = ({
                     </td>
 
                     <td className="py-4 pr-4 ">
-                      <div className="flex flex-col gap-0.5">
+                      <div className="flex flex-col gap-0.5  pl-5">
                         <Link href={`mailto:${company.email}`} className="text-xs font-medium text-slate-700 dark:text-white">
                           {company.email}
                         </Link>
@@ -208,14 +208,14 @@ const DeletedTable: React.FC<CompanyDeleteTableProps> = ({
                       </div>
                     </td>
 
-                    <td className="py-4 pr-4">
-                      <span className="text-white text-xs font-medium px-2.5 py-1 text-nowrap rounded-md dark:text-gray-300 capitalize bg-cyan-500 p-">
+                    <td className="py-4 pr-4  pl-5">
+                      <span className="text-white text-xs font-medium px-2.5 py-1 text-nowrap rounded-md dark:text-gray-300 capitalize bg-cyan-500  ">
                         {company.industry || "—"}
                       </span>
                     </td>
 
                     <td className="py-4 pr-4">
-                      <span className="text-xs text-gray-600 text-nowrap dark:text-gray-300">
+                      <span className="text-xs text-gray-600 text-nowrap dark:text-gray-300  pl-5">
                         {company.companySize
                           ? sizeLabel[company.companySize] ?? company.companySize
                           : "—"}
@@ -223,24 +223,24 @@ const DeletedTable: React.FC<CompanyDeleteTableProps> = ({
                     </td>
 
                     <td className="py-4 pr-4">
-                      <span className="text-xs text-gray-600 dark:text-gray-300 text-nowrap capitalize">
+                      <span className="text-xs text-gray-600 dark:text-gray-300 text-nowrap capitalize  pl-5">
                         {getCountryName(company.country)}
                       </span>
                     </td>
 
-                    <td className="py-4 pr-4">
+                    <td className="py-4 pr-4 pl-5">
                       <span
-                        className={`text-xs font-medium whitespace-nowrap px-2.5 py-1 text-nowrap rounded-md capitalize bg-red-600 text-white `}
+                        className="text-xs font-medium whitespace-nowrap   px-2.5 py-1 text-nowrap rounded-md capitalize bg-red-600 text-white"
                       >
                         {t(company.status)}
                       </span>
                     </td>
 
-                    <td className="py-4 pr-4">
+                    <td className="py-4 pr-4 ">
                       {company.subscription ? (
                         <Link
                           href={`/subscriptions/${company.id}`}
-                          className="text-xs text-cyan-500 whitespace-nowrap  dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/20 px-2.5 py-1 rounded-md"
+                          className="text-xs  pl-5 text-cyan-500 whitespace-nowrap  dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/20 px-2.5 py-1 rounded-md"
                         >
                           {company.subscriptionCount} {t("active")}
                         </Link>
@@ -250,13 +250,13 @@ const DeletedTable: React.FC<CompanyDeleteTableProps> = ({
                     </td>
 
                     <td className="py-4 pr-4">
-                      <span className="text-xs text-gray-500 whitespace-nowrap dark:text-gray-400">
+                      <span className="text-xs  pl-5 text-gray-500 whitespace-nowrap dark:text-gray-400">
                         {FormatDate(company.createdAt)}
                       </span>
                     </td>
 
                     <td className="py-4 pr-4">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 pl-5 pr-5">
                         <Link
                           href={`/companies/${company.id}`}
                           className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900/30 dark:hover:text-green-400 transition-colors"

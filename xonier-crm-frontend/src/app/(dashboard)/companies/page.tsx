@@ -98,7 +98,7 @@ await CompanyService.softDelete(companyId);
   };
 
   return (
-    <div className=" min-h-screen p-6">
+    <div className="min-h-screen">
       <CompanyViewTable
         companyData={companiesData}
         isLoading={isLoading}

@@ -47,6 +47,7 @@ import UserSelect from "@/src/components/common/userselect";
 import { useTranslation } from "react-i18next";
 import { HiOutlineViewBoards, HiOutlineTable } from "react-icons/hi";
 import LeadKanbanBoard from "./LeadKanbanBoard";
+import PageLimit from "../../common/PageLimit";
 
 const TAB = { ALL: 1, WON: 2, LOST: 3, ASSIGNED: 4 } as const;
 
@@ -721,6 +722,14 @@ const isIndeterminate =
     clearFields();
   }, [currentTab]);
 
+      const [limitOpen, setLimitOpen] = useState(false);
+  const limits = [10, 20, 30, 40];
+   const handleLimit = (n: number) => {
+      setPageLimit(Number(n));
+      setCurrentPage(1);
+    };
+  
+
   const options: Record<
     string,
     { value: string[]; handlefunction: (value: string) => void }
@@ -1099,7 +1108,15 @@ const isIndeterminate =
               <p className="text-gray-500 dark:text-gray-400">{t("create_edit_or_remove_leads")}</p>
             </div>
             <div className="flex items-center gap-4">
-              <select
+               <PageLimit
+                setLimitOpen={setLimitOpen}
+                pageLimit={pageLimit}
+                limitOpen={limitOpen}
+                limits={limits}
+                handleLimit={handleLimit}
+            
+              />
+              {/* <select
                 value={pageLimitMap[currentTab] ?? pageLimit}
                 className="bg-slate-50 outline-none text-slate-500 dark:bg-gray-600 dark:text-white/70 px-3 py-2.5 rounded-lg border border-slate-900/10 "
                 onChange={(e) => handlePageLimit(Number(e.target.value))}
@@ -1108,7 +1125,7 @@ const isIndeterminate =
                 <option value="20">20</option>
                 <option value="30">30</option>
                 <option value="50">50</option>
-              </select>
+              </select> */}
 
               <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg outline-none border border-slate-900/10 flex items-center gap-2">
                 <IoIosSearch className="text-xl text-slate-400" />

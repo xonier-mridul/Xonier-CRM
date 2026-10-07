@@ -33,6 +33,7 @@ import Skeleton from "react-loading-skeleton";
 import { useTranslation } from "react-i18next";
 import Pagination from "@/src/components/common/pagination";
 import { PiMemberOf } from "react-icons/pi";
+import PageLimit from "@/src/components/common/PageLimit";
 
 
 const page = (): JSX.Element => {
@@ -353,6 +354,12 @@ getCategoryData();
     }
   };
 
+        const [limitOpen, setLimitOpen] = useState(false);
+    const limits = [10, 20, 30, 40];
+     const handleLimit = (n: number) => {
+        setPageLimit(Number(n));
+        setCurrentPage(1);
+      };
 
   console.log("teamData",teamData)
   return (
@@ -735,7 +742,15 @@ getCategoryData();
               </p>
             </div>
             <div className="flex items-center gap-6">
-              <select
+               <PageLimit
+                                     setLimitOpen={setLimitOpen}
+                              pageLimit={pageLimit}
+                              limitOpen={limitOpen}
+                              limits={limits}
+                              handleLimit={handleLimit}
+                          
+                                   />
+              {/* <select
                 name="limit"
                 id="limit"
                 className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border-[1px] border-slate-900/10 outline-none text-slate-500"
@@ -744,7 +759,7 @@ getCategoryData();
                 <option value="20">20</option>
                 <option value="30">30</option>
                 <option value="40">50</option>
-              </select>
+              </select> */}
               <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 gap-1.5 rounded-lg border-[1px] text-slate-500 border-slate-900/10 flex items-center">
                 <IoIosSearch className="text-xl" />
                 <input type="text" placeholder={t("search_by_name")}  onChange={(e)=>{setSearch(e.target.value)}} className="border-none bg-transparent outline-none text-sm font-medium text-slate-900 dark:text-white w-full"/>

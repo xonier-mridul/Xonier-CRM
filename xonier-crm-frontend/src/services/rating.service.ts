@@ -1,6 +1,7 @@
 import api from "../lib/axios";
 
 export interface RatedUser {
+  id: string;    
   name: string;
   email: string;
   role: string;

@@ -329,7 +329,6 @@ class TaskService:
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
 
-
     async def get_all_tasks(self, filters: Dict[str, Any], user: Dict[str, Any]):
         try:
             page = int(filters.get("page", 1))
@@ -340,9 +339,13 @@ class TaskService:
             query: Dict[str, Any] = {"deletedAt": None}
             and_conditions = []
 
-            
-
-            if not is_admin and not is_c_admin:
+            if is_admin:
+                pass  # super admin sees everything
+            elif is_c_admin:
+                # Company admin should only see tasks belonging to their own company
+                if user.get("company"):
+                    query["company.$id"] = ObjectId(user["company"])
+            else:
                 members = await self.getTeamMembers.get_team_members(user["_id"])
                 user_object_id = PydanticObjectId(user["_id"])
                 visibility_query = self._build_visibility_query(user, members, user_object_id)
@@ -384,17 +387,39 @@ class TaskService:
                     ]
                 })
 
+            if "assignee" in filters:
+                if not ObjectId.is_valid(filters["assignee"]):
+                    raise AppException(400, "Invalid assignee id")
+                query["assignedTo.$id"] = PydanticObjectId(filters["assignee"])
+
             if "search" in filters and filters["search"].strip():
-                regex_data = {"$regex": filters["search"].strip(), "$options": "i"}
-                and_conditions.append({
-                    "$or": [
-                        {"title": regex_data},
-                        {"priority": regex_data},
-                        {"tags": regex_data},
-                        {"entityId": regex_data},
-                        {"entityType": regex_data},
-                    ]
-                })
+                search_term = filters["search"].strip()
+                regex_data = {"$regex": search_term, "$options": "i"}
+
+                # Resolve users whose name/email matches the search term
+                matching_user_ids = []
+                try:
+                    user_cursor = self.db["users"].find(
+                        {"$or": [{"name": regex_data}, {"email": regex_data}]},
+                        {"_id": 1}
+                    )
+                    matching_user_ids = [doc["_id"] async for doc in user_cursor]
+                except Exception:
+                    matching_user_ids = []
+
+                search_or = [
+                    {"title": regex_data},
+                    {"priority": regex_data},
+                    {"tags": regex_data},
+                    {"entityId": regex_data},
+                    {"entityType": regex_data},
+                ]
+
+                if matching_user_ids:
+                    search_or.append({"assignedTo.$id": {"$in": matching_user_ids}})
+                    search_or.append({"createdBy.$id": {"$in": matching_user_ids}})
+
+                and_conditions.append({"$or": search_or})
 
             try:
                 date_filter = {}
@@ -435,16 +460,11 @@ class TaskService:
             cache_query = {k: serialize_for_cache(v) for k, v in query.items()}
             cache_key = cache_key_generator(prefix=TASK_CACHE_NAMESPACE, filters=cache_query, page=page, limit=limit)
 
-            
-            
             cache = await FastAPICache.get_backend().get(cache_key)
- 
+
             if cache:
-                
                 return json.loads(cache)
 
-            
-            
             result = await self.repo.get_all_with_lookup(
                 page=page,
                 limit=limit,
@@ -454,7 +474,6 @@ class TaskService:
                 sort=["order", "-createdAt"],
                 project=TASK_BOARD_PROJECT
             )
-           
 
             if not result:
                 raise AppException(404, "No tasks found")
@@ -491,16 +510,12 @@ class TaskService:
 
             await FastAPICache.get_backend().set(key=cache_key, value=json.dumps(result), expire=900)
 
-
-
             return result
 
         except AppException:
             raise
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
-        
-
     async def get_kanban_board(self, category_id: str, user: Dict[str, Any], filters: Dict[str, Any]):
         try:
             if not ObjectId.is_valid(category_id):

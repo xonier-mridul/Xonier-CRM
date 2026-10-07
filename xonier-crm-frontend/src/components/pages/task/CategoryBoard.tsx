@@ -1,12 +1,18 @@
 "use client";
 import { CategoryBoardProps, PendingDrop, TaskItem } from "@/src/types/task/task.types";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import MarkFinalModal, { MarkFinalPayload } from "./Marrkfinalmodal";
 import { toast } from "react-toastify";
 import { getColorOption } from "./createStatusModal";
 import BoardCard from "./BoardCard";
 import { useTranslation } from "react-i18next";
 import { Check, CheckCircle2, Folder, Inbox } from "lucide-react";
+
+// Tunables
+const DRAG_ACTIVATE_DELAY = 80; // ms cursor must dwell in a column before it's "active"
+const SCROLL_EDGE_THRESHOLD = 180; // px from edge where auto-scroll kicks in
+const SCROLL_MAX_SPEED = 32; // px per frame at the very edge (fast)
+const SCROLL_MIN_SPEED = 4;
 
 function CategoryBoard({
   categoryId,
@@ -38,71 +44,173 @@ function CategoryBoard({
 }: CategoryBoardProps) {
   const { t } = useTranslation();
   const boardRef = useRef<HTMLDivElement>(null);
-  const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // --- Auto-scroll (rAF based, smooth, eased, window-driven) ---
+  const scrollAnimationRef = useRef<number | null>(null);
+  const scrollDirectionRef = useRef<0 | 1 | -1>(0);
+  const scrollSpeedRef = useRef(0);
+  const isDraggingRef = useRef(false);
+
+  // --- Drag state ---
   const [dragOverStatusId, setDragOverStatusId] = useState<string | null>(null);
   const dragTaskRef = useRef<TaskItem | null>(null);
+  const dragCounterRef = useRef<Record<string, number>>({});
+  const dragActivateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const [pendingDrop, setPendingDrop] = useState<PendingDrop | null>(null);
+
+  // ---------------- Auto scroll engine (rAF) ----------------
+  const tickScroll = () => {
+    const container = boardRef.current;
+    if (container && scrollDirectionRef.current !== 0 && isDraggingRef.current) {
+      container.scrollLeft += scrollDirectionRef.current * scrollSpeedRef.current;
+      scrollAnimationRef.current = requestAnimationFrame(tickScroll);
+    } else {
+      scrollAnimationRef.current = null;
+    }
+  };
+
+  const startAutoScroll = (direction: 1 | -1, speed: number) => {
+    scrollDirectionRef.current = direction;
+    scrollSpeedRef.current = speed;
+    if (!scrollAnimationRef.current) {
+      scrollAnimationRef.current = requestAnimationFrame(tickScroll);
+    }
+  };
+
+  const stopAutoScroll = () => {
+    scrollDirectionRef.current = 0;
+    scrollSpeedRef.current = 0;
+    if (scrollAnimationRef.current) {
+      cancelAnimationFrame(scrollAnimationRef.current);
+      scrollAnimationRef.current = null;
+    }
+  };
+
+  // Eased speed curve: quadratic ramp feels smoother & reaches top speed faster near edge
+  const computeScrollFromClientX = (clientX: number) => {
+    const container = boardRef.current;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+
+    if (clientX < rect.left + SCROLL_EDGE_THRESHOLD) {
+      const raw = Math.min(1, (rect.left + SCROLL_EDGE_THRESHOLD - clientX) / SCROLL_EDGE_THRESHOLD);
+      const intensity = raw * raw; // ease-in quadratic
+      const speed = SCROLL_MIN_SPEED + intensity * (SCROLL_MAX_SPEED - SCROLL_MIN_SPEED);
+      startAutoScroll(-1, speed);
+    } else if (clientX > rect.right - SCROLL_EDGE_THRESHOLD) {
+      const raw = Math.min(1, (clientX - (rect.right - SCROLL_EDGE_THRESHOLD)) / SCROLL_EDGE_THRESHOLD);
+      const intensity = raw * raw;
+      const speed = SCROLL_MIN_SPEED + intensity * (SCROLL_MAX_SPEED - SCROLL_MIN_SPEED);
+      startAutoScroll(1, speed);
+    } else {
+      stopAutoScroll();
+    }
+  };
+   const resetDragState = () => {
+    dragCounterRef.current = {};
+    if (dragActivateTimeoutRef.current) {
+      clearTimeout(dragActivateTimeoutRef.current);
+      dragActivateTimeoutRef.current = null;
+    }
+    setDragOverStatusId(null);
+  };
+
+  // ---------------- Global drag tracking ----------------
+  // This keeps auto-scroll + drag alive even when the cursor moves over
+  // elements outside this board (sidebar, other page sections, nav links, etc.)
+  useEffect(() => {
+    const handleWindowDragOver = (e: DragEvent) => {
+      if (!isDraggingRef.current) return;
+      e.preventDefault(); // keep drag alive / allow continued dragover anywhere
+      computeScrollFromClientX(e.clientX);
+    };
+
+    const handleWindowDrop = () => {
+      stopAutoScroll();
+      isDraggingRef.current = false;
+    };
+
+    const handleWindowDragEnd = () => {
+      stopAutoScroll();
+      isDraggingRef.current = false;
+      resetDragState();
+      dragTaskRef.current = null;
+    };
+
+    window.addEventListener("dragover", handleWindowDragOver);
+    window.addEventListener("drop", handleWindowDrop);
+    window.addEventListener("dragend", handleWindowDragEnd);
+
+    return () => {
+      window.removeEventListener("dragover", handleWindowDragOver);
+      window.removeEventListener("drop", handleWindowDrop);
+      window.removeEventListener("dragend", handleWindowDragEnd);
+      stopAutoScroll();
+      if (dragActivateTimeoutRef.current) clearTimeout(dragActivateTimeoutRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleDragStart = (e: React.DragEvent, task: TaskItem) => {
     dragTaskRef.current = task;
+    isDraggingRef.current = true;
     e.dataTransfer.effectAllowed = "move";
     const el = e.currentTarget as HTMLElement;
     setTimeout(() => { el.style.opacity = "0.5"; }, 0);
     e.currentTarget.addEventListener("dragend", () => { el.style.opacity = "1"; }, { once: true });
   };
 
-  const handleAutoScroll = (e: React.DragEvent) => {
-    const container = boardRef.current;
-    if (!container) return;
+  // ---------------- Column enter/leave with dwell-based activation ----------------
+  const handleDragEnter = (e: React.DragEvent, statusId: string) => {
+    e.preventDefault();
+    dragCounterRef.current[statusId] = (dragCounterRef.current[statusId] || 0) + 1;
 
-    const rect = container.getBoundingClientRect();
-    const threshold = 400;
-    const speed = 2;
-    const mouseX = e.clientX;
-
-    if (scrollIntervalRef.current) {
-      clearInterval(scrollIntervalRef.current);
-      scrollIntervalRef.current = null;
-    }
-
-    if (mouseX < rect.left + threshold) {
-      scrollIntervalRef.current = setInterval(() => {
-        container.scrollLeft -= speed;
-      }, 16);
-    } else if (mouseX > rect.right - threshold) {
-      scrollIntervalRef.current = setInterval(() => {
-        container.scrollLeft += speed;
-      }, 16);
-    }
+    if (dragActivateTimeoutRef.current) clearTimeout(dragActivateTimeoutRef.current);
+    dragActivateTimeoutRef.current = setTimeout(() => {
+      if ((dragCounterRef.current[statusId] || 0) > 0) {
+        setDragOverStatusId(statusId);
+      }
+    }, DRAG_ACTIVATE_DELAY);
   };
 
-  const stopAutoScroll = () => {
-    if (scrollIntervalRef.current) {
-      clearInterval(scrollIntervalRef.current);
-      scrollIntervalRef.current = null;
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent, statusId: string) => {
+  const handleDragOverColumn = (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
-    setDragOverStatusId(statusId);
   };
 
-  const handleDragLeave = (e: React.DragEvent) => {
-    if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverStatusId(null);
+  const handleDragLeaveColumn = (e: React.DragEvent, statusId: string) => {
+    dragCounterRef.current[statusId] = Math.max(0, (dragCounterRef.current[statusId] || 0) - 1);
+
+    if (dragCounterRef.current[statusId] === 0) {
+      if (dragActivateTimeoutRef.current) {
+        clearTimeout(dragActivateTimeoutRef.current);
+        dragActivateTimeoutRef.current = null;
+      }
+      setDragOverStatusId((prev) => (prev === statusId ? null : prev));
+    }
   };
+
+ 
 
   const handleDrop = (e: React.DragEvent, targetStatusId: string) => {
-    stopAutoScroll();
     e.preventDefault();
+    e.stopPropagation();
+    stopAutoScroll();
+    isDraggingRef.current = false;
 
-    setDragOverStatusId(null);
     const task = dragTaskRef.current;
     dragTaskRef.current = null;
-    if (!task || task.status.id === targetStatusId) return;
+
+    const wasActivated = dragOverStatusId === targetStatusId;
+    resetDragState();
+
+    if (!task || !wasActivated) return;
+    if (task.status.id === targetStatusId) return;
+
     const targetStatus = statuses.find((s) => s.id === targetStatusId);
     if (!targetStatus) return;
+
     if (targetStatus.isFinal) {
       if (!canMarkFinal) { toast.error("You don't have permission to mark tasks as final."); return; }
       setPendingDrop({ task, targetStatus, categoryId });
@@ -128,13 +236,15 @@ function CategoryBoard({
 
   const handleDragEnd = (e: React.DragEvent<HTMLDivElement>) => {
     stopAutoScroll();
+    isDraggingRef.current = false;
+    resetDragState();
+    dragTaskRef.current = null;
   };
 
   const isCategoryEmoji = categoryIcon && categoryIcon !== "❓" && categoryIcon !== "?";
 
   return (
     <>
-     
       <div className="relative">
         {/* Category Swimlane Header Bar */}
         <div className="grid grid-cols-8 h-full  rounded-xl w-full items-center gap-3 mb-4 pb-3 border-b border-slate-200/80 dark:border-slate-800 sticky self-start top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm z-30 p-2">
@@ -187,11 +297,8 @@ function CategoryBoard({
         {/* Board Columns Scroll Area */}
         <div
           ref={boardRef}
-          className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar items-start"
-          onDragLeave={handleDragLeave}
-          onDragOver={(e) => {
-            handleAutoScroll(e);
-          }}
+          className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar items-start scroll-smooth"
+          onDrop={() => { stopAutoScroll(); isDraggingRef.current = false; }}
         >
           {statuses.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center py-12 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 text-slate-400">
@@ -211,12 +318,14 @@ function CategoryBoard({
               return (
                 <div
                   key={status.id}
-                  className={`flex flex-col rounded-2xl transition-all duration-150 min-w-[280px] max-w-[315px] flex-shrink-0 p-2.5 max-h-[500px] ${
+                  className={`flex flex-col rounded-2xl transition-all duration-150 ease-out min-w-[280px] max-w-[315px] flex-shrink-0 p-2.5 max-h-[500px] ${
                     isDragOver
-                      ? "border-2 border-cyan-500 bg-cyan-50/40 dark:bg-cyan-950/30 ring-2 ring-cyan-500/20"
-                      : "bg-slate-100/70 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800"
+                      ? "border-2 border-cyan-500 bg-cyan-50/40 dark:bg-cyan-950/30 ring-2 ring-cyan-500/20 scale-[1.01]"
+                      : "border border-slate-200/80 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-900/50 scale-100"
                   }`}
-                  onDragOver={(e) => handleDragOver(e, status.id)}
+                  onDragEnter={(e) => handleDragEnter(e, status.id)}
+                  onDragOver={handleDragOverColumn}
+                  onDragLeave={(e) => handleDragLeaveColumn(e, status.id)}
                   onDrop={(e) => handleDrop(e, status.id)}
                 >
                   {/* Scrolling container: header sits directly inside and sticks to top-0 */}
@@ -253,7 +362,7 @@ function CategoryBoard({
                     <div className="space-y-2.5 pb-1">
                       {columnTasks.length === 0 ? (
                         <div
-                          className={`flex flex-col items-center justify-center py-8 rounded-xl border border-dashed transition-colors ${
+                          className={`flex flex-col items-center justify-center py-8 rounded-xl border border-dashed transition-colors duration-150 ${
                             isDragOver
                               ? "border-cyan-400 bg-cyan-50/50 dark:bg-cyan-900/60"
                               : "border-slate-200 dark:border-slate-700/60"

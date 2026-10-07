@@ -22,6 +22,7 @@ class RatingService:
 
             processed.append(
                 {
+                    "id": str(doc.get("userId")),
                     "name": f"{doc.get('firstName', '')} {doc.get('lastName', '')}".strip(),
                     "email": email,
                     "role": roles[0] if roles else "N/A",

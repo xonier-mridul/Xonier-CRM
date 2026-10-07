@@ -30,6 +30,7 @@ import StatusBadge from "@/src/components/common/Status";
 import { useTranslation } from "react-i18next";
 import { FiUser, FiCalendar, FiDollarSign, FiActivity, FiClock, FiSettings } from "react-icons/fi";
 import Pagination from "@/src/components/common/pagination";
+import PageLimit from "@/src/components/common/PageLimit";
 
 const page = (): JSX.Element => {
   const { t } = useTranslation();
@@ -88,6 +89,12 @@ const page = (): JSX.Element => {
       setSearchVal(val);
     }, 500);
   };
+
+  const [limitOpen, setLimitOpen] = useState(false);
+    const limits = [10, 20, 30, 40];
+     const handleLimit = (n: number) => {
+        setPageLimit(Number(n));
+        setCurrentPage(1);}
   return (
     <div>
       <div className="bg-white mb-4 dark:bg-gray-700 dark:backdrop-blur-sm  gap-5 p-6 rounded-xl border-[1px] border-slate-900/10 w-full flex items-center justify-between">
@@ -112,7 +119,15 @@ const page = (): JSX.Element => {
             </p>
           </div>
           <div className="flex items-center gap-6">
-            <select
+             <PageLimit
+                setLimitOpen={setLimitOpen}
+                pageLimit={pageLimit}
+                limitOpen={limitOpen}
+                limits={limits}
+                handleLimit={handleLimit}
+            
+              />
+            {/* <select
               name="limit"
               id="limit"
               className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 outline-none text-slate-500 rounded-lg border-[1px] border-slate-900/10 dark:text-white/70"
@@ -122,7 +137,7 @@ const page = (): JSX.Element => {
               <option value="20">20</option>
               <option value="30">30</option>
               <option value="40">50</option>
-            </select>
+            </select> */}
             <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 text-slate-500 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2 dark:text-white/70">
               <IoIosSearch className="text-xl" />
               <input type="text" className="outline-none" placeholder={t("search_3")} onChange={(e) => handleSearch(e.target.value)} />

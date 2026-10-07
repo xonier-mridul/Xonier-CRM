@@ -11,6 +11,7 @@ import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import { StatusService } from "@/src/services/status.service";
 import { StatusPayload, StatusItem } from "@/src/types/task/status.types";
 import StatusTable from "@/src/components/pages/task/StatusTable";
+import { number } from "framer-motion";
 
 const page = (): JSX.Element => {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -33,7 +34,7 @@ const page = (): JSX.Element => {
     icon: "⚡",
     category: "",
     isFinal: false,
-    order: 0
+    order: null
   });
 
   const auth = useSelector((state: RootState) => state.auth);
@@ -120,7 +121,7 @@ const page = (): JSX.Element => {
       color: status.color ?? "",
       icon: status.icon ?? "",
       isFinal: status.isFinal ?? false,
-      order: status.order ?? 0,
+      order: status.order ?? null,
       category:
         typeof status.category === "object"
           ? String(status.category?.id)
@@ -186,7 +187,7 @@ const page = (): JSX.Element => {
 
   // ── Helpers ───────────────────────────────────────────────────────────────
   const resetForm = (): void => {
-    setFormData({ name: "", description: "", color: "#ffffff", icon: " ⚡", category: "" ,isFinal: false, order: 0});
+    setFormData({ name: "", description: "", color: "#ffffff", icon: " ⚡", category: "" ,isFinal: false, order: null});
     setEditTarget(null);
   };
 

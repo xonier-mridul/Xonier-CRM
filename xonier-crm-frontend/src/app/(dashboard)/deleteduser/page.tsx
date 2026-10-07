@@ -24,6 +24,7 @@ import {
 import { MdOutlineDeleteForever } from "react-icons/md";
 import { useTranslation } from "react-i18next";
 import { FormatDate } from "@/src/components/common/FormateDate";
+import PageLimit from "@/src/components/common/PageLimit";
 
 // ─── Avatar helper ───────────────────────────────────────────────────────────
 
@@ -303,11 +304,18 @@ const DeletedUsersPage = (): JSX.Element => {
     }
   };
 
+        const [limitOpen, setLimitOpen] = useState(false);
+  const limits = [10, 20, 30, 40];
+   const handleLimit = (n: number) => {
+      setPageLimit(Number(n));
+      setCurrentPage(1);
+    };
   // ── Pagination helpers ───────────────────────────────────────────────────
 
   const pages = Array.from({ length: totalPage }, (_, i) => i + 1);
   const startEntry = (currentPage - 1) * pageLimit + 1;
   const endEntry = Math.min(currentPage * pageLimit, totalCount);
+
 
 
   // ── Render ───────────────────────────────────────────────────────────────
@@ -381,7 +389,17 @@ const DeletedUsersPage = (): JSX.Element => {
             </>
           )}
           {/* Rows per page */}
-          <select
+
+             <PageLimit
+                setLimitOpen={setLimitOpen}
+                pageLimit={pageLimit}
+                limitOpen={limitOpen}
+                limits={limits}
+                handleLimit={handleLimit}
+            
+              />
+
+          {/* <select
             value={pageLimit}
             onChange={(e) => {
               setPageLimit(Number(e.target.value));
@@ -392,7 +410,7 @@ const DeletedUsersPage = (): JSX.Element => {
             {[5, 10, 20, 50].map((n) => (
               <option key={n} value={n}>{n} / {" "}{t("page")}</option>
             ))}
-          </select>
+          </select> */}
 
         </div>
       </div>

@@ -36,6 +36,7 @@ import ReassignModal from "@/src/components/pages/prospect/ReassignModal";
 import  UserSelect from "@/src/components/common/userselect";
 import { useTranslation } from "react-i18next";
 import Pagination from "@/src/components/common/pagination";
+import PageLimit from "@/src/components/common/PageLimit";
 
 type CallStatus = "queued" | "in_progress" | "completed" | "failed";
 type MergedFilters = FilterValues & DateFilter;
@@ -471,13 +472,16 @@ const LeadContent = (): JSX.Element => {
       }
     }
   };
-
-
+ const [limitOpen, setLimitOpen] = useState(false);
+ const limits = [10, 20, 30, 40];
+     const handleLimit = (n: number) => {
+        setPageLimit(Number(n));
+        setCurrentPage(1);}
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <>
       <div>
-        <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full flex flex-col gap-7 items-center justify-between">
+        <div className="bg-white mb-10 dark:bg-gray-900/50 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full flex flex-col gap-7 items-center justify-between">
 
           {/* Header */}
           <div className="flex w-full items-center gap-12 justify-between">
@@ -541,10 +545,19 @@ const LeadContent = (): JSX.Element => {
               </div>
 
               {/* Export */}
-              <button className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-full flex items-center gap-2 text-sm font-medium transition-colors">⬇</button>
+              {/* <button className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-full flex items-center gap-2 text-sm font-medium transition-colors">⬇</button> */}
 
               {/* Page limit */}
-              <select
+
+               <PageLimit
+                setLimitOpen={setLimitOpen}
+                pageLimit={pageLimit}
+                limitOpen={limitOpen}
+                limits={limits}
+                handleLimit={handleLimit}
+            
+              />
+              {/* <select
                 value={pageLimit}
                 onChange={(e) => setPageLimit(Number(e.target.value))}
                 className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 text-sm outline-none"
@@ -552,18 +565,18 @@ const LeadContent = (): JSX.Element => {
                 {[10, 20, 30, 40, 50].map((col) => (
                   <option key={col} value={col}>{col}</option>
                 ))}
-              </select>
+              </select> */}
 
               {/* Date Filter */}
               <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
 
               {/* Sidebar toggle */}
-              <button
+              {/* <button
                 className="px-3 py-2 rounded-md flex items-center gap-2 text-sm font-normal transition-colors border border-slate-300 outline-none"
                 onClick={() => setOpenFilter((prev) => !prev)}
               >
                 <LiaFilterSolid /> {openFilter ? t("hide_filters") : t("show_filters")}
-              </button>
+              </button> */}
             </div>
           </div>
 
@@ -646,7 +659,7 @@ const LeadContent = (): JSX.Element => {
                   </tr>
                 </thead>
 
-               <tbody className="divide-y divide-slate-100 dark:divide-gray-700">
+               <tbody className="divide-y divide-slate-100 dark:bg-slate-900/70 ">
   {isLoading ? (
     Array.from({ length: 5 }).map((_, i) => (
       <tr 

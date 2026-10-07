@@ -4,6 +4,8 @@ import React, { useEffect, useState, useCallback } from "react";
 import { Star, Users, TrendingUp, Search, ChevronDown, Eye } from "lucide-react";
 import Pagination from "@/src/components/common/pagination";
 import { RatingService } from "@/src/services/rating.service";
+import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 
 interface RatedUser {
   name: string;
@@ -14,6 +16,7 @@ interface RatedUser {
   rating: number;
   reviews: number;
   lastRated: string;
+  id:string;
 }
 
 interface StatsData {
@@ -118,6 +121,8 @@ const Page = () => {
     selectedDesignation,
   ]);
 
+
+
   useEffect(() => {
     fetchRatedUsers();
   }, [fetchRatedUsers]);
@@ -136,13 +141,16 @@ const Page = () => {
 
   const showingFrom = totalUsers === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
   const showingTo = Math.min(currentPage * itemsPerPage, totalUsers);
+  const {t} = useTranslation()
+
+  const router = useRouter()
 
   return (
     <div className="space-y-6 ">
       {/* Header */}
       <div>
         <div className="flex items-center gap-3">
-          <Star className="h-7 w-7 fill-blue-500 text-blue-500" />
+          <Star className="h-7 w-7 fill-cyan-500 text-cyan-500" />
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
             Rated Users
           </h1>
@@ -155,7 +163,7 @@ const Page = () => {
       {/* Cards */}
       <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
         <Card
-          icon={<Users className="h-6 w-6 text-blue-500" />}
+          icon={<Users className="h-6 w-6 text-cyan-500" />}
           title="Total Rated Users"
           value={String(stats.totalRatedUsers)}
         />
@@ -185,7 +193,7 @@ const Page = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search by name or email..."
-              className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-4 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:focus:ring-blue-900"
+              className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-4 text-sm outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:focus:ring-cyan-900"
             />
           </div>
 
@@ -253,12 +261,13 @@ const Page = () => {
             }}
           />
 
-          <button
+         {(selectedRole != "All Roles" || selectedRating != "All Ratings" || searchTerm) && 
+         <button
             onClick={handleClearFilters}
-            className="px-3 text-sm font-medium text-blue-600 hover:text-blue-700"
+            className="px-3  text-sm font-medium  text-red-600 bg-red-200 hover:text-red-700 border rounded-xl"
           >
-            Clear Filters
-          </button>
+            {t("clear_filter")}
+          </button>}
         </div>
 
         {/* Table */}
@@ -298,7 +307,7 @@ const Page = () => {
                   >
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-600 dark:bg-blue-900/40">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-100 text-sm font-semibold text-cyan-600 dark:bg-cyan-900/40 uppercase">
                           {user.name
                             .split(" ")
                             .map((name) => name[0])
@@ -312,7 +321,7 @@ const Page = () => {
                     </td>
 
                     <td className="px-5 py-4">
-                      <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                      <span className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-medium text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400">
                         {user.role}
                       </span>
                     </td>
@@ -344,10 +353,15 @@ const Page = () => {
                     </td>
 
                     <td className="px-5 py-4 text-right">
-                      <button className="inline-flex items-center gap-2 rounded-lg border border-blue-200 px-4 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-50 dark:border-blue-800 dark:hover:bg-blue-900/20">
+                    
+                    
+                      <button
+                        onClick={() => router.push(`/users/${user?.id}`)}
+                       className="inline-flex items-center gap-2 rounded-lg border border-cyan-200 px-4 py-2 text-sm font-medium text-cyan-600 transition hover:bg-cyan-50 dark:border-cyan-800 dark:hover:bg-cyan-900/20">
                         <Eye className="h-4 w-4" />
                         View
                       </button>
+                   
                     </td>
                   </tr>
                 ))
@@ -410,7 +424,7 @@ const FilterDropdown = ({
               onClick={() => onSelect(opt)}
               className={`block w-full px-4 py-2 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-600 ${
                 selected === opt
-                  ? "bg-blue-50 text-blue-600 dark:bg-blue-900/30"
+                  ? "bg-cyan-50 text-cyan-600 dark:bg-cyan-900/30"
                   : "text-slate-600 dark:text-slate-300"
               }`}
             >

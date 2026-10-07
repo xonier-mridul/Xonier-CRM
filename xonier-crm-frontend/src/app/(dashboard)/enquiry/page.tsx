@@ -33,6 +33,7 @@ import {
   FiActivity, FiUser, FiCalendar, FiX, FiTag,
   FiTarget, FiUserPlus, FiSettings, FiUserCheck
 } from "react-icons/fi";
+import PageLimit from "@/src/components/common/PageLimit";
 
 const page = (): JSX.Element => {
   const { t } = useTranslation();
@@ -164,7 +165,8 @@ const page = (): JSX.Element => {
     ...(statusFilter ? [{ label: `Status: ${statusFilter.replace(/_/g, " ")}`, onRemove: () => setStatusFilter("") }] : []),
     ...(projectTypeFilter ? [{ label: `Type: ${projectTypeFilter.replace(/_/g, " ")}`, onRemove: () => setProjectTypeFilter("") }] : []),
     ...(assigneeFilter ? [{ label: `Assignee: ${userData.find((u: any) => (u.id || u._id) === assigneeFilter)?.firstName || "User"}`, onRemove: () => setAssigneeFilter("") }] : []),
-    ...(sourceFilter ? [{ label: `Source: ${sourceFilter.replace(/_/g, " ")}`, onRemove: () => setSourceFilter("") }] : []),
+    ...(sourceFilter ? [{ label: `Source: ${sourceFilter.replace(/_/g, " ")}`,
+       onRemove: () => setSourceFilter("") }] : []),
     ...((dateFilter.fromDate || dateFilter.toDate) ? [{ label: `Date: ${dateFilter.fromDate || ""} → ${dateFilter.toDate || ""}`, onRemove: () => setDateFilter({ fromDate: "", toDate: "" }) }] : []),
   ];
 
@@ -211,6 +213,13 @@ const page = (): JSX.Element => {
     { key: "actions", icon: <FiSettings className="text-[13px] text-slate-400" />, label: t("actions") },
   ];
 
+        const [limitOpen, setLimitOpen] = useState(false);
+    const limits = [10, 20, 30, 40];
+     const handleLimit = (n: number) => {
+        setPageLimit(Number(n));
+        setCurrentPage(1);
+      };
+
   return (
     <div>
       {/* Bulk create banner */}
@@ -237,12 +246,21 @@ const page = (): JSX.Element => {
             </span>
           </div>
           <div className="items-center hidden lg:flex gap-6">
-            <select
+             <PageLimit
+                setLimitOpen={setLimitOpen}
+                pageLimit={pageLimit}
+                limitOpen={limitOpen}
+                limits={limits}
+                handleLimit={handleLimit}
+            
+              />
+            
+            {/* <select
               className="bg-slate-50 outline-none text-slate-400 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 dark:text-white/70"
               onChange={(e) => setPageLimit(Number(e.target.value))}
             >
               {[10, 20, 30, 50].map((v) => <option key={v} value={v}>{v}</option>)}
-            </select>
+            </select> */}
             <div className="bg-slate-50 text-slate-500 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2">
               <IoIosSearch className="text-xl text-slate-500" />
               <input type="text" className="outline-none dark:text-white/70 bg-transparent" placeholder={t("search_3")} onChange={(e) => handleSearch(e.target.value)} value={searchVal} />
