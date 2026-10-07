@@ -172,3 +172,24 @@ async def distribute_equal(request: Request, campaign_id: str):
 )
 async def claim_next_lead(request: Request, campaign_id: str):
     return await campaignController.claim_next_lead(request=request, campaign_id=campaign_id)
+
+
+@router.post(
+    "/{campaign_id}/leads/{campaign_lead_id}/claim",
+    status_code=200,
+    dependencies=[*_auth_deps, Depends(dependencies.permissions(["campaign:read"]))],
+)
+async def claim_lead(request: Request, campaign_id: str, campaign_lead_id: str):
+    return await campaignController.claim_lead(
+        request=request, campaign_id=campaign_id, campaign_lead_id=campaign_lead_id
+    )
+
+
+
+@router.get(
+    "/engagement-stats",
+    status_code=200,
+    dependencies=[*_auth_deps, Depends(dependencies.permissions(["campaign:read"]))],
+)
+async def get_engagement_stats(request: Request):
+    return await campaignController.get_engagement_stats(request=request)

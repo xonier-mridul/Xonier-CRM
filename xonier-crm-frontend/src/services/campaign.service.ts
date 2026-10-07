@@ -34,6 +34,21 @@ const CampaignService = {
     api.patch(`/campaign/update/${id}/status`, payload),
     
   delete: (id: string) => api.delete(`/campaign/delete/${id}`),
+
+  getCampaignLeads: (campaignId: string, page?: number, limit?: number) => {
+    const params = new URLSearchParams();
+    if (page) params.append("page", String(page));
+    if (limit) params.append("limit", String(limit));
+    return api.get(`/campaign/${campaignId}/leads?${params.toString()}`);
+  },
+
+  importLeads: (campaignId: string, data: { leads: Record<string, any>[]; dataTag?: string }) =>
+    api.post(`/campaign/${campaignId}/leads/import`, data),
+
+  getEngagementStats: () => api.get("/campaign/engagement-stats"),
+
+  claimLead: (campaignId: string, campaignLeadId: string) =>
+    api.post(`/campaign/${campaignId}/leads/${campaignLeadId}/claim`),
 };
 
 export default CampaignService;

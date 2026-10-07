@@ -23,6 +23,7 @@ export enum CampaignLeadStatus {
 
 export interface ICampaign {
   _id: string;
+  id?: string;
   name: string;
   description?: string;
   managers: any[]; 

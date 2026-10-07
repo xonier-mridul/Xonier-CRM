@@ -150,10 +150,10 @@ export default function StatusDropdown({
           onClick={handleToggle}
           disabled={isUpdating}
           className={`${
-            STATUS_CONFIG[currentStatus].color
-          } ${STATUS_CONFIG[currentStatus].textColor} px-3 py-1.5 text-[13px] font-semibold rounded-md flex items-center gap-2 justify-between min-w-[130px] transition-all`}
+            (STATUS_CONFIG[currentStatus] || STATUS_CONFIG[LeadEngagementStatus.NOT_REACHED]).color
+          } ${(STATUS_CONFIG[currentStatus] || STATUS_CONFIG[LeadEngagementStatus.NOT_REACHED]).textColor} px-3 py-1.5 text-[13px] font-semibold rounded-md flex items-center gap-2 justify-between min-w-[130px] transition-all`}
         >
-          <span>{STATUS_CONFIG[currentStatus].label}</span>
+          <span>{(STATUS_CONFIG[currentStatus] || STATUS_CONFIG[LeadEngagementStatus.NOT_REACHED]).label}</span>
           {isUpdating ? (
             <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
           ) : (

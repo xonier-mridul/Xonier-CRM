@@ -154,3 +154,21 @@ class CampaignController:
             return successResponse(200, "No unassigned leads available", result)
         except AppException as e:
             raise e
+
+    async def claim_lead(self, request: Request, campaign_id: str, campaign_lead_id: str):
+        try:
+            user = request.state.user
+            result = await self.service.claim_lead(
+                campaign_id=campaign_id, campaign_lead_id=campaign_lead_id, user=user
+            )
+            return successResponse(200, "Lead claimed successfully", result)
+        except AppException as e:
+            raise e
+
+    async def get_engagement_stats(self, request: Request):
+        try:
+            user = request.state.user
+            result = await self.service.get_engagement_stats(user=user)
+            return successResponse(200, "Engagement stats fetched", result)
+        except AppException as e:
+            raise e

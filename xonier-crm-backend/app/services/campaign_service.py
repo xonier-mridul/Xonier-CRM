@@ -71,6 +71,9 @@ class CampaignService:
     def _lead_collection(self):
         return CampaignLeadModel.get_pymongo_collection()
 
+    def _global_leads_collection(self):
+        return LeadsModel.get_pymongo_collection()
+
     async def _clear_cache(self) -> None:
         """Safely clear campaign cache; gracefully handles Redis downtime."""
         try:
@@ -155,12 +158,16 @@ class CampaignService:
             if search:
                 query["name"] = {"$regex": search, "$options": "i"}
 
+            sort_field = filters.get("sortField", "createdAt")
+            sort_order_str = filters.get("sortOrder", "desc")
+            sort_order = -1 if sort_order_str == "desc" else 1
+            
             result = await self.repo.get_all(
                 page=page,
                 limit=limit,
                 filters=query,
                 populate=["managers", "agents", "createdBy"],
-                sort=[("createdAt", -1)],
+                sort=[(sort_field, sort_order)],
             )
 
             return result
@@ -308,6 +315,10 @@ class CampaignService:
                     now = datetime.now(timezone.utc)
 
                     collection = self._collection()
+                    # ⚠️  SOFT DELETE ONLY — never delete LeadsModel or CampaignLeadModel records.
+                    # Leads are independent entities; campaign deletion only marks the campaign
+                    # as deleted. CampaignLeadModel junction records are intentionally retained
+                    # for audit/history purposes.
                     await collection.update_one(
                         {"_id": campaign.id},
                         {"$set": {
@@ -360,6 +371,9 @@ class CampaignService:
         5. $inc campaign.totalLeads atomically.
         6. Log activity.
         """
+        campaign = None
+        inserted_count = 0
+        result_payload: Dict[str, Any] = {}
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
@@ -422,18 +436,40 @@ class CampaignService:
                             encrypted_email = self.encryption.encrypt_data(email)
                             encrypted_phone = self.encryption.encrypt_data(phone) if phone else None
 
-                            if (hashed_email, hashed_phone, project_type or None) in existing_set:
+                            dup_key = (hashed_email, hashed_phone, project_type or None)
+                            if dup_key in existing_set:
                                 skipped.append({
                                     "email": lead.get("email"),
                                     "phone": phone or "N/A",
                                     "reason": "Duplicate lead (same email, phone, project type)",
                                 })
                                 continue
+                            # Also guard against duplicates inside the same upload
+                            existing_set.add(dup_key)
 
-                            # Validate individual lead using existing schema
+                            # Normalize fields that are Enums so they match backend expectations.
+                            # CSV may provide "Medium", "Cold Call", etc. which causes Pydantic validation to fail.
+                            raw_priority = str(lead.get("priority") or "medium").strip().lower()
+                            raw_source = str(lead.get("source") or "other").strip().lower().replace(" ", "_")
+                            raw_status = str(lead.get("status") or "new").strip().lower().replace(" ", "_")
+                            raw_project_type = lead.get("projectType")
+                            if raw_project_type:
+                                raw_project_type = str(raw_project_type).strip().lower().replace(" ", "_")
+
+                            # Restore LeadsCreateSchema validation to ensure we respect manual lead creation rules.
                             try:
-                                LeadsCreateSchema(**lead)
+                                lead_for_validation = {
+                                    **lead,
+                                    "priority": raw_priority,
+                                    "source": raw_source,
+                                    "status": raw_status,
+                                    "projectType": raw_project_type,
+                                    "meetingScheduled": lead.get("meetingScheduled") or "no",
+                                }
+                                LeadsCreateSchema(**lead_for_validation)
                             except Exception as ve:
+                                with open("import_errors.log", "a") as f:
+                                    f.write(f"Failed lead: {lead.get('email')} - Error: {ve}\n")
                                 skipped.append({
                                     "email": lead.get("email", "N/A"),
                                     "reason": f"Validation error: {ve}",
@@ -445,18 +481,19 @@ class CampaignService:
                                 "fullName": lead.get("fullName"),
                                 "email": encrypted_email,
                                 "hashedEmail": hashed_email,
-                                "priority": lead.get("priority"),
-                                "source": lead.get("source"),
-                                "status": lead.get("status", "new"),
+                                "priority": raw_priority,
+                                "source": raw_source,
+                                "status": raw_status,
                                 "createdBy": user_oid,
                                 "leadSource": LEAD_SOURCE_TYPE.BULK_IMPORTED,
+                                
                             }
                             if encrypted_phone:
                                 lead_doc_data["phone"] = encrypted_phone
                             if hashed_phone:
                                 lead_doc_data["hashedPhone"] = hashed_phone
-                            if project_type:
-                                lead_doc_data["projectType"] = project_type
+                            if raw_project_type:
+                                lead_doc_data["projectType"] = raw_project_type
 
                             optional_fields = {
                                 "companyName": lead.get("companyName"),
@@ -469,7 +506,8 @@ class CampaignService:
                                 "employeeSeniority": lead.get("employeeSeniority"),
                                 "message": lead.get("message"),
                                 "membershipNotes": lead.get("membershipNotes"),
-                                "dataTag": data_tag,
+                                # Per-lead dataTag from CSV takes priority, fallback to batch-level
+                                "dataTag": lead.get("dataTag") or data_tag,
                             }
                             for k, v in optional_fields.items():
                                 if v is not None and v != "":
@@ -492,7 +530,12 @@ class CampaignService:
                     inserted_count = 0
                     if leads_to_insert:
                         try:
-                            await LeadsModel.insert_many(documents=leads_to_insert, session=session)
+                            insert_result = await LeadsModel.insert_many(documents=leads_to_insert, session=session)
+                            inserted_ids = insert_result.inserted_ids
+                            # Assign the inserted IDs back to the model instances
+                            for i, _id in enumerate(inserted_ids):
+                                leads_to_insert[i].id = _id
+                            
                             inserted_count = len(leads_to_insert)
                         except DuplicateKeyError as dke:
                             raise AppException(409, f"Duplicate key during lead insertion: {dke}")
@@ -554,7 +597,11 @@ class CampaignService:
                     await self.activityRepo.create(data=act, session=session)
                     await self._clear_cache()
 
-                    return {
+                    with open("skipped_reasons.log", "w") as f:
+                        import json
+                        f.write(json.dumps(skipped, indent=2))
+                    
+                    result_payload = {
                         "inserted": inserted_count,
                         "skipped": len(skipped),
                         "skippedRecords": skipped,
@@ -566,6 +613,25 @@ class CampaignService:
                 except Exception as e:
                     traceback.print_exc()
                     raise AppException(500, f"Internal server error: {e}")
+
+        # Execute auto-distribution OUTSIDE the transaction if campaign has agents
+        if (
+            campaign
+            and inserted_count > 0
+            and campaign.distributionMode != CAMPAIGN_DISTRIBUTION_MODE.ON_DEMAND
+        ):
+            try:
+                camp_raw = await self._collection().find_one({"_id": campaign.id})
+                has_agents = bool((camp_raw or {}).get("agents"))
+                if has_agents:
+                    dist_res = await self._distribute_to_agents(campaign, user)
+                    result_payload["distributed"] = dist_res.get("distributed", 0)
+                    print(f"[import_leads] Auto-distributed {result_payload.get('distributed', 0)} leads")
+            except Exception as e:
+                traceback.print_exc()
+                print(f"[import_leads] Auto-distribution failed: {e}")
+
+        return result_payload
 
     # ─────────────────────────────────────────────────────────────────────────
     # GET CAMPAIGN LEADS (paginated)
@@ -592,6 +658,29 @@ class CampaignService:
             match: Dict[str, Any] = {
                 "campaignId.$id": campaign_oid,
             }
+
+            # ON DEMAND: agents only see the unassigned pool plus their own leads.
+            camp_doc = await self._collection().find_one({"_id": campaign_oid})
+            if camp_doc and camp_doc.get("distributionMode") == CAMPAIGN_DISTRIBUTION_MODE.ON_DEMAND.value:
+                uid = PydanticObjectId(user["_id"])
+
+                def _ids(refs):
+                    out = []
+                    for r in (refs or []):
+                        if isinstance(r, dict) and "$id" in r:
+                            out.append(r["$id"])
+                        elif hasattr(r, "id"):
+                            out.append(r.id)
+                    return out
+
+                creator = camp_doc.get("createdBy")
+                privileged = set(_ids(camp_doc.get("managers")))
+                privileged.update(_ids([creator]) if creator else [])
+                if uid in set(_ids(camp_doc.get("agents"))) and uid not in privileged:
+                    match["$or"] = [
+                        {"campaignStatus": "unassigned"},
+                        {"assignedTo.$id": uid},
+                    ]
             if status_filter:
                 try:
                     match["campaignStatus"] = CAMPAIGN_LEAD_STATUS(status_filter)
@@ -603,10 +692,17 @@ class CampaignService:
             pipeline = [
                 {"$match": match},
                 {"$sort": {"importedAt": -1}},
+                # Extract raw ObjectId from Beanie DBRef before $lookup
+                {
+                    "$addFields": {
+                        "leadOid": {"$ifNull": ["$leadId.$id", "$leadId"]},
+                        "assignedOid": {"$ifNull": ["$assignedTo.$id", "$assignedTo"]},
+                    }
+                },
                 {
                     "$lookup": {
                         "from": "leads",
-                        "localField": "leadId.$id",
+                        "localField": "leadOid",
                         "foreignField": "_id",
                         "as": "lead",
                     }
@@ -615,7 +711,7 @@ class CampaignService:
                 {
                     "$lookup": {
                         "from": "users",
-                        "localField": "assignedTo.$id",
+                        "localField": "assignedOid",
                         "foreignField": "_id",
                         "as": "assignedUser",
                     }
@@ -647,10 +743,12 @@ class CampaignService:
                             "companyName": "$lead.companyName",
                             "projectType": "$lead.projectType",
                             "createdAt": "$lead.createdAt",
+                            "connectStatus": "$lead.connectStatus",
                         },
                         "assignedTo": {
                             "_id": {"$toString": "$assignedUser._id"},
-                            "name": "$assignedUser.name",
+                            "firstName": "$assignedUser.firstName",
+                            "lastName": "$assignedUser.lastName",
                             "email": "$assignedUser.email",
                         },
                     }
@@ -668,7 +766,8 @@ class CampaignService:
                 return {"data": [], "page": page, "limit": limit, "totalPages": 0, "total": 0}
 
             data = result[0].get("data", [])
-            total = result[0].get("totalCount", [{}])[0].get("count", 0)
+            total_count_list = result[0].get("totalCount", [])
+            total = total_count_list[0].get("count", 0) if total_count_list else 0
             total_pages = (total + limit - 1) // limit if total else 0
 
             return {
@@ -771,6 +870,18 @@ class CampaignService:
                         raise AppException(400, "Agent is not part of this campaign")
 
                     cl_collection = self._lead_collection()
+                    
+                    prev_doc = await cl_collection.find_one({"_id": cl_oid, "campaignId.$id": campaign_oid})
+                    if not prev_doc:
+                        raise AppException(404, "Campaign lead not found")
+                        
+                    lead_ref = prev_doc.get("leadId")
+                    lead_oid = None
+                    if hasattr(lead_ref, "id"):
+                        lead_oid = lead_ref.id
+                    elif isinstance(lead_ref, dict) and "$id" in lead_ref:
+                        lead_oid = lead_ref["$id"]
+                        
                     result = await cl_collection.update_one(
                         {"_id": cl_oid, "campaignId.$id": campaign_oid},
                         {"$set": {
@@ -783,18 +894,33 @@ class CampaignService:
                         session=session,
                     )
 
-                    if result.matched_count == 0:
-                        raise AppException(404, "Campaign lead not found")
-
                     # Track first assignment: increment campaign.assignedLeads
                     # Only count if previously unassigned
-                    prev_doc = await cl_collection.find_one({"_id": cl_oid})
-                    if prev_doc and not prev_doc.get("assignedTo"):
+                    if not prev_doc.get("assignedTo"):
                         camp_collection = self._collection()
                         await camp_collection.update_one(
                             {"_id": campaign_oid},
                             {"$inc": {"assignedLeads": 1}, "$set": {"updatedAt": now}},
                             session=session,
+                        )
+
+                    # Sync global LeadsModel
+                    if lead_oid:
+                        global_leads_collection = self._global_leads_collection()
+                        await global_leads_collection.update_one(
+                            {"_id": lead_oid},
+                            {
+                                "$addToSet": {
+                                    "assignedTo": {"$ref": "users", "$id": agent_oid}
+                                },
+                                "$set": {
+                                    "isAssigned": True,
+                                    "assignedAt": now,
+                                    "assignedBy": {"$ref": "users", "$id": user_oid},
+                                    "updatedAt": now,
+                                }
+                            },
+                            session=session
                         )
 
                     return {"assigned": True, "agentId": str(agent_oid)}
@@ -808,6 +934,103 @@ class CampaignService:
     # ─────────────────────────────────────────────────────────────────────────
     # DISTRIBUTE — EQUAL MODE
     # ─────────────────────────────────────────────────────────────────────────
+
+    async def _distribute_to_agents(
+        self,
+        campaign: Any,
+        user: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """
+        Internal helper: Distribute UNASSIGNED campaign leads across the campaign's agents
+        using round-robin. Works for any distribution mode.
+        """
+        campaign_oid = campaign.id
+
+        camp_raw = await self._collection().find_one({"_id": campaign_oid})
+        agent_ids: List[PydanticObjectId] = []
+        for ref in (camp_raw.get("agents") or []):
+            # Motor returns bson.DBRef objects; handle both DBRef and dict formats
+            if hasattr(ref, "id"):
+                agent_ids.append(PydanticObjectId(ref.id))
+            elif isinstance(ref, dict) and "$id" in ref:
+                agent_ids.append(PydanticObjectId(ref["$id"]))
+        if not agent_ids:
+            return {"distributed": 0, "message": "No agents found"}
+
+        cl_collection = self._lead_collection()
+        unassigned = await cl_collection.find(
+            {"campaignId.$id": campaign_oid, "campaignStatus": "unassigned"}
+        ).sort("importedAt", 1).to_list(length=None)
+
+        if not unassigned:
+            return {"distributed": 0, "message": "No unassigned leads found"}
+
+        now = datetime.now(timezone.utc)
+        user_oid = PydanticObjectId(user["_id"])
+        num_agents = len(agent_ids)
+        distributed = 0
+
+        # Track which lead -> agent mapping for syncing global LeadsModel
+        from pymongo import UpdateOne
+        lead_agent_map: Dict[Any, PydanticObjectId] = {}
+        bulk_ops = []
+        for idx, cl_doc in enumerate(unassigned):
+            agent_oid = agent_ids[idx % num_agents]
+            # Get the leadId from the campaign_lead doc
+            lead_ref = cl_doc.get("leadId")
+            lead_oid = None
+            if hasattr(lead_ref, "id"):
+                lead_oid = lead_ref.id
+            elif isinstance(lead_ref, dict) and "$id" in lead_ref:
+                lead_oid = lead_ref["$id"]
+            
+            bulk_ops.append(
+                UpdateOne(
+                    {"_id": cl_doc["_id"]},
+                    {"$set": {
+                        "assignedTo": {"$ref": "users", "$id": agent_oid},
+                        "assignedAt": now,
+                        "assignedBy": {"$ref": "users", "$id": user_oid},
+                        "campaignStatus": CAMPAIGN_LEAD_STATUS.ASSIGNED,
+                        "updatedAt": now,
+                    }},
+                )
+            )
+            if lead_oid:
+                lead_agent_map[lead_oid] = agent_oid
+            distributed += 1
+
+        if bulk_ops:
+            await cl_collection.bulk_write(bulk_ops)
+            await self._collection().update_one(
+                {"_id": campaign_oid},
+                {"$inc": {"assignedLeads": distributed}, "$set": {"updatedAt": now}},
+            )
+
+            # ── Sync global LeadsModel.assignedTo ─────────────────────────
+            # Each lead's global assignedTo list gets the agent added (no duplicates)
+            if lead_agent_map:
+                leads_collection = self._global_leads_collection()
+                lead_bulk_ops = [
+                    UpdateOne(
+                        {"_id": lead_oid},
+                        {
+                            "$addToSet": {
+                                "assignedTo": {"$ref": "users", "$id": agent_oid}
+                            },
+                            "$set": {
+                                "isAssigned": True,
+                                "assignedAt": now,
+                                "assignedBy": {"$ref": "users", "$id": user_oid},
+                                "updatedAt": now,
+                            }
+                        },
+                    )
+                    for lead_oid, agent_oid in lead_agent_map.items()
+                ]
+                await leads_collection.bulk_write(lead_bulk_ops)
+
+        return {"distributed": distributed, "agents": num_agents}
 
     async def distribute_equal(
         self,
@@ -836,11 +1059,12 @@ class CampaignService:
 
                     # Read agents from raw document to avoid Beanie Link resolution
                     camp_raw = await self._collection().find_one({"_id": campaign_oid})
-                    agent_ids: List[PydanticObjectId] = [
-                        ref["$id"]
-                        for ref in (camp_raw.get("agents") or [])
-                        if isinstance(ref, dict) and "$id" in ref
-                    ]
+                    agent_ids: List[PydanticObjectId] = []
+                    for ref in (camp_raw.get("agents") or []):
+                        if hasattr(ref, "id"):
+                            agent_ids.append(PydanticObjectId(ref.id))
+                        elif isinstance(ref, dict) and "$id" in ref:
+                            agent_ids.append(PydanticObjectId(ref["$id"]))
                     if not agent_ids:
                         raise AppException(400, "Campaign has no valid agents assigned")
 
@@ -885,6 +1109,38 @@ class CampaignService:
                             session=session,
                         )
 
+                        # Sync global LeadsModel
+                        leads_collection = self._global_leads_collection()
+                        lead_bulk_ops = []
+                        for idx, cl_doc in enumerate(unassigned):
+                            agent_oid = agent_ids[idx % num_agents]
+                            lead_ref = cl_doc.get("leadId")
+                            lead_oid = None
+                            if hasattr(lead_ref, "id"):
+                                lead_oid = lead_ref.id
+                            elif isinstance(lead_ref, dict) and "$id" in lead_ref:
+                                lead_oid = lead_ref["$id"]
+                                
+                            if lead_oid:
+                                lead_bulk_ops.append(
+                                    UpdateOne(
+                                        {"_id": lead_oid},
+                                        {
+                                            "$addToSet": {
+                                                "assignedTo": {"$ref": "users", "$id": agent_oid}
+                                            },
+                                            "$set": {
+                                                "isAssigned": True,
+                                                "assignedAt": now,
+                                                "assignedBy": {"$ref": "users", "$id": user_oid},
+                                                "updatedAt": now,
+                                            }
+                                        }
+                                    )
+                                )
+                        if lead_bulk_ops:
+                            await leads_collection.bulk_write(lead_bulk_ops, session=session)
+
                     return {"distributed": distributed, "agents": num_agents}
 
                 except AppException:
@@ -908,6 +1164,9 @@ class CampaignService:
         """
         try:
             campaign = await self._get_campaign_or_404(campaign_id)
+
+            if campaign.status == CAMPAIGN_STATUS.PAUSED:
+                raise AppException(400, "This campaign is paused. Calling is disabled until it is resumed")
 
             if campaign.distributionMode != CAMPAIGN_DISTRIBUTION_MODE.ON_DEMAND:
                 raise AppException(
@@ -980,3 +1239,145 @@ class CampaignService:
         except Exception as e:
             traceback.print_exc()
             raise AppException(500, f"Internal server error: {e}")
+
+    async def claim_lead(
+        self,
+        campaign_id: str,
+        campaign_lead_id: str,
+        user: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """
+        ON DEMAND: atomically claim a specific unassigned lead. If someone else
+        already took it, the filter fails and a 409 is returned.
+        """
+        try:
+            campaign = await self._get_campaign_or_404(campaign_id)
+            if campaign.status == CAMPAIGN_STATUS.PAUSED:
+                raise AppException(400, "This campaign is paused. Calling is disabled until it is resumed")
+            if campaign.distributionMode != CAMPAIGN_DISTRIBUTION_MODE.ON_DEMAND:
+                raise AppException(400, "This campaign is not configured for ON DEMAND distribution")
+
+            try:
+                cl_oid = PydanticObjectId(campaign_lead_id)
+            except Exception:
+                raise AppException(400, "Invalid campaign lead id")
+
+            agent_oid = PydanticObjectId(user["_id"])
+            now = datetime.now(timezone.utc)
+            cl_collection = self._lead_collection()
+
+            claimed = await cl_collection.find_one_and_update(
+                {
+                    "_id": cl_oid,
+                    "campaignId.$id": campaign.id,
+                    "campaignStatus": "unassigned",
+                },
+                {"$set": {
+                    "assignedTo": {"$ref": "users", "$id": agent_oid},
+                    "assignedAt": now,
+                    "claimedAt": now,
+                    "campaignStatus": CAMPAIGN_LEAD_STATUS.ASSIGNED,
+                    "updatedAt": now,
+                }},
+                return_document=True,
+            )
+            if not claimed:
+                raise AppException(409, "This lead has already been taken by someone else")
+
+            await self._collection().update_one(
+                {"_id": campaign.id},
+                {"$inc": {"assignedLeads": 1}, "$set": {"updatedAt": now}},
+            )
+
+            lead_ref = claimed.get("leadId")
+            lead_oid = None
+            if hasattr(lead_ref, "id"):
+                lead_oid = lead_ref.id
+            elif isinstance(lead_ref, dict) and "$id" in lead_ref:
+                lead_oid = lead_ref["$id"]
+            if lead_oid:
+                await self._global_leads_collection().update_one(
+                    {"_id": lead_oid},
+                    {
+                        "$addToSet": {"assignedTo": {"$ref": "users", "$id": agent_oid}},
+                        "$set": {
+                            "isAssigned": True,
+                            "assignedAt": now,
+                            "assignedBy": {"$ref": "users", "$id": agent_oid},
+                            "updatedAt": now,
+                        },
+                    },
+                )
+
+            return {
+                "claimed": True,
+                "leadId": str(lead_oid) if lead_oid else None,
+                "campaignLeadId": str(cl_oid),
+            }
+        except AppException:
+            raise
+        except Exception as e:
+            traceback.print_exc()
+            raise AppException(500, f"Internal server error: {e}")
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # ENGAGEMENT STATS — connectStatus counts across all campaign leads
+    # ─────────────────────────────────────────────────────────────────────────
+
+    async def get_engagement_stats(self, user: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Aggregates connectStatus counts for all leads that appear in any
+        non-deleted campaign of this company.
+        Returns: { "stats": [{ "status": "not_reached", "count": 12 }, ...] }
+        """
+        try:
+            # Get all non-deleted campaign IDs for this company
+            camp_collection = self._collection()
+            company_oid = PydanticObjectId(user["companyId"])
+            campaigns = await camp_collection.find(
+                {"companyId": company_oid, "status": {"$ne": "deleted"}},
+                {"_id": 1},
+            ).to_list(length=None)
+            campaign_ids = [c["_id"] for c in campaigns]
+
+            if not campaign_ids:
+                return {"stats": []}
+
+            cl_collection = self._lead_collection()
+
+            # Find all unique leadIds across all campaign_leads for these campaigns
+            pipeline = [
+                {"$match": {"campaignId.$id": {"$in": campaign_ids}}},
+                # Extract raw ObjectId from Beanie DBRef before $lookup
+                {
+                    "$addFields": {
+                        "leadOid": {"$ifNull": ["$leadId.$id", "$leadId"]},
+                    }
+                },
+                # Join with leads collection to get connectStatus
+                {"$lookup": {
+                    "from": "leads",
+                    "localField": "leadOid",
+                    "foreignField": "_id",
+                    "as": "lead",
+                }},
+                {"$unwind": "$lead"},
+                # Group by connectStatus
+                {"$group": {
+                    "_id": "$lead.connectStatus",
+                    "count": {"$sum": 1},
+                }},
+                {"$project": {
+                    "_id": 0,
+                    "status": {"$ifNull": ["$_id", "not_reached"]},
+                    "count": 1,
+                }},
+                {"$sort": {"count": -1}},
+            ]
+            result = await cl_collection.aggregate(pipeline).to_list(length=None)
+            return {"stats": result}
+
+        except Exception as e:
+            traceback.print_exc()
+            raise AppException(500, f"Internal server error: {e}")
+

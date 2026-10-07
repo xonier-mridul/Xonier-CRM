@@ -23,7 +23,6 @@ class SubscriptionController:
             raise AppException(500, f"Internal server error: {e}")
         
 
-
     async def getById(self, request:Request, id:str):
         try:
             user = request.state.user
