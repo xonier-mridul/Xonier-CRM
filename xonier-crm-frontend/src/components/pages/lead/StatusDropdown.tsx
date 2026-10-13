@@ -11,6 +11,7 @@ const AVAILABLE_STATUSES: LeadEngagementStatus[] = [
   LeadEngagementStatus.NOT_REACHED,
   LeadEngagementStatus.INTERESTED,
   LeadEngagementStatus.MEETING_SCHEDULED,
+  LeadEngagementStatus.MEETING_COMPLETED,
   LeadEngagementStatus.NOT_INTERESTED,
   LeadEngagementStatus.WRONG_NUMBER,
 ];
@@ -53,6 +54,11 @@ export const STATUS_CONFIG: Record<
     label: "Meeting Scheduled",
     color: "bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-700/40",
     textColor: "text-violet-600 dark:text-violet-400",
+  },
+  [LeadEngagementStatus.MEETING_COMPLETED]: {
+    label: "Meeting Done",
+    color: "bg-fuchsia-50 dark:bg-fuchsia-900/20 border border-fuchsia-200 dark:border-fuchsia-700/40",
+    textColor: "text-fuchsia-600 dark:text-fuchsia-400",
   },
 };
 

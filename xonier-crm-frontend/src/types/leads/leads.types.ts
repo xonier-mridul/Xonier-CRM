@@ -38,6 +38,7 @@ export interface Lead {
 
   inDeal?: boolean
   connectStatus?: string | null;
+  campaign?: string | null;
   createdAt: string;          
   updatedAt: string;          
   deletedAt?: string | null;

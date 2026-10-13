@@ -21,6 +21,15 @@ class Dependencies:
         self.userRepo = UserRepository()
         self.companyRepo = CompanyRepository()
 
+    async def own_profile_or_user_read(self, request: Request):
+        user = request.state.user
+        target_id = request.path_params.get("id")
+        if target_id and str(target_id) in {
+            str(user.get("id", "")), str(user.get("_id", ""))
+        }:
+            return
+        await self.permissions(["user:read"])(request)
+
     def permissions(self, permissions: List[str]):
         async def checking(request: Request):
             

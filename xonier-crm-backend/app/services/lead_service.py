@@ -17,6 +17,8 @@ from app.core.constants import (
     
 )
 from app.db.models.lead_model import LeadsModel 
+from app.db.models.campaign_lead_model import CampaignLeadModel
+from app.db.models.campaign_model import CampaignModel
 from app.core.enums import SALES_STATUS, ACTIVITY_ENTITY_TYPE, ACTIVITY_ACTION, LEAD_SOURCE_TYPE, MEETING_SCHEDULED
 from app.utils.cache_key_generator import (
     cache_key_generator,
@@ -877,7 +879,14 @@ class LeadService:
             cache = await FastAPICache.get_backend().get(key)
 
             if cache:
-                return json.loads(cache)      
+                cached_data = json.loads(cache)
+                # Invalidate old cached responses that don't have the 'campaign' field
+                first_lead = (cached_data.get("data") or [None])[0]
+                if first_lead is not None and "campaign" not in first_lead:
+                    # Stale cache — fall through to re-fetch
+                    pass
+                else:
+                    return cached_data
 
            
          
@@ -900,6 +909,49 @@ class LeadService:
                 item["email"] = encryptor.decrypt_data(item["email"])
                 if item["phone"]:
                     item["phone"] = encryptor.decrypt_data(item["phone"])
+
+            # ── Enrich leads with campaign name ──────────────────────────────
+            try:
+                def _ref_id(ref):
+                    if ref is None:
+                        return None
+                    if isinstance(ref, dict):
+                        return ref.get("$id") or ref.get("id")
+                    return getattr(ref, "id", ref)
+
+                lead_oids = [ObjectId(item["id"]) for item in result["data"] if item.get("id")]
+                lead_campaign_map: Dict[str, str] = {}
+                if lead_oids:
+                    cl_col = CampaignLeadModel.get_pymongo_collection()
+                    cl_docs = await cl_col.find(
+                        {"leadId.$id": {"$in": lead_oids}},
+                        {"leadId": 1, "campaignId": 1},
+                    ).to_list(length=None)
+
+                    campaign_oids = list({
+                        _ref_id(d.get("campaignId")) for d in cl_docs if _ref_id(d.get("campaignId"))
+                    })
+                    camp_names: Dict[str, str] = {}
+                    if campaign_oids:
+                        camp_docs = await CampaignModel.get_pymongo_collection().find(
+                            {"_id": {"$in": campaign_oids}}, {"name": 1}
+                        ).to_list(length=None)
+                        camp_names = {str(c["_id"]): c.get("name") for c in camp_docs}
+
+                    for d in cl_docs:
+                        lid = _ref_id(d.get("leadId"))
+                        cid = _ref_id(d.get("campaignId"))
+                        cname = camp_names.get(str(cid)) if cid else None
+                        if lid and cname and str(lid) not in lead_campaign_map:
+                            lead_campaign_map[str(lid)] = cname
+
+                for item in result["data"]:
+                    item["campaign"] = lead_campaign_map.get(item.get("id", ""), None)
+            except Exception as enrich_err:
+                print(f"[Campaign Enrich Warning] {enrich_err}")
+                for item in result["data"]:
+                    item.setdefault("campaign", None)
+            # ─────────────────────────────────────────────────────────────────
 
             await FastAPICache.get_backend().set(
                 key=key, value=json.dumps(result), expire=300

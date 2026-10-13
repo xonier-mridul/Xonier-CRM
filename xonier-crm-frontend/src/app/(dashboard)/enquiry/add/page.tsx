@@ -241,6 +241,131 @@ const FieldLabel = ({
   </label>
 );
 
+const customOptionKey = (value: string) => value.trim().toLocaleLowerCase();
+
+const loadCustomOptions = (storageKey: string, defaults: string[]) => {
+  if (typeof window === "undefined") return defaults;
+  try {
+    const saved = JSON.parse(localStorage.getItem(storageKey) || "[]");
+    if (!Array.isArray(saved)) return defaults;
+    return [...defaults, ...saved].filter(
+      (value, index, values) =>
+        values.findIndex((item) => customOptionKey(item) === customOptionKey(value)) === index
+    );
+  } catch {
+    return defaults;
+  }
+};
+
+// ── Custom Combobox ────────────────────────────────────────────────────────
+const CustomCombobox = ({
+  value,
+  onChange,
+  onBlur,
+  options,
+  placeholder,
+  required,
+  hasErr,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  onBlur: (v: string) => void;
+  options: string[];
+  placeholder: string;
+  required?: boolean;
+  hasErr?: boolean;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const filteredOptions = options.filter((opt) =>
+    opt.toLowerCase().includes((value || "").toLowerCase())
+  );
+
+  return (
+    <div ref={wrapperRef} className="relative w-full">
+      <div className="relative flex items-center">
+        <input
+          ref={inputRef}
+          required={required}
+          className={`${selectClass(hasErr)} pr-10`}
+          value={value}
+          placeholder={placeholder}
+          onChange={(e) => {
+            onChange(e.target.value);
+            setIsOpen(true);
+          }}
+          onFocus={() => setIsOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              setIsOpen(false);
+              onBlur(e.currentTarget.value);
+              inputRef.current?.blur();
+            }
+          }}
+          onBlur={() => {
+            // Intentionally left empty to avoid saving on click outside
+          }}
+        />
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            if (isOpen) {
+              setIsOpen(false);
+            } else {
+              setIsOpen(true);
+              inputRef.current?.focus();
+            }
+          }}
+          className="absolute right-2 text-gray-400 hover:text-cyan-600 dark:text-gray-500 dark:hover:text-cyan-400 transition-colors p-1"
+        >
+          <MdOutlineKeyboardArrowDown className="text-xl" />
+        </button>
+      </div>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto z-50 py-1">
+          {filteredOptions.length > 0 ? (
+            filteredOptions.map((opt) => (
+              <div
+                key={opt}
+                className="px-4 py-2.5 cursor-pointer hover:bg-cyan-50 dark:hover:bg-cyan-900/30 transition-colors flex flex-col border-b border-gray-50 dark:border-gray-700/50 last:border-0"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  onChange(opt);
+                  setIsOpen(false);
+                  onBlur(opt);
+                  inputRef.current?.blur();
+                }}
+              >
+                <span className="font-medium text-gray-900 dark:text-gray-100 text-[15px]">{opt}</span>
+                <span className="text-xs font-bold text-cyan-600 dark:text-cyan-400 tracking-wider">{opt.replace(/_/g, " ").toUpperCase()}</span>
+              </div>
+            ))
+          ) : (
+            <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 italic text-center">
+              {value ? "Press Enter to add as custom option" : "No options available"}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ── Page ───────────────────────────────────────────────────────────────────
 const page = (): JSX.Element => {
   const { t } = useTranslation();
@@ -250,6 +375,12 @@ const page = (): JSX.Element => {
   const [searchVal,setSearchVal]= useState<string>('')
   const [openDropDown,setOpenDropDown]=useState<boolean>(false)
   const [selectedUser,setSelectedUser]= useState<User | null>(null)
+  const [projectTypes, setProjectTypes] = useState<string[]>(() =>
+    loadCustomOptions("enquiry-project-types", Object.values(PROJECT_TYPES))
+  );
+  const [sources, setSources] = useState<string[]>(() =>
+    loadCustomOptions("enquiry-sources", Object.values(SOURCE))
+  );
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -280,6 +411,17 @@ const page = (): JSX.Element => {
     },
     extra_fields: [] as { label: string; value: string }[],
   });
+
+  const rememberOption = (value: string, options: string[], setOptions: (values: string[]) => void, storageKey: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return trimmed;
+    const existing = options.find((option) => customOptionKey(option) === customOptionKey(trimmed));
+    if (existing) return existing;
+    const next = [...options, trimmed];
+    setOptions(next);
+    localStorage.setItem(storageKey, JSON.stringify(next));
+    return trimmed;
+  };
   
 const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
   setSearchVal(e.target.value);
@@ -750,38 +892,28 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
 
             <div className="flex flex-col gap-1.5">
               <FieldLabel required>{t("project_type")}</FieldLabel>
-              <select
+              <CustomCombobox
                 required
-                className={selectClass(!!err)}
+                hasErr={!!err}
                 value={formData.projectType}
-                onChange={(e) =>
-                  set("projectType", e.target.value as PROJECT_TYPES)
-                }
-              >
-                <option value="">{t("select_project_type")}</option>
-                {Object.values(PROJECT_TYPES).map((type) => (
-                  <option key={type} value={type}>
-                    {type.replace(/_/g, " ").toUpperCase()}
-                  </option>
-                ))}
-              </select>
+                placeholder={t("select_project_type")}
+                options={projectTypes}
+                onChange={(v) => set("projectType", v as PROJECT_TYPES)}
+                onBlur={(v) => set("projectType", rememberOption(v, projectTypes, setProjectTypes, "enquiry-project-types") as PROJECT_TYPES)}
+              />
             </div>
 
             <div className="flex flex-col gap-1.5">
               <FieldLabel required>{t("source")}</FieldLabel>
-              <select
+              <CustomCombobox
                 required
-                className={selectClass(!!err)}
+                hasErr={!!err}
                 value={formData.source}
-                onChange={(e) => set("source", e.target.value as SOURCE)}
-              >
-                <option value="">{t("select_source")}</option>
-                {Object.values(SOURCE).map((src) => (
-                  <option key={src} value={src}>
-                    {src.replace(/_/g, " ").toUpperCase()}
-                  </option>
-                ))}
-              </select>
+                placeholder={t("select_source")}
+                options={sources}
+                onChange={(v) => set("source", v as SOURCE)}
+                onBlur={(v) => set("source", rememberOption(v, sources, setSources, "enquiry-sources") as SOURCE)}
+              />
             </div>
 
             <div className="flex flex-col gap-1.5">

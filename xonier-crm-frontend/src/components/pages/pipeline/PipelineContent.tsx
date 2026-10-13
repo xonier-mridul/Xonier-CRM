@@ -1,27 +1,24 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import CampaignService from "@/src/services/campaign.service";
-import { ICampaign } from "@/src/types/campaign/campaign.types";
+import { CampaignStatus, ICampaign } from "@/src/types/campaign/campaign.types";
 import Pagination from "@/src/components/common/pagination";
-import { LineChart, Line, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { 
-  Package, Users, Target, Filter, Megaphone, Zap, Plus, Upload, 
-  BarChart2, Download, Search, ArrowDownUp, List, Grid, 
-  MoreVertical, ArrowUpRight, Mail, FileText, LayoutTemplate, Briefcase, Check, Pause, Play
+  Package, Users, Filter, Megaphone, Plus, Search, ArrowDownUp, List, Grid,
+  MoreVertical, Mail, FileText, LayoutTemplate, Briefcase, Check, Pause, Play,
+  Clock3, Flame, CalendarCheck, MessageCircle,
+  RefreshCw, CalendarCheck2
 } from "lucide-react";
 import StatusBadge from "@/src/components/common/Status";
 import CreatedAt from "@/src/components/common/CreatedAt";
 import CreateCampaignModal from "./CreateCampaignModal";
 import CampaignDetailView from "./CampaignDetailView";
-
-const spark1 = [{ v: 4 }, { v: 7 }, { v: 5 }, { v: 8 }, { v: 12 }, { v: 15 }, { v: 14 }];
-const spark2 = [{ v: 2 }, { v: 3 }, { v: 4 }, { v: 3 }, { v: 6 }, { v: 8 }, { v: 10 }];
-const spark3 = [{ v: 10 }, { v: 12 }, { v: 11 }, { v: 14 }, { v: 13 }, { v: 16 }, { v: 18 }];
-const spark4 = [{ v: 5 }, { v: 4 }, { v: 6 }, { v: 8 }, { v: 7 }, { v: 10 }, { v: 12 }];
+import PipelineLeadTable, { PipelineLeadFilter } from "./PipelineLeadTable";
 
 const PIE_COLORS: Record<string, string> = {
   not_reached: "#9ca3af",
@@ -45,6 +42,28 @@ const PIE_LABELS: Record<string, string> = {
   call_back: "Call Back",
 };
 
+interface LeadStatusCount {
+  status: string;
+  label: string;
+  count: number;
+}
+
+interface EngagementStatsResponse {
+  stats: { status: string; count: number }[];
+  pieBreakdown: {
+    fresh: LeadStatusCount[];
+    inProgress: LeadStatusCount[];
+    lost: LeadStatusCount[];
+  };
+  totalLeads: number;
+  totalInProgress: number;
+  totalClosed: number;
+  closedBreakdown: { won: number; lost: number };
+  campaigns: { total: number; active: number; paused: number };
+  highlights: Record<"interested" | "meetingsScheduled" | "meetingsCompleted" | "callBack" | "followUps", number>;
+  funnel?: Partial<Record<"all" | "contacted" | "engaged" | "meetings" | "closed_won", number>>;
+}
+
 const getCampaignIconAndBg = (index: number) => {
   const styles = [
     { bg: 'bg-[#18A1C4]', icon: <Mail className="text-white" size={20} /> },
@@ -65,9 +84,14 @@ const PipelineContent = () => {
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
   const [selectedCampaign, setSelectedCampaign] = useState<ICampaign | null>(null);
+  const [selectedPipelineFilter, setSelectedPipelineFilter] = useState<{
+    filter: PipelineLeadFilter;
+    title: string;
+  } | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
-  const [engagementStats, setEngagementStats] = useState<Record<string, number>>({});
+  const [engagementStats, setEngagementStats] = useState<EngagementStatsResponse | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState(false);
   const [selectedCampaignIds, setSelectedCampaignIds] = useState<string[]>([]);
 
   const [searchVal, setSearchVal] = useState("");
@@ -98,11 +122,11 @@ const PipelineContent = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const fetchCampaigns = async () => {
+  const fetchCampaigns = useCallback(async () => {
     setIsLoading(true);
     setSelectedCampaignIds([]); // Reset selection when fetching/paginating
     try {
-      const filters: Record<string, any> = {};
+      const filters: Record<string, string> = {};
       if (debouncedSearchVal) filters.search = debouncedSearchVal;
       if (statusFilter) filters.status = statusFilter;
       if (sortField) filters.sortField = sortField;
@@ -115,37 +139,40 @@ const PipelineContent = () => {
         setPageLimit(Number(res.data.data.limit));
         setTotalPages(Number(res.data.data.totalPages));
       }
-    } catch (error) {
+    } catch {
       toast.error(t("failed_to_fetch_campaigns") || "Failed to fetch campaigns");
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentPage, debouncedSearchVal, pageLimit, sortField, sortOrder, statusFilter, t]);
 
-  const fetchEngagementStats = async () => {
-    setStatsLoading(true);
-    try {
-      const res = await CampaignService.getEngagementStats();
-      if (res.status === 200) {
-        const statsArray: { status: string; count: number }[] = res.data?.data?.stats || [];
-        const statsMap: Record<string, number> = {};
-        statsArray.forEach(({ status, count }) => { statsMap[status] = count; });
-        setEngagementStats(statsMap);
-      }
-    } catch {
-      // silent — stats are non-critical
-    } finally {
-      setStatsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchCampaigns();
-  }, [currentPage, pageLimit, debouncedSearchVal, statusFilter, sortField, sortOrder]);
-
-  useEffect(() => {
-    fetchEngagementStats();
+  const fetchEngagementStats = useCallback((signal?: AbortSignal) => {
+    return CampaignService.getEngagementStats(signal).then(res => {
+      if (signal?.aborted) return;
+      setEngagementStats(res.data.data);
+      setStatsError(false);
+    }).catch(() => {
+      if (!signal?.aborted) setStatsError(true);
+    }).finally(() => {
+      if (!signal?.aborted) setStatsLoading(false);
+    });
   }, []);
+
+  const refreshStats = () => {
+    setStatsLoading(true);
+    void fetchEngagementStats();
+  };
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => { void fetchCampaigns(); }, 0);
+    return () => window.clearTimeout(timer);
+  }, [fetchCampaigns]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetchEngagementStats(controller.signal);
+    return () => controller.abort();
+  }, [fetchEngagementStats]);
 
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
 
@@ -168,7 +195,7 @@ const PipelineContent = () => {
     }
     setIsBulkUpdating(true);
     const results = await Promise.allSettled(
-      toUpdate.map((c) => CampaignService.updateStatus(c.id || c._id!, { status: next as any }))
+      toUpdate.map((c) => CampaignService.updateStatus(c.id || c._id!, { status: next as CampaignStatus }))
     );
     const ok = results.filter((r) => r.status === "fulfilled").length;
     const failed = results.length - ok;
@@ -176,19 +203,24 @@ const PipelineContent = () => {
     if (failed) toast.error(`${failed} campaign${failed !== 1 ? "s" : ""} failed to update`);
     setIsBulkUpdating(false);
     fetchCampaigns();
+    refreshStats();
   };
 
   if (selectedCampaign) {
     return (
       <CampaignDetailView
         campaign={selectedCampaign}
-        onBack={() => setSelectedCampaign(null)}
+        onBack={() => {
+          setSelectedCampaign(null);
+          refreshStats();
+          void fetchCampaigns();
+        }}
         onStatusChange={(newStatus) => {
-          setSelectedCampaign((c) => (c ? { ...c, status: newStatus as any } : c));
+          setSelectedCampaign((c) => (c ? { ...c, status: newStatus as CampaignStatus } : c));
           setCampaigns((list) =>
             list.map((c) =>
               (c.id || c._id) === (selectedCampaign.id || selectedCampaign._id)
-                ? { ...c, status: newStatus as any }
+                ? { ...c, status: newStatus as CampaignStatus }
                 : c
             )
           );
@@ -197,143 +229,91 @@ const PipelineContent = () => {
     );
   }
 
-  const totalCampaigns = campaigns.length;
-  const totalLeads = campaigns.reduce((acc, camp) => acc + (camp.totalLeads || 0), 0);
+  if (selectedPipelineFilter) {
+    return (
+      <PipelineLeadTable
+        filter={selectedPipelineFilter.filter}
+        title={selectedPipelineFilter.title}
+        onBack={() => setSelectedPipelineFilter(null)}
+      />
+    );
+  }
+
+  const totalLeads = engagementStats?.totalLeads ?? 0;
+  const totalInProgress = engagementStats?.totalInProgress ?? 0;
   
   // Convert engagement stats to pie chart data
-  const pieData = Object.keys(PIE_LABELS).map((key) => ({
-    name: PIE_LABELS[key],
-    value: engagementStats[key] || 0,
-    color: PIE_COLORS[key] || "#d1d5db"
+  const pieData = (engagementStats?.stats ?? []).map(({ status, count }) => ({
+    name: PIE_LABELS[status] || status.replaceAll("_", " "),
+    value: count,
+    color: PIE_COLORS[status] || "#64748b"
   }));
   
-  // To match the UI in case of empty stats, we mock some for visuals if totalLeads is > 0 but stats are 0
   const hasStats = pieData.some(d => d.value > 0);
-  const displayPieData = hasStats ? pieData.filter(d => d.value > 0) : 
-    (totalLeads > 0 ? [
-      { name: "Not Reached", value: 16, color: "#9ca3af" },
-      { name: "Connected", value: 5, color: "#3b82f6" },
-      { name: "Not Connected", value: 4, color: "#eab308" },
-      { name: "Interested", value: 3, color: "#10b981" },
-      { name: "Meeting Scheduled", value: 5, color: "#8b5cf6" },
-      { name: "Not Interested", value: 3, color: "#f43f5e" },
-      { name: "Wrong Number", value: 3, color: "#ef4444" },
-      { name: "Call Back", value: 5, color: "#f59e0b" },
-    ] : [{ name: "No Data", value: 1, color: "#e5e7eb" }]);
+  const displayPieData = hasStats ? pieData.filter(d => d.value > 0) : [{ name: "No Data", value: 1, color: "#e5e7eb" }];
 
-  const displayTotalLeads = hasStats ? Object.values(engagementStats).reduce((a, b) => a + b, 0) : (totalLeads > 0 ? 44 : 0);
+  const displayTotalLeads = totalLeads;
+
+  const pipelineCards: {
+    label: string;
+    value: number;
+    filter: PipelineLeadFilter;
+    icon: React.ElementType;
+    color: string;
+  }[] = [
+    { label: "Total Leads", value: displayTotalLeads, filter: "all", icon: Users, color: "text-blue-600 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-400 border-blue-100 dark:border-blue-900/50" },
+    { label: "In Progress", value: totalInProgress, filter: "in_progress", icon: Clock3, color: "text-amber-600 bg-amber-50 dark:bg-amber-900/30 dark:text-amber-400 border-amber-100 dark:border-amber-900/50" },
+    { label: "Meetings Scheduled", value: engagementStats?.highlights.meetingsScheduled ?? 0, filter: "meetings_scheduled", icon: CalendarCheck, color: "text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/50" },
+    { label: "Meetings Done", value: engagementStats?.highlights.meetingsCompleted ?? 0, filter: "meetings_done", icon: CalendarCheck2, color: "text-teal-600 bg-teal-50 dark:bg-teal-900/30 dark:text-teal-400 border-teal-100 dark:border-teal-900/50" },
+    { label: "Follow-ups", value: engagementStats?.highlights.followUps ?? 0, filter: "follow_ups", icon: MessageCircle, color: "text-violet-600 bg-violet-50 dark:bg-violet-900/30 dark:text-violet-400 border-violet-100 dark:border-violet-900/50" },
+    { label: "Fresh Enquiry", value: engagementStats?.stats.find(s => s.status === "not_reached")?.count ?? 0, filter: "fresh_enquiry", icon: Flame, color: "text-orange-600 bg-orange-50 dark:bg-orange-900/30 dark:text-orange-400 border-orange-100 dark:border-orange-900/50" },
+  ];
+
+  const renderKpiValue = (value: number | string) => statsLoading || statsError ? "—" : typeof value === "number" ? value.toLocaleString() : value;
 
   return (
     <div className="w-full min-h-screen bg-[#f8fafc] dark:bg-gray-900 p-6 font-sans">
-      
-      {/* TOP KPI CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        
-        {/* Total Campaigns */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-[#18A1C4]/10 dark:bg-[#18A1C4]/30 text-[#18A1C4] flex items-center justify-center">
-                <Package size={20} />
-              </div>
-              <span className="text-gray-500 dark:text-gray-400 font-medium text-sm">Total Campaigns</span>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-gray-900 dark:text-white">{totalCampaigns > 0 ? totalCampaigns : 5}</div>
-              <div className="text-xs text-emerald-500 font-semibold flex items-center gap-1 mt-1">
-                <ArrowUpRight size={14} /> 25% <span className="text-gray-400 dark:text-gray-500 font-normal">from last month</span>
-              </div>
-            </div>
-          </div>
-          <div className="w-24 h-12">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={spark1}>
-                <Line type="monotone" dataKey="v" stroke="#18A1C4" strokeWidth={2.5} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Pipeline overview</h1>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">All company campaigns · Unique leads · All time</p>
         </div>
+        <button type="button" onClick={refreshStats} disabled={statsLoading} className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">
+          <RefreshCw size={15} className={statsLoading ? "animate-spin" : ""} /> Refresh stats
+        </button>
+      </div>
+      {statsError && <div role="alert" className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">Unable to load pipeline statistics. Please refresh to try again.</div>}
 
-        {/* Total Leads */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center">
-                <Users size={20} />
-              </div>
-              <span className="text-gray-500 dark:text-gray-400 font-medium text-sm">Total Leads</span>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-gray-900 dark:text-white">{displayTotalLeads}</div>
-              <div className="text-xs text-emerald-500 font-semibold flex items-center gap-1 mt-1">
-                <ArrowUpRight size={14} /> 12% <span className="text-gray-400 dark:text-gray-500 font-normal">from last month</span>
-              </div>
-            </div>
-          </div>
-          <div className="w-24 h-12">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={spark2}>
-                <Line type="monotone" dataKey="v" stroke="#3b82f6" strokeWidth={2.5} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+      {/* 1. TOP KPI CARDS (User preferences) */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+        {pipelineCards.map(({ label, value, filter, icon: Icon, color }) => {
+          const bgColors = color.split(' ').filter(c => c.startsWith('bg-') || c.startsWith('dark:bg-') || c.startsWith('text-') || c.startsWith('dark:text-')).join(' ');
+          const borderClass = color.split(' ').find(c => c.startsWith('border-')) || 'border-gray-100';
+          const darkBorderClass = color.split(' ').find(c => c.startsWith('dark:border-')) || 'dark:border-gray-700';
 
-        {/* Active Campaigns */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-900/30 text-orange-500 flex items-center justify-center">
-                <Target size={20} />
+          return (
+            <button
+              key={label}
+              type="button"
+              disabled={statsLoading || statsError}
+              onClick={() => setSelectedPipelineFilter({ filter, title: label })}
+              className={`bg-white dark:bg-gray-800 rounded-2xl border ${borderClass} ${darkBorderClass} p-5 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-md cursor-pointer disabled:cursor-not-allowed disabled:opacity-60`}
+              aria-label={`View ${label} leads`}
+            >
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-3 ${bgColors}`}>
+                <Icon size={24} />
               </div>
-              <span className="text-gray-500 dark:text-gray-400 font-medium text-sm">Active Campaigns</span>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-gray-900 dark:text-white">{totalCampaigns > 0 ? totalCampaigns : 5}</div>
-              <div className="text-xs text-gray-400 dark:text-gray-500 font-medium mt-1">
-                {totalCampaigns > 0 ? totalCampaigns : 5} running • 0 paused
-              </div>
-            </div>
-          </div>
-          <div className="w-24 h-12">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={spark3}>
-                <Line type="monotone" dataKey="v" stroke="#f97316" strokeWidth={2.5} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Overall Conversion */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 flex items-center justify-center">
-                <Filter size={20} />
-              </div>
-              <span className="text-gray-500 dark:text-gray-400 font-medium text-sm">Overall Conversion</span>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-gray-900 dark:text-white">22.7%</div>
-              <div className="text-xs text-emerald-500 font-semibold flex items-center gap-1 mt-1">
-                <ArrowUpRight size={14} /> 4.2% <span className="text-gray-400 dark:text-gray-500 font-normal">from last month</span>
-              </div>
-            </div>
-          </div>
-          <div className="w-24 h-12">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={spark4}>
-                <Line type="monotone" dataKey="v" stroke="#10b981" strokeWidth={2.5} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+              <div className="text-3xl font-black text-gray-900 dark:text-white tabular-nums tracking-tight">{renderKpiValue(value)}</div>
+              <div className="mt-1.5 text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{label}</div>
+            </button>
+          );
+        })}
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 h-full">
-        
-        {/* LEFT COLUMN - STATS & QUICK ACTIONS */}
-        <div className="w-full lg:w-[380px] flex flex-col gap-6 shrink-0">
+        <div className="flex flex-col xl:flex-row gap-6 items-stretch">
+
+        {/* COL 1 - Lead Engagement Status */}
+        <div className="w-full xl:w-[350px] shrink-0">
           
           {/* Lead Engagement Status */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
@@ -341,9 +321,6 @@ const PipelineContent = () => {
               <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
                 <Megaphone size={18} className="text-gray-500" /> Lead Engagement Status
               </h3>
-              <button className="text-xs font-medium text-gray-500 hover:text-gray-800 dark:hover:text-white transition-colors flex items-center gap-1">
-                View all &rarr;
-              </button>
             </div>
             
             <div className="flex items-center gap-4">
@@ -351,100 +328,188 @@ const PipelineContent = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={displayPieData}
+                      data={statsLoading || statsError ? [{ name: "Unavailable", value: 1, color: "#e5e7eb" }] : displayPieData}
                       innerRadius={45}
                       outerRadius={65}
                       paddingAngle={2}
                       dataKey="value"
                       stroke="none"
                     >
-                      {displayPieData.map((entry, index) => (
+                        {(statsLoading || statsError ? [{ color: "#e5e7eb" }] : displayPieData).map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-2xl font-bold text-gray-800 dark:text-white leading-none">{displayTotalLeads}</span>
+                  <span className="text-2xl font-bold text-gray-800 dark:text-white leading-none">{renderKpiValue(displayTotalLeads)}</span>
                   <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-1 uppercase tracking-wider">Total Leads</span>
                 </div>
               </div>
               
               <div className="flex-1 flex flex-col gap-2.5">
-                {Object.keys(PIE_LABELS).map((key) => {
-                  const val = hasStats ? engagementStats[key] : (displayPieData.find(d => d.name === PIE_LABELS[key])?.value || 0);
-                  if (val === 0 && !hasStats && totalLeads === 0) return null;
-                  
+                {pieData.map((item) => {
                   return (
-                    <div key={key} className="flex items-center justify-between text-xs">
+                    <div key={item.name} className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: PIE_COLORS[key] }}></div>
-                        <span className="text-gray-500 dark:text-gray-400 font-medium">{PIE_LABELS[key]}</span>
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }}></div>
+                        <span className="text-gray-500 dark:text-gray-400 font-medium capitalize">{item.name}</span>
                       </div>
-                      <span className="font-bold text-gray-800 dark:text-white">{val}</span>
+                      <span className="font-bold text-gray-800 dark:text-white">{renderKpiValue(item.value)}</span>
                     </div>
                   )
                 })}
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Quick Actions */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
+        {/* COL 2 - Sales Funnel */}
+        <div className="w-full xl:w-[350px] shrink-0">
+          {/* Sales Funnel */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 h-full">
             <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2 mb-5">
-              <Zap size={18} className="text-gray-500" /> Quick Actions
+              <Filter size={18} className="text-[#18A1C4]" /> Sales Funnel
             </h3>
             
-            <div className="grid grid-cols-2 gap-4">
-              <button 
-                onClick={() => setIsCreateModalOpen(true)}
-                className="flex items-start gap-3 p-3 bg-[#18A1C4]/10 dark:bg-[#18A1C4]/10 hover:bg-[#18A1C4]/20 dark:hover:bg-[#18A1C4]/20 rounded-xl transition-colors border border-[#18A1C4]/30 dark:border-[#18A1C4]/30 text-left group"
-              >
-                <div className="w-8 h-8 rounded-full bg-[#18A1C4]/20 dark:bg-[#18A1C4]/80 text-[#18A1C4] dark:text-[#18A1C4] flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                  <Plus size={16} />
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-[#18A1C4] dark:text-[#18A1C4] leading-tight">Create Campaign</div>
-                  <div className="text-[10px] text-[#18A1C4]/80 dark:text-[#18A1C4] mt-0.5 font-medium">Start a new outreach</div>
-                </div>
-              </button>
+            {statsLoading ? (
+               <div className="flex flex-col gap-2 animate-pulse items-center w-full">
+                 <div className="h-10 w-full bg-gray-100 dark:bg-gray-700 rounded-xl"></div>
+                 <div className="h-10 w-[80%] bg-gray-100 dark:bg-gray-700 rounded-xl"></div>
+                 <div className="h-10 w-[60%] bg-gray-100 dark:bg-gray-700 rounded-xl"></div>
+                 <div className="h-10 w-[40%] bg-gray-100 dark:bg-gray-700 rounded-xl"></div>
+               </div>
+            ) : (
+              <div className="flex flex-col gap-[2px] items-center justify-center w-full pb-2">
+                {(() => {
+                  const totalLeads = engagementStats?.totalLeads ?? 0;
+                  const contacted = engagementStats?.funnel?.contacted ?? totalLeads - (engagementStats?.stats.find(s => s.status === 'not_reached')?.count ?? 0) - (engagementStats?.stats.find(s => s.status === 'not_connected')?.count ?? 0);
+                  const engagedFromHighlights = (engagementStats?.highlights.interested ?? 0) + (engagementStats?.highlights.followUps ?? 0) + (engagementStats?.highlights.callBack ?? 0) + (engagementStats?.highlights.meetingsScheduled ?? 0) + (engagementStats?.highlights.meetingsCompleted ?? 0);
+                  const meetingsFromHighlights = (engagementStats?.highlights.meetingsScheduled ?? 0) + (engagementStats?.highlights.meetingsCompleted ?? 0);
+                  const engagedRaw = engagementStats?.funnel?.engaged ?? engagedFromHighlights;
+                  const meetingsRaw = engagementStats?.funnel?.meetings ?? meetingsFromHighlights;
+                  const wonRaw = engagementStats?.funnel?.closed_won ?? engagementStats?.closedBreakdown.won ?? 0;
 
-              <button className="flex items-start gap-3 p-3 bg-blue-50/70 dark:bg-blue-900/10 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-colors border border-blue-100/50 dark:border-blue-800/30 text-left group">
-                <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                  <Upload size={16} />
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-blue-900 dark:text-blue-100 leading-tight">Import Leads</div>
-                  <div className="text-[10px] text-blue-600/70 dark:text-blue-400 mt-0.5 font-medium">Upload from CSV/Excel</div>
-                </div>
-              </button>
+                  const funnelData = [
+                    { name: 'Total Leads', value: totalLeads, filter: 'all' as PipelineLeadFilter, fill: 'from-[#18A1C4] to-cyan-400' },
+                    { name: 'Contacted', value: contacted, filter: 'contacted' as PipelineLeadFilter, fill: 'from-blue-500 to-[#18A1C4]' },
+                    { name: 'Engaged', value: engagedRaw, filter: 'engaged' as PipelineLeadFilter, fill: 'from-indigo-500 to-blue-500' },
+                    { name: 'Meetings', value: meetingsRaw, filter: 'meetings' as PipelineLeadFilter, fill: 'from-purple-500 to-indigo-500' },
+                    { name: 'Closed Won', value: wonRaw, filter: 'closed_won' as PipelineLeadFilter, fill: 'from-emerald-500 to-teal-400' }
+                   ];
 
-              <button className="flex items-start gap-3 p-3 bg-orange-50/70 dark:bg-orange-900/10 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-xl transition-colors border border-orange-100/50 dark:border-orange-800/30 text-left group">
-                <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-800 text-orange-500 dark:text-orange-300 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                  <BarChart2 size={16} />
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-orange-900 dark:text-orange-100 leading-tight">View Pipeline</div>
-                  <div className="text-[10px] text-orange-600/70 dark:text-orange-400 mt-0.5 font-medium">Track conversions</div>
-                </div>
-              </button>
+                  const maxValue = Math.max(funnelData[0]?.value || 1, 1);
+                  const minWidth = 25; // minimum width percentage at bottom of funnel
 
-              <button className="flex items-start gap-3 p-3 bg-emerald-50/70 dark:bg-emerald-900/10 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-xl transition-colors border border-emerald-100/50 dark:border-emerald-800/30 text-left group">
-                <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-800 text-emerald-600 dark:text-emerald-300 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                  <Download size={16} />
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-emerald-900 dark:text-emerald-100 leading-tight">Download Report</div>
-                  <div className="text-[10px] text-emerald-600/70 dark:text-emerald-400 mt-0.5 font-medium">Get detailed insights</div>
-                </div>
-              </button>
+                  return funnelData.map((step, idx) => {
+                    const w_bottom = Math.max((step.value / maxValue) * 100, minWidth);
+                    let w_top = 100;
+                    if (idx > 0) {
+                       w_top = Math.max((funnelData[idx - 1].value / maxValue) * 100, minWidth);
+                     }
+
+                    const pTopLeft = `${(100 - w_top) / 2}% 0%`;
+                    const pTopRight = `${(100 + w_top) / 2}% 0%`;
+                    const pBottomRight = `${(100 + w_bottom) / 2}% 100%`;
+                     const pBottomLeft = `${(100 - w_bottom) / 2}% 100%`;
+
+                     const clipPath = `polygon(${pTopLeft}, ${pTopRight}, ${pBottomRight}, ${pBottomLeft})`;
+
+                    return (
+                      <button
+                        key={step.name}
+                        type="button"
+                        disabled={statsError}
+                        onClick={() => setSelectedPipelineFilter({ filter: step.filter, title: step.name })}
+                        className="group relative flex h-11 w-full items-center justify-center cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                        aria-label={`View ${step.name} leads`}
+                      >
+                        <div
+                          className={`absolute inset-0 bg-gradient-to-r ${step.fill} transition-all duration-300 opacity-95 group-hover:opacity-100`}
+                          style={{ clipPath }}
+                        />
+                        <div className="relative z-10 flex w-full justify-center items-center gap-4 px-2 pointer-events-none">
+                          <span className="text-white font-bold text-xs whitespace-nowrap drop-shadow-md">{step.name}</span>
+                          <span className="text-white font-black text-sm tabular-nums drop-shadow-md">{renderKpiValue(step.value)}</span>
+                        </div>
+                      </button>
+                    );
+                  });
+                })()}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* COL 3 - Pie Charts */}
+        <div className="flex-1">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 h-full">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-full">
+              {[
+                { title: "Fresh Inquiry", data: engagementStats?.pieBreakdown?.fresh ?? [] },
+                { title: "IN-PROGRESS", data: engagementStats?.pieBreakdown?.inProgress ?? [] },
+                { title: "LOST", data: engagementStats?.pieBreakdown?.lost ?? [] }
+              ].map((chart, idx) => {
+                const CHART_COLORS = ["#ef4444", "#06b6d4", "#fcd34d", "#ca8a04", "#4338ca", "#0f172a", "#10b981", "#8b5cf6", "#ec4899", "#f97316"];
+                return (
+                  <div key={idx} className="flex flex-col items-center">
+                    <div className="h-[130px] w-full max-w-[150px] relative">
+                      {statsLoading ? (
+                        <div className="w-full h-full rounded-full bg-gray-100 dark:bg-gray-700 animate-pulse" />
+                      ) : (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={chart.data.length > 0 ? chart.data : [{ label: 'No Data', count: 1 }]}
+                              innerRadius={38}
+                              outerRadius={55}
+                              paddingAngle={0}
+                              dataKey="count"
+                              stroke="none"
+                            >
+                              {chart.data.length > 0 ? chart.data.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                              )) : (
+                                <Cell fill="#e5e7eb" />
+                              )}
+                            </Pie>
+                          </PieChart>
+                        </ResponsiveContainer>
+                      )}
+                      {!statsLoading && chart.data.length === 0 && (
+                        <div className="absolute inset-0 flex items-center justify-center text-[10px] text-gray-400">No Data</div>
+                      )}
+                    </div>
+                    <h4 className="font-bold text-gray-900 dark:text-white mt-2 mb-2 uppercase text-xs tracking-wide">{chart.title}</h4>
+                    <div className="w-full bg-gray-50 dark:bg-gray-900/50 rounded-xl p-2.5 flex-1">
+                      {statsLoading ? (
+                        <div className="flex flex-col gap-1.5">{[1,2,3].map(i => <div key={i} className="h-3 rounded bg-gray-100 dark:bg-gray-700 animate-pulse" />)}</div>
+                      ) : chart.data.length > 0 ? (
+                        <ul className="flex flex-col gap-1.5 max-h-[140px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700 pr-0.5">
+                          {chart.data.map((item, i) => (
+                            <li key={i} className="flex items-center text-[11px] text-gray-600 dark:text-gray-400">
+                              <span className="w-2.5 h-2.5 rounded-sm mr-1.5 shrink-0" style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }} />
+                              <span className="truncate">{item.label}</span>
+                              <span className="ml-1 shrink-0">({item.count})</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-xs text-gray-400 italic">No data</div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
 
-        {/* RIGHT COLUMN - CAMPAIGNS TABLE */}
-        <div className="flex-1 bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col min-h-0 overflow-hidden">
-          
+      </div>
+
+      {/* FULL WIDTH - CAMPAIGNS TABLE */}
+      <div className="mt-6 bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col overflow-hidden">
+
           {/* Header & Toolbar */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-3">
@@ -617,7 +682,7 @@ const PipelineContent = () => {
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">No campaigns found</h3>
                 <p className="text-gray-500 dark:text-gray-400 text-sm mt-1 mb-4 text-center max-w-sm">
-                  You haven't created any campaigns yet. Click the "Create Campaign" button to get started.
+          You haven&apos;t created any campaigns yet. Click the &quot;Create Campaign&quot; button to get started.
                 </p>
                 <button 
                   onClick={() => setIsCreateModalOpen(true)}
@@ -818,7 +883,6 @@ const PipelineContent = () => {
             </div>
           )}
         </div>
-      </div>
 
       {isCreateModalOpen && (
         <CreateCampaignModal
@@ -826,6 +890,7 @@ const PipelineContent = () => {
           onSuccess={() => {
             setIsCreateModalOpen(false);
             fetchCampaigns();
+            refreshStats();
           }}
         />
       )}

@@ -100,7 +100,7 @@ const SideBar = () => {
     if (pathname.startsWith("/leads")) {
       setOpenMenu("sales")
     }
-    if (pathname.startsWith("/pipeline")) {
+    if (pathname.startsWith("/pipeline") || pathname.startsWith("/agents")) {
       setOpenMenu("sales")
     }
     if (pathname.startsWith("/deals")) {
@@ -168,6 +168,7 @@ const SideBar = () => {
         return pathname.startsWith("/enquiry") ||
           pathname.startsWith("/leads") ||
           pathname.startsWith("/pipeline") ||
+          pathname.startsWith("/agents") ||
           pathname.startsWith("/deals") ||
           pathname.startsWith("/quotations") ||
           pathname.startsWith("/invoice");
@@ -760,6 +761,17 @@ const SideBar = () => {
                           } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       >
                         {t("pipeline") || "Pipeline"}
+                      </Link>
+                    </li>}
+                    {(hasPermission(PERMISSIONS.readLead) && hasPermission(PERMISSIONS.readUser) && hasFeature(FEATURES.CRM)) && <li>
+                      <Link
+                        href="/agents"
+                        className={`${isActive("/agents")
+                          ? "dark:text-cyan-300 text-cyan-700 border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          : "border-l-2 border-transparent"
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                      >
+                        {t("agents", { defaultValue: "Agents" })}
                       </Link>
                     </li>}
                   {(hasPermission(PERMISSIONS.readEnquiry)&&  (hasFeature(FEATURES.CRM))) && <li>

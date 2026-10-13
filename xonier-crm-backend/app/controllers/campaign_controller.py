@@ -28,6 +28,15 @@ class CampaignController:
         except AppException as e:
             raise e
 
+    async def get_pipeline_leads(self, request: Request):
+        try:
+            user = request.state.user
+            filters = request.query_params
+            result = await self.service.get_pipeline_leads(filters=filters, user=user)
+            return successResponse(200, "Pipeline leads fetched successfully", result)
+        except AppException as e:
+            raise e
+
     async def get_by_id(self, request: Request, campaign_id: str):
         try:
             user = request.state.user

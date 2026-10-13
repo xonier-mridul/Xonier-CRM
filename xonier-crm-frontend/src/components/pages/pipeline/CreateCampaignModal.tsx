@@ -161,13 +161,24 @@ export const CsvMappingModal: React.FC<CsvMappingProps> = ({ csvHeaders, preview
     return auto;
   });
 
+  // Lock background scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
+
   const requiredMapped = LEAD_FIELDS.filter((f) => f.required).every((f) => mapping[f.key]);
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4"
+      onWheel={(e) => e.stopPropagation()}
+    >
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex justify-between items-center px-6 py-5 border-b border-gray-100 dark:border-gray-700/60 bg-gray-50/50 dark:bg-gray-800/50">
+        <div className="flex justify-between items-center px-6 py-5 border-b border-gray-100 dark:border-gray-700/60 bg-gray-50/50 dark:bg-gray-800/50 flex-shrink-0">
           <div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white">Map CSV Columns</h3>
             <p className="text-xs text-gray-500 mt-1">Match your CSV headers to the CRM lead fields</p>
@@ -177,7 +188,7 @@ export const CsvMappingModal: React.FC<CsvMappingProps> = ({ csvHeaders, preview
           </button>
         </div>
 
-        <div className="overflow-y-auto p-5 flex flex-col gap-4">
+        <div className="overflow-y-auto flex-1 min-h-0 p-5 flex flex-col gap-4 overscroll-contain">
           {/* Mapping table */}
           <div className="border dark:border-gray-700 rounded-lg overflow-hidden">
             <table className="w-full text-sm">

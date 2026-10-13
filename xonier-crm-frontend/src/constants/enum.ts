@@ -1114,7 +1114,8 @@ export enum LeadEngagementStatus {
   NOT_CONNECTED = "not_connected",
   NOT_REACHED = "not_reached",
   WRONG_NUMBER = "wrong_number",
-  MEETING_SCHEDULED = "meeting_scheduled"
+  MEETING_SCHEDULED = "meeting_scheduled",
+  MEETING_COMPLETED = "meeting_completed"
 }
 
 export enum TASK_ACTIVITY_ACTION {

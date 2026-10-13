@@ -32,6 +32,7 @@ from app.core.security import hash_value
 from app.utils.custom_exception import AppException
 from app.utils.enquiry_id_generator import generate_enquiry_id
 from app.utils.activity_payload import activity_payload
+from app.utils.pipeline_stats import matches_pipeline_filter, summarize_lead_groups
 
 
 class CampaignService:
@@ -456,6 +457,40 @@ class CampaignService:
                             if raw_project_type:
                                 raw_project_type = str(raw_project_type).strip().lower().replace(" ", "_")
 
+                            # Normalize language: CSV may send full names like "English", "Hindi"
+                            # instead of ISO codes like "en", "hi". Map them here.
+                            LANGUAGE_NAME_TO_CODE = {
+                                "english": "en", "spanish": "es", "french": "fr", "german": "de",
+                                "italian": "it", "portuguese": "pt", "dutch": "nl", "russian": "ru",
+                                "ukrainian": "uk", "polish": "pl", "czech": "cs", "slovak": "sk",
+                                "hungarian": "hu", "romanian": "ro", "bulgarian": "bg", "greek": "el",
+                                "turkish": "tr", "arabic": "ar", "hebrew": "he", "persian": "fa",
+                                "urdu": "ur", "hindi": "hi", "bengali": "bn", "tamil": "ta",
+                                "telugu": "te", "marathi": "mr", "gujarati": "gu", "kannada": "kn",
+                                "malayalam": "ml", "punjabi": "pa", "chinese": "zh", "japanese": "ja",
+                                "korean": "ko", "thai": "th", "vietnamese": "vi", "indonesian": "id",
+                                "malay": "ms", "filipino": "tl", "tagalog": "tl", "swedish": "sv",
+                                "norwegian": "no", "danish": "da", "finnish": "fi", "icelandic": "is",
+                                "afrikaans": "af", "swahili": "sw", "zulu": "zu", "latin": "la",
+                            }
+                            raw_language = lead.get("language")
+                            if raw_language:
+                                lang_lower = str(raw_language).strip().lower()
+                                raw_language = LANGUAGE_NAME_TO_CODE.get(lang_lower, lang_lower)
+
+                            # Normalize postalCode: CSV sends strings, schema expects int
+                            raw_postal_code = lead.get("postalCode")
+                            if raw_postal_code is not None and raw_postal_code != "":
+                                try:
+                                    raw_postal_code = int(str(raw_postal_code).strip())
+                                except (ValueError, TypeError):
+                                    raw_postal_code = None
+
+                            # Normalize employeeSeniority: CSV may send "Senior Level" instead of "senior_level"
+                            raw_seniority = lead.get("employeeSeniority")
+                            if raw_seniority:
+                                raw_seniority = str(raw_seniority).strip().lower().replace(" ", "_")
+
                             # Restore LeadsCreateSchema validation to ensure we respect manual lead creation rules.
                             try:
                                 lead_for_validation = {
@@ -465,6 +500,9 @@ class CampaignService:
                                     "status": raw_status,
                                     "projectType": raw_project_type,
                                     "meetingScheduled": lead.get("meetingScheduled") or "no",
+                                    "language": raw_language,
+                                    "postalCode": raw_postal_code,
+                                    "employeeSeniority": raw_seniority,
                                 }
                                 LeadsCreateSchema(**lead_for_validation)
                             except Exception as ve:
@@ -499,11 +537,11 @@ class CampaignService:
                                 "companyName": lead.get("companyName"),
                                 "city": lead.get("city"),
                                 "country": lead.get("country"),
-                                "postalCode": lead.get("postalCode"),
-                                "language": lead.get("language"),
+                                "postalCode": raw_postal_code,
+                                "language": raw_language,
                                 "industry": lead.get("industry"),
                                 "employeeRole": lead.get("employeeRole"),
-                                "employeeSeniority": lead.get("employeeSeniority"),
+                                "employeeSeniority": raw_seniority,
                                 "message": lead.get("message"),
                                 "membershipNotes": lead.get("membershipNotes"),
                                 # Per-lead dataTag from CSV takes priority, fallback to batch-level
@@ -1324,60 +1362,180 @@ class CampaignService:
     # ENGAGEMENT STATS — connectStatus counts across all campaign leads
     # ─────────────────────────────────────────────────────────────────────────
 
-    async def get_engagement_stats(self, user: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Aggregates connectStatus counts for all leads that appear in any
-        non-deleted campaign of this company.
-        Returns: { "stats": [{ "status": "not_reached", "count": 12 }, ...] }
-        """
+    async def get_pipeline_leads(self, filters: Dict[str, Any], user: Dict[str, Any]) -> Dict[str, Any]:
+        """Return paginated campaign leads for a clickable pipeline metric."""
         try:
-            # Get all non-deleted campaign IDs for this company
-            camp_collection = self._collection()
             company_oid = PydanticObjectId(user["companyId"])
-            campaigns = await camp_collection.find(
-                {"companyId": company_oid, "status": {"$ne": "deleted"}},
+            page = max(int(filters.get("page") or 1), 1)
+            limit = min(max(int(filters.get("limit") or 10), 1), 100)
+            filter_name = str(filters.get("filter") or "all").strip().lower()
+            search = str(filters.get("search") or "").strip().lower()
+
+            campaigns = await self._collection().find(
+                {"companyId": company_oid, "deletedAt": None, "status": {"$ne": "deleted"}},
                 {"_id": 1},
             ).to_list(length=None)
-            campaign_ids = [c["_id"] for c in campaigns]
-
+            campaign_ids = [campaign["_id"] for campaign in campaigns]
             if not campaign_ids:
-                return {"stats": []}
+                return {"data": [], "page": page, "limit": limit, "total": 0, "totalPages": 1}
 
-            cl_collection = self._lead_collection()
+            # A lead can be in more than one campaign. Keep the same unique-lead
+            # scope used by get_engagement_stats before applying the metric.
+            lead_groups = await self._lead_collection().aggregate([
+                {"$match": {
+                    "$or": [
+                        {"campaignId.$id": {"$in": campaign_ids}},
+                        {"campaignId": {"$in": campaign_ids}},
+                    ],
+                }},
+                {"$group": {"_id": {"$ifNull": ["$leadId.$id", "$leadId"]}}},
+            ]).to_list(length=None)
+            lead_ids = [group["_id"] for group in lead_groups if group.get("_id")]
+            if not lead_ids:
+                return {"data": [], "page": page, "limit": limit, "total": 0, "totalPages": 1}
 
-            # Find all unique leadIds across all campaign_leads for these campaigns
-            pipeline = [
-                {"$match": {"campaignId.$id": {"$in": campaign_ids}}},
-                # Extract raw ObjectId from Beanie DBRef before $lookup
-                {
-                    "$addFields": {
-                        "leadOid": {"$ifNull": ["$leadId.$id", "$leadId"]},
+            leads = await LeadsModel.find({
+                "_id": {"$in": lead_ids},
+                "companyId": company_oid,
+                "deletedAt": None,
+                "status": {"$nin": ["delete", "deleted"]},
+            }).sort("-createdAt").to_list(length=None)
+
+            matching_leads = []
+            for lead in leads:
+                lead_data = lead.model_dump(mode="json", exclude={"hashedEmail", "hashedPhone"})
+                lead_data["customStatuses"] = [
+                    {"k": key, "v": value}
+                    for key, value in (lead_data.get("extraFields") or {}).items()
+                ]
+                if not matches_pipeline_filter(lead_data, filter_name):
+                    continue
+
+                if search:
+                    searchable = " ".join(
+                        str(lead_data.get(field) or "")
+                        for field in (
+                            "lead_id", "fullName", "companyName", "city", "source",
+                            "projectType", "dataTag", "status", "connectStatus",
+                        )
+                    ).lower()
+                    if search not in searchable:
+                        continue
+                matching_leads.append(lead)
+
+            total = len(matching_leads)
+            start = (page - 1) * limit
+            page_leads = matching_leads[start:start + limit]
+
+            serialized = []
+            for lead in page_leads:
+                # Fetch only the people needed by the table and strip credentials
+                # from the response.
+                for field in ("createdBy", "assignedTo", "assignedBy"):
+                    value = getattr(lead, field, None)
+                    if hasattr(value, "fetch"):
+                        setattr(lead, field, await value.fetch())
+                    elif isinstance(value, list):
+                        setattr(lead, field, [
+                            await item.fetch() if hasattr(item, "fetch") else item
+                            for item in value
+                        ])
+
+                item = lead.model_dump(mode="json", exclude={"hashedEmail", "hashedPhone"})
+                for field in ("email", "phone"):
+                    if item.get(field):
+                        item[field] = self.encryption.decrypt_data(item[field])
+
+                def safe_user(value):
+                    if not value:
+                        return None
+                    return {
+                        "id": str(value.get("id") or value.get("_id")) if isinstance(value, dict) else str(value.id),
+                        "firstName": value.get("firstName") if isinstance(value, dict) else value.firstName,
+                        "lastName": value.get("lastName") if isinstance(value, dict) else value.lastName,
                     }
-                },
-                # Join with leads collection to get connectStatus
-                {"$lookup": {
-                    "from": "leads",
-                    "localField": "leadOid",
-                    "foreignField": "_id",
-                    "as": "lead",
-                }},
-                {"$unwind": "$lead"},
-                # Group by connectStatus
-                {"$group": {
-                    "_id": "$lead.connectStatus",
-                    "count": {"$sum": 1},
-                }},
-                {"$project": {
-                    "_id": 0,
-                    "status": {"$ifNull": ["$_id", "not_reached"]},
-                    "count": 1,
-                }},
-                {"$sort": {"count": -1}},
-            ]
-            result = await cl_collection.aggregate(pipeline).to_list(length=None)
-            return {"stats": result}
 
+                item["createdBy"] = safe_user(item.get("createdBy"))
+                item["assignedBy"] = safe_user(item.get("assignedBy"))
+                item["assignedTo"] = [safe_user(value) for value in item.get("assignedTo") or []]
+                serialized.append(item)
+
+            return {
+                "data": serialized,
+                "page": page,
+                "limit": limit,
+                "total": total,
+                "totalPages": max((total + limit - 1) // limit, 1),
+            }
+        except AppException:
+            raise
+        except (TypeError, ValueError) as e:
+            raise AppException(400, f"Invalid pipeline lead filter: {e}")
         except Exception as e:
             traceback.print_exc()
             raise AppException(500, f"Internal server error: {e}")
 
+    async def get_engagement_stats(self, user: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Aggregates lead lifecycle, engagement, and custom sales-status counts for
+        the unique leads that appear in any non-deleted campaign of this company.
+        """
+        try:
+            camp_collection = self._collection()
+            company_oid = PydanticObjectId(user["companyId"])
+            campaigns = await camp_collection.find(
+                {"companyId": company_oid, "deletedAt": None, "status": {"$ne": "deleted"}},
+                {"_id": 1, "status": 1},
+            ).to_list(length=None)
+            campaign_ids = [c["_id"] for c in campaigns]
+            campaign_summary = {
+                "total": len(campaigns),
+                "active": sum(c.get("status") == "active" for c in campaigns),
+                "paused": sum(c.get("status") == "paused" for c in campaigns),
+            }
+            if not campaign_ids:
+                return {**summarize_lead_groups([]), "campaigns": campaign_summary}
+
+            # Deduplicate before joining so multi-campaign leads count only once.
+            # The join also enforces company scope and removes deleted leads.
+            pipeline = [
+                {"$match": {
+                    "$or": [
+                        {"campaignId.$id": {"$in": campaign_ids}},
+                        {"campaignId": {"$in": campaign_ids}},
+                    ],
+                }},
+                {"$group": {"_id": {"$ifNull": ["$leadId.$id", "$leadId"]}}},
+                {"$lookup": {"from": "leads", "localField": "_id", "foreignField": "_id", "as": "lead"}},
+                {"$unwind": "$lead"},
+                {"$match": {
+                    "lead.companyId": company_oid,
+                    "lead.deletedAt": None,
+                    "lead.status": {"$nin": ["delete", "deleted"]},
+                }},
+                {"$group": {
+                    "_id": {
+                        "status": "$lead.status",
+                        "connectStatus": "$lead.connectStatus",
+                        "meetingScheduled": "$lead.meetingScheduled",
+                        "dataTag": "$lead.dataTag",
+                        "projectType": "$lead.projectType",
+                        "customStatuses": {"$filter": {
+                            "input": {"$objectToArray": {"$ifNull": ["$lead.extraFields", {}]}},
+                            "as": "field",
+                            "cond": {"$regexMatch": {
+                                "input": "$$field.k",
+                                "regex": r"^(status|(?:lead|connect|engagement|sales|follow[\s_-]*up|demo|meeting)[\s_-]*status|(?:lead[\s_-]*)?stage|disposition)$",
+                                "options": "i",
+                            }},
+                        }},
+                    },
+                    "count": {"$sum": 1},
+                }},
+            ]
+            groups = await self._lead_collection().aggregate(pipeline).to_list(length=None)
+            return {**summarize_lead_groups(groups), "campaigns": campaign_summary}
+
+        except Exception as e:
+            traceback.print_exc()
+            raise AppException(500, f"Internal server error: {e}")

@@ -9,7 +9,6 @@ router = APIRouter()
 dependencies = Dependencies()
 leadController = LeadController()
 
-
 @router.post("/create", status_code=201, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
 Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM)), Depends(dependencies.permissions(["lead:create"]))])
 async def create(request: Request, payload: LeadBaseSchema):
@@ -66,7 +65,6 @@ Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATU
 async def get_by_id(request: Request, id: str):
     return await leadController.get_by_id(request=request, id=id)
 
-
 @router.put("/update/{id}", status_code=200, dependencies=[Depends(dependencies.authorized),Depends(dependencies.company_active),
 Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM)), Depends(dependencies.permissions(["lead:update"]))])
 async def update(request: Request, id:str, payload: LeadUpdateSchema ):
@@ -86,7 +84,6 @@ async def update_connect_status(Request: Request, id: str, payload: LeadConnectS
 Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM)), Depends(dependencies.permissions(["lead:delete"]))])
 async def delete(request: Request, id: str):
     return await leadController.delete(request,id)
-
 
 @router.delete("/delete/bulk", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
 Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM)), Depends(dependencies.permissions(["lead:delete"]))])

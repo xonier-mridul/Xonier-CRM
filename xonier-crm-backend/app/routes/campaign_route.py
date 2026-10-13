@@ -10,6 +10,8 @@ from app.schemas.campaign_schema import (
     CampaignLeadAssignSchema,
 )
 from app.controllers.campaign_controller import CampaignController
+from app.services.agent_service import AgentService
+from app.utils.custom_response import successResponse
 
 router = APIRouter()
 
@@ -27,6 +29,17 @@ _auth_deps = [
 
 # ─── Campaign CRUD ────────────────────────────────────────────────────────────
 
+@router.get(
+    "/agents",
+    status_code=200,
+    dependencies=[*_auth_deps, Depends(dependencies.permissions(["user:read"])),
+                  Depends(dependencies.permissions(["lead:read"]))],
+)
+async def get_agent_breakdown(request: Request):
+    result = await AgentService().get_breakdown(request.state.user)
+    return successResponse(200, "Agent breakdown fetched successfully", result)
+
+
 @router.post(
     "/create",
     status_code=201,
@@ -43,6 +56,15 @@ async def create_campaign(request: Request, payload: CampaignCreateSchema):
 )
 async def get_all_campaigns(request: Request):
     return await campaignController.get_all(request=request)
+
+
+@router.get(
+    "/pipeline-leads",
+    status_code=200,
+    dependencies=[*_auth_deps, Depends(dependencies.permissions(["campaign:read"]))],
+)
+async def get_pipeline_leads(request: Request):
+    return await campaignController.get_pipeline_leads(request=request)
 
 
 @router.get(
