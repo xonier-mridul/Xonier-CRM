@@ -605,6 +605,7 @@ class ACTIVITY_ENTITY_TYPE(str, Enum):
     PLAN="plan"
     COMPANY = "company"
     OTP = "otp"
+    TEAM = "team"  
     
     
 

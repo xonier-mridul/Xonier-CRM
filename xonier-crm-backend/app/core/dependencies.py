@@ -60,48 +60,37 @@ class Dependencies:
 
         return checking
     
-    async def authorized(self,request: Request, response: Response):
-        try:
-           token = None
+    async def authorized(self, request: Request):
+        token = None
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
+        if not token:
+            token = request.cookies.get("accessToken")
 
-           
-  
-           auth_header = request.headers.get("Authorization")
-           if auth_header and auth_header.startswith("Bearer "):
-                token = auth_header.split(" ")[1]
-           if not token: 
-                token = request.cookies.get("accessToken")
+        if not token:
+            raise AppException(401, "You are logged out, please login again")
 
-           if not token:
-               
-               raise AppException(401, "You are logged out, please logged in again")
-           payload = verify_access_token(token)
+        payload = verify_access_token(token)
+        if not payload:
+            raise AppException(401, "Invalid or expired Tokens", clear_cookies=True)
 
-           
-           
-           if not payload:
-               response.delete_cookie(key="accessToken", **JWT_OPTIONS)
-               response.delete_cookie(key="refreshToken", **JWT_OPTIONS)
-               
-               return AppException(401, "Invalid or expired Tokens")
-           with system_query():
-                user = await self.userRepo.find_by_id(PydanticObjectId(payload["_id"]), populate=["userRole"])
-           
-           if not user:
-               raise AppException(401, "User not found")
-           
-           user = user.model_dump(mode="json")
+        with system_query():
+            user = await self.userRepo.find_by_id(PydanticObjectId(payload["_id"]), populate=["userRole"])
 
-           user_status = user["status"]
+        if not user:
+            raise AppException(401, "User not found", clear_cookies=True)
 
-           if user_status and (user_status == USER_STATUS.INACTIVE.value or user_status == USER_STATUS.DELETED.value or user_status == USER_STATUS.SUSPENDED.value):
-               return AppException(400, f"User status is {"inactive" if user_status == USER_STATUS.INACTIVE else "suspended" if user_status == USER_STATUS.SUSPENDED else "deleted" if user_status == USER_STATUS.DELETED else "unknown"}")
-           
-      
-           return True
+        user = user.model_dump(mode="json")
 
-        except Exception as e:
-            raise e
+        if user["status"] in (
+            USER_STATUS.INACTIVE.value,
+            USER_STATUS.SUSPENDED.value,
+            USER_STATUS.DELETED.value,
+        ):
+            raise AppException(403, f"User status is {user['status']}", clear_cookies=True)
+
+        return True
         
 
 
@@ -166,38 +155,36 @@ class Dependencies:
             current_company.set(None)
             return
 
-        company = request.state.company
+        company = getattr(request.state, "company", None)
+        if not company:
+            raise AppException(403, "Company context missing")
         current_company.set(str(company.id))
         is_admin_context.set(False)
 
 
     async def company_active(self, request: Request):
-        
         user = request.state.user
 
-        
         if user["userRole"][0]["code"] == SUPER_ADMIN_CODE:
             return
 
         with system_query():
             company = await self.companyRepo.find_by_id(PydanticObjectId(user["companyId"]))
 
-
         if not company:
-            raise AppException(403, "No company associated with this account")
+            raise AppException(403, "No company associated with this account", clear_cookies=True)
 
-        if company.status == COMPANY_STATUS.DELETED:
-            raise AppException(410, "This company no longer exists")
+        blocked = {
+            COMPANY_STATUS.DELETED: (410, "This company no longer exists"),
+            COMPANY_STATUS.SUSPENDED: (403, "Your company has been suspended. Contact support."),
+            COMPANY_STATUS.INACTIVE: (403, "Your company account is inactive."),
+            COMPANY_STATUS.PENDING_VERIFICATION: (403, "Your company is pending verification."),
+        }
 
-        if company.status == COMPANY_STATUS.SUSPENDED:
-            raise AppException(403, "Your company has been suspended. Contact support.")
+        if company.status in blocked:
+            code, msg = blocked[company.status]
+            raise AppException(code, msg, clear_cookies=True)
 
-        if company.status == COMPANY_STATUS.INACTIVE:
-            raise AppException(403, "Your company account is inactive.")
-
-        if company.status == COMPANY_STATUS.PENDING_VERIFICATION:
-            raise AppException(403, "Your company is pending verification.")
-       
         request.state.company = company
 
     def feature_access(self, feature_key: str):
