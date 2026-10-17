@@ -167,7 +167,7 @@ app.include_router(feature_route, prefix="/api/feature")
 app.include_router(company_route, prefix="/api/companies")
 app.include_router(subscription_route, prefix="/api/subscription")
 app.include_router(query_route, prefix="/api/query")
-app.include_router(rating_router, prefix="/api/rating", tags=["rating"])
+# app.include_router(rating_router, prefix="/api/rating", tags=["rating"])
 app.include_router(
     payment_router,
     prefix="/api/v1/payments",
