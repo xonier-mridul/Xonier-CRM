@@ -1013,7 +1013,8 @@ class AuthServices:
 
                 if not company:
                     raise AppException(404, "Company not found against provided company Id, kindly check and try again")
-                
+
+            
                 if company.status != COMPANY_STATUS.ACTIVE:
                     raise AppException(400, f"Company status is {company.status}, so you can't login, connect with support team")
                 

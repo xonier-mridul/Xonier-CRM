@@ -102,6 +102,9 @@ const SideBar = () => {
     if (pathname.startsWith("/leads")) {
       setOpenMenu("sales")
     }
+    if (pathname.startsWith("/pipeline") || pathname.startsWith("/agents")) {
+      setOpenMenu("sales")
+    }
     if (pathname.startsWith("/deals")) {
       setOpenMenu("sales")
     }
@@ -165,6 +168,8 @@ const SideBar = () => {
       case "sales":
         return pathname.startsWith("/enquiry") ||
           pathname.startsWith("/leads") ||
+          pathname.startsWith("/pipeline") ||
+          pathname.startsWith("/agents") ||
           pathname.startsWith("/deals") ||
           pathname.startsWith("/quotations") ||
           pathname.startsWith("/invoice");
@@ -769,6 +774,28 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     transition={{ duration: 0.25 }}
                     className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
                   >
+                    {(hasPermission(PERMISSIONS.readLead) &&  (hasFeature(FEATURES.CRM))) && <li>
+                      <Link
+                        href="/pipeline"
+                        className={`${isActive("/pipeline")
+                          ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          : "border-l-2 border-transparent"
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                      >
+                        {t("pipeline") || "Pipeline"}
+                      </Link>
+                    </li>}
+                    {(hasPermission(PERMISSIONS.readLead) && hasPermission(PERMISSIONS.readUser) && hasFeature(FEATURES.CRM)) && <li>
+                      <Link
+                        href="/agents"
+                        className={`${isActive("/agents")
+                          ? "dark:text-cyan-300 text-cyan-700 border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          : "border-l-2 border-transparent"
+                          } block px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                      >
+                        {t("agents", { defaultValue: "Agents" })}
+                      </Link>
+                    </li>}
                   {(hasPermission(PERMISSIONS.readEnquiry)&&  (hasFeature(FEATURES.CRM))) && <li>
                       <Link
                         href="/enquiry"
@@ -791,6 +818,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                         {t("leads")}
                       </Link>
                     </li>}
+                    
                     {(hasPermission(PERMISSIONS.readDeal) &&  (hasFeature(FEATURES.CRM))) && <li>
                       <Link
                         href="/deals"

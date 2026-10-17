@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request, Depends
 
 from app.controllers.activity_controller import ActivityController
 from app.core.dependencies import Dependencies
+from app.core.enums import FEATURE
 from app.schemas.activity_schema import CallActivitySchema, CallActivityUpdateSchema
 
 
@@ -26,6 +27,11 @@ async def get_user_activity_summary(id: str, request: Request):
     return await controller.get_user_activity_summary(id, request)
 
 
+@router.get("/lead/{lead_id}/call-history", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM)), Depends(dependencies.permissions(["lead:read"]))])
+async def get_lead_call_history(lead_id: str, request: Request):
+    return await controller.get_lead_call_history(lead_id, request)
+
+
 @router.post("/call/made", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
 Depends(dependencies.company_context), Depends(dependencies.permissions(["call:call"]))])
 async def call_activity(request: Request, payload: CallActivitySchema):
@@ -36,5 +42,3 @@ async def call_activity(request: Request, payload: CallActivitySchema):
 Depends(dependencies.company_context), Depends(dependencies.permissions(["call:call"]))])
 async def update_call_activity(request: Request, id:str,  payload: CallActivityUpdateSchema):
     return await controller.update_call_activity(request=request, id=id, payload=payload.model_dump(mode="json"))
-
-

@@ -968,13 +968,13 @@ class BaseRepository:
 
 
     async def delete_by_id(
-        self, id: PydanticObjectId, session: Optional[AsyncIOMotorClientSession] = None
+    self, id: PydanticObjectId, session: Optional[AsyncIOMotorClientSession] = None
     ):
-        user = await self.model.find_one({"_id": id})
-        if not user:
+        doc = await self.model.find_one({"_id": id}, session=session)
+        if not doc:
             return None
 
-        await user.delete()
+        await doc.delete(session=session)
         return True
 
 

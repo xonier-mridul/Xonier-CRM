@@ -18,6 +18,8 @@ from datetime import datetime, timedelta, timezone
 from fastapi_cache import FastAPICache
 from app.db import db as database_module
 from app.db.models.activity_model import ActivityModel
+from app.db.models.user_model import UserModel
+from app.db.models.lead_model import LeadsModel
 from app.core.constants import (
     SUPER_ADMIN_CODE,
     LEAD_CACHE_NAMESPACE,
@@ -376,6 +378,91 @@ class ActivityService:
 
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
+
+    async def get_lead_call_history(self, lead_id: str, user: Dict[str, Any]):
+        """Return call outcomes recorded by the mobile activity-update API.
+
+        These records are authoritative: mobile writes the duration and final
+        engagement result here after a call, while a browser call-request can be
+        cancelled when its modal closes even if the phone call later completed.
+        """
+        try:
+            if not PydanticObjectId.is_valid(lead_id):
+                raise AppException(400, "Invalid lead id")
+            lead_oid = PydanticObjectId(lead_id)
+            company_id = PydanticObjectId(user["companyId"])
+
+            lead = await self.leadRepo.model.get_pymongo_collection().find_one(
+                {"_id": lead_oid, "companyId": company_id, "deletedAt": None}, {"_id": 1}
+            )
+            if not lead:
+                raise AppException(404, "Lead not found")
+
+            activities = await ActivityModel.get_pymongo_collection().find(
+                {
+                    "companyId": company_id,
+                    "entityType": ACTIVITY_ENTITY_TYPE.LEAD.value,
+                    "entityId": lead_oid,
+                    "action": ACTIVITY_ACTION.CALL_MADE.value,
+                },
+                sort=[("createdAt", -1)],
+            ).to_list(length=100)
+
+            def ref_id(value):
+                if isinstance(value, dict):
+                    return value.get("$id") or value.get("id") or value.get("_id")
+                return getattr(value, "id", value)
+
+            agent_ids = {ref_id(item.get("userId")) for item in activities if item.get("userId")}
+            agents = await UserModel.get_pymongo_collection().find(
+                {"_id": {"$in": list(agent_ids)}}, {"firstName": 1, "lastName": 1, "email": 1}
+            ).to_list(length=len(agent_ids)) if agent_ids else []
+            agent_names = {
+                agent["_id"]: " ".join(part for part in [agent.get("firstName"), agent.get("lastName")] if part)
+                or agent.get("email") or "Agent"
+                for agent in agents
+            }
+
+            result = []
+            for activity in activities:
+                metadata = activity.get("metadata") or {}
+                try:
+                    duration = max(int(metadata.get("callDuration") or 0), 0)
+                except (TypeError, ValueError):
+                    duration = 0
+                connect_status = str(metadata.get("connectStatus") or "").lower() or None
+                is_not_connected = connect_status in {"not_connected", "not_reached", "wrong_number"}
+                is_connected = duration > 0 or bool(connect_status and not is_not_connected)
+                agent_id = ref_id(activity.get("userId"))
+                created_at = activity.get("createdAt")
+                # Historical activities were written with date-only createdAt.
+                # Mongo ObjectId retains the original creation second, making it
+                # the best available timestamp for those already-saved records.
+                if (
+                    not metadata.get("callCompletedAt")
+                    and isinstance(created_at, datetime)
+                    and created_at.hour == created_at.minute == created_at.second == 0
+                ):
+                    created_at = activity["_id"].generation_time
+                result.append({
+                    "id": str(activity["_id"]),
+                    "status": connect_status or ("connected" if is_connected else "not_connected"),
+                    "connectStatus": connect_status,
+                    "disposition": "connected" if is_connected else "not_connected",
+                    "durationSec": duration if is_connected else None,
+                    "feedback": metadata.get("feedback"),
+                    "followUpAt": metadata.get("followUpAt"),
+                    # Mobile sends the final call detail through activity-update.
+                    # Prefer that exact completion time; older records fall back
+                    # to the activity's creation timestamp.
+                    "requestedAt": metadata.get("callCompletedAt") or created_at,
+                    "agentName": agent_names.get(agent_id, "Agent"),
+                })
+            return result
+        except AppException:
+            raise
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
                 
 
     async def update_call_activity(self, id:str,  payload: Dict[str, Any], user: Dict[str, Any]):
@@ -391,29 +478,87 @@ class ActivityService:
                         raise AppException(404, "Call activity not found")
                     
                     created_at = call_act.createdAt
-
-
                     if created_at.tzinfo is None:
                         created_at = created_at.replace(tzinfo=timezone.utc)
                     
-                    if datetime.now(timezone.utc) > (created_at + timedelta(hours=1)):
+                    if datetime.now(timezone.utc) > (created_at + timedelta(hours=24)):
                         raise AppException(400, "The update call activity time goes expire, Operation denied")
-                    
+
+                    # ── Initialize variables here so they are always in scope ──────
+                    from zoneinfo import ZoneInfo
+                    IST = ZoneInfo("Asia/Kolkata")
+
+                    follow_up_at: None = None
+                    connect_status = payload.get("connectStatus")
+                    follow_up_in   = payload.get("followUpIn")  # "1h" | "6h" | "1d" | ISO string
+
+                    # ── Calculate exact follow-up datetime in IST ─────────────────
+                    if follow_up_in:
+                        now_ist = datetime.now(IST)   # current moment in India time
+                        preset_map = {
+                            "1h": timedelta(hours=1),
+                            "6h": timedelta(hours=6),
+                            "1d": timedelta(days=1),
+                        }
+                        if follow_up_in in preset_map:
+                            # "1d" at 6:23 PM IST → tomorrow 6:23 PM IST
+                            follow_up_at = now_ist + preset_map[follow_up_in]
+                        else:
+                            # Custom ISO string from "Pick date & time"
+                            try:
+                                parsed = datetime.fromisoformat(follow_up_in)
+                                if parsed.tzinfo is None:
+                                    # Mobile sent IST local time without offset → treat as IST
+                                    parsed = parsed.replace(tzinfo=IST)
+                                follow_up_at = parsed
+                            except ValueError:
+                                raise AppException(
+                                    400,
+                                    f"Invalid followUpIn: '{follow_up_in}'. "
+                                    "Use '1h', '6h', '1d', or ISO with offset e.g. '2026-10-16T17:00:00+05:30'."
+                                )
+
+                    # If status is follow_up but no time provided, default to tomorrow
+                    if connect_status == "follow_up" and follow_up_at is None:
+                        follow_up_at = datetime.now(IST) + timedelta(days=1)
 
                     if call_act.entityType == ACTIVITY_ENTITY_TYPE.LEAD:
                         leadId = PydanticObjectId(call_act.entityId)
-                        
-                        connect_status = payload.get("connectStatus")
+                        lead_update_data: dict = {}
 
                         if connect_status:
+                            lead_update_data["connectStatus"] = connect_status
+                        if follow_up_at:
+                            lead_update_data["followUpAt"] = follow_up_at
+                        elif connect_status and connect_status != "follow_up":
+                            # A later non-follow-up outcome must not leave an old
+                            # reminder visible in the leads table.
+                            lead_update_data["followUpAt"] = None
 
-                            update_lead = await self.leadRepo.update(id=leadId, data={"connectStatus": connect_status}, session=session)
+                        if lead_update_data:
+                            lead_update_data["updatedAt"] = datetime.now(timezone.utc)
+                            # Write the exact same IST-derived datetime that is
+                            # stored in activity metadata. Using the raw tenant
+                            # scoped collection avoids any repository/session
+                            # scope ambiguity between the mobile and web flows.
+                            write_result = await LeadsModel.get_pymongo_collection().update_one(
+                                {"_id": leadId, "companyId": PydanticObjectId(user["companyId"])},
+                                {"$set": lead_update_data},
+                                session=session,
+                            )
+                            if write_result.matched_count != 1:
+                                raise AppException(404, "Lead linked to call activity was not found")
 
-                            
+                    # ── Build activity metadata ───────────────────────────────────
+                    meta_update = {**call_act.metadata, **{k: v for k, v in payload.items() if k != "followUpIn"}}
+                    # Preserve the actual completion moment in IST. This is also
+                    # used by the lead timeline for older activities created when
+                    # ActivityModel mistakenly stored only the calendar date.
+                    meta_update["callCompletedAt"] = datetime.now(IST).isoformat()
+                    if follow_up_at:
+                        meta_update["followUpAt"] = follow_up_at.isoformat()
 
-                    payload = {
-                        "metadata": {**call_act.metadata, **payload}
-                    }  
+                    payload = {"metadata": meta_update}
 
                     update = await self.repo.update(id=PydanticObjectId(id), data=payload, session=session)
 
@@ -434,5 +579,3 @@ class ActivityService:
 
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
-                
-                        

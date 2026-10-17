@@ -2,6 +2,7 @@ from fastapi import Request, HTTPException
 from fastapi.responses import JSONResponse
 from app.utils.custom_response import ApiResponse
 from app.utils.custom_exception import AppException
+from app.core.constants import JWT_OPTIONS
 
 
 async def http_exception_handler(request: Request, exc: HTTPException):
@@ -17,7 +18,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 
 
 async def app_exception_handler(request: Request, exc: AppException):
-    return JSONResponse(
+    response = JSONResponse(
         status_code=exc.status_code,
         content=ApiResponse(
             success=False,
@@ -26,5 +27,11 @@ async def app_exception_handler(request: Request, exc: AppException):
             data=None,
         ).model_dump(),
     )
+
+    if getattr(exc, "clear_cookies", False):
+        response.delete_cookie(key="accessToken", **JWT_OPTIONS)
+        response.delete_cookie(key="refreshToken", **JWT_OPTIONS)
+
+    return response
 
 

@@ -387,7 +387,7 @@ const TaskListPage = (): JSX.Element => {
     }
   };
 
-  const fetchTaskAll = useCallback(async (silent = false) => {
+const fetchTaskAll = useCallback(async (silent = false) => {
     if (!silent) setIsLoading(true);
     try {
       const res = await TaskService.getAll({
@@ -397,7 +397,7 @@ const TaskListPage = (): JSX.Element => {
         priority: filterPriority || undefined,
         category: filtrCategory.length > 0 ? filtrCategory.join(",") : undefined,
         search: search || undefined,
-        user: filterAssigned || undefined,
+        assignee: filterAssigned || undefined,
         fromDate: dateFilter.fromDate || undefined,
         toDate: dateFilter.toDate || undefined,
       });

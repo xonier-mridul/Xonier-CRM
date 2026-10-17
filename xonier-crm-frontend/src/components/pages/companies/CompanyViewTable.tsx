@@ -92,7 +92,7 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
 }) => {
   const { t } = useTranslation();
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-900/10 dark:border-gray-700 w-full flex flex-col gap-6 overflow-hidden">
+    <div className="bg-white dark:bg-gray-900/50 rounded-2xl border border-slate-900/10 dark:border-gray-700 w-full flex flex-col gap-6 overflow-hidden">
       {/* Header */}
       <div className="flex flex-wrap items-center gap-4 justify-between p-6 border-b border-slate-900/10 dark:border-gray-700">
         <div className="flex flex-col gap-1">
@@ -167,10 +167,10 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto px-6">
-        <table className="w-full">
+      <div className="overflow-x-auto ">
+        <table className="w-full p-6">
           <thead>
-            <tr className="border-b border-slate-200 dark:border-gray-700">
+            <tr className="border-b border-slate-200 dark:border-gray-700 p-6">
               {[
                 "company",
                 "contact",
@@ -184,7 +184,7 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
               ].map((col) => (
                 <th
                   key={col}
-                  className="pb-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 pr-4"
+                  className="pb-3 pl-5 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 pr-4"
                 >
                   {t(col)}
                 </th>
@@ -204,7 +204,7 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
                         : "bg-slate-100/50 dark:bg-slate-900/30 hover:bg-cyan-50 dark:hover:bg-gray-700/50"
                     } w-full group transition-colors `}
                   >
-                    <td className="py-4 pr-4 p-2">
+                    <td className="py-4 pr-4 p-2 pl-5">
                       <div className="flex flex-col">
                         <span className="font-semibold text-sm text-nowrap text-slate-900 dark:text-white capitalize">
                           {company.companyName}
@@ -215,7 +215,7 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
                       </div>
                     </td>
 
-                    <td className="py-4 pr-4 ">
+                    <td className="py-4 pr-4  pl-5 ">
                       <div className="flex flex-col gap-0.5">
                         <Link href={`mailto:${company.email}`} className="text-xs font-medium text-slate-700 dark:text-white">
                           {company.email}
@@ -226,13 +226,13 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
                       </div>
                     </td>
 
-                    <td className="py-4 pr-4">
+                    <td className="py-4 pr-4  pl-5">
                       <span className="text-xs text-gray-600 dark:text-gray-300 capitalize">
                         {company.industry || "—"}
                       </span>
                     </td>
 
-                    <td className="py-4 pr-4">
+                    <td className="py-4 pr-4  pl-5">
                       <span className="text-xs text-gray-600 text-nowrap dark:text-gray-300">
                         {company.companySize
                           ? sizeLabel[company.companySize] ?? company.companySize
@@ -240,13 +240,13 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
                       </span>
                     </td>
 
-                    <td className="py-4 pr-4">
+                    <td className="py-4 pr-4  pl-5">
                       <span className="text-xs text-gray-600 dark:text-gray-300 text-nowrap uppercase">
                         {getCountryName(company.country)}
                       </span>
                     </td>
 
-                    <td className="py-4 pr-4">
+                    <td className="py-4 pr-4  pl-5">
                       <span
                         className={`text-xs font-medium px-2.5 py-1 text-nowrap rounded-md capitalize ${
                           statusStyles[company.status] ??
@@ -257,7 +257,7 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
                       </span>
                     </td>
 
-                    <td className="py-4 pr-4">
+                    <td className="py-4 pr-4  pl-5">
                       {company.subscription ? (
                         <Link
                           href={`/subscriptions/${company.id}`}
@@ -270,13 +270,13 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
                       )}
                     </td>
 
-                    <td className="py-4 pr-4">
+                    <td className="py-4 pr-4  pl-5">
                       <span className="text-xs text-gray-500 whitespace-nowrap dark:text-gray-400">
                         {FormatDate(company.createdAt)}
                       </span>
                     </td>
 
-                    <td className="py-4">
+                    <td className="py-4 pr-5  pl-5">
                       <div className="flex items-center gap-2">
                         <Link
                           href={`/companies/${company.id}`}
@@ -315,7 +315,7 @@ const CompanyViewTable: React.FC<CompanyViewTableProps> = ({
                 <tr>
                   <td
                     colSpan={9}
-                    className="py-16 text-center text-gray-400 text-sm"
+                    className="py-16 text-center text-gray-400 text-sm  pl-5"
                   >
                     {t("no_companies_found")}
                   </td>

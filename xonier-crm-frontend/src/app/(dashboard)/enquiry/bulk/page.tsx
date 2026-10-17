@@ -26,7 +26,7 @@ import { EnquiryService } from "@/src/services/enquiry.service";
 import { AuthService } from "@/src/services/auth.service";
 import FieldMappingModal, {
   AppFieldKey,
-  FieldMapping,
+  GenericFieldMapping,
   autoDetectMapping,
 } from "@/src/components/pages/enquiry/FieldMappingModal";
 
@@ -90,7 +90,9 @@ const validateRow = (row: UpdateEnquiryPayload): RowError[] => {
   else if (!Object.values(SOURCE).includes(row.source as SOURCE))
     errors.push({ field: "source", message: `Invalid source: "${row.source}"` });
 
-  if (row.infoType && !Object.values(INFO_TYPE).includes(row.infoType as INFO_TYPE))
+  if (!row.infoType)
+    errors.push({ field: "infoType", message: "Info Type is required ('people' or 'company')" });
+  else if (!Object.values(INFO_TYPE).includes(row.infoType as INFO_TYPE))
     errors.push({ field: "infoType", message: `Invalid infoType: "${row.infoType}"` });
 
   if (!Array.isArray(row.industry) || row.industry.length === 0)
@@ -161,7 +163,7 @@ const applyCommonTransforms = (obj: Record<string, unknown>): UpdateEnquiryPaylo
  */
 const applyMappingAndTransform = (
   rawRows: Record<string, string>[],
-  mapping: FieldMapping,
+  mapping: GenericFieldMapping,
   batchAssignTo: string | null
 ): UpdateEnquiryPayload[] => {
   return rawRows.map((rawRow) => {
@@ -316,7 +318,7 @@ const page = (): JSX.Element => {
   };
 
   // ── Called when user confirms mapping ──
-  const handleMappingConfirm = (mapping: FieldMapping) => {
+  const handleMappingConfirm = (mapping: GenericFieldMapping) => {
     setShowMappingModal(false);
     const processed = applyMappingAndTransform(rawRows, mapping, batchAssignTo);
     setData(processed);
@@ -434,6 +436,109 @@ const page = (): JSX.Element => {
 
   // ── Render ────────────────────────────────────────────────────────────────
 
+  const assignBatchNode = (
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-sm">
+          👤
+        </div>
+        <div>
+          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+            Assign Batch To <span className="text-xs font-normal text-gray-400 dark:text-gray-500">(Optional)</span>
+          </h3>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+            All enquiries in this import will be assigned to the selected agent
+          </p>
+        </div>
+      </div>
+      <div ref={agentDropdownRef} className="relative w-full sm:w-72">
+        <button
+          type="button"
+          onClick={() => setOpenAgentDropdown(!openAgentDropdown)}
+          className="w-full px-3 py-2.5 capitalize rounded-lg border transition-all duration-200
+            bg-white dark:bg-gray-800 text-black dark:text-white
+            border-gray-200 dark:border-gray-700
+            focus:outline-none focus:border-cyan-400 dark:focus:border-cyan-500 focus:ring-2 focus:ring-cyan-400/20
+            flex items-center justify-between text-sm"
+        >
+          <div className="flex items-center gap-2">
+            {selectedAgent ? (
+              <>
+                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                  {selectedAgent.firstName?.[0]?.toUpperCase()}
+                </div>
+                <span className="text-gray-800 dark:text-white">
+                  {selectedAgent.firstName} {selectedAgent.lastName}
+                </span>
+              </>
+            ) : (
+              <span className="text-gray-400 dark:text-gray-500">Unassigned — select an agent</span>
+            )}
+          </div>
+          <MdOutlineKeyboardArrowDown className="text-gray-400 dark:text-gray-500 text-xl flex-shrink-0" />
+        </button>
+
+        {openAgentDropdown && (
+          <div className="absolute bottom-full mb-1 left-0 w-full bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto z-[200]">
+            {/* Search */}
+            <div className="p-2 border-b border-slate-100 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+              <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-700 rounded-lg px-3 py-1.5">
+                <CiSearch className="text-slate-400 text-lg flex-shrink-0" />
+                <input
+                  placeholder="Search agent..."
+                  value={agentSearch}
+                  onChange={(e) => setAgentSearch(e.target.value)}
+                  className="outline-none bg-transparent text-sm text-slate-600 dark:text-white/80 w-full"
+                />
+              </div>
+            </div>
+
+            {/* Unassigned option */}
+            <div
+              className="px-4 py-2.5 cursor-pointer text-sm text-slate-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              onClick={() => {
+                setBatchAssignTo(null);
+                setSelectedAgent(null);
+                setOpenAgentDropdown(false);
+              }}
+            >
+              — Unassigned
+            </div>
+
+            {/* Agent list */}
+            {filteredAgents.length ? (
+              filteredAgents.map((user) => (
+                <div
+                  key={user.id}
+                  className="px-4 py-2.5 cursor-pointer flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  onClick={() => {
+                    setBatchAssignTo(user.id);
+                    setSelectedAgent(user);
+                    setOpenAgentDropdown(false);
+                  }}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0">
+                      {user.firstName?.[0]?.toUpperCase()}
+                    </div>
+                    <span className="text-sm text-slate-700 dark:text-white/80 capitalize">
+                      {user.firstName} {user.lastName}
+                    </span>
+                  </div>
+                  {selectedAgent?.id === user.id && (
+                    <FaCheck className="text-emerald-500 text-xs" />
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="px-4 py-3 text-sm text-gray-400">{t("no_users_found")}</div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="p-6 space-y-6">
 
@@ -443,6 +548,7 @@ const page = (): JSX.Element => {
         csvHeaders={csvHeaders}
         previewRows={rawRows.slice(0, 3)}
         fileName={selectedFile?.name ?? ""}
+        assignBatchNode={assignBatchNode}
         onConfirm={handleMappingConfirm}
         onCancel={handleMappingCancel}
       />
@@ -489,111 +595,6 @@ const page = (): JSX.Element => {
         </div>
       </div>
 
-      {/* ── Optional: Batch Assign To ── */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
-        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-sm">
-            👤
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-              Assign Batch To{" "}
-              <span className="text-xs font-normal text-gray-400 dark:text-gray-500">(Optional)</span>
-            </h3>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-              All enquiries in this import will be assigned to the selected agent
-            </p>
-          </div>
-        </div>
-
-        <div className="px-6 py-4">
-          <div ref={agentDropdownRef} className="relative max-w-sm">
-            <button
-              type="button"
-              onClick={() => setOpenAgentDropdown(!openAgentDropdown)}
-              className="w-full px-3 py-2.5 capitalize rounded-lg border transition-all duration-200
-                bg-white dark:bg-gray-800 text-black dark:text-white
-                border-gray-200 dark:border-gray-700
-                focus:outline-none focus:border-cyan-400 dark:focus:border-cyan-500 focus:ring-2 focus:ring-cyan-400/20
-                flex items-center justify-between text-sm"
-            >
-              <div className="flex items-center gap-2">
-                {selectedAgent ? (
-                  <>
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
-                      {selectedAgent.firstName?.[0]?.toUpperCase()}
-                    </div>
-                    <span className="text-gray-800 dark:text-white">
-                      {selectedAgent.firstName} {selectedAgent.lastName}
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-gray-400 dark:text-gray-500">Unassigned — select an agent</span>
-                )}
-              </div>
-              <MdOutlineKeyboardArrowDown className="text-gray-400 dark:text-gray-500 text-xl flex-shrink-0" />
-            </button>
-
-            {openAgentDropdown && (
-              <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto z-[200]">
-                {/* Search */}
-                <div className="p-2 border-b border-slate-100 dark:border-gray-700">
-                  <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-700 rounded-lg px-3 py-1.5">
-                    <CiSearch className="text-slate-400 text-lg flex-shrink-0" />
-                    <input
-                      placeholder="Search agent..."
-                      value={agentSearch}
-                      onChange={(e) => setAgentSearch(e.target.value)}
-                      className="outline-none bg-transparent text-sm text-slate-600 dark:text-white/80 w-full"
-                    />
-                  </div>
-                </div>
-
-                {/* Unassigned option */}
-                <div
-                  className="px-4 py-2.5 cursor-pointer text-sm text-slate-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                  onClick={() => {
-                    setBatchAssignTo(null);
-                    setSelectedAgent(null);
-                    setOpenAgentDropdown(false);
-                  }}
-                >
-                  — Unassigned
-                </div>
-
-                {/* Agent list */}
-                {filteredAgents.length ? (
-                  filteredAgents.map((user) => (
-                    <div
-                      key={user.id}
-                      className="px-4 py-2.5 cursor-pointer flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                      onClick={() => {
-                        setBatchAssignTo(user.id);
-                        setSelectedAgent(user);
-                        setOpenAgentDropdown(false);
-                      }}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0">
-                          {user.firstName?.[0]?.toUpperCase()}
-                        </div>
-                        <span className="text-sm text-slate-700 dark:text-white/80 capitalize">
-                          {user.firstName} {user.lastName}
-                        </span>
-                      </div>
-                      {selectedAgent?.id === user.id && (
-                        <FaCheck className="text-emerald-500 text-xs" />
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <div className="px-4 py-3 text-sm text-gray-400">{t("no_users_found")}</div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
 
       {/* ── Drop Zone ── */}
       <div

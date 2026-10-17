@@ -42,7 +42,7 @@ async def get_user_by_teams(request: Request):
 async def get_all_deleted_users(request: Request):
     return await auth_controller.get_all_deleted_users(request=request)
 
-@router.get("/user/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context), Depends(dependencies.permissions(["user:read"]))])
+@router.get("/user/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context), Depends(dependencies.own_profile_or_user_read)])
 async def get_user_by_id(id: PydanticObjectId, request: Request):
     return await auth_controller.get_user_by_id(request, id)
 

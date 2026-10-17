@@ -60,6 +60,7 @@ import { usePermissions } from "@/src/hooks/usePermissions";
 import { DEAL_STATUS, PERMISSIONS } from "@/src/constants/enum";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import { useTranslation } from "react-i18next";
+import { FormatDate } from "@/src/components/common/FormateDate";
 
 const DealViewPage = (): JSX.Element => {
   const { t } = useTranslation();
@@ -558,7 +559,7 @@ const DealViewPage = (): JSX.Element => {
                   />
                   <InfoItem
                     icon={<IoFlagOutline className="w-4 h-4" />}
-                    label={t("priority")}
+                    label={t("priority_2")}
                     value={lead.priority}
                   />
                   <InfoItem
@@ -711,12 +712,12 @@ const DealViewPage = (): JSX.Element => {
                 />
                 <StatItem
                   label={t("created")}
-                  value={formatDate(dealData.createdAt)}
+                  value={FormatDate(dealData.createdAt)}
                   color="text-gray-600 dark:text-gray-400"
                 />
                 <StatItem
                   label={t("last_updated")}
-                  value={formatDate(dealData.updatedAt)}
+                  value={FormatDate(dealData.updatedAt)}
                   color="text-gray-600 dark:text-gray-400"
                 />
               </div>

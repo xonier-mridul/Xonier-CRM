@@ -47,6 +47,7 @@ import UserSelect from "@/src/components/common/userselect";
 import { useTranslation } from "react-i18next";
 import { HiOutlineViewBoards, HiOutlineTable } from "react-icons/hi";
 import LeadKanbanBoard from "./LeadKanbanBoard";
+import PageLimit from "../../common/PageLimit";
 
 const TAB = { ALL: 1, WON: 2, LOST: 3, ASSIGNED: 4 } as const;
 
@@ -721,6 +722,14 @@ const isIndeterminate =
     clearFields();
   }, [currentTab]);
 
+      const [limitOpen, setLimitOpen] = useState(false);
+  const limits = [10, 20, 30, 40];
+   const handleLimit = (n: number) => {
+      setPageLimit(Number(n));
+      setCurrentPage(1);
+    };
+  
+
   const options: Record<
     string,
     { value: string[]; handlefunction: (value: string) => void }
@@ -877,7 +886,15 @@ const isIndeterminate =
             <SensitiveField value={item.email} link={`mailto:${item.email}`} maskedValue={maskEmail(item.email)} fontSize="[13px]" />
           </td>
           <td className="px-4 py-3.5">
-            <SensitiveField value={item.phone} link={`tel:${item.phone}`} maskedValue={maskPhone(item.phone)} fontSize="[13px]" />
+            <CallablePhone
+              lead={item}
+              displayValue={maskPhone(item.phone) || item.phone}
+              onCallDisposed={(leadId, connectStatus) => {
+                setLeadData((prev) =>
+                  prev.map((l) => l.id === leadId ? { ...l, connectStatus } : l)
+                );
+              }}
+            />
           </td>
           <td className="px-4 py-3.5">
             <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[13px] font-medium bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 capitalize">
@@ -902,6 +919,15 @@ const isIndeterminate =
             <span className="text-[13px] text-slate-500 dark:text-slate-400 capitalize">
               {item.createdBy?.firstName + " " + item.createdBy?.lastName}
             </span>
+          </td>
+          <td className="px-4 py-3.5">
+            {item.campaign ? (
+              <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[13px] font-medium bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 capitalize max-w-[140px] truncate" title={item.campaign}>
+                {item.campaign}
+              </span>
+            ) : (
+              <span className="text-[12px] text-slate-400 dark:text-slate-500">N/A</span>
+            )}
           </td>
           <td className="px-4 py-3.5">
             {hasPermission(PERMISSIONS.updateLead) ? (
@@ -972,7 +998,15 @@ const isIndeterminate =
             <SensitiveField value={item.email} link={`mailto:${item.email}`} maskedValue={maskEmail(item.email)} fontSize="[13px]" />
           </td>
           <td className="px-4 py-3.5">
-            <SensitiveField value={item.phone} link={`tel:${item.phone}`} maskedValue={maskPhone(item.phone)} fontSize="[13px]" />
+            <CallablePhone
+              lead={item}
+              displayValue={maskPhone(item.phone) || item.phone}
+              onCallDisposed={(leadId, connectStatus) => {
+                setAssignedLeadData((prev) =>
+                  prev.map((l) => l.id === leadId ? { ...l, connectStatus } : l)
+                );
+              }}
+            />
           </td>
           <td className="px-4 py-3.5">
             <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[13px] font-medium bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 capitalize">
@@ -997,6 +1031,15 @@ const isIndeterminate =
             <span className="text-[13px] text-slate-500 dark:text-slate-400 capitalize">
               {item.createdBy?.firstName + " " + item.createdBy?.lastName}
             </span>
+          </td>
+          <td className="px-4 py-3.5">
+            {item.campaign ? (
+              <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[13px] font-medium bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 capitalize max-w-[140px] truncate" title={item.campaign}>
+                {item.campaign}
+              </span>
+            ) : (
+              <span className="text-[12px] text-slate-400 dark:text-slate-500">N/A</span>
+            )}
           </td>
           {hasPermission(PERMISSIONS.updateLead) ? (
             <td className="px-4 py-3.5">
@@ -1099,7 +1142,15 @@ const isIndeterminate =
               <p className="text-gray-500 dark:text-gray-400">{t("create_edit_or_remove_leads")}</p>
             </div>
             <div className="flex items-center gap-4">
-              <select
+               <PageLimit
+                setLimitOpen={setLimitOpen}
+                pageLimit={pageLimit}
+                limitOpen={limitOpen}
+                limits={limits}
+                handleLimit={handleLimit}
+            
+              />
+              {/* <select
                 value={pageLimitMap[currentTab] ?? pageLimit}
                 className="bg-slate-50 outline-none text-slate-500 dark:bg-gray-600 dark:text-white/70 px-3 py-2.5 rounded-lg border border-slate-900/10 "
                 onChange={(e) => handlePageLimit(Number(e.target.value))}
@@ -1108,7 +1159,7 @@ const isIndeterminate =
                 <option value="20">20</option>
                 <option value="30">30</option>
                 <option value="50">50</option>
-              </select>
+              </select> */}
 
               <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg outline-none border border-slate-900/10 flex items-center gap-2">
                 <IoIosSearch className="text-xl text-slate-400" />
@@ -1542,8 +1593,8 @@ const isIndeterminate =
                           </label>
                         )}
                       </th>
-                    )}
-                    {[
+                     )}
+                     {[
                       { key: "client_info", icon: <FiUser className="text-[13px] text-sky-500" />, label: t("client_info") },
                       { key: "phone", icon: <FiPhone className="text-[13px] text-emerald-500" />, label: t("phone") },
                       { key: "project_type", icon: <FiTag className="text-[13px] text-violet-500" />, label: t("project_type") },
@@ -1552,8 +1603,9 @@ const isIndeterminate =
                       { key: "data_tag", icon: <FiHash className="text-[13px] text-amber-500" />, label: t("data_tag") },
                       { key: "created_date", icon: <FiCalendar className="text-[13px] text-teal-500" />, label: t("created_date") },
                       { key: "created_by", icon: <FiUserPlus className="text-[13px] text-slate-400" />, label: t("created_by") },
+                      { key: "campaign", icon: <FiTarget className="text-[13px] text-purple-500" />, label: "Campaign" },
                       { key: "engagement_status", icon: <FiMessageCircle className="text-[13px] text-blue-400" />, label: t("engagement_status") },
-                      { key: "actions", icon: <FiSettings className="text-[13px] text-slate-400" />, label: t("actions") },
+                                            { key: "actions", icon: <FiSettings className="text-[13px] text-slate-400" />, label: t("actions") },
                     ].map((col) => (
                       <th
                         key={col.key}
@@ -1605,6 +1657,7 @@ const isIndeterminate =
                       { key: "Data Tag", icon: <FiHash className="text-[13px] text-amber-500" />, label: "Data Tag" },
                       { key: "Created Date", icon: <FiCalendar className="text-[13px] text-teal-500" />, label: "Created Date" },
                       { key: "Created By", icon: <FiUserPlus className="text-[13px] text-slate-400" />, label: "Created By" },
+                      { key: "Campaign", icon: <FiTarget className="text-[13px] text-purple-500" />, label: "Campaign" },
                       { key: "Engagement Status", icon: <FiMessageCircle className="text-[13px] text-blue-400" />, label: "Engagement Status" },
                     ].map((col) => (
                       <th

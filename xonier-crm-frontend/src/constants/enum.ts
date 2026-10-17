@@ -224,8 +224,11 @@ export enum PERMISSIONS {
   taskTimerResume= "task_timer:resume",
   taskTimerStop= "task_timer:stop",
   taskTimerDelete= "task_timer:delete",
-
-
+  readCampaign = "campaign:read",
+  createCampaign = "campaign:create",
+  updateCampaign = "campaign:update",
+  deleteCampaign = "campaign:delete",
+  manageCampaign = "campaign:manage",
 }
 
 
@@ -1111,7 +1114,9 @@ export enum LeadEngagementStatus {
   NOT_CONNECTED = "not_connected",
   NOT_REACHED = "not_reached",
   WRONG_NUMBER = "wrong_number",
-  MEETING_SCHEDULED = "meeting_scheduled"
+  MEETING_SCHEDULED = "meeting_scheduled",
+  MEETING_COMPLETED = "meeting_completed",
+  FOLLOW_UP = "follow_up",
 }
 
 export enum TASK_ACTIVITY_ACTION {

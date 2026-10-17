@@ -29,6 +29,7 @@ import AdvancedFilters from "@/src/components/common/AdvanceFilter";
 import Pagination from "@/src/components/common/pagination";
 import { AuthService } from "@/src/services/auth.service";
 import UserSelect from "@/src/components/common/userselect";
+import PageLimit from "@/src/components/common/PageLimit";
 
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; textColor: string }> = {
@@ -385,6 +386,12 @@ const page = (): JSX.Element => {
     setUploadModalOpen(null);
   };
 
+  const [limitOpen, setLimitOpen] = useState(false);
+    const limits = [10, 20, 30, 40];
+     const handleLimit = (n: number) => {
+        setPageLimit(Number(n));
+        setCurrentPage(1);}
+
   return (
     <div>
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full flex flex-col gap-7 items-center justify-between">
@@ -396,7 +403,16 @@ const page = (): JSX.Element => {
             <p className="text-gray-500 dark:text-gray-400">{t("view_and_edit_quotations")}</p>
           </div>
           <div className="flex items-center gap-6">
-            <select
+             <PageLimit
+                setLimitOpen={setLimitOpen}
+                pageLimit={pageLimit}
+                limitOpen={limitOpen}
+                limits={limits}
+                handleLimit={handleLimit}
+            
+              />
+            
+            {/* <select
               name="limit"
               id="limit"
               className="bg-slate-100 dark:bg-gray-600 px-3 py-2.5 border border-slate-900/10 outline-none text-slate-500 rounded-lg  dark:text-white/70"
@@ -406,7 +422,7 @@ const page = (): JSX.Element => {
               <option value="20">20</option>
               <option value="30">30</option>
               <option value="40">50</option>
-            </select>
+            </select> */}
             <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2 dark:text-white/70">
               <IoIosSearch className="text-xl text-slate-400" />
               <input
