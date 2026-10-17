@@ -520,7 +520,7 @@ onClick={() => i18n.changeLanguage("po")}>
                   <ul className="flex flex-col ">
                     <li className="dark:hover:bg-slate-500 hover:bg-slate-100 group py-2 px-2 rounded-lg">
                       <Link
-                        href={`/users/${auth?.user?.id}`}
+                        href={`/users/${auth?.user?._id || auth?.user?.id}`}
                         className="flex items-center gap-4 group"
                       >
                         <span className="h-8 w-8 rounded-md text-slate-500 dark:text-white/80  dark:bg-slate-500 flex items-center justify-center overflow-hidden">

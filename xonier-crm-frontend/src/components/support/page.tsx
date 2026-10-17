@@ -1,4 +1,3 @@
-// components/Support/Support.tsx  ← paste here, replacing your current code
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";

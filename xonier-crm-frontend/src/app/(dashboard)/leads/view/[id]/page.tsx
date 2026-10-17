@@ -15,6 +15,7 @@ import PrimaryButton from "@/src/components/ui/PrimeryButton";
 import { SIDEBAR_WIDTH } from "@/src/constants/constants";
 import { COUNTRY_CODE, PERMISSIONS, SALES_STATUS } from "@/src/constants/enum";
 import LeadService from "@/src/services/lead.service";
+import CallService from "@/src/services/call.service";
 import { Lead } from "@/src/types/leads/leads.types";
 import axios from "axios";
 import { useParams, useRouter } from "next/navigation";
@@ -60,6 +61,34 @@ import Skeleton from "react-loading-skeleton";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 
+interface CallTimelineItem {
+  id: string;
+  status: "pending" | "delivered" | "dialing" | "ended" | "failed" | "cancelled" | "expired";
+  disposition?: "connected" | "not_connected" | null;
+  failureReason?: string | null;
+  requestedAt?: string | null;
+  dialedAt?: string | null;
+  endedAt?: string | null;
+  durationSec?: number | null;
+  agentName?: string;
+  connectStatus?: string | null;
+  feedback?: string | null;
+  followUpAt?: string | null;
+}
+
+const formatCallDuration = (seconds?: number | null) => {
+  if (seconds == null) return null;
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}m ${remainingSeconds.toString().padStart(2, "0")}s`;
+};
+
+const formatTimelineDate = (value?: string | null) =>
+  value ? new Date(value).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }) : "—";
+
+const formatTimelineTime = (value?: string | null) =>
+  value ? new Date(value).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }) : "—";
+
 const LeadViewPage = (): JSX.Element => {
   const { t } = useTranslation();
   const [err, setErr] = useState<string | string[]>("");
@@ -69,6 +98,8 @@ const LeadViewPage = (): JSX.Element => {
   const [activeTab, setActiveTab] = useState<
     "overview" | "contact" | "activity"
   >("overview");
+  const [callHistory, setCallHistory] = useState<CallTimelineItem[]>([]);
+  const [isCallHistoryLoading, setIsCallHistoryLoading] = useState(false);
 
   const { id } = useParams();
   const router = useRouter();
@@ -98,6 +129,28 @@ const LeadViewPage = (): JSX.Element => {
   useEffect(() => {
     getLeadData();
   }, []);
+
+  useEffect(() => {
+    if (activeTab !== "activity" || !id) return;
+
+    const loadCallHistory = async () => {
+      setIsCallHistoryLoading(true);
+      try {
+        const leadId = Array.isArray(id) ? id[0] : id;
+        const result = await CallService.getLeadHistory(leadId);
+        setCallHistory(result.data?.data ?? []);
+      } catch (error) {
+        setCallHistory([]);
+        if (axios.isAxiosError(error)) {
+          toast.error(extractErrorMessages(error).toString());
+        }
+      } finally {
+        setIsCallHistoryLoading(false);
+      }
+    };
+
+    void loadCallHistory();
+  }, [activeTab, id]);
 
   const handleDelete = async (id: string) => {
     if (!leadData) return;
@@ -593,12 +646,68 @@ const LeadViewPage = (): JSX.Element => {
                   {t("activity_timeline")}
                 </h3>
               </div>
-              <div className="text-center py-12">
-                <IoInformationCircleOutline className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
-                <p className="text-gray-500 dark:text-gray-400">
-                  {t("activity_timeline_coming_soon")}
-                </p>
-              </div>
+              {isCallHistoryLoading ? (
+                <div className="space-y-5">
+                  {[0, 1, 2].map((item) => <Skeleton key={item} height={74} borderRadius={10} />)}
+                </div>
+              ) : callHistory.length === 0 ? (
+                <div className="text-center py-12">
+                  <IoInformationCircleOutline className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
+                  <p className="text-gray-500 dark:text-gray-400">No mobile call activity recorded yet</p>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {callHistory.map((call, index) => {
+                    const eventAt = call.endedAt || call.dialedAt || call.requestedAt;
+                    const isConnected = call.disposition === "connected";
+                    const isFailed = call.status === "failed" || call.status === "cancelled" || call.status === "expired" || call.disposition === "not_connected";
+                    const label = isConnected
+                      ? "Outgoing Connected"
+                      : call.status === "failed"
+                        ? "Outgoing Failed"
+                        : call.status === "cancelled"
+                          ? "Outgoing Cancelled"
+                          : call.status === "expired"
+                            ? "Call Request Expired"
+                            : call.disposition === "not_connected"
+                              ? "Outgoing Not Connected"
+                              : call.status === "ended"
+                                ? "Outgoing Call Ended"
+                                : "Outgoing Call In Progress";
+                    const duration = formatCallDuration(call.durationSec);
+
+                    return (
+                      <div key={call.id} className="grid grid-cols-[104px_36px_1fr] gap-3 sm:grid-cols-[150px_44px_1fr] sm:gap-4">
+                        <div className="pt-1.5">
+                          <span className="inline-flex rounded-md bg-gray-100 px-2 py-1 text-[11px] font-semibold text-gray-600 dark:bg-gray-800 dark:text-gray-300 sm:text-xs">
+                            {formatTimelineDate(eventAt)}
+                          </span>
+                        </div>
+                        <div className="relative flex justify-center">
+                          {index < callHistory.length - 1 && <span className="absolute top-9 bottom-[-10px] w-0.5 bg-gray-200 dark:bg-gray-600" />}
+                          <span className={`z-10 flex h-9 w-9 items-center justify-center rounded-full text-white ${isConnected ? "bg-emerald-500" : isFailed ? "bg-rose-500" : "bg-amber-500"}`}>
+                            <IoCallOutline className="h-4 w-4" />
+                          </span>
+                        </div>
+                        <div className="pb-6">
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <p className="font-semibold text-gray-900 dark:text-white">{label}</p>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">| {formatTimelineTime(eventAt)}</span>
+                          </div>
+                          <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+                            <span>Agent: <span className="font-medium text-gray-700 dark:text-gray-200">{call.agentName || "Agent"}</span></span>
+                            <span>Status: <span className="font-medium capitalize text-gray-700 dark:text-gray-200">{(call.connectStatus || call.status).replace(/_/g, " ")}</span></span>
+                            {duration && <span>Duration: <span className="font-medium text-gray-700 dark:text-gray-200">{duration}</span></span>}
+                          </div>
+                          {call.feedback && <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">Feedback: {call.feedback}</p>}
+                          {call.followUpAt && <p className="mt-1 text-xs text-cyan-700 dark:text-cyan-300">Next follow-up: {formatTimelineDate(call.followUpAt)} at {formatTimelineTime(call.followUpAt)}</p>}
+                          {call.failureReason && <p className="mt-1 text-xs text-rose-600 dark:text-rose-300">Reason: {call.failureReason}</p>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>

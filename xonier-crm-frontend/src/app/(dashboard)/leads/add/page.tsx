@@ -9,8 +9,9 @@ import { UserFormService } from "@/src/services/userForm.service";
 import { LeadPayload } from "@/src/types/leads/leads.types";
 import { CustomField, UserForm } from "@/src/types/userForm/userForm.types";
 import axios from "axios";
-import React, { JSX, useState, useEffect, FormEvent, ChangeEvent } from "react";
+import React, { JSX, useState, useEffect, FormEvent, ChangeEvent, useRef } from "react";
 import { GrDocumentUpdate } from "react-icons/gr";
+import { MdOutlineKeyboardArrowDown } from "react-icons/md";
 import { toast } from "react-toastify";
 import Skeleton from "react-loading-skeleton";
 import InformationComponent from "@/src/components/ui/InformationComponent";
@@ -62,6 +63,143 @@ const MEETING_TRIGGER_KEY = "meetingScheduled";
 
 // Canonical value we use internally to represent an affirmative trigger.
 const YES_VALUE = "yes";
+
+const LeadCustomCombobox = ({
+  name,
+  label,
+  value,
+  onChange,
+  onBlur,
+  options,
+  placeholder,
+  required,
+}: {
+  name: string;
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  onBlur: (v: string) => void;
+  options: string[];
+  placeholder: string;
+  required?: boolean;
+}) => {
+  const { t } = useTranslation();
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const filteredOptions = options.filter((opt) =>
+    opt.toLowerCase().includes((value || "").toLowerCase())
+  );
+
+  const commonClasses = `
+    w-full px-3 py-2 rounded-md border text-sm pr-10
+    bg-white dark:bg-gray-700 text-black dark:text-white
+    border-gray-300 dark:border-gray-300/30
+    disabled:opacity-60 disabled:cursor-not-allowed
+    focus:ring-2 focus:outline-none focus:border-cyan-400 dark:focus:border-cyan-500 text-slate-600 focus:ring-teal-400/20
+  `;
+
+  return (
+    <div ref={wrapperRef} className="flex flex-col gap-1 w-full relative">
+      <label className="text-sm font-medium text-gray-700 dark:text-gray-200 capitalize flex gap-2">
+        {t(label.toLowerCase())}
+        {required && <span className="text-red-500 text-xl">*</span>}
+      </label>
+
+      <div className="relative flex items-center">
+        <input
+          ref={inputRef}
+          required={required}
+          className={commonClasses}
+          value={value}
+          placeholder={placeholder}
+          onChange={(e) => {
+            onChange(e.target.value);
+            setIsOpen(true);
+          }}
+          onFocus={() => setIsOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              setIsOpen(false);
+              onBlur(e.currentTarget.value);
+              inputRef.current?.blur();
+            }
+          }}
+          onBlur={() => {
+            // Intentionally left empty to avoid saving on click outside
+          }}
+        />
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            if (isOpen) {
+              setIsOpen(false);
+            } else {
+              setIsOpen(true);
+              inputRef.current?.focus();
+            }
+          }}
+          className="absolute right-2 text-gray-400 hover:text-cyan-600 dark:text-gray-500 dark:hover:text-cyan-400 transition-colors p-1"
+        >
+          <MdOutlineKeyboardArrowDown className="text-xl" />
+        </button>
+      </div>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto z-50 py-1">
+          {filteredOptions.length > 0 ? (
+            filteredOptions.map((opt) => (
+              <div
+                key={opt}
+                className="px-4 py-2.5 cursor-pointer hover:bg-cyan-50 dark:hover:bg-cyan-900/30 transition-colors flex flex-col border-b border-gray-50 dark:border-gray-700/50 last:border-0"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  onChange(opt);
+                  setIsOpen(false);
+                  onBlur(opt);
+                  inputRef.current?.blur();
+                }}
+              >
+                <span className="font-medium text-gray-900 dark:text-gray-100 text-[15px]">{opt}</span>
+                <span className="text-xs font-bold text-cyan-600 dark:text-cyan-400 tracking-wider">
+                  {opt.replace(/_/g, " ").toUpperCase()}
+                </span>
+              </div>
+            ))
+          ) : (
+            <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 italic text-center">
+              {value ? "Press Enter to add as custom option" : "No options available"}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const optionKey = (value: string) => value.trim().toLocaleLowerCase();
+const loadLeadOptions = (key: string, defaults: string[]) => {
+  if (typeof window === "undefined") return defaults;
+  try {
+    const saved = JSON.parse(localStorage.getItem(key) || "[]");
+    return Array.isArray(saved) ? [...defaults, ...saved].filter((value, index, all) =>
+      all.findIndex((item) => optionKey(item) === optionKey(value)) === index
+    ) : defaults;
+  } catch { return defaults; }
+};
 
 /**
  * Normalizes any value coming from a dynamically-configured select field
@@ -236,6 +374,7 @@ const page = (): JSX.Element => {
   const [loading, setLoading] = useState<boolean>(false);
   const [userFormData, setUserFormData] = useState<UserForm[]>([]);
   const [userFormField, setUserFormField] = useState<CustomField[]>([]);
+  const [customOptions, setCustomOptions] = useState<Record<string, string[]>>({});
 
   // Single flat map for ALL fields (known + dynamic extra).
   // On submit we split them apart before sending to the API.
@@ -292,6 +431,19 @@ const page = (): JSX.Element => {
     }
 
     setFlatFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const rememberLeadOption = (name: string, value: string, defaults: string[]) => {
+    const trimmed = value.trim();
+    const options = customOptions[name] ?? loadLeadOptions(`lead-${name}-options`, defaults);
+    const existing = options.find((option) => optionKey(option) === optionKey(trimmed));
+    const canonical = existing || trimmed;
+    if (trimmed && !existing) {
+      const next = [...options, trimmed];
+      setCustomOptions((prev) => ({ ...prev, [name]: next }));
+      localStorage.setItem(`lead-${name}-options`, JSON.stringify(next));
+    }
+    return canonical;
   };
 
   useEffect(() => {
@@ -385,6 +537,27 @@ const page = (): JSX.Element => {
   };
 
   if (item.type === "select") {
+    const isCustomizable = item.key === "projectType" || item.key === "source";
+    if (isCustomizable) {
+      const defaults = (item.options ?? []).map((option) => option.value);
+      const options = customOptions[item.key] ?? loadLeadOptions(`lead-${item.key}-options`, defaults);
+      return (
+        <LeadCustomCombobox
+          key={item.id}
+          name={item.key}
+          label={item.name}
+          options={options}
+          placeholder={item.placeholder ? t(item.placeholder) : t("select")}
+          value={String(fieldValue)}
+          onChange={(val) => setFlatFormData((prev) => ({ ...prev, [item.key]: val }))}
+          onBlur={(val) => setFlatFormData((prev) => ({
+            ...prev,
+            [item.key]: rememberLeadOption(item.key, val, defaults),
+          }))}
+          required={getRequired()}
+        />
+      );
+    }
     return (
       <Select
         key={item.id}

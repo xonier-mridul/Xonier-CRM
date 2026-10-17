@@ -83,7 +83,8 @@ class LeadBaseSchema(BaseModel):
     @classmethod
     def validate_meeting(cls, value):
             priority = value.get("priority")
-            if not priority or priority not in PRIORITY:
+            valid_priorities = [p.value for p in PRIORITY]
+            if not priority or priority not in valid_priorities:
                 raise AppException(422, "Priority should be low, medium or high")
             isMeetingScheduled = value.get("meetingScheduled")
     

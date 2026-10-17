@@ -10,7 +10,9 @@ const AVAILABLE_STATUSES: LeadEngagementStatus[] = [
   LeadEngagementStatus.NOT_CONNECTED,
   LeadEngagementStatus.NOT_REACHED,
   LeadEngagementStatus.INTERESTED,
+  LeadEngagementStatus.FOLLOW_UP,
   LeadEngagementStatus.MEETING_SCHEDULED,
+  LeadEngagementStatus.MEETING_COMPLETED,
   LeadEngagementStatus.NOT_INTERESTED,
   LeadEngagementStatus.WRONG_NUMBER,
 ];
@@ -53,6 +55,16 @@ export const STATUS_CONFIG: Record<
     label: "Meeting Scheduled",
     color: "bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-700/40",
     textColor: "text-violet-600 dark:text-violet-400",
+  },
+  [LeadEngagementStatus.MEETING_COMPLETED]: {
+    label: "Meeting Done",
+    color: "bg-fuchsia-50 dark:bg-fuchsia-900/20 border border-fuchsia-200 dark:border-fuchsia-700/40",
+    textColor: "text-fuchsia-600 dark:text-fuchsia-400",
+  },
+  [LeadEngagementStatus.FOLLOW_UP]: {
+    label: "Follow Up",
+    color: "bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-700/40",
+    textColor: "text-cyan-600 dark:text-cyan-400",
   },
 };
 
@@ -150,10 +162,10 @@ export default function StatusDropdown({
           onClick={handleToggle}
           disabled={isUpdating}
           className={`${
-            STATUS_CONFIG[currentStatus].color
-          } ${STATUS_CONFIG[currentStatus].textColor} px-3 py-1.5 text-[13px] font-semibold rounded-md flex items-center gap-2 justify-between min-w-[130px] transition-all`}
+            (STATUS_CONFIG[currentStatus] || STATUS_CONFIG[LeadEngagementStatus.NOT_REACHED]).color
+          } ${(STATUS_CONFIG[currentStatus] || STATUS_CONFIG[LeadEngagementStatus.NOT_REACHED]).textColor} px-3 py-1.5 text-[13px] font-semibold rounded-md flex items-center gap-2 justify-between min-w-[130px] transition-all`}
         >
-          <span>{STATUS_CONFIG[currentStatus].label}</span>
+          <span>{(STATUS_CONFIG[currentStatus] || STATUS_CONFIG[LeadEngagementStatus.NOT_REACHED]).label}</span>
           {isUpdating ? (
             <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
           ) : (

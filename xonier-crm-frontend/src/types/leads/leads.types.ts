@@ -38,6 +38,8 @@ export interface Lead {
 
   inDeal?: boolean
   connectStatus?: string | null;
+  followUpAt?: string | null;   // ISO datetime — when the next follow-up is due
+  campaign?: string | null;
   createdAt: string;          
   updatedAt: string;          
   deletedAt?: string | null;

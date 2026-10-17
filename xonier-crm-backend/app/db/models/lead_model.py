@@ -45,6 +45,7 @@ class LeadsModel(BaseDocument):
     postalCode: Optional[int] =  Field(None, gt=1000, lt=999999)
     language: Optional[LANGUAGE_CODE] = None
     connectStatus: Optional[CONTACT_STATUS] = CONTACT_STATUS.NOT_REACHED.value
+    followUpAt: Optional[datetime] = None  # Calculated next follow-up datetime
     industry: Optional[str] = None
     employeeRole: Optional[str] = None
     employeeSeniority: Optional[EMPLOYEE_SENIORITY] = None

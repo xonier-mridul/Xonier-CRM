@@ -20,6 +20,8 @@ const StatusBadge = ({ status }: { status: string }) => {
     not_reached:    "bg-amber-50   text-amber-600   dark:bg-amber-900/20   dark:text-amber-400",
     updated:        "bg-sky-50     text-sky-600     dark:bg-sky-900/20     dark:text-sky-400",
     resend:         "bg-violet-50  text-violet-600  dark:bg-violet-900/20  dark:text-violet-400",
+    paused:         "bg-amber-50   text-amber-600   dark:bg-amber-900/20   dark:text-amber-400",
+    active:         "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400",
   };
 
   const cls = map[status] ?? "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400";

@@ -14,8 +14,12 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
 
     async def dispatch(self, request: Request, call_next):
-       
-        
+        # BaseHTTPMiddleware cannot handle WebSocket upgrades — forward directly to ASGI app.
+        # The websocket endpoint does its own token auth via _ws_user().
+        if request.scope["type"] == "websocket":
+            await self.app(request.scope, request._receive, request._send)
+            return
+
         delete_cookie = False
         token = None
 

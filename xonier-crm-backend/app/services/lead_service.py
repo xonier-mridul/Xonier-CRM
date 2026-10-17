@@ -17,6 +17,8 @@ from app.core.constants import (
     
 )
 from app.db.models.lead_model import LeadsModel 
+from app.db.models.campaign_lead_model import CampaignLeadModel
+from app.db.models.campaign_model import CampaignModel
 from app.core.enums import SALES_STATUS, ACTIVITY_ENTITY_TYPE, ACTIVITY_ACTION, LEAD_SOURCE_TYPE, MEETING_SCHEDULED
 from app.utils.cache_key_generator import (
     cache_key_generator,
@@ -27,6 +29,7 @@ import json
 from app.utils.get_team_members import GetTeamMembers
 from app.core.crypto import Encryption
 from app.repositories.activity_repository import ActivityRepository
+from app.db.models.activity_model import ActivityModel
 from app.db.db import Client
 from app.utils.activity_payload import activity_payload
 from app.utils.validate_admin import validate_admin, validate_admin_company_admin
@@ -865,6 +868,9 @@ class LeadService:
                 return v
 
             cache_query = {k: serialize_for_cache(v) for k, v in query.items()}
+            # Bump the list-cache shape after sourcing follow-up data from the
+            # mobile activity record, so older cached lead values cannot survive.
+            cache_query["callTimelineFollowUpVersion"] = 2
 
             key = cache_key_generator_with_id(
                 prefix=LEAD_CACHE_NAMESPACE,
@@ -877,7 +883,14 @@ class LeadService:
             cache = await FastAPICache.get_backend().get(key)
 
             if cache:
-                return json.loads(cache)      
+                cached_data = json.loads(cache)
+                # Invalidate old cached responses that don't have the 'campaign' field
+                first_lead = (cached_data.get("data") or [None])[0]
+                if first_lead is not None and "campaign" not in first_lead:
+                    # Stale cache — fall through to re-fetch
+                    pass
+                else:
+                    return cached_data
 
            
          
@@ -900,6 +913,89 @@ class LeadService:
                 item["email"] = encryptor.decrypt_data(item["email"])
                 if item["phone"]:
                     item["phone"] = encryptor.decrypt_data(item["phone"])
+
+            # Mobile call completion data is the canonical follow-up source. A
+            # lead list may otherwise display an older cached lead.followUpAt
+            # while the activity timeline already shows the newest call result.
+            try:
+                lead_oids = [ObjectId(item["id"]) for item in result["data"] if item.get("id")]
+                if lead_oids:
+                    call_activities = await ActivityModel.get_pymongo_collection().find(
+                        {
+                            "companyId": PydanticObjectId(user["companyId"]),
+                            "entityType": ACTIVITY_ENTITY_TYPE.LEAD.value,
+                            "entityId": {"$in": lead_oids},
+                            "action": ACTIVITY_ACTION.CALL_MADE.value,
+                        },
+                        {"entityId": 1, "metadata": 1},
+                        # callCompletedAt is an ISO-8601 value, so descending
+                        # lexical order is chronological. _id covers old records.
+                        sort=[("metadata.callCompletedAt", -1), ("_id", -1)],
+                    ).to_list(length=len(lead_oids) * 20)
+
+                    latest_call_by_lead: Dict[str, Dict[str, Any]] = {}
+                    for activity in call_activities:
+                        lead_key = str(activity.get("entityId") or "")
+                        if lead_key and lead_key not in latest_call_by_lead:
+                            latest_call_by_lead[lead_key] = activity.get("metadata") or {}
+
+                    for item in result["data"]:
+                        metadata = latest_call_by_lead.get(item.get("id", ""))
+                        if not metadata:
+                            continue
+                        connect_status = metadata.get("connectStatus")
+                        if connect_status:
+                            item["connectStatus"] = connect_status
+                            item["followUpAt"] = (
+                                metadata.get("followUpAt")
+                                if connect_status == "follow_up"
+                                else None
+                            )
+            except Exception as call_enrich_err:
+                print(f"[Call follow-up enrich warning] {call_enrich_err}")
+
+            # ── Enrich leads with campaign name ──────────────────────────────
+            try:
+                def _ref_id(ref):
+                    if ref is None:
+                        return None
+                    if isinstance(ref, dict):
+                        return ref.get("$id") or ref.get("id")
+                    return getattr(ref, "id", ref)
+
+                lead_oids = [ObjectId(item["id"]) for item in result["data"] if item.get("id")]
+                lead_campaign_map: Dict[str, str] = {}
+                if lead_oids:
+                    cl_col = CampaignLeadModel.get_pymongo_collection()
+                    cl_docs = await cl_col.find(
+                        {"leadId.$id": {"$in": lead_oids}},
+                        {"leadId": 1, "campaignId": 1},
+                    ).to_list(length=None)
+
+                    campaign_oids = list({
+                        _ref_id(d.get("campaignId")) for d in cl_docs if _ref_id(d.get("campaignId"))
+                    })
+                    camp_names: Dict[str, str] = {}
+                    if campaign_oids:
+                        camp_docs = await CampaignModel.get_pymongo_collection().find(
+                            {"_id": {"$in": campaign_oids}}, {"name": 1}
+                        ).to_list(length=None)
+                        camp_names = {str(c["_id"]): c.get("name") for c in camp_docs}
+
+                    for d in cl_docs:
+                        lid = _ref_id(d.get("leadId"))
+                        cid = _ref_id(d.get("campaignId"))
+                        cname = camp_names.get(str(cid)) if cid else None
+                        if lid and cname and str(lid) not in lead_campaign_map:
+                            lead_campaign_map[str(lid)] = cname
+
+                for item in result["data"]:
+                    item["campaign"] = lead_campaign_map.get(item.get("id", ""), None)
+            except Exception as enrich_err:
+                print(f"[Campaign Enrich Warning] {enrich_err}")
+                for item in result["data"]:
+                    item.setdefault("campaign", None)
+            # ─────────────────────────────────────────────────────────────────
 
             await FastAPICache.get_backend().set(
                 key=key, value=json.dumps(result), expire=300
