@@ -29,7 +29,9 @@ class ActivityModel(BaseDocument):
     metadata: Optional[Dict] = None
 
     createdAt: datetime = Field(
-        default_factory=lambda: datetime.now(TIME_ZONE).date()
+        # Keep the full IST timestamp. Using .date() silently stored every
+        # activity at midnight and made call-history times display as 12:00 am.
+        default_factory=lambda: datetime.now(TIME_ZONE)
     )
 
     class Settings:

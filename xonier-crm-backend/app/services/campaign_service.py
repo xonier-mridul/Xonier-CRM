@@ -782,6 +782,8 @@ class CampaignService:
                             "projectType": "$lead.projectType",
                             "createdAt": "$lead.createdAt",
                             "connectStatus": "$lead.connectStatus",
+                            "followUpAt": "$lead.followUpAt",
+                            "phone": "$lead.phone",
                         },
                         "assignedTo": {
                             "_id": {"$toString": "$assignedUser._id"},
@@ -804,6 +806,19 @@ class CampaignService:
                 return {"data": [], "page": page, "limit": limit, "totalPages": 0, "total": 0}
 
             data = result[0].get("data", [])
+            # A campaign phone number is only sent in readable form to the agent
+            # who owns that campaign lead. The call endpoint repeats this check.
+            for item in data:
+                lead_data = item.get("lead") or {}
+                is_assigned_to_requester = str((item.get("assignedTo") or {}).get("_id") or "") == str(user["_id"])
+                if is_assigned_to_requester and lead_data.get("phone"):
+                    try:
+                        lead_data["phone"] = self.encryption.decrypt_data(lead_data["phone"])
+                    except Exception:
+                        # Keep the value unavailable rather than exposing encrypted data.
+                        lead_data["phone"] = None
+                else:
+                    lead_data.pop("phone", None)
             total_count_list = result[0].get("totalCount", [])
             total = total_count_list[0].get("count", 0) if total_count_list else 0
             total_pages = (total + limit - 1) // limit if total else 0

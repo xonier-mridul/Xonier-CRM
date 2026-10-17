@@ -34,7 +34,7 @@ from app.utils.custom_exception import AppException
 
 DELETED_LEAD_STATUSES = ["delete", "deleted"]
 CLOSED_LEAD_STATUSES = ["won", "lost", "delete", "deleted"]
-HIDDEN_CAMPAIGN_STATUSES = ["deleted", "draft"]
+HIDDEN_CAMPAIGN_STATUSES = ["deleted"]
 PERIODS = ["today", "week", "month", "quarter"]
 
 
@@ -196,17 +196,28 @@ class MobileService:
             raise AppException(400, f"Invalid status filter: {value}")
 
     async def _get_accessible_campaign(self, user, campaign_id: str) -> Dict[str, Any]:
-        """Campaign doc if the user is an agent/manager of it; 404 / 403 otherwise."""
+        """Campaign doc if the user is an agent/manager of it or has assigned leads in it; 404 / 403 otherwise."""
         uid, company = self._ids(user)
+        oid = ObjectId(str(uid))
         camp = await self._campaigns().find_one(
             {"_id": _oid(campaign_id, "campaign id"), "companyId": company, "deletedAt": None}
         )
         if not camp or camp.get("status") == "deleted":
             raise AppException(404, "Campaign not found")
-        member_ids = {_ref_id(r) for r in (camp.get("agents") or [])}
-        member_ids |= {_ref_id(r) for r in (camp.get("managers") or [])}
-        if uid not in member_ids:
-            raise AppException(403, "You are not part of this campaign")
+        member_ids = {str(_ref_id(r)) for r in (camp.get("agents") or []) if r}
+        member_ids |= {str(_ref_id(r)) for r in (camp.get("managers") or []) if r}
+        if str(uid) not in member_ids:
+            # Also check if agent has assigned leads in this campaign
+            has_assigned = await self._campaign_leads().find_one({
+                "$or": [
+                    {"campaignId.$id": camp["_id"], "assignedTo.$id": oid},
+                    {"campaignId.$id": camp["_id"], "assignedTo": oid},
+                    {"campaignId": camp["_id"], "assignedTo.$id": oid},
+                    {"campaignId": camp["_id"], "assignedTo": oid},
+                ]
+            })
+            if not has_assigned:
+                raise AppException(403, "You are not part of this campaign")
         return camp
 
     # ─────────────────────────────────────────────────────────────────────────
@@ -311,12 +322,42 @@ class MobileService:
     # MY CAMPAIGNS
     # ─────────────────────────────────────────────────────────────────────────
 
-    def _my_campaign_query(self, uid, company, status: Optional[str] = None, search: str = ""):
+    async def _get_campaign_ids_from_leads(self, uid: ObjectId) -> List[ObjectId]:
+        docs = await self._campaign_leads().find(
+            {"$or": [{"assignedTo.$id": uid}, {"assignedTo": uid}]},
+            {"campaignId": 1}
+        ).to_list(length=None)
+        cids = set()
+        for d in docs:
+            cid = d.get("campaignId")
+            if hasattr(cid, "id"):
+                cids.add(cid.id)
+            elif isinstance(cid, dict) and "$id" in cid:
+                cids.add(cid["$id"])
+            elif isinstance(cid, ObjectId):
+                cids.add(cid)
+        return list(cids)
+
+    async def _my_campaign_query(self, uid, company, status: Optional[str] = None, search: str = ""):
+        # uid as plain ObjectId for raw PyMongo queries
+        oid = ObjectId(str(uid))
+        lead_camp_ids = await self._get_campaign_ids_from_leads(oid)
+
+        or_clauses: List[Dict[str, Any]] = [
+            {"agents.$id": oid},
+            {"agents": oid},
+            {"managers.$id": oid},
+            {"managers": oid},
+        ]
+        if lead_camp_ids:
+            or_clauses.append({"_id": {"$in": lead_camp_ids}})
+
         query: Dict[str, Any] = {
             "companyId": company,
             "deletedAt": None,
             "status": {"$nin": HIDDEN_CAMPAIGN_STATUSES},
-            "$or": [{"agents.$id": uid}, {"managers.$id": uid}],
+            # Match both DBRef format (Beanie Link), plain ObjectId storage, and assigned leads
+            "$or": or_clauses,
         }
         if status:
             query["status"] = status
@@ -383,7 +424,7 @@ class MobileService:
         try:
             uid, company = self._ids(user)
             page, limit = _page_args(filters)
-            query = self._my_campaign_query(
+            query = await self._my_campaign_query(
                 uid, company, filters.get("status"), (filters.get("search") or "").strip()
             )
             total = await self._campaigns().count_documents(query)
@@ -392,11 +433,12 @@ class MobileService:
 
             stats = await self._campaign_stats([c["_id"] for c in camps], uid)
             users = await self._user_map(self._camp_user_ids(camps))
-            data = [await self._campaign_card(c, stats[c["_id"]], users) for c in camps]
+            data = [await self._campaign_card(c, stats.get(c["_id"], {"totalLeads": 0, "myLeads": 0, "otherLeads": 0, "unassignedLeads": 0}), users) for c in camps]
 
             # summary strip on top of the My Campaigns screen
+            all_camps_query = await self._my_campaign_query(uid, company)
             all_camps = await self._campaigns().find(
-                self._my_campaign_query(uid, company), {"status": 1}
+                all_camps_query, {"status": 1}
             ).to_list(length=None)
             summary = {
                 "totalCampaigns": len(all_camps),
@@ -613,7 +655,7 @@ class MobileService:
             by_status = {r["_id"] or "not_reached": r["count"] for r in rows}
 
             camps = await self._campaigns().find(
-                self._my_campaign_query(uid, company), {"status": 1}
+                await self._my_campaign_query(uid, company), {"status": 1}
             ).to_list(length=None)
 
             return {

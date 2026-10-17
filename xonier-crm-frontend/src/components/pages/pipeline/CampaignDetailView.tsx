@@ -16,6 +16,7 @@ import {
   FiPlay,
 } from "react-icons/fi";
 import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
 import CampaignService from "@/src/services/campaign.service";
 import LeadService from "@/src/services/lead.service";
 import { ICampaign } from "@/src/types/campaign/campaign.types";
@@ -23,6 +24,9 @@ import StatusBadge from "@/src/components/common/Status";
 import CreatedAt from "@/src/components/common/CreatedAt";
 import AddLeadsToCampaign from "./AddLeadsToCampaign";
 import Pagination from "@/src/components/common/pagination";
+import CallablePhone from "@/src/components/common/CallablePhone";
+import { Lead } from "@/src/types/leads/leads.types";
+import { RootState } from "@/src/store";
 
 interface Props {
   campaign: ICampaign;
@@ -41,6 +45,8 @@ interface LeadData {
   projectType?: string;
   createdAt?: string;
   connectStatus?: string;
+  followUpAt?: string;
+  phone?: string;
 }
 
 interface CampaignLead {
@@ -91,6 +97,11 @@ const StatCard: React.FC<{
 const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange }) => {
   const { t } = useTranslation();
   const router = useRouter();
+  const auth = useSelector((state: RootState) => state.auth);
+  const currentUserId = auth.user?._id ?? auth.user?.id ?? "";
+  const isCampaignManager = (campaign.managers || []).some((manager: any) =>
+    String(manager?._id ?? manager?.id ?? manager) === String(currentUserId)
+  );
   const [leads, setLeads] = useState<CampaignLead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -290,6 +301,7 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
               <tr>
                 <th className="px-5 py-3">#</th>
                 <th className="px-5 py-3">Name</th>
+                <th className="px-5 py-3">Phone</th>
                 <th className="px-5 py-3">Company</th>
                 <th className="px-5 py-3">Source</th>
                 <th className="px-5 py-3">Priority</th>
@@ -302,7 +314,7 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
               {isLoading ? (
                 Array.from({ length: 6 }).map((_, idx) => (
                   <tr key={idx} className="border-b dark:border-gray-700">
-                    {Array.from({ length: 8 }).map((__, ci) => (
+                    {Array.from({ length: 9 }).map((__, ci) => (
                       <td key={ci} className="px-5 py-3">
                         <Skeleton width={ci === 0 ? 24 : ci === 1 ? 120 : ci === 7 ? 150 : 90} />
                       </td>
@@ -311,7 +323,7 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
                 ))
               ) : leads.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-5 py-10 text-center text-gray-400 dark:text-gray-500">
+                  <td colSpan={9} className="px-5 py-10 text-center text-gray-400 dark:text-gray-500">
                     <div className="flex flex-col items-center gap-2">
                       <FiLayers size={28} className="opacity-30" />
                       <p>No leads found for this campaign</p>
@@ -321,18 +333,57 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
               ) : (
                 leads.map((lead, idx) => {
                   const ld = lead.lead;
-                  const statusKey = (lead.campaignStatus || "unassigned").toLowerCase();
+                  const isAssignedToMe = Boolean(
+                    currentUserId && lead.assignedTo?._id === currentUserId
+                  );
+                  // Agents may see campaign allocation, but can only open or
+                  // modify their own lead. Managers/admins retain oversight.
+                  const canAccessLead = isAssignedToMe || auth.isAdmin || isCampaignManager;
                   return (
                     <tr
                       key={lead._id}
-                      onClick={() => ld?._id && router.push(`/leads/view/${ld._id}`)}
-                      className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors cursor-pointer"
+                      onClick={() => canAccessLead && ld?._id && router.push(`/leads/view/${ld._id}`)}
+                      title={canAccessLead ? "Open lead" : "This lead is assigned to another agent"}
+                      className={`bg-white border-b dark:bg-gray-800 dark:border-gray-700 transition-colors ${
+                        canAccessLead
+                          ? "hover:bg-gray-50 dark:hover:bg-gray-700/40 cursor-pointer"
+                          : "cursor-default"
+                      }`}
                     >
                       <td className="px-5 py-3 text-gray-400 text-xs">
                         {(currentPage - 1) * pageLimit + idx + 1}
                       </td>
                       <td className="px-5 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">
                         {ld?.fullName || "—"}
+                      </td>
+                      <td className="px-5 py-3">
+                        {ld?.phone ? (
+                          isAssignedToMe ? (
+                            <CallablePhone
+                              lead={{ ...ld, id: ld._id } as Lead}
+                              displayValue={ld.phone}
+                              campaignId={campaign.id || campaign._id}
+                              campaignLeadId={lead._id}
+                              onCallDisposed={(leadId, connectStatus) => {
+                                setLeads((previous) => previous.map((campaignLead) =>
+                                  campaignLead.lead?._id === leadId
+                                    ? { ...campaignLead, lead: { ...campaignLead.lead, connectStatus } }
+                                    : campaignLead
+                                ));
+                                // Mobile may have also set followUpAt. Reload this page so
+                                // the exact next follow-up date/time appears beneath the number.
+                                void fetchLeads();
+                              }}
+                            />
+                          ) : (
+                            <span
+                              className="text-gray-400 dark:text-gray-500"
+                              title="Only the assigned agent can call this campaign lead"
+                            >
+                              —
+                            </span>
+                          )
+                        ) : "—"}
                       </td>
                       <td className="px-5 py-3">{ld?.companyName || "—"}</td>
                       <td className="px-5 py-3 capitalize">{ld?.source || "—"}</td>
@@ -383,7 +434,8 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
                                 e.stopPropagation();
                                 setOpenDropdownId(openDropdownId === ld._id ? null : ld._id!);
                               }}
-                              disabled={updatingLeadId === ld._id}
+                              disabled={updatingLeadId === ld._id || !canAccessLead}
+                              title={!canAccessLead ? "Only the assigned agent can update this lead" : undefined}
                               className={`flex items-center justify-between w-[160px] px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
                                 updatingLeadId === ld._id
                                   ? "bg-gray-50 border-gray-200 text-gray-400 dark:bg-gray-700 dark:border-gray-600"

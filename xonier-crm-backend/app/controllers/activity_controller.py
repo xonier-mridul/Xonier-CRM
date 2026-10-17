@@ -48,6 +48,10 @@ class ActivityController:
             "User activity summary fetched successfully",
             result
         )
+
+    async def get_lead_call_history(self, lead_id: str, request: Request):
+        result = await self.service.get_lead_call_history(lead_id, request.state.user)
+        return successResponse(200, "Lead mobile call history fetched", result)
     
 
     async def call_activity(self, request: Request, payload: Dict[str, Any]):
@@ -87,4 +91,3 @@ class ActivityController:
         except Exception as e:
                 raise AppException(500, f"Internal server error")
         
-

@@ -29,6 +29,7 @@ import json
 from app.utils.get_team_members import GetTeamMembers
 from app.core.crypto import Encryption
 from app.repositories.activity_repository import ActivityRepository
+from app.db.models.activity_model import ActivityModel
 from app.db.db import Client
 from app.utils.activity_payload import activity_payload
 from app.utils.validate_admin import validate_admin, validate_admin_company_admin
@@ -867,6 +868,9 @@ class LeadService:
                 return v
 
             cache_query = {k: serialize_for_cache(v) for k, v in query.items()}
+            # Bump the list-cache shape after sourcing follow-up data from the
+            # mobile activity record, so older cached lead values cannot survive.
+            cache_query["callTimelineFollowUpVersion"] = 2
 
             key = cache_key_generator_with_id(
                 prefix=LEAD_CACHE_NAMESPACE,
@@ -909,6 +913,46 @@ class LeadService:
                 item["email"] = encryptor.decrypt_data(item["email"])
                 if item["phone"]:
                     item["phone"] = encryptor.decrypt_data(item["phone"])
+
+            # Mobile call completion data is the canonical follow-up source. A
+            # lead list may otherwise display an older cached lead.followUpAt
+            # while the activity timeline already shows the newest call result.
+            try:
+                lead_oids = [ObjectId(item["id"]) for item in result["data"] if item.get("id")]
+                if lead_oids:
+                    call_activities = await ActivityModel.get_pymongo_collection().find(
+                        {
+                            "companyId": PydanticObjectId(user["companyId"]),
+                            "entityType": ACTIVITY_ENTITY_TYPE.LEAD.value,
+                            "entityId": {"$in": lead_oids},
+                            "action": ACTIVITY_ACTION.CALL_MADE.value,
+                        },
+                        {"entityId": 1, "metadata": 1},
+                        # callCompletedAt is an ISO-8601 value, so descending
+                        # lexical order is chronological. _id covers old records.
+                        sort=[("metadata.callCompletedAt", -1), ("_id", -1)],
+                    ).to_list(length=len(lead_oids) * 20)
+
+                    latest_call_by_lead: Dict[str, Dict[str, Any]] = {}
+                    for activity in call_activities:
+                        lead_key = str(activity.get("entityId") or "")
+                        if lead_key and lead_key not in latest_call_by_lead:
+                            latest_call_by_lead[lead_key] = activity.get("metadata") or {}
+
+                    for item in result["data"]:
+                        metadata = latest_call_by_lead.get(item.get("id", ""))
+                        if not metadata:
+                            continue
+                        connect_status = metadata.get("connectStatus")
+                        if connect_status:
+                            item["connectStatus"] = connect_status
+                            item["followUpAt"] = (
+                                metadata.get("followUpAt")
+                                if connect_status == "follow_up"
+                                else None
+                            )
+            except Exception as call_enrich_err:
+                print(f"[Call follow-up enrich warning] {call_enrich_err}")
 
             # ── Enrich leads with campaign name ──────────────────────────────
             try:

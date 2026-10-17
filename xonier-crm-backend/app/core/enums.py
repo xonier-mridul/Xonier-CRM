@@ -872,6 +872,7 @@ class CONTACT_STATUS(str, Enum):
     wrong_number = "wrong_number"
     meeting_scheduled = "meeting_scheduled"
     meeting_completed = "meeting_completed"
+    follow_up = "follow_up"
 
 
 class TASK_PRIORITY(str, Enum):

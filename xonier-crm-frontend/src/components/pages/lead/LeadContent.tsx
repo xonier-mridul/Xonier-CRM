@@ -47,6 +47,7 @@ import UserSelect from "@/src/components/common/userselect";
 import { useTranslation } from "react-i18next";
 import { HiOutlineViewBoards, HiOutlineTable } from "react-icons/hi";
 import LeadKanbanBoard from "./LeadKanbanBoard";
+import CallablePhone from "@/src/components/common/CallablePhone";
 
 const TAB = { ALL: 1, WON: 2, LOST: 3, ASSIGNED: 4 } as const;
 
@@ -877,7 +878,15 @@ const isIndeterminate =
             <SensitiveField value={item.email} link={`mailto:${item.email}`} maskedValue={maskEmail(item.email)} fontSize="[13px]" />
           </td>
           <td className="px-4 py-3.5">
-            <SensitiveField value={item.phone} link={`tel:${item.phone}`} maskedValue={maskPhone(item.phone)} fontSize="[13px]" />
+            <CallablePhone
+              lead={item}
+              displayValue={maskPhone(item.phone) || item.phone}
+              onCallDisposed={(leadId, connectStatus) => {
+                setLeadData((prev) =>
+                  prev.map((l) => l.id === leadId ? { ...l, connectStatus } : l)
+                );
+              }}
+            />
           </td>
           <td className="px-4 py-3.5">
             <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[13px] font-medium bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 capitalize">
@@ -981,7 +990,15 @@ const isIndeterminate =
             <SensitiveField value={item.email} link={`mailto:${item.email}`} maskedValue={maskEmail(item.email)} fontSize="[13px]" />
           </td>
           <td className="px-4 py-3.5">
-            <SensitiveField value={item.phone} link={`tel:${item.phone}`} maskedValue={maskPhone(item.phone)} fontSize="[13px]" />
+            <CallablePhone
+              lead={item}
+              displayValue={maskPhone(item.phone) || item.phone}
+              onCallDisposed={(leadId, connectStatus) => {
+                setAssignedLeadData((prev) =>
+                  prev.map((l) => l.id === leadId ? { ...l, connectStatus } : l)
+                );
+              }}
+            />
           </td>
           <td className="px-4 py-3.5">
             <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[13px] font-medium bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 capitalize">

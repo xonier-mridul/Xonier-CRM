@@ -62,6 +62,7 @@ from app.routes.payment_route import router as payment_router
 from app.routes.notification_route import router as notification_router
 from app.routes.campaign_route import router as campaign_router
 from app.routes.mobile_route import router as mobile_router
+from app.routes.call_route import web_router as call_web_router, mobile_router as call_mobile_router
 
 settings = get_setting()
 
@@ -174,6 +175,8 @@ app.include_router(
 app.include_router(notification_router, prefix="/api/v1/notifications", tags=["Notifications"])
 app.include_router(campaign_router, prefix="/api/campaign", tags=["Campaign"])
 app.include_router(mobile_router, prefix="/api/mobile", tags=["Mobile"])
+app.include_router(call_mobile_router, prefix="/api/mobile", tags=["Mobile Calls"])
+app.include_router(call_web_router, prefix="/api/call", tags=["Calls"])
 
 app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(AppException, app_exception_handler)
