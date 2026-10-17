@@ -17,7 +17,7 @@ export interface StatusPayload {
   icon:        string;
   category: string;
   isFinal: boolean;
-  order: number;
+  order: number | null;
 }
 
 // ── Shape returned by the API ─────────────────────────────────────────────────

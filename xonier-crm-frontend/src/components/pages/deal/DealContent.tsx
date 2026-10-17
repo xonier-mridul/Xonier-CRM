@@ -32,6 +32,7 @@ import { FiBriefcase, FiActivity, FiTag, FiCalendar, FiUserPlus, FiUser, FiSetti
 import { useAdvancedFilters } from "@/src/hooks/useAdvanceFilter";
 import AdvancedFilters from "@/src/components/common/AdvanceFilter";
 import UserSelect from "@/src/components/common/userselect";
+import PageLimit from "../../common/PageLimit";
 
 const DealContent = (): JSX.Element => {
   const { t } = useTranslation();
@@ -350,6 +351,14 @@ const DealContent = (): JSX.Element => {
   // Server-side filters handle salesPersonFilter and assignedToFilter via API
   const currentDealData = baseDealData;
 
+      const [limitOpen, setLimitOpen] = useState(false);
+  const limits = [10, 20, 30, 40];
+   const handleLimit = (n: number) => {
+      setPageLimit(Number(n));
+      setCurrentPage(1);
+    };
+  
+
   return (
     <div>
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm  p-6 rounded-xl border border-slate-900/10 w-full flex flex-col gap-7 items-center justify-between">
@@ -361,7 +370,16 @@ const DealContent = (): JSX.Element => {
             <p className="text-gray-500 dark:text-gray-400">{t("create_edit_or_remove_deals")}</p>
           </div>
           <div className="flex items-center gap-6">
-            <select
+             <PageLimit
+                            setLimitOpen={setLimitOpen}
+                            pageLimit={pageLimit}
+                            limitOpen={limitOpen}
+                            limits={limits}
+                            handleLimit={handleLimit}
+                        
+                          />
+
+            {/* <select
               name="limit"
               id="limit"
               className="bg-slate-50  dark:bg-gray-600 px-3 py-2.5 rounded-lg border text-slate-500 border-slate-900/10 outline-none dark:text-white/70"
@@ -371,7 +389,7 @@ const DealContent = (): JSX.Element => {
               <option value="20">20</option>
               <option value="30">30</option>
               <option value="40">50</option>
-            </select>
+            </select> */}
             <div className="bg-slate-50 dark:bg-gray-600 text-slate-500 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2 dark:text-white/70">
               <IoIosSearch className="text-xl" />
               <input
@@ -666,24 +684,24 @@ const DealContent = (): JSX.Element => {
                               onChange={() => toggleSelectDeal(item.id)}
                             />
                           </td>
-                          <td className="px-4 py-3.5 bg-slate-50/50 dark:bg-slate-800/30">
+                          <td className="px-4 py-3.5 ">
                             <h4 className="capitalize font-semibold text-[13px] text-slate-700 dark:text-slate-200 group-hover:text-cyan-600 transition-colors">{item.dealName}</h4>
                           </td>
                           <td className="px-4 py-3.5">
                             <span
                               className={`inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold capitalize tracking-wide ${
                                 item.dealStage.trim() === DEAL_STAGES.REQUIREMENT_ANALYSIS
-                                  ? "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400"
+                                  ? "bg-amber-50 text-amber-600 dark:bg-amber-800 dark:text-amber-400"
                                   : item.dealStage.trim() === DEAL_STAGES.QUALIFICATION
-                                  ? "bg-sky-50 text-sky-600 dark:bg-sky-900/20 dark:text-sky-400"
+                                  ? "bg-sky-50  text-sky-600 dark:bg-sky-800 dark:text-sky-400"
                                   : item.dealStage.trim() === DEAL_STAGES.PROPOSAL
-                                  ? "bg-violet-50 text-violet-600 dark:bg-violet-900/20 dark:text-violet-400"
+                                  ? "bg-violet-50 text-violet-600 dark:bg-violet-800 dark:text-violet-400"
                                   : item.dealPipeline.trim() === DEAL_STAGES.NEGOTIATION
-                                  ? "bg-teal-50 text-teal-600 dark:bg-teal-900/20 dark:text-teal-400"
+                                  ? "bg-teal-50 text-teal-600 dark:bg-teal-800 dark:text-teal-400"
                                   : item.dealStage.trim() === DEAL_STAGES.WON
-                                  ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
+                                  ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-800 dark:text-emerald-400"
                                   : item.dealStage.trim() === DEAL_STAGES.LOST || item.dealStage.trim() === DEAL_STAGES.DELETE
-                                  ? "bg-rose-50 text-rose-500 dark:bg-rose-900/20 dark:text-rose-400"
+                                  ? "bg-rose-50 text-rose-500 dark:bg-rose-800 dark:text-rose-400"
                                   : "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400"
                               }`}
                             >
@@ -692,7 +710,7 @@ const DealContent = (): JSX.Element => {
                           </td>
                           <td className="px-4 py-3.5">
                             <span
-                              className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-medium bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400 cursor-copy hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                              className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-medium bg-slate-100 text-slate-500 dark:bg-slate-900/50 dark:text-slate-400 cursor-copy hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
                               onClick={() => handleCopy(item?.lead_id?.lead_id)}
                               title="Copy Lead ID"
                             >

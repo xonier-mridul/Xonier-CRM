@@ -15,7 +15,7 @@ const ICON_OPTIONS: string[] = [
 export function StatusBadge({ color, icon, name }: { color: ColorOption; icon?: string; name: string }) {
     if (!icon) icon = "⚡";
     return (
-        <span className={`inline-flex bg-white/80 items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${color.bg} ${color.text}`}>
+        <span className={`inline-flex bg-white/80 dark:bg-cyan-800 dark:text-white items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${color.bg} ${color.text}`}>
             <span>{icon}</span>
             {name}
         </span>
@@ -38,6 +38,7 @@ export function StatusModal({
     const selectedIcon = formData.icon || ICON_OPTIONS[0];
     const selectedCategory = formData.category || "";
     const [categorys, setCategorys] = useState<CategoryItem[]>([]);
+    const [open, setOpen] = useState(false);
 
     const featchCategorys = async () => {
         const result = await CategoryService.getAll({});
@@ -133,32 +134,80 @@ export function StatusModal({
 
                     {/* Category */}
                     <div>
-                        
-                         <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
-                            {t("category")} <span className="text-rose-500">*</span>
+                        <label className="flex gap-1.5 text-sm font-semibold dark:text-gray-300 text-gray-700 mb-1.5">
+                            {t("category")}
+                             <span className="text-rose-500">*</span>
                         </label>
-                        <select
-                            value={formData.category || ""}
-                            onChange={e =>
-                                setFormData(prev => ({
-                                    ...prev,
-                                    category: e.target.value
-                                }))
-                            }
-                            className="w-full px-3.5 py-2.5 rounded-xl border dark:border-gray-500 border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/40 "
+                        
+                       
+                        <button
+                        type="button"
+                        onClick={() => setOpen((prev) => !prev)}
+                        className="
+                            w-full px-3.5 py-2.5
+                            rounded-xl
+                            border border-gray-200 dark:border-gray-500
+                            bg-white dark:bg-slate-800
+                            text-gray-900 dark:text-white
+                            text-sm
+                            flex items-center justify-between
+                            focus:outline-none
+                            focus:ring-2 focus:ring-cyan-500/40
+                        "
                         >
-                            <option value="" disabled>{t("select_category_3")}</option>
+                        <span>
+                            {formData.category
+                            ? (() => {
+                                const selected = categorys.find(
+                                    (c) => String(c.id) === formData.category
+                                );
 
-                            {categorys.map(c => (
-                                <option key={c.id} value={String(c.id)}>
-                                    <div  className="flex gap-15 items-center">
-                                          {c.icon || "❓"}
-                                      {c.name}
-                                    </div>
-                                  
-                                </option>
+                                return `${selected?.icon || "❓"} ${selected?.name || ""}`;
+                                })()
+                            : t("select_category_3")}
+                        </span>
+
+                        <span>▼</span>
+                        </button>
+
+                        {/* Dropdown */}
+                        {open && (
+                        <div
+                            className="
+                            absolute z-50 mt-2 w-[90%]
+                            rounded-xl
+                            border border-gray-200 dark:border-gray-600
+                            bg-white dark:bg-slate-800
+                            shadow-lg
+                            overflow-hidden
+                            "
+                        >
+                            {categorys.map((c) => (
+                            <button
+                                type="button"
+                                key={c.id}
+                                onClick={() => {
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    category: String(c.id),
+                                }));
+
+                                setOpen(false);
+                                }}
+                                className="
+                                w-full px-3.5 py-2.5
+                                flex items-center gap-3
+                                text-left
+                                text-gray-900 dark:text-white
+                                hover:bg-gray-100 dark:hover:bg-slate-700
+                                "
+                            >
+                                <span>{c.icon || "❓"}</span>
+                                <span>{c.name}</span>
+                            </button>
                             ))}
-                        </select>
+                        </div>
+                        )}
                     </div>
                     {/* Is Final */}
                     {/* Is Final - Segmented Cards */}
@@ -192,18 +241,22 @@ export function StatusModal({
 
                     <div>
                         <label className="block text-sm font-semibold dark:text-gray-300 text-gray-700 mb-1.5">
-                            {t("status_order")} <span className="text-rose-500">*</span>
+                            {t("status_order")}
+                             {/* <span className="text-rose-500">*</span> */}
                         </label>
                         <input
                             type="number"
-                            value={formData.order}
-                            onChange={e =>
-                                setFormData(prev => ({ ...prev, order: Number(e.target.value) }))
+                            value={formData.order ?? ""}
+                            onChange={(e) =>
+                                setFormData((prev) => ({
+                                ...prev,
+                                order: e.target.value === "" ? null : Number(e.target.value),
+                                }))
                             }
-                            onBlur={() => formData.order}
                             placeholder={t("eg_2")}
                             className="w-full px-3.5 dark:text-slate-200 py-2.5 rounded-xl border dark:border-gray-500 border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-400 transition"
-                        />
+                            />
+
                     </div>
 
                     {/* Icon Picker */}

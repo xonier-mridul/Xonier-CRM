@@ -27,6 +27,7 @@ import { IoCheckmarkCircle } from "react-icons/io5";
 import { FaRegCircle } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import {FormatDate, FormatDateTime} from "../../common/FormateDate"
+import PageLimit from "../../common/PageLimit";
 
 
 
@@ -299,7 +300,7 @@ export const UsersTable = ({
 const isPasswordValid = checks.every((check) => check.valid);
 
 
-  const handleLimit = (n: string) => {
+  const handleLimit = (n: number) => {
     setPageLimit(Number(n));
     setCurrentPages(1);
   };
@@ -327,6 +328,8 @@ const isPasswordValid = checks.every((check) => check.valid);
   // selectedCompanyId: string
 
   // Replace the CompanySelect component and the filter section in the table header:
+  const [limitOpen, setLimitOpen] = useState(false);
+const limits = [10, 20, 30, 40];
 
 
 
@@ -605,17 +608,15 @@ const isPasswordValid = checks.every((check) => check.valid);
           )}
         </div>
         <div className="flex items-center justify-end gap-6">
-          <select
-            name="limit"
-            id="limit"
-            className="bg-slate-50 outline-none dark:bg-gray-500/30 px-3 py-2.5 rounded-lg border border-slate-900/10"
-            onChange={(e) => handleLimit(e.target.value)}
-          >
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="30">30</option>
-            <option value="40">50</option>
-          </select>
+         <PageLimit
+           setLimitOpen={setLimitOpen}
+    pageLimit={pageLimit}
+    limitOpen={limitOpen}
+    limits={limits}
+    handleLimit={handleLimit}
+
+         />
+
           <div className="bg-slate-50 dark:bg-gray-500/30 px-3 py-2.5 rounded-lg border border-slate-900/10 flex items-center gap-2">
             <IoIosSearch className="text-xl" />
             <input
