@@ -48,6 +48,7 @@ import { useTranslation } from "react-i18next";
 import { HiOutlineViewBoards, HiOutlineTable } from "react-icons/hi";
 import LeadKanbanBoard from "./LeadKanbanBoard";
 import PageLimit from "../../common/PageLimit";
+import CallablePhone from "../../common/CallablePhone";
 
 const TAB = { ALL: 1, WON: 2, LOST: 3, ASSIGNED: 4 } as const;
 
