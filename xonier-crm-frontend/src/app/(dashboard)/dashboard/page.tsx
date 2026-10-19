@@ -51,6 +51,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
+import { formatDate } from "@/src/lib/formatDate";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -3433,23 +3434,6 @@ function UserLayout({ d }: { d: DashboardData }) {
 }
 
 // ── Main Dashboard ─────────────────────────────────────────────────────────────
-export const formatDate = (date: string, language: string) => {
-  const localeMap: Record<string, string> = {
-    en: "en-US",
-    hi: "hi-IN",
-    pt: "pt-PT", // or "pt-BR"
-  };
-
-  return new Date(date).toLocaleDateString(
-    localeMap[language] || "en-US",
-    {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    }
-  );
-};
-
 export default function UnifiedDashboardPage() {
   const { t } = useTranslation();
   const { i18n } = useTranslation();

@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr, field_validator, model_validator
 from typing import Optional
 from app.core.enums import NUMBER_OF_EMPLOYEES, COUNTRY_CODE, COMPANY_STATUS, BILLING_CYCLE
+from app.utils.company_code import validate_company_code
 
 
 
@@ -76,6 +77,7 @@ class CompanyCreateSchema(BaseModel):
         return v
 
 class CompanyUpdateSchema(BaseModel):
+    companyId: Optional[str] = None
     industry: Optional[str] = None
     companyName: Optional[str] = None
     number: Optional[str] = None
@@ -88,6 +90,13 @@ class CompanyUpdateSchema(BaseModel):
     country: Optional[COUNTRY_CODE] = None
     subDomain: Optional[str] = None
     status: Optional[COMPANY_STATUS] = None
+
+    @field_validator("companyId", mode="before")
+    @classmethod
+    def validate_login_code(cls, value: str) -> str:
+        if not isinstance(value, str):
+            raise ValueError("Company ID must be a non-empty string")
+        return validate_company_code(value)
 
     @field_validator("companyName", mode="before")
     @classmethod

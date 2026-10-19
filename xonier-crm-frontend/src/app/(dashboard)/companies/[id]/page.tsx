@@ -239,7 +239,7 @@ export default function CompanyDetailPage() {
     setActionLoading(true);
     setMenuOpen(false);
     try {
-      await CompanyService.updateStatus(company.companyId, status);
+      await CompanyService.updateStatus(company.id, status);
       toast.success(`Status updated to ${statusConfig[status]?.label ?? status}`);
       fetchCompany();
     } catch (error) {
@@ -254,7 +254,7 @@ export default function CompanyDetailPage() {
     setActionLoading(true);
     setMenuOpen(false);
     try {
-      await CompanyService.softDelete(company.companyId);
+      await CompanyService.softDelete(company.id);
       toast.success("Company deleted");
       router.push("/companies");
     } catch (error) {
@@ -269,7 +269,7 @@ export default function CompanyDetailPage() {
     setActionLoading(true);
     setMenuOpen(false);
     try {
-      await CompanyService.restore(company.companyId);
+      await CompanyService.restore(company.id);
       toast.success("Company restored");
       fetchCompany();
     } catch (error) {

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import "../../app/globals.css";
 import SideBar from "@/src/components/layouts/SideBar";
 import NavBar from "@/src/components/layouts/NavBar";
-import { SIDEBAR_WIDTH } from "@/src/constants/constants";
+import ChatProvider from "@/src/components/chat/ChatProvider";
 
 export const metadata: Metadata = {
   title: "Trakeroo CRM | Smart Sales, Leads & Customer Management",
@@ -17,14 +17,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    <ChatProvider>
     <div className="flex min-h-screen bg-slate-50/60 dark:bg-slate-800/60">
       {/* Fixed Sidebar */}
       <SideBar />
 
       {/* Main content area — offset by sidebar width */}
       <div
-        className="flex flex-col flex-1 min-w-0"
-        style={{ marginLeft: SIDEBAR_WIDTH }}
+        className="flex flex-col flex-1 min-w-0 lg:ml-72"
       >
         {/* Fixed Navbar */}
         <NavBar />
@@ -35,5 +35,6 @@ export default function RootLayout({
         </main>
       </div>
     </div>
+    </ChatProvider>
   );
 }

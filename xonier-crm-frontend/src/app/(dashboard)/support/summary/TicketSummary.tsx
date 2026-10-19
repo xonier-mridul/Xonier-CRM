@@ -4,7 +4,7 @@ import { Ticket } from "@/src/types/ticket/ticket.type";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { FiUser, FiCalendar, FiMessageSquare, FiFlag, FiBriefcase } from "react-icons/fi";
-import StatusBadge from "../statusBadge/page";
+import StatusBadge from "../statusBadge/StatusBadge";
 
 
 interface TicketSummaryProps {

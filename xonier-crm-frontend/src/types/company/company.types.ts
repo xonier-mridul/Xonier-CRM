@@ -73,6 +73,7 @@ export interface CompanySelfRegisterPayload {
 }
 
 export interface CompanyUpdatePayload {
+  companyId?: string;
   industry?: string;
   companyName?: string;
   number?: string;
@@ -137,6 +138,7 @@ export interface PaginatedCompanies {
 
 export interface CreateCompanyResponse {
   companyId: string;
+  companyCode?: string;
   userId: string;
   subscriptionId: string | null;
   data: any;
@@ -145,6 +147,7 @@ export interface CreateCompanyResponse {
 
 export interface SelfRegisterResponse {
   companyId: string;
+  companyCode?: string;
   userId: string;
   subscriptionId: string | null;
   message: string;

@@ -1,5 +1,5 @@
 aiohappyeyeballs==2.6.1
-aiohttp==3.13.3
+aiohttp==3.14.5
 aiohttp-retry==2.9.1
 aiosignal==1.4.0
 aiosmtplib==5.0.0
@@ -25,13 +25,13 @@ frozenlist==1.8.0
 h11==0.16.0
 httpcore==1.0.9
 httpx==0.28.1
-idna==3.11
+idna==3.20
 Jinja2==3.1.6
 lazy-model==0.4.0
 limits==5.6.0
 MarkupSafe==3.0.3
 motor==3.7.1
-multidict==6.7.1
+multidict==7.1.0
 packaging==25.0
 passlib==1.7.4
 pendulum==3.1.0
@@ -43,7 +43,7 @@ pycparser==2.23
 pydantic==2.12.5
 pydantic-settings==2.12.0
 pydantic_core==2.41.5
-PyJWT==2.11.0
+PyJWT==2.15.1
 pymongo==4.15.5
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.1
@@ -64,5 +64,7 @@ tzlocal==5.3.1
 urllib3==2.6.3
 uvicorn==0.38.0
 websockets>=13.0
+boto3==1.43.114
+livekit-api==1.2.2
 wrapt==2.0.1
-yarl==1.23.0
+yarl==1.25.1

@@ -41,7 +41,11 @@ from app.utils.slug_generator import generate_slug
 from app.db.models.plan_model import PlanModel
 from app.db.models.subscription_model import SubscriptionModel
 from app.utils.subscription_utils import calculate_price, calculate_subscription_dates
-from app.utils.enquiry_id_generator import generate_enquiry_id
+from app.utils.company_code import (
+    assert_company_editor, company_login_filter, generate_company_code,
+    normalize_company_code, is_company_code_collision,
+    CompanyCodeCollision, retry_company_code_collision,
+)
 from app.core.crypto import encryptor
 from app.core.tenant import system_query
 from app.utils.validate_admin import validate_admin
@@ -162,8 +166,12 @@ class CompanyService:
         )
         await new_user.insert(session=session)
 
+        company_code = await generate_company_code(
+            CompanyModel.get_pymongo_collection(), payload.companyName
+        )
         new_company = CompanyModel(
-            companyId=generate_enquiry_id("COMP"),
+            companyId=company_code,
+            loginCodes=[company_code],
             slug=generate_slug(payload.companyName),
             companyName=payload.companyName,
             email=payload.adminEmail,
@@ -183,7 +191,12 @@ class CompanyService:
             createdBy=creator_id,
         )
 
-        await new_company.insert(session=session)
+        try:
+            await new_company.insert(session=session)
+        except DuplicateKeyError as error:
+            if is_company_code_collision(error):
+                raise CompanyCodeCollision() from error
+            raise
 
         new_user.companyId = new_company.id
 
@@ -216,6 +229,7 @@ class CompanyService:
         # if not sent:
         #     raise AppException(502, "Failed to send verification email — please retry")
 
+    @retry_company_code_collision
     async def create(
         self,
         payload: CompanyCreateSchema,
@@ -300,6 +314,7 @@ class CompanyService:
 
                     return {
                         "companyId": str(new_company.id),
+                        "companyCode": new_company.companyId,
                         "userId": str(new_user.id),
                         "subscriptionId": (
                             str(subscription.id) if subscription else None
@@ -307,7 +322,7 @@ class CompanyService:
                         "message": "Company created. Verification OTP sent to admin email.",
                     }
 
-                except AppException:
+                except (AppException, CompanyCodeCollision):
                     raise
                 except DuplicateKeyError as e:
                     raise AppException(
@@ -317,6 +332,18 @@ class CompanyService:
                     raise AppException(500, f"Internal server error: {e}")
 
     async def self_register(
+        self,
+        payload: CompanySelfRegisterSchema,
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        # Public registration has no existing tenant context. Its new user,
+        # global admin role lookup and audit belong to the new company only.
+        with system_query():
+            return await self._self_register(payload, ip_address, user_agent)
+
+    @retry_company_code_collision
+    async def _self_register(
         self,
         payload: CompanySelfRegisterSchema,
         ip_address: Optional[str] = None,
@@ -340,7 +367,7 @@ class CompanyService:
                         session=session,
                     )
 
-                    new_user.createdBy = new_user.id
+                    new_user.createdBy = UserModel.link_from_id(new_user.id)
                     await new_user.save(session=session)
 
                     subscription = None
@@ -352,7 +379,7 @@ class CompanyService:
                             billing_cycle=payload.billingCycle,
                             session=session,
                         )
-                        new_company.subscription = subscription.id
+                        new_company.subscription = subscription
                         new_company.subscriptionCount = 1
                         await new_company.save(session=session)
 
@@ -393,6 +420,7 @@ class CompanyService:
 
                     return {
                         "companyId": str(new_company.id),
+                        "companyCode": new_company.companyId,
                         "userId": str(new_user.id),
                         "subscriptionId": (
                             str(subscription.id) if subscription else None
@@ -400,7 +428,7 @@ class CompanyService:
                         "message": "Registration successful. Check your email for the verification OTP.",
                     }
 
-                except AppException:
+                except (AppException, CompanyCodeCollision):
                     raise
                 except DuplicateKeyError as e:
                     raise AppException(
@@ -474,8 +502,9 @@ class CompanyService:
                             )
                         
                         if company:
-                            company.status = COMPANY_STATUS.ACTIVE
-                            await company.replace(session=session)
+                            await CompanyModel.get_pymongo_collection().update_one(
+                                {"_id": company.id}, {"$set": {"status": COMPANY_STATUS.ACTIVE}}, session=session
+                            )
                     with system_query():
                         await self.activityRepo.create(
                             activity_payload(
@@ -825,48 +854,88 @@ class CompanyService:
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None,
     ) -> Dict[str, Any]:
-        try:
+        if not ObjectId.is_valid(company_id):
+            raise AppException(400, "Invalid company Object ID")
+        assert_company_editor(actor, company_id)
+        update_data = payload.model_dump(exclude_none=True, exclude_unset=True)
+        if not update_data:
+            raise AppException(400, "No fields provided for update")
+
+        collection = CompanyModel.get_pymongo_collection()
+
+        async def apply_changes(session):
             company = await self.repo.find_one(
-                filter={"_id": PydanticObjectId(company_id), "deletedAt": None}
+                filter={"_id": PydanticObjectId(company_id), "deletedAt": None}, session=session
             )
             if not company:
                 raise AppException(404, "Company not found")
 
-            update_data = payload.model_dump(exclude_none=True, exclude_unset=True)
-            if not update_data:
-                raise AppException(400, "No fields provided for update")
+            fields = dict(update_data)
+            if "companyName" in fields:
+                fields["slug"] = generate_slug(fields["companyName"])
+            # Only update requested fields. A stale settings form must never
+            # overwrite another admin's code change or remove reserved aliases.
+            if "number" in fields:
+                number = fields["number"].lower()
+                fields["number"] = self.encryptor.encrypt_data(number)
+                fields["numberHash"] = hash_value(number)
+            fields["updatedAt"] = datetime.now(timezone.utc)
+            fields["updatedBy"] = DBRef("users", PydanticObjectId(actor["_id"]))
+            mutation = {"$set": fields}
 
-            if "companyName" in update_data:
-                update_data["slug"] = generate_slug(update_data["companyName"])
+            if "companyId" in update_data:
+                code = update_data["companyId"]
+                conflict = await collection.find_one({
+                    **company_login_filter(code), "_id": {"$ne": company.id},
+                }, {"_id": 1}, session=session)
+                if conflict:
+                    raise AppException(409, "This Company ID is already in use or reserved; choose another")
+                mutation["$addToSet"] = {"loginCodes": {"$each": list({
+                    normalize_company_code(company.companyId), code,
+                })}}
 
-            for field, value in update_data.items():
-                setattr(company, field, value)
-
-            company.updatedAt = datetime.now(timezone.utc)
-            company.updatedBy = UserModel.link_from_id(actor["_id"])
-            await company.save()
-
+            await collection.update_one({"_id": company.id, "deletedAt": None}, mutation, session=session)
+            metadata = dict(update_data)
+            if "companyId" in update_data:
+                metadata["previousCompanyId"] = company.companyId
             await self.activityRepo.create(
                 activity_payload(
                     userId=PydanticObjectId(actor["_id"]),
                     entityType=ACTIVITY_ENTITY_TYPE.COMPANY.value,
-                    entityId=PydanticObjectId(company_id),
+                    entityId=company.id,
                     action=ACTIVITY_ACTION.UPDATED.value,
                     title="Company updated",
                     description=f"Fields updated: {', '.join(update_data.keys())}",
-                    metadata=update_data,
-                    ipAddress=ip_address,
-                    userAgent=user_agent,
-                )
+                    metadata=metadata, ipAddress=ip_address, userAgent=user_agent,
+                ), session=session,
             )
+            updated = await self.repo.find_one(filter={"_id": company.id}, session=session)
+            result = updated.model_dump(mode="json")
+            result["email"] = self.encryptor.decrypt_data(result["email"])
+            result["number"] = self.encryptor.decrypt_data(result["number"])
+            return result
 
-            return jsonable_encoder(company)
+        try:
+            async with await self.client.start_session() as session:
+                return await session.with_transaction(apply_changes)
         except AppException:
             raise
         except DuplicateKeyError as e:
+            if is_company_code_collision(e):
+                raise AppException(409, "This Company ID is already in use or reserved; choose another")
             raise AppException(409, f"Duplicate value for {_extract_duplicate_key(e)}")
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+
+    async def suggest_code(self, company_id: str, actor: Dict[str, Any]) -> dict:
+        if not ObjectId.is_valid(company_id):
+            raise AppException(400, "Invalid company Object ID")
+        assert_company_editor(actor, company_id)
+        company = await self.repo.find_one(filter={"_id": PydanticObjectId(company_id), "deletedAt": None})
+        if not company:
+            raise AppException(404, "Company not found")
+        code = await generate_company_code(CompanyModel.get_pymongo_collection(), company.companyName)
+        return {"companyId": code}
 
     async def update_status(
         self,
@@ -886,10 +955,12 @@ class CompanyService:
                 raise AppException(400, f"Company is already in '{status}' status")
 
             old_status = company.status
-            company.status = status
-            company.updatedAt = datetime.now(timezone.utc)
-            company.updatedBy = PydanticObjectId(actor["_id"])
-            await company.save()
+            await CompanyModel.get_pymongo_collection().update_one(
+                {"_id": company.id, "deletedAt": None}, {"$set": {
+                    "status": status, "updatedAt": datetime.now(timezone.utc),
+                    "updatedBy": DBRef("users", PydanticObjectId(actor["_id"])),
+                }}
+            )
 
             await self.activityRepo.create(
                 activity_payload(
@@ -933,13 +1004,12 @@ class CompanyService:
                     now = datetime.now(timezone.utc)
                     actor_id = PydanticObjectId(actor["_id"])
 
-                    user = await self.userRepo.find_by_id(
-                        PydanticObjectId(actor["_id"])
+                    await CompanyModel.get_pymongo_collection().update_one(
+                        {"_id": company.id, "deletedAt": None}, {"$set": {
+                            "deletedAt": now, "deletedBy": DBRef("users", actor_id),
+                            "status": COMPANY_STATUS.DELETED,
+                        }}, session=session
                     )
-                    company.deletedAt = now
-                    company.deletedBy = user
-                    company.status = COMPANY_STATUS.DELETED
-                    await company.save(session=session)
 
                     deleted_user = await self.userRepo.bulk_update(
                         filters={
@@ -996,12 +1066,13 @@ class CompanyService:
                     if not company:
                         raise AppException(404, "Company not found or is not deleted")
 
-                    company.deletedAt = None
-                    company.deletedBy = None
-                    company.status = COMPANY_STATUS.ACTIVE
-                    company.updatedAt = datetime.now(timezone.utc)
-                    company.updatedBy = UserModel.link_from_id(actor["_id"])
-                    await company.save(session=session)
+                    await CompanyModel.get_pymongo_collection().update_one(
+                        {"_id": company.id}, {"$set": {
+                            "deletedAt": None, "deletedBy": None, "status": COMPANY_STATUS.ACTIVE,
+                            "updatedAt": datetime.now(timezone.utc),
+                            "updatedBy": DBRef("users", PydanticObjectId(actor["_id"])),
+                        }}, session=session
+                    )
 
      
                     restore_user = await self.userRepo.bulk_update(
