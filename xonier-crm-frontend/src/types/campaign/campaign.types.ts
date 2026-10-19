@@ -1,3 +1,11 @@
+export interface CampaignLeadAssignment {
+  campaignId: string;
+  campaignLeadId: string;
+  assignedAgentId: string;
+  agents: { value: string; label: string }[];
+  onAssigned: (agentId: string) => void;
+}
+
 export enum CampaignDistributionMode {
   ON_DEMAND = "on_demand",
   EQUAL = "equal",

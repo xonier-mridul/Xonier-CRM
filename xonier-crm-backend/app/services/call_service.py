@@ -162,10 +162,8 @@ class CallService:
             if not lead:
                 raise AppException(404, "Lead not found")
 
-            # Campaign calls deliberately use campaign-scoped assignment, which is
-            # independent from the lead's general assignedTo field. This check is
-            # strict for every role, including managers/admins, so another agent's
-            # campaign lead can never be called by changing the browser request.
+            # Admins may call any lead in their company. Other users need the
+            # campaign assignment, independently of the general lead assignment.
             if bool(campaign_id) != bool(campaign_lead_id):
                 raise AppException(400, "Campaign id and campaign lead id must be provided together")
             if campaign_id:
@@ -185,7 +183,10 @@ class CallService:
                 })
                 if not campaign_lead:
                     raise AppException(404, "Campaign lead not found")
-                if _ref_id(campaign_lead.get("assignedTo")) != uid:
+                if (
+                    not validate_admin_company_admin(user["userRole"])
+                    and _ref_id(campaign_lead.get("assignedTo")) != uid
+                ):
                     raise AppException(403, "You can only call campaign leads assigned to you")
             else:
                 assigned = {_ref_id(r) for r in (lead.get("assignedTo") or [])}

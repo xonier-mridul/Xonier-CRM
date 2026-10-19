@@ -30,7 +30,7 @@ const parseFile = (file: File): Promise<Parsed> =>
       reader.onload = (e) => {
         try {
           const wb = XLSX.read(new Uint8Array(e.target?.result as ArrayBuffer), { type: "array" });
-          const json = XLSX.utils.sheet_to_json<Record<string, string>>(wb.Sheets[wb.SheetNames[0]], { defval: "" });
+          const json = XLSX.utils.sheet_to_json<Record<string, string>>(wb.Sheets[wb.SheetNames[0]], { defval: "", raw: false });
           resolve({ headers: json.length ? Object.keys(json[0]) : [], rows: json });
         } catch (err) {
           reject(err);
@@ -69,7 +69,7 @@ const AddLeadsToCampaign: React.FC<Props> = ({ campaignId, onImported }) => {
         const lead: Record<string, any> = {};
         LEAD_FIELDS.forEach((f) => {
           const col = mapping[f.key];
-          if (col && row[col] !== undefined && row[col] !== "") lead[f.key] = row[col];
+          if (col && row[col] != null && row[col] !== "") lead[f.key] = String(row[col]).trim();
         });
         return lead;
       })

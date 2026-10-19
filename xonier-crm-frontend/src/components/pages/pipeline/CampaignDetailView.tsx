@@ -41,11 +41,11 @@ interface LeadData {
   status?: string;
   priority?: string;
   source?: string;
-  companyName?: string;
+  companyName?: string | null;
   projectType?: string;
   createdAt?: string;
-  connectStatus?: string;
-  followUpAt?: string;
+  connectStatus?: string | null;
+  followUpAt?: string | null;
   phone?: string;
 }
 
@@ -356,14 +356,43 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
                       <td className="px-5 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">
                         {ld?.fullName || "—"}
                       </td>
-                      <td className="px-5 py-3">
+                      <td
+                        onClick={(event) => event.stopPropagation()}
+                        className="px-5 py-3"
+                      >
                         {ld?.phone ? (
-                          isAssignedToMe ? (
                             <CallablePhone
                               lead={{ ...ld, id: ld._id } as Lead}
                               displayValue={ld.phone}
                               campaignId={campaign.id || campaign._id}
                               campaignLeadId={lead._id}
+                              campaignAssignment={{
+                                campaignId: campaign.id || campaign._id,
+                                campaignLeadId: lead._id,
+                                assignedAgentId: lead.assignedTo?._id || "",
+                                agents: (campaign.agents || []).map((agent) => ({
+                                  value: String(agent.id || agent._id || agent),
+                                  label: [agent.firstName, agent.lastName].filter(Boolean).join(" ") || agent.email || "Agent",
+                                })),
+                                onAssigned: (agentId) => {
+                                  const agent = campaign.agents.find((item) => String(item.id || item._id || item) === agentId);
+                                  setLeads((previous) => previous.map((item) => item._id === lead._id
+                                    ? {
+                                        ...item,
+                                        assignedTo: { _id: agentId, firstName: agent?.firstName, lastName: agent?.lastName, email: agent?.email },
+                                        campaignStatus: "assigned",
+                                      }
+                                    : item
+                                  ));
+                                },
+                              }}
+                              onLeadUpdated={(leadId, updatedLead) => {
+                                setLeads((previous) => previous.map((campaignLead) =>
+                                  campaignLead.lead?._id === leadId
+                                    ? { ...campaignLead, lead: { ...campaignLead.lead, ...updatedLead } }
+                                    : campaignLead
+                                ));
+                              }}
                               onCallDisposed={(leadId, connectStatus) => {
                                 setLeads((previous) => previous.map((campaignLead) =>
                                   campaignLead.lead?._id === leadId
@@ -375,14 +404,6 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
                                 void fetchLeads();
                               }}
                             />
-                          ) : (
-                            <span
-                              className="text-gray-400 dark:text-gray-500"
-                              title="Only the assigned agent can call this campaign lead"
-                            >
-                              —
-                            </span>
-                          )
                         ) : "—"}
                       </td>
                       <td className="px-5 py-3">{ld?.companyName || "—"}</td>
