@@ -41,11 +41,11 @@ interface LeadData {
   status?: string;
   priority?: string;
   source?: string;
-  companyName?: string;
+  companyName?: string | null;
   projectType?: string;
   createdAt?: string;
-  connectStatus?: string;
-  followUpAt?: string;
+  connectStatus?: string | null;
+  followUpAt?: string | null;
   phone?: string;
 }
 
@@ -366,6 +366,33 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
                               displayValue={ld.phone}
                               campaignId={campaign.id || campaign._id}
                               campaignLeadId={lead._id}
+                              campaignAssignment={{
+                                campaignId: campaign.id || campaign._id,
+                                campaignLeadId: lead._id,
+                                assignedAgentId: lead.assignedTo?._id || "",
+                                agents: (campaign.agents || []).map((agent) => ({
+                                  value: String(agent.id || agent._id || agent),
+                                  label: [agent.firstName, agent.lastName].filter(Boolean).join(" ") || agent.email || "Agent",
+                                })),
+                                onAssigned: (agentId) => {
+                                  const agent = campaign.agents.find((item) => String(item.id || item._id || item) === agentId);
+                                  setLeads((previous) => previous.map((item) => item._id === lead._id
+                                    ? {
+                                        ...item,
+                                        assignedTo: { _id: agentId, firstName: agent?.firstName, lastName: agent?.lastName, email: agent?.email },
+                                        campaignStatus: "assigned",
+                                      }
+                                    : item
+                                  ));
+                                },
+                              }}
+                              onLeadUpdated={(leadId, updatedLead) => {
+                                setLeads((previous) => previous.map((campaignLead) =>
+                                  campaignLead.lead?._id === leadId
+                                    ? { ...campaignLead, lead: { ...campaignLead.lead, ...updatedLead } }
+                                    : campaignLead
+                                ));
+                              }}
                               onCallDisposed={(leadId, connectStatus) => {
                                 setLeads((previous) => previous.map((campaignLead) =>
                                   campaignLead.lead?._id === leadId

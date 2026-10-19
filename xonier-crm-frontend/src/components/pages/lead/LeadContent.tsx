@@ -890,6 +890,11 @@ const isIndeterminate =
             <CallablePhone
               lead={item}
               displayValue={maskPhone(item.phone) || item.phone}
+              onLeadUpdated={(leadId, updatedLead) => {
+                setLeadData((previous) => previous.map((item) =>
+                  item.id === leadId ? { ...item, ...updatedLead } : item
+                ));
+              }}
               onCallDisposed={(leadId, connectStatus) => {
                 setLeadData((prev) =>
                   prev.map((l) => l.id === leadId ? { ...l, connectStatus } : l)
@@ -1002,6 +1007,11 @@ const isIndeterminate =
             <CallablePhone
               lead={item}
               displayValue={maskPhone(item.phone) || item.phone}
+              onLeadUpdated={(leadId, updatedLead) => {
+                setLeadData((previous) => previous.map((item) =>
+                  item.id === leadId ? { ...item, ...updatedLead } : item
+                ));
+              }}
               onCallDisposed={(leadId, connectStatus) => {
                 setAssignedLeadData((prev) =>
                   prev.map((l) => l.id === leadId ? { ...l, connectStatus } : l)

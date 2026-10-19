@@ -915,8 +915,8 @@ class CampaignService:
                     # (avoids need to fetch/resolve Beanie Link objects)
                     camp_raw = await self._collection().find_one({"_id": campaign_oid})
                     agent_ids_raw = [
-                        ref.get("$id") for ref in (camp_raw.get("agents") or [])
-                        if isinstance(ref, dict) and "$id" in ref
+                        ref.get("$id") if isinstance(ref, dict) else getattr(ref, "id", ref)
+                        for ref in (camp_raw.get("agents") or [])
                     ]
                     if agent_oid not in agent_ids_raw:
                         raise AppException(400, "Agent is not part of this campaign")

@@ -310,21 +310,21 @@ const PipelineContent = () => {
         })}
       </div>
 
-        <div className="flex flex-col xl:flex-row gap-6 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-7 gap-4 items-stretch">
 
         {/* COL 1 - Lead Engagement Status */}
-        <div className="w-full xl:w-[350px] shrink-0">
+        <div className="w-full min-w-0 xl:col-span-2">
           
           {/* Lead Engagement Status */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100 dark:border-gray-700 h-full">
             <div className="flex justify-between items-center mb-6">
               <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
                 <Megaphone size={18} className="text-gray-500" /> Lead Engagement Status
               </h3>
             </div>
             
-            <div className="flex items-center gap-4">
-              <div className="relative w-36 h-36 shrink-0">
+            <div className="flex flex-col   gap-4">
+              <div className="relative  h-36 shrink-0  w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -347,7 +347,7 @@ const PipelineContent = () => {
                 </div>
               </div>
               
-              <div className="flex-1 flex flex-col gap-2.5">
+              <div className="flex-1 flex flex-col gap-2.5 w-full">
                 {pieData.map((item) => {
                   return (
                     <div key={item.name} className="flex items-center justify-between text-xs">
@@ -365,7 +365,7 @@ const PipelineContent = () => {
         </div>
 
         {/* COL 2 - Sales Funnel */}
-        <div className="w-full xl:w-[350px] shrink-0">
+        <div className="w-full min-w-0 xl:col-span-2">
           {/* Sales Funnel */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 h-full">
             <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2 mb-5">
@@ -399,7 +399,7 @@ const PipelineContent = () => {
                    ];
 
                   const maxValue = Math.max(funnelData[0]?.value || 1, 1);
-                  const minWidth = 25; // minimum width percentage at bottom of funnel
+                  const minWidth = 38; // Keep narrow stages readable while preserving the funnel shape.
 
                   return funnelData.map((step, idx) => {
                     const w_bottom = Math.max((step.value / maxValue) * 100, minWidth);
@@ -414,6 +414,9 @@ const PipelineContent = () => {
                      const pBottomLeft = `${(100 - w_bottom) / 2}% 100%`;
 
                      const clipPath = `polygon(${pTopLeft}, ${pTopRight}, ${pBottomRight}, ${pBottomLeft})`;
+                    const count = String(renderKpiValue(step.value));
+                    const textWidth = step.name.length * 8 + count.length * 10 + 20;
+                    const textAreaWidth = Math.min((w_top + w_bottom) / 2, 100) * 0.9;
 
                     return (
                       <button
@@ -421,17 +424,26 @@ const PipelineContent = () => {
                         type="button"
                         disabled={statsError}
                         onClick={() => setSelectedPipelineFilter({ filter: step.filter, title: step.name })}
-                        className="group relative flex h-11 w-full items-center justify-center cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                        className="group relative flex h-12 w-full items-center justify-center cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                         aria-label={`View ${step.name} leads`}
+                        title={`${step.name}: ${count}`}
                       >
                         <div
                           className={`absolute inset-0 bg-gradient-to-r ${step.fill} transition-all duration-300 opacity-95 group-hover:opacity-100`}
                           style={{ clipPath }}
                         />
-                        <div className="relative z-10 flex w-full justify-center items-center gap-4 px-2 pointer-events-none">
-                          <span className="text-white font-bold text-xs whitespace-nowrap drop-shadow-md">{step.name}</span>
-                          <span className="text-white font-black text-sm tabular-nums drop-shadow-md">{renderKpiValue(step.value)}</span>
-                        </div>
+                        <svg
+                          aria-hidden="true"
+                          className="relative z-10 h-full pointer-events-none text-white"
+                          style={{ width: `min(${textAreaWidth}%, ${textWidth}px)` }}
+                          viewBox={`0 0 ${textWidth} 44`}
+                          preserveAspectRatio="xMidYMid meet"
+                        >
+                          <text x="50%" y="22" textAnchor="middle" dominantBaseline="central" fill="currentColor">
+                            <tspan fontSize="13" fontWeight="700">{step.name}</tspan>
+                            <tspan dx="12" fontSize="15" fontWeight="900" className="tabular-nums">{count}</tspan>
+                          </text>
+                        </svg>
                       </button>
                     );
                   });
@@ -442,9 +454,9 @@ const PipelineContent = () => {
         </div>
 
         {/* COL 3 - Pie Charts */}
-        <div className="flex-1">
+        <div className="min-w-0 md:col-span-2 xl:col-span-3">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 h-full">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-full">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 h-full">
               {[
                 { title: "Fresh Inquiry", data: engagementStats?.pieBreakdown?.fresh ?? [] },
                 { title: "IN-PROGRESS", data: engagementStats?.pieBreakdown?.inProgress ?? [] },
