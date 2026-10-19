@@ -356,9 +356,11 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
                       <td className="px-5 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">
                         {ld?.fullName || "—"}
                       </td>
-                      <td className="px-5 py-3">
+                      <td
+                        onClick={(event) => event.stopPropagation()}
+                        className="px-5 py-3"
+                      >
                         {ld?.phone ? (
-                          isAssignedToMe ? (
                             <CallablePhone
                               lead={{ ...ld, id: ld._id } as Lead}
                               displayValue={ld.phone}
@@ -375,14 +377,6 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
                                 void fetchLeads();
                               }}
                             />
-                          ) : (
-                            <span
-                              className="text-gray-400 dark:text-gray-500"
-                              title="Only the assigned agent can call this campaign lead"
-                            >
-                              —
-                            </span>
-                          )
                         ) : "—"}
                       </td>
                       <td className="px-5 py-3">{ld?.companyName || "—"}</td>

@@ -403,7 +403,7 @@ class CampaignService:
                             continue
 
                         filter_entry: Dict[str, Any] = {"hashedEmail": hash_value(email)}
-                        phone = lead.get("phone", "")
+                        phone = str(lead.get("phone") or "").strip()
                         project_type = lead.get("projectType", "")
                         if phone:
                             filter_entry["hashedPhone"] = hash_value(phone)
@@ -426,7 +426,7 @@ class CampaignService:
                     for lead in leads_data:
                         try:
                             email = (lead.get("email") or "").lower().strip()
-                            phone = lead.get("phone", "") or ""
+                            phone = str(lead.get("phone") or "").strip()
                             project_type = lead.get("projectType", "") or ""
 
                             if any(s.get("email") == lead.get("email") for s in skipped):
@@ -806,12 +806,11 @@ class CampaignService:
                 return {"data": [], "page": page, "limit": limit, "totalPages": 0, "total": 0}
 
             data = result[0].get("data", [])
-            # A campaign phone number is only sent in readable form to the agent
-            # who owns that campaign lead. The call endpoint repeats this check.
+            # Show saved phone numbers in the campaign table. Call requests
+            # enforce campaign assignment separately in the call service.
             for item in data:
                 lead_data = item.get("lead") or {}
-                is_assigned_to_requester = str((item.get("assignedTo") or {}).get("_id") or "") == str(user["_id"])
-                if is_assigned_to_requester and lead_data.get("phone"):
+                if lead_data.get("phone"):
                     try:
                         lead_data["phone"] = self.encryption.decrypt_data(lead_data["phone"])
                     except Exception:

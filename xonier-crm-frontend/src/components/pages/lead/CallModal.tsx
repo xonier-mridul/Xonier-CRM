@@ -290,7 +290,7 @@ const CallModal = ({ lead, onClose, onDisposed, campaignId, campaignLeadId }: Ca
   // ── minimized floating bar ────────────────────────────────────────────────
   if (minimized) {
     return createPortal(
-      <div className="fixed bottom-4 right-4 z-[1000] flex items-center gap-3 rounded-full bg-[#0092B8] text-white shadow-2xl pl-3 pr-2 py-2">
+      <div onClick={(event) => event.stopPropagation()} className="fixed bottom-4 right-4 z-[1000] flex items-center gap-3 rounded-full bg-[#0092B8] text-white shadow-2xl pl-3 pr-2 py-2">
         <span className="h-8 w-8 rounded-full bg-white/15 flex items-center justify-center">
           <FiPhone size={15} />
         </span>
@@ -313,7 +313,7 @@ const CallModal = ({ lead, onClose, onDisposed, campaignId, campaignLeadId }: Ca
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[1000] bg-black/50 flex items-center justify-center p-3 sm:p-6">
+    <div onClick={(event) => event.stopPropagation()} className="fixed inset-0 z-[1000] bg-black/50 flex items-center justify-center p-3 sm:p-6">
       <div
         role="dialog"
         aria-modal="true"
