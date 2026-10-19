@@ -228,7 +228,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
           </h2>
 
           <ul className="flex flex-col gap-1 ">
-            {!auth.isAdmin && auth.user?.companyId && <li><ChatNavLink /></li>}
+          
             <li>
               <Link
                 href="/dashboard"
@@ -873,8 +873,8 @@ const isSuperAdmin = auth.user?.userRole?.some(
                 {t("clients")}
               </Link>
             </li>}
-
-            {(((hasPermission(PERMISSIONS.telephone))|| hasPermission(PERMISSIONS.smsReadLog)) &&  (hasFeature(FEATURES.TELECOM)) && !auth.isAdmin )&& <li>
+              {!auth.isAdmin && auth.user?.companyId && <li><ChatNavLink /></li>}
+            {/* {(((hasPermission(PERMISSIONS.telephone))|| hasPermission(PERMISSIONS.smsReadLog)) &&  (hasFeature(FEATURES.TELECOM)) && !auth.isAdmin )&& <li>
               <button
                 onClick={() => toggleMenu("communication")}
                 className={`${isMenuActive("communication")
@@ -886,7 +886,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                    <span className={`${isMenuActive("communication") ?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`} >
                   <AiOutlineTeam className="text-lg" />
                   </span>
-                  {t("communication")}
+                  {t("communication444")}
                 </span>
 
                 <IoChevronDown
@@ -931,7 +931,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                   </motion.ul>
                 )}
               </AnimatePresence>
-            </li>}
+            </li>} */}
             {((hasPermission(PERMISSIONS.readTemplate) || hasPermission(PERMISSIONS.createTemplate) || hasPermission(PERMISSIONS.readEmailLog)) &&  (hasFeature(FEATURES.CRM)) && !auth.isAdmin) && <li>
               <button
                 onClick={() => toggleMenu("emailManagement")}
