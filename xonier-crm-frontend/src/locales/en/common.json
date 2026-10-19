@@ -1,4 +1,17 @@
 {
+  "company_code_editor": {
+    "title": "Company login ID",
+    "description": "A short, memorable ID your team uses to sign in.",
+    "new_id": "New company ID",
+    "format": "Format: 3 capital letters + hyphen + 4 digits, for example XON-1234. IDs must be unique.",
+    "generate": "Generate short ID",
+    "save": "Save ID",
+    "copy": "Copy company ID",
+    "safety": "Share the new ID with your team after saving. Previous IDs remain valid for login and cannot be assigned to another company. Your data and existing sessions stay unchanged.",
+    "saved": "Company ID saved successfully.",
+    "failed": "Could not update the company ID. Please try again.",
+    "copy_failed": "Could not copy. Please select and copy the ID manually."
+  },
   "status_and_conversion": "Status and conversion",
   
   

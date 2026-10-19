@@ -142,6 +142,11 @@ async def update(request: Request, company_id: str, payload: CompanyUpdateSchema
     )
 
 
+@router.get("/{company_id}/code-suggestion", dependencies=authorized)
+async def suggest_code(request: Request, company_id: str):
+    return await controller.suggest_code(request=request, company_id=company_id)
+
+
 @router.patch("/{company_id}/status", dependencies=admin_only)
 async def update_status(
     request: Request,

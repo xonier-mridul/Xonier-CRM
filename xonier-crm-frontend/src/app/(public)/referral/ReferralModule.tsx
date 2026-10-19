@@ -12,7 +12,7 @@ import PartnerDocuments from "./partner/PartnerDocuments"; // NEW
 import PartnerSettings from "./partner/PartnerSettings";
 
 // Admin panels
-import AdminDashboard from "./dashboard/page";
+import AdminDashboard from "./dashboard/AdminDashboard";
 import AdminPartners from "./admin/AdminPartners";
 import AdminTiers from "./admin/AdminTiers";
 import AdminQueue from "./admin/AdminQueue";

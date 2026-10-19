@@ -16,6 +16,9 @@ crypto = Encryption()
 
 class CompanyModel(Document):
     companyId:str
+    # Current and previous login codes stay reserved to the same tenant.
+    # Legacy documents may have no codes until explicitly edited/migrated.
+    loginCodes: list[str] = Field(default_factory=list)
     slug: str
     subDomain: Optional[str] = None
     industry: str
@@ -57,7 +60,13 @@ class CompanyModel(Document):
                 [("companyId", 1)],
                 name="unique_company_id",
                 unique=True
-            )
+            ),
+            IndexModel(
+                [("loginCodes", 1)],
+                name="unique_company_login_codes",
+                unique=True,
+                partialFilterExpression={"loginCodes.0": {"$exists": True}},
+            ),
         ]
 
     

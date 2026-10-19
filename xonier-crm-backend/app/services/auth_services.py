@@ -1009,7 +1009,7 @@ class AuthServices:
             encrypt_email = self.crypto.encrypt_data(data["email"])
 
             with system_query():
-                company = await self.companyRepo.find_one(filter={"companyId": data.get("companyId")}, populate=["subscription"], session=session)
+                company = await self.companyRepo.find_company_by_companyId(data.get("companyId"), populate=["subscription"], session=session)
 
                 if not company:
                     raise AppException(404, "Company not found against provided company Id, kindly check and try again")
@@ -1242,7 +1242,7 @@ class AuthServices:
 
 
             with system_query():
-                company = await self.companyRepo.find_one(filter={"companyId": data.get("companyId")}, populate=["subscription"], session=session)
+                company = await self.companyRepo.find_company_by_companyId(data.get("companyId"), populate=["subscription"], session=session)
             
                 if not company:
                     raise AppException(404, "Company not found against provided company Id, kindly check and try again")
@@ -1469,7 +1469,7 @@ class AuthServices:
 
 
             with system_query():
-                company = await self.companyRepo.find_one(filter={"companyId": data.get("companyId")}, populate=["subscription"], session=session)
+                company = await self.companyRepo.find_company_by_companyId(data.get("companyId"), populate=["subscription"], session=session)
             
                 if not company:
                     raise AppException(404, "Company not found against provided company Id, kindly check and try again")
@@ -2209,7 +2209,7 @@ class AuthServices:
             hash_mail = hash_value(payload.get("email"))
 
             with system_query():
-                company = await self.companyRepo.find_one(filter={"companyId": payload.get("companyId")}, populate=["subscription"])
+                company = await self.companyRepo.find_company_by_companyId(payload.get("companyId"), populate=["subscription"])
                         
                 if not company:
                     raise AppException(404, "Company not found against provided company Id, kindly check and try again")
@@ -2275,7 +2275,7 @@ class AuthServices:
                     hash_otp = hash_value(payload.get("otp"))
                     
                     with system_query():
-                        company = await self.companyRepo.find_one(filter={"companyId": payload.get("companyId")}, populate=["subscription"], session=session)
+                        company = await self.companyRepo.find_company_by_companyId(payload.get("companyId"), populate=["subscription"], session=session)
                                             
                         if not company:
                             raise AppException(404, "Company not found against provided company Id, kindly check and try again")

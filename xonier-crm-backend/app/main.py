@@ -63,6 +63,8 @@ from app.routes.notification_route import router as notification_router
 from app.routes.campaign_route import router as campaign_router
 from app.routes.mobile_route import router as mobile_router
 from app.routes.call_route import web_router as call_web_router, mobile_router as call_mobile_router
+from app.routes.chat_route import router as chat_router
+from app.core.chat_runtime import chat_runtime
 
 settings = get_setting()
 
@@ -71,6 +73,7 @@ settings = get_setting()
 async def lifespan(app: FastAPI):
     await connect_db()
     await init_cache()
+    await chat_runtime.start()
 
     notification_scheduler.add_job(
         send_event_reminders,
@@ -80,9 +83,11 @@ async def lifespan(app: FastAPI):
     )
     notification_scheduler.start()
 
-    yield
-
-    notification_scheduler.shutdown()
+    try:
+        yield
+    finally:
+        await chat_runtime.stop()
+        notification_scheduler.shutdown()
 
 app = FastAPI(lifespan=lifespan)
 
@@ -178,6 +183,7 @@ app.include_router(campaign_router, prefix="/api/campaign", tags=["Campaign"])
 app.include_router(mobile_router, prefix="/api/mobile", tags=["Mobile"])
 app.include_router(call_mobile_router, prefix="/api/mobile", tags=["Mobile Calls"])
 app.include_router(call_web_router, prefix="/api/call", tags=["Calls"])
+app.include_router(chat_router)
 
 app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(AppException, app_exception_handler)
