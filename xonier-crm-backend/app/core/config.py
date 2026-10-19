@@ -57,6 +57,21 @@ class EnvSettings(BaseSettings):
     PAYPAL_MODE: str = "sandbox"  # sandbox | live
     PAYPAL_WEBHOOK_ID: str
 
+    # Team chat. Media/storage integrations are optional until configured.
+    CHAT_ENABLED: bool = True
+    CHAT_REDIS_URL: str = ""
+    CHAT_ALLOWED_ORIGINS: str = ""
+    CHAT_MAX_MEMBERS: int = 100
+    CHAT_MAX_FILE_BYTES: int = 25 * 1024 * 1024
+    CHAT_S3_BUCKET: str = ""
+    CHAT_S3_REGION: str = "ap-south-1"
+    CHAT_CLAMAV_HOST: str = ""
+    CHAT_CLAMAV_PORT: int = 3310
+    LIVEKIT_URL: str = ""
+    LIVEKIT_API_KEY: str = ""
+    LIVEKIT_API_SECRET: str = ""
+    CHAT_MAX_CALL_PARTICIPANTS: int = 16
+
 
 
     model_config = SettingsConfigDict(

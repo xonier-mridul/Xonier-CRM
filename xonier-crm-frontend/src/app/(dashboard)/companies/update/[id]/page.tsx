@@ -2,6 +2,7 @@
 
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import CompanyUpdateForm from "@/src/components/pages/companies/CompanyUpdateForm";
+import CompanyCodeEditor from "@/src/components/pages/companies/CompanyCodeEditor";
 import CompanyService from "@/src/services/company.service";
 import { Company, CompanyUpdatePayload } from "@/src/types/company/company.types";
 import axios from "axios";
@@ -145,6 +146,9 @@ const EditCompanyPage = () => {
           </div>
         </div>
       ) : companyData ? (
+        <>
+        <CompanyCodeEditor key={id} companyObjectId={id} companyCode={companyData.companyId}
+          onSaved={code => setCompanyData(previous => previous ? { ...previous, companyId: code } : previous)} />
         <CompanyUpdateForm
           company={companyData}
           isSubmitting={isSubmitting}
@@ -155,6 +159,7 @@ const EditCompanyPage = () => {
           onResendOtp={handleResendOtp}
           loading={loading}
         />
+        </>
       ) : (
         <div className="flex flex-col items-center justify-center py-24 text-gray-400">
           <BsBuildings className="text-5xl mb-3 opacity-30" />

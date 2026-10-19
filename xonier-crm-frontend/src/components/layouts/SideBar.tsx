@@ -36,6 +36,7 @@ import { useFeatures } from "@/src/hooks/useFeatures";
 import { useTranslation } from "react-i18next";
 import { GrUserSettings } from "react-icons/gr";
 import { LuTicket } from "react-icons/lu";
+import { ChatNavLink } from "@/src/components/chat/ChatProvider";
 
 
 const SideBar = () => {
@@ -227,6 +228,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
           </h2>
 
           <ul className="flex flex-col gap-1 ">
+            {!auth.isAdmin && auth.user?.companyId && <li><ChatNavLink /></li>}
             <li>
               <Link
                 href="/dashboard"

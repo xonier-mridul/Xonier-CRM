@@ -73,6 +73,12 @@ const CompanyService = {
   ): Promise<ApiResponse<Company>> =>
     api.patch(`/companies/${companyId}`, payload),
 
+  suggestCode: (companyObjectId: string) =>
+    api.get(`/companies/${companyObjectId}/code-suggestion`),
+
+  updateCode: (companyObjectId: string, companyId: string) =>
+    api.patch(`/companies/${companyObjectId}`, { companyId }),
+
   updateStatus: (
     companyId: string,
     status: COMPANY_STATUS,

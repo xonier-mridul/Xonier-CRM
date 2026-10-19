@@ -14,6 +14,7 @@ import {
 } from "@/src/constants/company";
 import PhoneInputField from "@/src/components/common/PhoneInput";
 import CompanyService from "@/src/services/company.service";
+import CompanyCodeEditor from "@/src/components/pages/companies/CompanyCodeEditor";
 
 // ============================================================
 // Types
@@ -64,6 +65,7 @@ interface CompanyFormState extends CompanyUpdatePayload {
 
 interface CompanyDisplayData {
   id: string;
+  companyId: string;
   slug?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -209,6 +211,7 @@ const mapResponseToForm = (raw: RawCompanyResponse): CompanyFormState => {
 // Map raw API response -> read-only display fields
 const mapResponseToDisplay = (raw: RawCompanyResponse): CompanyDisplayData => ({
   id: raw.id,
+  companyId: raw.companyId || "",
   slug: raw.slug,
   createdAt: raw.createdAt,
   updatedAt: raw.updatedAt,
@@ -392,7 +395,7 @@ const handleSubmit = async (e: React.FormEvent) => {
   }
 
   return (
-    <div className="px-4 py-6 mx-auto ml-72 mt-10 max-w-7xl">
+    <div className="px-4 py-6 mx-auto mt-10 max-w-7xl">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg">
@@ -408,6 +411,9 @@ const handleSubmit = async (e: React.FormEvent) => {
           </div>
         </div>
       </div>
+
+      {company && <CompanyCodeEditor key={id} companyObjectId={id} companyCode={company.companyId}
+        onSaved={code => setCompany(previous => previous ? { ...previous, companyId: code } : previous)} />}
 
       {hasUnsavedChanges && (
         <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-start gap-3">
@@ -721,7 +727,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                   {t("company_id")}
                 </span>
                 <p className="text-sm text-slate-900 dark:text-white font-mono break-all">
-                  {company.id}
+                  {company.companyId || "—"}
                 </p>
               </div>
 

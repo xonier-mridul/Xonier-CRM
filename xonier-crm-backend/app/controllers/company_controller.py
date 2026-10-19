@@ -118,6 +118,10 @@ class CompanyController:
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
 
+    async def suggest_code(self, request: Request, company_id: str):
+        result = await self.service.suggest_code(company_id, request.state.user)
+        return successResponse(200, "Company ID suggestion generated", result)
+
     async def update(self, request: Request, company_id: str, payload: CompanyUpdateSchema):
         try:
             ip, ua = _extract_meta(request)
