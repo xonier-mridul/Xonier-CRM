@@ -66,6 +66,7 @@ from app.routes.call_route import web_router as call_web_router, mobile_router a
 from app.routes.chat_route import router as chat_router
 from app.core.chat_runtime import chat_runtime
 from app.core.security_store import initialize_security_indexes, database
+from app.core.mail_runtime import mail_consumers
 from app.routes.mail_operations_route import router as mail_operations_router
 from app.routes.mobile_auth_route import router as mobile_auth_router
 
@@ -91,7 +92,8 @@ async def lifespan(app: FastAPI):
     notification_scheduler.start()
 
     try:
-        yield
+        async with mail_consumers(database()):
+            yield
     finally:
         await chat_runtime.stop()
         notification_scheduler.shutdown()

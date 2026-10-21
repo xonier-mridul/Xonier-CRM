@@ -1,4 +1,7 @@
-"""Durable transactional outbox. API processes NEVER contact SMTP."""
+"""Durable outbox: request handlers enqueue; workers own SMTP delivery.
+
+Workers are separate processes in production and embedded only for local dev.
+"""
 import hashlib
 import json
 import uuid
@@ -103,9 +106,10 @@ class MailQueue:
     def fence(self, job):
         return {"_id": job["_id"], "state": "sending", "leaseOwner": job["leaseOwner"], "leaseUntil": {"$gt": now()}}
 
-    async def finish(self, job, state, *, error=None, retry_in=None):
+    async def finish(self, job, state, *, error=None, error_code=None, error_category=None, retry_in=None):
         async def commit(session):
-            fields = {"state": state, "updatedAt": now(), "error": error}
+            fields = {"state": state, "updatedAt": now(), "error": error,
+                "errorCode": error_code, "errorCategory": error_category}
             if retry_in is not None:
                 fields["availableAt"] = now() + timedelta(seconds=retry_in)
             else:
