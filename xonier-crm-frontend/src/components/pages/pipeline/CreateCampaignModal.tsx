@@ -152,9 +152,12 @@ export const CsvMappingModal: React.FC<CsvMappingProps> = ({ csvHeaders, preview
     // Auto-map exact or case-insensitive matches
     const auto: Record<string, string> = {};
     LEAD_FIELDS.forEach((f) => {
+      const normalize = (value: string) => value.toLowerCase().replace(/[\s_\-().]/g, "");
+      const aliases = f.key === "phone"
+        ? ["phone", "phone number", "phone no", "mobile", "mobile number", "mobile no", "contact number", "telephone"]
+        : [f.key, f.label];
       const match = csvHeaders.find(
-        (h) => h.toLowerCase().replace(/[\s_-]/g, "") === f.key.toLowerCase() ||
-               h.toLowerCase() === f.label.toLowerCase()
+        (h) => aliases.some((alias) => normalize(h) === normalize(alias))
       );
       if (match) auto[f.key] = match;
     });
@@ -350,7 +353,7 @@ const CreateCampaignModal: React.FC<Props> = ({ onClose, onSuccess }) => {
             const data = new Uint8Array(e.target?.result as ArrayBuffer);
             const wb = XLSX.read(data, { type: "array" });
             const ws = wb.Sheets[wb.SheetNames[0]];
-            const json = XLSX.utils.sheet_to_json<Record<string, string>>(ws, { defval: "" });
+            const json = XLSX.utils.sheet_to_json<Record<string, string>>(ws, { defval: "", raw: false });
             const headers = json.length > 0 ? Object.keys(json[0]) : [];
             resolve({ headers, rows: json });
           } catch (err) {
@@ -421,8 +424,8 @@ const CreateCampaignModal: React.FC<Props> = ({ onClose, onSuccess }) => {
         const lead: Record<string, any> = {};
         LEAD_FIELDS.forEach((f) => {
           const col = mapping[f.key];
-          if (col && row[col] !== undefined && row[col] !== "") {
-            lead[f.key] = row[col];
+          if (col && row[col] != null && row[col] !== "") {
+            lead[f.key] = String(row[col]).trim();
           }
         });
         return lead;
@@ -467,7 +470,7 @@ const CreateCampaignModal: React.FC<Props> = ({ onClose, onSuccess }) => {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh] border border-gray-100 dark:border-gray-700">
         {/* Header */}
         <div className="flex justify-between items-start px-6 py-5 border-b border-gray-100 dark:border-gray-700/60 bg-gray-50/50 dark:bg-gray-800/50 relative overflow-hidden">

@@ -1,8 +1,9 @@
 "use client";
+import type { CampaignLeadAssignment } from "@/src/types/campaign/campaign.types";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import Link from "next/link";
+import LeadEditModal from "./LeadEditModal";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { FaWhatsapp } from "react-icons/fa";
@@ -32,6 +33,8 @@ interface CallModalProps {
   onClose: () => void;
   /** Called after the agent answers "Was call connected?" so the table can refresh the row. */
   onDisposed?: (leadId: string, connectStatus: string) => void;
+  onLeadUpdated?: (leadId: string, lead: Partial<Lead>) => void;
+  campaignAssignment?: CampaignLeadAssignment;
   campaignId?: string;
   campaignLeadId?: string;
 }
@@ -71,7 +74,9 @@ const DetailRow = ({ label, value }: { label: string; value?: string | null }) =
   </div>
 );
 
-const CallModal = ({ lead, onClose, onDisposed, campaignId, campaignLeadId }: CallModalProps) => {
+const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUpdated, campaignAssignment, campaignId, campaignLeadId }: CallModalProps) => {
+  const [lead, setLead] = useState(initialLead);
+  const [editingLead, setEditingLead] = useState(false);
   const [tab, setTab] = useState<Tab>("info");
   const [minimized, setMinimized] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -265,7 +270,7 @@ const CallModal = ({ lead, onClose, onDisposed, campaignId, campaignLeadId }: Ca
   // ── minimized floating bar ────────────────────────────────────────────────
   if (minimized) {
     return createPortal(
-      <div className="fixed bottom-4 right-4 z-[1000] flex items-center gap-3 rounded-full bg-[#0092B8] text-white shadow-2xl pl-3 pr-2 py-2">
+      <div onClick={(event) => event.stopPropagation()} className="fixed bottom-4 right-4 z-[1000] flex items-center gap-3 rounded-full bg-[#0092B8] text-white shadow-2xl pl-3 pr-2 py-2">
         <span className="h-8 w-8 rounded-full bg-white/15 flex items-center justify-center">
           <FiPhone size={15} />
         </span>
@@ -288,7 +293,7 @@ const CallModal = ({ lead, onClose, onDisposed, campaignId, campaignLeadId }: Ca
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[1000] bg-black/50 flex items-center justify-center p-3 sm:p-6">
+    <div onClick={(event) => event.stopPropagation()} className="fixed inset-0 z-[1000] bg-black/50 flex items-center justify-center p-3 sm:p-6">
       <div
         role="dialog"
         aria-modal="true"
@@ -400,13 +405,14 @@ const CallModal = ({ lead, onClose, onDisposed, campaignId, campaignLeadId }: Ca
                       <FiPhone size={17} />
                       {lead.phone}
                     </span>
-                    <Link
-                      href={`/leads/update/${lead.id}`}
+                    <button
+                      type="button"
+                      onClick={() => setEditingLead(true)}
                       className="h-8 w-8 rounded-md flex items-center justify-center hover:bg-white/15 transition-colors"
                       title="Edit lead"
                     >
                       <FiEdit2 size={16} />
-                    </Link>
+                    </button>
                   </div>
                 </div>
 
@@ -580,6 +586,18 @@ const CallModal = ({ lead, onClose, onDisposed, campaignId, campaignLeadId }: Ca
           )}
         </div>
       </div>
+      {editingLead && (
+        <LeadEditModal
+          campaignAssignment={campaignAssignment}
+          leadId={lead.id}
+          onClose={() => setEditingLead(false)}
+          onSaved={(updatedLead) => {
+            setLead((current) => ({ ...current, ...updatedLead }));
+            onLeadUpdated?.(lead.id, updatedLead);
+            setEditingLead(false);
+          }}
+        />
+      )}
     </div>,
     document.body
   );

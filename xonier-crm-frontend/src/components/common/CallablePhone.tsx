@@ -1,4 +1,5 @@
 "use client";
+import type { CampaignLeadAssignment } from "@/src/types/campaign/campaign.types";
 
 import { useState } from "react";
 import { FiPhoneCall, FiClock } from "react-icons/fi";
@@ -11,7 +12,9 @@ interface CallablePhoneProps {
   displayValue: string;
   fontSize?: string;
   onCallDisposed?: (leadId: string, connectStatus: string) => void;
+  onLeadUpdated?: (leadId: string, lead: Partial<Lead>) => void;
   /** When called from a campaign, the backend verifies this exact assignment. */
+  campaignAssignment?: CampaignLeadAssignment;
   campaignId?: string;
   campaignLeadId?: string;
 }
@@ -38,6 +41,8 @@ export default function CallablePhone({
   displayValue,
   fontSize = "[13px]",
   onCallDisposed,
+  onLeadUpdated,
+  campaignAssignment,
   campaignId,
   campaignLeadId,
 }: CallablePhoneProps) {
@@ -87,6 +92,8 @@ export default function CallablePhone({
           lead={lead}
           onClose={() => setOpen(false)}
           onDisposed={onCallDisposed}
+          onLeadUpdated={onLeadUpdated}
+          campaignAssignment={campaignAssignment}
           campaignId={campaignId}
           campaignLeadId={campaignLeadId}
         />

@@ -71,6 +71,9 @@ const CampaignService = {
 
   claimLead: (campaignId: string, campaignLeadId: string) =>
     api.post(`/campaign/${campaignId}/leads/${campaignLeadId}/claim`),
+
+  assignLead: (campaignId: string, campaignLeadId: string, agentId: string) =>
+    api.patch(`/campaign/${campaignId}/leads/${campaignLeadId}/assign`, { agentId }),
 };
 
 export default CampaignService;
