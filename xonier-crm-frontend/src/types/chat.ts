@@ -6,6 +6,8 @@ export interface Conversation {
   description: string;
   visibility: "private" | "public";
   ownerId: string;
+  settingsVersion?: number;
+  archived?: boolean;
   memberIds: string[];
   memberNames: Record<string, string>;
   lastSeq: number;
@@ -49,6 +51,7 @@ export interface ChatCall {
 }
 export interface Capabilities {
   ready: boolean; reason: string; files: boolean; calls: boolean;
+  callsReason?: string; filesReason?: string;
   maxFileBytes: number; maxMembers: number; maxCallParticipants: number; currentUserId: string;
 }
 export interface ChatEvent {
@@ -58,6 +61,7 @@ export interface ChatEvent {
   data?: unknown;
 }
 export interface JoinCall { token: string; serverUrl: string; call: ChatCall }
+export interface CallPreferences { username: string; audioEnabled: boolean; videoEnabled: boolean; audioDeviceId?: string; videoDeviceId?: string }
 export function conversationName(c: Conversation, uid: string) {
   return c.kind === "dm" ? c.memberNames[c.memberIds.find(id => id !== uid) || ""] || "Direct message" : c.name;
 }

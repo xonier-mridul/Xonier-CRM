@@ -1,5 +1,6 @@
 """Conversation-scoped app-to-app calls. LiveKit owns media; Trakeroo owns access."""
 from datetime import timedelta
+import asyncio
 
 from bson import ObjectId
 
@@ -51,6 +52,8 @@ async def start(service, conversation_id, kind):
 
     async def commit(session):
         conversation = await service.conversation(conversation_id, session)
+        if conversation.get("archived"):
+            raise AppException(409, "Restore this conversation before starting a call")
         if conversation.get("activeCallId"):
             existing = await service.db.chat_calls.find_one(service.scope(_id=oid(conversation["activeCallId"])), session=session)
             if existing and existing["status"] in ("ringing", "live"):
@@ -83,9 +86,13 @@ async def join(service, conversation_id, call_id):
     s = get_setting()
     if not configured():
         raise AppException(503, "Calling is unavailable")
-    async with media_client() as client:
-        await client.room.create_room(api.CreateRoomRequest(name=call["room"],
-            empty_timeout=60, departure_timeout=30, max_participants=s.CHAT_MAX_CALL_PARTICIPANTS))
+    try:
+        async with asyncio.timeout(10):
+            async with media_client() as client:
+                await client.room.create_room(api.CreateRoomRequest(name=call["room"],
+                    empty_timeout=60, departure_timeout=30, max_participants=s.CHAT_MAX_CALL_PARTICIPANTS))
+    except Exception:
+        raise AppException(503, "The media server could not be reached. Your administrator should check LiveKit credentials, TLS and network access.", code="CALL_PROVIDER_UNAVAILABLE")
     # Recheck after network I/O: an owner may have ended the call while room creation ran.
     await service.conversation(conversation_id)
     current = await service.db.chat_calls.find_one(service.scope(_id=call["_id"]))
@@ -94,7 +101,9 @@ async def join(service, conversation_id, call_id):
     token = (api.AccessToken(s.LIVEKIT_API_KEY, s.LIVEKIT_API_SECRET)
         .with_identity(service.uid).with_name(service.actor["name"]).with_ttl(timedelta(minutes=5))
         .with_grants(api.VideoGrants(room_join=True, room=call["room"],
-            can_publish=True, can_subscribe=True, can_publish_data=False)).to_jwt())
+            can_publish=True, can_subscribe=True, can_publish_data=False,
+            can_publish_sources=["microphone"] if call["kind"] == "voice" else
+                ["microphone", "camera", "screen_share", "screen_share_audio"])).to_jwt())
     return {"token": token, "serverUrl": s.LIVEKIT_URL, "call": public(current)}
 
 
@@ -113,6 +122,35 @@ async def end(service, conversation_id, call_id):
             if exc.code != "not_found":
                 raise
     return await finish(call, "ended")
+
+
+async def connected(service, conversation_id, call_id):
+    """Reconcile after a real media connection; never trust a client participant list."""
+    from livekit import api
+    _, call = await load(service, conversation_id, call_id)
+    if call["status"] not in ("ringing", "live"):
+        raise AppException(409, "This call has ended")
+    try:
+        async with asyncio.timeout(8):
+            async with media_client() as client:
+                response = await client.room.list_participants(api.ListParticipantsRequest(room=call["room"]))
+                participants = [participant.identity for participant in await authorized_participants(call, response.participants, client)]
+    except Exception:
+        raise AppException(503, "Could not confirm media participants. The call will be reconciled automatically.")
+    if service.uid not in participants:
+        raise AppException(409, "Your media connection has not been confirmed yet")
+    async def commit(session):
+        await service.conversation(conversation_id, session)
+        current = await service.db.chat_calls.find_one(service.scope(_id=call["_id"]), session=session)
+        if current["status"] not in ("ringing", "live"):
+            raise AppException(409, "This call has ended")
+        current["participants"] = participants
+        if len(participants) >= 2:
+            current["status"] = "live"
+        await service.db.chat_calls.replace_one(service.scope(_id=call["_id"]), current, session=session)
+        await service.event("call.updated", conversation_id, current, session)
+        return public(current)
+    return await service.transaction(commit)
 
 
 async def decline(service, conversation_id, call_id):

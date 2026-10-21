@@ -12,6 +12,7 @@ from app.db.models.base_model import BaseDocument
 
 
 class EmailHistoryModel(BaseDocument):
+    request_hash: Optional[str] = None
 
     
     template: Optional[Link[EmailTemplateModel]] = None  

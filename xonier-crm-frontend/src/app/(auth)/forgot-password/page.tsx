@@ -54,6 +54,7 @@ try {
   if (result.status === 200) {
     sessionStorage.setItem("forgotPasswordEmail", formData.email);
     sessionStorage.setItem("forgotPasswordCompanyId", formData.companyId);
+    sessionStorage.setItem("passwordResetChallengeId", result.data.data.challengeId);
 
     toast.success(t("otp_sent_successfully"));
 
@@ -65,7 +66,6 @@ try {
     router.push("/change-password");
   }
 } catch (error) {
-  console.error("forget:", error);
 
   if (axios.isAxiosError(error)) {
     const message = error.response?.data?.message;

@@ -36,12 +36,14 @@ class OTPService:
             for item in result["data"]:
                 
                 email = item.get("encrypt_mail")
-                otp = item.get("encrypt_opt")
                 
                 if email:
                     item["encrypt_mail"] = self.crypto.decrypt_data(email)
-                if otp:
-                    item["encrypt_opt"] = self.crypto.decrypt_data(otp)
+                # Even administrators must not retrieve a user's live OTP.
+                # Keep the legacy response shape without exposing old codes,
+                # hashes, or encrypted ciphertext as an alternate login path.
+                item["otp"] = ""
+                item["encrypt_opt"] = ""
             
             
             return result

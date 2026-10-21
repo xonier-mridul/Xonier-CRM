@@ -15,8 +15,6 @@ class UserRepository(BaseRepository):
         return result
     
     async def find_user_by_hashMail_and_companyId(self,hashMail: str, companyId:str, projections: Optional[Dict[str, int]] = None, populate: Optional[List[str]] = None,  session: Optional[AsyncIOMotorClientSession] = None ):
-        print("companyid: ", companyId)
-        print("hash: ", hashMail)
         result = await self.find_one({"hashedEmail": hashMail, "companyId": ObjectId(companyId) }, projections, populate,  session)
         return result
     

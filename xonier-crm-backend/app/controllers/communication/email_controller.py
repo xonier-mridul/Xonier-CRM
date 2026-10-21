@@ -9,11 +9,19 @@ class EmailController:
     def __init__(self):
         self.service = EmailService()
 
+    def request_key(self, request):
+        value = request.headers.get("idempotency-key", "")
+        if len(value) > 128 or (value and not value.strip()):
+            raise AppException(422, "Idempotency-Key must be a nonblank value of at most 128 characters")
+        return value
+
     async def send_email(self, request: Request, payload: Dict[str, Any]):
         try:
             user = request.state.user
+            if request.headers.get("idempotency-key"):
+                payload["_request_key"] = "send:" + self.request_key(request)
             result = await self.service.send_email(payload=payload, user=user)
-            return successResponse(data=result, message="Email sent successfully", status_code=201)
+            return successResponse(data=result, message="Email queued for delivery", status_code=201)
         except AppException:
             raise
         except Exception as e:
@@ -22,10 +30,12 @@ class EmailController:
     async def send_bulk_email(self, request: Request, payload: Dict[str, Any]):
         try:
             user = request.state.user
+            if request.headers.get("idempotency-key"):
+                payload["_request_key"] = "bulk:" + self.request_key(request)
             result = await self.service.send_bulk_email(payload=payload, user=user)
             return successResponse(
                 data=result,
-                message=f"Bulk email completed. {result['success_count']}/{result['total']} sent successfully"
+                message=f"Bulk email accepted. {result['queued_count']}/{result['total']} queued for delivery"
             )
         except AppException:
             raise
@@ -56,8 +66,10 @@ class EmailController:
     async def resend_email(self, request: Request, id: str, payload: Dict[str, Any]):
         try:
             user = request.state.user
+            if request.headers.get("idempotency-key"):
+                payload["_request_key"] = f"resend:{id}:" + self.request_key(request)
             result = await self.service.resend_email(id=id, payload=payload, user=user)
-            return successResponse(data=result, message="Email resent successfully")
+            return successResponse(data=result, message="Email queued for redelivery")
         except AppException:
             raise
         except Exception as e:

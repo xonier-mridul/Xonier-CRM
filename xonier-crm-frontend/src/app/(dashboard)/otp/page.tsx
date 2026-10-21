@@ -92,70 +92,6 @@ function StatusBadge({ isUsed, expiresAt }: { isUsed: boolean; expiresAt: string
   );
 }
 
-// ── OTP Reveal Cell ───────────────────────────────────────────────────────────
-function OtpReveal({ encryptedOtp }: { encryptedOtp: string }) {
-  const { t } = useTranslation();
-  const [visible, setVisible] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const [countdown, setCountdown] = useState(3);
-  const countRef = useRef<NodeJS.Timeout | null>(null);
-
-  const handleReveal = () => {
-    if (visible) return;
-    setVisible(true);
-    setCountdown(3);
-
-    // countdown tick
-    let c = 3;
-    countRef.current = setInterval(() => {
-      c -= 1;
-      setCountdown(c);
-      if (c <= 0) clearInterval(countRef.current!);
-    }, 1000);
-
-    timerRef.current = setTimeout(() => {
-      setVisible(false);
-      setCountdown(3);
-    }, 3000);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-      if (countRef.current) clearInterval(countRef.current);
-    };
-  }, []);
-
-  return (
-    <div className="flex items-center gap-2">
-      {visible ? (
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-base font-extrabold tracking-[0.35em] text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-600 select-all">
-            {encryptedOtp}
-          </span>
-          <span
-            className="text-[10px] font-bold text-rose-500 bg-rose-50 dark:bg-rose-900/30 px-2 py-0.5 rounded-full border border-rose-100 dark:border-rose-800 tabular-nums min-w-[44px] text-center"
-          >
-            {countdown}{t("s")}
-          </span>
-        </div>
-      ) : (
-        <button
-          type="button"
-          onClick={handleReveal}
-          className="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border border-indigo-100 dark:border-indigo-800 transition-all hover:shadow-sm active:scale-95"
-        >
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" className="shrink-0">
-            <ellipse cx="6.5" cy="6.5" rx="5.5" ry="3.5" stroke="currentColor" strokeWidth="1.4" />
-            <circle cx="6.5" cy="6.5" r="1.8" fill="currentColor" />
-          </svg>
-          {t("reveal")}
-        </button>
-      )}
-    </div>
-  );
-}
-
 // ── Skeleton Row ──────────────────────────────────────────────────────────────
 function SkeletonRow({ cols }: { cols: number }) {
   return (
@@ -446,7 +382,7 @@ const OtpListPage = (): JSX.Element => {
 
                         {/* OTP reveal */}
                         <td className="px-5 py-4">
-                          <OtpReveal encryptedOtp={otp.encrypt_opt} />
+                          <span className="text-xs text-gray-500">Hidden for security</span>
                         </td>
 
                         {/* Type */}

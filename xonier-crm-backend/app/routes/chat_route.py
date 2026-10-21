@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Query, Request, WebSocket, WebSocketDisc
 
 from app.core.chat_runtime import Socket, chat_runtime
 from app.core.config import get_setting
-from app.schemas.chat_schema import (CallCreate, ConversationCreate, FileUpload, MemberAdd,
+from app.schemas.chat_schema import (CallCreate, ConversationCreate, ConversationUpdate, FileUpload, MemberAdd,
     MessageCreate, MessageEdit, Reaction, ReadPosition)
 from app.services import chat_calls, chat_storage
 from app.services.chat_auth import actor, authenticate
@@ -28,6 +28,8 @@ async def capabilities(user=Depends(actor)):
     s = get_setting()
     return successResponse(data={"ready": chat_runtime.ready, "reason": chat_runtime.error,
         "files": chat_storage.storage_configured(), "calls": chat_calls.configured(),
+        "callsReason": "" if chat_calls.configured() else "Voice and video require a configured LiveKit media server. Ask your administrator to set LIVEKIT_URL, LIVEKIT_API_KEY and LIVEKIT_API_SECRET on the backend.",
+        "filesReason": "" if chat_storage.storage_configured() else "Private file storage and malware scanning are not configured.",
         "maxFileBytes": s.CHAT_MAX_FILE_BYTES, "maxMembers": s.CHAT_MAX_MEMBERS,
         "maxCallParticipants": s.CHAT_MAX_CALL_PARTICIPANTS, "currentUserId": user["id"]})
 
@@ -40,6 +42,21 @@ async def users(search: str = Query("", max_length=80), svc=Depends(service)):
 @router.get("/conversations")
 async def conversations(svc=Depends(service)):
     return successResponse(data=await svc.list_conversations())
+
+
+@router.get("/presence")
+async def company_presence(userIds: str = Query("", max_length=2500), svc=Depends(service)):
+    ids = sorted(set(filter(None, userIds.split(","))))
+    if len(ids) > 100:
+        raise AppException(422, "At most 100 presence lookups per request")
+    users = await svc.db.users.find(svc.scope(_id={"$in": [oid(uid) for uid in ids]}, status="active", deletedAt=None), {"_id": 1}).to_list(100)
+    return successResponse(data={"onlineIds": await chat_runtime.online(svc.actor["company"], [str(u["_id"]) for u in users])})
+
+
+@router.patch("/conversations/{cid}")
+async def update_conversation(cid: str, command: ConversationUpdate, svc=Depends(service)):
+    await chat_runtime.limit(svc.actor, "settings", 30)
+    return successResponse(data=await svc.update_conversation(cid, command))
 
 
 @router.post("/conversations", status_code=201)
@@ -164,6 +181,12 @@ async def end_call(cid: str, call_id: str, svc=Depends(service)):
     return successResponse(data=await chat_calls.end(svc, cid, call_id))
 
 
+@router.post("/conversations/{cid}/calls/{call_id}/connected")
+async def call_connected(cid: str, call_id: str, svc=Depends(service)):
+    await chat_runtime.limit(svc.actor, "call_connected", 30)
+    return successResponse(data=await chat_calls.connected(svc, cid, call_id))
+
+
 @router.post("/conversations/{cid}/calls/{call_id}/decline")
 async def decline_call(cid: str, call_id: str, svc=Depends(service)):
     return successResponse(data=await chat_calls.decline(svc, cid, call_id))
@@ -198,6 +221,7 @@ async def websocket(ws: WebSocket, ticket: str = ""):
         return
     socket = None
     sender = None
+    guard = None
     try:
         chat_runtime.require_ready()
         credentials = await chat_runtime.consume_ticket(ticket)
@@ -216,14 +240,27 @@ async def websocket(ws: WebSocket, ticket: str = ""):
 
         async def send_queue():
             while True:
-                await asyncio.wait_for(ws.send_json(await socket.queue.get()), timeout=10)
+                event = await socket.queue.get()
+                await authenticate(credentials["token"])
+                await asyncio.wait_for(ws.send_json(event), timeout=10)
+        async def check_session():
+            while True:
+                await asyncio.sleep(5)
+                try:
+                    await authenticate(credentials["token"])
+                except Exception:
+                    with suppress(Exception):
+                        await ws.close(code=4401)
+                    return
         sender = asyncio.create_task(send_queue())
+        guard = asyncio.create_task(check_session())
         while True:
             # Short-lived tickets keep the access JWT out of proxy logs. Revalidate the
             # original JWT/user/company on every heartbeat, including expiry/suspension.
             user = await authenticate(credentials["token"])
-            await chat_runtime.presence(user)
+            await chat_runtime.presence(user, socket.connection_id)
             raw = await asyncio.wait_for(ws.receive_text(), timeout=45)
+            user = await authenticate(credentials["token"])
             await chat_runtime.limit(user, "ws_commands", 120)
             if len(raw) > 2048:
                 await ws.close(code=1009)
@@ -256,6 +293,11 @@ async def websocket(ws: WebSocket, ticket: str = ""):
     finally:
         if socket:
             chat_runtime.sockets.discard(socket)
+            with suppress(Exception):
+                await chat_runtime.offline(socket.actor, socket.connection_id)
         if sender:
             sender.cancel()
             await asyncio.gather(sender, return_exceptions=True)
+        if guard:
+            guard.cancel()
+            await asyncio.gather(guard, return_exceptions=True)

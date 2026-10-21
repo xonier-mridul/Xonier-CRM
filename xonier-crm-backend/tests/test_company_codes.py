@@ -138,6 +138,9 @@ class CompanyCodeMongoTests(unittest.IsolatedAsyncioTestCase):
         self.crypto = encryptor
         self.client = AsyncIOMotorClient(uri, serverSelectionTimeoutMS=5000)
         self.db = self.client[f"trakeroo_company_code_test_{uuid4().hex}"]
+        import app.db.db as database_module
+        self.previous_db = database_module.db
+        database_module.db = self.db
         await init_beanie(database=self.db, document_models=[CompanyModel, UserModel, UserRoleModel,
             PermissionModel, ActivityModel, SubscriptionModel, PlanModel, FeatureModel, OtpModel, TelephoneNumbersModel])
         self.service = CompanyService()
@@ -152,6 +155,8 @@ class CompanyCodeMongoTests(unittest.IsolatedAsyncioTestCase):
         await self.db.users.insert_one({"_id": self.admin_id, "companyId": self.company_id, "untouched": True})
 
     async def asyncTearDown(self):
+        import app.db.db as database_module
+        database_module.db = self.previous_db
         await self.client.drop_database(self.db.name)
         self.client.close()
 
@@ -240,7 +245,7 @@ class CompanyCodeMongoTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(after["companyId"], self.legacy)
         self.assertNotIn("XON-4321", after.get("loginCodes", []))
 
-    async def test_all_five_auth_flows_resolve_old_and_new_codes_without_bypassing_status(self):
+    async def test_credential_entry_flows_resolve_old_and_new_codes_without_bypassing_status(self):
         from app.services.auth_services import AuthServices
         await self.update(companyId="XON-4321")
         await self.db.companies.update_one({"_id": self.company_id}, {"$set": {"status": "inactive"}})
@@ -248,8 +253,7 @@ class CompanyCodeMongoTests(unittest.IsolatedAsyncioTestCase):
         auth.client = self.client
         for code in [self.legacy, " xon-4321 "]:
             payload = {"companyId": code, "email": "preview@example.com", "password": "Test!Password123", "otp": "123456"}
-            for method in [auth.login, auth.resend_verification_otp, auth.verify_login_otp,
-                           auth.forgot_password, auth.verify_forgot_pass_otp]:
+            for method in [auth.login, auth.forgot_password]:
                 with self.subTest(code=code, method=method.__name__), self.assertRaises(AppException) as denied:
                     await method(payload)
                 # Reaching the existing status gate proves the company lookup

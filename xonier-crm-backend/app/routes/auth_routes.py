@@ -96,12 +96,12 @@ async def user_login( request:Request, data: UserLoginSchema):
     return await auth_controller.login( request,  data.model_dump())
 
 @router.post("/resend-login-otp", status_code=200)
-async def resend_login_otp(data: ResendOTPSchema):
-    return await auth_controller.resend_verification_otp(data.model_dump())
+async def resend_login_otp(request: Request, data: ResendOTPSchema):
+    return await auth_controller.resend_verification_otp(data.model_dump(), request=request)
 
 @router.post("/resend-admin-login-otp", status_code=200)
-async def resend_login_otp(data: ResendAdminOTPSchema):
-    return await auth_controller.resend_admin_verification_otp(data.model_dump())
+async def resend_login_otp(request: Request, data: ResendAdminOTPSchema):
+    return await auth_controller.resend_admin_verification_otp(data.model_dump(), request=request)
 
 @router.post("/verify-admin-login-otp", status_code=200)
 async def verify_admin_login_otp(request: Request, response: Response, data: VerifyAdminLoginOtpSchema):
@@ -114,6 +114,11 @@ async def verify_login_otp(request: Request, response: Response, data: VerifyLog
 @router.get("/me", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context)])
 async def getMe(request: Request, response: Response):
     return await auth_controller.getMe(request=request, response=response)
+
+
+@router.get("/session", dependencies=[Depends(dependencies.authorized)])
+async def session_status():
+    return {"success": True, "data": {"active": True}}
 
 @router.put("/update/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context), Depends(dependencies.permissions(["user:update"]))])
 async def update(request: Request,id: str, payload: UpdateUserSchema ):

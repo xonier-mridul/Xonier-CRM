@@ -27,7 +27,9 @@ def s3_client():
 
 
 async def create_upload(service, conversation_id, command):
-    await service.conversation(conversation_id)
+    conversation = await service.conversation(conversation_id)
+    if conversation.get("archived"):
+        raise AppException(409, "Restore this conversation before uploading files")
     s = get_setting()
     if not storage_configured():
         raise AppException(503, "File sharing requires private S3 storage and a ClamAV scanner")

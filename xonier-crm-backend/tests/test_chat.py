@@ -22,7 +22,7 @@ from mongomock_motor import AsyncMongoMockClient
 from pydantic import ValidationError
 
 from app.core.chat_runtime import ChatRuntime, Socket
-from app.schemas.chat_schema import ConversationCreate, MessageCreate, MessageEdit
+from app.schemas.chat_schema import ConversationCreate, ConversationUpdate, MessageCreate, MessageEdit
 from app.services import chat_auth, chat_calls, chat_storage
 from app.services.chat_policy import now, oid, public
 from app.services.chat_service import ChatService
@@ -155,6 +155,98 @@ class ChatTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(AppException):
             await self.service.create(ConversationCreate(kind="dm", memberIds=[self.bob, self.charlie]))
 
+    async def test_settings_permissions_version_fencing_and_ownership_transfer(self):
+        cid = (await self.conversation())["id"]
+        with self.assertRaises(AppException) as error:
+            await self.as_user(self.bob).update_conversation(cid, ConversationUpdate(version=1, name="Hijack"))
+        self.assertEqual(error.exception.status_code, 403)
+        updated = await self.service.update_conversation(cid, ConversationUpdate(version=1, name="Design team", description="Decisions"))
+        self.assertEqual(updated["settingsVersion"], 2)
+        self.assertEqual(updated["name"], "Design team")
+        with self.assertRaises(AppException) as error:
+            await self.service.update_conversation(cid, ConversationUpdate(version=1, name="Stale"))
+        self.assertEqual(error.exception.status_code, 409)
+        with self.assertRaises(AppException):
+            await self.service.update_conversation(cid, ConversationUpdate(version=2, ownerId=self.charlie))
+        await self.service.update_conversation(cid, ConversationUpdate(version=2, ownerId=self.bob))
+        with self.assertRaises(AppException):
+            await self.service.membership(cid, add=[self.charlie])
+        await self.service.membership(cid, remove=self.alice)
+        with self.assertRaises(AppException):
+            await self.service.messages(cid)
+
+    async def test_owner_must_transfer_before_leaving_and_dm_settings_are_fixed(self):
+        cid = (await self.conversation())["id"]
+        with self.assertRaises(AppException):
+            await self.service.membership(cid, remove=self.alice)
+        dm = (await self.conversation(kind="dm"))["id"]
+        with self.assertRaises(AppException):
+            await self.service.update_conversation(dm, ConversationUpdate(version=1, name="Rename"))
+
+    async def test_archiving_preserves_history_but_blocks_mutations_and_discovery(self):
+        cid = (await self.conversation(kind="channel", visibility="public"))["id"]
+        message = await self.service.send(cid, MessageCreate(clientId=uuid4(), text="Keep history"))
+        await self.service.update_conversation(cid, ConversationUpdate(version=1, archived=True))
+        self.assertEqual((await self.service.messages(cid))["items"][0]["text"], "Keep history")
+        self.assertEqual(await self.as_user(self.charlie).discover(), [])
+        for operation in [self.service.send(cid, MessageCreate(clientId=uuid4(), text="No")),
+                self.service.change_message(cid, message["id"], emoji="👍"),
+                self.service.change_message(cid, message["id"], delete=True),
+                self.service.membership(cid, add=[self.charlie])]:
+            with self.assertRaises(AppException) as error:
+                await operation
+            self.assertEqual(error.exception.status_code, 409)
+        await self.service.update_conversation(cid, ConversationUpdate(version=2, archived=False))
+        self.assertEqual((await self.service.send(cid, MessageCreate(clientId=uuid4(), text="Restored")))["text"], "Restored")
+
+    async def test_thread_count_updates_are_published_without_full_conversation_refresh(self):
+        cid = (await self.conversation())["id"]
+        parent = await self.service.send(cid, MessageCreate(clientId=uuid4(), text="Topic"))
+        await self.as_user(self.bob).send(cid, MessageCreate(clientId=uuid4(), text="Reply", parentId=parent["id"]))
+        event = await self.db.chat_outbox.find_one({"event": "message.updated"})
+        self.assertEqual(event["data"]["replyCount"], 1)
+        self.assertEqual(event["data"]["version"], 2)
+
+    async def test_presence_keeps_other_device_online_and_expires_stale_connections(self):
+        runtime = ChatRuntime()
+        runtime.redis = FakeRedis(decode_responses=True)
+        runtime.ready = True
+        actor = self.service.actor
+        try:
+            await runtime.presence(actor, "browser")
+            await runtime.presence(actor, "mobile")
+            await runtime.offline(actor, "browser")
+            self.assertEqual(await runtime.online(actor["company"], [self.alice, self.bob]), [self.alice])
+            self.assertEqual(await runtime.online(str(self.other_company), [self.alice]), [])
+            with patch("app.core.chat_runtime.now", return_value=now() + timedelta(seconds=51)):
+                self.assertEqual(await runtime.online(actor["company"], [self.alice]), [])
+            await runtime.offline(actor, "mobile")
+            self.assertEqual(await runtime.online(actor["company"], [self.alice]), [])
+        finally:
+            await runtime.stop()
+
+    async def test_call_connection_uses_provider_participants_and_handles_provider_failure(self):
+        cid = (await self.conversation())["id"]
+        settings = SimpleNamespace(LIVEKIT_URL="ws://127.0.0.1:17880", LIVEKIT_API_KEY="test-key",
+            LIVEKIT_API_SECRET="local-test-secret-with-at-least-thirty-two-characters", CHAT_MAX_CALL_PARTICIPANTS=16)
+        client = MagicMock()
+        client.__aenter__ = AsyncMock(return_value=client)
+        client.__aexit__ = AsyncMock(return_value=None)
+        client.room.create_room = AsyncMock(side_effect=ConnectionError("offline"))
+        client.room.list_participants = AsyncMock(return_value=SimpleNamespace(participants=[SimpleNamespace(identity=self.bob)]))
+        with patch.object(chat_calls, "get_setting", return_value=settings), patch.object(chat_calls, "media_client", return_value=client):
+            call = await chat_calls.start(self.service, cid, "video")
+            with self.assertRaises(AppException) as error:
+                await chat_calls.join(self.service, cid, call["id"])
+            self.assertEqual(error.exception.status_code, 503)
+            with self.assertRaises(AppException) as error:
+                await chat_calls.connected(self.service, cid, call["id"])
+            self.assertEqual(error.exception.status_code, 409)
+            client.room.list_participants.return_value = SimpleNamespace(participants=[SimpleNamespace(identity=self.alice), SimpleNamespace(identity=self.bob)])
+            connected = await chat_calls.connected(self.service, cid, call["id"])
+            self.assertEqual(connected["status"], "live")
+            self.assertCountEqual(connected["participants"], [self.alice, self.bob])
+
     async def test_pagination_reconnect_and_search(self):
         cid = (await self.conversation())["id"]
         for n in range(55):
@@ -203,7 +295,10 @@ class ChatTests(unittest.IsolatedAsyncioTestCase):
             await chat_storage.download(self.as_user(self.bob), cid, str(fid))
 
     async def test_authentication_requires_active_user_and_company(self):
-        token = {"_id": self.alice, "type": "access"}
+        token = {"_id": self.alice, "type": "access", "sid": "test-session", "sessionType": "web"}
+        await self.db.auth_sessions.insert_one({"_id": f"{self.alice}:web", "userId": oid(self.alice),
+            "sessionType": "web", "sid": "test-session", "revokedAt": None,
+            "expiresAt": now() + timedelta(hours=1)})
         with patch.object(chat_auth, "verify_access_token", return_value=token):
             self.assertEqual((await chat_auth.authenticate("test"))["id"], self.alice)
             await self.db.users.update_one({"_id": oid(self.alice)}, {"$set": {"status": "suspended"}})
@@ -262,6 +357,11 @@ class ChatTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(claims["video"]["room"], call["room"])
             self.assertTrue(claims["video"]["roomJoin"])
             self.assertFalse(claims["video"].get("roomAdmin", False))
+            self.assertIn("camera", claims["video"]["canPublishSources"])
+            voice_cid = (await self.conversation())["id"]
+            voice = await chat_calls.start(self.service, voice_cid, "voice")
+            voice_token = await chat_calls.join(self.service, voice_cid, voice["id"])
+            self.assertEqual(jwt.decode(voice_token["token"], settings.LIVEKIT_API_SECRET, algorithms=["HS256"])["video"]["canPublishSources"], ["microphone"])
             with self.assertRaises(AppException):
                 await chat_calls.join(self.as_user(self.charlie), cid, call["id"])
             with self.assertRaises(AppException):
@@ -418,6 +518,9 @@ class ChatTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(error.exception.code, 4401)
 
     def test_input_contracts_and_safe_serialization(self):
+        for owner in ["", "invalid-id", "   "]:
+            with self.assertRaises(ValidationError):
+                ConversationUpdate(version=1, ownerId=owner)
         for payload in [{"text": ""}, {"text": "x" * 10001}, {"text": "hello", "companyId": str(self.other_company)}]:
             with self.assertRaises(ValidationError):
                 MessageCreate(clientId=uuid4(), **payload)

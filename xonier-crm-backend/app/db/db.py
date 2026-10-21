@@ -46,7 +46,7 @@ from app.db.models.call_session_model import CallSessionModel
 
 settings = get_setting()
 
-Client = AsyncIOMotorClient(settings.MONGO_URI) 
+Client = AsyncIOMotorClient(settings.MONGO_URI, w="majority")
 
 db = None
 

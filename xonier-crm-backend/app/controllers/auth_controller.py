@@ -12,6 +12,14 @@ from beanie import PydanticObjectId
 from bson import ObjectId
 
 
+def _login_context(request):
+    client_id = request.headers.get("x-client-id", "")
+    if len(client_id) > 128:
+        raise AppException(422, "Invalid client identifier")
+    return {"ip": request.client.host if request.client else None, "client_id": client_id,
+            "existing_sid": (getattr(request.state, "auth_payload", None) or {}).get("sid")}
+
+
 class AuthController:
     def __init__(self):
         self.service = AuthServices()
@@ -62,11 +70,11 @@ class AuthController:
         try:
            
            
-            result = await self.service.admin_login(data=data)
+            result = await self.service.admin_login(data=data, **_login_context(request))
 
             user_name= f"{result.get("firstName")} {result.get("lastName", "")}"
             
-            return successResponse(200, f"{user_name} Credential accepted, verification otp send successfully")
+            return successResponse(200, "Credentials accepted. Verification email queued.", result)
 
         except AppException as e:
 
@@ -77,31 +85,31 @@ class AuthController:
         try:
           
            
-            result = await self.service.login(data=data)
+            result = await self.service.login(data=data, **_login_context(request))
 
             user_name= f"{result.get("firstName")} {result.get("lastName", "")}"
             
-            return successResponse(200, f"{user_name} Credential accepted, verification otp send successfully")
+            return successResponse(200, "Credentials accepted. Verification email queued.", result)
 
         except AppException as e:
 
            raise e
         
-    async def resend_admin_verification_otp(self, data: Dict[str, Any]):
+    async def resend_admin_verification_otp(self, data: Dict[str, Any], request: Request):
         try:
             
-            result = await self.service.resend_verification_otp_for_admin(data)
-            return successResponse(200, f"Verification otp send successfully")
+            result = await self.service.resend_verification_otp_for_admin(data, client_id=request.headers.get("x-client-id", ""), ip=request.client.host if request.client else None)
+            return successResponse(200, "Verification email queued", result)
 
         except AppException as e:
            
            raise e
 
-    async def resend_verification_otp(self, data: Dict[str, Any]):
+    async def resend_verification_otp(self, data: Dict[str, Any], request: Request):
         try:
             
-            result = await self.service.resend_verification_otp(data)
-            return successResponse(200, f"Verification otp send successfully")
+            result = await self.service.resend_verification_otp(data, client_id=request.headers.get("x-client-id", ""), ip=request.client.host if request.client else None)
+            return successResponse(200, "Verification email queued", result)
 
         except AppException as e:
            
@@ -114,9 +122,9 @@ class AuthController:
             ip = request.client.host
 
             user_agent = request.headers.get("user-agent")
-            result = await self.service.verify_admin_login_otp(data=data, ip=ip, agent=user_agent)
+            result = await self.service.verify_admin_login_otp(data=data, agent=user_agent, **_login_context(request))
 
-            access_token_expiry = int(self.settings.ACCESS_TOKEN_EXPIRY) * 24 * 60 * 60
+            access_token_expiry = self.settings.AUTH_ACCESS_SECONDS
             # access_token_expiry = int(self.settings.ACCESS_TOKEN_EXPIRY) * 60
             refresh_token_expiry = int(self.settings.REFRESH_TOKEN_EXPIRY) * 24 * 60 * 60
 
@@ -126,7 +134,7 @@ class AuthController:
 
             user_name = f"{result['user']["firstName"]} {result['user']["lastName"]}"
 
-            return successResponse(200, f"{user_name} logged in successfully", {**result["user"], "accessToken": result["access_token"], "refreshToken": result["refresh_token"]})
+            return successResponse(200, f"{user_name} logged in successfully", {**result["user"], "sessionType": "web"})
 
 
         except AppException as e:
@@ -139,9 +147,9 @@ class AuthController:
             ip = request.client.host
 
             user_agent = request.headers.get("user-agent")
-            result = await self.service.verify_login_otp(data=data, ip=ip, agent=user_agent)
+            result = await self.service.verify_login_otp(data=data, agent=user_agent, **_login_context(request))
 
-            access_token_expiry = int(self.settings.ACCESS_TOKEN_EXPIRY) * 24 * 60 * 60
+            access_token_expiry = self.settings.AUTH_ACCESS_SECONDS
             # access_token_expiry = int(self.settings.ACCESS_TOKEN_EXPIRY) * 60
             refresh_token_expiry = int(self.settings.REFRESH_TOKEN_EXPIRY) * 24 * 60 * 60
 
@@ -151,7 +159,7 @@ class AuthController:
 
             user_name = f"{result['user']["firstName"]} {result['user']["lastName"]}"
 
-            return successResponse(200, f"{user_name} logged in successfully", {**result["user"], "accessToken": result["access_token"], "refreshToken": result["refresh_token"]})
+            return successResponse(200, f"{user_name} logged in successfully", {**result["user"], "sessionType": "web"})
 
 
         except AppException as e:
@@ -175,7 +183,7 @@ class AuthController:
           
             response.delete_cookie(key="accessToken", **JWT_OPTIONS)
             response.delete_cookie(key="refreshToken", **JWT_OPTIONS)
-            return AppException(status_code=e.status_code, message=e.message)
+            raise AppException(status_code=e.status_code, message=e.message)
         
     async def get_all_for_frontend(self, request: Request, response: Response):
         try:
@@ -307,7 +315,7 @@ class AuthController:
           user_agent = request.headers.get("user-agent")
 
 
-          result = await self.service.logout(user["_id"], ip, user_agent)
+          result = await self.service.logout(user["_id"], ip, user_agent, session_id=request.state.auth_payload["sid"])
           
           response.delete_cookie(key="accessToken", **JWT_OPTIONS)
           response.delete_cookie(key="refreshToken", **JWT_OPTIONS)
@@ -413,9 +421,10 @@ class AuthController:
 
     async def forgot_password(self, request: Request, payload: Dict[str, Any] ):
         try:
-            await self.service.forgot_password(payload=payload)
+            result = await self.service.forgot_password(payload=payload, ip=request.client.host if request.client else None,
+                client_id=request.headers.get("x-client-id", ""))
 
-            return successResponse(200, "Email verified, confirmation OTP send to your email")
+            return successResponse(200, "Verification email queued", result)
 
 
         except AppException as e: 
@@ -428,7 +437,8 @@ class AuthController:
             clientIp = request.client.host
             user_agent = request.headers.get("user-agent")
             
-            await self.service.verify_forgot_pass_otp(payload=payload, userIp=clientIp, userAgent=user_agent)
+            await self.service.verify_forgot_pass_otp(payload=payload, userIp=clientIp, userAgent=user_agent,
+                client_id=request.headers.get("x-client-id", ""))
             return successResponse(200, "OTP Verified")
 
         except AppException as e: 
@@ -525,7 +535,7 @@ class AuthController:
 
             
 
-            access_token_expiry = int(self.settings.ACCESS_TOKEN_EXPIRY) * 24 * 60 * 60
+            access_token_expiry = self.settings.AUTH_ACCESS_SECONDS
             # access_token_expiry = int(self.settings.ACCESS_TOKEN_EXPIRY) * 60
             refresh_token_expiry = int(self.settings.REFRESH_TOKEN_EXPIRY) * 24 * 60 * 60
 
@@ -536,15 +546,14 @@ class AuthController:
             
             return successResponse(200, result["message"], {
                 **result["user"],
-                "accessToken": result["access_token"],
-                "refreshToken": result["refresh_token"],
+                "sessionType": "web",
             })
 
         except AppException as e:
             response.delete_cookie(key="accessToken", **JWT_OPTIONS)
             response.delete_cookie(key="refreshToken", **JWT_OPTIONS)
 
-            return AppException(e.status_code, e.message)
+            raise e
 
         except Exception as e:
             response.delete_cookie(key="accessToken", **JWT_OPTIONS)
@@ -561,7 +570,7 @@ class AuthController:
 
 
         except AppException as e:
-            return AppException(e.status_code, e.message)
+            raise AppException(e.status_code, e.message)
         
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")

@@ -1,12 +1,46 @@
-# Trakeroo team chat
+# Trakeroo Communication
 
-The new dashboard page is `/chat`. It includes direct messages, group DMs,
+The dashboard page is `/communication` (`/chat` remains a compatible alias). It includes direct messages, group DMs,
 company public/private channels, threads, reactions, author-only edit/delete,
 history/search, unread counts, typing, presence, private file attachments, and
 conversation-scoped voice/video calls with screen sharing. Incoming calls work
 across dashboard pages while the browser is open. This is an initial collaboration
 module, not full Slack parity: mobile push, PSTN calls, recording, scheduled
 meetings, retention/admin export, DND, and cross-company guests are not included.
+
+## Communication UI and permissions
+
+Member search/invites, owner transfer, name/purpose edits and archive/restore use
+in-app dialogs. Destructive confirmations reuse the existing `ConfirmPopup`.
+Only the conversation owner can manage a group/channel; membership is enforced
+by the backend, not just hidden buttons. An owner must transfer ownership before
+leaving. Private/public visibility is fixed at creation. Archiving preserves
+history and blocks sends, reactions, message edits/deletes, uploads and calls;
+an active call must be ended first. Metadata uses `settingsVersion` conflict
+checks (legacy conversations start at version 1; no destructive migration).
+
+Presence means a recent authenticated connection heartbeat, not guaranteed
+availability. Redis tracks connections independently: closing a browser does not
+clear a still-active mobile connection. Heartbeats expire after 50 seconds; dots
+refresh every 15 seconds and disappear while the observer reconnects.
+
+Messages appear optimistically before server acknowledgement; pending/failed
+status stays explicit. Manual retry retains the original idempotency key, and
+unconfirmed sends survive reload in tab-scoped session storage. An old pending
+composer send is migrated with its original key. Draft persistence is debounced,
+typing remains possible during an outstanding send, and long text is collapsed
+with a read-full control. The server still enforces 10,000 characters and 5 files
+per message. There is no promise of zero network latency or offline delivery.
+Do not store sensitive drafts on shared/untrusted devices; browser storage is
+best-effort, not an encrypted delivery queue.
+
+Calls now have an explicit device-check/prejoin screen. Devices start off and
+are only enabled by the user. Missing infrastructure and connection failures are
+visible and actionable. The dual-peer-connection SDK mode avoids a reproduced
+WebKit offer-with-join configuration failure, without removing server ICE/TURN
+configuration. A `/connected` acknowledgement reconciles actual provider
+participants instead of trusting client claims. Media data-channel chat is
+deliberately not exposed; minimize the call to use durable conversation history.
 
 ## Infrastructure requirements
 
@@ -51,7 +85,7 @@ checkout/release process; the example server path is `/var/www/Xonier-CRM`.
    Do not replace the rest of your domain/certificate configuration.
 6. `sudo nginx -t`, then `sudo systemctl restart myapp` and
    `sudo systemctl reload nginx`. Check `sudo journalctl -u myapp -n 100 --no-pager`
-   for chat startup errors before directing users to `/chat`.
+   for chat startup errors before directing users to `/communication`.
 
 Chat WebSocket endpoint:
 
@@ -171,3 +205,58 @@ Only localhost test URIs are accepted. Test databases have unique
 `trakeroo_chat_test_*` names and are deleted after each test. Live S3, scanner and
 multi-device LiveKit calls need separate staging credentials and are not exercised
 by the database tests.
+
+## Isolated local UI/media verification
+
+`tests/chat_preview.py` is an opt-in loopback-only application with in-memory
+Mongo/Redis, synthetic users and a fake local login. NEVER expose it through
+Nginx, use it with real data, or deploy it as the application entry point.
+`CHAT_PREVIEW_MESSAGE_DELAY=3` injects three seconds of message acknowledgement
+latency to check optimistic sending and safe drafts.
+
+For an optional local LiveKit test, from the backend directory:
+
+```bash
+docker run --rm --name trakeroo-communication-local-test \
+  -p 127.0.0.1:17880:17880 -p 127.0.0.1:17881:17881 \
+  -p 127.0.0.1:17882:17882/udp \
+  -v "$PWD/tests/fixtures/livekit-local.yaml:/etc/livekit.yaml:ro" \
+  livekit/livekit-server:v1.13.10 --config /etc/livekit.yaml
+
+CHAT_PREVIEW=1 CHAT_PREVIEW_LOCAL_MEDIA=1 CHAT_PREVIEW_PORT=8137 \
+  CHAT_PREVIEW_MESSAGE_DELAY=3 PYTHONPATH=.:tests \
+  venv/bin/python tests/chat_preview.py
+```
+
+The checked-in YAML credentials are public, disposable TEST credentials. All
+published ports are loopback-only; no real backend `.env` changes are needed.
+The media image used during verification resolved to digest
+`sha256:89ca9ce0791e18d6e03bf6e2c49ceb27e1c754eae8bd50c989386c1a5963791a`.
+This Docker networking arrangement is not a production deployment recipe.
+
+In a separate frontend terminal use:
+
+```bash
+TRAKEROO_UI_PREVIEW=1 NEXT_PUBLIC_BASE_URL=http://localhost:8137/api \
+  npx next dev --webpack --port 3100
+```
+
+Open `http://localhost:3100/communication`. The preview uses a separate
+`.next-ui-preview` build directory. `tests/local_media_probe.py` optionally joins
+as synthetic Bob using an isolated virtualenv with `livekit` and `httpx`.
+Run it with `CHAT_PREVIEW=1` and start a preview call within 120 seconds.
+It publishes generated pixels/silent audio only; no hardware is captured and
+it refuses non-loopback media URLs. Close the call and stop the test processes
+after verification. A two-participant browser connection and decoded 320×180
+synthetic video were verified locally; internet/NAT, real devices, large group
+capacity, S3 integration and production reliability still require staging QA.
+
+Frontend message merge tests (Node 22+):
+
+```bash
+node --experimental-strip-types --test tests/message-state.test.mjs
+```
+
+The unrelated existing `test_pipeline_stats.py` fails independently (status
+breakdowns return empty mappings). Its source and tests were not changed by
+this Communication update; do not report the entire repository suite as green.

@@ -34,6 +34,9 @@ const page = () => {
   };
 
 useEffect(() => {
+  if (new URLSearchParams(window.location.search).get("reason") === "SESSION_REPLACED") {
+    toast.info("Your account was signed in elsewhere. This session has ended.");
+  }
   const companyId = localStorage.getItem("companyId");
 
   if (companyId) {
@@ -55,12 +58,12 @@ useEffect(() => {
         sessionStorage.setItem("loginMail", formData.email);
         sessionStorage.setItem("companyId", formData.companyId);
         localStorage.setItem("companyId", formData.companyId);
-        sessionStorage.setItem("loginPassword", formData.password);
+        sessionStorage.setItem("loginChallengeId", result.data.data.challengeId);
+        sessionStorage.removeItem("loginPassword");
         setFormData({ email: "", password: "" ,companyId:""});
         toast.success(result.data.message);
       }
     } catch (error) {
-      process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) {
         const messages = extractErrorMessages(error);
         setErr(messages);

@@ -65,6 +65,9 @@ from app.routes.mobile_route import router as mobile_router
 from app.routes.call_route import web_router as call_web_router, mobile_router as call_mobile_router
 from app.routes.chat_route import router as chat_router
 from app.core.chat_runtime import chat_runtime
+from app.core.security_store import initialize_security_indexes, database
+from app.routes.mail_operations_route import router as mail_operations_router
+from app.routes.mobile_auth_route import router as mobile_auth_router
 
 settings = get_setting()
 
@@ -72,6 +75,10 @@ settings = get_setting()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await connect_db()
+    hello = await database().command("hello")
+    if not hello.get("setName") and hello.get("msg") != "isdbgrid":
+        raise RuntimeError("Authentication and mail outbox require a MongoDB replica set or mongos")
+    await initialize_security_indexes(database())
     await init_cache()
     await chat_runtime.start()
 
@@ -90,6 +97,7 @@ async def lifespan(app: FastAPI):
         notification_scheduler.shutdown()
 
 app = FastAPI(lifespan=lifespan)
+app.include_router(mobile_auth_router, prefix="/api/auth/mobile", tags=["Mobile authentication"])
 
 
 
@@ -109,6 +117,7 @@ app.add_middleware(
     allow_credentials=True,    
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Retry-After"],
 )
 
 app.add_middleware(TenantMiddleware)
@@ -138,6 +147,7 @@ app.add_middleware(AuthMiddleware)
 
 app.include_router(user_role_router, prefix="/api/user-role")
 app.include_router(auth_router, prefix="/api/auth")
+app.include_router(mail_operations_router, prefix="/api/operations/email-queue")
 app.include_router(permission_router, prefix="/api/permission")
 app.include_router(enquiry_route, prefix="/api/enquiry")
 app.include_router(team_router, prefix="/api/team")

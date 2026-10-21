@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 const OTP_LENGTH = 6;
 
 export interface verifyPasswordOtp{
+        challengeId: string,
         email: string,
         otp: string, 
         companyId:string,
@@ -90,6 +91,7 @@ export default function SingleStepResetPage() {
 
     try {
       const payload = {
+        challengeId: sessionStorage.getItem("passwordResetChallengeId") || "",
         email: email,
         otp: otp, 
         companyId: companyId,
@@ -102,6 +104,7 @@ export default function SingleStepResetPage() {
       if (result.status === 200) {
         toast.success(t("password_changed_successfully") || "Success!");
         sessionStorage.removeItem("forgotPasswordEmail");
+        sessionStorage.removeItem("passwordResetChallengeId");
         setTimeout(() => router.push("/login"), 1500);
       }
     } catch (error: any) {

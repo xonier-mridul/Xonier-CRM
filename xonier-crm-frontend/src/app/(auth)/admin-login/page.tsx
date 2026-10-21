@@ -38,13 +38,13 @@ const Page = () => {
 
       if (result.status == 200) {
         sessionStorage.setItem("email", formData.email)
-        sessionStorage.setItem("password", formData.password)
+        sessionStorage.setItem("adminLoginChallengeId", result.data.data.challengeId)
+        sessionStorage.removeItem("password")
         setFormData({ email: "", password: "" });
 
         router.push('/admin-login/verify-otp')
       }
     } catch (error) {
-      console.log("err i admin login :", error)
       setError(t("login_failed_message") || "Login failed. Please check your credentials and try again.")
     } finally {
       setIsLoading(false)

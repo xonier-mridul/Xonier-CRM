@@ -16,7 +16,8 @@ export default function ReduxProvider({ children }: {
     "/admin-login",    // Alternative admin login page (if applicable)
     "/forgot-password", // Forgot password page
     "/forgot-companyId",
-    "/change-password"
+    "/change-password",
+    "/", "/referral", "/referralForm", "/quotation"
 
   ];
 

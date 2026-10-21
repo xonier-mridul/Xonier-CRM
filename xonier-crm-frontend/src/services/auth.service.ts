@@ -66,13 +66,14 @@ export const AuthService = {
   verifyLoginOtp: (data: VerifyLoginOtpPayload) =>
     api.post("/auth/verify-login-otp", data),
   resendAdminOTP: (data: ResendAdminLoginOtpPayload) =>
-    api.post("/auth//resend-admin-login-otp", data),
+    api.post("/auth/resend-admin-login-otp", data),
 
   
   resendOTP: (data: ResendLoginOtpPayload) =>
     api.post("/auth/resend-login-otp", data),
   getUserById: (id: ParamValue) => api.get(`/auth/user/${id}`),
   me: () => api.get("/auth/me"),
+  session: () => api.get("/auth/session"),
   update: (id: ParamValue, payload: UserUpdatePayload) =>
     api.put(`/auth/update/${id}`, payload),
   updateStatus: (id: ParamValue, statusPayload: UserStatusPayload) =>

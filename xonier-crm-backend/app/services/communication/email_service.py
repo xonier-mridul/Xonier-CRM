@@ -4,14 +4,19 @@ from beanie import PydanticObjectId
 from fastapi.encoders import jsonable_encoder
 from datetime import datetime, timezone
 from jinja2 import Environment, BaseLoader
-from email.message import EmailMessage
-import aiosmtplib
+import hashlib
+import json
+from bson import ObjectId
+from pymongo.errors import DuplicateKeyError
+from app.core.security_store import now
+from datetime import timedelta
+from app.services.mail_queue import MailQueue
 
 from app.repositories.email_history_repository import EmailHistoryRepository
 from app.repositories.email_template_repository import EmailTemplateRepository
 from app.db.models.communications.email_history_model import EmailHistoryModel
 from app.db.models.email_template_model import EmailTemplateModel
-from app.config.email_config import EMAIL_USER, EMAIL_HOST, EMAIL_PASS, EMAIL_PORT, FROM_EMAIL
+from app.config.email_config import FROM_EMAIL
 from app.core.enums import EmailStatus
 from app.utils.custom_exception import AppException
 
@@ -24,154 +29,34 @@ class EmailService:
 
     
     async def send_email(self, payload: Dict[str, Any], user: Dict[str, Any]):
-        try:
-            template = await self._get_template(payload["template_id"])
-            variables = payload.get("variables", {})
+        template = await self._get_template(payload["template_id"])
+        variables = payload.get("variables", {})
+        self._validate_required_variables(template.variables, variables)
+        rendered = self._render_template(template, variables)
+        return await self._enqueue_rendered(payload["template_id"], rendered, variables, payload, user)
 
-            
-            self._validate_required_variables(template.variables, variables)
 
-            
-            rendered = self._render_template(template, variables)
-
-            
-
-            from_name = f"{user.get('firstName', '')} {user.get('lastName', '')}".strip()
-
-            
-            history = await self._create_history(
-                template_id=payload["template_id"],
-                rendered=rendered,
-                variables=variables,
-                user=user,
-                from_name=from_name,
-                to_emails=payload["to_emails"],
-                cc_emails=payload.get("cc_emails", []),
-                bcc_emails=payload.get("bcc_emails", []),
-                reply_to=payload.get("reply_to"),
-                payload=payload
-            )
-
-            
-            await self._dispatch_email(
-                to=payload["to_emails"],
-                subject=rendered["subject"],
-                html=rendered["html"],
-                text=rendered["text"],
-                cc=payload.get("cc_emails", []),
-                bcc=payload.get("bcc_emails", []),
-                reply_to=payload.get("reply_to"),
-                from_name=from_name,
-            )
-
-            
-            await self._mark_sent(history)
-
-            
-            await self._increment_usage(payload["template_id"])
-
-            return jsonable_encoder(history)
-
-        except AppException:
-            raise
-        except Exception as e:
-            
-            import traceback
-            if 'history' in locals():
-                await self._mark_failed(history, str(e))
-            print("traceback:", traceback.format_exc())
-            raise AppException(500, f"Failed to send email: {str(e)}")
-
-    
     async def send_bulk_email(self, payload: Dict[str, Any], user: Dict[str, Any]):
-        try:
-            template = await self._get_template(payload["template_id"])
-            global_variables = payload.get("variables", {})
-            recipients = payload["recipients"]
+        results, failed = [], []
+        for index, recipient in enumerate(payload["recipients"]):
+            message = {**payload, "to_emails": [recipient["email"]],
+                "variables": {**payload.get("variables", {}), **recipient.get("variables", {})}, "_kind": "bulk"}
+            message.pop("recipients", None)
+            if payload.get("_request_key"):
+                message["_request_key"] = f"{payload['_request_key']}:{index}"
+            try:
+                history = await self.send_email(message, user)
+                results.append({"email": recipient["email"], "status": "queued", "history_id": str(history.get("_id") or history.get("id"))})
+            except AppException as error:
+                failed.append({"email": recipient["email"], "status": "failed", "error": error.message})
+        return {"total": len(payload["recipients"]), "queued_count": len(results),
+                "success_count": len(results), "failed_count": len(failed), "results": results, "failed": failed}
 
-            from_name = f"{user.get('firstName', '')} {user.get('lastName', '')}".strip()
 
-            results = []
-            failed = []
-            success_count = 0
-
-            for recipient in recipients:
-                recipient_email = recipient["email"]
-
-                
-                merged_vars = {**global_variables, **recipient.get("variables", {})}
-
-                try:
-                    
-                    self._validate_required_variables(template.variables, merged_vars)
-
-                    
-                    rendered = self._render_template(template, merged_vars)
-
-                    
-                    history = await self._create_history(
-                        template_id=payload["template_id"],
-                        rendered=rendered,
-                        variables=merged_vars,
-                        user=user,
-                        from_name=from_name,
-                        to_emails=[recipient_email],
-                        cc_emails=payload.get("cc_emails", []),
-                        bcc_emails=payload.get("bcc_emails", []),
-                        reply_to=None,
-                        payload=payload
-                    )
-
-                    
-                    await self._dispatch_email(
-                        to=[recipient_email],
-                        subject=rendered["subject"],
-                        html=rendered["html"],
-                        text=rendered["text"],
-                        cc=payload.get("cc_emails", []),
-                        bcc=payload.get("bcc_emails", []),
-                        reply_to=None,
-                        from_name=from_name,
-                    )
-
-                    await self._mark_sent(history)
-                    await self._increment_usage(payload["template_id"])
-
-                    success_count += 1
-                    results.append({
-                        "email": recipient_email,
-                        "status": "sent",
-                        "history_id": str(history.id)
-                    })
-
-                except Exception as e:
-                    if 'history' in locals():
-                        await self._mark_failed(history, str(e))
-                    failed.append({
-                        "email": recipient_email,
-                        "status": "failed",
-                        "error": str(e)
-                    })
-
-            return {
-                "total": len(recipients),
-                "success_count": success_count,
-                "failed_count": len(failed),
-                "results": results,
-                "failed": failed
-            }
-
-        except AppException:
-            raise
-        except Exception as e:
-            raise AppException(500, f"Failed to send bulk email: {str(e)}")
-
-   
     async def get_all(self, filters: Dict[str, Any], user: Dict[str, Any]):
         try:
             page = filters.get("page") or 1
             limit = filters.get("limit") or 10
-            print("one")
             query: Dict[str, Any] = {
                 "sent_by.$id": PydanticObjectId(user["_id"])
             }
@@ -191,7 +76,6 @@ class EmailService:
             if "quotation_id" in filters:
                 query["quotation_id"] = filters["quotation_id"]
 
-            print("two")
             result = await self.history_repo.get_all(
                 page=int(page),
                 limit=int(limit),
@@ -202,7 +86,6 @@ class EmailService:
 
             if not result:
                 raise AppException(404, "No email history found")
-            print('three')
             return jsonable_encoder(result)
 
         except AppException:
@@ -232,69 +115,21 @@ class EmailService:
 
    
     async def resend_email(self, id: str, payload: Dict[str, Any], user: Dict[str, Any]):
-        try:
-            original = await self.history_repo.find_one(
-                filter={
-                    "_id": PydanticObjectId(id),
-                    "sent_by.$id": PydanticObjectId(user["_id"])
-                }
-            )
-            if not original:
-                raise AppException(404, "Email not found or access denied")
+        original = await self.history_repo.find_one(filter={"_id": PydanticObjectId(id),
+            "sent_by.$id": PydanticObjectId(user["_id"])})
+        if not original:
+            raise AppException(404, "Email not found or access denied")
+        recipients = {**payload, "to_emails": payload.get("to_emails") or original.to_emails,
+            "cc_emails": payload.get("cc_emails") or original.cc_emails,
+            "bcc_emails": payload.get("bcc_emails") or original.bcc_emails, "reply_to": original.reply_to,
+            **{field: getattr(original, field) for field in ["lead_id", "deal_id", "client_id", "invoice_id", "quotation_id", "prospect_id"]}}
+        template = original.template
+        template_id = str(template.ref.id if hasattr(template, "ref") else template.id) if template else None
+        return await self._enqueue_rendered(template_id,
+            {"subject": original.subject, "html": original.html_body, "text": original.text_body},
+            original.variables_used, recipients, user)
 
-            to_emails = payload.get("to_emails") or original.to_emails
-            cc_emails = payload.get("cc_emails") or original.cc_emails
-            bcc_emails = payload.get("bcc_emails") or original.bcc_emails
-            from_name = f"{user.get('firstName', '')} {user.get('lastName', '')}".strip()
 
-            
-            new_history = EmailHistoryModel(
-                template=original.template,
-                subject=original.subject,
-                html_body=original.html_body,
-                text_body=original.text_body,
-                variables_used=original.variables_used,
-                sent_by=PydanticObjectId(user["_id"]),
-                from_email=FROM_EMAIL,
-                from_name=from_name,
-                to_emails=to_emails,
-                cc_emails=cc_emails,
-                bcc_emails=bcc_emails,
-                reply_to=original.reply_to,
-                status=EmailStatus.QUEUED,
-                provider="smtp",
-                retry_count=original.retry_count + 1,
-                lead_id=original.lead_id,
-                deal_id=original.deal_id,
-                client_id=original.client_id,
-                invoice_id=original.invoice_id,
-                quotation_id=original.quotation_id,
-                prospect_id=original.prospect_id,
-            )
-            await new_history.insert()
-
-            await self._dispatch_email(
-                to=to_emails,
-                subject=original.subject,
-                html=original.html_body,
-                text=original.text_body,
-                cc=cc_emails,
-                bcc=bcc_emails,
-                reply_to=original.reply_to,
-                from_name=from_name,
-            )
-
-            await self._mark_sent(new_history)
-            return jsonable_encoder(new_history)
-
-        except AppException:
-            raise
-        except Exception as e:
-            if 'new_history' in locals():
-                await self._mark_failed(new_history, str(e))
-            raise AppException(500, f"Failed to resend email: {str(e)}")
-
-    
     async def update(self, id: str, payload: Dict[str, Any], user: Dict[str, Any]):
         try:
             existing = await self.history_repo.find_one(
@@ -321,55 +156,34 @@ class EmailService:
 
     
     async def delete(self, id: str, user: Dict[str, Any]):
-        try:
-            existing = await self.history_repo.find_one(
-                filter={
-                    "_id": PydanticObjectId(id),
-                    "sent_by.$id": PydanticObjectId(user["_id"])
-                }
-            )
-            if not existing:
-                raise AppException(404, "Email not found or access denied")
+        result = await self.bulk_delete([id], user)
+        return {"message": "Email history deleted; pending delivery cancelled", **result}
 
-            await EmailHistoryModel.find_one({"_id": PydanticObjectId(id)}).delete()
-            return {"message": "Email deleted successfully"}
-
-        except AppException:
-            raise
-        except Exception as e:
-            raise AppException(500, f"Internal server error: {str(e)}")
-
-    
     async def bulk_delete(self, ids: List[str], user: Dict[str, Any]):
-        try:
-            object_ids = [PydanticObjectId(id) for id in ids]
-
-            histories = await EmailHistoryModel.find({
-                "_id": {"$in": object_ids},
-                "sent_by.$id": PydanticObjectId(user["_id"])
-            }).to_list()
-
-            if not histories:
+        queue = MailQueue()
+        object_ids = list({PydanticObjectId(value) for value in ids})
+        async def commit(session):
+            rows = await queue.db.email_history.find({"_id": {"$in": object_ids},
+                "sent_by.$id": PydanticObjectId(user["_id"])}, {"_id": 1}, session=session).to_list(len(object_ids))
+            found = [row["_id"] for row in rows]
+            if not found:
                 raise AppException(404, "No emails found or access denied")
+            if await queue.db.email_jobs.find_one({"historyId": {"$in": found},
+                    "state": {"$in": ["sending", "uncertain"]}}, session=session):
+                raise AppException(409, "Delivery is in progress or requires review. Resolve it before deleting history.")
+            # Cancellation races with worker claims on the same job documents;
+            # transaction conflicts retry and re-check the in-flight guard.
+            await queue.db.email_jobs.update_many({"historyId": {"$in": found}, "state": "queued"},
+                {"$set": {"state": "cancelled", "updatedAt": now(),
+                          "cleanupAt": now() + timedelta(days=queue.settings.MAIL_RETENTION_DAYS)},
+                 "$unset": {"payloadCipher": ""}}, session=session)
+            await queue.db.email_history.delete_many({"_id": {"$in": found}}, session=session)
+            missing = [str(value) for value in object_ids if value not in found]
+            return {"deleted_count": len(found), "deleted_ids": [str(value) for value in found],
+                    "skipped_ids": missing, "skipped_count": len(missing)}
+        async with await queue.db.client.start_session() as session:
+            return await session.with_transaction(commit)
 
-            found_ids = [h.id for h in histories]
-            not_found_ids = [id for id in ids if PydanticObjectId(id) not in found_ids]
-
-            await EmailHistoryModel.find({"_id": {"$in": found_ids}}).delete()
-
-            return {
-                "deleted_count": len(found_ids),
-                "deleted_ids": [str(id) for id in found_ids],
-                "skipped_ids": not_found_ids,
-                "skipped_count": len(not_found_ids)
-            }
-
-        except AppException:
-            raise
-        except Exception as e:
-            raise AppException(500, f"Internal server error: {str(e)}")
-
-    
     async def _get_template(self, template_id: str):
         template = await EmailTemplateModel.find_one(
             {"_id": PydanticObjectId(template_id), "deleted_at": None}
@@ -393,13 +207,46 @@ class EmailService:
         }
 
    
+    async def _enqueue_rendered(self, template_id, rendered, variables, payload, user):
+        queue = MailQueue()
+        from_name = f"{user.get('firstName', '')} {user.get('lastName', '')}".strip()
+        request_hash = hashlib.sha256(json.dumps({"payload": payload, "rendered": rendered}, sort_keys=True, default=str).encode()).hexdigest()
+        request_key = payload.get("_request_key")
+        history_id = ObjectId(hashlib.sha256(f"{user['_id']}:{request_key}".encode()).hexdigest()[:24]) if request_key else ObjectId()
+        async def commit(session):
+            existing = await EmailHistoryModel.find_one({"_id": history_id}, session=session)
+            if existing:
+                if existing.request_hash != request_hash:
+                    raise AppException(409, "Idempotency key already used for a different email")
+                return jsonable_encoder(existing)
+            if request_key and await queue.db.email_outbox.find_one({
+                    "_id": hashlib.sha256(f"email-history:{history_id}".encode()).hexdigest()}, session=session):
+                raise AppException(409, "This email request was already processed and its history was deleted")
+            history = await self._create_history(template_id, rendered, variables, user, from_name,
+                payload["to_emails"], payload.get("cc_emails", []), payload.get("bcc_emails", []),
+                payload.get("reply_to"), payload, session=session, history_id=history_id, request_hash=request_hash)
+            await queue.enqueue(to=payload["to_emails"], cc=payload.get("cc_emails"), bcc=payload.get("bcc_emails"),
+                reply_to=payload.get("reply_to"), from_name=from_name, subject=rendered["subject"],
+                html=rendered["html"], text=rendered.get("text"), kind=payload.get("_kind", "transactional"),
+                history_id=history.id, tenant_id=user.get("companyId"), key=f"email-history:{history.id}", session=session)
+            return jsonable_encoder(history)
+        for attempt in range(3):
+            try:
+                async with await queue.db.client.start_session() as session:
+                    return await session.with_transaction(commit)
+            except DuplicateKeyError:
+                if attempt == 2:
+                    raise AppException(409, "Concurrent email request; retry using the same idempotency key")
+
     async def _create_history(
         self, template_id, rendered, variables,
         user, from_name, to_emails, cc_emails,
-        bcc_emails, reply_to, payload
+        bcc_emails, reply_to, payload, *, session=None, history_id=None, request_hash=None
     ) -> EmailHistoryModel:
         history = EmailHistoryModel(
-            template=PydanticObjectId(template_id),
+            id=history_id,
+            request_hash=request_hash,
+            template=PydanticObjectId(template_id) if template_id else None,
             subject=rendered["subject"],
             html_body=rendered["html"],
             text_body=rendered["text"],
@@ -420,59 +267,8 @@ class EmailService:
             quotation_id=payload.get("quotation_id"),
             prospect_id=payload.get("prospect_id"),
         )
-        await history.insert()
+        await history.insert(session=session)
         return history
-
-    
-    async def _dispatch_email(self, to, subject, html, text, cc, bcc, reply_to, from_name):
-        msg = EmailMessage()
-        msg["Subject"] = subject
-        msg["From"] = f"{from_name} <{FROM_EMAIL}>"
-        msg["To"] = ", ".join(to)
-
-        if cc:
-            msg["Cc"] = ", ".join(cc)
-        if bcc:
-            msg["Bcc"] = ", ".join(bcc)
-        if reply_to:
-            msg["Reply-To"] = reply_to
-
-        if text:
-            msg.set_content(text)
-        msg.add_alternative(html, subtype="html")
-
-        await aiosmtplib.send(
-            msg,
-            hostname=EMAIL_HOST,
-            port=EMAIL_PORT,
-            username=EMAIL_USER,
-            password=EMAIL_PASS,
-            start_tls=True
-        )
-
-    
-    async def _mark_sent(self, history: EmailHistoryModel):
-        history.status = EmailStatus.SENT
-        history.sent_at = datetime.now(timezone.utc)
-        history.updated_at = datetime.now(timezone.utc)
-        await history.save()
-
-    
-    async def _mark_failed(self, history: EmailHistoryModel, error: str):
-        history.status = EmailStatus.FAILED
-        history.error_message = error
-        history.failed_at = datetime.now(timezone.utc)
-        history.updated_at = datetime.now(timezone.utc)
-        await history.save()
-
-    
-    async def _increment_usage(self, template_id: str):
-        await EmailTemplateModel.find_one(
-            {"_id": PydanticObjectId(template_id)}
-        ).update({
-            "$inc": {"usage_count": 1},
-            "$set": {"last_used_at": datetime.now(timezone.utc)}
-        })
 
     
     def _render(self, template_str: str, variables: Dict) -> str:

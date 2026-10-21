@@ -7,6 +7,7 @@ from app.core.config import get_setting
 from app.services.chat_policy import oid
 from app.utils.custom_exception import AppException
 from app.utils.manage_tokens import verify_access_token
+from app.services.auth_sessions import SessionService
 
 
 def database():
@@ -22,13 +23,14 @@ async def authenticate(token: str | None):
     payload = verify_access_token(token) if token else None
     if not payload or payload.get("type") != "access":
         raise AppException(401, "Please sign in again")
+    await SessionService(database()).require(payload)
     user = await database().users.find_one({"_id": oid(payload.get("_id")), "status": "active", "deletedAt": None})
     if not user or not user.get("companyId"):
         raise AppException(403, "An active company account is required for team chat")
     company = await database().companies.find_one({"_id": user["companyId"], "status": "active", "deletedAt": None})
     if not company:
         raise AppException(403, "Your company account is not active")
-    return {"id": str(user["_id"]), "company": str(user["companyId"]),
+    return {"id": str(user["_id"]), "company": str(user["companyId"]), "sid": payload["sid"],
             "name": " ".join(filter(None, [user.get("firstName"), user.get("lastName")]))}
 
 

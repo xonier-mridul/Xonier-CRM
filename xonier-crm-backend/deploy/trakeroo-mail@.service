@@ -1,0 +1,28 @@
+[Unit]
+Description=Trakeroo durable email worker (%i)
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=10
+
+[Service]
+Type=simple
+# EXAMPLE PATHS: match WorkingDirectory/User/venv from your actual backend unit.
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/var/www/Xonier-CRM/xonier-crm-backend
+ExecStart=/var/www/Xonier-CRM/xonier-crm-backend/venv/bin/python -m app.workers.mail_worker --lane %i
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+Restart=always
+RestartSec=5
+TimeoutStopSec=50
+KillSignal=SIGTERM
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

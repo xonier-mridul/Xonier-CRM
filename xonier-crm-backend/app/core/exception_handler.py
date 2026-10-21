@@ -18,15 +18,15 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 
 
 async def app_exception_handler(request: Request, exc: AppException):
+    body = ApiResponse(success=False, status_code=exc.status_code, message=exc.message, data=None).model_dump()
+    if exc.code:
+        body["error"] = {"code": exc.code, "message": exc.message}
     response = JSONResponse(
         status_code=exc.status_code,
-        content=ApiResponse(
-            success=False,
-            status_code=exc.status_code,
-            message=exc.message,
-            data=None,
-        ).model_dump(),
+        content=body,
     )
+    if exc.retry_after is not None:
+        response.headers["Retry-After"] = str(exc.retry_after)
 
     if getattr(exc, "clear_cookies", False):
         response.delete_cookie(key="accessToken", **JWT_OPTIONS)

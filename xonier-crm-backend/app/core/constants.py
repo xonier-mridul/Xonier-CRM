@@ -5,7 +5,7 @@ settings = get_setting()
 
 JWT_OPTIONS = {
     "httponly": True,
-    "secure": False,
+    "secure": settings.ENV.lower() not in {"development", "dev", "local", "test"},
     "samesite": "lax",
     "path": "/",
 }

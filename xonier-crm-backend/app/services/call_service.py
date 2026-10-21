@@ -5,7 +5,7 @@ Flow
   1. Web  : POST /api/call/request {leadId}      -> session (pending) + pushed to the mobile app
   2. Mobile gets the request over WebSocket (or by polling /api/mobile/calls/pending)
   3. Mobile: POST /api/mobile/calls/{id}/status   received -> dialing -> ended|failed
-  4. Web  : receives session_update over WebSocket  to show live state / timer (no polling)
+  4. Web  : follows persisted state through authenticated GET /api/call/session/{id}
   5. Web  : POST /api/call/session/{id}/dispose   "Was call connected?" -> lead connectStatus updated
 
 All queries use raw collections with an explicit companyId, so the same methods work from

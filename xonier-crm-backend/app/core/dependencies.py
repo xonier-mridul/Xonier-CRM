@@ -70,6 +70,11 @@ class Dependencies:
         return checking
     
     async def authorized(self, request: Request):
+        auth_error = getattr(request.state, "auth_error", None)
+        if auth_error:
+            raise auth_error
+        if getattr(request.state, "auth_payload", None) and getattr(request.state, "user", None):
+            return True
         token = None
         auth_header = request.headers.get("Authorization")
         if auth_header and auth_header.startswith("Bearer "):
@@ -84,11 +89,17 @@ class Dependencies:
         if not payload:
             raise AppException(401, "Invalid or expired Tokens", clear_cookies=True)
 
+        from app.services.auth_sessions import SessionService
+        await SessionService().require(payload)
+
         with system_query():
             user = await self.userRepo.find_by_id(PydanticObjectId(payload["_id"]), populate=["userRole"])
 
         if not user:
             raise AppException(401, "User not found", clear_cookies=True)
+
+        request.state.auth_payload = payload
+        request.state.user = user.model_dump(mode="json", exclude={"password", "refreshToken"})
 
         user = user.model_dump(mode="json")
 
@@ -107,7 +118,8 @@ class Dependencies:
         try:
             token = None
 
-            token = request.cookies.get("refreshToken")
+            native = request.url.path.endswith("/auth/mobile/refresh")
+            token = None if native else request.cookies.get("refreshToken")
 
             if not token:
                 try:
@@ -120,6 +132,8 @@ class Dependencies:
                 raise AppException(401, "Your session is expired, please login again")
 
             payload = verify_refresh_token(token)
+            if payload["sessionType"] != ("mobile" if native else "web"):
+                raise AppException(403, "Use the refresh endpoint for this session type", code="CLIENT_TYPE_MISMATCH")
 
             
             payload["raw_token"] = token
@@ -131,6 +145,14 @@ class Dependencies:
 
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+
+    async def mobile_session(self, request: Request):
+        if (getattr(request.state, "auth_payload", None) or {}).get("sessionType") != "mobile":
+            raise AppException(403, "A native mobile session is required", code="CLIENT_TYPE_MISMATCH")
+
+    async def web_session(self, request: Request):
+        if (getattr(request.state, "auth_payload", None) or {}).get("sessionType") != "web":
+            raise AppException(403, "A browser session is required", code="CLIENT_TYPE_MISMATCH")
 
     async def onlyForAdmin(self, request:Request):
         try:

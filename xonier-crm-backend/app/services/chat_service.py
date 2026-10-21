@@ -67,7 +67,7 @@ class ChatService:
 
     async def discover(self):
         return public(await self.db.chat_conversations.find(self.scope(
-            kind="channel", visibility="public", memberIds={"$ne": self.uid}),
+            kind="channel", visibility="public", archived={"$ne": True}, memberIds={"$ne": self.uid}),
             {"name": 1, "description": 1}).sort("name", 1).limit(100).to_list(100))
 
     async def create(self, command):
@@ -85,7 +85,8 @@ class ChatService:
         doc = {"_id": ObjectId(), "companyId": self.company, "kind": command.kind,
                "name": command.name, "description": command.description, "visibility": command.visibility,
                "ownerId": self.uid, "memberIds": members, "memberNames": names, "read": {},
-               "lastSeq": 0, "createdAt": now(), "updatedAt": now(), "lastMessage": None}
+               "lastSeq": 0, "settingsVersion": 1, "archived": False,
+               "createdAt": now(), "updatedAt": now(), "lastMessage": None}
         if dm_key:
             doc["dmKey"] = dm_key
 
@@ -110,10 +111,15 @@ class ChatService:
                     raise AppException(404, "Channel not found")
                 adding = [self.uid]
             else:
-                require_owner(doc, self.uid)
+                if remove == self.uid and doc["kind"] != "dm":
+                    require_member(doc, self.uid)
+                else:
+                    require_owner(doc, self.uid)
                 adding = add or []
+            if doc.get("archived"):
+                raise AppException(409, "Restore this conversation before changing membership")
             if remove == doc["ownerId"]:
-                raise AppException(400, "The conversation owner cannot be removed")
+                raise AppException(400, "Transfer ownership before leaving this conversation")
             old_members = doc["memberIds"][:]
             members = validate_members(doc["kind"], [*doc["memberIds"], *adding], doc["ownerId"], get_setting().CHAT_MAX_MEMBERS)
             if adding:
@@ -128,11 +134,33 @@ class ChatService:
                 # Calls are closed before removal, ensuring issued media grants cannot linger.
                 if doc.get("activeCallId"):
                     raise AppException(409, "End the active call before removing a member")
-            doc.update(memberIds=members, updatedAt=now())
+            doc.update(memberIds=members, updatedAt=now(), settingsVersion=doc.get("settingsVersion", 1) + 1)
             await self.db.chat_conversations.replace_one(self.scope(_id=doc["_id"]), doc, session=session)
             await self.event("conversation.updated", doc["_id"], doc, session)
             if remove in old_members:
                 await self.event("conversation.removed", doc["_id"], {"id": str(doc["_id"])}, session, [remove])
+            return public(doc)
+        return await self.transaction(commit)
+
+    async def update_conversation(self, conversation_id, command):
+        changes = command.model_dump(exclude_none=True, exclude={"version"})
+        if not changes:
+            raise AppException(400, "No settings provided")
+        async def commit(session):
+            doc = await self.conversation(conversation_id, session)
+            require_owner(doc, self.uid)
+            if doc.get("settingsVersion", 1) != command.version:
+                raise AppException(409, "Conversation settings changed. Reload before saving.")
+            if changes.get("archived") and doc.get("activeCallId"):
+                raise AppException(409, "End the active call before archiving this conversation")
+            if "ownerId" in changes:
+                owner = changes["ownerId"]
+                if owner not in doc["memberIds"] or not await self.db.users.find_one(
+                        self.scope(_id=oid(owner), status="active", deletedAt=None), session=session):
+                    raise AppException(400, "The new owner must be an active member of this conversation")
+            doc.update(**changes, settingsVersion=command.version + 1, updatedAt=now())
+            await self.db.chat_conversations.replace_one(self.scope(_id=doc["_id"]), doc, session=session)
+            await self.event("conversation.updated", doc["_id"], doc, session)
             return public(doc)
         return await self.transaction(commit)
 
@@ -196,7 +224,9 @@ class ChatService:
                 await self.db.chat_files.update_many(self.scope(_id={"$in": [oid(a["id"]) for a in attachments]}),
                     {"$set": {"messageId": str(message["_id"]) }}, session=session)
             if command.parentId:
-                await self.db.chat_messages.update_one(self.scope(_id=oid(command.parentId)), {"$inc": {"replyCount": 1, "version": 1}}, session=session)
+                parent = await self.db.chat_messages.find_one_and_update(self.scope(_id=oid(command.parentId)),
+                    {"$inc": {"replyCount": 1, "version": 1}}, session=session, return_document=ReturnDocument.AFTER)
+                await self.event("message.updated", conversation_id, parent, session)
             else:
                 await self.db.chat_conversations.update_one(self.scope(_id=doc["_id"]), {"$set": {"lastMessage": {
                     "text": command.text[:140] or "Shared a file", "senderName": self.actor["name"], "seq": message["seq"]}}}, session=session)
@@ -211,6 +241,8 @@ class ChatService:
     async def change_message(self, conversation_id, message_id, text=None, version=None, emoji=None, delete=False):
         async def commit(session):
             conversation = await self.conversation(conversation_id, session)
+            if conversation.get("archived"):
+                raise AppException(409, "Restore this conversation before changing messages")
             message = await self.db.chat_messages.find_one(self.scope(_id=oid(message_id), conversationId=conversation_id), session=session)
             if not message:
                 raise AppException(404, "Message not found")

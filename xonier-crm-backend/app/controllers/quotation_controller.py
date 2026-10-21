@@ -105,7 +105,7 @@ class QuotationController:
 
             await self.service.resend(quoteId=id, user=user) 
 
-            return successResponse(200, "Quotation resend successfully")
+            return successResponse(200, "Quotation email queued for redelivery")
 
 
         except AppException as e:
@@ -122,4 +122,4 @@ class QuotationController:
         except AppException as e:
             raise e
 
-         
+

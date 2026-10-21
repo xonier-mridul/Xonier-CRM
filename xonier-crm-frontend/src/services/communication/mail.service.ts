@@ -32,7 +32,8 @@ export const MailService = {
   updateTemplate: (id: ParamValue, payload: Template) => api.patch(`/email-template/update/${id}`, payload),
   getById : (id:ParamValue)=> api.get(`/email-template/get/${id}`),
   deleteTemplate : (id:ParamValue)=> api.delete(`/email-template/delete/${id}`),
-  bulkMail:(payload:any) => api.post("/email/send/bulk",payload)
+  bulkMail:(payload:any, idempotencyKey?: string) => api.post("/email/send/bulk", payload,
+    idempotencyKey ? { headers: { "Idempotency-Key": idempotencyKey } } : undefined)
 };
 
 export default MailService;
