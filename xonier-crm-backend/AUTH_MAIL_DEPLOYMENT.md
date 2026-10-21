@@ -64,6 +64,54 @@ Never embed a shared “mobile secret” in the APK/IPA as an attestation substi
 
 ## Queue design and semantics
 
+### Local development startup
+
+With `ENV=development` (also `dev`/`local`), `MAIL_WORKER_MODE=auto` now starts
+both durable queue consumers inside the API lifespan. A normal local backend
+start is enough; a second worker command is no longer required for OTP email.
+First start the development inbox once (Docker Desktop must be running):
+
+```sh
+docker compose -f deploy/compose.dev-mail.yml up -d
+venv/bin/python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+With `MAIL_DELIVERY_MODE=auto` (default), **all development email goes to the
+local inbox at [http://127.0.0.1:8025](http://127.0.0.1:8025)**, including messages
+to fake/demo recipients. Open the latest email there and enter its fresh OTP in
+the normal login screen. Nothing is delivered to the public mailbox/provider.
+The official [Mailpit image](https://mailpit.axllent.org/docs/install/docker/)
+is version-pinned, published on loopback only, with no persistent volume; the
+temporary inbox database is deleted on graceful shutdown. Keep it local: **never
+proxy/expose this unauthenticated test inbox on EC2 or a shared/public interface.**
+
+Your existing `.env` database, encryption keys and SMTP credentials are preserved.
+Use a separate development database: never point local queue consumers at the
+production database, because they claim jobs from the same queue collections.
+Mailpit uses fixed numeric `127.0.0.1:1025`, without TLS/authentication, and never
+receives the real SMTP password. It has no configured forwarding/relay. If it is
+down, jobs wait/retry in the durable queue; there is **no external SMTP fallback**.
+To intentionally send real email during development set `MAIL_DELIVERY_MODE=smtp`
+and restart. `ENV=production`/`staging` defaults to real SMTP with required TLS;
+explicit `MAIL_DELIVERY_MODE=mailpit` is rejected outside development. Stop the
+inbox with `docker compose -f deploy/compose.dev-mail.yml down` (removes its local
+test inbox; CRM/queue collections are untouched). Request fresh OTPs after setup;
+old failed/expired codes are not automatically resent.
+
+Codes are stored as HMAC
+challenges in `auth_challenges`, not plaintext rows in the legacy `otps`
+collection. Their encrypted outbound messages are in `email_jobs`. An empty
+legacy OTP list alone does not mean no login code was saved.
+The Super Admin OTP history now combines both collections as redacted metadata;
+it never returns codes, hashes, client bindings or usable challenge identifiers.
+
+This local convenience still uses the same durable queue, leases, expiration,
+retry rules and SMTP protocol; no inline send or authentication bypass exists.
+For `ENV=production`/`staging`, auto mode does NOT embed consumers: keep the two
+supervised worker services below. Explicit `embedded` mode is development-only
+and rejected outside development. Set `MAIL_WORKER_MODE=external` locally if
+you intentionally run those separate worker processes yourself.
+
 All current application email producers now enqueue: login/admin OTP, password
 recovery/security notices, registration/resend, quotations, CRM template sends,
 bulk sends and history resends. Only `app/workers/mail_worker.py` contacts SMTP.
@@ -169,6 +217,10 @@ a lane has no recent heartbeat, 1 means failed/review-required jobs or queued ag
 >120 seconds, 0 is healthy. Wire these conditions, worker restart loops and database
 availability into your existing alerting/monitoring; the script alone does not
 send alerts. Heartbeats expire after five minutes; health requires lastSeen<45s.
+Failed-job diagnostics also retain the numeric SMTP `errorCode` and a fixed
+`errorCategory` (for example `sender_rejected`), without raw server replies or
+addresses. SMTP authentication succeeding does not guarantee that a subsequent
+message will be accepted; diagnose envelope/DATA rejection separately.
 
 Super Admin authenticated endpoints (not Company Admin):
 
@@ -198,5 +250,12 @@ CHAT_TEST_MONGO_URI='mongodb://127.0.0.1:27029/?replicaSet=chat-test' PYTHONPATH
 
 SMTP is mocked/injected in auth/mail tests: no external email is sent. HTTP tests
 exercise actual routes, middleware, cookies, refresh and cross-slot rejection.
+The opt-in real Mailpit test sends ONLY to fixed loopback SMTP and reads the code
+internally from that local inbox; it never prints codes or connects to a provider:
+
+```sh
+AUTH_MAIL_TEST_MAILPIT=1 AUTH_MAIL_TEST_MONGO_URI='mongodb://127.0.0.1:27029/?replicaSet=chat-test' PYTHONPATH=.:tests venv/bin/python -m unittest test_auth_mail.AuthMailTests.test_real_local_inbox_delivers_and_verifies_login_otp -v
+```
+
 Relevant design references: [OWASP session management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html),
 [transactional outbox pattern](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html).

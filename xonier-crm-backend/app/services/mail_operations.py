@@ -38,6 +38,7 @@ class MailOperations:
                 raise AppException(409, "Mail payload has already been purged")
             result = await self.db.email_jobs.update_one({"_id": job_id, "state": job["state"]}, {"$set": {
                 "state": "queued", "availableAt": now(), "attempts": 0, "updatedAt": now(), "error": None,
+                "errorCode": None, "errorCategory": None,
             }, "$inc": {"redriveCount": 1}, "$unset": {"cleanupAt": ""}}, session=session)
             if not result.matched_count:
                 raise AppException(409, "Job changed; refresh and try again")

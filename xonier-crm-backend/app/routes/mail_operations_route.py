@@ -21,7 +21,8 @@ async def overview():
 @router.get("/jobs")
 async def failed_jobs(state: str = Query("failed", pattern="^(failed|uncertain)$")):
     rows = await MailOperations().db.email_jobs.find({"state": state}, {
-        "_id": 1, "state": 1, "kind": 1, "attempts": 1, "error": 1, "createdAt": 1,
+        "_id": 1, "state": 1, "kind": 1, "attempts": 1, "error": 1,
+        "errorCode": 1, "errorCategory": 1, "createdAt": 1,
     }).sort("createdAt", -1).limit(100).to_list(100)
     return successResponse(data=jsonable_encoder(rows))
 

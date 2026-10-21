@@ -1,4 +1,7 @@
-"""Run separately: python -m app.workers.mail_worker --lane critical|general."""
+"""Production: python -m app.workers.mail_worker --lane critical|general.
+
+Development may run the same durable consumers through the API lifespan.
+"""
 import argparse
 import asyncio
 import contextlib
@@ -15,6 +18,7 @@ from cryptography.fernet import InvalidToken
 import aiosmtplib
 from motor.motor_asyncio import AsyncIOMotorClient
 from app.core.config import get_setting
+from app.core.mail_delivery import mailpit_enabled, smtp_options
 from app.core.crypto import encryptor
 from app.core.security_store import initialize_security_indexes, now, utc, rate_limit
 from app.services.mail_queue import MailQueue, StaleMail, LostLease
@@ -24,22 +28,36 @@ log = logging.getLogger("trakeroo.mail")
 
 
 class RejectedMail(Exception):
-    def __init__(self, code):
+    def __init__(self, code, category="provider_rejected"):
         self.code = int(code)
+        self.category = category
+
+
+def rejection_category(message):
+    """Persist a fixed diagnostic label, never an address or raw SMTP response."""
+    text = str(message).lower()
+    if "quota" in text or "limit exceeded" in text or "too many" in text:
+        return "provider_quota"
+    if "relay" in text:
+        return "relay_denied"
+    if "authenticat" in text or "credential" in text:
+        return "authentication_failed"
+    if "sender" in text or "from address" in text:
+        return "sender_rejected"
+    if "recipient" in text or "no such user" in text or "unknown user" in text:
+        return "recipient_rejected"
+    if "spam" in text or "policy" in text or "blocked" in text:
+        return "provider_policy_rejected"
+    return "provider_rejected"
 
 
 async def smtp_send(payload, message_id, mark_dispatching):
     settings = get_setting()
-    port = int(settings.EMAIL_PORT)
-    mode = settings.MAIL_SMTP_TLS
-    if mode not in {"auto", "tls", "starttls"}:
-        raise ValueError("MAIL_SMTP_TLS must be auto, tls or starttls")
-    implicit = mode == "tls" or mode == "auto" and port == 465
-    smtp = aiosmtplib.SMTP(hostname=settings.EMAIL_HOST, port=port, use_tls=implicit,
-        start_tls=not implicit, validate_certs=True, timeout=settings.MAIL_SMTP_TIMEOUT_SECONDS)
+    capture = mailpit_enabled(settings)
+    smtp = aiosmtplib.SMTP(**smtp_options(settings))
     try:
         await smtp.connect()
-        if settings.EMAIL_USER:
+        if not capture and settings.EMAIL_USER:
             await smtp.login(settings.EMAIL_USER, settings.EMAIL_PASS)
         message = EmailMessage()
         message["Message-ID"] = f"<{message_id}@trakeroo-mail>"
@@ -57,9 +75,9 @@ async def smtp_send(payload, message_id, mark_dispatching):
         try:
             await smtp.send_message(message, sender=payload["fromEmail"], recipients=[payload["recipient"]])
         except aiosmtplib.SMTPRecipientsRefused as error:
-            raise RejectedMail(error.recipients[0].code) from error
+            raise RejectedMail(error.recipients[0].code, rejection_category(error.recipients[0].message)) from error
         except aiosmtplib.SMTPResponseException as error:
-            raise RejectedMail(error.code) from error
+            raise RejectedMail(error.code, rejection_category(error.message)) from error
     finally:
         # Delivery is decided by DATA's response, not by a later QUIT failure.
         with contextlib.suppress(Exception):
@@ -70,6 +88,8 @@ class MailWorker:
     def __init__(self, db, lane, transport=smtp_send):
         self.queue, self.lane, self.transport = MailQueue(db), lane, transport
         self.settings = get_setting()
+        # Fail at worker startup for unsafe configuration, not after claiming mail.
+        smtp_options(self.settings)
         self.owner = uuid.uuid4().hex
         self.stop = asyncio.Event()
 
@@ -114,8 +134,14 @@ class MailWorker:
             state = "uncertain" if uncertain else "failed" if permanent or job["attempts"] >= self.settings.MAIL_MAX_ATTEMPTS else "queued"
             delay = min(3600, 5 * 2 ** (job["attempts"] - 1)) + random.uniform(0, 3)
             # Never log body, recipient, password, OTP or SMTP's raw response.
-            await self.queue.finish(job, state, error=type(error).__name__, retry_in=delay if state == "queued" else None)
-            log.warning("mail_job state=%s id=%s attempt=%d", state, job["_id"], job["attempts"])
+            smtp_code = getattr(error, "code", None)
+            category = getattr(error, "category", None)
+            if isinstance(error, aiosmtplib.SMTPResponseException):
+                category = rejection_category(error.message)
+            await self.queue.finish(job, state, error=type(error).__name__, error_code=smtp_code,
+                error_category=category, retry_in=delay if state == "queued" else None)
+            log.warning("mail_job state=%s id=%s attempt=%d smtp_code=%s category=%s",
+                state, job["_id"], job["attempts"], smtp_code, category)
         return True
 
     async def consume(self):

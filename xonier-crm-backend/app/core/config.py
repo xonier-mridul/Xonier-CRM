@@ -1,6 +1,6 @@
 from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
+from pydantic import Field, model_validator
 from typing import Literal
 
 
@@ -40,7 +40,12 @@ class EnvSettings(BaseSettings):
     AUTH_TAKEOVER_LOCK_SECONDS: int = Field(1800, ge=0)
     AUTH_REFRESH_GRACE_SECONDS: int = Field(10, ge=0, le=30)
 
-    # Durable MongoDB email outbox; delivery runs in a separate worker process.
+    # Durable MongoDB outbox. Local dev runs consumers with the API; production
+    # uses independently supervised worker processes.
+    MAIL_WORKER_MODE: Literal["auto", "external", "embedded"] = "auto"
+    # auto captures locally in development, real TLS SMTP everywhere else.
+    MAIL_DELIVERY_MODE: Literal["auto", "smtp", "mailpit"] = "auto"
+    MAIL_DEV_SMTP_PORT: int = Field(1025, ge=1, le=65535)
     MAIL_SMTP_TLS: Literal["auto", "tls", "starttls"] = "auto"
     MAIL_SMTP_TIMEOUT_SECONDS: int = Field(30, ge=5, le=120)
     MAIL_LEASE_SECONDS: int = Field(180, ge=30)
@@ -91,6 +96,15 @@ class EnvSettings(BaseSettings):
     LIVEKIT_API_KEY: str = ""
     LIVEKIT_API_SECRET: str = ""
     CHAT_MAX_CALL_PARTICIPANTS: int = 16
+
+    @model_validator(mode="after")
+    def validate_development_mail(self):
+        development = self.ENV.strip().lower() in {"development", "dev", "local"}
+        if not development and self.MAIL_DELIVERY_MODE == "mailpit":
+            raise ValueError("Mailpit is development-only; use MAIL_DELIVERY_MODE=smtp in production")
+        if not development and self.MAIL_WORKER_MODE == "embedded":
+            raise ValueError("Embedded mail workers are development-only; use MAIL_WORKER_MODE=external in production")
+        return self
 
 
 

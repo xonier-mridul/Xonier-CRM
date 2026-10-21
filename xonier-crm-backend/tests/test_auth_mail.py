@@ -1,7 +1,8 @@
 """Real MongoDB transaction/race tests. All databases and addresses are synthetic.
 
 AUTH_MAIL_TEST_MONGO_URI must point to a disposable LOCAL replica set. No SMTP
-connection is ever made; delivery is injected/mocked for each worker test.
+connection is ever made unless AUTH_MAIL_TEST_MAILPIT=1 explicitly opts into
+the fixed-loopback local inbox test. No external SMTP is used by any test.
 """
 import asyncio
 import json
@@ -95,6 +96,97 @@ class AuthMailTests(unittest.IsolatedAsyncioTestCase):
             with self.assertRaises(AppException):
                 await chat_auth.authenticate(first["access_token"])
             self.assertEqual((await chat_auth.authenticate(second["access_token"]))["id"], str(self.user.id))
+
+    async def test_local_api_lifecycle_delivers_login_otp_without_separate_worker_command(self):
+        from app.core.mail_runtime import mail_consumers
+        settings = self.queue.settings.model_copy(update={"ENV": "development", "MAIL_WORKER_MODE": "auto"})
+        delivered = asyncio.Event()
+        received = []
+        async def transport(payload, message_id, mark):
+            await mark()
+            received.append(payload)
+            delivered.set()
+        with patch("app.core.mail_runtime.get_setting", return_value=settings):
+            async with mail_consumers(self.db, transport=transport):
+                challenge = await self.auth.begin(self.inputs, client_id="browser-a", ip="127.0.0.1")
+                self.assertEqual(await self.db.auth_challenges.count_documents({"_id": challenge["challengeId"]}), 1)
+                await asyncio.wait_for(delivered.wait(), timeout=8)
+                self.assertEqual(len(received), 1)
+                code = re.search(r"\b([0-9]{6})\b", received[0]["text"]).group(1)
+                signed_in = await self.auth.verify({"challengeId": challenge["challengeId"], "otp": code}, client_id="browser-a")
+                await self.sessions.require(verify_access_token(signed_in["access_token"]))
+        self.assertEqual((await self.db.email_jobs.find_one({"kind": "otp"}))["state"], "sent")
+
+    async def test_stopping_local_consumers_leaves_new_jobs_durable_for_restart(self):
+        from app.core.mail_runtime import mail_consumers
+        settings = self.queue.settings.model_copy(update={"ENV": "development", "MAIL_WORKER_MODE": "auto"})
+        transport = AsyncMock()
+        with patch("app.core.mail_runtime.get_setting", return_value=settings):
+            async with mail_consumers(self.db, transport=transport):
+                pass
+        await self.begin()
+        await asyncio.sleep(0.05)
+        transport.assert_not_awaited()
+        self.assertEqual(await self.db.email_jobs.count_documents({"state": "queued"}), 1)
+
+    @unittest.skipUnless(os.getenv("AUTH_MAIL_TEST_MAILPIT") == "1", "Local Mailpit test not requested")
+    async def test_real_local_inbox_delivers_and_verifies_login_otp(self):
+        import httpx
+        challenge = await self.auth.begin(self.inputs, client_id="browser-a", ip="127.0.0.1")
+        self.assertEqual(await self.db.auth_challenges.count_documents({"_id": challenge["challengeId"]}), 1)
+        settings = self.queue.settings.model_copy(update={"ENV": "development", "MAIL_DELIVERY_MODE": "mailpit",
+            "MAIL_DEV_SMTP_PORT": 1025})
+        with patch("app.workers.mail_worker.get_setting", return_value=settings):
+            await MailWorker(self.db, "critical").once()
+        job = await self.db.email_jobs.find_one({"kind": "otp"})
+        self.assertEqual(job["state"], "sent")
+        async with httpx.AsyncClient(base_url="http://127.0.0.1:8025", trust_env=False, timeout=5) as inbox:
+            response = await inbox.get("/api/v1/search", params={"query": f"message-id:{job['_id']}@trakeroo-mail"})
+            response.raise_for_status()
+            messages = response.json()["messages"]
+            self.assertEqual(len(messages), 1)
+            message_id = messages[0]["ID"]
+            try:
+                message = await inbox.get(f"/api/v1/message/{message_id}")
+                message.raise_for_status()
+                code = re.search(r"\b([0-9]{6})\b", message.json()["Text"]).group(1)
+                tokens = await self.auth.verify({"challengeId": challenge["challengeId"], "otp": code}, client_id="browser-a")
+                await self.sessions.require(verify_access_token(tokens["access_token"]))
+            finally:
+                # Delete only the synthetic message created by this test.
+                cleanup = await inbox.request("DELETE", "/api/v1/messages", json={"IDs": [message_id]})
+                cleanup.raise_for_status()
+
+    async def test_admin_otp_history_includes_login_challenges_without_exposing_secrets(self):
+        from app.services.otp_service import OTPService
+        challenge, code = await self.begin()
+        history = OTPService()
+        with self.assertRaises(AppException) as denied:
+            await history.get_all_otp({"userRole": [{"code": "COMPANY_ADMIN"}]}, {})
+        self.assertEqual(denied.exception.status_code, 403)
+        result = await history.get_all_otp({"userRole": [{"code": "SUPER_ADMIN"}]}, {})
+        self.assertEqual(result["total"], 1)
+        row = result["data"][0]
+        self.assertEqual(row["encrypt_mail"], "alice@example.com")
+        self.assertEqual(row["otp_type"], "login")
+        self.assertEqual(row["otp"], "")
+        self.assertEqual(row["encrypt_opt"], "")
+        self.assertNotIn(challenge["challengeId"], json.dumps(result))
+        for secret in ("otpHash", "passwordFingerprint", "clientHash", "payloadCipher"):
+            self.assertNotIn(secret, row)
+        self.assertEqual((await history.get_all_otp({"userRole": [{"code": "SUPER_ADMIN"}]}, {"page": 2}))["data"], [])
+
+    async def test_smtp_rejection_keeps_only_safe_code_and_category_for_diagnosis(self):
+        await self.begin()
+        async def transport(payload, message_id, mark):
+            await mark()
+            raise RejectedMail(550, "recipient_rejected")
+        await MailWorker(self.db, "critical", transport).once()
+        job = await self.db.email_jobs.find_one({"kind": "otp"})
+        self.assertEqual(job["state"], "failed")
+        self.assertEqual(job["errorCode"], 550)
+        self.assertEqual(job["errorCategory"], "recipient_rejected")
+        self.assertEqual(job["error"], "RejectedMail")
 
     async def test_starting_or_failing_login_does_not_evict_current_session(self):
         first = await self.sign_in()
