@@ -1,0 +1,13 @@
+# LOCAL TEST ONLY. Published ports must be bound to 127.0.0.1.
+# These public, disposable credentials must NEVER be used in production.
+port: 17880
+bind_addresses: ["0.0.0.0"]
+rtc:
+  tcp_port: 17881
+  udp_port: 17882
+  node_ip: 127.0.0.1
+  use_external_ip: false
+keys:
+  previewkey: local-preview-only-not-a-production-secret-123456
+logging:
+  level: warn

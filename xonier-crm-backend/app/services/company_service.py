@@ -1,4 +1,8 @@
 from typing import Dict, Any, Optional
+import hashlib
+import hmac
+from app.core.config import get_setting
+from app.core.security_store import database, rate_limit
 from app.utils.custom_exception import AppException
 from pymongo.errors import DuplicateKeyError
 from app.repositories.company_repository import CompanyRepository
@@ -52,6 +56,10 @@ from app.utils.validate_admin import validate_admin
 
 
 class CompanyService:
+    def _otp_digest(self, email, code):
+        value = f"company-verification:{email.lower()}:{code}"
+        return "sha256:" + hmac.new(get_setting().SECRET_KEY.encode(), value.encode(), hashlib.sha256).hexdigest()
+
     def __init__(self):
         self.repo = CompanyRepository()
         self.client = Client
@@ -215,19 +223,16 @@ class CompanyService:
         otp_doc = OtpModel(
             encrypt_mail=encryptor.encrypt_data(plain_email),
             email=plain_email,
-            otp=otp_str,
-            encrypt_opt=encryptor.encrypt_data(otp_str),
+            otp=self._otp_digest(plain_email, otp_str),
+            encrypt_opt="",  # The queue owns the encrypted delivery payload.
             otp_type=OTP_TYPE.EMAIL_VERIFICATION,
         )
         await otp_doc.insert(session=session)
-
-        # sent = await self.emailManager.send_otp_email(
-        #     to=plain_email,
-        #     otp=otp_code,
-        #     type=OTP_TYPE.EMAIL_VERIFICATION,
-        # )
-        # if not sent:
-        #     raise AppException(502, "Failed to send verification email — please retry")
+        await self.emailManager.send_otp_email(
+            to=plain_email, otp=otp_code, type=OTP_TYPE.EMAIL_VERIFICATION,
+            session=session, key=f"company-verification:{otp_doc.id}", expires_at=otp_doc.expires_at,
+            otp_ref={"collection": "otps", "filter": {"_id": otp_doc.id, "is_used": False}},
+        )
 
     @retry_company_code_collision
     async def create(
@@ -444,6 +449,10 @@ class CompanyService:
     ip_address: Optional[str] = None,
     user_agent: Optional[str] = None,
 ) -> Dict[str, Any]:
+        # Keep counters outside the business transaction: a wrong code rolls
+        # the transaction back, but must never roll its attempt counter back.
+        await rate_limit(database(), f"registration-verify-ip:{ip_address}", 40, 60)
+        await rate_limit(database(), f"registration-verify-user:{payload.userId}", 5, 600)
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
@@ -459,10 +468,12 @@ class CompanyService:
 
                     if user.isEmailVerified:
                         raise AppException(400, "Email is already verified")
+                    if self.encryptor.decrypt_data(user.email).lower() != payload.email.lower():
+                        raise AppException(400, "Verification email does not match this user")
                     with system_query():
                         otp_doc = await self.otpRepo.find_latest_otp(
                             filters={
-                                "email": payload.email,
+                                "email": payload.email.strip().lower(),
                                 "otp_type": OTP_TYPE.EMAIL_VERIFICATION,
                                 "is_used": False,
                             },
@@ -479,7 +490,8 @@ class CompanyService:
                     if datetime.now(timezone.utc) > expires_at:
                         raise AppException(410, "OTP has expired — request a new one")
 
-                    if otp_doc.otp != str(payload.otp):
+                    expected = self._otp_digest(payload.email, str(payload.otp)) if otp_doc.otp.startswith("sha256:") else str(payload.otp)
+                    if not hmac.compare_digest(otp_doc.otp, expected):
                         raise AppException(401, "Invalid OTP")
 
                     otp_doc.is_used = True
@@ -535,6 +547,8 @@ class CompanyService:
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None,
     ) -> Dict[str, Any]:
+        await rate_limit(database(), f"registration-resend-ip:{ip_address}", 20, 300)
+        await rate_limit(database(), f"registration-resend-user:{payload.userId}", 3, 600)
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
@@ -605,7 +619,7 @@ class CompanyService:
                             session=session,
                         )
                     
-                    return {"message": "A new OTP has been sent to your email"}
+                    return {"message": "A new verification email has been queued"}
 
                 except AppException:
                     raise
@@ -895,6 +909,9 @@ class CompanyService:
                 })}}
 
             await collection.update_one({"_id": company.id, "deletedAt": None}, mutation, session=session)
+            if update_data.get("status") in {"inactive", "suspended", "deleted"}:
+                from app.services.auth_sessions import SessionService
+                await SessionService(collection.database).revoke_company(company.id, session=session)
             metadata = dict(update_data)
             if "companyId" in update_data:
                 metadata["previousCompanyId"] = company.companyId
@@ -937,50 +954,12 @@ class CompanyService:
         code = await generate_company_code(CompanyModel.get_pymongo_collection(), company.companyName)
         return {"companyId": code}
 
-    async def update_status(
-        self,
-        company_id: str,
-        status: COMPANY_STATUS,
-        actor: Dict[str, Any],
-        ip_address: Optional[str] = None,
-        user_agent: Optional[str] = None,
-    ) -> Dict[str, Any]:
-        try:
-            company = await self.repo.find_one(
-                filter={"_id": PydanticObjectId(company_id), "deletedAt": None}
-            )
-            if not company:
-                raise AppException(404, "Company not found")
-            if company.status == status:
-                raise AppException(400, f"Company is already in '{status}' status")
+    async def update_status(self, company_id, status, actor, ip_address=None, user_agent=None):
+        # Use the same transaction/audit/session-revocation path as settings.
+        if not validate_admin(actor["userRole"]):
+            raise AppException(403, "Only Super Admin may change company status")
+        return await self.update(company_id, CompanyUpdateSchema(status=status), actor, ip_address, user_agent)
 
-            old_status = company.status
-            await CompanyModel.get_pymongo_collection().update_one(
-                {"_id": company.id, "deletedAt": None}, {"$set": {
-                    "status": status, "updatedAt": datetime.now(timezone.utc),
-                    "updatedBy": DBRef("users", PydanticObjectId(actor["_id"])),
-                }}
-            )
-
-            await self.activityRepo.create(
-                activity_payload(
-                    userId=PydanticObjectId(actor["_id"]),
-                    entityType=ACTIVITY_ENTITY_TYPE.COMPANY.value,
-                    entityId=PydanticObjectId(company_id),
-                    action=ACTIVITY_ACTION.UPDATED.value,
-                    title="Company status changed",
-                    description=f"Status changed from '{old_status}' to '{status}'",
-                    metadata={"from": old_status, "to": status},
-                    ipAddress=ip_address,
-                    userAgent=user_agent,
-                )
-            )
-
-            return {"message": f"Company status updated to '{status}'"}
-        except AppException:
-            raise
-        except Exception as e:
-            raise AppException(500, f"Internal server error: {e}")
 
     async def soft_delete(
         self,
@@ -1010,6 +989,9 @@ class CompanyService:
                             "status": COMPANY_STATUS.DELETED,
                         }}, session=session
                     )
+
+                    from app.services.auth_sessions import SessionService
+                    await SessionService(CompanyModel.get_pymongo_collection().database).revoke_company(company.id, session=session)
 
                     deleted_user = await self.userRepo.bulk_update(
                         filters={

@@ -179,6 +179,8 @@ class QuotationService:
                         terms_conditions=payload.get("termsAndConditions", ""),
                         notes=payload.get("notes", ""),
                         company_logo=COMPANY_LOGO_LINK,
+                        session=session,
+                        queue_key=f"quotation-created:{create.id}",
                
                     )
 
@@ -1004,6 +1006,7 @@ class QuotationService:
                         notes=quotation.notes or "",
                         company_logo=COMPANY_LOGO_LINK,
                         quote_version=quotation.version,
+                        session=session,
                     )
 
                     if not is_send:

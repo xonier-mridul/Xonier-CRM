@@ -90,7 +90,6 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUpdated, camp
 
   const startedRef = useRef(false);
   const autoSwitchedRef = useRef(false);
-  const wsRef = useRef<WebSocket | null>(null);
 
   const sessionId = session?.id;
   const status = session?.status;
@@ -128,65 +127,41 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUpdated, camp
     runRequest();
   };
 
-  // ── follow the call via WebSocket (replaces HTTP polling) ─────────────────
+  // The browser follows persisted call state with its HttpOnly web session.
+  // Never join the phone-only socket: that incorrectly marks a browser as a
+  // connected dialer and requires exposing a bearer token to browser storage.
   useEffect(() => {
     if (!sessionId || disposed || !status || !LIVE_STATUSES.includes(status)) return;
-
-    // Close any previous socket before opening a new one
-    wsRef.current?.close();
-
-    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-    if (!token) return;
-
-    const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL ?? "").replace(/^http/, "ws");
-    const ws = new WebSocket(`${baseUrl}/mobile/ws?token=${token}`);
-    wsRef.current = ws;
-
-    ws.onmessage = (event) => {
+    let stopped = false;
+    let pending = false;
+    let delay = 2000;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const poll = async () => {
+      if (stopped || pending) return;
+      pending = true;
       try {
-        const msg = JSON.parse(event.data as string);
-
-        // Backend pushes session_update when mobile reports call_status
-        if (msg.event === "session_update" && msg.session) {
-          const next: CallSession = msg.session;
-          setSession(next);
-          setMobileOnline(msg.mobileOnline ?? null);
-
-          if (next.status === "dialing") {
-            setDialStartedAtMs((prev) => prev ?? Date.now());
-          }
-          // Jump to dispose tab as soon as call starts / ends
-          if (
-            !autoSwitchedRef.current &&
-            ["dialing", "ended", "failed"].includes(next.status)
-          ) {
-            autoSwitchedRef.current = true;
-            setTab("dispose");
-          }
-          // Call is terminal — no need to keep socket open
-          if (["ended", "failed", "cancelled", "expired"].includes(next.status)) {
-            ws.close();
-          }
+        const response = await CallService.getSession(sessionId);
+        if (stopped) return;
+        const next: CallSession & { mobileOnline?: boolean } = response.data.data;
+        setSession(next);
+        setMobileOnline(next.mobileOnline ?? null);
+        delay = 2000;
+        if (next.status === "dialing") setDialStartedAtMs(value => value ?? Date.now());
+        if (!autoSwitchedRef.current && ["dialing", "ended", "failed"].includes(next.status)) {
+          autoSwitchedRef.current = true;
+          setTab("dispose");
         }
-
-        // Backend pushes call_cancelled when someone cancels from another tab
-        if (msg.event === "call_cancelled" && msg.sessionId === sessionId) {
-          setSession((prev) => prev ? { ...prev, status: "cancelled" } : prev);
-          ws.close();
-        }
-      } catch {
-        // ignore malformed frames
+        if (!LIVE_STATUSES.includes(next.status)) stopped = true;
+      } catch (cause) {
+        if (axios.isAxiosError(cause) && [400, 401, 403, 404].includes(cause.response?.status || 0)) stopped = true;
+        else delay = Math.min(delay * 2, 10000);
+      } finally {
+        pending = false;
+        if (!stopped) timer = setTimeout(() => { void poll(); }, delay);
       }
     };
-
-    ws.onerror = () => {
-      // Silently ignore — socket will be cleaned up in onclose
-    };
-
-    return () => {
-      ws.close();
-      wsRef.current = null;
-    };
+    void poll();
+    return () => { stopped = true; if (timer) clearTimeout(timer); };
   }, [sessionId, status, disposed]);
 
   // ── live timer ────────────────────────────────────────────────────────────

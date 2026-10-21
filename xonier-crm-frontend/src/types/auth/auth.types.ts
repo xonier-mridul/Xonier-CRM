@@ -21,26 +21,20 @@ export interface LoginPayload {
 }
 
 export interface VerifyLoginOtpPayload {
-  email: string;
+  challengeId: string;
   otp: number;
-  password: string;
-  companyId:string;
 }
 export interface VerifyAdminLoginOtpPayload{
-   email: string;
+  challengeId: string;
   otp: number;
-  password: string;
 
 }
 
 export interface ResendLoginOtpPayload {
-  email: string;
-  password: string;
-  companyId?:string
+  challengeId: string;
 }
 export interface ResendAdminLoginOtpPayload {
-  email: string;
-  password: string;
+  challengeId: string;
 }
 
 export interface changePasswordPayload {

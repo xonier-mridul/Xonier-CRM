@@ -12,17 +12,15 @@ export function proxy(request: NextRequest){
    
     
 
-    if(PROTECTED_ROUTES.some((item)=> pathname.startsWith(item) && !accessToken)){
+    if(PROTECTED_ROUTES.some((item)=> pathname.startsWith(item) && !accessToken && !refreshToken)){
        
         const loginUrl = new URL("/login", request.url)
 
         return NextResponse.redirect(loginUrl)
     }
 
-    if(pathname.startsWith("/login") && accessToken){
-        const dashboardUrl = new URL("/dashboard", request.url)
-        return NextResponse.redirect(dashboardUrl)
-    }
+    // A cookie can belong to a revoked session. Only the API may establish
+    // whether it is active; never bounce the login page on cookie presence.
 
     return NextResponse.next()
 }

@@ -2,6 +2,7 @@ import time
 from typing import Any, Dict, Set
 
 from fastapi import WebSocket
+from app.services.auth_sessions import SessionService
 
 
 class ConnectionManager:
@@ -45,6 +46,7 @@ class ConnectionManager:
         delivered = False
         for ws in list(self._sockets.get(user_id, ())):
             try:
+                await SessionService().require(ws.scope.get("auth_payload"))
                 await ws.send_json(message)
                 delivered = True
             except Exception:

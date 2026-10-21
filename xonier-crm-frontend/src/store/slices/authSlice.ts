@@ -14,25 +14,34 @@ const authSlice = createSlice({
     reducers: {
        login: (state, action: PayloadAction<any>) => {
         state.isAuthenticated = true;
-        state.user = action.payload;
+        const { accessToken, refreshToken, access_token, refresh_token, password, ...profile } = action.payload;
+        state.user = profile;
+        state.isAdmin = profile.userRole?.some((role: { code: string }) => role.code === "SUPER_ADMIN") ?? false;
         // Persist to localStorage
         if (typeof window !== "undefined") {
-          localStorage.setItem("auth_user", JSON.stringify(action.payload));
+          try { localStorage.setItem("auth_user", JSON.stringify(profile)); } catch { /* Storage may be disabled. */ }
         }
        },
        setAuthState: (state, action: PayloadAction<any>) => {
         state.isAuthenticated = true;
-        state.user = action.payload;
+        const { accessToken, refreshToken, access_token, refresh_token, password, ...profile } = action.payload;
+        state.user = profile;
+        state.isAdmin = profile.userRole?.some((role: { code: string }) => role.code === "SUPER_ADMIN") ?? false;
        },
        setIsAdmin: (state) => {
          state.isAdmin = true;
        },
        logout: (state) => {
         state.isAuthenticated = false;
+        state.isAdmin = false;
         state.user = null;
         // Clear persisted state
         if (typeof window !== "undefined") {
-          localStorage.removeItem("auth_user");
+          try {
+            localStorage.removeItem("auth_user");
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("refresh_token");
+          } catch { /* Storage may be disabled. */ }
         }
        }
     }

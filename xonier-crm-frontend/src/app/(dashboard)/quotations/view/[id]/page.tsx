@@ -186,7 +186,7 @@ const Page = (): JSX.Element => {
     try {
       const result = await QuoteService.resend(id);
       if (result.status === 200) {
-        toast.success("Quotation resent successfully");
+        toast.success("Quotation email queued for redelivery");
         await getQuoteData(id);
       }
     } catch (error) {

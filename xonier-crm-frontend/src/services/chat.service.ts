@@ -11,6 +11,9 @@ export const chatApi = {
   capabilities: () => api.get<Envelope<Capabilities>>("/chat/capabilities").then(unwrap),
   users: (search = "") => api.get<Envelope<ChatUser[]>>("/chat/users", { params: { search } }).then(unwrap),
   conversations: () => api.get<Envelope<Conversation[]>>("/chat/conversations").then(unwrap),
+  updateConversation: (cid: string, payload: { version: number; name?: string; description?: string; ownerId?: string; archived?: boolean }) =>
+    api.patch<Envelope<Conversation>>(path(cid), payload).then(unwrap),
+  presenceBatch: (ids: string[]) => api.get<Envelope<{ onlineIds: string[] }>>("/chat/presence", { params: { userIds: ids.join(",") } }).then(unwrap),
   discover: () => api.get<Envelope<Pick<Conversation, "id" | "name" | "description">[]>>("/chat/channels/discover").then(unwrap),
   create: (payload: { kind: Conversation["kind"]; name: string; description: string; visibility: "private" | "public"; memberIds: string[] }) =>
     api.post<Envelope<Conversation>>("/chat/conversations", payload).then(unwrap),
@@ -19,7 +22,7 @@ export const chatApi = {
   removeMember: (cid: string, uid: string) => api.delete(`${path(cid)}/members/${uid}`),
   messages: (cid: string, params: { before?: number; after?: number; parentId?: string; search?: string } = {}) =>
     api.get<Envelope<{ items: ChatMessage[]; hasMore: boolean }>>(`${path(cid)}/messages`, { params }).then(unwrap),
-  send: (cid: string, command: SendMessage) => api.post<Envelope<ChatMessage>>(`${path(cid)}/messages`, command).then(unwrap),
+  send: (cid: string, command: SendMessage) => api.post<Envelope<ChatMessage>>(`${path(cid)}/messages`, command, { timeout: 15000 }).then(unwrap),
   edit: (cid: string, mid: string, text: string, version: number) => api.patch<Envelope<ChatMessage>>(`${path(cid)}/messages/${mid}`, { text, version }).then(unwrap),
   delete: (cid: string, mid: string) => api.delete<Envelope<ChatMessage>>(`${path(cid)}/messages/${mid}`).then(unwrap),
   reaction: (cid: string, mid: string, emoji: string) => api.post<Envelope<ChatMessage>>(`${path(cid)}/messages/${mid}/reactions`, { emoji }).then(unwrap),
@@ -28,8 +31,9 @@ export const chatApi = {
   ticket: () => api.post<Envelope<{ ticket: string }>>("/chat/ws-ticket").then(unwrap),
   calls: (cid: string) => api.get<Envelope<ChatCall[]>>(`${path(cid)}/calls`).then(unwrap),
   startCall: (cid: string, kind: "voice" | "video") => api.post<Envelope<ChatCall>>(`${path(cid)}/calls`, { kind }).then(unwrap),
-  joinCall: (cid: string, callId: string) => api.post<Envelope<JoinCall>>(`${path(cid)}/calls/${callId}/join`).then(unwrap),
+  joinCall: (cid: string, callId: string) => api.post<Envelope<JoinCall>>(`${path(cid)}/calls/${callId}/join`, {}, { timeout: 15000 }).then(unwrap),
   endCall: (cid: string, callId: string) => api.post(`${path(cid)}/calls/${callId}/end`),
+  callConnected: (cid: string, callId: string) => api.post(`${path(cid)}/calls/${callId}/connected`),
   declineCall: (cid: string, callId: string) => api.post(`${path(cid)}/calls/${callId}/decline`),
   file: (cid: string, fid: string) => api.get<Envelope<Attachment>>(`${path(cid)}/files/${fid}`).then(unwrap),
   download: (cid: string, fid: string) => api.get<Envelope<{ url: string }>>(`${path(cid)}/files/${fid}/download`).then(unwrap),

@@ -1,6 +1,7 @@
 
 node_modules/
 .next/
+.next-ui-preview/
 out/
 dist/
 build/

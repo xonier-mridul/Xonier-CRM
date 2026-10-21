@@ -2,10 +2,12 @@ from fastapi import HTTPException, status
 
 
 class AppException(Exception):
-    def __init__(self, status_code: int = 400, message: str = "Something went wrong",clear_cookies: bool = False ):
+    def __init__(self, status_code: int = 400, message: str = "Something went wrong",clear_cookies: bool = False, code: str | None = None, retry_after: int | None = None):
         self.message = message
         self.status_code = status_code
         self.clear_cookies = clear_cookies
+        self.code = code
+        self.retry_after = retry_after
         super().__init__(message)
 
 

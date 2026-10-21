@@ -15,6 +15,7 @@ mobileService = MobileService()
 # the logged-in user inside MobileService (no admin permissions needed).
 _auth_deps = [
     Depends(dependencies.authorized),
+    Depends(dependencies.mobile_session),
     Depends(dependencies.company_active),
     Depends(dependencies.company_context),
     Depends(dependencies.feature_access(FEATURE.CRM)),

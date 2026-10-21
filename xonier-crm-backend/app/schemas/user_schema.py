@@ -168,99 +168,20 @@ class UpdateUserStatusSchema(BaseModel):
     status: USER_STATUS
     
 class ResendAdminOTPSchema(BaseModel):
-    
-    email: EmailStr
-    password: Password
+    challengeId: str = Field(min_length=32, max_length=128)
 
-    @field_validator("password")
-    @classmethod
-    def strong_password33(cls, v: str):
-        rules = {
-            "lowercase": any(c.islower() for c in v),
-            "uppercase": any(c.isupper() for c in v),
-            "digit": any(c.isdigit() for c in v),
-            "special": any(c in "@$!%*.?&#" for c in v),
-            "length": len(v) >= 8,
-        }
 
-        if not all(rules.values()):
-            raise ValueError(
-                "Password must contain uppercase, lowercase, digit, special character and be at least 8 characters long"
-            )
+class ResendOTPSchema(ResendAdminOTPSchema):
+    pass
 
-        return v
-    
-class ResendOTPSchema(BaseModel):
-    companyId: str
-    email: EmailStr
-    password: Password
 
-    @field_validator("password")
-    @classmethod
-    def strong_password33(cls, v: str):
-        rules = {
-            "lowercase": any(c.islower() for c in v),
-            "uppercase": any(c.isupper() for c in v),
-            "digit": any(c.isdigit() for c in v),
-            "special": any(c in "@$!%.*?&#" for c in v),
-            "length": len(v) >= 8,
-        }
+class VerifyAdminLoginOtpSchema(ResendAdminOTPSchema):
+    otp: int = Field(ge=100000, le=999999)
 
-        if not all(rules.values()):
-            raise ValueError(
-                "Password must contain uppercase, lowercase, digit, special character and be at least 8 characters long"
-            )
 
-        return v
-    
-class VerifyAdminLoginOtpSchema(BaseModel):
-    
-    email: EmailStr
-    otp: Otp
-    password: Password
+class VerifyLoginOtpSchema(VerifyAdminLoginOtpSchema):
+    pass
 
-    @field_validator("password")
-    @classmethod
-    def strong_password3(cls, v: str):
-        rules = {
-            "lowercase": any(c.islower() for c in v),
-            "uppercase": any(c.isupper() for c in v),
-            "digit": any(c.isdigit() for c in v),
-            "special": any(c in "@$!%.*?&#" for c in v),
-            "length": len(v) >= 8,
-        }
-
-        if not all(rules.values()):
-            raise ValueError(
-                "Password must contain uppercase, lowercase, digit, special character and be at least 8 characters long"
-            )
-
-        return v
-    
-class VerifyLoginOtpSchema(BaseModel):
-    companyId: str
-    email: EmailStr
-    otp: Otp
-    password: Password
-
-    @field_validator("password")
-    @classmethod
-    def strong_password3(cls, v: str):
-        rules = {
-            "lowercase": any(c.islower() for c in v),
-            "uppercase": any(c.isupper() for c in v),
-            "digit": any(c.isdigit() for c in v),
-            "special": any(c in "@$!%.*?&#" for c in v),
-            "length": len(v) >= 8,
-        }
-
-        if not all(rules.values()):
-            raise ValueError(
-                "Password must contain uppercase, lowercase, digit, special character and be at least 8 characters long"
-            )
-
-        return v
-    
 
 class ResetPasswordSchema(BaseModel):
     oldPassword: Password
@@ -306,6 +227,7 @@ class ForgotPasswordSchema(BaseModel):
         return v
 
 class ForgotPassOtpSchema(BaseModel):
+    challengeId: str = Field(min_length=32, max_length=128)
     email: EmailStr
     companyId: str
     otp: str

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   MdEmail,
   MdCheckCircle,
@@ -112,6 +112,7 @@ const BulkMailModal = ({ leads, onClose }: { leads: Prospect[]; onClose: () => v
   const [mailText, setMailText] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const sendIntent = useRef<{ payload: string; key: string } | null>(null);
 
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
@@ -209,6 +210,7 @@ const BulkMailModal = ({ leads, onClose }: { leads: Prospect[]; onClose: () => v
   // ── Send ──
 
   const handleSend = async () => {
+    if (isSending || sent) return;
     if (!subject.trim() || !mailText.trim()) { toast.warning("Please fill in subject and message"); return; }
     if (extractedVariables.length > 0 && !isVariablesComplete()) { toast.warning("Please configure all variables"); return; }
 
@@ -217,14 +219,18 @@ const BulkMailModal = ({ leads, onClose }: { leads: Prospect[]; onClose: () => v
       const payload = buildBulkMailPayload(
         selectedTemplate?.id || "", leads, variableConfig, CONSTANT_VARS, getLeadFieldValue
       );
-      const response = await MailService.bulkMail(payload);
+      const serialized = JSON.stringify(payload);
+      if (sendIntent.current?.payload !== serialized) {
+        sendIntent.current = { payload: serialized, key: crypto.randomUUID() };
+      }
+      const response = await MailService.bulkMail(payload, sendIntent.current.key);
       const result = response.data;
       if (result?.success) {
-        const s = result?.data?.success_count || 0;
+        const s = result?.data?.queued_count || 0;
         const f = result?.data?.failed_count || 0;
         setSent(true);
-        if (f === 0) toast.success(`All ${s} emails sent successfully`);
-        else if (s > 0) toast.warning(`${s} sent, ${f} failed`);
+        if (f === 0) toast.success(`All ${s} emails queued for delivery`);
+        else if (s > 0) toast.warning(`${s} queued, ${f} failed`);
         else toast.error("All emails failed to send");
         setTimeout(onClose, 1500);
       } else {
@@ -656,7 +662,7 @@ const SendButton = ({
     {isSending ? (
       <><AiOutlineLoading3Quarters className="w-4 h-4 animate-spin" /> {t("sending")}</>
     ) : sent ? (
-      <><MdCheckCircle className="w-4 h-4" /> {t("sent_2")}</>
+      <><MdCheckCircle className="w-4 h-4" /> Queued</>
     ) : (
       `Send to ${count} lead${count !== 1 ? "s" : ""}`
     )}

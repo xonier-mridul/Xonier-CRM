@@ -1,7 +1,6 @@
-import aiosmtplib
+from app.services.mail_queue import MailQueue
 from app.config.email_config import EMAIL_USER, EMAIL_HOST, EMAIL_PASS, EMAIL_PORT, FROM_EMAIL
 from app.core.enums import OTP_TYPE
-from email.message import EmailMessage
 from app.templates.email_template import otp_template
 from app.templates.quotation_template import quotation_template
 from typing import Optional, List, Dict
@@ -15,44 +14,14 @@ class EmailManager:
         self.email_port = EMAIL_PORT
         self.from_email = FROM_EMAIL
 
-    async def send_otp_email(self, to: str, otp: int, type: OTP_TYPE):
-        match type:
-            case OTP_TYPE.EMAIL_VERIFICATION:
-                subject = "OTP for email verification"
+    async def send_otp_email(self, to, otp, type, *, session=None, key=None, expires_at=None, otp_ref=None):
+        purpose = getattr(type, "value", type)
+        subject = "OTP for login" if purpose == "login" else "OTP for email verification" if purpose == "email_verification" else "OTP for password reset"
+        return await MailQueue().enqueue(to=[to], subject=subject,
+            text=f"Your verification code is {otp}. Never share this code.",
+            html=otp_template(title=subject, otp_code=otp), kind="otp", key=key,
+            expires_at=expires_at, otp_ref=otp_ref, session=session)
 
-            case OTP_TYPE.LOGIN:
-                subject = "OTP for login"
-
-            case OTP_TYPE.PASSWORD_RESET:
-                subject = "OTP for password reset"
-
-            case _:
-                raise ValueError(f"Unsupported OTP type: {type}")
-
-        body = otp_template(title=subject, otp_code=otp)
-
-        message = EmailMessage()
-        message["Subject"] = subject
-        message["From"] = self.from_email
-        message["To"] = to
-        message.set_content(f"your verification otp is {otp}")
-        message.add_alternative(body, subtype="html")
-
-        try:
-            await aiosmtplib.send(
-                message,
-                hostname=self.email_host,
-                port=465,
-                username=self.email_user,
-                password=self.email_pass,
-                use_tls=True
-            )
-            return True
-        
-        except Exception as e:
-            print("email error: ", e)
-            return False
-        
     async def send_quotation_email(
         self,
         to: str,
@@ -86,6 +55,8 @@ class EmailManager:
         quote_version: int = 1,
         cc: Optional[List[str]] = None,
         bcc: Optional[List[str]] = None,
+        session=None,
+        queue_key=None,
     ):
         subject = f"Quotation #{quote_id} – {title}"
 
@@ -122,60 +93,9 @@ class EmailManager:
         
             
 
-        message = EmailMessage()
-        message["Subject"] = subject
-        message["From"] = self.from_email
-        message["To"] = to
-        
-
-        if cc:
-            message["Cc"] = ", ".join(cc)
-        
-
-        if bcc:
-            message["Bcc"] = ", ".join(bcc)
-        
-
-        plain_text = f"""
-        Quotation #{quote_id}
-        
-        Dear {customer_name},
-        
-        Thank you for your interest! Please find your quotation details below:
-        
-        Title: {title}
-        Issue Date: {issue_date}
-        Valid Until: {valid_until}
-        
-        Subtotal: ${sub_total:,.2f}
-        
-        Total: ${total:,.2f}
-        
-        For the complete quotation with full details, please view this email in an HTML-compatible email client.
-        
-        If you have any questions, please don't hesitate to contact us.
-        
-        Best regards,
-        Your Company Team
-        """
-        
-        message.set_content(plain_text)
-        message.add_alternative(body, subtype="html")
-        
-        try:
-            await aiosmtplib.send(
-                message,
-                hostname=self.email_host,
-                port=self.email_port,
-                username=self.email_user,
-                password=self.email_pass,
-                # use_tls=True
-                start_tls=True
-            )
-            return True
-        except Exception as e:
-            print(f"Quotation email error: {e}")
-            return False
+        return await MailQueue().enqueue(to=[to], cc=cc, bcc=bcc, subject=subject,
+            text=f"Quotation #{quote_id}: {title}. Total: {total:,.2f} {currency_code}. View details: {link}",
+            html=body, kind="transactional", key=queue_key, session=session)
 
 
         

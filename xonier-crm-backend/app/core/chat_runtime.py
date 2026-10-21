@@ -28,6 +28,7 @@ class Socket:
     ws: WebSocket
     actor: dict
     queue: asyncio.Queue = field(default_factory=lambda: asyncio.Queue(maxsize=100))
+    connection_id: str = field(default_factory=lambda: secrets.token_hex(16))
 
 
 class ChatRuntime:
@@ -101,14 +102,25 @@ class ChatRuntime:
         raw = await self.redis.getdel(f"{self.prefix}:ticket:{ticket}")
         return json.loads(raw) if raw else None
 
-    async def presence(self, actor):
-        await self.redis.set(f"{self.prefix}:presence:{actor['company']}:{actor['id']}", "1", ex=65)
+    async def presence(self, actor, connection_id="legacy"):
+        key = f"{self.prefix}:active:{actor['company']}:{actor['id']}"
+        stamp = now().timestamp()
+        async with self.redis.pipeline(transaction=True) as pipe:
+            pipe.zremrangebyscore(key, "-inf", stamp - 50)
+            pipe.zadd(key, {connection_id: stamp})
+            pipe.expire(key, 65)
+            await pipe.execute()
+
+    async def offline(self, actor, connection_id):
+        await self.redis.zrem(f"{self.prefix}:active:{actor['company']}:{actor['id']}", connection_id)
 
     async def online(self, company, users):
         if not users:
             return []
-        keys = [f"{self.prefix}:presence:{company}:{u}" for u in users]
-        values = await self.redis.mget(keys)
+        async with self.redis.pipeline(transaction=False) as pipe:
+            for uid in users:
+                pipe.zcount(f"{self.prefix}:active:{company}:{uid}", now().timestamp() - 50, "+inf")
+            values = await pipe.execute()
         return [u for u, value in zip(users, values) if value]
 
     async def broadcast(self, actor, conversation_id, event, data):
@@ -175,7 +187,7 @@ class ChatRuntime:
                     {"$set": {"availableAt": now() + timedelta(seconds=30)}, "$inc": {"attempts": 1}},
                     return_document=ReturnDocument.AFTER, sort=[("createdAt", 1)])
                 if not event:
-                    await asyncio.sleep(0.5)
+                    await asyncio.sleep(0.1)
                     continue
                 await self.redis.publish(self.channel, json.dumps({"eventId": str(event["_id"]),
                     "event": event["event"], "company": str(event["companyId"]),

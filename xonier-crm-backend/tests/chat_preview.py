@@ -1,7 +1,8 @@
 """Opt-in localhost UI fixture. Uses synthetic users and IN-MEMORY data only.
 
 CHAT_PREVIEW=1 venv/bin/python tests/chat_preview.py
-Not a production entry point. No application database/storage/media connections.
+Not a production entry point. No application database/storage connections.
+CHAT_PREVIEW_LOCAL_MEDIA=1 permits only the disposable loopback LiveKit fixture.
 """
 import asyncio
 import os
@@ -14,6 +15,9 @@ if os.environ.get("CHAT_PREVIEW") != "1":
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from chat_test_env import seed_test_settings
 seed_test_settings()
+if os.environ.get("CHAT_PREVIEW_LOCAL_MEDIA") == "1":
+    os.environ.update(LIVEKIT_URL="ws://127.0.0.1:17880", LIVEKIT_API_KEY="previewkey",
+        LIVEKIT_API_SECRET="local-preview-only-not-a-production-secret-123456")
 
 import uvicorn
 from bson import ObjectId
@@ -36,7 +40,8 @@ company = ObjectId("000000000000000000000001")
 alice = "000000000000000000000011"
 bob = "000000000000000000000012"
 carol = "000000000000000000000013"
-names = {alice: "Alice Sharma", bob: "Bob Singh", carol: "Carol Patel"}
+names = {alice: "Alice Sharma", bob: "Bob Singh", carol: "Carol Patel",
+    "000000000000000000000014": "David Chen", "000000000000000000000015": "Sara Wilson"}
 
 
 async def authenticate(token):
@@ -74,6 +79,8 @@ async def lifespan(app):
     await svc.send(general["id"], MessageCreate(clientId=uuid4(), text="Welcome to our team space 👋\nLet's keep ideas, decisions and project updates together."))
     await bob_service.send(general["id"], MessageCreate(clientId=uuid4(), text="Looks great! We can use threads for project discussions and keep this channel focused."))
     await svc.create(ConversationCreate(kind="dm", memberIds=[bob]))
+    await svc.send(general["id"], MessageCreate(clientId=uuid4(), text="Release readiness checklist\n\n" + "Keep the owner, delivery date, review notes and decision in this channel. Follow up in a thread when details need more room.\n" * 35))
+    await chat_runtime.presence(await authenticate("preview-bob"), "preview-phone")
     yield
     await chat_runtime.stop()
 
@@ -81,6 +88,18 @@ async def lifespan(app):
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:3100", "http://127.0.0.1:3100"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 app.include_router(chat_route.router)
+
+
+@app.middleware("http")
+async def synthetic_latency(request, call_next):
+    if request.method == "POST" and request.url.path.endswith("/messages"):
+        await asyncio.sleep(float(os.getenv("CHAT_PREVIEW_MESSAGE_DELAY", "0")))
+    return await call_next(request)
+
+
+@app.get("/api/auth/session")
+async def active_session():
+    return {"success": True, "data": {"active": True}}
 
 
 @app.exception_handler(AppException)
@@ -101,5 +120,10 @@ async def unread():
     return {"success": True, "data": {"unreadCount": 0}}
 
 
+@app.get("/api/v1/notifications/")
+async def notifications():
+    return {"success": True, "data": {"data": [], "page": 1, "limit": 20, "total": 0, "totalPages": 0}}
+
+
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=int(os.getenv("CHAT_PREVIEW_PORT", "8137")))

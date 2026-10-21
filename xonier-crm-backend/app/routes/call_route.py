@@ -1,4 +1,7 @@
 from typing import Literal, Optional
+import asyncio
+from contextlib import suppress
+from app.services.auth_sessions import SessionService
 
 from beanie import PydanticObjectId
 from fastapi import APIRouter, Depends, Query, Request, WebSocket, WebSocketDisconnect
@@ -10,6 +13,7 @@ from app.core.enums import FEATURE
 from app.core.tenant import system_query
 from app.core.ws_manager import manager
 from app.repositories.user_repository import UserRepository
+from app.repositories.company_repository import CompanyRepository
 from app.services.call_service import CallService
 from app.utils.custom_exception import AppException
 from app.utils.custom_response import successResponse
@@ -50,7 +54,7 @@ class CallStatusSchema(BaseModel):
 # ═══════════════════════════════════════════════════════════════════════════════
 
 web_router = APIRouter()
-_web_deps = [*_base_deps, Depends(dependencies.permissions(["lead:read"]))]
+_web_deps = [*_base_deps, Depends(dependencies.web_session), Depends(dependencies.permissions(["lead:read"]))]
 
 
 @web_router.post("/request", status_code=201, dependencies=_web_deps)
@@ -102,16 +106,17 @@ async def dispose_call_session(request: Request, session_id: str, payload: CallD
 # ═══════════════════════════════════════════════════════════════════════════════
 
 mobile_router = APIRouter()
+_mobile_deps = [*_base_deps, Depends(dependencies.mobile_session)]
 
 
-@mobile_router.get("/calls/pending", status_code=200, dependencies=_base_deps)
+@mobile_router.get("/calls/pending", status_code=200, dependencies=_mobile_deps)
 async def pending_call(request: Request):
     """Polling fallback: returns the newest call request waiting for this phone (or null)."""
     result = await callService.pending_for_agent(request.state.user)
     return successResponse(200, "Pending call fetched", {"session": result})
 
 
-@mobile_router.post("/calls/{session_id}/status", status_code=200, dependencies=_base_deps)
+@mobile_router.post("/calls/{session_id}/status", status_code=200, dependencies=_mobile_deps)
 async def report_call_status(request: Request, session_id: str, payload: CallStatusSchema):
     """Mobile reports progress: received -> dialing -> ended (with durationSec) | failed (with reason)."""
     result = await callService.mobile_update(
@@ -129,14 +134,24 @@ async def _ws_user(websocket: WebSocket, token: Optional[str]):
     if not token:
         return None
     payload = verify_access_token(token)
-    if not payload:
+    if (not payload or payload.get("sessionType") != "mobile" or "origin" in websocket.headers
+            or any(key.startswith("sec-fetch-") for key in websocket.headers)):
         return None
+    try:
+        await SessionService().require(payload)
+    except AppException:
+        return None
+    websocket.scope["auth_payload"] = payload
     with system_query():
         user = await UserRepository().find_by_id(PydanticObjectId(payload["_id"]), ["userRole"])
     if not user or not getattr(user, "companyId", None):
         return None
+    with system_query():
+        company = await CompanyRepository().find_by_id(user.companyId)
+    if not company or company.status != "active" or company.deletedAt:
+        return None
     user = jsonable_encoder(user, exclude={"password", "refreshToken"})
-    if str(user.get("status", "")).lower() in ("deleted", "suspended"):
+    if str(user.get("status", "")).lower() != "active":
         return None
     return user
 
@@ -160,6 +175,16 @@ async def mobile_socket(websocket: WebSocket, token: Optional[str] = Query(None)
 
     uid = str(user["_id"])
     await manager.connect(uid, websocket)
+    async def check_session():
+        while True:
+            await asyncio.sleep(5)
+            try:
+                await SessionService().require(websocket.scope["auth_payload"])
+            except Exception:
+                with suppress(Exception):
+                    await websocket.close(code=4401)
+                return
+    guard = asyncio.create_task(check_session())
     try:
         await websocket.send_json({"event": "connected"})
         pending = await callService.pending_for_agent(user)
@@ -168,6 +193,7 @@ async def mobile_socket(websocket: WebSocket, token: Optional[str] = Query(None)
 
         while True:
             message = await websocket.receive_json()
+            await SessionService().require(websocket.scope["auth_payload"])
             manager.touch(uid)
             kind = message.get("type") if isinstance(message, dict) else None
             if kind == "ping":
@@ -186,7 +212,12 @@ async def mobile_socket(websocket: WebSocket, token: Optional[str] = Query(None)
                     await websocket.send_json({"event": "error", "message": e.message})
     except WebSocketDisconnect:
         pass
+    except AppException:
+        with suppress(Exception):
+            await websocket.close(code=4401)
     except Exception:
         pass
     finally:
+        guard.cancel()
+        await asyncio.gather(guard, return_exceptions=True)
         manager.disconnect(uid, websocket)

@@ -38,6 +38,14 @@ class MessageCreate(Command):
         return self
 
 
+class ConversationUpdate(Command):
+    version: int = Field(ge=1)
+    name: str | None = Field(default=None, min_length=1, max_length=80)
+    description: str | None = Field(default=None, max_length=500)
+    ownerId: str | None = Field(default=None, pattern=r"^[0-9a-f]{24}$")
+    archived: bool | None = None
+
+
 class MessageEdit(Command):
     text: str = Field(min_length=1, max_length=10000)
     version: int = Field(ge=1)

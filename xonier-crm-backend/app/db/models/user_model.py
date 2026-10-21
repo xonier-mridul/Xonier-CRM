@@ -4,6 +4,7 @@ from pydantic import Field, field_validator, model_validator
 from typing import Optional, List, TYPE_CHECKING
 from app.core.security import hash_password, hash_value, verify_password
 import re
+import secrets
 from app.core.crypto import encryptor
 from app.utils.custom_exception import AppException
 from app.core.enums import USER_STATUS
@@ -127,29 +128,31 @@ class UserModel(BaseDocument):
     def compare_password(self, password: str)-> bool:
         return verify_password(password, self.password)
     
-    def generate_access_token(self):
-        expire = datetime.now(timezone.utc) + timedelta(days=float(EnvSettings.ACCESS_TOKEN_EXPIRY))
+    def generate_access_token(self, *, session_id: str, session_type: str = "web"):
+        expire = datetime.now(timezone.utc) + timedelta(seconds=EnvSettings.AUTH_ACCESS_SECONDS)
         payload = {
             "_id": str(self.id),
             "hashEmail": self.hashedEmail,
             "iat": datetime.now(timezone.utc),
             "exp": expire,
-            "type": "access"
+            "type": "access",
+            "sid": session_id, "sessionType": session_type, "jti": secrets.token_urlsafe(24)
         }
 
-        return jwt.encode(payload, EnvSettings.ACCESS_TOKEN_SECRET, algorithm="HS256")
+        return jwt.encode(payload, EnvSettings.ACCESS_TOKEN_SECRET, algorithm=EnvSettings.ALGORITHM)
     
-    def generate_refresh_token(self):
-        expire = datetime.now(timezone.utc) + timedelta(days=float(EnvSettings.REFRESH_TOKEN_EXPIRY))
+    def generate_refresh_token(self, *, session_id: str, session_type: str = "web", expires_at=None):
+        expire = expires_at or datetime.now(timezone.utc) + timedelta(days=float(EnvSettings.REFRESH_TOKEN_EXPIRY))
         payload = {
             "_id": str(self.id),
             "hashEmail": self.hashedEmail,
             "iat": datetime.now(timezone.utc),
             "exp": expire,
-            "type": "refresh"
+            "type": "refresh",
+            "sid": session_id, "sessionType": session_type, "jti": secrets.token_urlsafe(24)
         }
 
-        return jwt.encode(payload, EnvSettings.REFRESH_TOKEN_SECRET, algorithm="HS256")
+        return jwt.encode(payload, EnvSettings.REFRESH_TOKEN_SECRET, algorithm=EnvSettings.ALGORITHM)
     
 
 
