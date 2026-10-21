@@ -12,7 +12,7 @@ import { SIDEBAR_WIDTH } from "@/src/constants/constants";
 import { HiOutlineAdjustments } from "react-icons/hi";
 import { SlCalender } from "react-icons/sl";
 import { TbNotes, TbMoneybag } from "react-icons/tb";
-import { BsBarChart, BsBuildingGear } from "react-icons/bs";
+import { BsBarChart, BsBuildingGear, BsChatDots } from "react-icons/bs";
 import { MdEmail, MdKeyboardDoubleArrowRight, MdOutlineHelpOutline, MdOutlineLogout, MdOutlineNotificationsActive } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import ConfirmPopup from "../ui/ConfirmPopup";
@@ -124,7 +124,7 @@ const SideBar = () => {
     if (pathname.startsWith("/emailManagement/template") || pathname.startsWith("/emailManagement/outbox")) {
       setOpenMenu("emailManagement")
     }
-    if (pathname.startsWith("/message") || pathname.startsWith("/telephone")) {
+    if (pathname.startsWith("/chat") || pathname.startsWith("/communication") || pathname.startsWith("/message") || pathname.startsWith("/telephone")) {
       setOpenMenu("communication")
     }
     if (pathname.startsWith("/task")) {
@@ -180,7 +180,7 @@ const SideBar = () => {
       case "emailManagement":
         return pathname.startsWith("/templates") || pathname.startsWith("/emailManagement") || pathname.startsWith("/outbox");
       case "communication":
-        return pathname.startsWith("/message") || pathname.startsWith("/telephone");
+        return pathname.startsWith("/chat") || pathname.startsWith("/communication") || pathname.startsWith("/message") || pathname.startsWith("/telephone");
       case "task":
         return pathname.startsWith("/task")|| pathname.startsWith("/category") || pathname.startsWith("/status")|| pathname.startsWith("/reports") || pathname.startsWith("/report/create");
       default:
@@ -859,7 +859,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                 )}
               </AnimatePresence>
             </li>}
-            {(hasPermission(PERMISSIONS.readClient)&&  (hasFeature(FEATURES.CRM)) && !auth.isAdmin) && <li>
+            {(hasPermission(PERMISSIONS.readClient) &&  (hasFeature(FEATURES.CRM)) && !auth.isAdmin) && <li>
               <Link
                 href="/clients"
                 className={`${isActive("/clients")
@@ -873,7 +873,48 @@ const isSuperAdmin = auth.user?.userRole?.some(
                 {t("clients")}
               </Link>
             </li>}
-              {!auth.isAdmin && auth.user?.companyId && <li><ChatNavLink /></li>}
+            {!auth.isAdmin && auth.user?.companyId && 
+            <li>
+              <button
+                type="button"
+                onClick={() => toggleMenu("communication")}
+                aria-expanded={openMenu === "communication"}
+                aria-controls="communication-submenu"
+                className={`${isMenuActive("communication")
+                  ? "dark:text-cyan-300 text-cyan-700 border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                  : "border-l-2 border-transparent"
+                  } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
+              >
+                <span className="flex items-center gap-3">
+                  <span className={`${isMenuActive("communication") ? "bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400 w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl" : ""}`}>
+                    <BsChatDots className="text-lg" />
+                  </span>
+                  {t("communication")}
+                </span>
+                <IoChevronDown className={`transition-transform ${openMenu === "communication" ? "rotate-180" : ""}`} />
+              </button>
+              <AnimatePresence>
+                {openMenu === "communication" && (
+                  <motion.ul
+                    id="communication-submenu"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.25 }}
+                    className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
+                  >
+                    <li>
+                      <ChatNavLink
+                        className={`${isActive("/chat")
+                          ? "dark:text-cyan-300 text-cyan-700 border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
+                          : "border-l-2 border-transparent"
+                          } flex items-center gap-3 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
+                      />
+                    </li>
+                  </motion.ul>
+                )}
+              </AnimatePresence>
+            </li>}
             {/* {(((hasPermission(PERMISSIONS.telephone))|| hasPermission(PERMISSIONS.smsReadLog)) &&  (hasFeature(FEATURES.TELECOM)) && !auth.isAdmin )&& <li>
               <button
                 onClick={() => toggleMenu("communication")}
