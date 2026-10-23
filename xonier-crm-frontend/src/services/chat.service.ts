@@ -20,7 +20,7 @@ export const chatApi = {
   joinChannel: (cid: string) => api.post<Envelope<Conversation>>(`${path(cid)}/join`).then(unwrap),
   addMembers: (cid: string, userIds: string[]) => api.post<Envelope<Conversation>>(`${path(cid)}/members`, { userIds }).then(unwrap),
   removeMember: (cid: string, uid: string) => api.delete(`${path(cid)}/members/${uid}`),
-  messages: (cid: string, params: { before?: number; after?: number; parentId?: string; search?: string } = {}) =>
+  messages: (cid: string, params: { before?: number; after?: number; parentId?: string; search?: string; messageIds?: string } = {}) =>
     api.get<Envelope<{ items: ChatMessage[]; hasMore: boolean }>>(`${path(cid)}/messages`, { params }).then(unwrap),
   send: (cid: string, command: SendMessage) => api.post<Envelope<ChatMessage>>(`${path(cid)}/messages`, command, { timeout: 15000 }).then(unwrap),
   edit: (cid: string, mid: string, text: string, version: number) => api.patch<Envelope<ChatMessage>>(`${path(cid)}/messages/${mid}`, { text, version }).then(unwrap),

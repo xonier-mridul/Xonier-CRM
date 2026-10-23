@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, Query, Request, WebSocket, WebSocketDisc
 
 from app.core.chat_runtime import Socket, chat_runtime
 from app.core.config import get_setting
+from app.core.chat_origins import allowed_chat_origins
 from app.schemas.chat_schema import (CallCreate, ConversationCreate, ConversationUpdate, FileUpload, MemberAdd,
     MessageCreate, MessageEdit, Reaction, ReadPosition)
 from app.services import chat_calls, chat_storage
@@ -91,10 +92,12 @@ async def remove_member(cid: str, uid: str, svc=Depends(service)):
 
 @router.get("/conversations/{cid}/messages")
 async def messages(cid: str, before: int | None = Query(None, ge=1), after: int | None = Query(None, ge=0),
-                   parentId: str | None = None, search: str = Query("", max_length=100), svc=Depends(service)):
+                   parentId: str | None = None, search: str = Query("", max_length=100),
+                   messageIds: str = Query("", max_length=2500), svc=Depends(service)):
     if before is not None and after is not None:
         raise AppException(400, "Use either before or after")
-    return successResponse(data=await svc.messages(cid, before, after, parentId, search))
+    ids = list(dict.fromkeys(filter(None, messageIds.split(","))))
+    return successResponse(data=await svc.messages(cid, before, after, parentId, search, ids))
 
 
 @router.post("/conversations/{cid}/messages", status_code=201)
@@ -211,9 +214,7 @@ async def ws_ticket(request: Request, svc=Depends(service)):
 @router.websocket("/ws")
 async def websocket(ws: WebSocket, ticket: str = ""):
     settings = get_setting()
-    allowed = {settings.CLIENT_URL.rstrip("/"), *[o.strip().rstrip("/") for o in settings.CHAT_ALLOWED_ORIGINS.split(",") if o.strip()]}
-    if settings.ENV.lower() in ("development", "dev", "local"):
-        allowed.update({"http://localhost:3000", "http://127.0.0.1:3000"})
+    allowed = allowed_chat_origins(settings)
     # Native mobile clients may omit Origin; browser clients must match our allowlist.
     origin = ws.headers.get("origin")
     if origin and origin.rstrip("/") not in allowed:

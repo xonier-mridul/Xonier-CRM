@@ -17,8 +17,11 @@ Those references never change when a login ID is edited.
   Changing a company name does **not** unexpectedly change its login ID.
 - Current and previous IDs are reserved in `loginCodes`. A unique multikey index
   prevents another company claiming a retained ID, including IDs of deleted companies.
-  Login, login OTP verification/resend, password reset and its OTP verification
-  resolve both current and previous IDs. Legacy IDs work before any migration.
+  Only the current `companyId` is accepted for new login/password-recovery requests.
+  Previous IDs remain reserved but are not alternate login IDs. Legacy IDs work
+  only while they are still the current ID. Share the new ID after editing it.
+  Existing authenticated sessions and already-issued user-bound OTP challenges
+  are not revoked just because the human-facing company ID changes.
 - An ID change and its activity log commit together in a MongoDB transaction.
   Partial settings/status updates do not overwrite concurrent code changes.
 - A remembered company ID is an identifier, **not** a password or security boundary;
@@ -61,8 +64,9 @@ to one company. Apply updates only the login ID, alias reservations and timestam
 it does not alter user/tenant relationships or encrypted company contact fields.
 It includes deleted companies so their IDs remain reserved. It is resumable,
 skips already formatted IDs and skips records concurrently edited by an admin.
-Legacy IDs remain usable after migration. Keep aliases when restoring a backup;
-removing them could allow identifier reassignment and break old login links.
+Legacy IDs stop authenticating after migration; distribute the new IDs before
+applying it. Keep reservations when restoring a backup; removing them could allow
+identifier reassignment to another company.
 
 ## Verification
 

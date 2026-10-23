@@ -97,6 +97,17 @@ class AuthMailTests(unittest.IsolatedAsyncioTestCase):
                 await chat_auth.authenticate(first["access_token"])
             self.assertEqual((await chat_auth.authenticate(second["access_token"]))["id"], str(self.user.id))
 
+    async def test_previous_company_id_cannot_start_login_or_recovery_after_change(self):
+        await self.db.companies.update_one({"_id": self.fixture.company_id}, {"$set": {
+            "companyId": "XON-4321", "loginCodes": [self.fixture.legacy.upper(), "XON-4321"]}})
+        for operation in (self.auth.begin(self.inputs), self.auth.forgot(self.inputs)):
+            with self.assertRaises(AppException) as denied:
+                await operation
+            self.assertEqual(denied.exception.status_code, 404)
+        self.inputs["companyId"] = " xon-4321 "
+        tokens = await self.sign_in()
+        await self.sessions.require(verify_access_token(tokens["access_token"]))
+
     async def test_local_api_lifecycle_delivers_login_otp_without_separate_worker_command(self):
         from app.core.mail_runtime import mail_consumers
         settings = self.queue.settings.model_copy(update={"ENV": "development", "MAIL_WORKER_MODE": "auto"})

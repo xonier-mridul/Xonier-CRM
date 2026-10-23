@@ -67,7 +67,7 @@ export default function CompanyCodeEditor({ companyObjectId, companyCode, onSave
         try {
           localStorage.setItem("companyId", code);
           localStorage.setItem("auth_user", JSON.stringify(updatedUser));
-        } catch { /* Login still works using the server's retained previous ID. */ }
+        } catch { /* Storage is optional; the team must use the newly saved ID. */ }
       }
       setSaved(true);
     } catch (cause) { reportError(cause); }

@@ -8,7 +8,7 @@ import ChatDialog from "./ChatDialog";
 import PeoplePicker from "./PeoplePicker";
 
 export default function ConversationDialog({ close, onSelect, initialKind = "dm" }: { close: () => void; onSelect: (id: string) => void; initialKind?: Conversation["kind"] }) {
-  const { refresh, capabilities } = useChat();
+  const { refresh, capabilities, publish } = useChat();
   const [kind, setKind] = useState(initialKind);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -22,7 +22,8 @@ export default function ConversationDialog({ close, onSelect, initialKind = "dm"
     setBusy(true); setError("");
     try {
       const conversation = await chatApi.create({ kind, name: name.trim(), description: description.trim(), visibility: kind === "channel" ? visibility : "private", memberIds: selected.map(user => user.id) });
-      await refresh(); onSelect(conversation.id); close();
+      publish({ event: "conversation.updated", conversationId: conversation.id, data: conversation });
+      onSelect(conversation.id); close(); void refresh().catch(() => {});
     } catch (cause) { setError(chatError(cause)); setBusy(false); }
   };
   return <ChatDialog close={close} busy={busy} title="Start a conversation" subtitle="The right people. A shared space. Everything in one place.">

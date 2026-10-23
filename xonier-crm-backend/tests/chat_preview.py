@@ -15,6 +15,8 @@ if os.environ.get("CHAT_PREVIEW") != "1":
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from chat_test_env import seed_test_settings
 seed_test_settings()
+# Both loopback spellings are valid for this explicitly isolated UI fixture.
+os.environ["CHAT_ALLOWED_ORIGINS"] = "http://localhost:3100,http://127.0.0.1:3100"
 if os.environ.get("CHAT_PREVIEW_LOCAL_MEDIA") == "1":
     os.environ.update(LIVEKIT_URL="ws://127.0.0.1:17880", LIVEKIT_API_KEY="previewkey",
         LIVEKIT_API_SECRET="local-preview-only-not-a-production-secret-123456")
@@ -61,6 +63,16 @@ runtime_module.database = lambda: db
 chat_auth.authenticate = authenticate
 chat_route.authenticate = authenticate
 chat_service.ChatService.transaction = transaction
+preview_realtime_enabled = True
+original_consume_ticket = chat_runtime.consume_ticket
+
+
+async def preview_consume_ticket(ticket):
+    credentials = await original_consume_ticket(ticket)
+    return credentials if preview_realtime_enabled else None
+
+
+chat_runtime.consume_ticket = preview_consume_ticket
 
 
 @asynccontextmanager
@@ -88,6 +100,17 @@ async def lifespan(app):
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:3100", "http://127.0.0.1:3100"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 app.include_router(chat_route.router)
+
+
+@app.post("/__preview/realtime")
+async def preview_realtime(enabled: bool):
+    """Synthetic-only outage control for browser recovery checks; never in app.main."""
+    global preview_realtime_enabled
+    preview_realtime_enabled = enabled
+    if not enabled:
+        for socket in list(chat_runtime.sockets):
+            await socket.ws.close(code=1012)
+    return {"enabled": enabled}
 
 
 @app.middleware("http")

@@ -52,6 +52,11 @@ response means MongoDB committed the message AND outbox event. Maintain a local
 pending/failed state until confirmed, without inventing a committed sequence.
 
 For threads, set parentId to a root message ID. Nested replies are not supported.
+The send response also includes `threadParent`, the authoritative parent message
+snapshot, on initial send and idempotent replay. Merge that parent by ID/version
+immediately; never derive counts from the currently open thread or increment on
+both HTTP and WebSocket acknowledgement. HTTP send/edit/delete/reaction responses
+must feed the same local event reducer as realtime events.
 Attachment IDs must be uploaded/completed by the sender into this conversation
 and not already attached to another message. A scanning attachment can be sent,
 but downloading it remains blocked until the scanner approves it.
@@ -63,6 +68,10 @@ catch-up (mutually exclusive), `parentId=<rootId>` for thread replies,
 monotonic across all messages in one conversation; gaps within a thread/root
 view are normal. Store a separate cursor for each view. On receiving an old
 message event, compare version before replacing the existing message.
+`messageIds=<comma-separated IDs>` refreshes up to 100 known messages in the same
+conversation/root-or-thread view. This recovers changes on already-loaded older
+rows outside the latest 50 messages after a socket outage. Normal tenant and
+membership checks still apply; inaccessible IDs are never returned.
 
 ## Realtime connection
 

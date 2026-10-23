@@ -28,14 +28,16 @@ def company_code_prefix(company_name: str) -> str:
 
 
 def company_login_filter(value: str) -> dict:
-    # Exact legacy IDs still work before migration, including their lowercase
-    # UUID suffix. New codes and retained aliases are case-insensitive.
+    # Only the CURRENT ID authenticates. Unmigrated legacy IDs still work while
+    # current; historical reservations must never become alternate login IDs.
     original = value.strip()
     normalized = normalize_company_code(value)
-    return {"$or": [
-        {"companyId": original}, {"companyId": normalized},
-        {"loginCodes": normalized, "loginCodes.0": {"$exists": True}},
-    ]}
+    return {"$or": [{"companyId": original}, {"companyId": normalized}]}
+
+
+def company_reservation_filter(value: str) -> dict:
+    return {"$or": [*company_login_filter(value)["$or"],
+        {"loginCodes": normalize_company_code(value), "loginCodes.0": {"$exists": True}}]}
 
 
 def assert_company_editor(actor: dict, company_id: str) -> None:

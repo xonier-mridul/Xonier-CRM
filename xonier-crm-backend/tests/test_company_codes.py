@@ -17,7 +17,7 @@ from pymongo.errors import DuplicateKeyError
 
 from app.schemas.company_schema import CompanyUpdateSchema, CompanyCreateSchema, CompanySelfRegisterSchema
 from app.utils.company_code import (
-    assert_company_editor, company_code_prefix, company_login_filter,
+    assert_company_editor, company_code_prefix, company_login_filter, company_reservation_filter,
     generate_company_code, validate_company_code, retry_company_code_collision,
     CompanyCodeCollision,
 )
@@ -63,7 +63,7 @@ class CompanyCodeTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(await generate_company_code(collection, "Xonier"), "XON-0019")
         client.close()
 
-    async def test_lookup_supports_legacy_new_and_retained_codes(self):
+    async def test_lookup_accepts_only_current_id_but_retains_old_reservations(self):
         client = AsyncMongoMockClient()
         collection = client.test.companies
         legacy = "COMP2-2026-123456-abcdef"
@@ -73,8 +73,11 @@ class CompanyCodeTests(unittest.IsolatedAsyncioTestCase):
         await collection.update_one({"_id": company["_id"]}, {"$set": {
             "companyId": "XON-1234", "loginCodes": [legacy.upper(), "XON-1234"],
         }})
-        for code in [legacy, legacy.upper(), "xon-1234", " XON-1234 "]:
+        for code in ["xon-1234", " XON-1234 "]:
             self.assertIsNotNone(await collection.find_one(company_login_filter(code)))
+        for code in [legacy, legacy.upper()]:
+            self.assertIsNone(await collection.find_one(company_login_filter(code)))
+            self.assertIsNotNone(await collection.find_one(company_reservation_filter(code)))
         self.assertIsNone(await collection.find_one(company_login_filter("INF-9999")))
         client.close()
 
@@ -184,7 +187,8 @@ class CompanyCodeMongoTests(unittest.IsolatedAsyncioTestCase):
         for field in ["_id", "email", "emailHash", "number", "numberHash", "slug"]:
             self.assertEqual(after[field], self.original[field])
         self.assertEqual((await self.db.users.find_one({"_id": self.admin_id}))["companyId"], self.company_id)
-        for code in [self.legacy, "XON-4321", "xon-4321"]:
+        self.assertIsNone(await self.service.repo.find_company_by_companyId(self.legacy))
+        for code in ["XON-4321", "xon-4321"]:
             self.assertEqual((await self.service.repo.find_company_by_companyId(code)).id, self.company_id)
         log = await self.db.activities.find_one({"entityId": self.company_id})
         self.assertEqual(log["metadata"]["previousCompanyId"], self.legacy)
@@ -245,7 +249,7 @@ class CompanyCodeMongoTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(after["companyId"], self.legacy)
         self.assertNotIn("XON-4321", after.get("loginCodes", []))
 
-    async def test_credential_entry_flows_resolve_old_and_new_codes_without_bypassing_status(self):
+    async def test_credential_entry_flows_reject_old_id_and_check_status_for_current_id(self):
         from app.services.auth_services import AuthServices
         await self.update(companyId="XON-4321")
         await self.db.companies.update_one({"_id": self.company_id}, {"$set": {"status": "inactive"}})
@@ -256,10 +260,11 @@ class CompanyCodeMongoTests(unittest.IsolatedAsyncioTestCase):
             for method in [auth.login, auth.forgot_password]:
                 with self.subTest(code=code, method=method.__name__), self.assertRaises(AppException) as denied:
                     await method(payload)
-                # Reaching the existing status gate proves the company lookup
-                # succeeded; alias login doesn't bypass account/subscription checks.
-                self.assertEqual(denied.exception.status_code, 400)
-                self.assertIn("status is", denied.exception.message)
+                if code == self.legacy:
+                    self.assertEqual(denied.exception.status_code, 404)
+                else:
+                    self.assertEqual(denied.exception.status_code, 400)
+                    self.assertIn("status is", denied.exception.message)
 
     async def test_normal_number_edit_keeps_email_hash_and_encrypts_phone(self):
         from app.core.security import hash_value
@@ -285,7 +290,8 @@ class CompanyCodeMongoTests(unittest.IsolatedAsyncioTestCase):
         after = await self.db.companies.find_one({"_id": self.company_id})
         for field in ["_id", "email", "emailHash", "number", "numberHash"]:
             self.assertEqual(after[field], self.original[field])
-        self.assertIsNotNone(await self.service.repo.find_company_by_companyId(self.legacy))
+        self.assertIsNone(await self.service.repo.find_company_by_companyId(self.legacy))
+        self.assertIsNotNone(await self.service.repo.find_company_by_companyId(after["companyId"]))
         self.assertEqual(await migrate_company_codes(self.db.companies, apply=True), [])
 
     async def test_registration_and_admin_creation_generate_short_ids(self):

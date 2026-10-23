@@ -10,7 +10,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:chat": "node --experimental-strip-types --test tests/message-state.test.mjs tests/conversation-state.test.mjs"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.21",

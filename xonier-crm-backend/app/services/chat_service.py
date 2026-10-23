@@ -164,9 +164,14 @@ class ChatService:
             return public(doc)
         return await self.transaction(commit)
 
-    async def messages(self, conversation_id, before=None, after=None, parent_id=None, search=""):
+    async def messages(self, conversation_id, before=None, after=None, parent_id=None, search="", message_ids=None):
         await self.conversation(conversation_id)
         query = self.scope(conversationId=conversation_id, parentId=parent_id)
+        if message_ids:
+            if len(message_ids) > 100:
+                raise AppException(422, "At most 100 message snapshots per request")
+            query["_id"] = {"$in": [oid(mid) for mid in message_ids]}
+            return {"items": public(await self.db.chat_messages.find(query).sort("seq", 1).to_list(100)), "hasMore": False}
         if before is not None:
             query["seq"] = {"$lt": before}
         if after is not None:
@@ -186,10 +191,19 @@ class ChatService:
         request_hash = hashlib.sha256(json.dumps({"text": command.text, "parentId": command.parentId,
             "attachments": sorted(set(command.attachmentIds))}, sort_keys=True).encode()).hexdigest()
 
-        def replay(existing):
+        async def response(message, session=None):
+            result = public(message)
+            if message.get("parentId"):
+                parent = await self.db.chat_messages.find_one(self.scope(
+                    _id=oid(message["parentId"]), conversationId=conversation_id), session=session)
+                if parent:
+                    result["threadParent"] = public(parent)
+            return result
+
+        async def replay(existing, session=None):
             if existing.get("requestHash") != request_hash:
                 raise AppException(409, "This message id was already used for different content")
-            return public(existing)
+            return await response(existing, session)
 
         async def commit(session):
             doc = await self.conversation(conversation_id, session)
@@ -198,7 +212,7 @@ class ChatService:
             existing = await self.db.chat_messages.find_one(self.scope(
                 conversationId=conversation_id, senderId=self.uid, clientId=client_id), session=session)
             if existing:
-                return replay(existing)
+                return await replay(existing, session)
             if command.parentId:
                 parent = await self.db.chat_messages.find_one(self.scope(
                     _id=oid(command.parentId), conversationId=conversation_id, parentId=None, deletedAt=None), session=session)
@@ -229,14 +243,14 @@ class ChatService:
                 await self.event("message.updated", conversation_id, parent, session)
             else:
                 await self.db.chat_conversations.update_one(self.scope(_id=doc["_id"]), {"$set": {"lastMessage": {
-                    "text": command.text[:140] or "Shared a file", "senderName": self.actor["name"], "seq": message["seq"]}}}, session=session)
+                    "text": command.text[:140] or "Shared a file", "senderName": self.actor["name"], "seq": message["seq"], "version": message["version"]}}}, session=session)
             await self.event("message.created", conversation_id, message, session)
-            return public(message)
+            return await response(message, session)
         try:
             return await self.transaction(commit)
         except DuplicateKeyError:
             await self.conversation(conversation_id)
-            return replay(await self.db.chat_messages.find_one(self.scope(conversationId=conversation_id, senderId=self.uid, clientId=client_id)))
+            return await replay(await self.db.chat_messages.find_one(self.scope(conversationId=conversation_id, senderId=self.uid, clientId=client_id)))
 
     async def change_message(self, conversation_id, message_id, text=None, version=None, emoji=None, delete=False):
         async def commit(session):
@@ -267,7 +281,8 @@ class ChatService:
             await self.db.chat_messages.replace_one(self.scope(_id=message["_id"]), message, session=session)
             if (conversation.get("lastMessage") or {}).get("seq") == message["seq"]:
                 await self.db.chat_conversations.update_one(self.scope(_id=conversation["_id"]), {"$set": {
-                    "lastMessage.text": "Message deleted" if delete else message["text"][:140] or "Shared a file"}}, session=session)
+                    "lastMessage.text": "Message deleted" if delete else message["text"][:140] or "Shared a file",
+                    "lastMessage.version": message["version"]}}, session=session)
             await self.event("message.updated", conversation_id, message, session)
             return public(message)
         return await self.transaction(commit)
