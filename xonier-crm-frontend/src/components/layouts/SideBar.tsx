@@ -873,48 +873,18 @@ const isSuperAdmin = auth.user?.userRole?.some(
                 {t("clients")}
               </Link>
             </li>}
-            {!auth.isAdmin && auth.user?.companyId && 
-            <li>
-              <button
-                type="button"
-                onClick={() => toggleMenu("communication")}
-                aria-expanded={openMenu === "communication"}
-                aria-controls="communication-submenu"
-                className={`${isMenuActive("communication")
-                  ? "dark:text-cyan-300 text-cyan-700 border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
-                  : "border-l-2 border-transparent"
-                  } flex w-full items-center justify-between px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
-              >
-                <span className="flex items-center gap-3">
-                  <span className={`${isMenuActive("communication") ? "bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400 w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl" : ""}`}>
-                    <BsChatDots className="text-lg" />
-                  </span>
-                  {t("communication")}
-                </span>
-                <IoChevronDown className={`transition-transform ${openMenu === "communication" ? "rotate-180" : ""}`} />
-              </button>
-              <AnimatePresence>
-                {openMenu === "communication" && (
-                  <motion.ul
-                    id="communication-submenu"
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.25 }}
-                    className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
-                  >
-                    <li>
+             { !auth.isAdmin && auth.user?.companyId && 
+               <li>
                       <ChatNavLink
-                        className={`${isActive("/chat")
+                        className={`${isActive("/communication")
                           ? "dark:text-cyan-300 text-cyan-700 border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
                           } flex items-center gap-3 px-3 py-2 text-sm rounded-md hover:bg-cyan-600/5 transition-all`}
                       />
-                    </li>
-                  </motion.ul>
-                )}
-              </AnimatePresence>
-            </li>}
+                    </li>}
+
+
+           
             {/* {(((hasPermission(PERMISSIONS.telephone))|| hasPermission(PERMISSIONS.smsReadLog)) &&  (hasFeature(FEATURES.TELECOM)) && !auth.isAdmin )&& <li>
               <button
                 onClick={() => toggleMenu("communication")}

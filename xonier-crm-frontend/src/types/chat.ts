@@ -15,7 +15,7 @@ export interface Conversation {
   unread?: number;
   updatedAt: string;
   activeCallId?: string;
-  lastMessage?: { text: string; senderName: string; seq: number } | null;
+  lastMessage?: { text: string; senderName: string; seq: number; version?: number } | null;
 }
 export interface Attachment { id: string; name: string; size: number; contentType: string; state?: string }
 export interface ChatMessage {
@@ -35,6 +35,8 @@ export interface ChatMessage {
   editedAt: string | null;
   deletedAt: string | null;
   delivery?: "sending" | "failed";
+  // HTTP reply acknowledgements carry the authoritative parent snapshot.
+  threadParent?: ChatMessage;
 }
 export interface ChatCall {
   id: string;

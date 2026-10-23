@@ -117,6 +117,43 @@ class ChatTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(AppException):
             await bob.send(cid, MessageCreate(clientId=uuid4(), text="nested", parentId=reply["id"]))
 
+    async def test_reply_ack_updates_only_its_parent_and_retry_never_increments_twice(self):
+        cid = (await self.conversation())["id"]
+        parents = [await self.service.send(cid, MessageCreate(clientId=uuid4(), text=text)) for text in ("First", "Second")]
+        for index in (0, 1, 0, 0, 1):
+            command = MessageCreate(clientId=uuid4(), text="Reply", parentId=parents[index]["id"])
+            reply = await self.service.send(cid, command)
+            replay = await self.service.send(cid, command)
+            self.assertEqual(reply["threadParent"]["id"], parents[index]["id"])
+            self.assertEqual(replay["threadParent"]["replyCount"], reply["threadParent"]["replyCount"])
+        rows = (await self.service.messages(cid))["items"]
+        self.assertEqual([row["replyCount"] for row in rows], [3, 2])
+        self.assertEqual([row["version"] for row in rows], [4, 3])
+
+    async def test_message_snapshot_sync_refreshes_old_rows_without_leaking_other_rooms(self):
+        cid = (await self.conversation())["id"]
+        first = await self.service.send(cid, MessageCreate(clientId=uuid4(), text="Old parent"))
+        for i in range(51):
+            await self.service.send(cid, MessageCreate(clientId=uuid4(), text=str(i)))
+        self.assertNotIn(first["id"], [row["id"] for row in (await self.service.messages(cid))["items"]])
+        await self.as_user(self.bob).change_message(cid, first["id"], emoji="👍")
+        other = (await self.conversation())["id"]
+        foreign = await self.service.send(other, MessageCreate(clientId=uuid4(), text="Other room"))
+        result = await self.service.messages(cid, message_ids=[first["id"], foreign["id"]])
+        self.assertEqual([row["id"] for row in result["items"]], [first["id"]])
+        self.assertEqual(result["items"][0]["reactions"], {"👍": [self.bob]})
+        with self.assertRaises(AppException):
+            await self.as_user(self.mallory, self.other_company).messages(cid, message_ids=[first["id"]])
+
+    def test_dev_frontend_port_3100_is_allowed_but_production_stays_explicit(self):
+        from app.core.chat_origins import allowed_chat_origins
+        settings = SimpleNamespace(CLIENT_URL="https://chat.example.test", CHAT_ALLOWED_ORIGINS="", ENV="development")
+        self.assertIn("http://127.0.0.1:3100", allowed_chat_origins(settings))
+        self.assertIn("http://localhost:3100", allowed_chat_origins(settings))
+        self.assertNotIn("https://evil.example.test", allowed_chat_origins(settings))
+        settings.ENV = "production"
+        self.assertEqual(allowed_chat_origins(settings), {"https://chat.example.test"})
+
     async def test_reaction_toggle_delete_tombstone_and_read_cursor(self):
         cid = (await self.conversation())["id"]
         message = await self.service.send(cid, MessageCreate(clientId=uuid4(), text="hello"))

@@ -7,7 +7,7 @@
     "generate": "Generate short ID",
     "save": "Save ID",
     "copy": "Copy company ID",
-    "safety": "Share the new ID with your team after saving. Previous IDs remain valid for login and cannot be assigned to another company. Your data and existing sessions stay unchanged.",
+    "safety": "Share the new ID with your team after saving. Only the current ID works for new logins. Previous IDs cannot be assigned to another company. Your data and existing sessions stay unchanged.",
     "saved": "Company ID saved successfully.",
     "failed": "Could not update the company ID. Please try again.",
     "copy_failed": "Could not copy. Please select and copy the ID manually."
@@ -1993,6 +1993,7 @@
   "search_tasks": "Search tasks…",
   "select_category": "Select category",
   "select_status": "Select status…",
+  "select_status1": "Select Status",
   "select_user": "Select user",
   "showing_page": "Showing page",
   "soon": "SOON",

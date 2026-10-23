@@ -46,7 +46,7 @@ from app.db.models.plan_model import PlanModel
 from app.db.models.subscription_model import SubscriptionModel
 from app.utils.subscription_utils import calculate_price, calculate_subscription_dates
 from app.utils.company_code import (
-    assert_company_editor, company_login_filter, generate_company_code,
+    assert_company_editor, company_reservation_filter, generate_company_code,
     normalize_company_code, is_company_code_collision,
     CompanyCodeCollision, retry_company_code_collision,
 )
@@ -900,7 +900,7 @@ class CompanyService:
             if "companyId" in update_data:
                 code = update_data["companyId"]
                 conflict = await collection.find_one({
-                    **company_login_filter(code), "_id": {"$ne": company.id},
+                    **company_reservation_filter(code), "_id": {"$ne": company.id},
                 }, {"_id": 1}, session=session)
                 if conflict:
                     raise AppException(409, "This Company ID is already in use or reserved; choose another")

@@ -110,6 +110,8 @@ origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
+if settings.ENV.strip().lower() in {"development", "dev", "local"}:
+    origins.extend(["http://localhost:3100", "http://127.0.0.1:3100"])
 
 
 

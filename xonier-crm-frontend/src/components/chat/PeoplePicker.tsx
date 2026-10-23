@@ -32,6 +32,6 @@ export default function PeoplePicker({ selected, onChange, exclude = [], maximum
         const checked = selected.some(item => item.id === user.id);
         return <button key={user.id} type="button" role="checkbox" aria-checked={checked} disabled={!checked && !single && selected.length >= maximum} onClick={() => onChange(checked ? selected.filter(item => item.id !== user.id) : single ? [user] : [...selected, user])} className={`flex w-full items-center gap-3 border-b border-slate-100 px-3 py-3 text-left last:border-0 disabled:opacity-40 dark:border-slate-800 ${checked ? "bg-cyan-50/70 dark:bg-cyan-950/40" : "hover:bg-slate-50 dark:hover:bg-slate-800"}`}><PersonAvatar name={user.name} size="sm" online={onlineIds.includes(user.id) ? true : undefined} /><span className="min-w-0 flex-1 truncate text-sm font-medium">{user.name}</span><span className={`flex h-5 w-5 items-center justify-center rounded-md border ${checked ? "border-cyan-700 bg-cyan-700 text-white" : "border-slate-300 dark:border-slate-600"}`}>{checked && <Check size={13} />}</span></button>;
       })}
-    </div><p className="mt-2 text-xs text-slate-400">{selected.length} selected{!single && ` · ${maximum} available places`}</p>
+    </div><p role="status" className="mt-2 text-xs text-slate-400">{selected.length} selected{!single && ` · ${Math.max(0, maximum - selected.length)} available places`}</p>
   </div>;
 }

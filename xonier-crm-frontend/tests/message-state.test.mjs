@@ -28,3 +28,14 @@ test("confirmed sequence order precedes pending drafts and does not mutate input
   assert.equal(current[0].delivery, "failed");
   assert.equal(incoming[0].seq, 2);
 });
+test("independent thread parents never share counts and stale parent acknowledgements cannot undo them", () => {
+  const a = message({ id: "parent-a", clientId: "a" });
+  const b = message({ id: "parent-b", clientId: "b", seq: 5 });
+  const first = mergeMessages([a, b], [{ ...a, replyCount: 3, version: 4 }]);
+  const second = mergeMessages(first, [{ ...b, replyCount: 1, version: 2 }, { ...a, replyCount: 1, version: 2 }]);
+  assert.deepEqual(second.map(row => row.replyCount), [3, 1]);
+});
+test("an initial snapshot arriving after a newer socket event cannot erase the new reaction", () => {
+  const latest = message({ version: 2, reactions: { "👍": ["alice"] } });
+  assert.deepEqual(mergeMessages([latest], [message()])[0].reactions, { "👍": ["alice"] });
+});

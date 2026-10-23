@@ -8,7 +8,7 @@ import { mergeMessages } from "./messageState";
 
 type Pending = { command: SendMessage; optimistic: ChatMessage };
 export function useMessages(cid: string, parentId: string | null = null, search = "") {
-  const { uid, subscribe } = useChat();
+  const { uid, subscribe, publish, connection } = useChat();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(false);
@@ -18,11 +18,13 @@ export function useMessages(cid: string, parentId: string | null = null, search 
   const rows = useRef<ChatMessage[]>([]);
   const pending = useRef(new Map<string, Pending>());
   const confirmed = useRef(new Set<string>());
+  const connectionRef = useRef(connection);
+  useEffect(() => { connectionRef.current = connection; }, [connection]);
   const storageKey = "trakeroo:communication:outbox:" + uid + ":" + cid + ":" + (parentId || "main");
   useEffect(() => { rows.current = messages; }, [messages]);
   const persist = useCallback(() => { try { if (pending.current.size) sessionStorage.setItem(storageKey, JSON.stringify([...pending.current.values()])); else sessionStorage.removeItem(storageKey); } catch { /* In-memory retry remains available if browser storage is full/blocked. */ } }, [storageKey]);
   useEffect(() => {
-    let cancelled = false, syncing = false;
+    let cancelled = false, syncing = false, syncAgain = false;
     alive.current = true; const generation = ++epoch.current;
     const params = { ...(parentId ? { parentId } : {}), ...(search ? { search } : {}) };
     const acknowledge = (items: ChatMessage[]) => {
@@ -30,15 +32,24 @@ export function useMessages(cid: string, parentId: string | null = null, search 
       persist();
     };
     const sync = async (initial = false) => {
-      if (syncing || cancelled) return;
+      if (cancelled) return;
+      if (syncing) { syncAgain = true; return; }
       syncing = true;
       try {
-        if (initial) { await Promise.resolve(); if (cancelled) return; setLoading(true); setMessages([]); rows.current = []; }
+        if (initial) { await Promise.resolve(); if (cancelled) return; setLoading(true); const restored = search ? [] : [...pending.current.values()].map(item => item.optimistic); setMessages(restored); rows.current = restored; }
         const cursor = Math.max(0, ...rows.current.filter(message => !message.delivery).map(message => message.seq));
         const latest = await chatApi.messages(cid, params);
         if (cancelled) return;
         let incoming = latest.items;
-        if (!initial && !search && incoming.length && cursor && incoming[0].seq > cursor) {
+        // A disconnected socket must not leave edits/reactions/thread counts on
+        // loaded older rows stale just because they are outside the newest page.
+        const olderIds = rows.current.filter(message => !message.delivery && !latest.items.some(item => item.id === message.id)).map(message => message.id);
+        for (let offset = 0; offset < olderIds.length; offset += 100) {
+          const snapshots = await chatApi.messages(cid, { ...params, messageIds: olderIds.slice(offset, offset + 100).join(",") });
+          if (cancelled) return;
+          incoming = mergeMessages(incoming, snapshots.items);
+        }
+        if (!initial && !search && latest.items.length && cursor && latest.items[0].seq > cursor) {
           let after = cursor;
           for (let page = 0; page < 20; page++) {
             const data = await chatApi.messages(cid, { ...params, after });
@@ -50,9 +61,9 @@ export function useMessages(cid: string, parentId: string | null = null, search 
           }
         }
         acknowledge(incoming);
-        if (!cancelled) { setMessages(previous => initial ? mergeMessages(search ? [] : [...pending.current.values()].map(item => item.optimistic), incoming) : mergeMessages(previous, incoming)); if (initial) setHasMore(latest.hasMore); setError(""); }
+        if (!cancelled) { setMessages(previous => mergeMessages(previous, incoming)); if (initial) setHasMore(latest.hasMore); setError(""); }
       } catch (cause) { if (!cancelled) setError(chatError(cause)); }
-      finally { syncing = false; if (!cancelled) setLoading(false); }
+      finally { syncing = false; if (!cancelled) { setLoading(false); if (syncAgain) { syncAgain = false; void sync(); } } }
     };
     try {
       const saved: Pending[] = JSON.parse(sessionStorage.getItem(storageKey) || "[]");
@@ -76,7 +87,12 @@ export function useMessages(cid: string, parentId: string | null = null, search 
       if (message.parentId === parentId && !search) setMessages(previous => mergeMessages(previous, [message]));
       else if (search) void sync();
     });
-    const timer = setInterval(() => { if (document.visibilityState === "visible") void sync(); }, 30000);
+    let lastSync = 0;
+    const timer = setInterval(() => {
+      if (document.visibilityState !== "visible" || Date.now() - lastSync < (connectionRef.current === "online" ? 30000 : 3000)) return;
+      lastSync = Date.now();
+      void sync();
+    }, 1000);
     return () => { cancelled = true; alive.current = false; epoch.current = generation + 1; clearInterval(timer); unsubscribe(); };
   }, [cid, parentId, search, subscribe, uid, storageKey, persist]);
   const loadOlder = useCallback(async () => {
@@ -91,23 +107,26 @@ export function useMessages(cid: string, parentId: string | null = null, search 
   const send = useCallback(async (command: SendMessage, senderName: string, attachments: Attachment[] = []) => {
     if (confirmed.current.has(command.clientId)) return true;
     const previous = pending.current.get(command.clientId)?.optimistic;
+    const generation = epoch.current;
     const optimistic: ChatMessage = previous ? { ...previous, delivery: "sending" } : { id: command.clientId, clientId: command.clientId, conversationId: cid, senderId: uid, senderName, text: command.text, parentId: command.parentId, attachments, seq: 0, version: 1, reactions: {}, replyCount: 0, createdAt: new Date().toISOString(), editedAt: null, deletedAt: null };
     optimistic.delivery = "sending"; pending.current.set(command.clientId, { command, optimistic }); persist();
     setMessages(previous => mergeMessages(previous, [{ ...optimistic }]));
     try {
       const message = await chatApi.send(cid, command);
       confirmed.current.add(command.clientId); pending.current.delete(command.clientId); persist();
-      if (alive.current) setMessages(previous => mergeMessages(previous, [message]));
+      publish({ event: "message.created", conversationId: cid, data: message });
+      if (message.threadParent) publish({ event: "message.updated", conversationId: cid, data: message.threadParent });
+      if (alive.current && epoch.current === generation) setMessages(previous => mergeMessages(previous, [message]));
       return true;
     } catch (cause) {
       if (confirmed.current.has(command.clientId)) return true;
       pending.current.set(command.clientId, { command, optimistic: { ...optimistic, delivery: "failed" } }); persist();
-      if (alive.current) { setMessages(previous => previous.map(message => message.clientId === command.clientId ? { ...message, delivery: "failed" } : message)); setError(chatError(cause)); }
+      if (alive.current && epoch.current === generation) { setMessages(previous => previous.map(message => message.clientId === command.clientId ? { ...message, delivery: "failed" } : message)); setError(chatError(cause)); }
       return false;
     }
-  }, [cid, uid, persist]);
+  }, [cid, uid, persist, publish]);
   const retry = useCallback(async (clientId: string) => { const item = pending.current.get(clientId); if (item && item.optimistic.delivery !== "sending") await send(item.command, item.optimistic.senderName, item.optimistic.attachments); }, [send]);
-  const update = useCallback((message: ChatMessage) => setMessages(previous => mergeMessages(previous, [message])), []);
+  const update = useCallback((message: ChatMessage) => publish({ event: "message.updated", conversationId: cid, data: message }), [cid, publish]);
   const discard = useCallback((clientId: string) => { pending.current.delete(clientId); persist(); setMessages(previous => previous.filter(message => message.clientId !== clientId)); }, [persist]);
   return { messages, loading, hasMore, error, loadOlder, send, update, discard, retry };
 }

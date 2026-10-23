@@ -1,6 +1,6 @@
 # Trakeroo Communication
 
-The dashboard page is `/communication` (`/chat` remains a compatible alias). It includes direct messages, group DMs,
+The dashboard page is `/communication`. It includes direct messages, group DMs,
 company public/private channels, threads, reactions, author-only edit/delete,
 history/search, unread counts, typing, presence, private file attachments, and
 conversation-scoped voice/video calls with screen sharing. Incoming calls work
@@ -33,6 +33,19 @@ with a read-full control. The server still enforces 10,000 characters and 5 file
 per message. There is no promise of zero network latency or offline delivery.
 Do not store sensitive drafts on shared/untrusted devices; browser storage is
 best-effort, not an encrypted delivery queue.
+
+HTTP acknowledgements update the shared UI immediately, including the exact
+thread parent returned by a reply. Socket and HTTP snapshots are reconciled by
+message version, settings version, sequence and monotonic read cursors. During
+a WebSocket outage, visible timelines reconcile every 3 seconds and conversation
+lists every 5 seconds, without overlapping requests; hidden tabs pause polling.
+Loaded older messages are refreshed too. Reconnects request a full reconciliation.
+Polling requires a reachable HTTP API; it is not offline message delivery.
+
+Development browser origins explicitly include localhost/127.0.0.1 on ports
+3000, 3100 and 5173 for chat. Production still allows only `CLIENT_URL` and explicit
+`CHAT_ALLOWED_ORIGINS`; do not use a wildcard. If production stays reconnecting,
+verify the exact browser origin and the existing Nginx WebSocket upgrade config.
 
 Calls now have an explicit device-check/prejoin screen. Devices start off and
 are only enabled by the user. Missing infrastructure and connection failures are

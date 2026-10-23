@@ -1,5 +1,6 @@
 "use client";
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { TASK_PRIORITY, BoardCardProps } from "@/src/types/task/task.types";
 import { useRouter } from "next/navigation";
 import { getColorOption } from "./createStatusModal";
@@ -7,6 +8,7 @@ import { MdDelete, MdEdit, MdOutlineMessage } from "react-icons/md";
 import { Star, Play, Pause, Square, Calendar, AlertCircle } from "lucide-react";
 import CategoryBadge from "./CategoryBadge";
 import { useTranslation } from "react-i18next";
+import { GoPaperAirplane } from "react-icons/go";
 
 function getInitials(firstName?: string, lastName?: string): string {
   const f = firstName?.trim()?.[0] || "";
@@ -22,6 +24,10 @@ function formatSeconds(s: number): string {
 }
 
 function BoardCard({
+  statuses,
+  canChangeStatus,
+  canMarkFinal,
+  onSelectStatus,
   task,
   handleDragEnd,
   canEdit,
@@ -44,6 +50,32 @@ function BoardCard({
   onStop,
 }: BoardCardProps) {
   const { t } = useTranslation();
+  const [statusMenu, setStatusMenu] = useState<{ top: number; left: number } | null>(null);
+  const statusTrigger = useRef<HTMLButtonElement>(null);
+  const statusPanel = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!statusMenu) return;
+    const close = () => setStatusMenu(null);
+    const outside = (event: PointerEvent) => {
+      if (!statusPanel.current?.contains(event.target as Node) && !statusTrigger.current?.contains(event.target as Node)) close();
+    };
+    const key = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { close(); statusTrigger.current?.focus(); }
+    };
+    const scroll = (event: Event) => {
+      if (!statusPanel.current?.contains(event.target as Node)) close();
+    };
+    document.addEventListener("pointerdown", outside);
+    document.addEventListener("keydown", key);
+    window.addEventListener("resize", close);
+    window.addEventListener("scroll", scroll, true);
+    return () => {
+      document.removeEventListener("pointerdown", outside);
+      document.removeEventListener("keydown", key);
+      window.removeEventListener("resize", close);
+      window.removeEventListener("scroll", scroll, true);
+    };
+  }, [statusMenu]);
 
   const pri = {
     [TASK_PRIORITY.URGENT]: {
@@ -116,7 +148,66 @@ function BoardCard({
         </div>
 
         {/* Hover Quick Actions */}
-        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+        <div className="flex self-start items-start gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity shrink-0">
+          {(canChangeStatus || canMarkFinal) && (
+            <>
+              <button
+                ref={statusTrigger}
+                type="button"
+                title="Change status"
+                aria-label="Change task status"
+                aria-haspopup="dialog"
+                aria-expanded={!!statusMenu}
+                className="p-1 rounded-md text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-950/40 transition cursor-pointer focus-visible:outline-2 focus-visible:outline-cyan-500"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  const rect = event.currentTarget.getBoundingClientRect();
+                  setStatusMenu(statusMenu ? null : {
+                    top: Math.max(8, Math.min(rect.bottom + 6, window.innerHeight - 296)),
+                    left: Math.max(8, Math.min(rect.right - 224, window.innerWidth - 232)),
+                  });
+                }}
+                onDragStart={(event) => { event.preventDefault(); event.stopPropagation(); }}
+              >
+                <GoPaperAirplane className="text-sm" />
+              </button>
+              {statusMenu && createPortal(
+                <div
+                  ref={statusPanel}
+                  role="dialog"
+                  aria-label="Change task status"
+                  style={{ ...statusMenu, maxHeight: "min(18rem, calc(100vh - 16px))" }}
+                  className="fixed z-[150] w-56 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl dark:border-slate-600 dark:bg-slate-800"
+                  onClick={(event) => event.stopPropagation()}
+                  onDragStart={(event) => { event.preventDefault(); event.stopPropagation(); }}
+                >
+                  <p className="px-2.5 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400">{t("select_status1")}</p>
+                  {statuses.map((status) => {
+                    const selected = status.id === task.status.id;
+                    const disabled = selected || (status.isFinal ? !canMarkFinal : !canChangeStatus);
+                    return (
+                      <button
+                        key={status.id}
+                        type="button"
+                        disabled={disabled}
+                        aria-current={selected ? "true" : undefined}
+                        className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-xs transition focus-visible:outline-2 focus-visible:outline-cyan-500 ${selected ? "bg-cyan-50 text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-300" : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700 disabled:opacity-40"} ${disabled ? "cursor-default" : "cursor-pointer"}`}
+                        onClick={() => {
+                          setStatusMenu(null);
+                          statusTrigger.current?.focus();
+                          onSelectStatus(task, status.id);
+                        }}
+                      >
+                        <span className="shrink-0">{status.icon || "•"}</span>
+                        <span className="min-w-0 flex-1 break-words">{status.name}</span>
+                        {selected && <span aria-hidden="true">✓</span>}
+                      </button>
+                    );
+                  })}
+                </div>, document.body,
+              )}
+            </>
+          )}
           {canRemark && (
             <button
               type="button"
