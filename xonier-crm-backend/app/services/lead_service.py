@@ -8,7 +8,7 @@ from app.repositories.lead_repository import LeadRepository
 from fastapi.encoders import jsonable_encoder
 from bson import ObjectId
 from pydantic import ValidationError
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from app.core.crypto import encryptor
 from app.core.constants import (
     SUPER_ADMIN_CODE,
@@ -82,6 +82,20 @@ class LeadService:
                         "createdBy": PydanticObjectId(user["_id"]),
                         "leadSource": LEAD_SOURCE_TYPE.ADMIN_CREATED.value if is_admin else LEAD_SOURCE_TYPE.SELF_CREATED.value
                     }
+
+                    # Leads created by agents should immediately appear in their
+                    # own web and mobile lead lists, both of which are scoped by
+                    # assignedTo. Admin-created leads retain the existing
+                    # unassigned behavior.
+                    if not is_admin:
+                        creator_id = PydanticObjectId(user["_id"])
+                        now = datetime.now(timezone.utc)
+                        new_payload.update({
+                            "assignedTo": [creator_id],
+                            "assignedBy": creator_id,
+                            "assignedAt": now,
+                            "isAssigned": True,
+                        })
                     
 
                     new_lead = await self.repo.create(data=new_payload, session=session)
@@ -914,9 +928,9 @@ class LeadService:
                 if item["phone"]:
                     item["phone"] = encryptor.decrypt_data(item["phone"])
 
-            # Mobile call completion data is the canonical follow-up source. A
-            # lead list may otherwise display an older cached lead.followUpAt
-            # while the activity timeline already shows the newest call result.
+            # The latest call or engagement update is the canonical source for
+            # status and follow-up time. Include web engagement updates so an
+            # older call cannot overwrite a newer status change in the table.
             try:
                 lead_oids = [ObjectId(item["id"]) for item in result["data"] if item.get("id")]
                 if lead_oids:
@@ -925,12 +939,13 @@ class LeadService:
                             "companyId": PydanticObjectId(user["companyId"]),
                             "entityType": ACTIVITY_ENTITY_TYPE.LEAD.value,
                             "entityId": {"$in": lead_oids},
-                            "action": ACTIVITY_ACTION.CALL_MADE.value,
+                            "action": {"$in": [
+                                ACTIVITY_ACTION.CALL_MADE.value,
+                                ACTIVITY_ACTION.UPDATE_LEAD_CONNECTION_STATUS.value,
+                            ]},
                         },
                         {"entityId": 1, "metadata": 1},
-                        # callCompletedAt is an ISO-8601 value, so descending
-                        # lexical order is chronological. _id covers old records.
-                        sort=[("metadata.callCompletedAt", -1), ("_id", -1)],
+                        sort=[("createdAt", -1), ("_id", -1)],
                     ).to_list(length=len(lead_oids) * 20)
 
                     latest_call_by_lead: Dict[str, Dict[str, Any]] = {}
@@ -1382,18 +1397,64 @@ class LeadService:
                         raise AppException(403, "Permission denied, only admin, creator or assigned person can access it")
                     
                     
-                    lead.connectStatus = payload["status"]
+                    connect_status = payload["status"]
+                    previous_follow_up_owner_id = lead.followUpOwnerId
+                    follow_up_at = None
+                    follow_up_in = payload.get("followUpIn")
+                    if connect_status == "follow_up" and follow_up_in:
+                        from zoneinfo import ZoneInfo
+
+                        ist = ZoneInfo("Asia/Kolkata")
+                        preset_durations = {
+                            "1h": timedelta(hours=1),
+                            "6h": timedelta(hours=6),
+                            "1d": timedelta(days=1),
+                        }
+                        now_ist = datetime.now(ist)
+                        if follow_up_in in preset_durations:
+                            follow_up_at = now_ist + preset_durations[follow_up_in]
+                        else:
+                            try:
+                                follow_up_at = datetime.fromisoformat(follow_up_in)
+                            except ValueError:
+                                raise AppException(400, "Invalid follow-up time. Use 1h, 6h, 1d, or a valid ISO date and time")
+                            if follow_up_at.tzinfo is None:
+                                # datetime-local values follow the mobile app convention and are interpreted as IST.
+                                follow_up_at = follow_up_at.replace(tzinfo=ist)
+                            if follow_up_at <= now_ist:
+                                raise AppException(400, "Follow-up time must be in the future")
+
+                    lead.connectStatus = connect_status
+                    if follow_up_at is not None:
+                        lead.followUpAt = follow_up_at.astimezone(timezone.utc)
+                        lead.followUpOwnerId = PydanticObjectId(user["_id"])
+                    elif connect_status != "follow_up":
+                        lead.followUpAt = None
+                        lead.followUpOwnerId = None
                     lead.updatedAt = datetime.now(timezone.utc)
 
                     await lead.save(session=session)
                     
 
-                    activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD.value, entityId=PydanticObjectId(lead.id), action=ACTIVITY_ACTION.UPDATE_LEAD_CONNECTION_STATUS, title="update lead connect status", metadata={"leadId": lead.lead_id, "companyName":  lead.companyName or "", "leadName": lead.fullName, "status": lead.status, "connectStatus": lead.connectStatus, "email": lead.email or "N/A", "phone": lead.phone or "N/A"})
+                    activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD.value, entityId=PydanticObjectId(lead.id), action=ACTIVITY_ACTION.UPDATE_LEAD_CONNECTION_STATUS, title="update lead connect status", metadata={"leadId": lead.lead_id, "companyName":  lead.companyName or "", "leadName": lead.fullName, "status": lead.status, "connectStatus": lead.connectStatus, "followUpAt": lead.followUpAt.isoformat() if lead.followUpAt else None, "email": lead.email or "N/A", "phone": lead.phone or "N/A"})
 
                     is_activity = await self.activityRepo.create(data=activity, session=session)
 
                     if not is_activity:
                         raise AppException(400, "Activity log failed")
+
+                    if connect_status == "follow_up" or previous_follow_up_owner_id:
+                        from app.services.google_calendar_service import GoogleCalendarService
+
+                        await GoogleCalendarService().sync_followup(
+                            company_id=PydanticObjectId(user["companyId"]),
+                            lead_id=str(lead.id),
+                            lead_name=lead.fullName or "Lead follow-up",
+                            owner_id=lead.followUpOwnerId,
+                            previous_owner_id=previous_follow_up_owner_id,
+                            follow_up_at=lead.followUpAt,
+                            owner_name=" ".join(filter(None, [user.get("firstName"), user.get("lastName")])),
+                        )
 
                     await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
                     await FastAPICache.get_backend().clear(namespace=USER_LEAD_CACHE_NAMESPACE) 

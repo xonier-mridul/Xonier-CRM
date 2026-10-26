@@ -186,17 +186,25 @@ def summarize_lead_groups(groups):
             "followUps": any("follow_up" in key for key in labels),
         }
         for key, matches in highlight_matches.items():
-            if matches:
+            if matches and not is_won_or_lost:
                 highlights[key] += count
 
     total = sum(lifecycle.values())
     closed = lifecycle["won"] + lifecycle["lost"]
+    open_breakdown = fresh_breakdown + in_progress_breakdown
     funnel_filters = (
         "all", "contacted", "engaged", "meetings", "closed_won",
     )
     return {
         "stats": [{"status": key, "count": count} for key, count in engagement.most_common()],
-        "statusBreakdown": [],
+        "statusBreakdown": [
+            {
+                "status": key,
+                "label": STATUS_LABELS.get(key, key.replace("_", " ").title()),
+                "count": count,
+            }
+            for key, count in sorted(open_breakdown.items(), key=lambda pair: (-pair[1], pair[0]))
+        ],
         "pieBreakdown": {
             "fresh": [
                 {"status": key, "label": STATUS_LABELS.get(key, key.replace("_", " ").title()), "count": count}

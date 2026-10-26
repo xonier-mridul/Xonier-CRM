@@ -69,56 +69,57 @@ class QuotationService:
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
-                    if not ObjectId.is_valid(payload["deal"]):
-                        raise AppException(400, "Invalid deal Id")
+                    if payload.get("deal"):
+                        if not ObjectId.is_valid(payload["deal"]):
+                            raise AppException(400, "Invalid deal Id")
 
-                    deal = await self.dealRepo.find_by_id(
-                        PydanticObjectId(payload["deal"]), populate=["createdBy"]
-                    )
-
-                    if not deal:
-                        raise AppException(404, "Deal not found against deal id")
-
-                    deal = deal.model_dump(mode="json")
-
-                    if deal["inQuotation"]:
-                        raise AppException(
-                            400,
-                            "Action stopped, Already created quotation against this deal",
+                        deal = await self.dealRepo.find_by_id(
+                            PydanticObjectId(payload["deal"]), populate=["createdBy"]
                         )
 
-                    if (
-                        deal["dealStage"] == DEAL_STAGES.DELETE.value
-                        and deal["status"] == DEAL_STATUS.DELETE.value
-                    ):
-                        raise AppException(
-                            400, f"Quotation failed, {deal["dealName"]} deleted"
-                        )
+                        if not deal:
+                            raise AppException(404, "Deal not found against deal id")
 
-                    isAdmin = False
-                    isCreator = False
-                    isManager = False
+                        deal = deal.model_dump(mode="json")
 
-                    isAdmin = validate_admin_company_admin(user["userRole"])
-
-                    if not isAdmin:
-
-                        if deal["createdBy"]["id"] == user["_id"]:
-                            isCreator = True
-
-                        if not isCreator:
-                            members = await self.getTeamMem.get_team_members(
-                                user["_id"]
+                        if deal["inQuotation"]:
+                            raise AppException(
+                                400,
+                                "Action stopped, Already created quotation against this deal",
                             )
 
-                            if members:
-                                isManager = deal["createdBy"]["id"] in members
+                        if (
+                            deal["dealStage"] == DEAL_STAGES.DELETE.value
+                            and deal["status"] == DEAL_STATUS.DELETE.value
+                        ):
+                            raise AppException(
+                                400, f"Quotation failed, {deal["dealName"]} deleted"
+                            )
 
-                    if not isAdmin and not isCreator and not isManager:
-                        raise AppException(
-                            403,
-                            "Permission denied, Only Admin, Creator or Manager can perform this",
-                        )
+                        isAdmin = False
+                        isCreator = False
+                        isManager = False
+
+                        isAdmin = validate_admin_company_admin(user["userRole"])
+
+                        if not isAdmin:
+
+                            if deal["createdBy"]["id"] == user["_id"]:
+                                isCreator = True
+
+                            if not isCreator:
+                                members = await self.getTeamMem.get_team_members(
+                                    user["_id"]
+                                )
+
+                                if members:
+                                    isManager = deal["createdBy"]["id"] in members
+
+                        if not isAdmin and not isCreator and not isManager:
+                            raise AppException(
+                                403,
+                                "Permission denied, Only Admin, Creator or Manager can perform this",
+                            )
 
                     quote_id = generate_enquiry_id(prefix="QUT")
 
@@ -182,18 +183,19 @@ class QuotationService:
                
                     )
 
-                    update_deal = await self.dealRepo.update(
-                        id=PydanticObjectId(payload["deal"]),
-                        data={
-                            "inQuotation": True,
-                            "dealStage": DEAL_STAGES.PROPOSAL,
-                            "dealPipeline": DEAL_PIPELINE.PROPOSAL,
-                        },
-                        session=session,
-                    )
+                    if payload.get("deal"):
+                        update_deal = await self.dealRepo.update(
+                            id=PydanticObjectId(payload["deal"]),
+                            data={
+                                "inQuotation": True,
+                                "dealStage": DEAL_STAGES.PROPOSAL,
+                                "dealPipeline": DEAL_PIPELINE.PROPOSAL,
+                            },
+                            session=session,
+                        )
 
-                    if not update_deal:
-                        raise AppException(400, "Deal field not updated")
+                        if not update_deal:
+                            raise AppException(400, "Deal field not updated")
 
                     activity = activity_payload(
                         userId=PydanticObjectId(user["_id"]),
@@ -469,23 +471,24 @@ class QuotationService:
 
                     deal_id = (
                         str(quotation.deal.id)
-                        if hasattr(quotation.deal, "id")
-                        else str(quotation.deal)
+                        if quotation.deal and hasattr(quotation.deal, "id")
+                        else (str(quotation.deal) if quotation.deal else None)
                     )
-                    await self.dealRepo.update(
-                        id=PydanticObjectId(deal_id),
-                        data={
-                            "dealStage": DEAL_STAGES.WON,
-                            "dealPipeline": DEAL_PIPELINE.WON,
-                        },
-                        session=session,
-                    )
+                    if deal_id:
+                        await self.dealRepo.update(
+                            id=PydanticObjectId(deal_id),
+                            data={
+                                "dealStage": DEAL_STAGES.WON,
+                                "dealPipeline": DEAL_PIPELINE.WON,
+                            },
+                            session=session,
+                        )
 
                     invoice_id = generate_enquiry_id("INV")
 
                     invoice_payload = {
     "invoiceId": invoice_id,
-    "deal": quotation.deal.id,
+    "deal": quotation.deal.id if quotation.deal else None,
     "quotation": quotation.id,
     "customerName": quotation.customerName,
     "customerEmail": quotation.customerEmail,
@@ -816,7 +819,7 @@ class QuotationService:
                         invoice_payload = {
                             "invoiceId": invoice_id,
                             "sourceQuoteId": quotation.quoteId,
-                            "deal": quotation.deal.id,
+                            "deal": quotation.deal.id if quotation.deal else None,
                             "quotation": quotation.id,
                             "customerName": quotation.customerName,
                             "customerEmail": quotation.customerEmail,
@@ -856,24 +859,26 @@ class QuotationService:
 
                         
 
-                        await self.dealRepo.update(
-                            id=PydanticObjectId(quotation.deal.id),
-                            data={
-                                "dealStage": DEAL_STAGES.WON.value,
-                                "dealPipeline": DEAL_PIPELINE.WON.value,
-                            },
-                            session=session,
-                        )
+                        if quotation.deal:
+                            await self.dealRepo.update(
+                                id=PydanticObjectId(quotation.deal.id),
+                                data={
+                                    "dealStage": DEAL_STAGES.WON.value,
+                                    "dealPipeline": DEAL_PIPELINE.WON.value,
+                                },
+                                session=session,
+                            )
                         
                     elif new_status == QuotationStatus.REJECTED:
-                        await self.dealRepo.update(
-                            id=PydanticObjectId(quotation.deal.id),
-                            data={
-                                "dealStage": DEAL_STAGES.LOST.value,
-                                "dealPipeline": DEAL_PIPELINE.LOST.value,
-                            },
-                            session=session,
-                        )
+                        if quotation.deal:
+                            await self.dealRepo.update(
+                                id=PydanticObjectId(quotation.deal.id),
+                                data={
+                                    "dealStage": DEAL_STAGES.LOST.value,
+                                    "dealPipeline": DEAL_PIPELINE.LOST.value,
+                                },
+                                session=session,
+                            )
                     
                     serialized_delta = {
                         field: {
@@ -1104,15 +1109,16 @@ class QuotationService:
                         session=session,
                     )
 
-                    await self.dealRepo.update(
-                        id=PydanticObjectId(quotation.deal.id),
-                        data={
-                            "inQuotation": False,
-                            "dealStage": DEAL_STAGES.REQUIREMENT_ANALYSIS.value,
-                            "dealPipeline": DEAL_PIPELINE.REQUIREMENT_ANALYSIS.value,
-                        },
-                        session=session,
-                    )
+                    if quotation.deal:
+                        await self.dealRepo.update(
+                            id=PydanticObjectId(quotation.deal.id),
+                            data={
+                                "inQuotation": False,
+                                "dealStage": DEAL_STAGES.REQUIREMENT_ANALYSIS.value,
+                                "dealPipeline": DEAL_PIPELINE.REQUIREMENT_ANALYSIS.value,
+                            },
+                            session=session,
+                        )
 
                     await self.historyRepo.create(
                         data={

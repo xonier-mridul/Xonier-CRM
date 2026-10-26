@@ -1,6 +1,6 @@
-from beanie import Document, Link, before_event, Save, Replace
+from beanie import Document, Link, before_event, Save, Replace, PydanticObjectId
 from pymongo import IndexModel
-from typing import Optional
+from typing import Optional, Dict, Any
 from pydantic import Field, field_validator
 from app.db.models.lead_model import LeadsModel
 from app.db.models.user_model import UserModel
@@ -10,7 +10,7 @@ from app.db.models.base_model import BaseDocument
 
 class DealModel(BaseDocument):
     deal_id : str
-    lead_id : Link[LeadsModel]
+    lead_id : Optional[Link[LeadsModel]] = None
     dealName : str 
     dealPipeline: DEAL_PIPELINE
     dealStage: DEAL_STAGES
@@ -21,6 +21,9 @@ class DealModel(BaseDocument):
     amount: int = Field(..., gt=0)
     dealCollaborator: Optional[str] = None
     dealDescription: Optional[str] = None
+    extraFields: Dict[str, Any] = Field(default_factory=dict)
+    followUpAt: Optional[datetime] = None
+    followUpOwnerId: Optional[PydanticObjectId] = None
     dealProbability: Optional[int] = Field(None,gt=0, lt=100) 
     forecastProbability: Optional[int] = Field(None, gt=0, lt=100)
     nextStep: Optional[str] = None

@@ -23,6 +23,7 @@ from datetime import timezone
 
 
 from app.utils.activity_payload import activity_payload
+from app.utils.enquiry_id_generator import generate_enquiry_id
 
 class InvoiceService:
     def __init__(self):
@@ -31,6 +32,34 @@ class InvoiceService:
         self.encryption = Encryption()
         self.activityRepo = ActivityRepository()
         self.client = Client
+
+    async def create_standalone(self, payload: Dict[str, Any], user: Dict[str, Any]):
+        try:
+            data = {
+                **payload,
+                "invoiceId": generate_enquiry_id("INV"),
+                "createdBy": PydanticObjectId(user["_id"]),
+                "deal": None,
+                "quotation": None,
+            }
+            invoice = await self.repo.create(data=data)
+            if not invoice:
+                raise AppException(400, "Invoice creation failed")
+            activity = activity_payload(
+                userId=PydanticObjectId(user["_id"]),
+                entityType=ACTIVITY_ENTITY_TYPE.INVOICE,
+                entityId=PydanticObjectId(invoice.id),
+                action=ACTIVITY_ACTION.CREATED,
+                title="create standalone invoice",
+                metadata={"invoiceId": invoice.invoiceId},
+            )
+            await self.activityRepo.create(data=activity)
+            return jsonable_encoder(invoice)
+        except AppException:
+            raise
+        except Exception as e:
+            print("Invoice creation error:", e)
+            raise AppException(500, "Invoice creation failed")
 
     async def getAll(self, filters: Dict[str, Any], user: Dict[str, Any]):
         try:

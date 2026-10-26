@@ -69,9 +69,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
     <div
       className={`w-full flex flex-wrap items-end justify-between gap-4 p-5 bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-gray-800 dark:to-gray-800/80 rounded-xl border border-slate-900/10 animate-in slide-in-from-top-2 duration-200 ${className}`}
     >
-      {/* LEFT SIDE — Team / Designation / SalesPerson filters */}
       <div className="flex flex-wrap items-end gap-4">
-        {/* Team filter */}
         {showTeam && (
           <div className="flex flex-col gap-1.5 min-w-[160px]">
             <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-300 uppercase tracking-wide">

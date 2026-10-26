@@ -21,6 +21,8 @@ export interface CalendarEvent {
 
   createdAt: string; 
   updatedAt: string; 
+  followUpEntity?: "lead" | "deal" | "quotation" | "invoice" | "enquiry";
+  followUpRecordId?: string;
 }
 
 export interface CalendarEventPayload {

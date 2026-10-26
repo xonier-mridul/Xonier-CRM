@@ -1,5 +1,5 @@
 "use client";
-import { PERMISSIONS } from "@/src/constants/enum";
+import { INVOICE_STATUS, PERMISSIONS } from "@/src/constants/enum";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import axios from "axios";
 import Link from "next/link";
@@ -9,6 +9,8 @@ import { IoIosSearch } from "react-icons/io";
 import extractErrorMessages from "../../utils/error.utils";
 import { toast } from "react-toastify";
 import InvoiceService from "@/src/services/invoice.service";
+import FollowUpScheduler from "@/src/components/common/FollowUpScheduler";
+import FollowUpCountCard from "@/src/components/common/FollowUpCountCard";
 import { Invoice } from "@/src/types/invoice/invoice.types";
 import { handleCopy } from "../../utils/clipboard.utils";
 import { MdDeleteOutline, MdOutlineEdit } from "react-icons/md";
@@ -101,6 +103,22 @@ const page = (): JSX.Element => {
         </div>
       </div>
 
+      <div className="mb-4 grid w-full grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className="flex items-center gap-3 rounded-xl border border-cyan-100 bg-gradient-to-br from-cyan-50 to-sky-50 p-4 dark:border-cyan-800/40 dark:from-cyan-900/20 dark:to-sky-900/20">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-100 dark:bg-cyan-900/40"><IoDocumentText className="text-cyan-600 dark:text-cyan-400" size={20} /></div>
+          <div><p className="text-[11px] font-semibold uppercase tracking-wide text-cyan-600 dark:text-cyan-400">All Invoices</p><p className="text-lg font-bold text-slate-800 dark:text-white">{invoiceData.length}</p></div>
+        </div>
+        <div className="flex items-center gap-3 rounded-xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-green-50 p-4 dark:border-emerald-800/40 dark:from-emerald-900/20 dark:to-green-900/20">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/40"><IoCheckmarkCircle className="text-emerald-600 dark:text-emerald-400" size={20} /></div>
+          <div><p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">Paid Invoices</p><p className="text-lg font-bold text-slate-800 dark:text-white">{invoiceData.filter((invoice) => invoice.status.toLowerCase() === INVOICE_STATUS.PAID.toLowerCase()).length}</p></div>
+        </div>
+        <div className="flex items-center gap-3 rounded-xl border border-amber-100 bg-gradient-to-br from-amber-50 to-yellow-50 p-4 dark:border-amber-800/40 dark:from-amber-900/20 dark:to-yellow-900/20">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/40"><IoAlertCircleOutline className="text-amber-600 dark:text-amber-400" size={20} /></div>
+          <div><p className="text-[11px] font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">Overdue Invoices</p><p className="text-lg font-bold text-slate-800 dark:text-white">{invoiceData.filter((invoice) => invoice.status.toLowerCase() === INVOICE_STATUS.OVERDUE.toLowerCase()).length}</p></div>
+        </div>
+        <FollowUpCountCard entity="invoice" dateFilter={dateFilter} />
+      </div>
+
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm  p-6 rounded-xl border-[1px] border-slate-900/10 w-full flex flex-col gap-7 items-center justify-between">
         <div className="flex w-full items-center gap-12 justify-between">
           <div className="flex flex-col gap-1.5">
@@ -112,6 +130,7 @@ const page = (): JSX.Element => {
             </p>
           </div>
           <div className="flex items-center gap-6">
+            {(hasPermission(PERMISSIONS.createInvoice) || hasPermission(PERMISSIONS.sendInvoice)) && <Link href="/invoice/create" className="flex items-center gap-2 rounded-md bg-cyan-600 px-4 py-2.5 text-white hover:bg-cyan-700"><FaPlus /> Create Invoice</Link>}
             <select
               name="limit"
               id="limit"
@@ -252,6 +271,7 @@ const page = (): JSX.Element => {
                       </td>
                       <td>
                         <div className="flex items-center gap-2">
+                          {hasPermission(PERMISSIONS.updateInvoice) && <FollowUpScheduler entity="invoice" recordId={item.id} recordName={item.invoiceId || item.customerName} followUpAt={item.followUpAt} onUpdated={getInvoiceData} />}
                           {hasPermission(PERMISSIONS.readInvoice) ? <Link
                             href={`/invoice/view/${item.id}`}
                             className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-colors"

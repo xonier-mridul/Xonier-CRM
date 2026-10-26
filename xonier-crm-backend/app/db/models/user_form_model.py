@@ -22,7 +22,7 @@ class UserFormModel(BaseDocument):
 
     class Settings:
         name="user_form"
-        indexes= [IndexModel([("userId", 1)], unique = True, name="user_id")]
+        indexes= [IndexModel([("userId", 1), ("module", 1)], unique = True, name="user_module_unique")]
 
     @before_event(Insert, Replace, Save)
     async def update_time_stamp(self):

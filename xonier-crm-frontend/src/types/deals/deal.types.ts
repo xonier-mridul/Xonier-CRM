@@ -7,7 +7,7 @@ export interface Deal {
   id: string;                 
 
   deal_id: string;
-  lead_id:  Lead;              
+  lead_id?: Lead | null;
 
   dealName: string;
   dealPipeline: DEAL_PIPELINE;
@@ -23,6 +23,9 @@ export interface Deal {
 
   dealCollaborator?: string | null;
   dealDescription?: string | null;
+  extraFields?: Record<string, string | number | boolean | null>;
+  followUpAt?: string | null;
+  followUpOwnerId?: string | null;
 
   dealProbability?: number | null;      
   forecastProbability?: number | null;  
@@ -46,7 +49,7 @@ export interface Deal {
 }
 
 export interface DealPayload {
-  lead_id: string;
+  lead_id?: string | null;
 
   dealName: string;
   dealPipeline?: DEAL_PIPELINE;
@@ -62,6 +65,7 @@ export interface DealPayload {
 
   dealCollaborator?: string | null;
   dealDescription?: string | null;
+  extraFields?: Record<string, string | number | boolean | null>;
 
   dealProbability?: number | null;      
   forecastProbability?: number | null;  

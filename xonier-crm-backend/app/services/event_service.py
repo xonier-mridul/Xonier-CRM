@@ -13,6 +13,14 @@ from app.schemas.project.calender_project import CALENDER_LOOKUPS, CALENDER_PROJ
 from app.services.notification_service import NotificationService
 from app.core.notification_enum import NOTIFICATION_TYPE, NOTIFICATION_ENTITY_TYPE
 from beanie import PydanticObjectId
+from datetime import timedelta
+from app.db.models.deal_model import DealModel
+from app.db.models.quotation_model import QuotationModel
+from app.db.models.invoice_model import InvoiceModel
+from app.db.models.enquiry_management_model import EnquiryModel
+from app.db.models.lead_model import LeadsModel
+from app.utils.get_team_members import GetTeamMembers
+from app.utils.validate_admin import validate_admin_company_admin
 
 
 class EventService:
@@ -202,7 +210,7 @@ class EventService:
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
 
-    async def get_all(self):
+    async def get_all(self, user: Dict[str, Any]):
         try:
             result = await self.repo.get_all_with_lookup(
                 page=1,
@@ -212,7 +220,53 @@ class EventService:
             )
 
             if not result:
-                raise AppException(400, "Event data not found")
+                result = {"data": [], "page": 1, "totalPages": 1, "limit": 1100}
+
+            company_id = PydanticObjectId(user["companyId"])
+            owner_ids = [PydanticObjectId(user["_id"])]
+            if not validate_admin_company_admin(user["userRole"]):
+                owner_ids.extend(
+                    PydanticObjectId(str(member_id))
+                    for member_id in await GetTeamMembers().get_team_members(user["_id"])
+                    if str(member_id) != str(user["_id"])
+                )
+
+            follow_up_query = {
+                "companyId": company_id,
+                "followUpAt": {"$ne": None},
+                "deletedAt": None,
+            }
+            if not validate_admin_company_admin(user["userRole"]):
+                follow_up_query["followUpOwnerId"] = {"$in": owner_ids}
+
+            follow_up_sources = [
+                (LeadsModel, "lead", "fullName"),
+                (DealModel, "deal", "dealName"),
+                (QuotationModel, "quotation", "title"),
+                (InvoiceModel, "invoice", "invoiceId"),
+                (EnquiryModel, "enquiry", "fullName"),
+            ]
+            for model, entity_type, title_field in follow_up_sources:
+                records = await model.find(follow_up_query).to_list()
+                for record in records:
+                    start = record.followUpAt
+                    if start.tzinfo is None:
+                        start = start.replace(tzinfo=timezone.utc)
+                    record_name = getattr(record, title_field, None) or entity_type.title()
+                    result["data"].append({
+                        "id": f"follow-up-{entity_type}-{record.id}",
+                        "title": f"Follow-up: {record_name}",
+                        "description": f"Follow-up for {entity_type} {record_name}",
+                        "eventType": "reminder",
+                        "start": start,
+                        "end": start + timedelta(minutes=30),
+                        "isAllDay": False,
+                        "priority": "high",
+                        "followUpEntity": entity_type,
+                        "followUpRecordId": str(record.id),
+                        "createdAt": record.createdAt,
+                        "updatedAt": record.updatedAt,
+                    })
 
             return jsonable_encoder(result)
 

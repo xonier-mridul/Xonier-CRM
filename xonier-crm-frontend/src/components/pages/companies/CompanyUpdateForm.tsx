@@ -22,6 +22,17 @@ const statusOptions = Object.values(COMPANY_STATUS).filter(
 
 const OTP_LENGTH = 6;
 const RESEND_COOLDOWN = 60;
+const CURRENCIES = [
+  ["USD", "US Dollar"], ["EUR", "Euro"], ["GBP", "Pound Sterling"], ["INR", "Indian Rupee"],
+  ["CAD", "Canadian Dollar"], ["AUD", "Australian Dollar"], ["NZD", "New Zealand Dollar"],
+  ["JPY", "Japanese Yen"], ["CNY", "Chinese Yuan"], ["HKD", "Hong Kong Dollar"], ["SGD", "Singapore Dollar"],
+  ["CHF", "Swiss Franc"], ["SEK", "Swedish Krona"], ["NOK", "Norwegian Krone"], ["DKK", "Danish Krone"],
+  ["AED", "UAE Dirham"], ["SAR", "Saudi Riyal"], ["ZAR", "South African Rand"], ["BRL", "Brazilian Real"],
+  ["MXN", "Mexican Peso"], ["KRW", "South Korean Won"], ["THB", "Thai Baht"], ["IDR", "Indonesian Rupiah"],
+  ["MYR", "Malaysian Ringgit"], ["PHP", "Philippine Peso"], ["TRY", "Turkish Lira"], ["PLN", "Polish Zloty"],
+  ["ILS", "Israeli New Shekel"], ["EGP", "Egyptian Pound"], ["NGN", "Nigerian Naira"], ["PKR", "Pakistani Rupee"],
+  ["BDT", "Bangladeshi Taka"], ["VND", "Vietnamese Dong"], ["QAR", "Qatari Riyal"], ["KWD", "Kuwaiti Dinar"],
+].map(([code, name]) => ({ code, name }));
 
 type FormErrors = Partial<Record<keyof CompanyUpdatePayload, string>>;
 
@@ -59,7 +70,7 @@ const OtpOverlay: React.FC<{
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, []);
 
-  const startCooldown = () => {
+  function startCooldown() {
     setCooldown(RESEND_COOLDOWN);
     timerRef.current = setInterval(() => {
       setCooldown((prev) => {
@@ -67,7 +78,7 @@ const OtpOverlay: React.FC<{
         return prev - 1;
       });
     }, 1000);
-  };
+  }
 
   const handleChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;
@@ -214,11 +225,14 @@ const CompanyUpdateForm: React.FC<CompanyUpdateFormProps> = ({
     website: company.website ?? "",
     timezone: company.timezone ?? "",
     country: company.country,
+    currency: company.currency ?? "USD",
     userLimit: company.userLimit,
     subDomain: company.subDomain ?? "",
     status: company.status,
   });
   const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [currencySearch, setCurrencySearch] = useState("");
+  const [currencyOpen, setCurrencyOpen] = useState(false);
 
   const set = (field: keyof CompanyUpdatePayload, value: unknown) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -347,6 +361,29 @@ const CompanyUpdateForm: React.FC<CompanyUpdateFormProps> = ({
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
+            </div>
+
+            <div className="flex flex-col gap-1 w-full">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Company currency</label>
+              <div className="relative">
+                <input
+                  value={currencyOpen ? currencySearch : `${form.currency ?? "USD"} — ${CURRENCIES.find((item) => item.code === form.currency)?.name ?? "US Dollar"}`}
+                  onFocus={() => { setCurrencySearch(""); setCurrencyOpen(true); }}
+                  onChange={(e) => setCurrencySearch(e.target.value)}
+                  onBlur={() => setTimeout(() => setCurrencyOpen(false), 150)}
+                  placeholder="Search currency code or name"
+                  className="w-full px-3 py-2 rounded-md border bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
+                  aria-label="Search company currency"
+                />
+                {currencyOpen && <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
+                  {CURRENCIES.filter((item) => `${item.code} ${item.name}`.toLowerCase().includes(currencySearch.toLowerCase())).map((item) => (
+                    <button type="button" key={item.code} onMouseDown={(e) => e.preventDefault()} onClick={() => { set("currency", item.code); setCurrencyOpen(false); }} className="block w-full px-3 py-2 text-left text-sm hover:bg-cyan-50 dark:hover:bg-gray-700">
+                      <span className="font-medium">{item.code}</span><span className="ml-2 text-gray-500">{item.name}</span>
+                    </button>
+                  ))}
+                </div>}
+              </div>
+              <p className="text-xs text-gray-500">Used to display amounts in this company’s Sales module.</p>
             </div>
 
             <div className="flex flex-col gap-1 w-full">

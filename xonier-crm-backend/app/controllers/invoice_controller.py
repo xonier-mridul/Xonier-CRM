@@ -4,11 +4,22 @@ from typing import Dict, Any
 from app.utils.custom_exception import AppException
 from app.utils.custom_response import successResponse
 from app.services.invoice_service import InvoiceService
+from app.schemas.invoice_schema import InvoiceCreateSchema
 from fastapi.responses import StreamingResponse
 
 class InvoiceController:
     def __init__(self):
         self.service = InvoiceService()
+
+    async def create_standalone(self, request: Request, payload: InvoiceCreateSchema):
+        try:
+            result = await self.service.create_standalone(
+                payload=payload.model_dump(exclude={"invoiceId", "createdBy", "deal", "quotation"}),
+                user=request.state.user,
+            )
+            return successResponse(201, "Invoice created successfully", result)
+        except AppException as e:
+            raise e
 
     async def getAll(self, request: Request):
         try:

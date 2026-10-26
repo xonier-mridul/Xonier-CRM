@@ -427,7 +427,6 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
     if (!formData.customerName.trim()) errors.push('Customer name is required')
     if (!formData.customerEmail.trim()) errors.push('Customer email is required')
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.customerEmail)) errors.push('Invalid email format')
-    if (!formData.deal) errors.push('Deal is required')
     if (!formData.issueDate) errors.push('Issue date is required')
     if (formData.subTotal <= 0) errors.push('Subtotal must be greater than 0')
     if (formData.total <= 0) errors.push('Total must be greater than 0')
@@ -452,6 +451,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
         valid: formData.valid || null,
         lineItems: (formData.lineItems ?? []).filter(i => i.description.trim()),
       }
+      if (!payload.deal) delete payload.deal
 
       const result = await QuoteService.create(payload)
 
@@ -581,7 +581,6 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                 value={formData.customerName}
                 onChange={handleInput}
                 placeholder={t("john_doe")}
-                disabled
                 className="w-full"
               />
               <Input
@@ -591,7 +590,6 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                 value={formData.customerEmail}
                 onChange={handleInput}
                 placeholder={t("john_example_com")}
-                disabled
                 className="w-full"
               />
               <Input
@@ -601,7 +599,6 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                 value={formData.customerPhone ?? ''}
                 onChange={handleInput}
                 placeholder="+1 555 123 4567"
-                disabled
                 className="w-full"
               />
               <Input
@@ -610,7 +607,6 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                 value={formData.companyName ?? ''}
                 onChange={handleInput}
                 placeholder={t("acme_corp")}
-                disabled
                 className="w-full"
               />
               <div className="md:col-span-2">

@@ -17,8 +17,8 @@ export interface Invoice {
   id: string
   invoiceId: string
   sourceQuoteId?: string | null
-  deal: Deal
-  quotation: Quotation
+  deal?: Deal | null
+  quotation?: Quotation | null
   customerName: string
   customerEmail: string
   customerEmailHash?: string | null
@@ -40,6 +40,8 @@ export interface Invoice {
   issueDate?: string | null
   dueDate: string
   status: INVOICE_STATUS
+  followUpAt?: string | null
+  followUpOwnerId?: string | null
   paymentTerms?: string | null
   notes?: string | null
   termsAndConditions?: string | null

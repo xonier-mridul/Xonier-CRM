@@ -63,6 +63,8 @@ from app.routes.notification_route import router as notification_router
 from app.routes.campaign_route import router as campaign_router
 from app.routes.mobile_route import router as mobile_router
 from app.routes.call_route import web_router as call_web_router, mobile_router as call_mobile_router
+from app.routes.google_calendar_route import router as google_calendar_router
+from app.routes.follow_up_route import router as follow_up_router
 
 settings = get_setting()
 
@@ -176,6 +178,8 @@ app.include_router(notification_router, prefix="/api/v1/notifications", tags=["N
 app.include_router(campaign_router, prefix="/api/campaign", tags=["Campaign"])
 app.include_router(mobile_router, prefix="/api/mobile", tags=["Mobile"])
 app.include_router(call_mobile_router, prefix="/api/mobile", tags=["Mobile Calls"])
+app.include_router(google_calendar_router, prefix="/api/google-calendar", tags=["Google Calendar"])
+app.include_router(follow_up_router, prefix="/api/follow-up", tags=["Follow-ups"])
 app.include_router(call_web_router, prefix="/api/call", tags=["Calls"])
 
 app.add_exception_handler(HTTPException, http_exception_handler)

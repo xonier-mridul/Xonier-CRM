@@ -1,4 +1,4 @@
-from beanie import Document, Link, before_event,Save, Replace, Insert, Indexed
+from beanie import Document, Link, before_event,Save, Replace, Insert, Indexed, PydanticObjectId
 from typing import Optional, Annotated, List, Dict, Any
 from app.core.enums import PROJECT_TYPES, SALES_STATUS, PRIORITY, SOURCE, NUMBER_OF_EMPLOYEES, INDUSTRIES, DESIGNATION, INFO_TYPE, TECHNOLOGY, COUNTRY_CODE
 from app.db.models.user_model import UserModel
@@ -95,6 +95,8 @@ class EnquiryModel(BaseDocument):
 
     projectType: Optional[str] = None
     status: SALES_STATUS = SALES_STATUS.NEW
+    followUpAt: Optional[datetime] = None
+    followUpOwnerId: Optional[PydanticObjectId] = None
     isActive: bool = True
     priority: PRIORITY = PRIORITY.MEDIUM.value
     source: str

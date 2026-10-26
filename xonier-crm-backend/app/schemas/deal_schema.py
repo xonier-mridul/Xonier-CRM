@@ -1,12 +1,12 @@
 
 from pydantic import BaseModel, Field, field_validator
 from app.core.enums import DEAL_PIPELINE, DEAL_STAGES, DEAL_TYPE, FORECAST_CATEGORY, DEAL_STATUS
-from typing import Optional
+from typing import Optional, Dict, Any
 from datetime import datetime
 from app.utils.custom_exception import AppException
 
 class DealSchema(BaseModel):
-    lead_id : str
+    lead_id : Optional[str] = None
     dealName : str 
     # dealPipeline: DEAL_PIPELINE
     dealStage: DEAL_STAGES
@@ -17,6 +17,7 @@ class DealSchema(BaseModel):
     amount: int = Field(gt=0)
     dealCollaborator: Optional[str] = None
     dealDescription: Optional[str] = None
+    extraFields: Dict[str, Any] = Field(default_factory=dict)
     dealProbability: Optional[int] = Field(None,gt=0, lt=100) 
     forecastProbability: Optional[int] = Field(None, gt=0, lt=100)
     nextStep: Optional[str] = None
@@ -76,6 +77,7 @@ class DealUpdateSchema(BaseModel):
     amount: int 
     dealCollaborator: Optional[str] = None
     dealDescription: Optional[str] = None
+    extraFields: Optional[Dict[str, Any]] = None
     dealProbability: Optional[int] = Field(None,gt=0, lt=100) 
     forecastProbability: Optional[int] = Field(None, gt=0, lt=100)
     nextStep: Optional[str] = None

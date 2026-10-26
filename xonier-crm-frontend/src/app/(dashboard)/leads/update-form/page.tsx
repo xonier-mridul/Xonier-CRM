@@ -12,7 +12,7 @@ import { GrDocumentUpdate } from "react-icons/gr";
 import Input from "@/src/components/ui/Input";
 import Select from "@/src/components/ui/Select";
 import { MdOutlineCloudUpload, MdSearch } from "react-icons/md";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { IoChevronBack, IoLanguage } from "react-icons/io5";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -37,8 +37,16 @@ import {
   HiOutlineViewList
 } from "react-icons/hi";
 
+const isDealPipelineField = (field: CustomField): boolean => {
+  const normalize = (value: string) => value.toLowerCase().replace(/[\s_-]/g, "");
+  return normalize(field.key) === "dealpipeline" || normalize(field.name) === "dealpipeline";
+};
+
 const page = (): JSX.Element => {
   const { t } = useTranslation();
+  const searchParams = useSearchParams();
+  const formModule = searchParams.get("module") === "deal" ? FORM_FIELD_MODULE.DEAL : FORM_FIELD_MODULE.LEAD;
+  const backToForm = formModule === FORM_FIELD_MODULE.DEAL ? "/deals/add" : "/leads/add";
   const [err, setErr] = useState<string | string[]>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [fieldDataLoading, setFieldDataLoading] = useState<boolean>(false);
@@ -103,12 +111,14 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
 
   const router = useRouter();
 
-  const getFormFields = async (): Promise<void> => {
+  const getFormFields = async (): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const result = await UserFormService.getAllLead();
+      const result = formModule === FORM_FIELD_MODULE.DEAL ? await UserFormService.getAllDeal() : await UserFormService.getAllLead();
       if (result.status === 200) {
-        const selectedFields: CustomField[] = result.data.data.selectedFormFields ?? [];
+        const selectedFields: CustomField[] = (result.data.data.selectedFormFields ?? []).filter(
+          (field: CustomField) => formModule !== FORM_FIELD_MODULE.DEAL || !isDealPipelineField(field),
+        );
         const selectedFieldsIds = selectedFields.map(item => item.id);
         const required = selectedFields.filter((item) => item.required === true || item.id === "6974a52d515f3aec8648561a");
         setUserFormData(result.data.data);
@@ -117,15 +127,25 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
           ...new Set([...prev, ...selectedFieldsIds])
         ]);
         setRequiredIds(required);
+        return true;
       }
+      return false;
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) {
+        if (formModule === FORM_FIELD_MODULE.DEAL && error.response?.status === 404) {
+          setUserFormData(null);
+          setUserFormField([]);
+          setSelectedFieldsIds([]);
+          setRequiredIds([]);
+          return false;
+        }
         const messages = extractErrorMessages(error);
         setErr(messages);
       } else {
         setErr([t("something_went_wrong")]);
       }
+      return false;
     } finally {
       setIsLoading(false);
     }
@@ -138,12 +158,12 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
       if (result.status === 200) {
         const data = result.data.data;
         console.log('form data :', data);
-        setAllCustomFormField(data);
+        setAllCustomFormField(data.filter((field: any) => field.module === formModule));
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
       if (axios.isAxiosError(error)) {
-        if (error.response?.status === 400) {
+        if (error.response?.status === 400 || error.response?.status === 404) {
           setAllCustomFormField([]);
           return;
         }
@@ -157,26 +177,38 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
     }
   };
 
-  const getAllFieldsData = async (): Promise<void> => {
+  const getAllFieldsData = async (initializeDealDefaults = false): Promise<void> => {
     setFieldDataLoading(true);
        setDeletePopupOpen(true); // Show blur background
     try {
-      const result = await FormFieldService.getLeadsAll();
+      const result = formModule === FORM_FIELD_MODULE.DEAL ? await FormFieldService.getDealAll() : await FormFieldService.getLeadsAll();
       if (result.status === 200) {
         const req: string[] = [];
-        result.data.data.forEach((item: any, i: number) => {
+        const fields: CustomField[] = formModule === FORM_FIELD_MODULE.DEAL
+          ? result.data.data.filter((field: CustomField) => !isDealPipelineField(field))
+          : result.data.data;
+        const defaultDealFieldNames = new Set([
+          "dealname", "dealstage", "dealtype", "dealowner",
+          "createdate", "closedate", "amount",
+        ]);
+        const isDefaultDealField = (field: CustomField) => {
+          const normalize = (value: string) => value.toLowerCase().replace(/[\s_-]/g, "");
+          return defaultDealFieldNames.has(normalize(field.key)) || defaultDealFieldNames.has(normalize(field.name));
+        };
+        const defaults = formModule === FORM_FIELD_MODULE.DEAL && initializeDealDefaults
+          ? fields.filter(isDefaultDealField).map((field: CustomField) => field.id)
+          : [];
+        fields.forEach((item: any, i: number) => {
           if (item.required === true) {
             req.push(item.id);
           }
-          if (item.id === "6974a52d515f3aec8648561a") {
+          if (formModule === FORM_FIELD_MODULE.LEAD && item.id === "6974a52d515f3aec8648561a") {
             req.push(item.id);
-            result.data.data[i].required = true;
+            fields[i].required = true;
           }
         });
-        setSelectedFieldsIds(prev => [
-          ...new Set([...prev, ...req])
-        ]);
-        setAllFormField(result.data.data);
+        setSelectedFieldsIds(prev => [...new Set([...prev, ...req, ...defaults])]);
+        setAllFormField(fields);
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
@@ -194,10 +226,15 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
   };
 
   useEffect(() => {
-    getFormFields();
-    getAllFieldsData();
-    getCustomFormFields();
-  }, []);
+    const loadFormConfiguration = async () => {
+      const hasSavedForm = await getFormFields();
+      await Promise.all([
+        getAllFieldsData(formModule === FORM_FIELD_MODULE.DEAL && !hasSavedForm),
+        getCustomFormFields(),
+      ]);
+    };
+    loadFormConfiguration();
+  }, [formModule]);
 
   const handleChecked = (e: ChangeEvent<HTMLInputElement>) => {
     const { value, checked } = e.target;
@@ -223,7 +260,7 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
       if (!userFormData) {
         const result = await UserFormService.create({
           "selectedFormFields": selectedFieldsIds,
-          "module": FORM_FIELD_MODULE.LEAD
+          "module": formModule
         });
 
         if (result.status === 201) {
@@ -235,14 +272,14 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
 
       const result = await UserFormService.update(userFormData?.id, {
         "selectedFormFields": selectedFieldsIds,
-        "module": FORM_FIELD_MODULE.LEAD
+        "module": formModule
       });
 
       if (result.status === 200) {
         toast.success(t("form_field_updated_successfully"));
         await getFormFields();
 
-        router.push('/leads/add')
+        router.push(backToForm)
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
@@ -308,7 +345,7 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
 
       const new_payload = {
         ...formData,
-        "module": FORM_FIELD_MODULE.LEAD
+        "module": formModule
       };
 
       const result = await CustomFormService.create(new_payload);
@@ -943,10 +980,10 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
               </div>
               <div>
                 <h2 className="text-gray-900 dark:text-white font-bold text-2xl tracking-tight">
-                  {t("update_lead_form_field")}
+                  {formModule === FORM_FIELD_MODULE.DEAL ? "Update Deal Form Fields" : t("update_lead_form_field")}
                 </h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {t("customize_lead_capture_form")}
+                  {formModule === FORM_FIELD_MODULE.DEAL ? "Choose the fields shown when creating a deal." : t("customize_lead_capture_form")}
                 </p>
               </div>
             </div>

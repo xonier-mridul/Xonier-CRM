@@ -298,6 +298,13 @@ PERMISSIONS = [
         "description": "permission for create event data",
     },
     {
+        "code": "invoice:create",
+        "module": "invoice",
+        "action": "create",
+        "title": "create invoice",
+        "description": "permission for create a standalone invoice",
+    },
+    {
         "code": "invoice:read",
         "module": "invoice",
         "action": "read",

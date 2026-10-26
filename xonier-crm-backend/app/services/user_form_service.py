@@ -110,6 +110,17 @@ class UserFormService:
             if not result:
                 raise AppException(404, 'You haven’t created any form fields yet. Please create form fields to continue')
             
+            hydrated_fields = []
+            for field in result.selectedFormFields:
+                if isinstance(field, CustomFieldModel):
+                    hydrated_fields.append(field)
+                    continue
+                field_id = getattr(field, "id", None) or getattr(getattr(field, "ref", None), "id", None)
+                if field_id:
+                    custom_field = await UserCustomFieldModel.get(field_id)
+                    if custom_field:
+                        hydrated_fields.append(custom_field)
+            result.selectedFormFields = hydrated_fields
             return result.model_dump(mode="json")
 
 

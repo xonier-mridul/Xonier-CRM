@@ -7,18 +7,15 @@ import { Lead } from "@/src/types/leads/leads.types";
 
 interface CallablePhoneProps {
   lead: Lead;
-  /** What to show in the cell (usually the masked number). */
   displayValue: string;
   fontSize?: string;
   onCallDisposed?: (leadId: string, connectStatus: string) => void;
-  /** When called from a campaign, the backend verifies this exact assignment. */
   campaignId?: string;
   campaignLeadId?: string;
 }
 
-/** Format ISO datetime to "15 Oct, 10:30 AM" in IST */
 function formatFollowUpTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-IN", {
+  return parseFollowUpTime(iso).toLocaleString("en-IN", {
     day: "2-digit",
     month: "short",
     hour: "2-digit",
@@ -28,11 +25,14 @@ function formatFollowUpTime(iso: string): string {
   });
 }
 
-/**
- * Phone number cell. Hovering shows a "Make call" chip; clicking does NOT dial from the
- * browser - it opens the call window and asks the agent's mobile app to place the call.
- * When connectStatus is "follow_up", also shows "Follow up at {exact time}" badge.
- */
+function parseFollowUpTime(iso: string): Date {
+  // MongoDB stores instants in UTC, while PyMongo's default decoder can return
+  // a naive datetime. Treat a missing offset as UTC instead of browser-local
+  // time, then format it in the app's IST display timezone.
+  const hasTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(iso);
+  return new Date(hasTimezone ? iso : `${iso}Z`);
+}
+
 export default function CallablePhone({
   lead,
   displayValue,
@@ -46,7 +46,7 @@ export default function CallablePhone({
   if (!lead.phone) return <span className="text-slate-400 text-[13px]">N/A</span>;
 
   const isFollowUp = lead.connectStatus === "follow_up" && lead.followUpAt;
-  const isOverdue = isFollowUp && new Date(lead.followUpAt!) < new Date();
+  const isOverdue = isFollowUp && parseFollowUpTime(lead.followUpAt!) < new Date();
 
   return (
     <>

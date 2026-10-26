@@ -49,7 +49,7 @@ class EventController:
     async def get_all(self, request: Request):
         try:
             user = request.state.user
-            result = await self.service.get_all()
+            result = await self.service.get_all(user)
 
             return successResponse(200, "Fetch all events successfully", result)
 
@@ -81,4 +81,4 @@ class EventController:
 
 
         
-    
+

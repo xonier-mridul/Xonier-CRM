@@ -493,6 +493,11 @@ export default function CompanyDetailPage() {
                     }
                   />
                   <InfoRow
+                    icon={<IoGlobeOutline />}
+                    label="Currency"
+                    value={company.currency ?? "USD"}
+                  />
+                  <InfoRow
                     icon={<IoTimeOutline />}
                     label={t("timezone")}
                     value={company.timezone}

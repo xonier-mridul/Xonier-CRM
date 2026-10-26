@@ -142,6 +142,7 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
   };
 
   const priority = event.extendedProps?.priority || "medium";
+  const isFollowUp = Boolean(event.extendedProps?.isFollowUp);
   const priorityConfig = getPriorityConfig(priority);
   const eventTypeIcon = getEventTypeIcon(event.extendedProps?.eventType);
 
@@ -166,7 +167,7 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/20 backdrop-blur-sm text-white border border-white/30">
-                  {event.extendedProps?.eventType?.replace('_', ' ') || "Event"}
+                  {isFollowUp ? "Follow-up" : event.extendedProps?.eventType?.replace('_', ' ') || "Event"}
                 </span>
                 {event.allDay && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/20 backdrop-blur-sm text-white border border-white/30">
@@ -317,7 +318,7 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
               {t("event_id")} {event.id}
             </div>
             <div className="flex gap-3">
-              {onEdit && hasPermission(PERMISSIONS.updateEvent) && (
+              {!isFollowUp && onEdit && hasPermission(PERMISSIONS.updateEvent) && (
                 <button
                   onClick={onEdit}
                   className="px-5 py-2.5 text-sm font-semibold text-cyan-700 dark:text-cyan-300 bg-cyan-50 dark:bg-cyan-900/30  rounded-lg hover:bg-cyan-100 dark:hover:bg-cyan-900/50 focus:outline-none focus:ring-4 focus:ring-cyan-200  transition-all duration-200 flex items-center gap-2  cursor-pointer"
@@ -328,7 +329,7 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
                   {t("edit_event")}
                 </button>
               )}
-              {hasPermission(PERMISSIONS.deleteEvent) && (
+              {!isFollowUp && hasPermission(PERMISSIONS.deleteEvent) && (
                 <button
                   onClick={() => onDelete(event.id as string, event.title as string)}
                   className="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 rounded-lg hover:from-red-700 hover:to-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 dark:focus:ring-red-800 transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg cursor-pointer"

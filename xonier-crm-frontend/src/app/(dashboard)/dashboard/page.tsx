@@ -3430,7 +3430,7 @@ function UserLayout({ d }: { d: DashboardData }) {
 }
 
 // ── Main Dashboard ─────────────────────────────────────────────────────────────
-export const formatDate = (date: string, language: string) => {
+const formatDate = (date: string, language: string) => {
   const localeMap: Record<string, string> = {
     en: "en-US",
     hi: "hi-IN",

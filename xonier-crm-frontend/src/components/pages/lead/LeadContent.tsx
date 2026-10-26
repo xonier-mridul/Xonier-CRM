@@ -34,11 +34,13 @@ import { User } from "@/src/types";
 import { MdDeleteOutline, MdOutlinePersonAdd } from "react-icons/md";
 import { HiOutlineUserGroup } from "react-icons/hi2";
 import { SUPER_ADMIN_ROLE_CODE } from "@/src/constants/constants";
-import { TbArrowsExchange } from "react-icons/tb";
+import { TbArrowsExchange, TbChartBar, TbTrendingUp } from "react-icons/tb";
+import { HiOutlineLightBulb } from "react-icons/hi";
 import { RiUserSharedLine } from "react-icons/ri";
 import StatusBadge from "@/src/components/common/Status";
 import CreatedAt from "@/src/components/common/CreatedAt";
 import DateFilterButton from "@/src/components/common/dateFilter";
+import FollowUpCountCard from "@/src/components/common/FollowUpCountCard";
 import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 import TagBadge from "@/src/components/common/tagBadge";
 import StatusDropdown, { STATUS_CONFIG } from "@/src/components/pages/lead/StatusDropdown";
@@ -544,17 +546,38 @@ const isIndeterminate =
     }
   };
 
-  const updateLeadStatus = async (id: string, newStatus: LeadEngagementStatus): Promise<void> => {
+  const updateLeadStatus = async (id: string, newStatus: LeadEngagementStatus, followUpIn?: string): Promise<void> => {
     try {
-      const result = await LeadService.updateEngagementStatus(id, { status: newStatus });
+      const result = await LeadService.updateEngagementStatus(id, {
+        status: newStatus,
+        ...(followUpIn ? { followUpIn } : {}),
+      });
 
       if (result.status === 200 && result.data?.success !== false) {
         const label = STATUS_CONFIG[newStatus]?.label ?? newStatus;
         toast.success(result.data?.message || `Lead status updated to "${label}" successfully`);
+        window.dispatchEvent(new Event("follow-up-updated"));
 
         setLeadData((prevData) =>
           prevData.map((lead) =>
-            lead.id === id ? { ...lead, connectStatus: newStatus } : lead
+            lead.id === id ? {
+              ...lead,
+              connectStatus: newStatus,
+              followUpAt: newStatus === LeadEngagementStatus.FOLLOW_UP
+                ? result.data?.data?.followUpAt ?? lead.followUpAt
+                : null,
+            } : lead
+          )
+        );
+        setAssignedLeadData((prevData) =>
+          prevData.map((lead) =>
+            lead.id === id ? {
+              ...lead,
+              connectStatus: newStatus,
+              followUpAt: newStatus === LeadEngagementStatus.FOLLOW_UP
+                ? result.data?.data?.followUpAt ?? lead.followUpAt
+                : null,
+            } : lead
           )
         );
       } else {
@@ -1128,6 +1151,21 @@ const isIndeterminate =
         </div>
 
         <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full flex flex-col gap-6">
+          <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className="flex items-center gap-3 rounded-xl border border-cyan-100 bg-gradient-to-br from-cyan-50 to-sky-50 p-4 dark:border-cyan-800/40 dark:from-cyan-900/20 dark:to-sky-900/20">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-100 dark:bg-cyan-900/40"><TbChartBar className="text-cyan-600 dark:text-cyan-400" size={20} /></div>
+              <div><p className="text-[11px] font-semibold uppercase tracking-wide text-cyan-600 dark:text-cyan-400">All Leads</p><p className="text-lg font-bold text-slate-800 dark:text-white">{leadData.length}</p></div>
+            </div>
+            <div className="flex items-center gap-3 rounded-xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-green-50 p-4 dark:border-emerald-800/40 dark:from-emerald-900/20 dark:to-green-900/20">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/40"><TbTrendingUp className="text-emerald-600 dark:text-emerald-400" size={20} /></div>
+              <div><p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">Won Leads</p><p className="text-lg font-bold text-slate-800 dark:text-white">{wonLeadData.length}</p></div>
+            </div>
+            <div className="flex items-center gap-3 rounded-xl border border-rose-100 bg-gradient-to-br from-rose-50 to-red-50 p-4 dark:border-rose-800/40 dark:from-rose-900/20 dark:to-red-900/20">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-rose-100 dark:bg-rose-900/40"><HiOutlineLightBulb className="text-rose-600 dark:text-rose-400" size={20} /></div>
+              <div><p className="text-[11px] font-semibold uppercase tracking-wide text-rose-600 dark:text-rose-400">Lost Leads</p><p className="text-lg font-bold text-slate-800 dark:text-white">{lostLeadData.length}</p></div>
+            </div>
+            <FollowUpCountCard entity="lead" dateFilter={dateFilter} />
+          </div>
           <div className="flex w-full items-center gap-12 justify-between">
             <div className="flex flex-col gap-1.5">
               <h2 className="text-xl font-bold dark:text-white text-slate-900">{t("all_sales_leads")}</h2>

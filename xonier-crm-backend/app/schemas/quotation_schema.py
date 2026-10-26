@@ -21,7 +21,7 @@ class QuotationSchema(BaseModel):
     title: str = Field(..., min_length=1, max_length=200)
     description: Optional[str] = Field(None, max_length=5000)
 
-    deal: str
+    deal: Optional[str] = None
     customerName: str = Field(..., min_length=1, max_length=200)
     customerEmail: str
     customerPhone: Optional[str] = None
