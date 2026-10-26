@@ -33,6 +33,7 @@ from app.utils.custom_exception import AppException
 from app.utils.enquiry_id_generator import generate_enquiry_id
 from app.utils.activity_payload import activity_payload
 from app.utils.pipeline_stats import matches_pipeline_filter, summarize_lead_groups
+from app.utils.validate_admin import validate_admin_company_admin
 
 
 class CampaignService:
@@ -59,11 +60,15 @@ class CampaignService:
         except Exception:
             raise AppException(400, "One or more user IDs are invalid ObjectIds")
 
-    async def _get_campaign_or_404(self, campaign_id: str) -> CampaignModel:
+    async def _get_campaign_or_404(self, campaign_id: str, user: Dict[str, Any] | None = None) -> CampaignModel:
         """Fetch campaign by string ObjectId; raise 404 if not found or deleted."""
         campaign = await self.repo.find_by_id(PydanticObjectId(campaign_id))
         if not campaign or campaign.deletedAt is not None:
             raise AppException(404, "Campaign not found")
+        if user and not validate_admin_company_admin(user.get("userRole", [])):
+            visible_campaigns, _, _ = await self._get_user_campaign_scope(user)
+            if not any(str(item.get("_id")) == str(campaign.id) for item in visible_campaigns):
+                raise AppException(404, "Campaign not found")
         return campaign
 
     def _collection(self):
@@ -74,6 +79,89 @@ class CampaignService:
 
     def _global_leads_collection(self):
         return LeadsModel.get_pymongo_collection()
+
+    @staticmethod
+    def _reference_id(value):
+        if isinstance(value, dict) and "$id" in value:
+            return value["$id"]
+        if hasattr(value, "id"):
+            return value.id
+        return value
+
+    async def _get_user_campaign_scope(self, user: Dict[str, Any], campaigns=None):
+        """Return campaigns and campaign-lead IDs visible to this user."""
+        company_oid = PydanticObjectId(user["companyId"])
+        if campaigns is None:
+            campaigns = await self._collection().find(
+                {"companyId": company_oid, "deletedAt": None, "status": {"$ne": "deleted"}}
+            ).to_list(length=None)
+        if validate_admin_company_admin(user.get("userRole", [])):
+            return campaigns, None, None
+
+        user_oid = PydanticObjectId(user["_id"])
+        all_campaign_ids = [campaign["_id"] for campaign in campaigns]
+        own_leads = await self._global_leads_collection().find(
+            {
+                "companyId": company_oid,
+                "deletedAt": None,
+                "$or": [
+                    {"createdBy.$id": user_oid},
+                    {"assignedTo.$id": user_oid},
+                ],
+            },
+            {"_id": 1},
+        ).to_list(length=None)
+        own_lead_ids = [lead["_id"] for lead in own_leads]
+
+        campaign_links = []
+        if all_campaign_ids:
+            campaign_links = await self._lead_collection().find(
+                {
+                    "companyId": company_oid,
+                    "$or": [
+                        {"campaignId.$id": {"$in": all_campaign_ids}},
+                        {"campaignId": {"$in": all_campaign_ids}},
+                    ],
+                    "$and": [{
+                        "$or": [
+                            {"assignedTo.$id": user_oid},
+                            {"leadId.$id": {"$in": own_lead_ids}},
+                            {"leadId": {"$in": own_lead_ids}},
+                        ]
+                    }],
+                },
+                {"campaignId": 1, "leadId": 1, "assignedTo": 1, "campaignStatus": 1},
+            ).to_list(length=None)
+
+        personal_campaign_ids = set()
+        personal_lead_ids = set()
+        personal_links_by_campaign = {}
+        for link in campaign_links:
+            campaign_id = self._reference_id(link.get("campaignId"))
+            lead_id = self._reference_id(link.get("leadId"))
+            if campaign_id and lead_id:
+                personal_campaign_ids.add(str(campaign_id))
+                personal_lead_ids.add(lead_id)
+                personal_links_by_campaign.setdefault(str(campaign_id), []).append(link)
+
+        visible_campaigns = []
+        membership_campaign_ids = set()
+        for campaign in campaigns:
+            manager_ids = {self._reference_id(ref) for ref in campaign.get("managers", []) or []}
+            agent_ids = {self._reference_id(ref) for ref in campaign.get("agents", []) or []}
+            creator_id = self._reference_id(campaign.get("createdBy"))
+            is_member = user_oid in manager_ids or user_oid in agent_ids or creator_id == user_oid
+            if is_member or str(campaign["_id"]) in personal_campaign_ids:
+                visible_campaigns.append(campaign)
+                if is_member:
+                    membership_campaign_ids.add(campaign["_id"])
+
+        return visible_campaigns, personal_lead_ids, {
+            "userId": user_oid,
+            "ownLeadIds": set(own_lead_ids),
+            "linksByCampaign": personal_links_by_campaign,
+            "membershipCampaignIds": membership_campaign_ids,
+        }
 
     async def _clear_cache(self) -> None:
         """Safely clear campaign cache; gracefully handles Redis downtime."""
@@ -162,6 +250,14 @@ class CampaignService:
             sort_field = filters.get("sortField", "createdAt")
             sort_order_str = filters.get("sortOrder", "desc")
             sort_order = -1 if sort_order_str == "desc" else 1
+
+            user_scope = None
+            if not validate_admin_company_admin(user.get("userRole", [])):
+                visible_campaigns, _, user_scope = await self._get_user_campaign_scope(user)
+                visible_campaign_ids = [campaign["_id"] for campaign in visible_campaigns]
+                if not visible_campaign_ids:
+                    return {"data": [], "page": page, "totalPages": 0, "limit": limit}
+                query["_id"] = {"$in": visible_campaign_ids}
             
             result = await self.repo.get_all(
                 page=page,
@@ -170,6 +266,34 @@ class CampaignService:
                 populate=["managers", "agents", "createdBy"],
                 sort=[(sort_field, sort_order)],
             )
+
+            if user_scope:
+                user_id = user_scope["userId"]
+                for campaign in result.get("data", []):
+                    campaign_id = PydanticObjectId(campaign.get("id") or campaign.get("_id"))
+                    personal_links = user_scope["linksByCampaign"].get(str(campaign_id), [])
+                    campaign["totalLeads"] = len(personal_links)
+                    campaign["assignedLeads"] = sum(
+                        self._reference_id(link.get("assignedTo")) == user_id
+                        for link in personal_links
+                    )
+                    campaign["completedLeads"] = sum(
+                        self._reference_id(link.get("campaignStatus"))
+                        in {CAMPAIGN_LEAD_STATUS.COMPLETED, CAMPAIGN_LEAD_STATUS.COMPLETED.value}
+                        for link in personal_links
+                    )
+                    campaign["agents"] = [
+                        agent for agent in campaign.get("agents", [])
+                        if str(self._reference_id(agent.get("id") or agent.get("_id"))) == str(user_id)
+                    ]
+                    campaign["managers"] = [
+                        manager for manager in campaign.get("managers", [])
+                        if str(self._reference_id(manager.get("id") or manager.get("_id"))) == str(user_id)
+                    ]
+                    if campaign.get("createdBy") and PydanticObjectId(
+                        campaign["createdBy"].get("id") or campaign["createdBy"].get("_id")
+                    ) != user_id:
+                        campaign["createdBy"] = None
 
             return result
 
@@ -192,6 +316,11 @@ class CampaignService:
             if not campaign or campaign.deletedAt is not None:
                 raise AppException(404, "Campaign not found")
 
+            if not validate_admin_company_admin(user.get("userRole", [])):
+                visible_campaigns, _, _ = await self._get_user_campaign_scope(user)
+                if not any(str(item.get("_id")) == str(campaign.id) for item in visible_campaigns):
+                    raise AppException(404, "Campaign not found")
+
             return jsonable_encoder(campaign)
 
         except AppException:
@@ -208,7 +337,7 @@ class CampaignService:
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
-                    campaign = await self._get_campaign_or_404(campaign_id)
+                    campaign = await self._get_campaign_or_404(campaign_id, user)
                     user_oid = PydanticObjectId(user["_id"])
 
                     updates: Dict[str, Any] = {"updatedBy": user_oid}
@@ -265,7 +394,7 @@ class CampaignService:
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
-                    campaign = await self._get_campaign_or_404(campaign_id)
+                    campaign = await self._get_campaign_or_404(campaign_id, user)
                     user_oid = PydanticObjectId(user["_id"])
                     new_status = CAMPAIGN_STATUS(payload["status"])
 
@@ -311,7 +440,7 @@ class CampaignService:
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
-                    campaign = await self._get_campaign_or_404(campaign_id)
+                    campaign = await self._get_campaign_or_404(campaign_id, user)
                     user_oid = PydanticObjectId(user["_id"])
                     now = datetime.now(timezone.utc)
 
@@ -378,7 +507,7 @@ class CampaignService:
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
-                    campaign = await self._get_campaign_or_404(campaign_id)
+                    campaign = await self._get_campaign_or_404(campaign_id, user)
                     campaign_oid = campaign.id
                     user_oid = PydanticObjectId(user["_id"])
 
@@ -685,7 +814,7 @@ class CampaignService:
         Returns paginated campaign leads with lead details joined via aggregation.
         """
         try:
-            await self._get_campaign_or_404(campaign_id)
+            await self._get_campaign_or_404(campaign_id, user)
             campaign_oid = PydanticObjectId(campaign_id)
 
             page = int(filters.get("page", 1))
@@ -697,10 +826,17 @@ class CampaignService:
                 "campaignId.$id": campaign_oid,
             }
 
+            is_admin = validate_admin_company_admin(user.get("userRole", []))
+            user_scope = None
+            if not is_admin:
+                visible_campaigns, _, user_scope = await self._get_user_campaign_scope(user)
+                if not any(str(item.get("_id")) == str(campaign_oid) for item in visible_campaigns):
+                    raise AppException(404, "Campaign not found")
+
             # ON DEMAND: agents only see the unassigned pool plus their own leads.
             camp_doc = await self._collection().find_one({"_id": campaign_oid})
+            uid = PydanticObjectId(user["_id"])
             if camp_doc and camp_doc.get("distributionMode") == CAMPAIGN_DISTRIBUTION_MODE.ON_DEMAND.value:
-                uid = PydanticObjectId(user["_id"])
 
                 def _ids(refs):
                     out = []
@@ -714,11 +850,21 @@ class CampaignService:
                 creator = camp_doc.get("createdBy")
                 privileged = set(_ids(camp_doc.get("managers")))
                 privileged.update(_ids([creator]) if creator else [])
-                if uid in set(_ids(camp_doc.get("agents"))) and uid not in privileged:
-                    match["$or"] = [
-                        {"campaignStatus": "unassigned"},
+                if not is_admin:
+                    personal_conditions = [
                         {"assignedTo.$id": uid},
+                        {"leadId.$id": {"$in": list(user_scope["ownLeadIds"])}},
+                        {"leadId": {"$in": list(user_scope["ownLeadIds"])}},
                     ]
+                    if uid in set(_ids(camp_doc.get("agents"))) and uid not in privileged:
+                        personal_conditions.append({"campaignStatus": "unassigned"})
+                    match = {"$and": [match, {"$or": personal_conditions}]}
+            elif not is_admin:
+                match = {"$and": [match, {"$or": [
+                    {"assignedTo.$id": uid},
+                    {"leadId.$id": {"$in": list(user_scope["ownLeadIds"])}},
+                    {"leadId": {"$in": list(user_scope["ownLeadIds"])}},
+                ]}]}
             if status_filter:
                 try:
                     match["campaignStatus"] = CAMPAIGN_LEAD_STATUS(status_filter)
@@ -746,6 +892,11 @@ class CampaignService:
                     }
                 },
                 {"$unwind": {"path": "$lead", "preserveNullAndEmptyArrays": True}},
+                *([{"$match": {
+                    "lead.companyId": PydanticObjectId(user["companyId"]),
+                    "lead.deletedAt": None,
+                    "lead.status": {"$nin": ["delete", "deleted"]},
+                }}] if not is_admin else []),
                 {
                     "$lookup": {
                         "from": "users",
@@ -850,7 +1001,7 @@ class CampaignService:
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
-                    await self._get_campaign_or_404(campaign_id)
+                    await self._get_campaign_or_404(campaign_id, user)
                     campaign_oid = PydanticObjectId(campaign_id)
                     cl_oid = PydanticObjectId(campaign_lead_id)
                     new_status = CAMPAIGN_LEAD_STATUS(payload["campaignStatus"])
@@ -904,7 +1055,7 @@ class CampaignService:
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
-                    campaign = await self._get_campaign_or_404(campaign_id)
+                    campaign = await self._get_campaign_or_404(campaign_id, user)
                     campaign_oid = campaign.id
                     cl_oid = PydanticObjectId(campaign_lead_id)
                     agent_oid = PydanticObjectId(payload["agentId"])
@@ -1096,7 +1247,7 @@ class CampaignService:
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
-                    campaign = await self._get_campaign_or_404(campaign_id)
+                    campaign = await self._get_campaign_or_404(campaign_id, user)
                     campaign_oid = campaign.id
 
                     if campaign.distributionMode != CAMPAIGN_DISTRIBUTION_MODE.EQUAL:
@@ -1215,7 +1366,7 @@ class CampaignService:
         for the requesting agent. Race-condition-safe via findOneAndUpdate.
         """
         try:
-            campaign = await self._get_campaign_or_404(campaign_id)
+            campaign = await self._get_campaign_or_404(campaign_id, user)
 
             if campaign.status == CAMPAIGN_STATUS.PAUSED:
                 raise AppException(400, "This campaign is paused. Calling is disabled until it is resumed")
@@ -1303,7 +1454,7 @@ class CampaignService:
         already took it, the filter fails and a 409 is returned.
         """
         try:
-            campaign = await self._get_campaign_or_404(campaign_id)
+            campaign = await self._get_campaign_or_404(campaign_id, user)
             if campaign.status == CAMPAIGN_STATUS.PAUSED:
                 raise AppException(400, "This campaign is paused. Calling is disabled until it is resumed")
             if campaign.distributionMode != CAMPAIGN_DISTRIBUTION_MODE.ON_DEMAND:
@@ -1387,21 +1538,34 @@ class CampaignService:
 
             campaigns = await self._collection().find(
                 {"companyId": company_oid, "deletedAt": None, "status": {"$ne": "deleted"}},
-                {"_id": 1},
+                {"_id": 1, "managers": 1, "agents": 1, "createdBy": 1},
             ).to_list(length=None)
+            is_admin = validate_admin_company_admin(user.get("userRole", []))
+            user_scope = None
+            if not is_admin:
+                campaigns, _, user_scope = await self._get_user_campaign_scope(user, campaigns)
             campaign_ids = [campaign["_id"] for campaign in campaigns]
             if not campaign_ids:
                 return {"data": [], "page": page, "limit": limit, "total": 0, "totalPages": 1}
 
             # A lead can be in more than one campaign. Keep the same unique-lead
             # scope used by get_engagement_stats before applying the metric.
+            link_match = {
+                "$or": [
+                    {"campaignId.$id": {"$in": campaign_ids}},
+                    {"campaignId": {"$in": campaign_ids}},
+                ],
+            }
+            if user_scope:
+                own_lead_ids = list(user_scope["ownLeadIds"])
+                link_match = {"$and": [link_match, {"$or": [
+                    {"assignedTo.$id": user_scope["userId"]},
+                    {"leadId.$id": {"$in": own_lead_ids}},
+                    {"leadId": {"$in": own_lead_ids}},
+                ]}]}
+
             lead_groups = await self._lead_collection().aggregate([
-                {"$match": {
-                    "$or": [
-                        {"campaignId.$id": {"$in": campaign_ids}},
-                        {"campaignId": {"$in": campaign_ids}},
-                    ],
-                }},
+                {"$match": link_match},
                 {"$group": {"_id": {"$ifNull": ["$leadId.$id", "$leadId"]}}},
             ]).to_list(length=None)
             lead_ids = [group["_id"] for group in lead_groups if group.get("_id")]
@@ -1499,8 +1663,12 @@ class CampaignService:
             company_oid = PydanticObjectId(user["companyId"])
             campaigns = await camp_collection.find(
                 {"companyId": company_oid, "deletedAt": None, "status": {"$ne": "deleted"}},
-                {"_id": 1, "status": 1},
+                {"_id": 1, "status": 1, "managers": 1, "agents": 1, "createdBy": 1},
             ).to_list(length=None)
+            is_admin = validate_admin_company_admin(user.get("userRole", []))
+            user_scope = None
+            if not is_admin:
+                campaigns, _, user_scope = await self._get_user_campaign_scope(user, campaigns)
             campaign_ids = [c["_id"] for c in campaigns]
             campaign_summary = {
                 "total": len(campaigns),
@@ -1512,13 +1680,22 @@ class CampaignService:
 
             # Deduplicate before joining so multi-campaign leads count only once.
             # The join also enforces company scope and removes deleted leads.
+            link_match = {
+                "$or": [
+                    {"campaignId.$id": {"$in": campaign_ids}},
+                    {"campaignId": {"$in": campaign_ids}},
+                ],
+            }
+            if user_scope:
+                own_lead_ids = list(user_scope["ownLeadIds"])
+                link_match = {"$and": [link_match, {"$or": [
+                    {"assignedTo.$id": user_scope["userId"]},
+                    {"leadId.$id": {"$in": own_lead_ids}},
+                    {"leadId": {"$in": own_lead_ids}},
+                ]}]}
+
             pipeline = [
-                {"$match": {
-                    "$or": [
-                        {"campaignId.$id": {"$in": campaign_ids}},
-                        {"campaignId": {"$in": campaign_ids}},
-                    ],
-                }},
+                {"$match": link_match},
                 {"$group": {"_id": {"$ifNull": ["$leadId.$id", "$leadId"]}}},
                 {"$lookup": {"from": "leads", "localField": "_id", "foreignField": "_id", "as": "lead"}},
                 {"$unwind": "$lead"},

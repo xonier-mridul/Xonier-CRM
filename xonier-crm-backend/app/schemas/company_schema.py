@@ -88,6 +88,7 @@ class CompanyUpdateSchema(BaseModel):
     tradeNumber: Optional[str] = None
     userLimit: Optional[int] = None
     country: Optional[COUNTRY_CODE] = None
+    currency: Optional[str] = None
     subDomain: Optional[str] = None
     status: Optional[COMPANY_STATUS] = None
 
@@ -107,6 +108,16 @@ class CompanyUpdateSchema(BaseModel):
         if len(stripped) < 3 or len(stripped) > 100:
             raise ValueError("Company name must be between 3 and 100 characters")
         return stripped
+
+    @field_validator("currency")
+    @classmethod
+    def validate_currency(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return value
+        code = value.upper()
+        if len(code) != 3 or not code.isalpha():
+            raise ValueError("Currency must be a valid three-letter ISO code")
+        return code
 
     model_config = {"extra": "forbid"}
 

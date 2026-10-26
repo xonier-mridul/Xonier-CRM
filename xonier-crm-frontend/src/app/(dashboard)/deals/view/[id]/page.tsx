@@ -407,7 +407,7 @@ const DealViewPage = (): JSX.Element => {
         {!isPrinting && (
           <div className="bg-white dark:bg-gray-700 mb-6 rounded-xl border border-gray-200 dark:border-gray-700">
             <div className="flex gap-8 overflow-x-auto px-6 py-3.5">
-              {(["overview", "lead", "activity"] as const).map((tab) => (
+              {(["overview", ...(dealData?.lead_id ? ["lead" as const] : []), "activity"] as const).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -535,7 +535,7 @@ const DealViewPage = (): JSX.Element => {
             )}
 
             {/* Lead Tab */}
-            {(activeTab === "lead" || isPrinting) && (
+            {lead && (activeTab === "lead" || isPrinting) && (
               <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700 break-inside-avoid">
                 <div className="flex items-center gap-2 mb-6">
                   <IoPersonOutline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />

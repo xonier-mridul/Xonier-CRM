@@ -2,6 +2,7 @@ import api from "../lib/axios";
 
 
 const InvoiceService = {
+  create: (payload: Record<string, unknown>) => api.post("/invoice/create", payload),
     getAll: (page?: number, limit?: number, filters?: Record<string, any>) => {
     const params = new URLSearchParams();
 

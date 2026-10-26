@@ -525,15 +525,25 @@ class ActivityService:
                     if call_act.entityType == ACTIVITY_ENTITY_TYPE.LEAD:
                         leadId = PydanticObjectId(call_act.entityId)
                         lead_update_data: dict = {}
+                        previous_lead = await LeadsModel.get_pymongo_collection().find_one(
+                            {"_id": leadId, "companyId": PydanticObjectId(user["companyId"])},
+                            {"fullName": 1, "followUpOwnerId": 1},
+                            session=session,
+                        )
+                        if not previous_lead:
+                            raise AppException(404, "Lead linked to call activity was not found")
+                        previous_follow_up_owner_id = previous_lead.get("followUpOwnerId")
 
                         if connect_status:
                             lead_update_data["connectStatus"] = connect_status
                         if follow_up_at:
                             lead_update_data["followUpAt"] = follow_up_at
+                            lead_update_data["followUpOwnerId"] = PydanticObjectId(user["_id"])
                         elif connect_status and connect_status != "follow_up":
                             # A later non-follow-up outcome must not leave an old
                             # reminder visible in the leads table.
                             lead_update_data["followUpAt"] = None
+                            lead_update_data["followUpOwnerId"] = None
 
                         if lead_update_data:
                             lead_update_data["updatedAt"] = datetime.now(timezone.utc)
@@ -548,6 +558,19 @@ class ActivityService:
                             )
                             if write_result.matched_count != 1:
                                 raise AppException(404, "Lead linked to call activity was not found")
+
+                        if connect_status == "follow_up" or previous_follow_up_owner_id:
+                            from app.services.google_calendar_service import GoogleCalendarService
+
+                            await GoogleCalendarService().sync_followup(
+                                company_id=PydanticObjectId(user["companyId"]),
+                                lead_id=str(leadId),
+                                lead_name=previous_lead.get("fullName") or "Lead follow-up",
+                                owner_id=PydanticObjectId(user["_id"]) if follow_up_at else None,
+                                previous_owner_id=previous_follow_up_owner_id,
+                                follow_up_at=follow_up_at.astimezone(timezone.utc) if follow_up_at else None,
+                                owner_name=" ".join(filter(None, [user.get("firstName"), user.get("lastName")])),
+                            )
 
                     # ── Build activity metadata ───────────────────────────────────
                     meta_update = {**call_act.metadata, **{k: v for k, v in payload.items() if k != "followUpIn"}}

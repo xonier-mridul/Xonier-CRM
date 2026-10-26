@@ -21,7 +21,8 @@ import DateFilterButton from "@/src/components/common/dateFilter";
 import type { DateFilter } from "@/src/types/components/ui/dateFilter.types";
 import StatusBadge from "@/src/components/common/Status";
 import { useTranslation } from "react-i18next";
-import { FiUser, FiCalendar, FiFileText, FiActivity, FiSettings, FiUserPlus, FiX } from "react-icons/fi";
+import { FiUser, FiCalendar, FiFileText, FiActivity, FiSettings, FiUserPlus, FiX, FiCheckCircle, FiXCircle } from "react-icons/fi";
+import { TbChartBar } from "react-icons/tb";
 import { useRouter } from "next/navigation";
 import QuotationFileUploadModal from "@/src/components/common/QuotationFileUploadModal";
 import { useAdvancedFilters } from "@/src/hooks/useAdvanceFilter";
@@ -30,6 +31,8 @@ import Pagination from "@/src/components/common/pagination";
 import { AuthService } from "@/src/services/auth.service";
 import UserSelect from "@/src/components/common/userselect";
 import PageLimit from "@/src/components/common/PageLimit";
+import FollowUpScheduler from "@/src/components/common/FollowUpScheduler";
+import FollowUpCountCard from "@/src/components/common/FollowUpCountCard";
 
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; textColor: string }> = {
@@ -395,6 +398,21 @@ const page = (): JSX.Element => {
   return (
     <div>
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm p-6 rounded-xl border border-slate-900/10 w-full flex flex-col gap-7 items-center justify-between">
+        <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div className="flex items-center gap-3 rounded-xl border border-cyan-100 bg-gradient-to-br from-cyan-50 to-sky-50 p-4 dark:border-cyan-800/40 dark:from-cyan-900/20 dark:to-sky-900/20">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-100 dark:bg-cyan-900/40"><TbChartBar className="text-cyan-600 dark:text-cyan-400" size={20} /></div>
+            <div><p className="text-[11px] font-semibold uppercase tracking-wide text-cyan-600 dark:text-cyan-400">All Quotations</p><p className="text-lg font-bold text-slate-800 dark:text-white">{quoteData.length}</p></div>
+          </div>
+          <div className="flex items-center gap-3 rounded-xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-green-50 p-4 dark:border-emerald-800/40 dark:from-emerald-900/20 dark:to-green-900/20">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/40"><FiCheckCircle className="text-emerald-600 dark:text-emerald-400" size={20} /></div>
+            <div><p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">Won Quotations</p><p className="text-lg font-bold text-slate-800 dark:text-white">{wonQuoteData.length}</p></div>
+          </div>
+          <div className="flex items-center gap-3 rounded-xl border border-rose-100 bg-gradient-to-br from-rose-50 to-red-50 p-4 dark:border-rose-800/40 dark:from-rose-900/20 dark:to-red-900/20">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-rose-100 dark:bg-rose-900/40"><FiXCircle className="text-rose-600 dark:text-rose-400" size={20} /></div>
+            <div><p className="text-[11px] font-semibold uppercase tracking-wide text-rose-600 dark:text-rose-400">Lost Quotations</p><p className="text-lg font-bold text-slate-800 dark:text-white">{lostQuoteData.length}</p></div>
+          </div>
+          <FollowUpCountCard entity="quotation" dateFilter={dateFilter} />
+        </div>
         <div className="flex w-full items-center gap-12 justify-between">
           <div className="flex flex-col gap-1.5">
             <h2 className="text-xl font-bold dark:text-white text-slate-900 capitalize">
@@ -433,6 +451,12 @@ const page = (): JSX.Element => {
                 onChange={(e) => handleSearch(e.target.value)}
               />
             </div>
+
+            {hasPermission(PERMISSIONS.createQuote) && (
+              <Link href="/quotations/create" className="bg-cyan-600 hover:bg-cyan-700 text-white px-5 py-2 rounded-md whitespace-nowrap">
+                Create Quotation
+              </Link>
+            )}
 
             {hasPermission(PERMISSIONS.readLead) && (
               <Link
@@ -596,6 +620,7 @@ const page = (): JSX.Element => {
                         </td>
                         <td>
                           <div className="flex items-center gap-2">
+                            {hasPermission(PERMISSIONS.updateQuote) && <FollowUpScheduler entity="quotation" recordId={item.id} recordName={item.title || item.customerName} followUpAt={item.followUpAt} onUpdated={getQuotationData} />}
                             {hasPermission(PERMISSIONS.readQuote) ? (
                               <Link
                                 href={`/quotations/view/${item.id}`}
@@ -730,6 +755,7 @@ const page = (): JSX.Element => {
                         </td>
                         <td>
                           <div className="flex items-center gap-2">
+                            {hasPermission(PERMISSIONS.updateQuote) && <FollowUpScheduler entity="quotation" recordId={item.id} recordName={item.title || item.customerName} followUpAt={item.followUpAt} onUpdated={getWonQuotationData} />}
                             {hasPermission(PERMISSIONS.readLead) ? (
                               <Link href={`/quotations/view/${item.id}`} className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-colors">
                                 <FaRegEye className="text-xl" />
@@ -838,6 +864,7 @@ const page = (): JSX.Element => {
                         </td>
                         <td>
                           <div className="flex items-center gap-2">
+                            {hasPermission(PERMISSIONS.updateQuote) && <FollowUpScheduler entity="quotation" recordId={item.id} recordName={item.title || item.customerName} followUpAt={item.followUpAt} onUpdated={getLostQuotationData} />}
                             {hasPermission(PERMISSIONS.readLead) ? (
                               <Link href={`/quotations/view/${item.id}`} className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-colors">
                                 <FaRegEye className="text-xl" />

@@ -168,6 +168,8 @@ class LeadStatusUpdateSchema(BaseModel):
 
 class LeadConnectStatusUpdateSchema(BaseModel):
     status: CONTACT_STATUS
+    # Mobile and web clients send the same presets (1h, 6h, 1d) or an ISO datetime.
+    followUpIn: Optional[str] = None
 
     @field_validator("status", mode="before")
     @classmethod

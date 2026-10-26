@@ -58,6 +58,10 @@ const EditCompanyPage = () => {
     setError("");
     try {
       await CompanyService.update(id, payload);
+      if (payload.currency && typeof window !== "undefined" && window.localStorage.getItem("companyId") === companyData?.companyId) {
+        window.localStorage.setItem("companyCurrency", payload.currency);
+        window.dispatchEvent(new Event("company-currency-changed"));
+      }
       toast.success("Company updated successfully");
       router.push("/companies");
     } catch (err) {

@@ -9,11 +9,11 @@ from app.core.enums import INVOICE_STATUS
 
 
 class InvoiceCreateSchema(BaseModel):
-    invoiceId: str
+    invoiceId: Optional[str] = None
     sourceQuoteId: Optional[str] = None
 
-    deal: str
-    quotation: str
+    deal: Optional[str] = None
+    quotation: Optional[str] = None
 
     customerName: str
     customerEmail: str
@@ -47,4 +47,4 @@ class InvoiceCreateSchema(BaseModel):
     paidAmount: float = 0
     lastPaymentDate: Optional[datetime] = None
 
-    createdBy: str
+    createdBy: Optional[str] = None

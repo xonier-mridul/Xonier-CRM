@@ -47,6 +47,14 @@ const Page = (): JSX.Element => {
   const [openUpdateModal, setOpenUpdateModal] = useState(false);
   const [activeView, setActiveView] = useState("dayGridMonth");
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [googleCalendar, setGoogleCalendar] = useState<{
+    connected: boolean;
+    accountEmail: string | null;
+    adminCalendarConnected: boolean;
+    adminCalendarEmail: string | null;
+    isCompanyAdmin: boolean;
+  } | null>(null);
+  const [googleCalendarLoading, setGoogleCalendarLoading] = useState(false);
 
   const { hasPermission } = usePermissions();
   const lastClickRef = useRef<number | null>(null);
@@ -130,6 +138,55 @@ const formatCurrentMonth = useMemo(() => {
     getAllEvent();
   }, []);
 
+  const loadGoogleCalendarStatus = async () => {
+    try {
+      const response = await EventService.getGoogleCalendarConnection();
+      setGoogleCalendar(response.data);
+    } catch (error) {
+      if (process.env.NEXT_PUBLIC_ENV === "development") console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    void loadGoogleCalendarStatus();
+    const result = new URLSearchParams(window.location.search).get("googleCalendar");
+    if (result) {
+      if (result === "connected") toast.success("Google Calendar connected. Existing follow-ups are syncing.");
+      else toast.error("Google Calendar could not be connected. Check the account consent and OAuth configuration.");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
+
+  const handleGoogleCalendarConnect = async () => {
+    setGoogleCalendarLoading(true);
+    try {
+      const response = await EventService.connectGoogleCalendar();
+      window.location.assign(response.data.authorizationUrl);
+    } catch (error) {
+      const message = axios.isAxiosError(error)
+        ? extractErrorMessages(error)
+        : "Unable to start Google Calendar connection";
+      toast.error(Array.isArray(message) ? message[0] : message);
+      setGoogleCalendarLoading(false);
+    }
+  };
+
+  const handleGoogleCalendarDisconnect = async () => {
+    setGoogleCalendarLoading(true);
+    try {
+      await EventService.disconnectGoogleCalendar();
+      await loadGoogleCalendarStatus();
+      toast.success("Google Calendar disconnected");
+    } catch (error) {
+      const message = axios.isAxiosError(error)
+        ? extractErrorMessages(error)
+        : "Unable to disconnect Google Calendar";
+      toast.error(Array.isArray(message) ? message[0] : message);
+    } finally {
+      setGoogleCalendarLoading(false);
+    }
+  };
+
   const mapToCalendarEvents = (events: CalendarEvent[]): EventInput[] => {
     return events.map((event) => ({
       id: event.id,
@@ -137,14 +194,17 @@ const formatCurrentMonth = useMemo(() => {
       start: event.start,
       end: event.end ?? undefined,
       allDay: event.isAllDay,
-      backgroundColor: getEventColor(event.priority),
-      borderColor: getEventColor(event.priority),
+      backgroundColor: event.followUpEntity ? "#0891b2" : getEventColor(event.priority),
+      borderColor: event.followUpEntity ? "#0891b2" : getEventColor(event.priority),
       textColor: "#ffffff",
       extendedProps: {
         description: event.description,
         priority: event.priority,
         eventType: event.eventType,
         meetingLink: event.meetingLink ?? null,
+        isFollowUp: Boolean(event.followUpEntity),
+        followUpEntity: event.followUpEntity,
+        followUpRecordId: event.followUpRecordId,
       },
       classNames: [`event-${event.priority?.toLowerCase() || "default"}`],
     }));
@@ -366,6 +426,32 @@ const handleDatesSet = useCallback((dateInfo: any) => {
             </motion.button>
           </div>
         </motion.div>
+
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+          <div className="text-sm">
+            <p className="font-semibold text-slate-800 dark:text-white">Google Calendar</p>
+            <p className="mt-1 text-slate-500 dark:text-gray-400">
+              {googleCalendar?.connected
+                ? `Connected: ${googleCalendar.accountEmail}`
+                : "Connect your account to sync your follow-ups."}
+              {googleCalendar && !googleCalendar.adminCalendarConnected && !googleCalendar.isCompanyAdmin
+                ? " The company admin must connect too to receive team follow-ups."
+                : ""}
+              {googleCalendar?.isCompanyAdmin && googleCalendar.connected
+                ? " Team follow-ups will also appear here."
+                : ""}
+            </p>
+          </div>
+          {googleCalendar?.connected ? (
+            <button type="button" onClick={handleGoogleCalendarDisconnect} disabled={googleCalendarLoading} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 disabled:opacity-50 dark:border-gray-600 dark:text-gray-200">
+              Disconnect
+            </button>
+          ) : (
+            <button type="button" onClick={handleGoogleCalendarConnect} disabled={googleCalendarLoading} className="rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
+              {googleCalendarLoading ? "Connecting…" : "Connect Google Calendar"}
+            </button>
+          )}
+        </div>
 
         <ViewEventPopup
           open={openViewModal}

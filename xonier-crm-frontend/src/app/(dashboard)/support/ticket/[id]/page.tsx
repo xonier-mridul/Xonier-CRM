@@ -1,12 +1,12 @@
 import TicketHeader from "../../header/page";
-import TicketSummary from "../../summary/TicketSummary";
-import TicketTimeline from "../../timeLine/TicketTimeline";
-import TicketInformation from "../../ticketInformation/TicketInformation";
+import TicketSummary from "@/src/components/pages/support/TicketSummary";
+import TicketTimeline from "@/src/components/pages/support/TicketTimeline";
+import TicketInformation from "@/src/components/pages/support/TicketInformation";
 import TicketSupportCard from "../../supportCard/page";
 import TicketUpdates from "../../ticketUpdate/page";
-import TicketHistory from "../../ticketHistory/TicketHistory";
+import TicketHistory from "@/src/components/pages/support/TicketHistory";
 import { getPreviousTickets, getTicketById } from "@/src/constants/ticket";
-import TicketNotFound from "../../notFound/TicketNotFound";
+import TicketNotFound from "@/src/components/pages/support/TicketNotFound";
 
 interface TicketDetailsPageProps {
   params: Promise<{ id: string }>;

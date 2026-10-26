@@ -36,17 +36,15 @@ class DealService:
         async with await self.client.start_session() as session:
           async with session.start_transaction():
             try:
-                lead_id = payload["lead_id"]
-                is_exist = await self.repo.find_by_lead(
-                    leadId=PydanticObjectId(lead_id)
-                )
-
-                
-
-                if is_exist and is_exist.status != DEAL_STATUS.DELETE.value:
-                    raise AppException(
-                        400, "Deal already exist for this lead, process stopped"
+                lead_id = payload.get("lead_id")
+                if lead_id:
+                    is_exist = await self.repo.find_by_lead(
+                        leadId=PydanticObjectId(lead_id)
                     )
+                    if is_exist and is_exist.status != DEAL_STATUS.DELETE.value:
+                        raise AppException(
+                            400, "Deal already exist for this lead, process stopped"
+                        )
 
                 deal_id = generate_enquiry_id("DEAL")
 
@@ -62,15 +60,13 @@ class DealService:
                 if not deal:
                     raise AppException(400, "Deal creation failed")
                 
-                lead = await self.leadRepo.find_by_id(PydanticObjectId(lead_id))
-
-                if not lead:
-                    raise AppException(404, "Lead not found against lead id")
-                
-                lead.inDeal = True
-                lead.status = SALES_STATUS.WON.value
-                
-                await lead.save(session=session)
+                if lead_id:
+                    lead = await self.leadRepo.find_by_id(PydanticObjectId(lead_id))
+                    if not lead:
+                        raise AppException(404, "Lead not found against lead id")
+                    lead.inDeal = True
+                    lead.status = SALES_STATUS.WON.value
+                    await lead.save(session=session)
 
                 activity = activity_payload(userId=PydanticObjectId(createdBy), entityType=ACTIVITY_ENTITY_TYPE.DEAL, entityId=PydanticObjectId(deal.id), action=ACTIVITY_ACTION.CREATED, title="create deal", metadata={"dealId": deal.deal_id, "leadName": deal.dealName})
 
@@ -188,11 +184,11 @@ class DealService:
             if cache:
                 return json.loads(cache)
            
-            result = await self.repo.get_all(
+            result = await self.repo.get_all_nested(
                 page=int(page),
                 limit=int(limit),
                 filters=query,
-                populate=["createdBy", "lead_id", "updatedBy", "assignedTo"],
+                populate=["createdBy", "lead_id", "lead_id.assignedTo", "updatedBy", "assignedTo"],
                 sort=["-createdAt"]
             )
  
@@ -205,6 +201,7 @@ class DealService:
                     "createdBy": {"password"},
                     "updatedBy": {"password"},
                     "assignedTo": {"password"},
+                    "lead_id": {"assignedTo": {"password"}},
                 },
             )
  
@@ -255,15 +252,16 @@ class DealService:
             if not isAdmin and not isCreator and not isManager:
                 raise AppException(403, "Unauthorized, only admin, manager or creator access deal")
             
-            email = result["lead_id"].get("email")
-            phone = result["lead_id"].get("phone")
+            lead = result.get("lead_id") or {}
+            email = lead.get("email")
+            phone = lead.get("phone")
 
             userEmail = result["createdBy"].get("email")
             userPhone = result["createdBy"].get("phone")
             if email:
-                result["lead_id"]["email"] = self.encryption.decrypt_data(email)
+                lead["email"] = self.encryption.decrypt_data(email)
             if phone:
-                result["lead_id"]["phone"] = self.encryption.decrypt_data(phone)
+                lead["phone"] = self.encryption.decrypt_data(phone)
             if userEmail: 
                 result["createdBy"]["email"] = self.encryption.decrypt_data(userEmail)
             if userPhone:
@@ -390,16 +388,14 @@ class DealService:
 
                     deleted = await self.repo.update(id=PydanticObjectId(id), data=payload, session=session)
 
-                    lead_payload = {
-                        "inDeal": False,
-                        "status": SALES_STATUS.CONTACTED.value
-
-                    }
-
-                    lead_update = await self.leadRepo.update(id=PydanticObjectId(result.lead_id.id), data=lead_payload, session=session)
-
-                    if not lead_update:
-                        raise AppException(400, "Lead fields are not updated")
+                    if result.lead_id:
+                        lead_payload = {
+                            "inDeal": False,
+                            "status": SALES_STATUS.CONTACTED.value
+                        }
+                        lead_update = await self.leadRepo.update(id=PydanticObjectId(result.lead_id.id), data=lead_payload, session=session)
+                        if not lead_update:
+                            raise AppException(400, "Lead fields are not updated")
 
                     if not deleted:
                         raise AppException(400, "Deal not deleted")

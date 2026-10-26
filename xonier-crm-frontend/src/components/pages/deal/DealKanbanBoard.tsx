@@ -254,7 +254,7 @@ const DealKanbanBoard: React.FC<DealKanbanBoardProps> = ({
                             {/* Amount */}
                             {deal.amount != null && deal.amount > 0 && (
                               <div className="text-xs text-slate-500 dark:text-slate-400 mb-2 font-medium">
-                                ₹ {Number(deal.amount).toLocaleString("en-IN")}
+                                {new Intl.NumberFormat(undefined, { style: "currency", currency: typeof window !== "undefined" ? localStorage.getItem("companyCurrency") || "USD" : "USD", maximumFractionDigits: 2 }).format(Number(deal.amount))}
                               </div>
                             )}
 

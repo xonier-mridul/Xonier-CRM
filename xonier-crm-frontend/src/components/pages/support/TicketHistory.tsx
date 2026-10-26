@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import StatusBadge from "../statusBadge/StatusBadge";
+import StatusBadge from "./StatusBadge";
 import { PreviousTicket } from "@/src/types/ticket/ticket.type";
 
 interface TicketHistoryProps {

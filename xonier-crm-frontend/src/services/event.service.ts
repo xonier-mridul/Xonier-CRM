@@ -7,5 +7,8 @@ export const EventService = {
 
     getAll: () => api.get("/event/all"),
     update: (payload: CalendarEventPayload & { id: string }) => api.put(`/event/update/${payload.id}`, payload),
-    delete: (id: string) => api.delete(`/event/delete/${id}`)
+    delete: (id: string) => api.delete(`/event/delete/${id}`),
+    getGoogleCalendarConnection: () => api.get("/google-calendar/connection"),
+    connectGoogleCalendar: () => api.post("/google-calendar/connect"),
+    disconnectGoogleCalendar: () => api.delete("/google-calendar/connection"),
 }

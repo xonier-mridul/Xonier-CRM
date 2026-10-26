@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -71,6 +72,10 @@ class EnvSettings(BaseSettings):
     LIVEKIT_API_KEY: str = ""
     LIVEKIT_API_SECRET: str = ""
     CHAT_MAX_CALL_PARTICIPANTS: int = 16
+# Optional until Google Calendar sync is configured in Google Cloud.
+    GOOGLE_CALENDAR_CLIENT_ID: Optional[str] = None
+    GOOGLE_CALENDAR_CLIENT_SECRET: Optional[str] = None
+    GOOGLE_CALENDAR_REDIRECT_URI: Optional[str] = None
 
 
 

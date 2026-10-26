@@ -18,11 +18,8 @@ export default function Calculator({ setCalOpen }: { setCalOpen: (v: boolean) =>
   const [justEvaluated, setJustEvaluated] = useState(false)
   const [history, setHistory] = useState<HistoryItem[]>([])
   const [showHistory, setShowHistory] = useState(false)
-
   const historyEndRef = useRef<HTMLDivElement>(null)
 
-
-  /* ------------------ Persistence ------------------ */
   useEffect(() => {
     try {
       const raw = localStorage.getItem('calc-history-v1')

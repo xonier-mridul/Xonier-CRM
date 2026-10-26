@@ -90,4 +90,5 @@ export interface BulkReassignLeadSchema{
 
 export interface LeadEngagementStatusPayload {
   status: LeadEngagementStatus
+  followUpIn?: string
 }

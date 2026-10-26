@@ -42,6 +42,7 @@ export interface UserForm {
     status: boolean
     createdAt: string
     updatedAt?: string
+    module?: string
 }
 
 export interface CreateUserForm {

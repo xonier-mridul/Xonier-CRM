@@ -27,6 +27,7 @@ export interface Company {
   userLimit?: number;
   subscriptionCount: number;
   country?: COUNTRY_CODE;
+  currency?: string;
   status: COMPANY_STATUS;
   createdAt: string;
   updatedAt?: string;
@@ -84,6 +85,7 @@ export interface CompanyUpdatePayload {
   tradeNumber?: string;
   userLimit?: number;
   country?: COUNTRY_CODE;
+  currency?: string;
   subDomain?: string;
   status?: COMPANY_STATUS;
 }

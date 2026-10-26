@@ -45,7 +45,7 @@ class QuotationModel(BaseDocument):
     title: str = Field(..., min_length=1, max_length=200)
     description: Optional[str] = Field(None, max_length=5000)
 
-    deal: Link[DealModel]
+    deal: Optional[Link[DealModel]] = None
 
     customerName: str = Field(..., min_length=1, max_length=200)
     customerEmail: str
@@ -68,6 +68,8 @@ class QuotationModel(BaseDocument):
     total: float = Field(..., ge=0)
 
     quotationStatus: QuotationStatus = QuotationStatus.SENT
+    followUpAt: Optional[datetime] = None
+    followUpOwnerId: Optional[PydanticObjectId] = None
     paymentStatus: QuotationPaymentStatus = QuotationPaymentStatus.UNPAID
     paymentTerms: Optional[str] = Field(None, max_length=500)
     paymentMethod: Optional[str] = Field(None, max_length=100)

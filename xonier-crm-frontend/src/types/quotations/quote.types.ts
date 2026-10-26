@@ -21,7 +21,7 @@ export interface Quotation {
   title?: string;
   description?: string;
 
-  deal: Deal;
+  deal?: Deal | null;
 
   customerName: string;
   customerEmail: string;
@@ -44,6 +44,8 @@ export interface Quotation {
   total: number;
 
   quotationStatus: QuotationStatus;
+  followUpAt?: string | null;
+  followUpOwnerId?: string | null;
   paymentStatus: QuotationPaymentStatus;
   paymentTerms?: string | null;
   paymentMethod?: string | null;
@@ -92,7 +94,7 @@ export interface QuotationCreatePayload {
   title: string;
   description?: string;
 
-  deal: string;
+  deal?: string | null;
   customerName: string;
   customerEmail: string;
   customerPhone?: string | null;

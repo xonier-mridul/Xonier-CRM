@@ -37,6 +37,7 @@ class CompanyModel(Document):
     userLimit: Optional[int] = None
     subscriptionCount: int = 0
     country: Optional[COUNTRY_CODE] = None
+    currency: str = "USD"
 
     status: Optional[COMPANY_STATUS] = None
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

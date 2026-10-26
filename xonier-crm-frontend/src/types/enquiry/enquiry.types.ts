@@ -29,6 +29,8 @@ export interface EnquiryData {
 
   projectType: PROJECT_TYPES;
   status: SALES_STATUS;
+  followUpAt?: string | null;
+  followUpOwnerId?: string | null;
   isActive: boolean;
   priority: PRIORITY;
   source: SOURCE;

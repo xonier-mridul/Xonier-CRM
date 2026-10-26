@@ -73,7 +73,8 @@ type Props = {
   Id: string;
   onStatusUpdate: (
     id: string,
-    newStatus: LeadEngagementStatus
+    newStatus: LeadEngagementStatus,
+    followUpIn?: string,
   ) => Promise<void>;
 };
 
@@ -84,6 +85,8 @@ export default function StatusDropdown({
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [selectingFollowUp, setSelectingFollowUp] = useState(false);
+  const [customFollowUpAt, setCustomFollowUpAt] = useState("");
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const [openUpward, setOpenUpward] = useState(false);
 
@@ -117,7 +120,7 @@ export default function StatusDropdown({
   const handleToggle = () => {
     if (!isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      const dropdownHeight = 300; // approx height
+      const dropdownHeight = 390; // allow room for the follow-up scheduling choices
       const spaceBelow = window.innerHeight - rect.bottom;
 
       const shouldOpenUp = spaceBelow < dropdownHeight;
@@ -137,8 +140,14 @@ export default function StatusDropdown({
   const handleStatusChange = async (
     newStatus: LeadEngagementStatus
   ) => {
-    if (newStatus === currentStatus) {
+    if (newStatus === currentStatus && newStatus !== LeadEngagementStatus.FOLLOW_UP) {
       setIsOpen(false);
+      return;
+    }
+
+    if (newStatus === LeadEngagementStatus.FOLLOW_UP) {
+      setSelectingFollowUp(true);
+      setCustomFollowUpAt("");
       return;
     }
 
@@ -147,6 +156,19 @@ export default function StatusDropdown({
 
     try {
       await onStatusUpdate(Id, newStatus);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const saveFollowUp = async (followUpIn: string) => {
+    setIsOpen(false);
+    setSelectingFollowUp(false);
+    setIsUpdating(true);
+    try {
+      await onStatusUpdate(Id, LeadEngagementStatus.FOLLOW_UP, followUpIn);
     } catch (error) {
       console.error(error);
     } finally {
@@ -194,16 +216,43 @@ export default function StatusDropdown({
             <div
               ref={menuRef}
               onMouseDown={(e) => e.stopPropagation()}
-              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 w-[220px] p-4 flex flex-col gap-3 animate-[fadeIn_0.2s_ease]"
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 w-[260px] p-4 flex flex-col gap-3 animate-[fadeIn_0.2s_ease]"
             >
-              {AVAILABLE_STATUSES.map((status) => (
+              {selectingFollowUp ? (
+                <div className="flex flex-col gap-2">
+                  <div className="mb-1 flex items-center justify-between">
+                    <span className="text-[13px] font-semibold text-gray-800 dark:text-white">Schedule follow-up</span>
+                    <button type="button" onClick={() => setSelectingFollowUp(false)} className="text-xs text-gray-500 hover:text-gray-800 dark:hover:text-white">Back</button>
+                  </div>
+                  <button type="button" onClick={() => void saveFollowUp("1h")} className="rounded-lg px-3 py-2 text-left text-[13px] text-gray-800 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">In 1 hour</button>
+                  <button type="button" onClick={() => void saveFollowUp("6h")} className="rounded-lg px-3 py-2 text-left text-[13px] text-gray-800 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">In 6 hours</button>
+                  <button type="button" onClick={() => void saveFollowUp("1d")} className="rounded-lg px-3 py-2 text-left text-[13px] text-gray-800 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">In 1 day</button>
+                  <label className="mt-1 text-xs font-medium text-gray-600 dark:text-gray-300" htmlFor={`follow-up-${Id}`}>Custom date &amp; time</label>
+                  <input
+                    id={`follow-up-${Id}`}
+                    type="datetime-local"
+                    value={customFollowUpAt}
+                    min={new Date().toISOString().slice(0, 16)}
+                    onChange={(event) => setCustomFollowUpAt(event.target.value)}
+                    className="w-full rounded-lg border border-gray-300 bg-white px-2 py-2 text-xs text-gray-800 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  />
+                  <button
+                    type="button"
+                    disabled={!customFollowUpAt || new Date(customFollowUpAt) <= new Date()}
+                    onClick={() => void saveFollowUp(new Date(customFollowUpAt).toISOString())}
+                    className="rounded-lg bg-cyan-600 px-3 py-2 text-[13px] font-semibold text-white hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Save follow-up
+                  </button>
+                </div>
+              ) : AVAILABLE_STATUSES.map((status) => (
                 <button
                   key={status}
                   onClick={() => handleStatusChange(status)}
-                  disabled={status === currentStatus}
+                  disabled={status === currentStatus && status !== LeadEngagementStatus.FOLLOW_UP}
                   className={`flex items-center gap-3 px-2 py-2 rounded-lg transition
                     ${
-                      status === currentStatus
+                      status === currentStatus && status !== LeadEngagementStatus.FOLLOW_UP
                         ? "opacity-50 cursor-not-allowed"
                         : "hover:bg-gray-100 dark:hover:bg-gray-700"
                     }`}

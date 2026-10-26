@@ -1,4 +1,4 @@
-from beanie import Document, Link, before_event, Save, Insert, Replace, Indexed
+from beanie import Document, Link, before_event, Save, Insert, Replace, Indexed, PydanticObjectId
 from typing import Annotated, Optional, List
 from pydantic import StringConstraints, Field, field_validator, model_validator
 from app.db.models.user_model import UserModel
@@ -46,6 +46,7 @@ class LeadsModel(BaseDocument):
     language: Optional[LANGUAGE_CODE] = None
     connectStatus: Optional[CONTACT_STATUS] = CONTACT_STATUS.NOT_REACHED.value
     followUpAt: Optional[datetime] = None  # Calculated next follow-up datetime
+    followUpOwnerId: Optional[PydanticObjectId] = None
     industry: Optional[str] = None
     employeeRole: Optional[str] = None
     employeeSeniority: Optional[EMPLOYEE_SENIORITY] = None

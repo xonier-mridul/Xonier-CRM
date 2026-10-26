@@ -28,11 +28,16 @@ import Pagination from "@/src/components/common/pagination";
 import { useSearchParams } from "next/navigation";
 import { FaRegUser } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
-import { FiBriefcase, FiActivity, FiTag, FiCalendar, FiUserPlus, FiUser, FiSettings, FiFilter, FiX, FiUserCheck } from "react-icons/fi";
+import { FiBriefcase, FiActivity, FiTag, FiCalendar, FiUserPlus, FiUser, FiSettings, FiFilter, FiX, FiUserCheck, FiCheckCircle, FiXCircle } from "react-icons/fi";
 import { useAdvancedFilters } from "@/src/hooks/useAdvanceFilter";
 import AdvancedFilters from "@/src/components/common/AdvanceFilter";
 import UserSelect from "@/src/components/common/userselect";
 import PageLimit from "../../common/PageLimit";
+import { formatCurrency } from "@/src/app/utils/currency.utils";
+import { FaPlus } from "react-icons/fa";
+import { TbChartBar } from "react-icons/tb";
+import FollowUpScheduler from "@/src/components/common/FollowUpScheduler";
+import FollowUpCountCard from "@/src/components/common/FollowUpCountCard";
 
 const DealContent = (): JSX.Element => {
   const { t } = useTranslation();
@@ -40,6 +45,7 @@ const DealContent = (): JSX.Element => {
   const [dealData, setDealData] = useState<Deal[]>([]);
   const [wonDealData, setWonDealData] = useState<Deal[]>([]);
   const [lostDealData, setLostDealData] = useState<Deal[]>([]);
+  const [totalRevenue, setTotalRevenue] = useState<number>(0);
   const [err, setErr] = useState<string[] | string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [wonCurrentPage, setWonCurrentPage] = useState<number>(1);
@@ -357,11 +363,50 @@ const DealContent = (): JSX.Element => {
       setPageLimit(Number(n));
       setCurrentPage(1);
     };
-  
+
+useEffect(() => {
+    let cancelled = false;
+    const loadRevenue = async () => {
+      try {
+        const filters = {
+          ...buildFiltersObject(),
+          ...(currentTab === 2 ? { stage: "won" } : currentTab === 3 ? { stage: "lost" } : {}),
+        };
+        const first = await dealService.getAll(1, 100, filters);
+        const firstPage = first.data.data;
+        let total = (firstPage.data as Deal[]).reduce((sum, deal) => sum + (Number(deal.amount) || 0), 0);
+        for (let page = 2; page <= Number(firstPage.totalPages || 1); page += 1) {
+          const response = await dealService.getAll(page, 100, filters);
+          total += (response.data.data.data as Deal[]).reduce((sum, deal) => sum + (Number(deal.amount) || 0), 0);
+        }
+        if (!cancelled) setTotalRevenue(total);
+      } catch (error) {
+        process.env.NEXT_PUBLIC_ENV === "development" && console.error("Failed to calculate deal revenue", error);
+        if (!cancelled) setTotalRevenue(0);
+      }
+    };
+    loadRevenue();
+    return () => { cancelled = true; };
+  }, [currentTab, searchVal, dateFilter, stageFilter, salesPersonFilter, assignedToFilter, userid]);
 
   return (
     <div>
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm  p-6 rounded-xl border border-slate-900/10 w-full flex flex-col gap-7 items-center justify-between">
+        <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div className="flex items-center gap-3 rounded-xl border border-cyan-100 bg-gradient-to-br from-cyan-50 to-sky-50 p-4 dark:border-cyan-800/40 dark:from-cyan-900/20 dark:to-sky-900/20">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-100 dark:bg-cyan-900/40"><TbChartBar className="text-cyan-600 dark:text-cyan-400" size={20} /></div>
+            <div><p className="text-[11px] font-semibold uppercase tracking-wide text-cyan-600 dark:text-cyan-400">All Deals</p><p className="text-lg font-bold text-slate-800 dark:text-white">{dealData.length}</p></div>
+          </div>
+          <div className="flex items-center gap-3 rounded-xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-green-50 p-4 dark:border-emerald-800/40 dark:from-emerald-900/20 dark:to-green-900/20">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/40"><FiCheckCircle className="text-emerald-600 dark:text-emerald-400" size={20} /></div>
+            <div><p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">Won Deals</p><p className="text-lg font-bold text-slate-800 dark:text-white">{wonDealData.length}</p></div>
+          </div>
+          <div className="flex items-center gap-3 rounded-xl border border-rose-100 bg-gradient-to-br from-rose-50 to-red-50 p-4 dark:border-rose-800/40 dark:from-rose-900/20 dark:to-red-900/20">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-rose-100 dark:bg-rose-900/40"><FiXCircle className="text-rose-600 dark:text-rose-400" size={20} /></div>
+            <div><p className="text-[11px] font-semibold uppercase tracking-wide text-rose-600 dark:text-rose-400">Lost Deals</p><p className="text-lg font-bold text-slate-800 dark:text-white">{lostDealData.length}</p></div>
+          </div>
+          <FollowUpCountCard entity="deal" dateFilter={dateFilter} />
+        </div>
         <div className="flex w-full items-center gap-12 justify-between">
           <div className="flex flex-col gap-1.5">
             <h2 className="text-xl font-bold  dark:text-white text-slate-900 capitalize">
@@ -403,6 +448,11 @@ const DealContent = (): JSX.Element => {
             <div>
               <DateFilterButton dateFilter={dateFilter} onChange={setDateFilter} />
             </div>
+            {hasPermission(PERMISSIONS.createDeal) && (
+              <Link href="/deals/add" className="bg-cyan-600 hover:bg-cyan-700 text-white px-5 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors">
+                <FaPlus /> Create Deal
+              </Link>
+            )}
             {hasPermission(PERMISSIONS.readLead) && (
               <Link
                 href={"/leads"}
@@ -653,6 +703,7 @@ const DealContent = (): JSX.Element => {
                   <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">
                     <div className="flex items-center gap-1.5"><FiCalendar className="text-[13px] text-amber-500"/> {t("close_date")}</div>
                   </th>
+                  <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">Amount</th>
                   <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">
                     <div className="flex items-center gap-1.5"><FiUserPlus className="text-[13px] text-slate-400"/> {t("created_by_2")}</div>
                   </th>
@@ -671,6 +722,7 @@ const DealContent = (): JSX.Element => {
                       const rr = i % 2 == 0;
                       const date = formatDate(item.createDate);
                       const isSelected = selectedDeals.has(item.id);
+                      const assignedUser = item.assignedTo ?? item.lead_id?.assignedTo?.[0] ?? null;
                       return (
                         <tr
                           key={item.deal_id}
@@ -710,8 +762,8 @@ const DealContent = (): JSX.Element => {
                           </td>
                           <td className="px-4 py-3.5">
                             <span
-                              className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-medium bg-slate-100 text-slate-500 dark:bg-slate-900/50 dark:text-slate-400 cursor-copy hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-                              onClick={() => handleCopy(item?.lead_id?.lead_id)}
+                              className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-medium bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400 cursor-copy hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                              onClick={() => handleCopy(item?.lead_id?.lead_id ?? "")}
                               title="Copy Lead ID"
                             >
                               {item?.lead_id?.lead_id ?? "N/A"}
@@ -727,15 +779,16 @@ const DealContent = (): JSX.Element => {
                               <span className="text-slate-300 dark:text-slate-600 text-xs">—</span>
                             )}
                           </td>
+                          <td className="px-4 py-3.5 text-[13px] font-semibold text-slate-700 dark:text-slate-200">{formatCurrency(Number(item.amount) || 0)}</td>
                           <td className="px-4 py-3.5">
                             <Link href={`/users/${item.createdBy.id}`} className="text-[13px] text-slate-500 dark:text-slate-400 capitalize hover:text-cyan-600 transition-colors">
                               {item.createdBy?.firstName + " " + item.createdBy?.lastName}
                             </Link>
                           </td>
                           <td className="px-4 py-3.5">
-                            {item.assignedTo ? (
+                            {assignedUser ? (
                               <span className="text-[13px] text-slate-500 dark:text-slate-400 capitalize">
-                                {item.assignedTo.firstName + " " + item.assignedTo.lastName}
+                                {[assignedUser.firstName, assignedUser.lastName].filter(Boolean).join(" ") || "—"}
                               </span>
                             ) : (
                               <span className="text-slate-300 dark:text-slate-600 text-xs">—</span>
@@ -743,6 +796,7 @@ const DealContent = (): JSX.Element => {
                           </td>
                           <td className="px-4 py-3.5">
                             <div className="flex items-center gap-1">
+                              {hasPermission(PERMISSIONS.updateDeal) && item.status !== DEAL_STATUS.DELETE && <FollowUpScheduler entity="deal" recordId={item.id} recordName={item.dealName} followUpAt={item.followUpAt} onUpdated={getDealData} />}
                               {hasPermission(PERMISSIONS.readDeal) ? (
                                 <Link
                                   href={`/deals/view/${item.id}`}
@@ -795,7 +849,7 @@ const DealContent = (): JSX.Element => {
                     })
                   ) : (
                     <tr>
-                      <td className="p-4 text-center text-slate-500 dark:text-white/70" colSpan={9}>
+                      <td className="p-4 text-center text-slate-500 dark:text-white/70" colSpan={10}>
                         {t("data_not_found")}
                       </td>
                     </tr>
@@ -817,6 +871,11 @@ const DealContent = (): JSX.Element => {
                       );
                   })
                 )}
+                <tr className="border-t-2 border-slate-200 bg-slate-50 dark:border-gray-700 dark:bg-gray-800/70">
+                  <td colSpan={8} className="px-4 py-4 text-right text-sm font-bold text-slate-700 dark:text-slate-200">Total revenue (all filtered deals)</td>
+                  <td className="px-4 py-4 text-sm font-bold text-cyan-700 dark:text-cyan-300">{formatCurrency(totalRevenue)}</td>
+                  <td />
+                </tr>
               </tbody>
             </table>
           )}
@@ -848,6 +907,7 @@ const DealContent = (): JSX.Element => {
                   <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">
                     <div className="flex items-center gap-1.5"><FiCalendar className="text-[13px] text-amber-500"/> {t("close_date")}</div>
                   </th>
+                  <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">Amount</th>
                   <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">
                     <div className="flex items-center gap-1.5"><FiUserPlus className="text-[13px] text-slate-400"/> {t("created_by_2")}</div>
                   </th>
@@ -866,6 +926,7 @@ const DealContent = (): JSX.Element => {
                       const rr = i % 2 == 0;
                       const date = formatDate(item.createDate);
                       const isSelected = selectedDeals.has(item.id);
+                      const assignedUser = item.assignedTo ?? item.lead_id?.assignedTo?.[0] ?? null;
                       return (
                         <tr
                           key={item.deal_id}
@@ -906,7 +967,7 @@ const DealContent = (): JSX.Element => {
                           <td className="px-4 py-3.5">
                             <span
                               className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-medium bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400 cursor-copy hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-                              onClick={() => handleCopy(item?.lead_id?.lead_id)}
+                              onClick={() => handleCopy(item?.lead_id?.lead_id ?? "")}
                               title="Copy Lead ID"
                             >
                               {item?.lead_id?.lead_id ?? "N/A"}
@@ -922,15 +983,16 @@ const DealContent = (): JSX.Element => {
                               <span className="text-slate-300 dark:text-slate-600 text-xs">—</span>
                             )}
                           </td>
+                          <td className="px-4 py-3.5 text-[13px] font-semibold text-slate-700 dark:text-slate-200">{formatCurrency(Number(item.amount) || 0)}</td>
                           <td className="px-4 py-3.5">
                             <Link href={`/users/${item.createdBy.id}`} className="text-[13px] text-slate-500 dark:text-slate-400 capitalize hover:text-cyan-600 transition-colors">
                               {item.createdBy?.firstName + " " + item.createdBy?.lastName}
                             </Link>
                           </td>
                           <td className="px-4 py-3.5">
-                            {item.assignedTo ? (
+                            {assignedUser ? (
                               <span className="text-[13px] text-slate-500 dark:text-slate-400 capitalize">
-                                {item.assignedTo.firstName + " " + item.assignedTo.lastName}
+                                {[assignedUser.firstName, assignedUser.lastName].filter(Boolean).join(" ") || "—"}
                               </span>
                             ) : (
                               <span className="text-slate-300 dark:text-slate-600 text-xs">—</span>
@@ -938,6 +1000,7 @@ const DealContent = (): JSX.Element => {
                           </td>
                           <td className="px-4 py-3.5">
                             <div className="flex items-center gap-1">
+                              {hasPermission(PERMISSIONS.updateDeal) && item.status !== DEAL_STATUS.DELETE && <FollowUpScheduler entity="deal" recordId={item.id} recordName={item.dealName} followUpAt={item.followUpAt} onUpdated={getWonDealData} />}
                               {hasPermission(PERMISSIONS.readDeal) ? (
                                 <Link
                                   href={`/deals/view/${item.id}`}
@@ -990,7 +1053,7 @@ const DealContent = (): JSX.Element => {
                     })
                   ) : (
                     <tr>
-                      <td className="p-4 text-center text-slate-500 dark:text-white/70" colSpan={9}>
+                      <td className="p-4 text-center text-slate-500 dark:text-white/70" colSpan={10}>
                         {t("data_not_found")}
                       </td>
                     </tr>
@@ -1012,6 +1075,11 @@ const DealContent = (): JSX.Element => {
                       );
                   })
                 )}
+                <tr className="border-t-2 border-slate-200 bg-slate-50 dark:border-gray-700 dark:bg-gray-800/70">
+                  <td colSpan={8} className="px-4 py-4 text-right text-sm font-bold text-slate-700 dark:text-slate-200">Total revenue (all filtered deals)</td>
+                  <td className="px-4 py-4 text-sm font-bold text-cyan-700 dark:text-cyan-300">{formatCurrency(totalRevenue)}</td>
+                  <td />
+                </tr>
               </tbody>
             </table>
           )}
@@ -1043,6 +1111,7 @@ const DealContent = (): JSX.Element => {
                   <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">
                     <div className="flex items-center gap-1.5"><FiCalendar className="text-[13px] text-amber-500"/> {t("close_date")}</div>
                   </th>
+                  <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">Amount</th>
                   <th className="px-4 py-3 uppercase text-[11px] font-semibold tracking-wider text-start text-slate-500 dark:text-slate-400">
                     <div className="flex items-center gap-1.5"><FiUserPlus className="text-[13px] text-slate-400"/> {t("created_by_2")}</div>
                   </th>
@@ -1061,6 +1130,7 @@ const DealContent = (): JSX.Element => {
                       const rr = i % 2 == 0;
                       const date = formatDate(item.createDate);
                       const isSelected = selectedDeals.has(item.id);
+                      const assignedUser = item.assignedTo ?? item.lead_id?.assignedTo?.[0] ?? null;
                       return (
                         <tr
                           key={item.deal_id}
@@ -1101,7 +1171,7 @@ const DealContent = (): JSX.Element => {
                           <td className="px-4 py-3.5">
                             <span
                               className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-medium bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400 cursor-copy hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-                              onClick={() => handleCopy(item?.lead_id?.lead_id)}
+                              onClick={() => handleCopy(item?.lead_id?.lead_id ?? "")}
                               title="Copy Lead ID"
                             >
                               {item?.lead_id?.lead_id ?? "N/A"}
@@ -1117,15 +1187,16 @@ const DealContent = (): JSX.Element => {
                               <span className="text-slate-300 dark:text-slate-600 text-xs">—</span>
                             )}
                           </td>
+                          <td className="px-4 py-3.5 text-[13px] font-semibold text-slate-700 dark:text-slate-200">{formatCurrency(Number(item.amount) || 0)}</td>
                           <td className="px-4 py-3.5">
                             <Link href={`/users/${item.createdBy.id}`} className="text-[13px] text-slate-500 dark:text-slate-400 capitalize hover:text-cyan-600 transition-colors">
                               {item.createdBy?.firstName + " " + item.createdBy?.lastName}
                             </Link>
                           </td>
                           <td className="px-4 py-3.5">
-                            {item.assignedTo ? (
+                            {assignedUser ? (
                               <span className="text-[13px] text-slate-500 dark:text-slate-400 capitalize">
-                                {item.assignedTo.firstName + " " + item.assignedTo.lastName}
+                                {[assignedUser.firstName, assignedUser.lastName].filter(Boolean).join(" ") || "—"}
                               </span>
                             ) : (
                               <span className="text-slate-300 dark:text-slate-600 text-xs">—</span>
@@ -1133,6 +1204,7 @@ const DealContent = (): JSX.Element => {
                           </td>
                           <td className="px-4 py-3.5">
                             <div className="flex items-center gap-1">
+                              {hasPermission(PERMISSIONS.updateDeal) && item.status !== DEAL_STATUS.DELETE && <FollowUpScheduler entity="deal" recordId={item.id} recordName={item.dealName} followUpAt={item.followUpAt} onUpdated={getLostDealData} />}
                               {hasPermission(PERMISSIONS.readDeal) ? (
                                 <Link
                                   href={`/deals/view/${item.id}`}
@@ -1185,7 +1257,7 @@ const DealContent = (): JSX.Element => {
                     })
                   ) : (
                     <tr>
-                      <td className="p-4 text-center text-slate-500 dark:text-white/70" colSpan={9}>
+                      <td className="p-4 text-center text-slate-500 dark:text-white/70" colSpan={10}>
                         {t("data_not_found")}
                       </td>
                     </tr>
@@ -1207,6 +1279,11 @@ const DealContent = (): JSX.Element => {
                       );
                   })
                 )}
+                <tr className="border-t-2 border-slate-200 bg-slate-50 dark:border-gray-700 dark:bg-gray-800/70">
+                  <td colSpan={8} className="px-4 py-4 text-right text-sm font-bold text-slate-700 dark:text-slate-200">Total revenue (all filtered deals)</td>
+                  <td className="px-4 py-4 text-sm font-bold text-cyan-700 dark:text-cyan-300">{formatCurrency(totalRevenue)}</td>
+                  <td />
+                </tr>
               </tbody>
             </table>
           )}

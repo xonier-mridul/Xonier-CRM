@@ -1,6 +1,6 @@
 
 
-from beanie import Document, Link, before_event, Insert, Save
+from beanie import Document, Link, before_event, Insert, Save, PydanticObjectId
 from pydantic import Field, BaseModel
 from typing import Optional, List
 from datetime import datetime, date, timezone, timedelta
@@ -19,8 +19,8 @@ class InvoiceModel(BaseDocument):
     invoiceId: str
     sourceQuoteId: Optional[str] = None
 
-    deal: Link[DealModel]
-    quotation: Link[QuotationModel]
+    deal: Optional[Link[DealModel]] = None
+    quotation: Optional[Link[QuotationModel]] = None
 
     customerName: str
     customerEmail: str
@@ -49,6 +49,8 @@ class InvoiceModel(BaseDocument):
     )
 
     status: INVOICE_STATUS = INVOICE_STATUS.ISSUED
+    followUpAt: Optional[datetime] = None
+    followUpOwnerId: Optional[PydanticObjectId] = None
 
     paymentTerms: Optional[str] = None
     notes: Optional[str] = None

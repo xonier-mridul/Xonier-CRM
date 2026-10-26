@@ -159,6 +159,7 @@ export enum PERMISSIONS {
   updateQuote = "quote:update",
   quoteDelete = "quote:delete",
   readInvoice = "invoice:read",
+  createInvoice = "invoice:create",
   updateInvoice = "invoice:update",
   deleteInvoice = "invoice:delete",
   sendInvoice = "invoice:send",

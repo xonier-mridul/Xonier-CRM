@@ -42,6 +42,7 @@ from app.db.models.payment_model import PaymentModel
 from app.db.models.campaign_model import CampaignModel
 from app.db.models.campaign_lead_model import CampaignLeadModel
 from app.db.models.call_session_model import CallSessionModel
+from app.db.models.google_calendar_connection_model import GoogleCalendarConnectionModel
 
 
 settings = get_setting()
@@ -57,10 +58,17 @@ async def connect_db():
     try:
         
         db = Client[settings.DATABASE_NAME]
+
+        # Older installs used a unique index on userId alone, which prevents
+        # one user from maintaining separate lead and deal form selections.
+        existing_indexes = await db["user_form"].index_information()
+        old_user_only_index = existing_indexes.get("user_id")
+        if old_user_only_index and old_user_only_index.get("unique"):
+            await db["user_form"].drop_index("user_id")
         
         await init_beanie(
             database=db,
-            document_models=[UserModel, PermissionModel, UserRoleModel, OtpModel, EnquiryModel, TeamModel, TeamCategoryModel, LeadsModel, CustomFieldModel, UserFormModel, DealModel, CalenderEventModel, QuotationModel, QuotationHistoryModel, NoteModel, UserCustomFieldModel, ActivityModel, TelephoneNumbersModel, SMSHistory, EmailTemplateModel, EmailHistoryModel, TaskCategoryModel, TaskActivityModel, TaskStatusModel, TaskModel, TaskRemarkModel, TaskReportModel, SubTaskModel, InvoiceModel, TaskTimeLogModel, FeatureModel, PlanModel, CompanyModel, SubscriptionModel, QueryModel, NotificationModel, PaymentModel, CampaignModel, CampaignLeadModel, CallSessionModel]
+            document_models=[UserModel, PermissionModel, UserRoleModel, OtpModel, EnquiryModel, TeamModel, TeamCategoryModel, LeadsModel, CustomFieldModel, UserFormModel, DealModel, CalenderEventModel, QuotationModel, QuotationHistoryModel, NoteModel, UserCustomFieldModel, ActivityModel, TelephoneNumbersModel, SMSHistory, EmailTemplateModel, EmailHistoryModel, TaskCategoryModel, TaskActivityModel, TaskStatusModel, TaskModel, TaskRemarkModel, TaskReportModel, SubTaskModel, InvoiceModel, TaskTimeLogModel, FeatureModel, PlanModel, CompanyModel, SubscriptionModel, QueryModel, NotificationModel, PaymentModel, CampaignModel, CampaignLeadModel, CallSessionModel, GoogleCalendarConnectionModel]
         )
         print("Successfully connected to MongoDB and initialized Beanie")
     except Exception as e:

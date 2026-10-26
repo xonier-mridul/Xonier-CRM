@@ -5,6 +5,8 @@ import React, { JSX, useState, useEffect, useRef } from "react";
 import extractErrorMessages from "../../utils/error.utils";
 import { toast } from "react-toastify";
 import { EnquiryService } from "@/src/services/enquiry.service";
+import FollowUpScheduler from "@/src/components/common/FollowUpScheduler";
+import FollowUpCountCard from "@/src/components/common/FollowUpCountCard";
 import { AuthService } from "@/src/services/auth.service";
 import { IoIosSearch } from "react-icons/io";
 import Link from "next/link";
@@ -278,7 +280,7 @@ const page = (): JSX.Element => {
         </div>
 
         {/* KPI cards */}
-        <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
           <div className="flex items-center gap-3 bg-gradient-to-br from-cyan-50 to-sky-50 dark:from-cyan-900/20 dark:to-sky-900/20 border border-cyan-100 dark:border-cyan-800/40 rounded-xl p-4">
             <div className="w-10 h-10 rounded-lg bg-cyan-100 dark:bg-cyan-900/40 flex items-center justify-center shrink-0"><TbChartBar className="text-cyan-600 dark:text-cyan-400" size={20} /></div>
             <div><p className="text-[11px] font-semibold text-cyan-600 dark:text-cyan-400 uppercase tracking-wide">All Enquiries</p><p className="text-lg font-bold text-slate-800 dark:text-white">{totalEnquiries}</p></div>
@@ -291,6 +293,7 @@ const page = (): JSX.Element => {
             <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center shrink-0"><TbTrendingUp className="text-emerald-600 dark:text-emerald-400" size={20} /></div>
             <div><p className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">Qualified</p><p className="text-lg font-bold text-slate-800 dark:text-white">{qualifiedEnquiries}</p></div>
           </div>
+          <FollowUpCountCard entity="enquiry" dateFilter={dateFilter} />
         </div>
 
         {/* Filter bar */}
@@ -501,6 +504,7 @@ const page = (): JSX.Element => {
                         </td>
                         <td className="px-4 py-3.5">
                           <div className="flex items-center gap-1">
+                            {hasPermission(PERMISSIONS.updateEnquiry) && <FollowUpScheduler entity="enquiry" recordId={item.id} recordName={item.fullName} followUpAt={item.followUpAt} onUpdated={getEnquiryData} />}
                             {hasPermission(PERMISSIONS.readEnquiry) ? (
                               <Link href={`/enquiry/view/${item.id}`} className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-colors" title="View">
                                 <FaRegEye size={15} />

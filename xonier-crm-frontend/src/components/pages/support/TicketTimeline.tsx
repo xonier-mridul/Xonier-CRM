@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { FiFlag, FiSearch, FiSettings, FiUser, FiCheckCircle, FiInfo, FiClock } from "react-icons/fi";
 import type { IconType } from "react-icons";
-import TimelineStep from "../timeLineStep/TimelineStep";
+import TimelineStep from "./TimelineStep";
 import { Ticket, TicketStatus } from "@/src/types/ticket/ticket.type";
 
 interface TicketTimelineProps {
