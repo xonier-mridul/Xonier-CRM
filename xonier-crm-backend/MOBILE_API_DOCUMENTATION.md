@@ -584,3 +584,16 @@ Values for dropdowns and filters:
 ### Distribution Mode (`distributionMode`)
 - `equal`: Leads were auto-distributed equally among agents during bulk import.
 - `on_demand`: Leads remain unassigned in a shared pool; agents claim them on the fly.
+
+
+## Campaign status behavior
+
+New campaigns default to `active`. Pausing sets `status: "paused"`; resuming
+sets `status: "active"`. Campaign list/detail responses and campaign references
+inside mobile lead responses use the same status. Mobile clients should display
+Active or Paused using this API field, and refresh campaign data after a change.
+Existing `completed`, `archived`, and `deleted` lifecycle values are unchanged.
+
+`draft` is retired. Backend startup migrates existing Draft campaigns to Active.
+Legacy clients sending `draft` in campaign creation/status updates or status
+filters are treated as requesting `active`; responses return `active`.

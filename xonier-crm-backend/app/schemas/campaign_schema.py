@@ -17,7 +17,7 @@ class CampaignCreateSchema(BaseModel):
     agents: List[str] = Field(default_factory=list)         # list of user ObjectId strings
     distributionMode: CAMPAIGN_DISTRIBUTION_MODE = CAMPAIGN_DISTRIBUTION_MODE.ON_DEMAND
     distributionConfig: Optional[Dict[str, Any]] = None
-    status: CAMPAIGN_STATUS = CAMPAIGN_STATUS.DRAFT
+    status: CAMPAIGN_STATUS = CAMPAIGN_STATUS.ACTIVE
 
     @field_validator("name", mode="before")
     @classmethod

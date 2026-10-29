@@ -22,7 +22,7 @@ from beanie import PydanticObjectId
 from bson import ObjectId
 
 from app.core.crypto import Encryption
-from app.core.enums import CONTACT_STATUS
+from app.core.enums import CONTACT_STATUS, CAMPAIGN_STATUS
 from app.core.security import hash_value
 from app.db.models.campaign_lead_model import CampaignLeadModel
 from app.db.models.campaign_model import CampaignModel
@@ -169,7 +169,7 @@ class MobileService:
             "id": str(camp["_id"]),
             "campaignId": camp.get("campaign_id"),
             "name": camp.get("name"),
-            "status": camp.get("status"),
+            "status": CAMPAIGN_STATUS(camp.get("status", "active")).value,
             "distributionMode": camp.get("distributionMode"),
         }
 
@@ -360,7 +360,10 @@ class MobileService:
             "$or": or_clauses,
         }
         if status:
-            query["status"] = status
+            try:
+                query["status"] = CAMPAIGN_STATUS(status).value
+            except ValueError:
+                raise AppException(400, f"Invalid status filter: {status}")
         if search:
             query["name"] = {"$regex": re.escape(search), "$options": "i"}
         return query
@@ -403,7 +406,7 @@ class MobileService:
             "campaignId": camp.get("campaign_id"),
             "name": camp.get("name"),
             "description": camp.get("description"),
-            "status": camp.get("status"),
+            "status": CAMPAIGN_STATUS(camp.get("status", "active")).value,
             "distributionMode": camp.get("distributionMode"),
             "managers": people(camp.get("managers")),
             "agents": people(camp.get("agents")),

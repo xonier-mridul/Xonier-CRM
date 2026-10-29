@@ -7,7 +7,7 @@ from app.utils.manage_tokens import verify_access_token, verify_refresh_token
 from app.repositories.user_repository import UserRepository
 from app.core.enums import USER_STATUS
 from beanie import PydanticObjectId
-from app.core.constants import SUPER_ADMIN_CODE
+from app.core.constants import SUPER_ADMIN_CODE, COMPANY_ADMIN_CODE
 from app.core.tenant import current_company, is_admin_context
 from app.core.enums import COMPANY_STATUS
 from app.core.tenant import system_query
@@ -100,7 +100,7 @@ class Dependencies:
            
            if user["status"] == USER_STATUS.SUSPENDED.value:
                raise AppException(400, "Your account is suspended, please contact with the admin")
-      
+
            return True
 
         except Exception as e:
@@ -158,6 +158,15 @@ class Dependencies:
 
         except Exception as e:
             raise e
+
+    async def onlyForCompanyAdmin(self, request: Request):
+        user = request.state.user
+        if any(
+            role.get("code") in {SUPER_ADMIN_CODE, COMPANY_ADMIN_CODE}
+            for role in user.get("userRole", [])
+        ):
+            return True
+        raise AppException(403, "Only company admins can update company settings")
 
     async def company_context(self, request: Request):
         

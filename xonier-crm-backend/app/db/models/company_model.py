@@ -1,6 +1,6 @@
 from beanie import Document, Link, before_event, Save, Replace, Update ,Insert
 from pydantic import BaseModel, Field, EmailStr, field_validator
-from typing import Optional
+from typing import Optional, List
 from pymongo import IndexModel
 from app.core.enums import NUMBER_OF_EMPLOYEES, COUNTRY_CODE, COMPANY_STATUS
 from datetime import datetime, timezone
@@ -26,6 +26,8 @@ class CompanyModel(Document):
     numberHash: str
     companySize: Optional[NUMBER_OF_EMPLOYEES] = None
     website: Optional[str] = None
+    address: Optional[str] = None
+    logoFileId: Optional[str] = None
     timezone: Optional[str] = None
     registrationNumber: Optional[str] = None
     tradeNumber: Optional[str] = None
@@ -35,6 +37,8 @@ class CompanyModel(Document):
     subscriptionCount: int = 0
     country: Optional[COUNTRY_CODE] = None
     currency: str = "USD"
+    paymentMethods: List[str] = Field(default_factory=list)
+    paymentTerms: List[str] = Field(default_factory=list)
 
     status: Optional[COMPANY_STATUS] = None
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

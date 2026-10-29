@@ -10,6 +10,8 @@ from app.core.enums import INVOICE_STATUS
 
 class InvoiceCreateSchema(BaseModel):
     invoiceId: Optional[str] = None
+    invoiceTitle: Optional[str] = None
+    description: Optional[str] = None
     sourceQuoteId: Optional[str] = None
 
     deal: Optional[str] = None
@@ -40,6 +42,7 @@ class InvoiceCreateSchema(BaseModel):
     status: INVOICE_STATUS = INVOICE_STATUS.ISSUED
 
     paymentTerms: Optional[str] = None
+    paymentMethod: Optional[str] = None
     notes: Optional[str] = None
     termsAndConditions: Optional[str] = None
     internalNotes: Optional[str] = None

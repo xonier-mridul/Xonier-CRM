@@ -1,5 +1,5 @@
 # app/controllers/company_controller.py
-from fastapi import Request
+from fastapi import Request, UploadFile
 from app.utils.custom_exception import AppException
 from app.services.company_service import CompanyService
 from app.utils.custom_response import successResponse
@@ -89,6 +89,43 @@ class CompanyController:
             raise
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+
+    async def get_current_company(self, request: Request):
+        try:
+            result = await self.service.get_current_company(actor=request.state.user)
+            return successResponse(200, "Company fetched successfully", result)
+        except AppException:
+            raise
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+
+    async def update_current_company_settings(self, request: Request, payload):
+        try:
+            result = await self.service.update_current_company_settings(
+                payload=payload, actor=request.state.user
+            )
+            return successResponse(200, "Company settings updated successfully", result)
+        except AppException:
+            raise
+        except Exception as e:
+            raise AppException(500, f"Internal server error: {e}")
+
+    async def upload_company_logo(self, request: Request, file: UploadFile):
+        try:
+            result = await self.service.upload_company_logo(file=file, actor=request.state.user)
+            return successResponse(200, "Company logo uploaded successfully", result)
+        except AppException:
+            raise
+        except Exception as e:
+            raise AppException(500, f"Company logo upload failed: {e}")
+
+    async def get_company_logo(self, request: Request):
+        try:
+            return await self.service.get_company_logo(actor=request.state.user)
+        except AppException:
+            raise
+        except Exception as e:
+            raise AppException(500, f"Company logo fetch failed: {e}")
 
     async def update(self, request: Request, company_id: str, payload: CompanyUpdateSchema):
         try:

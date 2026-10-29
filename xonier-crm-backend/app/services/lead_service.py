@@ -38,6 +38,9 @@ from app.repositories.event_repository import EventRepository
 from app.utils.event_payload_generator import EventPayloadGenerator
 
 
+from app.utils.lead_assignment_access import require_lead_assigner, require_lower_assignee
+
+
 class LeadService:
     def __init__(self):
         self.repo = LeadRepository()
@@ -327,10 +330,10 @@ class LeadService:
                     raise AppException(500, f"Internal server error: {str(e)}")
 
     async def bulk_lead_assign(self, payload: Dict[str, Any], user: Dict[str, Any]):
+        require_lead_assigner(user)
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
-                    validate_admin(user["userRole"])
 
                     user_id_str = payload.get("userId")
                     lead_ids_str = payload.get("leadsId", [])
@@ -342,10 +345,12 @@ class LeadService:
 
                     assign_to_user = await self.userRepo.find_one({
                         "_id": PydanticObjectId(user_id_str),
-                        "deletedAt": None
-                    })
+                        "deletedAt": None,
+                        "companyId": PydanticObjectId(user["companyId"]),
+                    }, populate=["userRole"])
                     if not assign_to_user:
                         raise AppException(404, "User not found or inactive")
+                    require_lower_assignee(user, jsonable_encoder(assign_to_user))
 
                     try:
                         lead_object_ids = [PydanticObjectId(lid) for lid in lead_ids_str]
@@ -361,6 +366,7 @@ class LeadService:
                     existing_leads = await collection.find(
                         {
                             "_id": {"$in": lead_object_ids},
+                            "companyId": PydanticObjectId(user["companyId"]),
                             "deletedAt": None
                         },
                         {"_id": 1, "lead_id": 1, "assignedTo": 1}
@@ -461,10 +467,10 @@ class LeadService:
                     raise AppException(status_code=500, message=f"Internal server error: {e}")
 
     async def bulk_clear_assign(self, payload: Dict[str, Any], user: Dict[str, Any]):
+        require_lead_assigner(user)
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
-                    validate_admin(user["userRole"])
 
                     lead_ids_str = payload.get("leadsIds", [])
 
@@ -483,6 +489,7 @@ class LeadService:
                     existing_leads = await collection.find(
                         {
                             "_id": {"$in": lead_object_ids},
+                            "companyId": PydanticObjectId(user["companyId"]),
                             "deletedAt": None
                         },
                         {"_id": 1, "lead_id": 1, "isAssigned": 1, "assignedTo": 1}
@@ -576,14 +583,12 @@ class LeadService:
                     raise AppException(status_code=500, message=f"Internal server error: {e}")           
 
     async def bulk_lead_reassign(self, payload: Dict[str, Any], user: Dict[str, Any]):
+        require_lead_assigner(user)
         
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
-                    isAdmin = validate_admin(user["userRole"])
 
-                    # if not isAdmin:
-                    #     raise AppException(403, "Only admin can reassign leads")
 
                     user_id_str = payload.get("userId")
                     lead_ids_str = payload.get("leadsId", [])
@@ -596,10 +601,12 @@ class LeadService:
                     
                     assign_to_user = await self.userRepo.find_one({
                         "_id": PydanticObjectId(user_id_str),
-                        "deletedAt": None
-                    })
+                        "deletedAt": None,
+                        "companyId": PydanticObjectId(user["companyId"]),
+                    }, populate=["userRole"])
                     if not assign_to_user:
                         raise AppException(404, "User not found or inactive")
+                    require_lower_assignee(user, jsonable_encoder(assign_to_user))
 
                     
                     try:
@@ -616,6 +623,7 @@ class LeadService:
                     existing_leads = await collection.find(
                         {
                             "_id": {"$in": lead_object_ids},
+                            "companyId": PydanticObjectId(user["companyId"]),
                             "deletedAt": None
                         },
                         {"_id": 1, "lead_id": 1, "assignedTo": 1, "isAssigned": 1}

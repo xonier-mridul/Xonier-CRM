@@ -66,6 +66,13 @@ async def connect_db():
         if old_user_only_index and old_user_only_index.get("unique"):
             await db["user_form"].drop_index("user_id")
         
+        # Idempotent migration: legacy Draft campaigns now start Active.
+        # Run before serving requests so raw mobile filters and counts agree.
+        await db["campaigns"].update_many(
+            {"status": "draft"},
+            {"$set": {"status": "active"}},
+        )
+
         await init_beanie(
             database=db,
             document_models=[UserModel, PermissionModel, UserRoleModel, OtpModel, EnquiryModel, TeamModel, TeamCategoryModel, LeadsModel, CustomFieldModel, UserFormModel, DealModel, CalenderEventModel, QuotationModel, QuotationHistoryModel, NoteModel, UserCustomFieldModel, ActivityModel, TelephoneNumbersModel, SMSHistory, EmailTemplateModel, EmailHistoryModel, TaskCategoryModel, TaskActivityModel, TaskStatusModel, TaskModel, TaskRemarkModel, TaskReportModel, SubTaskModel, InvoiceModel, TaskTimeLogModel, FeatureModel, PlanModel, CompanyModel, SubscriptionModel, QueryModel, NotificationModel, PaymentModel, CampaignModel, CampaignLeadModel, CallSessionModel, GoogleCalendarConnectionModel]

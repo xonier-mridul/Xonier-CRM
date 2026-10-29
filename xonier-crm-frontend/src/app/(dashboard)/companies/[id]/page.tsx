@@ -188,6 +188,8 @@ export default function CompanyDetailPage() {
   const { t } = useTranslation();
   const { id } = useParams();
   const router = useRouter();
+  const auth = useSelector((state: RootState) => state.auth);
+  const isSuperAdmin = auth.isAdmin;
   const [company, setCompany] = useState<Company | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -343,7 +345,7 @@ export default function CompanyDetailPage() {
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-2 relative">
+              {isSuperAdmin && <div className="flex items-center gap-2 relative">
                 <Link
                   href={`/companies/update/${company.id}`}
                   className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl bg-slate-100 dark:bg-gray-700 text-slate-700 dark:text-gray-200 hover:bg-slate-200 dark:hover:bg-gray-600 transition-colors"
@@ -409,7 +411,7 @@ export default function CompanyDetailPage() {
                     )}
                   </div>
                 )}
-              </div>
+              </div>}
             </div>
           ) : null}
         </div>
@@ -760,7 +762,7 @@ export default function CompanyDetailPage() {
             </Card>
 
             {/* Quick Actions */}
-            {!isLoading && company && (
+            {!isLoading && company && isSuperAdmin && (
               <Card title={t("quick_actions")} icon={<IoShieldCheckmarkOutline />}>
                 <div className="py-3 flex flex-col gap-2">
                   <Link

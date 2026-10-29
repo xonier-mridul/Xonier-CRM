@@ -588,6 +588,7 @@ export enum EventType {
 
 export enum INVOICE_STATUS {
   DRAFT = "DRAFT",
+  ISSUED = "ISSUED",
   SENT = "SENT",
   PAID = "PAID",
   PARTIALLY_PAID = "PARTIALLY_PAID",

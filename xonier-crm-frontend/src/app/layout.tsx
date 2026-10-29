@@ -18,6 +18,7 @@ import "react-toastify/dist/ReactToastify.css";
 import "react-loading-skeleton/dist/skeleton.css";
 import I18nProvider from "../components/providers/I18nProvider";
 import Support from "../components/support/page";
+import NormalizeNumberInputs from "../components/common/NormalizeNumberInputs";
 
 const poppins = localFont({
   src: [
@@ -68,6 +69,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
               </Suspense>
 
               <ToastProvider />
+              <NormalizeNumberInputs />
 
               
               {children }

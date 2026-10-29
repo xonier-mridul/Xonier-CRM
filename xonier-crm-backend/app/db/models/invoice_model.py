@@ -17,6 +17,8 @@ encryption = Encryption()
 
 class InvoiceModel(BaseDocument):
     invoiceId: str
+    invoiceTitle: Optional[str] = None
+    description: Optional[str] = None
     sourceQuoteId: Optional[str] = None
 
     deal: Optional[Link[DealModel]] = None
@@ -53,6 +55,7 @@ class InvoiceModel(BaseDocument):
     followUpOwnerId: Optional[PydanticObjectId] = None
 
     paymentTerms: Optional[str] = None
+    paymentMethod: Optional[str] = None
     notes: Optional[str] = None
     termsAndConditions: Optional[str] = None
     internalNotes: Optional[str] = None

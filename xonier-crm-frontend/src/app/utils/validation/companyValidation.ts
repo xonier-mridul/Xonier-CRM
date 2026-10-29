@@ -21,18 +21,18 @@ export const validateCompanyForm = (data: CompanySettingUpdatePayload): CompanyS
   }
 
   // Email validation
-  if (!data.companyEmail || data.companyEmail.trim().length === 0) {
-    errors.companyEmail = "Company email is required";
+  if (!data.email || data.email.trim().length === 0) {
+    errors.email = "Company email is required";
   } else {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(data.companyEmail)) {
-      errors.companyEmail = "Please enter a valid email address";
+    if (!emailRegex.test(data.email)) {
+      errors.email = "Please enter a valid email address";
     }
   }
 
   // Phone validation
-  if (!data.companyPhoneNumber || data.companyPhoneNumber.trim().length === 0) {
-    errors.companyPhoneNumber = "Phone number is required";
+  if (!data.number || data.number.trim().length === 0) {
+    errors.number = "Phone number is required";
   }
 
   // Website validation (optional but must be valid if provided)

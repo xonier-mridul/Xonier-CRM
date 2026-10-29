@@ -25,7 +25,7 @@ class CampaignModel(BaseDocument):
     # Empty for ON_DEMAND and EQUAL modes.
     distributionConfig: Optional[dict] = None
 
-    status: CAMPAIGN_STATUS = CAMPAIGN_STATUS.DRAFT
+    status: CAMPAIGN_STATUS = CAMPAIGN_STATUS.ACTIVE
 
     # Denormalized counts — updated via atomic $inc during import/assignment.
     # Avoids expensive COUNT queries on campaign_leads when listing campaigns.

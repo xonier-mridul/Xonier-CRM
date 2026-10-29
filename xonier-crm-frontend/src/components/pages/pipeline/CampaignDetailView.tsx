@@ -182,7 +182,7 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
   }, [fetchLeads]);
 
   const isOnDemand = String(campaign.distributionMode || "").toLowerCase() === "on_demand";
-  const [status, setStatus] = useState<string>(String(campaign.status || "draft").toLowerCase());
+  const [status, setStatus] = useState<string>(String(campaign.status || "active").toLowerCase());
   const [isTogglingPause, setIsTogglingPause] = useState(false);
   const isPaused = status === "paused";
 

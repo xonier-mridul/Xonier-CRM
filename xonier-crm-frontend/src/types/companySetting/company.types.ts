@@ -31,14 +31,19 @@ export interface CompanySetting {
   id: string;
   companyName: string;
   industry: string;
-  companyEmail: string;
-  companyPhoneNumber: string;
+  email: string;
+  number: string;
   companySize?: NUMBER_OF_EMPLOYEES;
   country?: COUNTRY_CODE;
   timezone?: string;
   website?: string;
+  address?: string;
+  logoFileId?: string;
   registrationNumber?: string;
   tradeNumber?: string;
+  currency?: string;
+  paymentMethods?: string[];
+  paymentTerms?: string[];
   
   // Read-only fields
   slug?: string;
@@ -55,21 +60,25 @@ export interface CompanySetting {
 export interface CompanySettingUpdatePayload {
   companyName: string;
   industry: string;
-  companyEmail: string;
-  companyPhoneNumber: string;
+  email: string;
+  number: string;
   companySize?: NUMBER_OF_EMPLOYEES;
   country?: COUNTRY_CODE;
   timezone?: string;
   website?: string;
+  address?: string;
   registrationNumber?: string;
   tradeNumber?: string;
+  currency?: string;
+  paymentMethods?: string[];
+  paymentTerms?: string[];
 }
 
 export interface CompanySettingFormErrors {
   companyName?: string;
   industry?: string;
-  companyEmail?: string;
-  companyPhoneNumber?: string;
+  email?: string;
+  number?: string;
   website?: string;
   general?: string;
 }

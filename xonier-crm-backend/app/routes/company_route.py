@@ -1,5 +1,6 @@
 # app/routers/company_router.py
-from fastapi import APIRouter, Depends, Request, Query
+from fastapi import APIRouter, Depends, Request, Query, File, UploadFile
+from fastapi.responses import StreamingResponse
 from typing import Optional
 from app.schemas.company_schema import (
     CompanyCreateSchema,
@@ -8,6 +9,7 @@ from app.schemas.company_schema import (
     CompanyFilterSchema,
     VerifyCompanyOtpSchema,
     ResendOtpSchema,
+    CompanySettingsUpdateSchema,
 )
 from app.core.enums import COMPANY_STATUS, COUNTRY_CODE, NUMBER_OF_EMPLOYEES
 from app.core.dependencies import Dependencies
@@ -48,6 +50,27 @@ async def create(request: Request, payload: CompanyCreateSchema):
 @router.get("/stats", dependencies=admin_only)
 async def get_stats(request: Request):
     return await controller.get_stats(request=request)
+
+
+@router.get("/me/settings", dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context)])
+async def get_current_company_settings(request: Request):
+    return await controller.get_current_company(request=request)
+
+
+@router.patch("/me/settings", dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context), Depends(dependencies.onlyForCompanyAdmin)])
+async def update_current_company_settings(request: Request, payload: CompanySettingsUpdateSchema):
+    return await controller.update_current_company_settings(request=request, payload=payload)
+
+
+@router.post("/me/logo", dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context), Depends(dependencies.onlyForCompanyAdmin)])
+async def upload_company_logo(request: Request, file: UploadFile = File(...)):
+    return await controller.upload_company_logo(request=request, file=file)
+
+
+@router.get("/me/logo", dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context)])
+async def get_company_logo(request: Request):
+    stream, content_type = await controller.get_company_logo(request=request)
+    return StreamingResponse(stream, media_type=content_type, headers={"Cache-Control": "private, max-age=300"})
 
 
 @router.get("/", dependencies=admin_only)

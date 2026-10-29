@@ -1,3 +1,4 @@
+from app.utils.lead_assignment_access import require_lead_assigner, require_lower_assignee
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
 import uuid
@@ -193,7 +194,7 @@ class CampaignService:
                         "agents": agent_oids,
                         "distributionMode": payload.get("distributionMode", CAMPAIGN_DISTRIBUTION_MODE.ON_DEMAND),
                         "distributionConfig": payload.get("distributionConfig"),
-                        "status": payload.get("status", CAMPAIGN_STATUS.DRAFT),
+                        "status": payload.get("status", CAMPAIGN_STATUS.ACTIVE),
                         "createdBy": user_oid,
                     }
 
@@ -1053,6 +1054,13 @@ class CampaignService:
         payload: Dict[str, Any],
         user: Dict[str, Any],
     ) -> Dict[str, Any]:
+        require_lead_assigner(user)
+        target = await self.userRepo.find_one(
+            {"_id": PydanticObjectId(payload["agentId"]), "deletedAt": None,
+             "companyId": PydanticObjectId(user["companyId"])}, populate=["userRole"])
+        if not target:
+            raise AppException(404, "Agent not found")
+        require_lower_assignee(user, jsonable_encoder(target))
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:

@@ -3,6 +3,7 @@ from typing import Dict, Any
 from app.utils.custom_exception import AppException
 from app.utils.custom_response import successResponse
 from app.services.quotation_service import QuotationService
+from fastapi.responses import StreamingResponse
 
 class QuotationController:
     def __init__(self):
@@ -122,4 +123,20 @@ class QuotationController:
         except AppException as e:
             raise e
 
-         
+    async def download_quotation(self, quoteId: str, request: Request):
+        try:
+            user = request.state.user
+            result = await self.service.download_quotation(quoteId, user)
+            return StreamingResponse(
+                result["pdf_buffer"],
+                media_type="application/pdf",
+                headers={
+                    "Content-Disposition": f"attachment; filename={result['filename']}",
+                    "Content-Type": "application/pdf",
+                },
+            )
+        except AppException as e:
+            raise e
+        except Exception as e:
+            print("Quotation download controller error:", e)
+            raise AppException(status_code=500, message="Failed to download quotation PDF")

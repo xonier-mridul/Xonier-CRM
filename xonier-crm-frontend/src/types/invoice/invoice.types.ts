@@ -16,6 +16,8 @@ export interface QuotationLineItem {
 export interface Invoice {
   id: string
   invoiceId: string
+  invoiceTitle?: string | null
+  description?: string | null
   sourceQuoteId?: string | null
   deal?: Deal | null
   quotation?: Quotation | null
@@ -43,6 +45,7 @@ export interface Invoice {
   followUpAt?: string | null
   followUpOwnerId?: string | null
   paymentTerms?: string | null
+  paymentMethod?: string | null
   notes?: string | null
   termsAndConditions?: string | null
   internalNotes?: string | null

@@ -6,7 +6,7 @@ import { Quotation } from '@/src/types/quotations/quote.types';
 import { User } from '@/src/types';
 import axios from 'axios';
 import { useParams, useRouter } from 'next/navigation';
-import React, { JSX, useEffect, useState } from 'react'
+import React, { JSX, useEffect, useRef, useState } from 'react'
 import { toast } from 'react-toastify';
 import {
   IoArrowBack,
@@ -33,6 +33,9 @@ import {
   IoGlobeOutline,
   IoLocationOutline,
   IoDocumentTextOutline,
+  IoEyeOutline,
+  IoCloseOutline,
+  IoAlertCircleOutline,
 } from 'react-icons/io5';
 import { FaRegPaperPlane } from "react-icons/fa";
 import { MdCategory, MdTimeline, MdDeleteOutline } from 'react-icons/md';
@@ -67,6 +70,13 @@ const Page = (): JSX.Element => {
   const [err, setErr] = useState<string[] | string>("");
   const [quoteHistoryInfo, setQuoteHistoryInfo] = useState<string[] | string>("");
   const [activeTab, setActiveTab] = useState<'overview' | 'items' | 'deal' | 'timeline'>('overview');
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
+  const [previewError, setPreviewError] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const previewRequestId = useRef(0);
   const { id } = useParams();
   const router = useRouter();
   const { hasPermission } = usePermissions();
@@ -197,6 +207,109 @@ const Page = (): JSX.Element => {
     }
   };
 
+  const handlePreviewQuotation = async () => {
+    if (!id || isPreviewLoading) return;
+    const requestId = ++previewRequestId.current;
+    setIsPreviewOpen(true);
+    setIsPreviewLoading(true);
+    setPreviewError(false);
+    try {
+      const result = await QuoteService.download(String(id));
+      if (result.status === 200) {
+        const blob = result.data instanceof Blob
+          ? result.data
+          : new Blob([result.data], { type: "application/pdf" });
+        if (!blob.size) throw new Error("Empty quotation PDF");
+        const url = window.URL.createObjectURL(blob);
+        if (requestId !== previewRequestId.current) {
+          window.URL.revokeObjectURL(url);
+          return;
+        }
+        setPreviewBlob(blob);
+        setPreviewUrl(url);
+      } else {
+        throw new Error("Quotation preview request failed");
+      }
+    } catch {
+      if (requestId === previewRequestId.current) {
+        setPreviewError(true);
+        toast.error("Failed to load quotation preview");
+      }
+    } finally {
+      if (requestId === previewRequestId.current) setIsPreviewLoading(false);
+    }
+  };
+
+  const handleDownloadQuotation = async () => {
+    if (previewUrl && previewBlob) {
+      const link = document.createElement("a");
+      link.href = previewUrl;
+      link.download = `quotation_${quoteData?.quoteId || id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success("Quotation PDF downloaded");
+      return;
+    }
+
+    if (!id || isDownloading) return;
+    setIsDownloading(true);
+    try {
+      const result = await QuoteService.download(String(id));
+      if (result.status === 200) {
+        const blob = result.data instanceof Blob
+          ? result.data
+          : new Blob([result.data], { type: "application/pdf" });
+        if (!blob.size) throw new Error("Empty PDF");
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `quotation_${quoteData?.quoteId || id}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        toast.success("Quotation PDF downloaded");
+      }
+    } catch {
+      toast.error("Failed to download quotation PDF");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const closeQuotationPreview = () => {
+    previewRequestId.current += 1;
+    setIsPreviewOpen(false);
+    setIsPreviewLoading(false);
+    setPreviewUrl(null);
+    setPreviewBlob(null);
+    setPreviewError(false);
+  };
+
+  useEffect(() => {
+    if (!previewUrl) return;
+    return () => window.URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
+
+  useEffect(() => {
+    if (!isPreviewOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        previewRequestId.current += 1;
+        setIsPreviewOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isPreviewOpen]);
+
+
   if (isLoading) {
     return (
       <div className="p-6 flex flex-col gap-6">
@@ -297,11 +410,21 @@ const Page = (): JSX.Element => {
               </button>
 
               <button
-                onClick={() => toast.info("Download coming soon")}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-sm font-medium transition-colors"
+                onClick={handlePreviewQuotation}
+                disabled={isPreviewLoading}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-gray-700 hover:bg-gray-800 dark:hover:bg-gray-600 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-wait"
+              >
+                <IoEyeOutline className="w-4 h-4" />
+                Preview PDF
+              </button>
+
+              <button
+                onClick={handleDownloadQuotation}
+                disabled={isDownloading}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 disabled:opacity-60 text-white rounded-xl text-sm font-medium transition-colors"
               >
                 <IoDownloadOutline className="w-4 h-4" />
-                {t("download")}
+                {isDownloading ? "Downloading..." : t("download")}
               </button>
 
               <div className="relative group">
@@ -328,6 +451,41 @@ const Page = (): JSX.Element => {
           </div>
         </div>
       </div>
+
+      {quoteData.quotationStatus === QuotationStatus.ACCEPTED && quoteData.convertedToInvoice && (
+        <div className="mb-5 flex items-center justify-between gap-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-6 py-4 dark:border-emerald-800/50 dark:bg-emerald-900/20">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/40">
+              <IoReceiptOutline className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
+                Invoice Generated
+              </p>
+              <p className="text-xs text-emerald-600 dark:text-emerald-400">
+                An invoice was automatically created when this quotation was accepted.
+              </p>
+            </div>
+          </div>
+          {quoteData.invoiceId ? (
+            <Link
+              href={`/invoice/view/${quoteData.invoiceId}`}
+              className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-700"
+            >
+              <IoReceiptOutline className="h-4 w-4" />
+              View Invoice
+            </Link>
+          ) : (
+            <Link
+              href="/invoice"
+              className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-700"
+            >
+              <IoReceiptOutline className="h-4 w-4" />
+              Go to Invoices
+            </Link>
+          )}
+        </div>
+      )}
 
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 mb-5">
         <div className="flex gap-1 overflow-x-auto px-4 py-2">
@@ -958,6 +1116,95 @@ const Page = (): JSX.Element => {
           )}
         </div>
       </div>
+
+      {isPreviewOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/70 p-3 backdrop-blur-sm sm:p-6"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeQuotationPreview();
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="quote-preview-title"
+            className="flex h-[min(92vh,980px)] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900"
+          >
+            <header className="flex items-center justify-between gap-4 border-b border-gray-200 px-5 py-4 dark:border-gray-700 sm:px-6">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300">
+                  <IoDocumentText className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <h2 id="quote-preview-title" className="truncate text-base font-bold text-gray-900 dark:text-white">
+                    Quotation Preview
+                  </h2>
+                  <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                    {quoteData.quoteId} · {quoteData.customerName}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={closeQuotationPreview}
+                aria-label={t("close")}
+                className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-800 dark:hover:bg-gray-800 dark:hover:text-white"
+              >
+                <IoCloseOutline className="h-5 w-5" />
+              </button>
+            </header>
+
+            <div className="relative min-h-0 flex-1 bg-gray-100 dark:bg-gray-800">
+              {isPreviewLoading ? (
+                <div className="flex h-full min-h-[420px] flex-col items-center justify-center gap-3 text-gray-600 dark:text-gray-300">
+                  <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-teal-600/25 border-t-teal-600" />
+                  <p className="text-sm font-medium">Generating quotation PDF preview...</p>
+                </div>
+              ) : previewError ? (
+                <div className="flex h-full min-h-[420px] flex-col items-center justify-center gap-3 px-6 text-center">
+                  <IoAlertCircleOutline className="h-10 w-10 text-rose-500" />
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Failed to generate quotation preview</p>
+                  <button
+                    type="button"
+                    onClick={handlePreviewQuotation}
+                    className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
+                  >
+                    {t("retry")}
+                  </button>
+                </div>
+              ) : previewUrl ? (
+                <iframe
+                  title={`Quotation Preview ${quoteData.quoteId}`}
+                  src={previewUrl}
+                  className="h-full min-h-[420px] w-full border-0"
+                />
+              ) : null}
+            </div>
+
+            <footer className="flex flex-col-reverse gap-3 border-t border-gray-200 bg-white px-5 py-4 dark:border-gray-700 dark:bg-gray-900 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+              <p className="text-xs text-gray-500 dark:text-gray-400">{quoteData.quoteId}</p>
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={closeQuotationPreview}
+                  className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
+                >
+                  {t("close")}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDownloadQuotation}
+                  disabled={!previewBlob || isPreviewLoading}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <IoDownloadOutline className="h-4 w-4" />
+                  {t("download")}
+                </button>
+              </div>
+            </footer>
+          </section>
+        </div>
+      )}
     </div>
   );
 };

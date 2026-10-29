@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, field_validator, model_validator
-from typing import Optional
+from typing import Optional, List
 from app.core.enums import NUMBER_OF_EMPLOYEES, COUNTRY_CODE, COMPANY_STATUS, BILLING_CYCLE
 
 
@@ -81,6 +81,7 @@ class CompanyUpdateSchema(BaseModel):
     number: Optional[str] = None
     companySize: Optional[NUMBER_OF_EMPLOYEES] = None
     website: Optional[str] = None
+    address: Optional[str] = None
     timezone: Optional[str] = None
     registrationNumber: Optional[str] = None
     tradeNumber: Optional[str] = None
@@ -103,6 +104,52 @@ class CompanyUpdateSchema(BaseModel):
     @field_validator("currency")
     @classmethod
     def validate_currency(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return value
+        code = value.upper()
+        if len(code) != 3 or not code.isalpha():
+            raise ValueError("Currency must be a valid three-letter ISO code")
+        return code
+
+    model_config = {"extra": "forbid"}
+
+
+class CompanySettingsUpdateSchema(BaseModel):
+    companyName: Optional[str] = None
+    industry: Optional[str] = None
+    email: Optional[str] = None
+    number: Optional[str] = None
+    companySize: Optional[NUMBER_OF_EMPLOYEES] = None
+    country: Optional[COUNTRY_CODE] = None
+    timezone: Optional[str] = None
+    website: Optional[str] = None
+    address: Optional[str] = None
+    registrationNumber: Optional[str] = None
+    tradeNumber: Optional[str] = None
+    currency: Optional[str] = None
+    paymentMethods: Optional[List[str]] = None
+    paymentTerms: Optional[List[str]] = None
+
+    @field_validator("companyName", mode="before")
+    @classmethod
+    def validate_settings_company_name(cls, value):
+        if value is None:
+            return value
+        stripped = value.strip()
+        if len(stripped) < 3 or len(stripped) > 100:
+            raise ValueError("Company name must be between 3 and 100 characters")
+        return stripped
+
+    @field_validator("address", mode="before")
+    @classmethod
+    def validate_address(cls, value):
+        if value is not None and len(value) > 500:
+            raise ValueError("Address must be 500 characters or fewer")
+        return value
+
+    @field_validator("currency")
+    @classmethod
+    def validate_settings_currency(cls, value: Optional[str]) -> Optional[str]:
         if value is None:
             return value
         code = value.upper()

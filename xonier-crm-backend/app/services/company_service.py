@@ -43,6 +43,11 @@ from app.utils.subscription_utils import calculate_price, calculate_subscription
 from app.utils.enquiry_id_generator import generate_enquiry_id
 from app.core.crypto import encryptor
 from app.core.tenant import system_query
+from app.core.config import get_setting
+from motor.motor_asyncio import AsyncIOMotorGridFSBucket
+from bson import ObjectId
+from PIL import Image, UnidentifiedImageError
+from io import BytesIO
 
 
 class CompanyService:
@@ -655,6 +660,108 @@ class CompanyService:
             raise
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
+
+    async def get_current_company(self, actor: Dict[str, Any]) -> Dict[str, Any]:
+        company_id = actor.get("companyId")
+        if not company_id:
+            raise AppException(403, "No company associated with this account")
+        return await self.get_by_id(str(company_id), actor)
+
+    async def update_current_company_settings(self, payload, actor: Dict[str, Any]) -> Dict[str, Any]:
+        company_id = actor.get("companyId")
+        if not company_id:
+            raise AppException(403, "No company associated with this account")
+
+        company = await self.repo.find_one(
+            filter={"_id": PydanticObjectId(company_id), "deletedAt": None}
+        )
+        if not company:
+            raise AppException(404, "Company not found")
+
+        update_data = payload.model_dump(exclude_none=True, exclude_unset=True)
+        if not update_data:
+            raise AppException(400, "No fields provided for update")
+
+        if "email" in update_data:
+            update_data["email"] = update_data.pop("email").strip().lower()
+        if "number" in update_data:
+            update_data["number"] = update_data["number"].strip()
+        if "companyName" in update_data:
+            update_data["slug"] = generate_slug(update_data["companyName"])
+
+        for field, value in update_data.items():
+            setattr(company, field, value)
+
+        company.updatedAt = datetime.now(timezone.utc)
+        await company.save()
+        result = company.model_dump(mode="json")
+        result["email"] = self.encryptor.decrypt_data(result["email"])
+        result["number"] = self.encryptor.decrypt_data(result["number"])
+        return result
+
+    async def upload_company_logo(self, file, actor: Dict[str, Any]) -> Dict[str, Any]:
+        company = await self._get_actor_company(actor)
+        content_type = (file.content_type or "").lower()
+        allowed_types = {"image/png": "png", "image/jpeg": "jpg"}
+        if content_type not in allowed_types:
+            raise AppException(400, "Upload a PNG or JPEG image")
+
+        image_bytes = await file.read(5 * 1024 * 1024 + 1)
+        if not image_bytes or len(image_bytes) > 5 * 1024 * 1024:
+            raise AppException(400, "Logo file must be between 1 byte and 5 MB")
+
+        try:
+            image = Image.open(BytesIO(image_bytes))
+            image.verify()
+        except (UnidentifiedImageError, OSError, ValueError):
+            raise AppException(400, "The uploaded file is not a valid image")
+        expected_format = "PNG" if content_type == "image/png" else "JPEG"
+        if image.format != expected_format:
+            raise AppException(400, "Upload a PNG or JPEG image")
+
+        db = self.client[get_setting().DATABASE_NAME]
+        bucket = AsyncIOMotorGridFSBucket(db, bucket_name="company_logos")
+        file_id = await bucket.upload_from_stream(
+            f"company-{company.id}.{allowed_types[content_type]}",
+            BytesIO(image_bytes),
+            metadata={"companyId": str(company.id), "contentType": content_type},
+        )
+
+        old_file_id = company.logoFileId
+        company.logoFileId = str(file_id)
+        company.updatedAt = datetime.now(timezone.utc)
+        await company.save()
+        if old_file_id and ObjectId.is_valid(old_file_id):
+            try:
+                await bucket.delete(ObjectId(old_file_id))
+            except Exception:
+                pass
+
+        return {"logoFileId": company.logoFileId}
+
+    async def get_company_logo(self, actor: Dict[str, Any]):
+        company = await self._get_actor_company(actor)
+        if not company.logoFileId or not ObjectId.is_valid(company.logoFileId):
+            raise AppException(404, "Company logo not found")
+
+        db = self.client[get_setting().DATABASE_NAME]
+        bucket = AsyncIOMotorGridFSBucket(db, bucket_name="company_logos")
+        try:
+            stream = await bucket.open_download_stream(ObjectId(company.logoFileId))
+            return stream, stream.metadata.get("contentType", "application/octet-stream")
+        except Exception:
+            raise AppException(404, "Company logo not found")
+
+    async def _get_actor_company(self, actor: Dict[str, Any]):
+        company_id = actor.get("companyId")
+        if not company_id:
+            raise AppException(403, "No company associated with this account")
+        company = await self.repo.find_one(
+            filter={"_id": PydanticObjectId(company_id), "deletedAt": None}
+        )
+        if not company:
+            raise AppException(404, "Company not found")
+        return company
 
     async def update(
         self,

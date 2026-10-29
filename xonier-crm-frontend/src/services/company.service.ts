@@ -10,7 +10,6 @@ import {
   CompanyCreatePayload,
   CreateCompanyResponse,
   CompanyFilterParams,
-  PaginatedCompanies,
   CompanyStats,
   Company,
   CompanyUpdatePayload,
@@ -71,13 +70,26 @@ const CompanyService = {
     api.patch(`/companies/${companyId}/restore`),
 
    getCompanyDetails: async (): Promise<CompanySetting> => {
-    const response = await api.get("/company/settings");
-    return response.data;
+    const response = await api.get("/companies/me/settings");
+    return response.data.data;
   },
 
   updateCompanySettings: async (data: CompanySettingUpdatePayload): Promise<CompanySetting> => {
-    const response = await api.put("/company/settings", data);
-    return response.data;}
+    const response = await api.patch("/companies/me/settings", data);
+    return response.data.data;
+  },
+
+  uploadCompanyLogo: async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await api.post("/companies/me/logo", formData);
+    return response.data.data.logoFileId;
+  },
+
+  getCompanyLogo: async (): Promise<Blob> => {
+    const response = await api.get("/companies/me/logo", { responseType: "blob" });
+    return response.data;
+  }
   
 };
 
