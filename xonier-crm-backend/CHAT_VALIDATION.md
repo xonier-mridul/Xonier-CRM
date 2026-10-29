@@ -1,5 +1,41 @@
 # Chat implementation handoff
 
+## Bug-sheet regression verification — 24 October 2026
+
+Rows 100–107 were checked against the local Communication implementation. The
+Google Sheet itself was not edited.
+
+| Row | Fix and verification |
+| --- | --- |
+| 100 | HTTP send acknowledgements include the authoritative thread parent. Each parent merges by message ID/version, so replies update its own count immediately; duplicate HTTP/WebSocket delivery cannot increment it twice. Browser checks covered two independent parents and parents older than the latest 50 messages. |
+| 101 | Selected reactions have a visible check/border and `aria-pressed` state, both in the picker and on the reaction chip. Selection/removal was verified in the browser. |
+| 102 | One shared picker ownership signal prevents another message/thread picker opening alongside it. The picker is portalled to the document body and clamped to the viewport, avoiding chat-container clipping. Outside click, Escape and keyboard navigation were checked. |
+| 103 | HTTP acknowledgements and WebSocket events share the same state reducers. Version/sequence guards prevent delayed responses reverting newer messages, counts or previews. |
+| 104 | Channel/group member capacity is calculated from the current selection. Browser checks verified remaining places decrease and increase as people are selected/unselected. |
+| 105 | A Groups sidebar filter now separates group conversations from channels and direct messages. A newly created group appears immediately. |
+| 106 | Reconnect triggers message catch-up and sidebar reconciliation. Disconnected visible tabs also poll, including snapshots of already-loaded older messages. A forced local WebSocket outage recovered incoming messages in both views without reload; restoring delivery reconnected automatically and delivered a further message. |
+| 107 | Login/recovery accept only the current company ID. Historical IDs remain reserved against reassignment, but cannot start login or recovery. Existing tenant references and authenticated sessions are unchanged. |
+
+Verification used synthetic users/messages and a fresh disposable localhost
+MongoDB replica set, not application or production data:
+
+* Chat/company-ID suites: **49 tests passed**, including real transaction rollback,
+  concurrent sends/ID claims, old-ID rejection, thread acknowledgements and
+  member/tenant isolation.
+* Auth/mail suites: **43 tests passed; 1 optional real-Mailpit integration test
+  skipped** (not enabled). These include independent web/mobile session slots,
+  OTP persistence/verification, durable mail jobs and login/recovery after an ID
+  change. No external SMTP delivery was attempted.
+* Frontend state suites: **12 tests passed**. Chat ESLint and TypeScript checks
+  passed. The production Webpack build also passed for this implementation.
+* Browser checks covered immediate thread counts, selected/single/unclipped
+  reaction pickers, channel capacity, Groups filtering, stale history beyond 50
+  messages, offline catch-up and automatic reconnect.
+
+These checks are not a production load test or a verification of external
+LiveKit/storage/scanning services. Deploy the frontend and backend together, and
+repeat the reconnect and multi-user checks against the actual staging/EC2 setup.
+
 ## Verified locally
 
 * 19 chat tests passed against a disposable MongoDB 8.0.17 single-node replica
