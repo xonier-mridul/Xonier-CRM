@@ -52,6 +52,16 @@ import LeadKanbanBoard from "./LeadKanbanBoard";
 import PageLimit from "../../common/PageLimit";
 import CallablePhone from "../../common/CallablePhone";
 
+import { useSelector } from "react-redux";
+import { RootState } from "@/src/store";
+
+type AssignmentRole = { code?: string; power?: number; canManageBelow?: boolean };
+const assignmentRank = (roles: AssignmentRole[]) => Math.max(0, ...roles.map(r =>
+  ({ SUPER_ADMIN: 100, COMPANY_ADMIN: 90, ADMIN: 80, MANAGER: 50, USER: 10 } as Record<string, number>)[r.code || ""] ?? r.power ?? 10));
+const canManageAssignments = (roles: AssignmentRole[]) => roles.some(r =>
+  ["SUPER_ADMIN", "COMPANY_ADMIN", "ADMIN", "MANAGER"].includes(r.code || "") ||
+  (r.code !== "USER" && r.canManageBelow === true));
+
 const TAB = { ALL: 1, WON: 2, LOST: 3, ASSIGNED: 4 } as const;
 
 const AssignedToPill = ({
@@ -79,6 +89,10 @@ const AssignedToPill = ({
 
 const LeadContent = (): JSX.Element => {
   const { t } = useTranslation();
+  const authUser = useSelector((state: RootState) => state.auth.user);
+  const assignmentRoles = authUser?.userRole || [];
+  const canAssignLeads = canManageAssignments(assignmentRoles);
+
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [leadData, setLeadData] = useState<Lead[]>([]);
@@ -284,11 +298,6 @@ const LeadContent = (): JSX.Element => {
     }
   };
 
-
-
-  // Load only the active table. The previous eager approach issued four lead
-  // queries on mount; a slow background query could leave the visible table in
-  // its skeleton state even when its own data was ready.
   useEffect(() => {
     if (currentTab === TAB.ALL) {
       getLeadData(true);
@@ -358,8 +367,6 @@ const isAllSelected =
 const isIndeterminate =
   selectedAssignableCount > 0 &&
   selectedAssignableCount < assignableLeads.length;
-  // const isAllSelected = assignableLeads.length > 0 && assignableLeads.every((l) => selectedLeadIds.has(l.id));
-  // const isIndeterminate = selectedLeadIds.size > 0 && !isAllSelected;
   const selectAllRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (selectAllRef.current) selectAllRef.current.indeterminate = isIndeterminate;
@@ -399,6 +406,7 @@ const isIndeterminate =
   };
 
   const handleAssignLeads = async (): Promise<void> => {
+    if (!canAssignLeads) return;
     if (!selectedUserId) {
       toast.warning("Please select a user to assign leads to");
       return;
@@ -456,6 +464,7 @@ const isIndeterminate =
   };
 
   const handleReassignLeads = async (): Promise<void> => {
+    if (!canAssignLeads) return;
     if (!selectedReassignUserId) {
       toast.warning("Please select a user to reassign leads to");
       return;
@@ -493,6 +502,7 @@ const isIndeterminate =
   };
 
   const handleRevokeLeads = async (): Promise<void> => {
+    if (!canAssignLeads) return;
     if (selectedReassignIds.size === 0) {
       toast.warning("Please select a lead to reassign");
       return;
@@ -861,7 +871,7 @@ const isIndeterminate =
           </td>
         </tr>
       );
-    if (isLoading) return <SkeletonRows cols={hasPermission(PERMISSIONS.assignLead) && currentTab === TAB.ALL ? 11 : 10} />;
+    if (isLoading) return <SkeletonRows cols={(canAssignLeads && hasPermission(PERMISSIONS.assignLead)) && currentTab === TAB.ALL ? 11 : 10} />;
 
     return data.map((item, i) => {
       const isChecked = selectedLeadIds.has(item.id);
@@ -874,7 +884,7 @@ const isIndeterminate =
               : "border-b border-slate-100 dark:border-gray-700/60 hover:bg-slate-50 dark:hover:bg-gray-700/30"
           } w-full transition-colors duration-150 text-nowrap`}
         >
-          {hasPermission(PERMISSIONS.assignLead) && currentTab === TAB.ALL && (
+          {(canAssignLeads && hasPermission(PERMISSIONS.assignLead)) && currentTab === TAB.ALL && (
             <td className="px-4 py-3.5 text-center">
               {!item.assignedTo?.length ? (
                 <label className="relative inline-flex items-center cursor-pointer">
@@ -1004,7 +1014,7 @@ const isIndeterminate =
               : "border-b border-slate-100 dark:border-gray-700/60 hover:bg-slate-50 dark:hover:bg-gray-700/30"
           } w-full transition-colors duration-150 text-nowrap`}
         >
-          {hasPermission(PERMISSIONS.reassignLead) && (
+          {(canAssignLeads && hasPermission(PERMISSIONS.reassignLead)) && (
             <td className="px-4 py-3.5 text-center">
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" className="sr-only" checked={isChecked} onChange={() => handleReassignSelectOne(item.id)} />
@@ -1261,7 +1271,7 @@ const isIndeterminate =
                 onClickEvent={() => handleTabs(TAB.LOST)}
               />
 
-              {hasPermission(PERMISSIONS.assignLead) && (
+              {(canAssignLeads && hasPermission(PERMISSIONS.assignLead)) && (
                 <button
                   onClick={() => handleTabs(TAB.ASSIGNED)}
                   className={`relative flex items-center gap-2 px-4 py-2.5 rounded-t-lg text-sm font-medium transition-all duration-150 border-b-2 -mb-px cursor-pointer
@@ -1427,7 +1437,7 @@ const isIndeterminate =
             )}
 
             {/* ── Assign Toolbar (All Leads tab) ── */}
-            {selectedLeadIds.size > 0 && currentTab === TAB.ALL && (
+            {canAssignLeads && selectedLeadIds.size > 0 && currentTab === TAB.ALL && (
               <div className="flex items-center gap-3 px-4 py-2 bg-cyan-50/50 dark:bg-cyan-900/20 rounded-xl border border-cyan-200 dark:border-cyan-800 self-end ml-auto">
                 <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-cyan-700 dark:text-cyan-300">
                   <span className="w-5 h-5 rounded-full bg-cyan-500 text-white text-[10px] flex items-center justify-center font-bold">
@@ -1462,10 +1472,10 @@ const isIndeterminate =
                         </div>
                       </div>
                       <ul className="max-h-52 overflow-y-auto">
-                        {userData.filter(u => `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase().includes(assignSearchVal.toLowerCase())).length === 0 ? (
+                        {userData.filter(u => u.userRole?.length && assignmentRank(assignmentRoles) > assignmentRank(u.userRole)).filter(u => `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase().includes(assignSearchVal.toLowerCase())).length === 0 ? (
                           <li className="px-4 py-3 text-[13px] text-slate-400 text-center">No users found</li>
                         ) : (
-                          userData.filter(u => `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase().includes(assignSearchVal.toLowerCase())).map((u: any) => (
+                          userData.filter(u => u.userRole?.length && assignmentRank(assignmentRoles) > assignmentRank(u.userRole)).filter(u => `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase().includes(assignSearchVal.toLowerCase())).map((u: any) => (
                             <li key={u.id || u._id}>
                               <button
                                 onClick={async () => {
@@ -1513,7 +1523,7 @@ const isIndeterminate =
             )}
 
             {/* ── Reassign Toolbar (Assigned Leads tab) ── */}
-            {selectedReassignIds.size > 0 && currentTab === TAB.ASSIGNED && (
+            {canAssignLeads && selectedReassignIds.size > 0 && currentTab === TAB.ASSIGNED && (
               <div className="flex items-center gap-3 px-4 py-2 bg-amber-50/60 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800 self-end ml-auto">
                 <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-amber-700 dark:text-amber-300">
                   <span className="w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] flex items-center justify-center font-bold">
@@ -1548,10 +1558,10 @@ const isIndeterminate =
                         </div>
                       </div>
                       <ul className="max-h-52 overflow-y-auto">
-                        {userData.filter(u => `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase().includes(reassignSearchVal.toLowerCase())).length === 0 ? (
+                        {userData.filter(u => u.userRole?.length && assignmentRank(assignmentRoles) > assignmentRank(u.userRole)).filter(u => `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase().includes(reassignSearchVal.toLowerCase())).length === 0 ? (
                           <li className="px-4 py-3 text-[13px] text-slate-400 text-center">No users found</li>
                         ) : (
-                          userData.filter(u => `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase().includes(reassignSearchVal.toLowerCase())).map((u: any) => (
+                          userData.filter(u => u.userRole?.length && assignmentRank(assignmentRoles) > assignmentRank(u.userRole)).filter(u => `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase().includes(reassignSearchVal.toLowerCase())).map((u: any) => (
                             <li key={u.id || u._id}>
                               <button
                                 onClick={async () => {
@@ -1620,7 +1630,7 @@ const isIndeterminate =
               <table className="w-full rounded-xl overflow-hidden">
                 <thead>
                 <tr className="w-full border-b border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800">
-                   {hasPermission(PERMISSIONS.assignLead) &&
+                   {(canAssignLeads && hasPermission(PERMISSIONS.assignLead)) &&
                     currentTab === TAB.ALL && (
                       <th className="px-4 py-3 w-12">
                         {assignableLeads.length > 0 && (
@@ -1673,7 +1683,7 @@ const isIndeterminate =
               <table className="w-full rounded-xl ">
                 <thead>
                   <tr className="w-full border-b border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800">
-                    {hasPermission(PERMISSIONS.reassignLead) && (
+                    {(canAssignLeads && hasPermission(PERMISSIONS.reassignLead)) && (
                       <th className="px-4 py-3 w-12 rounded-tl-xl">
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input

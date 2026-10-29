@@ -650,6 +650,13 @@ class LEAD_SOURCE_TYPE(str, Enum):
 
 
 class NUMBER_OF_EMPLOYEES(str, Enum):
+    # Existing company settings records use these smaller ranges.
+    EMPLOYEES_1_10 = "1-10"
+    EMPLOYEES_11_50 = "11-50"
+    EMPLOYEES_51_200 = "51-200"
+    EMPLOYEES_201_500 = "201-500"
+    EMPLOYEES_501_1000 = "501-1000"
+    EMPLOYEES_1000_PLUS = "1000+"
     LESS_THAN_50 = "50"
     FROM_50_TO_100 = "50-100"
     FROM_100_TO_200 = "100-200"
@@ -1109,12 +1116,19 @@ class CAMPAIGN_DISTRIBUTION_MODE(str, Enum):
 
 
 class CAMPAIGN_STATUS(str, Enum):
-    DRAFT = "draft"
     ACTIVE = "active"
     PAUSED = "paused"
     COMPLETED = "completed"
     ARCHIVED = "archived"
     DELETED = "deleted"
+
+
+    @classmethod
+    def _missing_(cls, value):
+        # Accept older clients and stored records without exposing Draft again.
+        if value == "draft":
+            return cls.ACTIVE
+        return None
 
 
 class CAMPAIGN_LEAD_STATUS(str, Enum):

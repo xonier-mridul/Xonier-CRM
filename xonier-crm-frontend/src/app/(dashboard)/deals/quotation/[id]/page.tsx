@@ -1,16 +1,17 @@
 "use client"
 import React, { useState, useEffect, useCallback } from 'react'
-import { QuotationStatus } from '@/src/constants/enum'
+import { INVOICE_STATUS, QuotationStatus } from '@/src/constants/enum'
 import Input from '@/src/components/ui/Input'
 import Select from '@/src/components/ui/Select'
 import axios from 'axios'
 import extractErrorMessages from '@/src/app/utils/error.utils'
 import { QuotationCreatePayload, QuotationLineItemPayload } from '@/src/types/quotations/quote.types'
 import { QuoteService } from '@/src/services/quote.service'
+import InvoiceService from '@/src/services/invoice.service'
 import { toast } from 'react-toastify'
 import ErrorComponent from '@/src/components/ui/ErrorComponent'
 import SuccessComponent from '@/src/components/ui/SuccessComponent'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, usePathname, useRouter } from 'next/navigation'
 import {
   IoDocumentText,
   IoSaveOutline,
@@ -36,6 +37,7 @@ import {
   IoChevronUpOutline,
 } from 'react-icons/io5'
 import dealService from '@/src/services/deal.service'
+import CompanyService from '@/src/services/company.service'
 import { ParamValue } from 'next/dist/server/request/params'
 import { QuotationPaymentStatus, QuotationCurrency  } from '@/src/constants/enum'
 import { useTranslation } from "react-i18next";
@@ -66,6 +68,14 @@ const EMPTY_LINE_ITEM: QuotationLineItemPayload = {
   taxRate: null,
   total: 0,
 }
+
+const getDefaultCurrency = (): QuotationCurrency => {
+  if (typeof window === 'undefined') return QuotationCurrency.USD;
+  const saved = window.localStorage.getItem('companyCurrency');
+  return (saved && Object.values(QuotationCurrency).includes(saved as QuotationCurrency)
+    ? saved as QuotationCurrency
+    : QuotationCurrency.USD);
+};
 
 const DEFAULT_PAYLOAD: QuotationCreatePayload = {
   title: '',
@@ -140,12 +150,14 @@ function LineItemRow({
   symbol,
   onChange,
   onRemove,
+  hideAdjustments = false,
 }: {
   item: QuotationLineItemPayload
   index: number
   symbol: string
   onChange: (index: number, field: keyof QuotationLineItemPayload, value: any) => void
   onRemove: (index: number) => void
+  hideAdjustments?: boolean
 }) {
   const { t } = useTranslation();
   return (
@@ -202,7 +214,7 @@ function LineItemRow({
       </div>
 
       {/* Discount % */}
-      <div className="col-span-4 sm:col-span-1">
+      {!hideAdjustments && <div className="col-span-4 sm:col-span-1">
         <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">{t("disc")}</label>
         <input
           type="number"
@@ -214,10 +226,10 @@ function LineItemRow({
           value={item.discount ?? ''}
           onChange={e => onChange(index, 'discount', e.target.value === '' ? null : parseFloat(e.target.value))}
         />
-      </div>
+      </div>}
 
       {/* Tax % */}
-      <div className="col-span-4 sm:col-span-1">
+      {!hideAdjustments && <div className="col-span-4 sm:col-span-1">
         <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">{t("tax")}</label>
         <input
           type="number"
@@ -229,7 +241,7 @@ function LineItemRow({
           value={item.taxRate ?? ''}
           onChange={e => onChange(index, 'taxRate', e.target.value === '' ? null : parseFloat(e.target.value))}
         />
-      </div>
+      </div>}
 
       {/* Total */}
       <div className="col-span-4 sm:col-span-1">
@@ -298,16 +310,32 @@ function FinancialSummary({
 const Page = () => {
   const { t } = useTranslation();
   const router = useRouter()
+  const pathname = usePathname()
+  const isInvoice = pathname.startsWith('/invoice/')
   const { id } = useParams()
 
   const [isLoading, setIsLoading] = useState(false)
   const [err, setErr] = useState<string[] | string>('')
   const [success, setSuccess] = useState('')
   const [showPreview, setShowPreview] = useState(false)
-  const [formData, setFormData] = useState<QuotationCreatePayload>({
+  const [formData, setFormData] = useState<QuotationCreatePayload>(() => ({
     ...DEFAULT_PAYLOAD,
+    currency: getDefaultCurrency(),
+    valid: isInvoice ? new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0] : '',
+    quotationStatus: isInvoice ? (INVOICE_STATUS.ISSUED as unknown as QuotationStatus) : QuotationStatus.SENT,
     deal: Array.isArray(id) ? id[0] : id || '',
-  })
+  }))
+  const [paymentMethods, setPaymentMethods] = useState<string[]>([])
+  const [paymentTermsPresets, setPaymentTermsPresets] = useState<string[]>([])
+
+  useEffect(() => {
+    CompanyService.getCompanyDetails()
+      .then((company) => {
+        setPaymentMethods(company.paymentMethods || [])
+        setPaymentTermsPresets(company.paymentTerms || [])
+      })
+      .catch(() => undefined)
+  }, [])
 
 const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
 
@@ -366,8 +394,8 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
 
   const computeLineItemTotal = (item: QuotationLineItemPayload): number => {
     let total = item.quantity * item.unitPrice
-    if (item.discount) total = total * (1 - item.discount / 100)
-    if (item.taxRate) total = total * (1 + item.taxRate / 100)
+    // Discounts and taxes are applied once at invoice/quotation level in the
+    // Financial Details section, never independently per line item.
     return Math.round(total * 100) / 100
   }
 
@@ -428,6 +456,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
     if (!formData.customerEmail.trim()) errors.push('Customer email is required')
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.customerEmail)) errors.push('Invalid email format')
     if (!formData.issueDate) errors.push('Issue date is required')
+    if (isInvoice && !formData.valid) errors.push('Due date is required')
     if (formData.subTotal <= 0) errors.push('Subtotal must be greater than 0')
     if (formData.total <= 0) errors.push('Total must be greater than 0')
     if (formData.customerPhone && formData.customerPhone.length < 7) errors.push('Phone number too short')
@@ -437,7 +466,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
 
   // ── Submit ────────────────────────────────────────────────────────────────
 
-  const handleSubmit = async (status: QuotationStatus) => {
+  const handleSubmit = async (status: QuotationStatus | INVOICE_STATUS) => {
     if (!validate()) { toast.error('Please fix the errors before submitting'); return }
 
     setIsLoading(true)
@@ -447,18 +476,46 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
     try {
       const payload: QuotationCreatePayload = {
         ...formData,
-        quotationStatus: status,
+        quotationStatus: status as QuotationStatus,
         valid: formData.valid || null,
         lineItems: (formData.lineItems ?? []).filter(i => i.description.trim()),
       }
       if (!payload.deal) delete payload.deal
 
-      const result = await QuoteService.create(payload)
+      const result = isInvoice
+        ? await InvoiceService.create({
+            invoiceTitle: payload.title,
+            description: payload.description,
+            customerName: payload.customerName,
+            customerEmail: payload.customerEmail,
+            customerPhone: payload.customerPhone || undefined,
+            companyName: payload.companyName || undefined,
+            companyAddress: payload.companyAddress || undefined,
+            companyWebsite: payload.companyWebsite || undefined,
+            lineItems: payload.lineItems,
+            currency: payload.currency,
+            subTotal: payload.subTotal,
+            discountAmount: payload.discountAmount,
+            discountPercent: payload.discountPercent,
+            taxAmount: payload.taxAmount,
+            taxPercent: payload.taxPercent,
+            shippingAmount: payload.shippingAmount,
+            total: payload.total,
+            issueDate: payload.issueDate,
+            dueDate: payload.valid,
+            status: String(status).toLowerCase() === 'sent' ? 'issued' : String(status).toLowerCase(),
+            paymentTerms: payload.paymentTerms,
+            paymentMethod: payload.paymentMethod,
+            notes: payload.notes,
+            termsAndConditions: payload.termsAndConditions,
+            internalNotes: payload.internalNotes,
+          })
+        : await QuoteService.create(payload)
 
       if (result.status === 200 || result.status === 201) {
-        setSuccess('Quotation created successfully!')
-        toast.success('Quotation created successfully!')
-        setTimeout(() => router.push(`/quotations/view/${result.data.data.id}`), 1800)
+        setSuccess(`${isInvoice ? 'Invoice' : 'Quotation'} created successfully!`)
+        toast.success(`${isInvoice ? 'Invoice' : 'Quotation'} created successfully!`)
+        setTimeout(() => router.push(`${isInvoice ? '/invoice/view' : '/quotations/view'}/${result.data.data.id}`), 1800)
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -495,10 +552,10 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <IoDocumentText className="w-7 h-7 text-cyan-600 dark:text-cyan-400" />
-            {t("new_quotation")}
+            {isInvoice ? 'New Invoice' : t("new_quotation")}
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {t("fill_in_the_details_to_create")}
+            {isInvoice ? 'Fill in the details to create a professional invoice' : t("fill_in_the_details_to_create")}
           </p>
         </div>
         <button
@@ -531,11 +588,11 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
                 <Input
-                  label={t("quotation_title_2")}
+                  label={isInvoice ? 'Invoice Title *' : t("quotation_title_2")}
                   name="title"
                   value={formData.title}
                   onChange={handleInput}
-                  placeholder={t("e_g_q4_2024_marketing_campaign")}
+                  placeholder={isInvoice ? 'e.g. Website Development Invoice' : t("e_g_q4_2024_marketing_campaign")}
                   className="w-full"
                 />
               </div>
@@ -561,9 +618,9 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
               <Select
                 label={t("status")}
                 name="quotationStatus"
-                value={formData.quotationStatus ?? QuotationStatus.SENT}
+                value={formData.quotationStatus ?? (isInvoice ? INVOICE_STATUS.ISSUED : QuotationStatus.SENT)}
                 onChange={handleInput}
-                options={[QuotationStatus.DRAFT, QuotationStatus.SENT].map(s => ({
+                options={(isInvoice ? Object.values(INVOICE_STATUS) : [QuotationStatus.DRAFT, QuotationStatus.SENT]).map(s => ({
                   label: s.charAt(0).toUpperCase() + s.slice(1),
                   value: s,
                 }))}
@@ -648,6 +705,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                     symbol={symbol}
                     onChange={updateLineItem}
                     onRemove={removeLineItem}
+                    hideAdjustments
                   />
                 ))}
               </>
@@ -692,7 +750,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
               {/* Discount */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t("discount_amount")}{symbol})
+                  {t("discount_amount")}{symbol}
                 </label>
                 <input
                   type="number"
@@ -798,7 +856,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                 className="w-full"
               />
               <Input
-                label={t("valid_until")}
+                label={isInvoice ? 'Due Date *' : t("valid_until")}
                 name="valid"
                 type="date"
                 value={formData.valid ?? ''}
@@ -810,8 +868,8 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                 <div className="md:col-span-2">
                   <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700/50 rounded-xl px-4 py-3">
                     <IoCalendarOutline className="w-4 h-4 text-cyan-500" />
-                    {t("valid_for")} <span className="font-semibold text-gray-900 dark:text-white">{validityDays} {t("days,")}</span>
-                    {t("expires")} {formatDate(formData.valid ?? '')}
+                    {isInvoice ? 'Payment due in' : t("valid_for")} <span className="font-semibold text-gray-900 dark:text-white">{validityDays} {t("days,")}</span>
+                    {isInvoice ? 'on' : t("expires")} {formatDate(formData.valid ?? '')}
                   </div>
                 </div>
               )}
@@ -827,16 +885,22 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                 value={formData.paymentTerms ?? ''}
                 onChange={handleInput}
                 placeholder={t("e_g_net_30_50_upfront")}
+                list="payment-terms-presets"
                 className="w-full"
               />
-              <Input
-                label={t("payment_method")}
-                name="paymentMethod"
-                value={formData.paymentMethod ?? ''}
-                onChange={handleInput}
-                placeholder={t("e_g_bank_transfer_paypal")}
-                className="w-full"
-              />
+              <div>
+                <Select
+                  label={t("payment_method")}
+                  name="paymentMethod"
+                  value={formData.paymentMethod ?? ''}
+                  onChange={handleInput}
+                  options={[{ label: 'Select payment method', value: '' }, ...paymentMethods.map((method) => ({ label: method, value: method }))]}
+                  className="w-full"
+                />
+              </div>
+              <datalist id="payment-terms-presets">
+                {paymentTermsPresets.map((term) => <option key={term} value={term} />)}
+              </datalist>
             </div>
           </Section>
 
@@ -905,7 +969,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
 
               <button
                 type="button"
-                onClick={() => handleSubmit(QuotationStatus.DRAFT)}
+                onClick={() => handleSubmit(isInvoice ? INVOICE_STATUS.DRAFT : QuotationStatus.DRAFT)}
                 disabled={isLoading}
                 className="px-5 py-2.5 rounded-xl text-sm font-medium bg-amber-500 hover:bg-amber-600 text-white transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
@@ -915,7 +979,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
 
               <button
                 type="button"
-                onClick={() => handleSubmit(QuotationStatus.SENT)}
+                onClick={() => handleSubmit(isInvoice ? (formData.quotationStatus as unknown as INVOICE_STATUS) : QuotationStatus.SENT)}
                 disabled={
                   isLoading ||
                   !formData.title.trim() ||
@@ -925,7 +989,7 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                 className="px-5 py-2.5 rounded-xl text-sm font-medium bg-cyan-600 hover:bg-cyan-700 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 <IoCheckmarkCircle className="w-4 h-4" />
-                {isLoading ? 'Creating...' : 'Create & Send'}
+                {isLoading ? 'Creating...' : isInvoice ? 'Create Invoice' : 'Create & Send'}
               </button>
             </div>
           </div>

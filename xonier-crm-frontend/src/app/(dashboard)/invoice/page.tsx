@@ -3,6 +3,7 @@ import { INVOICE_STATUS, PERMISSIONS } from "@/src/constants/enum";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import axios from "axios";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import React, { JSX, useEffect, useState, useRef } from "react";
 import { FaPlus, FaRegEye } from "react-icons/fa";
 import { IoIosSearch } from "react-icons/io";
@@ -36,12 +37,14 @@ import PageLimit from "@/src/components/common/PageLimit";
 
 const page = (): JSX.Element => {
   const { t } = useTranslation();
+  const searchParams = useSearchParams();
+  const querySearch = searchParams.get("search") || "";
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [invoiceData, setInvoiceData] = useState<Invoice[]>([])
+  const [invoiceData, setInvoiceData] = useState<Invoice[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [err, setErr] = useState<string[] | string>("");
   const [pageLimit, setPageLimit] = useState<number>(10);
-  const [searchVal, setSearchVal] = useState<string>("");
+  const [searchVal, setSearchVal] = useState<string>(querySearch);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const [dateFilter, setDateFilter] = useState<DateFilter>({ fromDate: "", toDate: "" });
   const [statusFilter, setStatusFilter] = useState<string>("");
@@ -147,7 +150,13 @@ const page = (): JSX.Element => {
             />
             <div className="bg-slate-50 dark:bg-gray-600 px-3 py-2.5 text-slate-500 rounded-lg border-[1px] border-slate-900/10 flex items-center gap-2 dark:text-white/70">
               <IoIosSearch className="text-xl" />
-              <input type="text" className="outline-none" placeholder={t("search_3")} onChange={(e) => handleSearch(e.target.value)} />
+              <input
+                type="text"
+                defaultValue={querySearch}
+                className="outline-none bg-transparent"
+                placeholder={t("search_3")}
+                onChange={(e) => handleSearch(e.target.value)}
+              />
             </div>
             <div className="flex items-center gap-2">
               <select
@@ -207,7 +216,7 @@ const page = (): JSX.Element => {
                   let rr = i % 2 == 0;
                   const issueDate = item.issueDate ? formatDate(item.issueDate) : "";
                   const dueDate = formatDate(item.dueDate)
-                  const amount = formatCurrency(item.total)
+                  const amount = formatCurrency(item.total, item.currency || undefined)
                   return (
                     <tr
                       key={item.invoiceId}
@@ -217,8 +226,12 @@ const page = (): JSX.Element => {
                       <Link href={`/invoice/view/${item.id}`} className="text-sm cursor-pointer hover:text-cyan-500" > {item.invoiceId}</Link>
                     </td> */}
                       <td className="flex gap-1 flex-col p-4">
-                        <h4 className="text-[13px] font-semibold text-slate-700 dark:text-slate-200 capitalize">{item.customerName}</h4>{" "}
-
+                        <h4 className="text-[13px] font-semibold text-slate-700 dark:text-slate-200 capitalize">{item.customerName}</h4>
+                        {item.sourceQuoteId && (
+                          <span className="text-[11px] font-medium text-cyan-600 dark:text-cyan-400">
+                            Quote: {item.sourceQuoteId}
+                          </span>
+                        )}
                       </td>
                       <td className="p-4 ">
                         <span className="text-[13px] text-slate-500 dark:text-slate-400 font-medium">

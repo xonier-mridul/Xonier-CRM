@@ -55,3 +55,8 @@ async def resend(id:str, request:Request):
 Depends(dependencies.company_context),Depends(dependencies.feature_access(FEATURE.CRM)), Depends(dependencies.permissions(["quote:create"]))])
 async def delete(id:str, request:Request):
     return await controller.delete(id, request)
+
+@router.get("/download/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM)), Depends(dependencies.permissions(["quote:read"]))])
+async def download_quotation(id: str, request: Request):
+    return await controller.download_quotation(quoteId=id, request=request)

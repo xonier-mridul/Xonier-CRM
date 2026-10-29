@@ -33,6 +33,7 @@ export const QuoteService = {
   update: (id: string, payload: QuotationUpdatePayload)=> api.put(`/quote/update/${id}`, payload),
   updateStatus: (id: string, payload: QuoteStatusUpdatePayload)=> api.patch(`/quote/update/status/${id}`, payload),
   resend: (id:string)=> api.post(`/quote/resend/${id}`, {}), 
+  download: (id: string) => api.get(`/quote/download/${id}`, { responseType: 'blob' }),
   delete: (id:string)=> api.delete(`/quote/delete/${id}`)
  
 }

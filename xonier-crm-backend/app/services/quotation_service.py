@@ -1,9 +1,21 @@
 from app.utils.custom_exception import AppException
 from app.utils.custom_response import successResponse
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from app.repositories.deal_repository import DealRepository
 from bson import ObjectId
 from app.db.db import Client
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.enums import TA_CENTER
+from reportlab.lib.utils import ImageReader
+from reportlab.pdfgen.canvas import Canvas
+from reportlab.pdfbase.pdfmetrics import stringWidth
+from io import BytesIO
+from html import escape
+from motor.motor_asyncio import AsyncIOMotorGridFSBucket
 
 from beanie import PydanticObjectId
 from app.utils.get_team_members import GetTeamMembers
@@ -64,6 +76,23 @@ class QuotationService:
         self.invoiceRepo = InvoiceRepository()
         self.activityRepo = ActivityRepository()
         self.setting = get_setting()
+
+    async def _clear_caches_best_effort(self, *namespaces: str) -> None:
+        """Cache invalidation is advisory and must not abort quotation transactions."""
+        try:
+            backend = FastAPICache.get_backend()
+        except Exception as error:
+            print(f"[Warning] Could not access cache backend while invalidating quotation caches: {error}")
+            return
+
+        if not backend:
+            return
+
+        for namespace in namespaces:
+            try:
+                await backend.clear(namespace=namespace)
+            except Exception as error:
+                print(f"[Warning] Could not clear quotation cache '{namespace}': {error}")
 
     async def create(self, user: Dict[str, Any], payload: Dict[str, Any]):
         async with await self.client.start_session() as session:
@@ -213,11 +242,9 @@ class QuotationService:
                     if not is_activity:
                         raise AppException(400, "Activity creation failed")
 
-                    await FastAPICache.get_backend().clear(
-                        namespace=DEAL_CACHE_NAMESPACE
-                    )
-                    await FastAPICache.get_backend().clear(
-                        namespace=DEAL_CACHE_NAMESPACE_BY_ID
+                    await self._clear_caches_best_effort(
+                        DEAL_CACHE_NAMESPACE,
+                        DEAL_CACHE_NAMESPACE_BY_ID,
                     )
 
                     return create.model_dump(mode="json")
@@ -487,45 +514,47 @@ class QuotationService:
                     invoice_id = generate_enquiry_id("INV")
 
                     invoice_payload = {
-    "invoiceId": invoice_id,
-    "deal": quotation.deal.id if quotation.deal else None,
-    "quotation": quotation.id,
-    "customerName": quotation.customerName,
-    "customerEmail": quotation.customerEmail,
-    "customerPhone": quotation.customerPhone,
-    "companyName": quotation.companyName,
-    "companyAddress": quotation.companyAddress,
-    "companyWebsite": quotation.companyWebsite,
-    "billingAddress": quotation.companyAddress,
-    "lineItems": [item.model_dump() for item in (quotation.lineItems or [])],
-    "currency": quotation.currency,
-    "subTotal": quotation.subTotal,
-    "discountAmount": quotation.discountAmount,
-    "discountPercent": quotation.discountPercent,
-    "taxAmount": quotation.taxAmount,
-    "taxPercent": quotation.taxPercent,
-    "shippingAmount": quotation.shippingAmount,
-    "total": quotation.total,
-    "issueDate": quotation.issueDate,
-    "dueDate": (datetime.now(timezone.utc) + timedelta(days=30)).date(),
-    "paymentTerms": quotation.paymentTerms,
-    "notes": quotation.notes,
-    "termsAndConditions": quotation.termsAndConditions,
-    "status": INVOICE_STATUS.ISSUED,
-    "createdBy": quotation.createdBy.id,
-    "sourceQuoteId": quotation.quoteId,
-}
-                    await self.invoiceRepo.create(data=invoice_payload, session=session)
+                        "invoiceId": invoice_id,
+                        "sourceQuoteId": quotation.quoteId,
+                        "companyId": quotation.companyId,
+                        "deal": quotation.deal.id if quotation.deal else None,
+                        "quotation": quotation.id,
+                        "customerName": quotation.customerName,
+                        "customerEmail": quotation.customerEmail,
+                        "customerPhone": quotation.customerPhone,
+                        "companyName": quotation.companyName,
+                        "companyAddress": quotation.companyAddress,
+                        "companyWebsite": quotation.companyWebsite,
+                        "billingAddress": quotation.companyAddress,
+                        "lineItems": [item.model_dump() if hasattr(item, "model_dump") else item for item in (quotation.lineItems or [])],
+                        "currency": quotation.currency.value if hasattr(quotation.currency, "value") else str(quotation.currency),
+                        "subTotal": quotation.subTotal,
+                        "discountAmount": quotation.discountAmount,
+                        "discountPercent": quotation.discountPercent,
+                        "taxAmount": quotation.taxAmount,
+                        "taxPercent": quotation.taxPercent,
+                        "shippingAmount": quotation.shippingAmount,
+                        "total": quotation.total,
+                        "issueDate": quotation.issueDate,
+                        "dueDate": (datetime.now(timezone.utc) + timedelta(days=30)).date(),
+                        "paymentTerms": quotation.paymentTerms,
+                        "notes": quotation.notes,
+                        "termsAndConditions": quotation.termsAndConditions,
+                        "status": INVOICE_STATUS.ISSUED,
+                        "createdBy": quotation.createdBy.id,
+                    }
+                    created_invoice = await self.invoiceRepo.create(data=invoice_payload, session=session)
 
                     await self.repo.update(
-    id=PydanticObjectId(quote_id),
-    data={
-        "quotationStatus": QuotationStatus.ACCEPTED,
-        "convertedToInvoice": True,
-        "confirmedAt": datetime.now(timezone.utc),
-    },
-    session=session,
-)
+                        id=PydanticObjectId(quote_id),
+                        data={
+                            "quotationStatus": QuotationStatus.ACCEPTED,
+                            "convertedToInvoice": True,
+                            "confirmedAt": datetime.now(timezone.utc),
+                            "invoiceId": created_invoice.id,
+                        },
+                        session=session,
+                    )
 
                     await self.historyRepo.create(
                         data={
@@ -561,11 +590,9 @@ class QuotationService:
                     if not is_activity:
                         raise AppException(400, "Activity creation failed")
 
-                    await FastAPICache.get_backend().clear(
-                        namespace=DEAL_CACHE_NAMESPACE
-                    )
-                    await FastAPICache.get_backend().clear(
-                        namespace=DEAL_CACHE_NAMESPACE_BY_ID
+                    await self._clear_caches_best_effort(
+                        DEAL_CACHE_NAMESPACE,
+                        DEAL_CACHE_NAMESPACE_BY_ID,
                     )
 
                     return {
@@ -819,6 +846,7 @@ class QuotationService:
                         invoice_payload = {
                             "invoiceId": invoice_id,
                             "sourceQuoteId": quotation.quoteId,
+                            "companyId": quotation.companyId,
                             "deal": quotation.deal.id if quotation.deal else None,
                             "quotation": quotation.id,
                             "customerName": quotation.customerName,
@@ -828,8 +856,8 @@ class QuotationService:
                             "companyAddress": quotation.companyAddress,
                             "companyWebsite": quotation.companyWebsite,
                             "billingAddress": quotation.companyAddress,
-                            "lineItems": [item.model_dump() for item in (quotation.lineItems or [])],
-                            "currency": quotation.currency,
+                            "lineItems": [item.model_dump() if hasattr(item, "model_dump") else item for item in (quotation.lineItems or [])],
+                            "currency": quotation.currency.value if hasattr(quotation.currency, "value") else str(quotation.currency),
                             "subTotal": quotation.subTotal,
                             "discountAmount": quotation.discountAmount,
                             "discountPercent": quotation.discountPercent,
@@ -843,19 +871,23 @@ class QuotationService:
                             "notes": quotation.notes,
                             "termsAndConditions": quotation.termsAndConditions,
                             "status": INVOICE_STATUS.ISSUED,
-                            "createdBy": user["_id"],
+                            "createdBy": PydanticObjectId(quotation.createdBy.id if quotation.createdBy else user["_id"]),
                         }
                         
-                        await self.invoiceRepo.create(data=invoice_payload, session=session)
+                        created_invoice = await self.invoiceRepo.create(data=invoice_payload, session=session)
                         
                         await self.repo.update(
                             id=PydanticObjectId(quoteId),
                             data={
                                 "convertedToInvoice": True,
                                 "confirmedAt": datetime.now(timezone.utc),
+                                "invoiceId": created_invoice.id,
                             },
                             session=session,
                         )
+
+                        quotation.convertedToInvoice = True
+                        quotation.invoiceId = created_invoice.id
 
                         
 
@@ -902,8 +934,10 @@ class QuotationService:
                     if not is_activity:
                         raise AppException(400, "Activity creation failed")
                     
-                    await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE)
-                    await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE_BY_ID)
+                    await self._clear_caches_best_effort(
+                        DEAL_CACHE_NAMESPACE,
+                        DEAL_CACHE_NAMESPACE_BY_ID,
+                    )
                     
                     return quotation.model_dump(mode="json")
 
@@ -1150,14 +1184,10 @@ class QuotationService:
                     if not is_activity:
                         raise AppException(400, "Activity creation failed")
 
-                    await FastAPICache.get_backend().clear(
-                        namespace=DEAL_CACHE_NAMESPACE
-                    )
-                    await FastAPICache.get_backend().clear(
-                        namespace=DEAL_CACHE_NAMESPACE_BY_ID
-                    )
-                    await FastAPICache.get_backend().clear(
-                        namespace=LEAD_CACHE_NAMESPACE
+                    await self._clear_caches_best_effort(
+                        DEAL_CACHE_NAMESPACE,
+                        DEAL_CACHE_NAMESPACE_BY_ID,
+                        LEAD_CACHE_NAMESPACE,
                     )
 
                     return True
@@ -1166,3 +1196,546 @@ class QuotationService:
                     raise
                 except Exception as e:
                     raise AppException(500, f"Internal server error: {e}")
+
+    # ──────────────────────────────────────────────────────────────────
+    # Quotation PDF Download
+    # ──────────────────────────────────────────────────────────────────
+
+    async def download_quotation(self, quoteId: str, user: Dict[str, Any]):
+        try:
+            if not ObjectId.is_valid(quoteId):
+                raise AppException(400, "Invalid quotation id")
+
+            is_super_admin = validate_admin_company_admin(user.get("userRole", []))
+
+            access_query: Dict[str, Any] = {"_id": PydanticObjectId(quoteId)}
+
+            if not is_super_admin:
+                members = await self.getTeamMem.get_team_members(user["_id"])
+                allowed_ids = [PydanticObjectId(m) for m in (members or [])]
+                allowed_ids.append(PydanticObjectId(user["_id"]))
+                access_query["createdBy.$id"] = {"$in": allowed_ids}
+
+            quotation = await self.repo.find_one(filter=access_query, populate=["createdBy", "deal"])
+
+            if not quotation:
+                raise AppException(403, "You are not authorized to access this quotation or it does not exist")
+
+            quote_data = jsonable_encoder(quotation, exclude={"createdBy": {"password"}})
+
+            # Decrypt sensitive fields
+            if quote_data.get("customerEmail"):
+                try:
+                    quote_data["customerEmail"] = self.encryption.decrypt_data(quote_data["customerEmail"])
+                except Exception:
+                    pass
+            if quote_data.get("customerPhone"):
+                try:
+                    quote_data["customerPhone"] = self.encryption.decrypt_data(quote_data["customerPhone"])
+                except Exception:
+                    pass
+
+            # Decrypt creator (sales representative) details
+            if quote_data.get("createdBy") and isinstance(quote_data["createdBy"], dict):
+                cb = quote_data["createdBy"]
+                if cb.get("email"):
+                    try:
+                        cb["email"] = self.encryption.decrypt_data(cb["email"])
+                    except Exception:
+                        pass
+                if cb.get("phone"):
+                    try:
+                        cb["phone"] = self.encryption.decrypt_data(cb["phone"])
+                    except Exception:
+                        pass
+
+            # Fetch company branding
+            quote_data["companyBranding"] = await self._get_company_quotation_branding(
+                quote_data.get("companyId") or user.get("companyId")
+            )
+
+            pdf_buffer = await self._generate_quotation_pdf(quote_data)
+
+            filename = f"quotation_{quote_data.get('quoteId', quoteId)}.pdf"
+
+            return {"pdf_buffer": pdf_buffer, "filename": filename, "quote_id": quote_data.get("quoteId", quoteId)}
+
+        except AppException:
+            raise
+        except Exception as e:
+            print("Quotation download error:", e)
+            import traceback; traceback.print_exc()
+            raise AppException(500, "Internal server error while generating quotation PDF")
+
+    async def _get_company_quotation_branding(self, company_id) -> Dict[str, Any]:
+        if isinstance(company_id, dict):
+            company_id = company_id.get("id") or company_id.get("_id")
+        if not company_id or not ObjectId.is_valid(str(company_id)):
+            return {}
+        database = self.client[self.setting.DATABASE_NAME]
+        company = await database["companies"].find_one({"_id": ObjectId(str(company_id))})
+        if not company:
+            return {}
+
+        def decrypt_optional(v: Optional[str]) -> str:
+            if not v:
+                return ""
+            try:
+                return self.encryption.decrypt_data(v)
+            except Exception:
+                return v
+
+        branding: Dict[str, Any] = {
+            "companyName": company.get("companyName", ""),
+            "address": company.get("address", ""),
+            "email": decrypt_optional(company.get("email")),
+            "phone": decrypt_optional(company.get("number")),
+            "website": company.get("website", ""),
+            "registrationNumber": company.get("registrationNumber", ""),
+            "tradeNumber": company.get("tradeNumber", ""),
+        }
+
+        logo_file_id = company.get("logoFileId")
+        if logo_file_id and ObjectId.is_valid(str(logo_file_id)):
+            try:
+                bucket = AsyncIOMotorGridFSBucket(database, bucket_name="company_logos")
+                stream = await bucket.open_download_stream(ObjectId(str(logo_file_id)))
+                branding["logoBytes"] = await stream.read()
+            except Exception:
+                pass
+
+        return branding
+
+    @staticmethod
+    def _pdf_text_q(value) -> str:
+        return str(value or "").encode("latin-1", "replace").decode("latin-1")
+
+    @classmethod
+    def _fit_pdf_text_q(cls, value, max_width: float, font: str, font_size: float) -> str:
+        text = cls._pdf_text_q(value)
+        if stringWidth(text, font, font_size) <= max_width:
+            return text
+        while text and stringWidth(text + "...", font, font_size) > max_width:
+            text = text[:-1]
+        return f"{text.rstrip()}..." if text else ""
+
+    def _format_date_q(self, v) -> str:
+        from datetime import date as _date
+        if not v:
+            return "N/A"
+        try:
+            if hasattr(v, "strftime"):
+                return v.strftime("%B %d, %Y")
+            if isinstance(v, str):
+                return datetime.fromisoformat(v.replace("Z", "+00:00")).strftime("%B %d, %Y")
+            return str(v)
+        except Exception:
+            return str(v)
+
+    async def _generate_quotation_pdf(self, q: Dict[str, Any]) -> BytesIO:
+        try:
+            buffer = BytesIO()
+            doc = SimpleDocTemplate(
+                buffer,
+                pagesize=A4,
+                rightMargin=44,
+                leftMargin=44,
+                topMargin=150,
+                bottomMargin=75,
+            )
+            elements = []
+            styles = getSampleStyleSheet()
+
+            # Palette: Executive Forest & Emerald Proposal
+            ink    = colors.HexColor("#0F172A")
+            muted  = colors.HexColor("#64748B")
+            accent = colors.HexColor("#065F46")   # Deep forest green
+            mint   = colors.HexColor("#047857")   # Emerald
+            line   = colors.HexColor("#E2E8F0")
+            pale   = colors.HexColor("#F8FAFC")
+            mint_pale = colors.HexColor("#F0FDF4")
+            mint_border = colors.HexColor("#86EFAC")
+
+            eyebrow       = ParagraphStyle("QEyebrow",   parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=7, leading=9, textColor=muted, spaceAfter=4)
+            body          = ParagraphStyle("QBody",      parent=styles["Normal"], fontName="Helvetica",      fontSize=8.5, leading=12, textColor=ink)
+            cust_name_sty = ParagraphStyle("QCust",      parent=body,            fontName="Helvetica-Bold", fontSize=11.5, leading=14, textColor=ink, spaceAfter=3)
+            small         = ParagraphStyle("QSmall",     parent=body,            fontSize=8, leading=11, textColor=muted)
+            section       = ParagraphStyle("QSection",   parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=9.5, leading=12, textColor=accent, spaceBefore=0, spaceAfter=8)
+            tbl_hdr       = ParagraphStyle("QTblHdr",    parent=eyebrow, textColor=colors.white, fontName="Helvetica-Bold", fontSize=7.5, leading=9)
+            det_label     = ParagraphStyle("QDetLabel",  parent=eyebrow, fontSize=6.5, leading=8, spaceAfter=0)
+            det_value     = ParagraphStyle("QDetValue",  parent=body,    fontSize=7.8, leading=10, spaceAfter=0)
+
+            safe  = lambda v: escape(self._pdf_text_q(v)).replace("\n", "<br/>")
+            currency = self._pdf_text_q(q.get("currency") or "USD")
+            money = lambda v: f"{currency} {float(v or 0):,.2f}"
+
+            # ── 1. Recipient & Sales Rep Info (Distinct to Quotation!) ──────────
+            cust_parts = []
+            if q.get("customerName"):  cust_parts.append(Paragraph(safe(q["customerName"]), cust_name_sty))
+            if q.get("companyName"):   cust_parts.append(Paragraph(f"<b>{safe(q['companyName'])}</b>", body))
+            for lbl, key in (("Email", "customerEmail"), ("Phone", "customerPhone"), ("Address", "companyAddress")):
+                if q.get(key):
+                    cust_parts.append(Paragraph(f"<font color='#64748B'>{lbl}:</font> {safe(q[key])}", small))
+            if not cust_parts:
+                cust_parts.append(Paragraph("Client contact not specified", small))
+
+            # Sales representative info
+            created_by = q.get("createdBy") or {}
+            rep_name = " ".join([p for p in [created_by.get("firstName"), created_by.get("lastName")] if p]).strip() or "Sales Team"
+            rep_email = created_by.get("email") or ""
+            deal_data = q.get("deal") or {}
+            deal_title = deal_data.get("title") if isinstance(deal_data, dict) else ""
+
+            status_str = self._pdf_text_q(str(q.get("quotationStatus") or "Sent")).replace("_", " ").title()
+            valid_date_str = self._format_date_q(q.get("valid"))
+            issue_date_str = self._format_date_q(q.get("issueDate"))
+
+            details = [
+                [Paragraph("PROPOSAL DATE", det_label), Paragraph(safe(issue_date_str), det_value),
+                 Paragraph("VALID UNTIL",   det_label), Paragraph(f"<b>{safe(valid_date_str)}</b>", det_value)],
+                [Paragraph("PROPOSAL STATUS", det_label), Paragraph(f"<b>{safe(status_str)}</b>", det_value),
+                 Paragraph("CURRENCY",      det_label), Paragraph(safe(currency), det_value)],
+                [Paragraph("PREPARED BY",   det_label), Paragraph(safe(rep_name), det_value),
+                 Paragraph("REP EMAIL",     det_label), Paragraph(safe(rep_email or "—"), det_value)],
+            ]
+            if deal_title:
+                details.append([
+                    Paragraph("OPPORTUNITY", det_label), Paragraph(safe(deal_title), det_value),
+                    Paragraph("", det_label), Paragraph("", det_value)
+                ])
+
+            det_tbl = Table(details, colWidths=[0.85*inch, 1.25*inch, 0.75*inch, 1.35*inch])
+            det_tbl.setStyle(TableStyle([
+                ("BACKGROUND", (0,0), (-1,-1), pale),
+                ("BOX", (0,0), (-1,-1), 0.5, line),
+                ("LINEBELOW", (0,0), (-1,-2), 0.35, line),
+                ("LINEBEFORE", (2,0), (2,-1), 0.35, line),
+                ("VALIGN", (0,0), (-1,-1), "MIDDLE"),
+                ("LEFTPADDING", (0,0), (-1,-1), 6),
+                ("RIGHTPADDING", (0,0), (-1,-1), 6),
+                ("TOPPADDING", (0,0), (-1,-1), 6),
+                ("BOTTOMPADDING", (0,0), (-1,-1), 6),
+            ]))
+
+            identity = Table([[([Paragraph("PROPOSAL PREPARED FOR", eyebrow)] + cust_parts), det_tbl]], colWidths=[2.85*inch, 4.2*inch])
+            identity.setStyle(TableStyle([
+                ("VALIGN", (0,0), (-1,-1), "TOP"),
+                ("LEFTPADDING", (0,0), (-1,-1), 0),
+                ("RIGHTPADDING", (0,0), (-1,-1), 8),
+                ("TOPPADDING", (0,0), (-1,-1), 0),
+                ("BOTTOMPADDING", (0,0), (-1,-1), 0),
+            ]))
+            elements.append(identity)
+            elements.append(Spacer(1, 14))
+
+            # ── 2. Project Scope & Proposal Subject (Unique to Quotation!) ──────
+            title_text = q.get("title") or (deal_title if deal_title else "")
+            desc_text  = q.get("description") or ""
+            if title_text or desc_text:
+                scope_content = []
+                if title_text:
+                    scope_content.append(Paragraph(f"<b>Proposal Subject:</b> {safe(title_text)}", body))
+                if desc_text:
+                    scope_content.append(Paragraph(f"<font color='#64748B'><b>Scope Overview:</b></font> {safe(desc_text)}", small))
+                scope_table = Table([[scope_content]], colWidths=[7.05*inch])
+                scope_table.setStyle(TableStyle([
+                    ("BACKGROUND", (0,0), (-1,-1), mint_pale),
+                    ("BOX", (0,0), (-1,-1), 0.6, mint_border),
+                    ("TOPPADDING", (0,0), (-1,-1), 7),
+                    ("BOTTOMPADDING", (0,0), (-1,-1), 7),
+                    ("LEFTPADDING", (0,0), (-1,-1), 10),
+                    ("RIGHTPADDING", (0,0), (-1,-1), 10),
+                ]))
+                elements.extend([scope_table, Spacer(1, 14)])
+
+            elements.append(Paragraph("Proposed Deliverables & Pricing Schedule", section))
+
+            # ── 3. Line Items Table (Deliverables & Scope) ──────────────────────
+            raw_items = q.get("lineItems") or []
+            rows = [[
+                Paragraph("NO.", tbl_hdr),
+                Paragraph("SCOPE & DELIVERABLE SPECIFICATION", tbl_hdr),
+                Paragraph("QTY", tbl_hdr),
+                Paragraph("UNIT PRICE", tbl_hdr),
+                Paragraph("ESTIMATED AMOUNT", tbl_hdr)
+            ]]
+            if raw_items:
+                for idx, item in enumerate(raw_items, 1):
+                    if hasattr(item, "model_dump"): item = item.model_dump()
+                    if not isinstance(item, dict): continue
+                    desc  = safe(item.get("description") or "Proposed Service / Deliverable")
+                    unit  = safe(item.get("unit") or "")
+                    qty   = item.get("quantity", 1)
+                    try:   qty_lbl = f"{float(qty):g}" + (f" {unit}" if unit else "")
+                    except: qty_lbl = str(qty)
+                    rows.append([
+                        Paragraph(f"{idx:02d}", small),
+                        Paragraph(desc, body),
+                        Paragraph(safe(qty_lbl), small),
+                        Paragraph(money(item.get("unitPrice")), small),
+                        Paragraph(money(item.get("total")), body),
+                    ])
+            else:
+                fallback_title = title_text or "Professional Services"
+                rows.append([
+                    Paragraph("01", small),
+                    Paragraph(safe(fallback_title), body),
+                    Paragraph("1 Unit", small),
+                    Paragraph(money(q.get("subTotal")), small),
+                    Paragraph(money(q.get("subTotal")), body)
+                ])
+
+            item_table = Table(rows, colWidths=[0.42*inch, 3.48*inch, 0.75*inch, 1.15*inch, 1.25*inch], repeatRows=1, hAlign="LEFT")
+            item_table.setStyle(TableStyle([
+                ("BACKGROUND", (0,0), (-1,0), accent),
+                ("TEXTCOLOR",  (0,0), (-1,0), colors.white),
+                ("LINEBELOW",  (0,0), (-1,0), 0.8, mint),
+                ("LINEBELOW",  (0,1), (-1,-1), 0.35, line),
+                ("VALIGN",  (0,0), (-1,-1), "MIDDLE"),
+                ("ALIGN",   (0,1), (0, -1), "CENTER"),
+                ("ALIGN",   (2,1), (-1,-1), "RIGHT"),
+                ("LEFTPADDING",  (0,0), (-1,-1), 8),
+                ("RIGHTPADDING", (0,0), (-1,-1), 8),
+                ("TOPPADDING",   (0,0), (-1,-1), 8),
+                ("BOTTOMPADDING", (0,0), (-1,-1), 8),
+            ]))
+            elements.extend([item_table, Spacer(1, 14)])
+
+            # ── 4. Commercials & Totals Block (No 'Balance Due' on a Quote!) ─────
+            totals = []
+            for lbl, key in (("Subtotal", "subTotal"), ("Proposed Discount", "discountAmount"), ("Estimated Tax", "taxAmount"), ("Logistics / Shipping", "shippingAmount")):
+                amt = q.get(key)
+                if key == "subTotal" or amt not in (None, 0, 0.0):
+                    amt_lbl = f"− {money(amt)}" if "Discount" in lbl else money(amt)
+                    totals.append([Paragraph(safe(lbl), small), Paragraph(amt_lbl, body)])
+            totals.append([
+                Paragraph("<b>Total Estimated Value</b>", body),
+                Paragraph(f"<font color='{accent.hexval()}'><b>{money(q.get('total'))}</b></font>", body)
+            ])
+
+            totals_table = Table(totals, colWidths=[1.8*inch, 1.6*inch], hAlign="RIGHT")
+            totals_table.setStyle(TableStyle([
+                ("ALIGN",  (0,0), (-1,-1), "RIGHT"),
+                ("LINEABOVE", (0, len(totals)-1), (-1, len(totals)-1), 1, accent),
+                ("TOPPADDING",    (0,0), (-1,-1), 5),
+                ("BOTTOMPADDING", (0,0), (-1,-1), 5),
+                ("LEFTPADDING",   (0,0), (-1,-1), 6),
+                ("RIGHTPADDING",  (0,0), (-1,-1), 6),
+            ]))
+            totals_wrap = Table([
+                [Paragraph("<font color='#64748B'><i>* This document is an estimate and commercial offer. Official tax invoice will follow upon formal acceptance.</i></font>", small),
+                 totals_table]
+            ], colWidths=[3.65*inch, 3.4*inch], hAlign="LEFT")
+            totals_wrap.setStyle(TableStyle([
+                ("VALIGN", (0,0), (-1,-1), "TOP"),
+                ("ALIGN", (1,0), (1,0), "RIGHT"),
+                ("LEFTPADDING", (0,0), (-1,-1), 0),
+                ("RIGHTPADDING", (0,0), (-1,-1), 0),
+                ("TOPPADDING", (0,0), (-1,-1), 0),
+                ("BOTTOMPADDING", (0,0), (-1,-1), 0),
+            ]))
+            elements.extend([totals_wrap, Spacer(1, 16)])
+
+            # ── 5. Commercial Terms & Validity (Quotation-Specific!) ────────────
+            elements.append(Paragraph("Commercial Terms & Proposal Validity", section))
+            terms_elements = [
+                Paragraph(f"• <b>Validity:</b> This price proposal is firm and valid through <b>{safe(valid_date_str)}</b>. Deliverables and pricing are subject to review after this date.", small),
+            ]
+            if q.get("paymentTerms"):
+                terms_elements.append(Paragraph(f"• <b>Payment Milestones:</b> {safe(q['paymentTerms'])}", small))
+            if q.get("notes"):
+                terms_elements.append(Paragraph(f"• <b>Notes & Deliverable Assumptions:</b> {safe(q['notes'])}", small))
+            if q.get("termsAndConditions"):
+                terms_elements.append(Paragraph(f"• <b>Terms & Conditions:</b> {safe(q['termsAndConditions'])}", small))
+
+            terms_box = Table([[terms_elements]], colWidths=[7.05*inch])
+            terms_box.setStyle(TableStyle([
+                ("BACKGROUND", (0,0), (-1,-1), pale),
+                ("BOX", (0,0), (-1,-1), 0.5, line),
+                ("TOPPADDING", (0,0), (-1,-1), 8),
+                ("BOTTOMPADDING", (0,0), (-1,-1), 8),
+                ("LEFTPADDING", (0,0), (-1,-1), 10),
+                ("RIGHTPADDING", (0,0), (-1,-1), 10),
+            ]))
+            elements.extend([terms_box, Spacer(1, 16)])
+
+            # ── 6. Acceptance & Authorization Sign-off (Distinct to Quotation!) ─
+            is_accepted = str(q.get("quotationStatus") or "").upper() == "ACCEPTED"
+            if is_accepted:
+                conf_name = q.get("confirmedByName") or q.get("customerName") or "Authorized Client Signatory"
+                conf_date = self._format_date_q(q.get("confirmedAt") or q.get("updatedAt") or q.get("issueDate"))
+                accept_box = Table([[
+                    [
+                        Paragraph(f"<font color='{accent.hexval()}'><b>✓ PROPOSAL OFFICIALLY ACCEPTED & CONFIRMED</b></font>", body),
+                        Paragraph(f"Accepted by client representative: <b>{safe(conf_name)}</b> on <b>{safe(conf_date)}</b>.<br/>"
+                                  f"This quotation is officially confirmed and authorized for execution.", small),
+                    ]
+                ]], colWidths=[7.05*inch])
+                accept_box.setStyle(TableStyle([
+                    ("BACKGROUND", (0,0), (-1,-1), mint_pale),
+                    ("BOX", (0,0), (-1,-1), 0.8, mint_border),
+                    ("TOPPADDING", (0,0), (-1,-1), 9),
+                    ("BOTTOMPADDING", (0,0), (-1,-1), 9),
+                    ("LEFTPADDING", (0,0), (-1,-1), 12),
+                    ("RIGHTPADDING", (0,0), (-1,-1), 12),
+                ]))
+                elements.append(accept_box)
+            else:
+                sign_note = Paragraph("<font color='#64748B'>To accept this proposal and authorize project commencement, please sign and return a copy:</font>", small)
+                sig_left = [
+                    Paragraph("<b>CLIENT AUTHORIZATION & ACCEPTANCE:</b>", eyebrow),
+                    Spacer(1, 12),
+                    Paragraph("Authorized Signature: _______________________________", small),
+                    Spacer(1, 6),
+                    Paragraph("Printed Name & Title: ________________________________", small),
+                    Spacer(1, 6),
+                    Paragraph("Date: ____________________________________________", small),
+                ]
+                sig_right = [
+                    Paragraph(f"<b>SUBMITTED BY {safe(q.get('companyBranding', {}).get('companyName') or 'COMPANY')}:</b>", eyebrow),
+                    Spacer(1, 12),
+                    Paragraph(f"Account Representative: <b>{safe(rep_name)}</b>", small),
+                    Spacer(1, 6),
+                    Paragraph("Authorized Signature: _______________________________", small),
+                    Spacer(1, 6),
+                    Paragraph(f"Date: {safe(issue_date_str)}", small),
+                ]
+                sig_table = Table([[sig_left, sig_right]], colWidths=[3.5*inch, 3.55*inch])
+                sig_table.setStyle(TableStyle([
+                    ("VALIGN", (0,0), (-1,-1), "TOP"),
+                    ("BOX", (0,0), (-1,-1), 0.5, line),
+                    ("BACKGROUND", (0,0), (-1,-1), pale),
+                    ("LEFTPADDING", (0,0), (-1,-1), 10),
+                    ("RIGHTPADDING", (0,0), (-1,-1), 10),
+                    ("TOPPADDING", (0,0), (-1,-1), 8),
+                    ("BOTTOMPADDING", (0,0), (-1,-1), 10),
+                ]))
+                elements.extend([sign_note, Spacer(1, 6), sig_table])
+
+            branding = {
+                **(q.get("companyBranding") or {}),
+                "quoteId": q.get("quoteId", ""),
+                "valid": self._format_date_q(q.get("valid")),
+                "customerName": q.get("customerName", ""),
+            }
+            doc.build(
+                elements,
+                onFirstPage=lambda canvas, document: self._draw_quotation_branding(canvas, document, branding),
+                onLaterPages=lambda canvas, document: self._draw_quotation_branding(canvas, document, branding),
+            )
+            buffer.seek(0)
+            return buffer
+
+        except Exception as e:
+            print("Quotation PDF generation error:", e)
+            import traceback; traceback.print_exc()
+            raise AppException(500, f"Error generating quotation PDF: {str(e)}")
+
+    def _draw_quotation_branding(self, canvas: Canvas, doc, branding: Dict[str, Any]) -> None:
+        page_width, page_height = A4
+        left  = doc.leftMargin
+        right = page_width - doc.rightMargin
+        accent = colors.HexColor("#064E3B")    # Deep Forest Green
+        mint   = colors.HexColor("#10B981")    # Emerald Highlight
+        tint   = colors.HexColor("#D1FAE5")    # Soft Mint
+        company_name = self._pdf_text_q(branding.get("companyName") or "Company")
+
+        canvas.saveState()
+        # Top Header: Sleek, architectural banner (Distinct from the wavy invoice!)
+        canvas.setFillColor(accent)
+        canvas.rect(0, page_height - 130, page_width, 130, stroke=0, fill=1)
+
+        # Thin mint divider rule line
+        canvas.setFillColor(mint)
+        canvas.rect(0, page_height - 133, page_width, 3, stroke=0, fill=1)
+
+        # Company Logo Box
+        logo_bytes = branding.get("logoBytes")
+        logo_x, logo_y, logo_w, logo_h = left, page_height - 98, 54, 48
+        canvas.setFillColor(colors.white)
+        canvas.roundRect(logo_x - 4, logo_y - 4, logo_w + 8, logo_h + 8, 6, stroke=0, fill=1)
+        if logo_bytes:
+            try:
+                canvas.drawImage(ImageReader(BytesIO(logo_bytes)), logo_x, logo_y, width=logo_w, height=logo_h, preserveAspectRatio=True, anchor="c", mask="auto")
+            except Exception:
+                self._draw_company_monogram_q(canvas, logo_x, logo_y, logo_w, logo_h, company_name, accent)
+        else:
+            self._draw_company_monogram_q(canvas, logo_x, logo_y, logo_w, logo_h, company_name, accent)
+
+        # Company Details (Left Column)
+        company_x = left + 72
+        canvas.setFillColor(colors.white)
+        canvas.setFont("Helvetica-Bold", 12)
+        col_w = right - company_x - 190
+        canvas.drawString(company_x, page_height - 50, self._fit_pdf_text_q(company_name, col_w, "Helvetica-Bold", 12))
+
+        address = self._pdf_text_q(branding.get("address"))
+        lines = []
+        if address:
+            lines.extend([p.strip() for p in address.replace("\n", ", ").split(",") if p.strip()][:2])
+        contact_line = "  |  ".join(self._pdf_text_q(i) for i in [branding.get("email"), branding.get("phone"), branding.get("website")] if i)
+        if contact_line:
+            lines.append(contact_line)
+
+        canvas.setFillColor(colors.HexColor("#A7F3D0"))
+        canvas.setFont("Helvetica", 7.5)
+        for i, ln in enumerate(lines[:3]):
+            canvas.drawString(company_x, page_height - 66 - (i * 11), self._fit_pdf_text_q(ln, col_w, "Helvetica", 7.5))
+
+        # Right Column Header: Clear Proposal Identity
+        canvas.setFillColor(colors.white)
+        canvas.setFont("Helvetica-Bold", 22)
+        canvas.drawRightString(right, page_height - 50, "PRICE QUOTATION")
+
+        canvas.setFillColor(tint)
+        canvas.setFont("Helvetica-Bold", 8)
+        canvas.drawRightString(right, page_height - 66, "COMMERCIAL PROPOSAL & SCOPE")
+
+        canvas.setFillColor(colors.white)
+        canvas.setFont("Helvetica", 7.5)
+        quote_id = self._pdf_text_q(branding.get("quoteId", ""))
+        if quote_id:
+            canvas.drawRightString(right, page_height - 80, f"Ref: {quote_id}")
+
+        valid_str = self._pdf_text_q(branding.get("valid", ""))
+        if valid_str:
+            canvas.setFillColor(colors.HexColor("#6EE7B7"))
+            canvas.setFont("Helvetica-Bold", 7.5)
+            canvas.drawRightString(right, page_height - 94, f"Valid Through: {valid_str}")
+
+        # Footer: Modern, clean architectural footer band
+        canvas.setFillColor(colors.HexColor("#064E3B"))
+        canvas.rect(0, 0, page_width, 55, stroke=0, fill=1)
+        canvas.setFillColor(mint)
+        canvas.rect(0, 55, page_width, 2, stroke=0, fill=1)
+
+        canvas.setFillColor(colors.white)
+        canvas.setFont("Helvetica-Bold", 7.5)
+        canvas.drawString(left, 36, "CONFIDENTIAL COMMERCIAL PROPOSAL")
+
+        canvas.setFont("Helvetica", 6.8)
+        canvas.setFillColor(colors.HexColor("#A7F3D0"))
+        contact_str = "   |   ".join(self._pdf_text_q(i) for i in [branding.get("phone"), branding.get("email"), branding.get("website")] if i)
+        if contact_str:
+            canvas.drawString(left, 24, self._fit_pdf_text_q(contact_str, 320, "Helvetica", 6.8))
+
+        # Right side legal & page
+        reg_items = []
+        if branding.get("registrationNumber"): reg_items.append(f"Reg: {self._pdf_text_q(branding['registrationNumber'])}")
+        if branding.get("tradeNumber"): reg_items.append(f"Trade: {self._pdf_text_q(branding['tradeNumber'])}")
+        if reg_items:
+            canvas.drawRightString(right, 36, self._fit_pdf_text_q("   |   ".join(reg_items), 220, "Helvetica", 6.8))
+
+        canvas.setFillColor(colors.white)
+        canvas.drawRightString(right, 22, self._fit_pdf_text_q(f"{company_name}  ·  Page {doc.page}", 200, "Helvetica", 6.8))
+
+        canvas.restoreState()
+
+    @staticmethod
+    def _draw_company_monogram_q(canvas, x, y, width, height, name, accent):
+        canvas.setFillColor(colors.HexColor("#ECFDF5"))
+        canvas.roundRect(x, y, width, height, 6, stroke=0, fill=1)
+        initials = "".join(w[0] for w in name.split()[:2]).upper() or "Q"
+        canvas.setFillColor(accent)
+        canvas.setFont("Helvetica-Bold", 16)
+        canvas.drawCentredString(x + width / 2, y + height / 2 - 5, initials)

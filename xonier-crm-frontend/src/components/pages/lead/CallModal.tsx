@@ -82,14 +82,16 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUpdated, camp
   const [menuOpen, setMenuOpen] = useState(false);
   const [session, setSession] = useState<CallSession | null>(null);
   const [mobileOnline, setMobileOnline] = useState<boolean | null>(null);
-  const [requesting, setRequesting] = useState(true);
+  // Opening lead details must be safe: a mobile call is requested only after
+  // the agent explicitly presses the Call button in this modal.
+  const [requesting, setRequesting] = useState(false);
   const [error, setError] = useState("");
   const [disposing, setDisposing] = useState<boolean | null>(null);
   const [dialStartedAtMs, setDialStartedAtMs] = useState<number | null>(null);
   const [nowMs, setNowMs] = useState<number>(() => Date.now());
 
-  const startedRef = useRef(false);
   const autoSwitchedRef = useRef(false);
+  const requestPendingRef = useRef(false);
   const wsRef = useRef<WebSocket | null>(null);
 
   const sessionId = session?.id;
@@ -98,6 +100,8 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUpdated, camp
 
   // ── send the call request to the mobile app ────────────────────────────────
   const runRequest = useCallback(async () => {
+    if (requestPendingRef.current) return;
+    requestPendingRef.current = true;
     try {
       const res = await CallService.request(lead.id, campaignId, campaignLeadId);
       const data: CallRequestResult = res.data.data;
@@ -107,17 +111,13 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUpdated, camp
       setSession(null);
       setError(getErrorMessage(err));
     } finally {
+      requestPendingRef.current = false;
       setRequesting(false);
     }
   }, [lead.id, campaignId, campaignLeadId]);
 
-  useEffect(() => {
-    if (startedRef.current) return; // React strict mode mounts effects twice in dev
-    startedRef.current = true;
-    runRequest();
-  }, [runRequest]);
-
   const handleRetry = () => {
+    if (requestPendingRef.current) return;
     setMenuOpen(false);
     setError("");
     setSession(null);
@@ -125,6 +125,20 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUpdated, camp
     setRequesting(true);
     autoSwitchedRef.current = false;
     setTab("info");
+    runRequest();
+  };
+
+  const handleRequestCall = () => {
+    if (requestPendingRef.current) return;
+    // A completed/failed/cancelled session can be requested again from the
+    // same explicit action without closing and reopening the lead details.
+    if (session) {
+      handleRetry();
+      return;
+    }
+
+    setError("");
+    setRequesting(true);
     runRequest();
   };
 
@@ -147,7 +161,7 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUpdated, camp
         const msg = JSON.parse(event.data as string);
 
         // Backend pushes session_update when mobile reports call_status
-        if (msg.event === "session_update" && msg.session) {
+        if (msg.event === "session_update" && msg.session?.id === sessionId) {
           const next: CallSession = msg.session;
           setSession(next);
           setMobileOnline(msg.mobileOnline ?? null);
@@ -186,6 +200,46 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUpdated, camp
     return () => {
       ws.close();
       wsRef.current = null;
+    };
+  }, [sessionId, status, disposed]);
+
+  // Recover socket updates missed during reconnects or across server workers.
+  useEffect(() => {
+    if (!sessionId || disposed || !status || !LIVE_STATUSES.includes(status)) return;
+    let stopped = false;
+    let fetching = false;
+    const refresh = async () => {
+      if (fetching) return;
+      fetching = true;
+      try {
+        const res = await CallService.getSession(sessionId);
+        const next: CallSession = res.data.data;
+        if (stopped || next.id !== sessionId) return;
+        setSession((current) => {
+          if (current?.id !== sessionId || !LIVE_STATUSES.includes(current.status)) return current;
+          if (LIVE_STATUSES.includes(next.status) &&
+              LIVE_STATUSES.indexOf(next.status) < LIVE_STATUSES.indexOf(current.status)) return current;
+          return next;
+        });
+        setMobileOnline(next.mobileOnline ?? null);
+        if (next.dialedAt) setDialStartedAtMs(Date.parse(next.dialedAt));
+        if (!autoSwitchedRef.current && ["dialing", "ended", "failed"].includes(next.status)) {
+          autoSwitchedRef.current = true;
+          setTab("dispose");
+        }
+      } catch {
+        // Retry temporary network failures on the next interval.
+      } finally {
+        fetching = false;
+      }
+    };
+    void refresh();
+    const interval = setInterval(refresh, 3000);
+    window.addEventListener("focus", refresh);
+    return () => {
+      stopped = true;
+      clearInterval(interval);
+      window.removeEventListener("focus", refresh);
     };
   }, [sessionId, status, disposed]);
 
@@ -251,7 +305,7 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUpdated, camp
 
   // ── status banner text ────────────────────────────────────────────────────
   let banner: { text: string; tone: "info" | "warn" | "ok" | "bad" } = {
-    text: "Sending the call request to your mobile app…",
+    text: "Ready to call. Press the Call button to send the request to your mobile app.",
     tone: "info",
   };
   if (error) banner = { text: error, tone: "bad" };
@@ -282,6 +336,15 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUpdated, camp
 
   const canRetry = Boolean(error) || (status && ["failed", "cancelled", "expired"].includes(status)) || (status === "pending" && mobileOnline === false);
   const canDispose = Boolean(status && DISPOSABLE_STATUSES.includes(status)) && !disposed;
+  const callCardLabel = requesting ? "Sending call request…"
+    : status === "pending" ? "Waiting for your mobile app…"
+    : status === "delivered" ? "Request received by your mobile app"
+    : status === "dialing" ? "Mobile reported call in progress"
+    : status === "ended" ? "Call ended"
+    : status === "failed" ? "Call failed"
+    : status === "cancelled" ? "Call request cancelled"
+    : status === "expired" ? "Call request expired"
+    : "Ready to call this number";
 
   const tabs: { key: Tab; label: string }[] = [
     { key: "info", label: "LEAD INFORMATION" },
@@ -365,6 +428,7 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUpdated, camp
                   <button
                     type="button"
                     onClick={handleRetry}
+                    disabled={requesting}
                     className="w-full text-left px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-700"
                   >
                     Call again
@@ -392,6 +456,7 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUpdated, camp
               <button
                 type="button"
                 onClick={handleRetry}
+                disabled={requesting}
                 className="shrink-0 rounded-full border border-current px-3 py-1 text-[12px] font-medium hover:bg-white/50"
               >
                 Retry
@@ -414,9 +479,11 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUpdated, camp
                   )}
                 </div>
 
-                {/* call card */}
+                {/* call card — an explicit click is required before any mobile call request */}
                 <div className="rounded-xl bg-[#0092B8] text-white shadow-md px-5 py-4 flex flex-col items-center gap-2">
-                  <p className="text-[11px] font-medium opacity-90">Calling on this number...</p>
+                  <p className="text-[11px] font-medium opacity-90">
+                    {callCardLabel}
+                  </p>
                   <div className="flex items-center justify-between w-full">
                     <button
                       type="button"
@@ -439,6 +506,15 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUpdated, camp
                       <FiEdit2 size={16} />
                     </button>
                   </div>
+                  <button
+                    type="button"
+                    onClick={handleRequestCall}
+                    disabled={requesting}
+                    className="mt-1 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2 text-[13px] font-semibold text-[#0092B8] shadow-sm transition-colors hover:bg-[#BAF7FE] disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <FiPhone size={15} />
+                    {requesting ? "Requesting call…" : session ? "Call again" : "Call"}
+                  </button>
                 </div>
 
                 {/* send message */}
@@ -594,6 +670,7 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUpdated, camp
                 <button
                   type="button"
                   onClick={handleRetry}
+                  disabled={requesting}
                   className="rounded-full border border-[#0092B8] text-[#0092B8] dark:text-[#BAF7FE] text-[13px] font-medium px-5 py-2 hover:bg-[#BAF7FE]/20 dark:hover:bg-slate-700"
                 >
                   Call again

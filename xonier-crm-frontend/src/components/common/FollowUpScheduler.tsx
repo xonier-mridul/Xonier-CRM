@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { parseFollowUpTime } from "@/src/app/utils/followUpTime.utils";
 import { CalendarClock, Clock3, X } from "lucide-react";
 import { toast } from "react-toastify";
 import { FollowUpEntity, FollowUpService } from "@/src/services/follow-up.service";
@@ -15,7 +16,7 @@ type Props = {
 
 const toIstInput = (value?: string | null) => {
   if (!value) return "";
-  return new Date(value)
+  return parseFollowUpTime(value)
     .toLocaleString("sv-SE", { timeZone: "Asia/Kolkata" })
     .replace(" ", "T")
     .slice(0, 16);
@@ -27,7 +28,7 @@ const formatIst = (value?: string | null) => {
     dateStyle: "medium",
     timeStyle: "short",
     timeZone: "Asia/Kolkata",
-  }).format(new Date(value)) + " IST";
+  }).format(parseFollowUpTime(value)) + " IST";
 };
 
 export default function FollowUpScheduler({ entity, recordId, recordName, followUpAt, onUpdated }: Props) {

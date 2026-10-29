@@ -23,6 +23,7 @@ import StatusBadge from "@/src/components/common/Status";
 import { useTranslation } from "react-i18next";
 import { FiUser, FiCalendar, FiFileText, FiActivity, FiSettings, FiUserPlus, FiX, FiCheckCircle, FiXCircle } from "react-icons/fi";
 import { TbChartBar } from "react-icons/tb";
+import { IoDocumentText, IoDownloadOutline } from "react-icons/io5";
 import { useRouter } from "next/navigation";
 import QuotationFileUploadModal from "@/src/components/common/QuotationFileUploadModal";
 import { useAdvancedFilters } from "@/src/hooks/useAdvanceFilter";
@@ -192,6 +193,31 @@ const page = (): JSX.Element => {
 
   const { hasPermission } = usePermissions();
   const router = useRouter();
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  const handleDownloadQuotation = async (id: string, quoteId: string) => {
+    if (downloadingId) return;
+    setDownloadingId(id);
+    try {
+      const result = await QuoteService.download(id);
+      if (result.status === 200) {
+        const blob = result.data instanceof Blob ? result.data : new Blob([result.data], { type: "application/pdf" });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `quotation_${quoteId || id}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        toast.success("Quotation PDF downloaded");
+      }
+    } catch {
+      toast.error("Failed to download quotation PDF");
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   const getUserData = async (): Promise<void> => {
     try {
@@ -633,6 +659,15 @@ const page = (): JSX.Element => {
                                 <FaRegEye className="text-xl" />
                               </span>
                             )}
+                            {(item.quotationStatus === QuotationStatus.ACCEPTED || item.convertedToInvoice) && (
+                              <Link
+                                href={item.invoiceId ? `/invoice/view/${item.invoiceId}` : `/invoice?search=${item.quoteId}`}
+                                title="View Generated Invoice"
+                                className="h-8 w-8 flex items-center justify-center rounded-lg text-emerald-600 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 dark:text-emerald-400 transition-colors"
+                              >
+                                <IoDocumentText className="text-lg" />
+                              </Link>
+                            )}
                             {hasPermission(PERMISSIONS.updateQuote) ? (
                               <Link
                                 href={`/quotations/update/${item.id}`}
@@ -774,6 +809,14 @@ const page = (): JSX.Element => {
                                 <MdOutlineEdit className="text-xl" />
                               </span>
                             )}
+                            <button
+                              onClick={() => handleDownloadQuotation(item.id, item.quoteId)}
+                              disabled={downloadingId === item.id}
+                              title="Download PDF"
+                              className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-colors disabled:opacity-50"
+                            >
+                              <IoDownloadOutline className="text-lg" />
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -883,6 +926,14 @@ const page = (): JSX.Element => {
                                 <MdOutlineEdit className="text-xl" />
                               </span>
                             )}
+                            <button
+                              onClick={() => handleDownloadQuotation(item.id, item.quoteId)}
+                              disabled={downloadingId === item.id}
+                              title="Download PDF"
+                              className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-colors disabled:opacity-50"
+                            >
+                              <IoDownloadOutline className="text-lg" />
+                            </button>
                             {(!item.attachments || item.attachments.length === 0) && (
                               <button
                                 onClick={() => setUploadModalOpen(item.id)}

@@ -8,7 +8,7 @@ import { INVOICE_STATUS, PERMISSIONS } from "@/src/constants/enum";
 import { User } from "@/src/types";
 import axios from "axios";
 import { useParams, useRouter } from "next/navigation";
-import React, { JSX, useEffect, useState } from "react";
+import React, { JSX, useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import { usePermissions } from "@/src/hooks/usePermissions";
@@ -28,6 +28,8 @@ import {
   IoCallOutline,
   IoEllipsisVertical,
   IoDownloadOutline,
+  IoEyeOutline,
+  IoCloseOutline,
   IoSendOutline,
   IoInformationCircleOutline,
   IoReceiptOutline,
@@ -76,6 +78,13 @@ const getStatusConfig = (status: INVOICE_STATUS) => {
       dot: "bg-cyan-500",
       label: "Sent",
     },
+    [INVOICE_STATUS.ISSUED]: {
+      bg: "bg-cyan-50 dark:bg-cyan-900/20",
+      text: "text-cyan-700 dark:text-cyan-300",
+      border: "border-cyan-200 dark:border-cyan-700",
+      dot: "bg-cyan-500",
+      label: "Issued",
+    },
     [INVOICE_STATUS.PAID]: {
       bg: "bg-emerald-50 dark:bg-emerald-900/20",
       text: "text-emerald-700 dark:text-emerald-300",
@@ -116,6 +125,12 @@ const InvoiceViewPage = (): JSX.Element => {
   const [invoiceData, setInvoiceData] = useState<Invoice | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>("invoice");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
+  const previewRequestId = useRef(0);
 
   const { id } = useParams();
   const router = useRouter();
@@ -155,26 +170,84 @@ const InvoiceViewPage = (): JSX.Element => {
     }
   };
 
-  const handleDownload = async () => {
-    if (!id) return;
+  const handlePreviewInvoice = async () => {
+    if (!id || isPreviewLoading) return;
+    const requestId = ++previewRequestId.current;
+    setIsPreviewOpen(true);
+    setIsPreviewLoading(true);
+    setPreviewError(false);
     try {
       const result = await InvoiceService.download(String(id));
       if (result.status === 200) {
-        const blob = new Blob([result.data], { type: "application/pdf" });
+        const blob = result.data instanceof Blob
+          ? result.data
+          : new Blob([result.data], { type: "application/pdf" });
+        if (!blob.size) throw new Error("Empty invoice PDF");
         const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `invoice_${invoiceData?.invoiceId}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-        toast.success("Invoice downloaded");
+        if (requestId !== previewRequestId.current) {
+          window.URL.revokeObjectURL(url);
+          return;
+        }
+        setPreviewBlob(blob);
+        setPreviewUrl(url);
+      } else {
+        throw new Error("Invoice preview request failed");
       }
     } catch {
-      toast.error("Download failed");
+      if (requestId === previewRequestId.current) {
+        setPreviewError(true);
+        toast.error(t("invoice_preview_failed"));
+      }
+    } finally {
+      if (requestId === previewRequestId.current) setIsPreviewLoading(false);
     }
   };
+
+  const handleDownloadPreview = () => {
+    if (!previewBlob || !previewUrl) return;
+    const link = document.createElement("a");
+    link.href = previewUrl;
+    link.download = `invoice_${invoiceData?.invoiceId || id}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success(t("invoice_downloaded"));
+  };
+
+  const closeInvoicePreview = () => {
+    previewRequestId.current += 1;
+    setIsPreviewOpen(false);
+    setIsPreviewLoading(false);
+    setPreviewUrl(null);
+    setPreviewBlob(null);
+    setPreviewError(false);
+  };
+
+  useEffect(() => {
+    if (!previewUrl) return;
+    return () => window.URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
+
+  useEffect(() => {
+    if (!isPreviewOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        previewRequestId.current += 1;
+        setIsPreviewOpen(false);
+        setIsPreviewLoading(false);
+        setPreviewUrl(null);
+        setPreviewBlob(null);
+        setPreviewError(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isPreviewOpen]);
 
   if (isLoading) {
     return (
@@ -286,11 +359,12 @@ const InvoiceViewPage = (): JSX.Element => {
                 </button>
               )}
               <button
-                onClick={handleDownload}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-gray-700 hover:bg-gray-800 dark:hover:bg-gray-600 text-white rounded-xl text-sm font-medium transition-colors"
+                onClick={handlePreviewInvoice}
+                disabled={isPreviewLoading}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-gray-700 hover:bg-gray-800 dark:hover:bg-gray-600 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-wait"
               >
-                <IoDownloadOutline className="w-4 h-4" />
-                {t("download_pdf")}
+                <IoEyeOutline className="w-4 h-4" />
+                {t("preview_pdf")}
               </button>
               <div className="relative">
                 <button
@@ -781,6 +855,94 @@ const InvoiceViewPage = (): JSX.Element => {
           </div>
         </div>
       </div>
+      {isPreviewOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/70 p-3 backdrop-blur-sm sm:p-6"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeInvoicePreview();
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="invoice-preview-title"
+            className="flex h-[min(92vh,980px)] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900"
+          >
+            <header className="flex items-center justify-between gap-4 border-b border-gray-200 px-5 py-4 dark:border-gray-700 sm:px-6">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-50 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300">
+                  <IoDocumentText className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <h2 id="invoice-preview-title" className="truncate text-base font-bold text-gray-900 dark:text-white">
+                    {t("invoice_preview")}
+                  </h2>
+                  <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                    {invoiceData.invoiceId}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={closeInvoicePreview}
+                aria-label={t("close")}
+                className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-800 dark:hover:bg-gray-800 dark:hover:text-white"
+              >
+                <IoCloseOutline className="h-5 w-5" />
+              </button>
+            </header>
+
+            <div className="relative min-h-0 flex-1 bg-gray-100 dark:bg-gray-800">
+              {isPreviewLoading ? (
+                <div className="flex h-full min-h-[420px] flex-col items-center justify-center gap-3 text-gray-600 dark:text-gray-300">
+                  <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-cyan-600/25 border-t-cyan-600" />
+                  <p className="text-sm font-medium">{t("preparing_invoice_preview")}</p>
+                </div>
+              ) : previewError ? (
+                <div className="flex h-full min-h-[420px] flex-col items-center justify-center gap-3 px-6 text-center">
+                  <IoAlertCircleOutline className="h-10 w-10 text-rose-500" />
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{t("invoice_preview_failed")}</p>
+                  <button
+                    type="button"
+                    onClick={handlePreviewInvoice}
+                    className="rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan-700"
+                  >
+                    {t("retry")}
+                  </button>
+                </div>
+              ) : previewUrl ? (
+                <iframe
+                  title={`${t("invoice_preview")} ${invoiceData.invoiceId}`}
+                  src={previewUrl}
+                  className="h-full min-h-[420px] w-full border-0"
+                />
+              ) : null}
+            </div>
+
+            <footer className="flex flex-col-reverse gap-3 border-t border-gray-200 bg-white px-5 py-4 dark:border-gray-700 dark:bg-gray-900 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+              <p className="text-xs text-gray-500 dark:text-gray-400">{invoiceData.invoiceId}</p>
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={closeInvoicePreview}
+                  className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
+                >
+                  {t("close")}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDownloadPreview}
+                  disabled={!previewBlob || isPreviewLoading}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-cyan-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <IoDownloadOutline className="h-4 w-4" />
+                  {t("download_pdf")}
+                </button>
+              </div>
+            </footer>
+          </section>
+        </div>
+      )}
     </div>
   );
 };

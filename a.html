@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>30 Database Trade-Offs — Darpan Decoded</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 18mm 18mm 18mm 18mm;
+
+            @top-left {
+                content: "30 DATABASE TRADE-OFFS • BACKEND FIELD NOTES";
+                font-family: "Georgia", serif;
+                font-size: 8pt;
+                color: #78716C;
+                letter-spacing: 0.5px;
+            }
+
+            @top-right {
+                content: "DARPAN.DECODED";
+                font-family: "Georgia", serif;
+                font-size: 8pt;
+                color: #A8854A;
+                font-weight: bold;
+                letter-spacing: 1px;
+            }
+
+            @bottom-left {
+                content: "© 2026 DARPAN.DECODED • ALL RIGHTS RESERVED";
+                font-family: "Georgia", serif;
+                font-size: 7.5pt;
+                color: #A8A29E;
+            }
+
+            @bottom-right {
+                content: "CONNECT: linkedin.com/in/darpandeveloper • instagram.com/darpan.decoded • whatsapp.me/91XXXXXXXXXX";
+                font-family: "Georgia", serif;
+                font-size: 7.5pt;
+                color: #A8854A;
+            }
+        }
+
+        body {
+            background-color: #F4EFE6;
+            color: #2C2825;
+            font-family: "Georgia", serif;
+            font-size: 10pt;
+            line-height: 1.55;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Structural Spacing & Flow */
+        .page-section {
+            page-break-after: always;
+        }
+
+        .page-section:last-child {
+            page-break-after: avoid;
+        }
+
+        h1 {
+            font-family: "Georgia", serif;
+            font-size: 26pt;
+            line-height: 1.15;
+            color: #1A1816;
+            margin: 0 0 10px 0;
+            font-weight: normal;
+        }
+
+        h2 {
+            font-family: "Georgia", serif;
+            font-size: 15pt;
+            line-height: 1.25;
+            color: #1A1816;
+            margin: 0 0 8px 0;
+            font-weight: normal;
+        }
+
+        h3 {
+            font-family: "Georgia", serif;
+            font-size: 11.5pt;
+            color: #A8854A;
+            margin: 22px 0 8px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: bold;
+        }
+
+        h4 {
+            font-family: "Georgia", serif;
+            font-size: 10pt;
+            color: #57534E;
+            margin: 14px 0 6px 0;
+            font-style: italic;
+        }
+
+        p {
+            margin: 0 0 10px 0;
+            text-align: justify;
+        }
+
+        strong {
+            color: #1A1816;
+        }
+
+        /* Top Chapter Header Banner */
+        .chapter-header-bar {
+            border-bottom: 1.5px solid #D6CFC7;
+            padding-bottom: 8px;
+            margin-bottom: 22px;
+            display: table;
+            width: 100%;
+        }
+
+        .chapter-header-left {
+            display: table-cell;
+            font-family: "Georgia", serif;
+            font-size: 8pt;
+            color: #78716C;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            vertical-align: middle;
+        }
+
+        .chapter-header-right {
+            display: table-cell;
+            text-align: right;
+            font-family: "Georgia", serif;
+            font-size: 18pt;
+            color: #D6CFC7;
+            font-weight: bold;
+            vertical-align: middle;
+        }
+
+        /* Two-column layout */
+        .two-col {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            margin: 12px 0;
+        }
+
+        .col-half {
+            display: table-cell;
+            width: 48%;
+            vertical-align: top;
+        }
+
+        .col-divider {
+            display: table-cell;
+            width: 4%;
+        }
+
+        /* Cards & Containers */
+        .card-lavender {
+            background-color: #EFECE6;
+            border-left: 3px solid #8B5CF6;
+            padding: 12px 14px;
+            margin: 10px 0;
+        }
+
+        .card-peach {
+            background-color: #F8F3EC;
+            border-left: 3px solid #D97706;
+            padding: 12px 14px;
+            margin: 10px 0;
+        }
+
+        .card-neutral {
+            background-color: #ECE7DF;
+            border: 1px solid #D6CFC7;
+            padding: 12px 14px;
+            margin: 10px 0;
+        }
+
+        /* Code Blocks & Flow */
+        pre,
+        .code-flow {
+            background-color: #1E1B18;
+            color: #E7E5E4;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 8.5pt;
+            padding: 10px 12px;
+            margin: 10px 0;
+            line-height: 1.4;
+            border-radius: 2px;
+            white-space: pre-wrap;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 9pt;
+        }
+
+        th {
+            background-color: #1E1B18;
+            color: #F4EFE6;
+            text-align: left;
+            padding: 8px 10px;
+            font-weight: normal;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            border-bottom: 1px solid #D6CFC7;
+            padding: 8px 10px;
+            vertical-align: top;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #ECE7DF;
+        }
+
+        /* Lists */
+        ul {
+            margin: 6px 0 10px 20px;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 4px;
+        }
+
+        /* Engineer Rule Callout */
+        .engineer-rule {
+            background-color: #2C2825;
+            color: #F4EFE6;
+            padding: 10px 14px;
+            margin: 14px 0;
+            font-family: "Georgia", serif;
+            font-size: 9.5pt;
+            border-left: 3px solid #A8854A;
+        }
+
+        .engineer-rule strong {
+            color: #A8854A;
+            letter-spacing: 0.5px;
+        }
+
+        /* Footer Links */
+        .social-footer {
+            margin-top: 30px;
+            border-top: 1px solid #D6CFC7;
+            padding-top: 12px;
+            font-size: 8pt;
+            text-align: center;
+            color: #78716C;
+        }
+
+        .social-footer a {
+            color: #A8854A;
+            text-decoration: none;
+            margin: 0 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- PAGE 01 -->
+    <div class="page-section">
+        <div style="margin-top: 40px;"></div>
+        <p style="font-size: 9pt; color: #A8854A; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 6px;">
+            Darpan Decoded • Master Field Notes</p>
+        <h1>30 Database Trade-Offs</h1>
+        <p style="font-size: 14pt; color: #57534E; font-style: italic; margin-bottom: 24px;">Every Backend Engineer
+            Eventually Faces</p>
+
+        <p style="font-size: 11pt; font-weight: bold; margin-bottom: 16px;">The decisions behind faster queries,
+            reliable data, and scalable applications.</p>
+
+        <p>A database decision can look perfectly reasonable during development and become a serious problem when real
+            users arrive. Adding indexes makes queries faster—but increases the work required for writes. Caching
+            reduces database traffic—but can return stale information. Replication improves resilience—but introduces
+            synchronization challenges. Sharding adds capacity—but makes queries and operations more complicated.</p>
+
+        <p>These aren't mistakes by default. They're trade-offs. <strong>A trade-off means improving one aspect of a
+                system while accepting a cost somewhere else.</strong></p>
+
+        <p>This handbook explores 30 decisions that backend engineers encounter while building, maintaining, and scaling
+            applications. Each one is explained through practical scenarios rather than isolated definitions.</p>
+
+        <div class="two-col" style="margin-top: 20px;">
+            <div class="col-half card-neutral">
+                <h3>Inside This Handbook</h3>
+                <ul style="list-style-type: none; margin-left: 0; font-size: 9pt;">
+                    <li style="margin-bottom: 6px;"><strong>DATA DESIGN</strong> — Relationships, Normalization &amp;
+                        Duplication</li>
+                    <li style="margin-bottom: 6px;"><strong>QUERY PERFORMANCE</strong> — Indexes, Caching &amp;
+                        Precomputation</li>
+                    <li style="margin-bottom: 6px;"><strong>SCALING</strong> — Replication, Sharding &amp; Partitioning
+                    </li>
+                    <li style="margin-bottom: 6px;"><strong>RELIABILITY</strong> — CAP, Consistency, Failover &amp;
+                        Fail-Open</li>
+                    <li><strong>MODERN STORES</strong> — Vector DBs, Search Engines &amp; OLAP</li>
+                </ul>
+            </div>
+            <div class="col-divider"></div>
+            <div class="col-half card-peach">
+                <h3>How To Think Like An Engineer</h3>
+                <p style="font-size: 8.5pt; margin-bottom: 6px;"><strong>01 — What am I optimizing for?</strong> Speed,
+                    correctness, availability, or simplicity?</p>
+                <p style="font-size: 8.5pt; margin-bottom: 6px;"><strong>02 — What am I giving up?</strong> Every
+                    architectural benefit comes with a cost.</p>
+                <p style="font-size: 8.5pt; margin-bottom: 6px;"><strong>03 — What fails?</strong> Consider stale reads,
+                    duplicate writes, and node outages.</p>
+                <p style="font-size: 8.5pt; margin-bottom: 0;"><strong>04 — Is this necessary?</strong> A simpler
+                    solution is often better.</p>
+            </div>
+        </div>
+
+        <p style="margin-top: 20px; font-style: italic; text-align: center;">The aim isn't to memorize which technology
+            wins. It's to understand which choice fits the problem—and why.</p>
+    </div>
+
+    <!-- PAGE 02 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part I — Data Design &amp; Models</div>
+            <div class="chapter-header-right">02</div>
+        </div>
+
+        <h2>SQL vs NoSQL</h2>
+        <h4>Should Your Data Follow Relationships or Access Patterns?</h4>
+
+        <p>Imagine building an e-commerce application storing users, orders, products, and payments. These records are
+            connected, and mistakes between them affect real transactions. Now imagine collecting millions of
+            application events with varying properties. These are two very different data problems.</p>
+
+        <div class="two-col">
+            <div class="col-half card-lavender">
+                <h3>SQL — Relational Databases</h3>
+                <p style="font-size: 9pt;">Relational databases store information in tables with rows, columns, and
+                    constraints. They support expressive queries and transactions across related records.</p>
+                <p style="font-size: 8.5pt; font-style: italic; margin-bottom: 0;">Example: PostgreSQL or MySQL storing
+                    orders referencing customers and items, preserving data integrity.</p>
+            </div>
+            <div class="col-divider"></div>
+            <div class="col-half card-peach">
+                <h3>NoSQL — Non-Relational</h3>
+                <p style="font-size: 9pt;">NoSQL includes document, key-value, wide-column, and graph databases. These
+                    systems use flexible data models suited to specific access patterns.</p>
+                <p style="font-size: 8.5pt; font-style: italic; margin-bottom: 0;">Example: A document store where
+                    laptops have RAM fields while shirts have fabric fields.</p>
+            </div>
+        </div>
+
+        <h3>The Trade-Off Matrix</h3>
+        <table>
+            <tr>
+                <th style="width: 50%;">Relational (SQL)</th>
+                <th style="width: 50%;">Non-Relational (NoSQL)</th>
+            </tr>
+            <tr>
+                <td>Structured relationships and strict constraints</td>
+                <td>Data models tuned to specific query patterns</td>
+            </tr>
+            <tr>
+                <td>Rich relational queries (JOINs)</td>
+                <td>Capabilities depend heavily on database type</td>
+            </tr>
+            <tr>
+                <td>Strong transactional support is standard</td>
+                <td>Transaction guarantees vary by product</td>
+            </tr>
+            <tr>
+                <td>Schema changes require upfront planning</td>
+                <td>Flexible record structures without rigid schemas</td>
+            </tr>
+        </table>
+
+        <p>Neither option is automatically faster or more scalable. A well-designed SQL database handles enormous
+            workloads; a poorly designed NoSQL model becomes difficult to query and maintain.</p>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Start with the shape of your data and the queries you need to run. Choose
+            the database afterward—not the other way around.
+        </div>
+    </div>
+
+    <!-- PAGE 03 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part I — Data Design &amp; Models</div>
+            <div class="chapter-header-right">03</div>
+        </div>
+
+        <h2>Normalization vs Denormalization</h2>
+        <h4>Should You Store Information Once or Duplicate It for Faster Reads?</h4>
+
+        <p>Suppose every order needs the customer's name and shipping city. You can store customer info once in a
+            customer table and connect each order, or copy customer info into each order record. Both approaches
+            optimize different things.</p>
+
+        <div class="two-col">
+            <div class="col-half card-lavender">
+                <h3>Normalization</h3>
+                <p style="font-size: 8.5pt;">Each fact is stored in an appropriate place and linked using identifiers.
+                </p>
+                <div class="code-flow">CUSTOMERS (id, name)
+                    ↓
+                    ORDERS (id, customer_id)
+                    ↓
+                    ORDER_ITEMS (order_id, product_id)</div>
+                <p style="font-size: 8.5pt; margin-bottom: 0;"><strong>Gain:</strong> Less duplication, fewer update
+                    anomalies, clear integrity.<br><strong>Cost:</strong> Complex joins required for complete reads.</p>
+            </div>
+            <div class="col-divider"></div>
+            <div class="col-half card-peach">
+                <h3>Denormalization</h3>
+                <p style="font-size: 8.5pt;">Selected fields are copied into the record that frequently needs them.</p>
+                <div class="code-flow">ORDER RECORD
+                    - order_id
+                    - customer_name
+                    - shipping_city
+                    - total_price</div>
+                <p style="font-size: 8.5pt; margin-bottom: 0;"><strong>Gain:</strong> Fewer joins, lower read
+                    latency.<br><strong>Cost:</strong> Updates become complex; duplicate copies must stay synchronized.
+                </p>
+            </div>
+        </div>
+
+        <p><strong>An Important Exception:</strong> Some historical values should intentionally remain unchanged. An
+            order should preserve the price charged at purchase time, even if the product's current catalog price
+            changes later.</p>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Don't duplicate everything for speed. Start with a correct model, measure
+            expensive reads, and duplicate only what serves a clear purpose.
+        </div>
+    </div>
+
+    <!-- PAGE 04 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part II — Distributed Consistency &amp; Reliability</div>
+            <div class="chapter-header-right">04</div>
+        </div>
+
+        <h2>Consistency vs Availability</h2>
+        <h4>What Should Happen When Database Nodes Cannot Communicate?</h4>
+
+        <p>Distributed databases keep data on multiple machines. What if a network partition prevents some machines from
+            communicating? One node accepts a new account balance, but another cannot receive the update. Should the
+            system continue answering requests from both sides with potential old data, or reject requests until
+            consistency is protected? This dilemma is the <strong>CAP theorem</strong>.</p>
+
+        <div class="two-col">
+            <div class="col-half card-lavender">
+                <h3>Consistency Priority</h3>
+                <p style="font-size: 9pt;">During a partition, the system refuses certain operations rather than
+                    returning uncoordinated or conflicting results.</p>
+                <p style="font-size: 8.5pt; margin-bottom: 0;"><strong>Benefit:</strong> Avoids accepting conflicting
+                    operations.<br><strong>Cost:</strong> Requests fail or wait even if nodes are running.</p>
+            </div>
+            <div class="col-divider"></div>
+            <div class="col-half card-peach">
+                <h3>Availability Priority</h3>
+                <p style="font-size: 9pt;">The system continues responding to requests on both sides of the partition,
+                    potentially using data that hasn't incorporated recent updates.</p>
+                <p style="font-size: 8.5pt; margin-bottom: 0;"><strong>Benefit:</strong> Users can continue
+                    interacting.<br><strong>Cost:</strong> Temporary stale or conflicting information.</p>
+            </div>
+        </div>
+
+        <h3>Practical Scenarios</h3>
+        <p>A banking operation verifying the latest account state must reject requests when required coordination is
+            unavailable. Conversely, a non-critical activity feed can display cached or slightly stale information while
+            the network recovers.</p>
+
+        <p><em>Note: CAP is specifically about network partitions. It does not mean systems must always choose between
+                consistency and availability during normal operation.</em></p>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Define what the application must guarantee during a network failure. Then
+            decide which requests can safely continue and which must wait.
+        </div>
+    </div>
+
+    <!-- PAGE 05 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part II — Distributed Consistency &amp; Reliability</div>
+            <div class="chapter-header-right">05</div>
+        </div>
+
+        <h2>Strong vs Eventual Consistency</h2>
+        <h4>Can Different Users Temporarily See Different Versions of the Same Data?</h4>
+
+        <p>A user changes their profile name. The primary database accepts the update, but a replica hasn't received it
+            yet. One request returns the new name; another returns the old one. Is that a bug? It depends on your
+            consistency promises.</p>
+
+        <div class="two-col">
+            <div class="col-half card-lavender">
+                <h3>Strong Consistency</h3>
+                <p style="font-size: 9pt;">Once a write succeeds, subsequent reads covered by that guarantee return the
+                    latest committed value.</p>
+                <p style="font-size: 8.5pt; margin-bottom: 0;"><strong>Gain:</strong> Predictable reads, no stale
+                    surprises.<br><strong>Cost:</strong> Distributed coordination increases latency during failures.</p>
+            </div>
+            <div class="col-divider"></div>
+            <div class="col-half card-peach">
+                <h3>Eventual Consistency</h3>
+                <p style="font-size: 9pt;">Replicas temporarily return different values. If updates stop, replicas
+                    eventually converge to a consistent state.</p>
+                <p style="font-size: 8.5pt; margin-bottom: 0;"><strong>Gain:</strong> Responsive reads and independent
+                    updates.<br><strong>Cost:</strong> Application must tolerate stale reads and resolve conflicts.</p>
+            </div>
+        </div>
+
+        <h3>Don't Confuse the Two Decisions</h3>
+        <p>Consistency vs Availability during a partition asks what a system does when nodes cannot coordinate. Strong
+            vs Eventual consistency asks what guarantees readers receive about data freshness. They are related, but
+            distinct.</p>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Choose consistency based on the consequences of stale information. A stale
+            recommendation is harmless; a stale inventory count or account balance affects financial decisions.
+        </div>
+    </div>
+
+    <!-- PAGE 06 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part III — Query Performance &amp; Caching</div>
+            <div class="chapter-header-right">06</div>
+        </div>
+
+        <h2>Read Performance vs Write Performance</h2>
+        <h4>Why Making Reads Faster Can Make Writes Slower</h4>
+
+        <p>A product catalog receives thousands of views per update, while an event collector continuously inserts new
+            records. Your database must be optimized for the workload it actually receives.</p>
+
+        <div class="two-col">
+            <div class="col-half card-lavender">
+                <h3>Read-Heavy Workloads</h3>
+                <div class="code-flow">Many users → Repeated SELECTs → Same records read often</div>
+                <p style="font-size: 8.5pt; margin-bottom: 0;"><strong>Techniques:</strong> Indexes, caching, read
+                    replicas, precomputed results.<br><strong>Cost:</strong> Indexes need maintenance, caches need
+                    invalidation, replicas need sync.</p>
+            </div>
+            <div class="col-divider"></div>
+            <div class="col-half card-peach">
+                <h3>Write-Heavy Workloads</h3>
+                <div class="code-flow">Continuous INSERT/UPDATE → DB writes → Log &amp; index maintenance</div>
+                <p style="font-size: 8.5pt; margin-bottom: 0;"><strong>Techniques:</strong> Append-only logs, minimal
+                    indexing.<br><strong>Cost:</strong> Queries become slow and expensive without proper indexes.</p>
+            </div>
+        </div>
+
+        <p>A catalog justifies category indexes because users repeatedly filter by category. Conversely, a high-volume
+            event ingestion table may not need an index on every field if some fields are never searched.</p>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Measure the ratio and cost of reads and writes before optimizing. Optimize
+            the entire workload against actual system requirements.
+        </div>
+    </div>
+
+    <!-- PAGE 07 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part III — Query Performance &amp; Caching</div>
+            <div class="chapter-header-right">07</div>
+        </div>
+
+        <h2>Joins vs Data Duplication</h2>
+        <h4>Should the Database Combine Data at Read Time or Store It Together?</h4>
+
+        <p>Consider an orders page displaying order date, customer name, shipping city, items, and total price. This
+            lives across multiple tables. The database can combine them via joins, or the application can store selected
+            fields together.</p>
+
+        <div class="two-col">
+            <div class="col-half card-lavender">
+                <h3>Using JOINs</h3>
+                <div class="code-flow">ORDERS ──┐
+                    ├── JOIN ──► ORDER DETAILS
+                    CUSTOMERS┘</div>
+                <p style="font-size: 8.5pt; margin-bottom: 0;"><strong>Gain:</strong> Less duplication, clear ownership
+                    of facts.<br><strong>Cost:</strong> Complex queries; poor indexing makes large joins expensive.</p>
+            </div>
+            <div class="col-divider"></div>
+            <div class="col-half card-peach">
+                <h3>Data Duplication</h3>
+                <div class="code-flow">ORDER VIEW (denormalized)
+                    - order_id
+                    - customer_name
+                    - shipping_city
+                    - total_price</div>
+                <p style="font-size: 8.5pt; margin-bottom: 0;"><strong>Gain:</strong> Simpler retrieval, lower read
+                    latency.<br><strong>Cost:</strong> Duplicated values require update strategies and sync handling.
+                </p>
+            </div>
+        </div>
+
+        <p>Remember that preserving a snapshot (such as order price at checkout time) is a business requirement, not
+            merely a performance optimization.</p>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Keep authoritative data modeled correctly. Optimize the read path only
+            when added duplication is justified by measured performance needs.
+        </div>
+    </div>
+
+    <!-- PAGE 08 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part III — Query Performance &amp; Caching</div>
+            <div class="chapter-header-right">08</div>
+        </div>
+
+        <h2>Indexes vs Write Speed</h2>
+        <h4>The Shortcut That Makes Reads Faster Also Needs Maintenance</h4>
+
+        <p>Searching for one customer among ten million records without an index forces the database to examine a large
+            number of rows. An index acts like a book index, using a lookup structure to locate records efficiently.</p>
+
+        <div class="two-col">
+            <div class="col-half card-lavender">
+                <h3>Without Index</h3>
+                <div class="code-flow">Query → Scan table rows → Find record (High Read Latency)</div>
+            </div>
+            <div class="col-divider"></div>
+            <div class="col-half card-peach">
+                <h3>With Index</h3>
+                <div class="code-flow">Query → Lookup Index → Direct pointer to record (Low Read Latency)</div>
+            </div>
+        </div>
+
+        <h3>Why Not Index Every Column?</h3>
+        <p>Indexes consume storage and require maintenance during data modifications. Every INSERT, UPDATE, or DELETE
+            may require updating multiple index structures. Too many unnecessary indexes increase write overhead and
+            resource pressure.</p>
+
+        <h3>When Should You Add an Index?</h3>
+        <ul>
+            <li>The column appears frequently in selective filters or WHERE clauses.</li>
+            <li>Queries repeatedly sort or join using the indexed columns.</li>
+            <li>Query execution plans confirm the index reduces disk I/O or row scans.</li>
+        </ul>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Indexes are not decorative optimizations. Add them to solve measured query
+            problems, then monitor both read improvements and write overhead.
+        </div>
+    </div>
+
+    <!-- PAGE 09 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part III — Query Performance &amp; Caching</div>
+            <div class="chapter-header-right">09</div>
+        </div>
+
+        <h2>Single-Column vs Composite Indexes</h2>
+        <h4>One Field at a Time—or the Exact Combination Your Query Needs?</h4>
+
+        <p>A single-column index helps locate records using that specific field. However, many production queries filter
+            or sort using multiple fields simultaneously, such as filtering orders by user ID and ordering by creation
+            time.</p>
+
+        <div class="two-col">
+            <div class="col-half card-lavender">
+                <h3>Single-Column Index</h3>
+                <div class="code-flow">INDEX: (user_id)</div>
+                <p style="font-size: 8.5pt; margin-bottom: 0;">Effective when queries filter strictly by user_id alone,
+                    but inefficient for compound sorting.</p>
+            </div>
+            <div class="col-divider"></div>
+            <div class="col-half card-peach">
+                <h3>Composite Index</h3>
+                <div class="code-flow">INDEX: (user_id, created_at)</div>
+                <p style="font-size: 8.5pt; margin-bottom: 0;">Supports queries filtering by user_id and
+                    sorting/filtering by created_at efficiently.</p>
+            </div>
+        </div>
+
+        <h3>Why Column Order Matters</h3>
+        <p>A composite index is organized according to its leading columns (Leftmost Prefix Rule). An index on
+            <code>(user_id, created_at)</code> supports queries filtering by <code>user_id</code>, but it may not
+            efficiently support a query filtering <em>only</em> by <code>created_at</code>.</p>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Start with actual query patterns. Inspect execution plans, respect
+            leftmost-prefix rules, and test performance before adding overlapping indexes.
+        </div>
+    </div>
+
+    <!-- PAGE 10 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part IV — Transactions &amp; Scaling</div>
+            <div class="chapter-header-right">10</div>
+        </div>
+
+        <h2>Transactions vs Performance</h2>
+        <h4>Should Several Database Operations Succeed or Fail Together?</h4>
+
+        <p>Transferring funds between accounts requires subtracting from one and adding to another. If the first
+            succeeds and the second fails, the system must not leave accounts in an invalid state. Transactions enforce
+            this atomicity.</p>
+
+        <div class="card-neutral">
+            <h3>Anatomy of a Database Transaction</h3>
+            <div class="code-flow">BEGIN TRANSACTION
+                ├─► Debit Account A (Update balance)
+                ├─► Credit Account B (Update balance)
+                └─► COMMIT (or ROLLBACK on failure)</div>
+        </div>
+
+        <h3>When Transactions Become Expensive</h3>
+        <p>Consider a transaction that updates records and then waits for a slow external API before committing. It
+            keeps locks and resources occupied unnecessarily, blocking concurrent operations and reducing throughput.
+        </p>
+
+        <h3>Better Design Pattern</h3>
+        <p>Keep database transactions focused strictly on database changes that need atomicity. Perform slow external
+            work outside the transaction, using background workflows to handle failures.</p>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Do not remove transactions merely to improve speed when correctness
+            depends on them. Keep transactions as short and focused as practical.
+        </div>
+    </div>
+
+    <!-- PAGE 11 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part IV — Transactions &amp; Scaling</div>
+            <div class="chapter-header-right">11</div>
+        </div>
+
+        <h2>Offset vs Cursor Pagination</h2>
+        <h4>Why Page 1 Can Be Fast While Page 10,000 Becomes Painful</h4>
+
+        <p>Returning millions of posts requires pagination. Two common approaches handle this differently: offset
+            pagination and cursor pagination.</p>
+
+        <div class="two-col">
+            <div class="col-half card-lavender">
+                <h3>Offset Pagination</h3>
+                <div class="code-flow">Page 1 → OFFSET 0
+                    Page 10,000 → OFFSET 200,000</div>
+                <p style="font-size: 8.5pt; margin-bottom: 0;"><strong>Gain:</strong> Simple API, numbered page
+                    jumps.<br><strong>Cost:</strong> Deep offsets force the database to scan and discard thousands of
+                    rows.</p>
+            </div>
+            <div class="col-divider"></div>
+            <div class="col-half card-peach">
+                <h3>Cursor Pagination</h3>
+                <div class="code-flow">Fetch 20 → Save last sort position (cursor) → Fetch WHERE id > cursor LIMIT 20
+                </div>
+                <p style="font-size: 8.5pt; margin-bottom: 0;"><strong>Gain:</strong> O(1) performance at any depth,
+                    robust against inserts.<br><strong>Cost:</strong> Harder to jump to arbitrary page numbers.</p>
+            </div>
+        </div>
+
+        <p>Cursor pagination requires a deterministic sort order (such as timestamp combined with a unique ID) to handle
+            records sharing identical timestamps.</p>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Use offset pagination when simple page navigation matters and datasets are
+            small. Use cursor pagination for large feeds and infinite scrolling.</p>
+        </div>
+    </div>
+
+    <!-- PAGE 12 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part IV — Transactions &amp; Scaling</div>
+            <div class="chapter-header-right">12</div>
+        </div>
+
+        <h2>Vertical vs Horizontal Scaling</h2>
+        <h4>Should You Make One Database Server Bigger or Add More Servers?</h4>
+
+        <p>When your database reaches CPU, memory, or disk I/O limits, you face a fundamental scaling choice: upgrade
+            the existing machine or distribute workload across multiple machines.</p>
+
+        <div class="two-col">
+            <div class="col-half card-lavender">
+                <h3>Vertical Scaling (Scale Up)</h3>
+                <div class="code-flow">Small Instance ──► Bigger Instance (More CPU / RAM / NVMe)</div>
+                <p style="font-size: 8.5pt; margin-bottom: 0;"><strong>Gain:</strong> Simple operational model, minimal
+                    code changes.<br><strong>Cost:</strong> Hardware ceilings, single point of failure, high cost at
+                    scale.</p>
+            </div>
+            <div class="col-divider"></div>
+            <div class="col-half card-peach">
+                <h3>Horizontal Scaling (Scale Out)</h3>
+                <div class="code-flow"> DATABASE WORKLOAD
+                    │
+                    ┌─────┼─────┐
+                    ▼ ▼ ▼
+                    NodeA NodeB NodeC</div>
+                <p style="font-size: 8.5pt; margin-bottom: 0;"><strong>Gain:</strong> Near-infinite aggregate capacity
+                    and resilience.<br><strong>Cost:</strong> Routing complexity, replication lag, operational overhead.
+                </p>
+            </div>
+        </div>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Scale vertically while it meets your requirements—it is operationally
+            simpler. Move to horizontal scaling when storage, throughput, or availability targets demand it.
+        </div>
+    </div>
+
+    <!-- PAGE 13 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part IV — Transactions &amp; Scaling</div>
+            <div class="chapter-header-right">13</div>
+        </div>
+
+        <h2>Read Replicas vs Read-After-Write Consistency</h2>
+        <h4>Why a User Can Save Something and Still See the Old Value</h4>
+
+        <p>Read replicas offload read traffic from the primary database. However, asynchronous replication takes time,
+            leading to <strong>replication lag</strong> where a user saves a profile update but immediately reads stale
+            data from a lagging replica.</p>
+
+        <div class="card-neutral">
+            <h3>The Replication Lag Scenario</h3>
+            <div class="code-flow">User updates profile → Primary DB saves → Replica is catching up ──x (Lag)
+                User reads immediately from replica ──► Returns OLD profile data</div>
+        </div>
+
+        <h3>Architectural Mitigations</h3>
+        <ul>
+            <li><strong>Route critical reads to Primary:</strong> Direct users to the primary database immediately after
+                they perform a write operation.</li>
+            <li><strong>Session Consistency:</strong> Ensure a user's session always reads from a replica that has
+                caught up with their latest write sequence number.</li>
+            <li><strong>Accept Stale Reads:</strong> For non-critical data (like view counts or public catalogs),
+                eventual consistency is acceptable.</li>
+        </ul>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Route reads according to freshness requirements. A public catalog
+            tolerates stale data; a user checking their own recent transaction expects immediate accuracy.
+        </div>
+    </div>
+
+    <!-- PAGE 14 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part IV — Transactions &amp; Scaling</div>
+            <div class="chapter-header-right">14</div>
+        </div>
+
+        <h2>Sharding vs Simplicity</h2>
+        <h4>When One Database Is No Longer Enough</h4>
+
+        <p>Sharding divides a dataset across multiple database instances, assigning a subset of data to each shard via a
+            routing key.</p>
+
+        <div class="two-col">
+            <div class="col-half card-lavender">
+                <h3>What Sharding Improves</h3>
+                <p style="font-size: 9pt;">• Aggregate storage capacity beyond single-node disk limits.<br>•
+                    Distribution of write workload across machines.</p>
+            </div>
+            <div class="col-divider"></div>
+            <div class="col-half card-peach">
+                <h3>What Sharding Makes Harder</h3>
+                <p style="font-size: 9pt;">• Cross-shard JOINs and distributed transactions.<br>• Handling hotspot keys
+                    and uneven traffic distribution.</p>
+            </div>
+        </div>
+
+        <h3>The Shard-Key Dilemma</h3>
+        <p>If most requests target a single shard (e.g., a celebrity user account), that shard becomes an extreme
+            hotspot regardless of how many other shards exist. Choosing a shard key requires balancing data distribution
+            and query efficiency.</p>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Do not shard simply because you have many users. Maximize indexes,
+            caching, vertical scaling, and read replicas first. Shard only when storage or write throughput demands it.
+        </div>
+    </div>
+
+    <!-- PAGE 15 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part IV — Transactions &amp; Scaling</div>
+            <div class="chapter-header-right">15</div>
+        </div>
+
+        <h2>Partitioning vs Operational Complexity</h2>
+        <h4>Should One Large Table Be Split into Smaller Logical Pieces?</h4>
+
+        <p>Partitioning divides a single logical table into smaller physical partitions (by date, region, or tenant)
+            while allowing applications to query the table as a single unit.</p>
+
+        <div class="two-col">
+            <div class="col-half card-lavender">
+                <h3>Time-Based Partitioning</h3>
+                <div class="code-flow">ORDERS Table
+                    ├── Partition: 2024
+                    ├── Partition: 2025
+                    └── Partition: 2026</div>
+                <p style="font-size: 8.5pt; margin-bottom: 0;"><strong>Partition Pruning:</strong> Queries targeting
+                    2026 skip 2024 and 2025 partitions entirely.</p>
+            </div>
+            <div class="col-divider"></div>
+            <div class="col-half card-peach">
+                <h3>Partitioning vs Sharding</h3>
+                <p style="font-size: 8.5pt; margin-bottom: 0;"><strong>Partitioning</strong> divides a table into
+                    logical segments inside a database.<br><br><strong>Sharding</strong> distributes data across
+                    completely separate database nodes or cluster deployments.</p>
+            </div>
+        </div>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Partition when datasets have a natural division (like time or region) that
+            improves query pruning or archival maintenance. Don't add partitions without measured benefits.
+        </div>
+    </div>
+
+    <!-- PAGE 16 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part V — Architecture &amp; Caching</div>
+            <div class="chapter-header-right">16</div>
+        </div>
+
+        <h2>Shared Database vs Database-Per-Service</h2>
+        <h4>Should Multiple Services Use the Same Database?</h4>
+
+        <p>In microservice architectures, deciding whether services share a database or maintain isolated stores
+            directly impacts team autonomy and system coupling.</p>
+
+        <div class="two-col">
+            <div class="col-half card-lavender">
+                <h3>Shared Database</h3>
+                <div class="code-flow">Orders ──┐
+                    Payments ─┼──► Shared DB
+                    Inventory ┘</div>
+                <p style="font-size: 8.5pt; margin-bottom: 0;"><strong>Gain:</strong> Simple early setup, easy
+                    cross-domain queries.<br><strong>Cost:</strong> Tightly coupled schemas; one team's migration breaks
+                    another service.</p>
+            </div>
+            <div class="col-divider"></div>
+            <div class="col-half card-peach">
+                <h3>Database-Per-Service</h3>
+                <div class="code-flow">Orders → Order DB
+                    Payments → Payment DB
+                    Inventory → Inventory DB</div>
+                <p style="font-size: 8.5pt; margin-bottom: 0;"><strong>Gain:</strong> Autonomous ownership, independent
+                    scaling.<br><strong>Cost:</strong> Complex cross-service queries and eventual consistency workflows.
+                </p>
+            </div>
+        </div>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> A shared database is fine for early monoliths. Move toward
+            database-per-service when teams need true operational independence—not just because microservices are
+            trendy.
+        </div>
+    </div>
+
+    <!-- PAGE 17 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part V — Architecture &amp; Caching</div>
+            <div class="chapter-header-right">17</div>
+        </div>
+
+        <h2>Cache vs Database</h2>
+        <h4>Should Every Request Reach the Database?</h4>
+
+        <p>Databases serve as the authoritative system of record, while caches store temporary copies of frequently
+            accessed data to serve subsequent reads faster.</p>
+
+        <div class="card-neutral">
+            <h3>The Cache-Aside Pattern Flow</h3>
+            <div class="code-flow">Request → Check Cache (Redis)
+                ├── HIT → Return cached value immediately
+                └── MISS → Query Database → Populate Cache → Return result</div>
+        </div>
+
+        <h3>Trade-Offs of Caching</h3>
+        <p><strong>What you gain:</strong> Sub-millisecond latency for repeated reads, reduced database load, and higher
+            throughput capacity.<br>
+            <strong>What it costs:</strong> Additional infrastructure memory, cache invalidation complexity, stale data
+            risks, and handling cache outages without crashing the primary database.
+        </p>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Cache data that is frequently read and whose freshness requirements are
+            well understood. Keep authoritative truth in the primary database.
+        </div>
+    </div>
+
+    <!-- PAGE 18 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part V — Architecture &amp; Caching</div>
+            <div class="chapter-header-right">18</div>
+        </div>
+
+        <h2>Cache Freshness vs Performance</h2>
+        <h4>How Long Can Your Application Use an Old Value?</h4>
+
+        <p>Cache Time-to-Live (TTL) configuration controls how long entries remain valid. Longer TTLs maximize cache
+            reuse but increase stale data duration; shorter TTLs ensure freshness but increase database read frequency.
+        </p>
+
+        <div class="two-col">
+            <div class="col-half card-lavender">
+                <h3>Short TTL</h3>
+                <div class="code-flow">Expires quickly → Frequent DB refreshes → Fresher data, higher DB load</div>
+            </div>
+            <div class="col-divider"></div>
+            <div class="col-half card-peach">
+                <h3>Long TTL</h3>
+                <div class="code-flow">Remains valid long → Fewer refreshes → High cache hit rate, stale risk</div>
+            </div>
+        </div>
+
+        <h3>The Core Question</h3>
+        <p>Instead of asking <em>"How long should this cache live?"</em>, ask: <strong>"What is the consequence if this
+                value is stale for 30 seconds?"</strong> Product catalogs tolerate stale data; security permissions and
+            financial balances do not.</p>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Choose TTL based on freshness tolerance and workload. For critical state
+            changes, use explicit invalidation rather than relying solely on time-based expiry.
+        </div>
+    </div>
+
+    <!-- PAGE 19 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part V — Architecture &amp; Caching</div>
+            <div class="chapter-header-right">19</div>
+        </div>
+
+        <h2>Precomputation vs Real-Time Queries</h2>
+        <h4>Should You Calculate a Result When Requested or Beforehand?</h4>
+
+        <p>Dashboards displaying total sales and regional revenue can calculate metrics in real time upon request or
+            precompute them in the background for instant retrieval.</p>
+
+        <div class="two-col">
+            <div class="col-half card-lavender">
+                <h3>Real-Time Queries</h3>
+                <div class="code-flow">User opens dashboard → Scan millions of rows → Aggregate live → Return result
+                </div>
+                <p style="font-size: 8.5pt; margin-bottom: 0;"><strong>Gain:</strong> Always reflects latest committed
+                    data.<br><strong>Cost:</strong> High CPU/disk load, slow response times under concurrency.</p>
+            </div>
+            <div class="col-divider"></div>
+            <div class="col-half card-peach">
+                <h3>Precomputation</h3>
+                <div class="code-flow">Background worker → Aggregate hourly/daily → Store summary → Instant read</div>
+                <p style="font-size: 8.5pt; margin-bottom: 0;"><strong>Gain:</strong> Instant dashboard loads, zero
+                    heavy queries.<br><strong>Cost:</strong> Data is slightly delayed; requires reliable background
+                    pipeline.</p>
+            </div>
+        </div>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Use real-time calculation when freshness is essential and query costs are
+            low. Precompute results when expensive aggregations are requested repeatedly and delays are tolerable.
+        </div>
+    </div>
+
+    <!-- PAGE 20 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part V — Architecture &amp; Caching</div>
+            <div class="chapter-header-right">20</div>
+        </div>
+
+        <h2>Materialized Views vs Storage and Refresh Cost</h2>
+        <h4>Should the Database Store the Result of an Expensive Query?</h4>
+
+        <p>A standard database view evaluates its query definition on every access. A <strong>materialized view</strong>
+            physically stores the result of an expensive query, allowing subsequent requests to read saved results
+            instantly.</p>
+
+        <div class="two-col">
+            <div class="col-half card-lavender">
+                <h3>Without Materialized View</h3>
+                <div class="code-flow">Dashboard Request → JOIN 5 tables → GROUP BY &amp; SUM → High Latency</div>
+            </div>
+            <div class="col-divider"></div>
+            <div class="col-half card-peach">
+                <h3>With Materialized View</h3>
+                <div class="code-flow">Dashboard Request → Read pre-calculated table rows → Instant Response</div>
+            </div>
+        </div>
+
+        <h3>Trade-Offs</h3>
+        <p><strong>Gains:</strong> Faster reads for repeated heavy queries and simplified reporting structures.<br>
+            <strong>Costs:</strong> Additional disk storage, background refresh overhead, and potential lag between
+            source updates and refreshed view data.
+        </p>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Materialize queries when they are expensive, frequently repeated, and
+            tolerant of asynchronous refresh schedules.
+        </div>
+    </div>
+
+    <!-- PAGE 21 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part VI — Production Operations</div>
+            <div class="chapter-header-right">21</div>
+        </div>
+
+        <h2>Connection Pooling vs Resource Usage</h2>
+        <h4>Why Opening More Database Connections Doesn't Make You Faster</h4>
+
+        <p>Opening a database connection requires handshake overhead and memory allocation. Creating a new connection
+            for every web request wastes resources, leading to connection pooling.</p>
+
+        <div class="card-neutral">
+            <h3>The Connection Pool Sizing Dilemma</h3>
+            <div class="code-flow">App Instances (10) × Max Pool Size (100) = 1,000 Potential DB Connections!</div>
+        </div>
+
+        <p><strong>Too few connections:</strong> Requests queue up waiting for a free connection, increasing
+            latency.<br>
+            <strong>Too many connections:</strong> The database spends excessive memory and CPU cycles managing active
+            sessions and thread context switching, degrading overall throughput.
+        </p>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Start with a measured connection pool size. Monitor active connections,
+            queue wait times, and database saturation. Beyond optimal range, more connections degrade performance.
+        </div>
+    </div>
+
+    <!-- PAGE 22 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part VI — Production Operations</div>
+            <div class="chapter-header-right">22</div>
+        </div>
+
+        <h2>Hot vs Cold Storage</h2>
+        <h4>Should All Data Live on the Fastest—and Most Expensive—Storage?</h4>
+
+        <p>Recent orders are queried constantly, while old audit logs are accessed rarely. Storing all data on
+            high-performance NVMe storage wastes budget.</p>
+
+        <div class="two-col">
+            <div class="col-half card-lavender">
+                <h3>Hot Storage</h3>
+                <p style="font-size: 8.5pt; margin-bottom: 0;">• High IOPS, low latency.<br>• Active customer profiles,
+                    current orders.<br>• Expensive per gigabyte.</p>
+            </div>
+            <div class="col-divider"></div>
+            <div class="col-half card-peach">
+                <h3>Cold / Archival Storage</h3>
+                <p style="font-size: 8.5pt; margin-bottom: 0;">• Lower cost per gigabyte.<br>• Historical logs,
+                    compliance records.<br>• Slower retrieval times.</p>
+            </div>
+        </div>
+
+        <div class="code-flow">Data Lifecycle: New Data (Hot Storage) ──► 90 Days (Warm Tier) ──► 1 Year (Cold Archive)
+        </div>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Design storage tiers around access frequency and retention policies. Never
+            archive data to save money without verifying restoration time and compliance needs.
+        </div>
+    </div>
+
+    <!-- PAGE 23 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part VI — Production Operations</div>
+            <div class="chapter-header-right">23</div>
+        </div>
+
+        <h2>Fail-Open vs Fail-Closed</h2>
+        <h4>What Should Your Application Do When a Database Dependency Fails?</h4>
+
+        <p>If Redis cache goes down, should your API fail completely or fall back to reading directly from the primary
+            database?</p>
+
+        <div class="two-col">
+            <div class="col-half card-lavender">
+                <h3>Fail-Open</h3>
+                <p style="font-size: 8.5pt; margin-bottom: 0;">The application bypasses the failed dependency and falls
+                    back to a secondary path.<br><br><strong>Risk:</strong> Fallback queries can overload the primary
+                    database and trigger cascading failures.</p>
+            </div>
+            <div class="col-divider"></div>
+            <div class="col-half card-peach">
+                <h3>Fail-Closed</h3>
+                <p style="font-size: 8.5pt; margin-bottom: 0;">The application rejects operations when required security
+                    or consistency guarantees cannot be verified.<br><br><strong>Risk:</strong> Higher user-facing
+                    downtime during minor outages.</p>
+            </div>
+        </div>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Fail open only when fallbacks are safe and rate-limited. Fail closed when
+            proceeding without the dependency violates security, financial correctness, or business rules.
+        </div>
+    </div>
+
+    <!-- PAGE 24 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part VI — Production Operations</div>
+            <div class="chapter-header-right">24</div>
+        </div>
+
+        <h2>Synchronous vs Asynchronous Replication</h2>
+        <h4>Should a Write Wait for a Replica to Confirm It?</h4>
+
+        <p>Replication copies data across nodes. The critical architectural decision is when the system reports a write
+            as successful relative to replication progress.</p>
+
+        <div class="two-col">
+            <div class="col-half card-lavender">
+                <h3>Synchronous Replication</h3>
+                <div class="code-flow">Write → Primary → Replica Confirms → Success Response</div>
+                <p style="font-size: 8.5pt; margin-bottom: 0;"><strong>Gain:</strong> Zero data loss on primary
+                    failure.<br><strong>Cost:</strong> Higher write latency, reduced write availability if replicas
+                    drop.</p>
+            </div>
+            <div class="col-divider"></div>
+            <div class="col-half card-peach">
+                <h3>Asynchronous Replication</h3>
+                <div class="code-flow">Write → Primary Saves → Success Response → Replica Catches Up Later</div>
+                <p style="font-size: 8.5pt; margin-bottom: 0;"><strong>Gain:</strong> Low write
+                    latency.<br><strong>Cost:</strong> Recent acknowledged writes can be lost if primary fails before
+                    syncing.</p>
+            </div>
+        </div>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Use replication guarantees matching your durability and latency
+            requirements. Never assume asynchronous replication guarantees zero data loss.
+        </div>
+    </div>
+
+    <!-- PAGE 25 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part VI — Production Operations</div>
+            <div class="chapter-header-right">25</div>
+        </div>
+
+        <h2>Fast Failover vs Potential Data Loss</h2>
+        <h4>When the Primary Database Fails, How Quickly Should Another Node Take Over?</h4>
+
+        <p>Promoting a replica to primary during an outage restores availability quickly, but the replica may not
+            contain every recent write from the failed primary.</p>
+
+        <div class="card-neutral">
+            <h3>Key Disaster Recovery Metrics</h3>
+            <p style="font-size: 9pt; margin-bottom: 6px;"><strong>RTO (Recovery Time Objective):</strong> How long can
+                the service remain unavailable during an outage?</p>
+            <p style="font-size: 9pt; margin-bottom: 0;"><strong>RPO (Recovery Point Objective):</strong> How much
+                recent data loss can the business tolerate?</p>
+        </div>
+
+        <p>Prioritizing instant failover restores uptime quickly but risks dropping un-replicated transactions.
+            Prioritizing strict data preservation requires confirmation checks that can extend downtime during leader
+            elections.</p>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Choose failover procedures based on explicit RTO and RPO targets. Test
+            them under realistic failure simulations instead of assuming automatic promotion is safe.
+        </div>
+    </div>
+
+    <!-- PAGE 26 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part VII — Specialized Storage &amp; Search</div>
+            <div class="chapter-header-right">26</div>
+        </div>
+
+        <h2>OLTP vs OLAP</h2>
+        <h4>Should the Database Focus on Transactions or Large-Scale Analysis?</h4>
+
+        <p>Handling day-to-day user transactions (OLTP) requires fast single-row lookups and ACID guarantees, whereas
+            analytical reporting (OLAP) requires scanning millions of historical records.</p>
+
+        <div class="two-col">
+            <div class="col-half card-lavender">
+                <h3>OLTP (Online Transaction Processing)</h3>
+                <p style="font-size: 8.5pt; margin-bottom: 0;">• Creating orders, updating user profiles.<br>• Low
+                    latency, row-oriented storage.<br>• Priority: Correct updates &amp; ACID concurrency.</p>
+            </div>
+            <div class="col-divider"></div>
+            <div class="col-half card-peach">
+                <h3>OLAP (Online Analytical Processing)</h3>
+                <p style="font-size: 8.5pt; margin-bottom: 0;">• Quarterly revenue trends, cohort analysis.<br>•
+                    Columnar storage, fast table scans.<br>• Priority: High-speed analytical aggregates.</p>
+            </div>
+        </div>
+
+        <p>Running heavy analytical queries against an OLTP production database competes for CPU, memory, and disk I/O,
+            degrading user-facing performance.</p>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Use OLTP for operations and OLAP for analytics. Separate them via ETL/CDC
+            pipelines so reporting queries never starve production transactions.
+        </div>
+    </div>
+
+    <!-- PAGE 27 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part VII — Specialized Storage &amp; Search</div>
+            <div class="chapter-header-right">27</div>
+        </div>
+
+        <h2>Database vs Search Engine</h2>
+        <h4>Why a Database Query Is Not Always the Best Way to Search Text</h4>
+
+        <p>Relational databases excel at exact filtering and structured records, whereas search engines (like
+            Elasticsearch or OpenSearch) specialize in full-text search, tokenization, and relevance ranking.</p>
+
+        <div class="two-col">
+            <div class="col-half card-lavender">
+                <h3>Database</h3>
+                <p style="font-size: 8.5pt; margin-bottom: 0;">Authoritative product records, exact ID lookups,
+                    structured relationships, and ACID transactions.</p>
+            </div>
+            <div class="col-divider"></div>
+            <div class="col-half card-peach">
+                <h3>Search Engine</h3>
+                <p style="font-size: 8.5pt; margin-bottom: 0;">Full-text search, BM25 relevance ranking, fuzzy matching,
+                    faceted filtering, and autocomplete.</p>
+            </div>
+        </div>
+
+        <div class="code-flow">Product DB (Source of Truth) ──(CDC / Sync)──► Search Index ──► Fast Search Results</div>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Use a database for authoritative records and structured operations. Add a
+            search engine when relevance-based discovery and full-text search justify the extra infrastructure.
+        </div>
+    </div>
+
+    <!-- PAGE 28 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part VII — Specialized Storage &amp; Search</div>
+            <div class="chapter-header-right">28</div>
+        </div>
+
+        <h2>Database vs Vector Database</h2>
+        <h4>Finding Exact Records vs Finding Semantically Similar Information</h4>
+
+        <p>Traditional databases retrieve exact matches via structured indexes. Vector databases convert content into
+            numerical embeddings and perform geometric similarity search.</p>
+
+        <div class="two-col">
+            <div class="col-half card-lavender">
+                <h3>Traditional Database</h3>
+                <p style="font-size: 8.5pt; margin-bottom: 0;">Find all orders where <code>user_id = 42</code>.
+                    Optimized for exact identifiers and deterministic filters.</p>
+            </div>
+            <div class="col-divider"></div>
+            <div class="col-half card-peach">
+                <h3>Vector Database</h3>
+                <p style="font-size: 8.5pt; margin-bottom: 0;">Find documents whose semantic meaning matches this user
+                    question. Optimized for ANN proximity search.</p>
+            </div>
+        </div>
+
+        <div class="code-flow">Documents ──► Embedding Model ──► Vectors ──► Similarity Search (ANN) ──► Relevant Chunks
+        </div>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Use structured queries for exact facts and vector search for semantic
+            similarity. Combine both when applications require hybrid retrieval capabilities.
+        </div>
+    </div>
+
+    <!-- PAGE 29 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part VIII — Architecture &amp; Strategy</div>
+            <div class="chapter-header-right">29</div>
+        </div>
+
+        <h2>Single Source of Truth vs Specialized Read Stores</h2>
+        <h4>Why Keep Multiple Copies of Data If the Application Needs Only One Truth?</h4>
+
+        <p>As systems scale, relying on a single database for every access pattern fails. Modern systems use relational
+            DBs for truth, Redis for caching, search engines for discovery, and warehouses for analytics.</p>
+
+        <div class="card-neutral" style="text-align: center; font-size: 8.5pt;">
+            AUTHORITATIVE DATA (PostgreSQL)<br>
+            │<br>
+            ├──► Cache Store (Redis)<br>
+            ├──► Search Index (OpenSearch)<br>
+            └──► Analytics Warehouse (Snowflake)
+        </div>
+
+        <p><strong>Gain:</strong> Fast retrieval tailored to specific workloads.<br>
+            <strong>Cost:</strong> Updates must be propagated across stores, temporary staleness occurs, and
+            synchronization failures create data inconsistencies.
+        </p>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Every important field needs a clear ownership rule. Specialized stores
+            require explicit update, freshness, and recovery strategies rather than becoming competing sources of truth.
+        </div>
+    </div>
+
+    <!-- PAGE 30 -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Part VIII — Architecture &amp; Strategy</div>
+            <div class="chapter-header-right">30</div>
+        </div>
+
+        <h2>Database Simplicity vs Scale</h2>
+        <h4>Why the Most Complex Architecture Is Not Automatically the Best One</h4>
+
+        <p>Launching a product with a few hundred users does not require sharding, replicas, multiple specialized
+            databases, and distributed caching. Sophistication is not suitability.</p>
+
+        <div class="two-col">
+            <div class="col-half card-lavender">
+                <h3>The Simple Start</h3>
+                <div class="code-flow">Application ──► One Well-Managed Database</div>
+                <p style="font-size: 8.5pt; margin-bottom: 0;">Few moving parts, straightforward debugging, easy
+                    transactions, and low operational costs.</p>
+            </div>
+            <div class="col-divider"></div>
+            <div class="col-half card-peach">
+                <h3>The Distributed Design</h3>
+                <div class="code-flow">App ──► Routing ──► Replicas / Shards / Caches</div>
+                <p style="font-size: 8.5pt; margin-bottom: 0;">Aggregate capacity and resilience, at the cost of
+                    distributed failure modes and synchronization complexity.</p>
+            </div>
+        </div>
+
+        <div class="engineer-rule">
+            <strong>ENGINEER'S RULE:</strong> Start with the simplest architecture meeting your correctness and
+            performance requirements. Add complexity only when evidence or scale demands it.
+        </div>
+    </div>
+
+    <!-- PAGE 31 — CLOSING & CONCLUSION -->
+    <div class="page-section">
+        <div class="chapter-header-bar">
+            <div class="chapter-header-left">Epilogue • Architectural Summary</div>
+            <div class="chapter-header-right">31</div>
+        </div>
+
+        <h2>Great Database Design Isn't About Choosing The Most Powerful Tool.</h2>
+        <p style="font-size: 10.5pt; margin-bottom: 16px;">It's about understanding what your application needs—and what
+            each decision costs.</p>
+
+        <div class="card-peach" style="margin-bottom: 20px;">
+            <p style="font-size: 9.5pt; margin-bottom: 6px;">• <strong>Faster reads</strong> may mean more indexes and
+                higher write overhead.</p>
+            <p style="font-size: 9.5pt; margin-bottom: 6px;">• <strong>More availability</strong> may mean accepting
+                stale data during network partitions.</p>
+            <p style="font-size: 9.5pt; margin-bottom: 6px;">• <strong>Distributed storage</strong> introduces complex
+                coordination and replication lag.</p>
+            <p style="font-size: 9.5pt; margin-bottom: 0;">• <strong>Specialized stores</strong> require robust
+                synchronization pipelines.</p>
+        </div>
+
+        <h3>Before choosing any technology, ask:</h3>
+        <p style="font-size: 11pt; font-style: color: #1A1816; font-weight: bold; margin: 12px 0;">
+            01 — What am I optimizing for?<br>
+            02 — What am I sacrificing?<br>
+            03 — What happens when it fails?<br>
+            04 — Can I solve this more simply?
+        </p>
+
+        <p style="margin-top: 20px;">There is no universally perfect database architecture. There is only a design that
+            fits your data, workload, reliability requirements, and constraints.</p>
+
+        <p style="font-weight: bold; margin-top: 15px; font-size: 11pt;">Learn the trade-offs. Make decisions
+            deliberately. Build accordingly.</p>
+
+        <div class="social-footer">
+            <p style="margin-bottom: 4px; font-weight: bold; color: #1A1816;">DARPAN.DECODED • MASTER FIELD NOTES</p>
+            <a href="https://linkedin.com/in/darpandeveloper">LinkedIn</a> |
+            <a href="https://instagram.com/darpan.decoded">Instagram</a> |
+            <a href="https://wa.me/91XXXXXXXXXX">WhatsApp</a>
+        </div>
+    </div>
+
+</body>
+
+</html>

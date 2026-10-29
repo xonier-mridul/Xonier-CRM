@@ -2,6 +2,7 @@
 import type { CampaignLeadAssignment } from "@/src/types/campaign/campaign.types";
 
 import { useState } from "react";
+import { parseFollowUpTime } from "@/src/app/utils/followUpTime.utils";
 import { FiPhoneCall, FiClock } from "react-icons/fi";
 import CallModal from "@/src/components/pages/lead/CallModal";
 import { Lead } from "@/src/types/leads/leads.types";
@@ -27,14 +28,6 @@ function formatFollowUpTime(iso: string): string {
     hour12: true,
     timeZone: "Asia/Kolkata",
   });
-}
-
-function parseFollowUpTime(iso: string): Date {
-  // MongoDB stores instants in UTC, while PyMongo's default decoder can return
-  // a naive datetime. Treat a missing offset as UTC instead of browser-local
-  // time, then format it in the app's IST display timezone.
-  const hasTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(iso);
-  return new Date(hasTimezone ? iso : `${iso}Z`);
 }
 
 export default function CallablePhone({

@@ -597,7 +597,7 @@ const PipelineContent = () => {
                 {isFilterOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-2 z-50">
                     <div className="text-xs font-bold text-gray-400 dark:text-gray-500 mb-2 px-2 uppercase tracking-wider">Status</div>
-                    {["", "draft", "active", "paused", "completed"].map((status) => (
+                    {["", "active", "paused", "completed"].map((status) => (
                       <button
                         key={status}
                         onClick={() => {
@@ -607,7 +607,7 @@ const PipelineContent = () => {
                         }}
                         className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between ${statusFilter === status ? 'bg-[#18A1C4]/10 text-[#18A1C4] font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                       >
-                        <span className="capitalize">{status === "active" ? "Running" : (status || "All")}</span>
+                        <span className="capitalize">{status || "All"}</span>
                         {statusFilter === status && <Check size={14} />}
                       </button>
                     ))}
