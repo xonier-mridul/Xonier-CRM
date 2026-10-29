@@ -206,18 +206,20 @@ function CategoryBoard({
     resetDragState();
 
     if (!task || !wasActivated) return;
+    handleSelectStatus(task, targetStatusId);
+  };
+
+  const handleSelectStatus = (task: TaskItem, targetStatusId: string) => {
     if (task.status.id === targetStatusId) return;
-
-    const targetStatus = statuses.find((s) => s.id === targetStatusId);
+    const targetStatus = statuses.find((status) => status.id === targetStatusId);
     if (!targetStatus) return;
-
     if (targetStatus.isFinal) {
       if (!canMarkFinal) { toast.error("You don't have permission to mark tasks as final."); return; }
       setPendingDrop({ task, targetStatus, categoryId });
       return;
     }
     if (!canChangeStatus) { toast.error("No permission to change status."); return; }
-    onStatusChange(task.id, { status: targetStatusId, category: categoryId });
+    void onStatusChange(task.id, { status: targetStatusId, category: categoryId });
   };
 
   const handleFinalConfirm = async (payload: MarkFinalPayload) => {
@@ -378,6 +380,10 @@ function CategoryBoard({
                           <BoardCard
                             key={task.id}
                             task={task}
+                            statuses={statuses}
+                            canChangeStatus={canChangeStatus}
+                            canMarkFinal={canMarkFinal}
+                            onSelectStatus={handleSelectStatus}
                             handleDragEnd={handleDragEnd}
                             canEdit={canEdit}
                             canRemark={canRemark}

@@ -313,6 +313,10 @@ export interface BoardViewProps {
 
 
 export interface BoardCardProps {
+  statuses: StatusOption[];
+  canChangeStatus: boolean;
+  canMarkFinal: boolean;
+  onSelectStatus: (task: TaskItem, statusId: string) => void;
   task: TaskItem;
   canEdit: boolean;
   canRemark: boolean;

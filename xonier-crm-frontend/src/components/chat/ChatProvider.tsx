@@ -193,8 +193,8 @@ function ChatSession({ children }: { children: React.ReactNode }) {
     {room && <CallRoom session={room} onLeave={() => { setRoom(null); void refresh().catch(() => {}); }} canEnd={room.call.createdBy === uid || conversations.find(item => item.id === room.call.conversationId)?.ownerId === uid} />}
   </ChatContext.Provider>;
 }
-export function ChatNavLink() {
+export function ChatNavLink({ className, children }: { className?: string; children?: React.ReactNode }) {
   const { conversations } = useChat();
   const count = conversations.reduce((sum, item) => sum + (item.unread || 0), 0);
-  return <Link href="/communication" className="flex items-center gap-3 rounded-md px-4 py-2.5 text-sm transition hover:bg-cyan-600/10"><MessageSquare size={18} />Communication{count > 0 && <span className="ml-auto rounded-full bg-cyan-700 px-2 py-0.5 text-xs text-white">{count > 99 ? "99+" : count}</span>}</Link>;
+  return <Link href="/communication" className={className ?? "flex items-center gap-3 rounded-md px-4 py-2.5 text-sm transition hover:bg-cyan-600/10"}>{children ?? <><MessageSquare size={18} />Communication</>}{count > 0 && <span className="ml-auto rounded-full bg-cyan-700 px-2 py-0.5 text-xs text-white">{count > 99 ? "99+" : count}</span>}</Link>;
 }
