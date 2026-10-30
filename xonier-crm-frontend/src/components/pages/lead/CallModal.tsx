@@ -107,6 +107,7 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUpdated, camp
       const data: CallRequestResult = res.data.data;
       setSession(data.session);
       setMobileOnline(data.mobileOnline);
+      if (data.campaignAssignedTo) campaignAssignment?.onAssigned(data.campaignAssignedTo);
     } catch (err) {
       setSession(null);
       setError(getErrorMessage(err));
@@ -114,7 +115,7 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUpdated, camp
       requestPendingRef.current = false;
       setRequesting(false);
     }
-  }, [lead.id, campaignId, campaignLeadId]);
+  }, [lead.id, campaignId, campaignLeadId, campaignAssignment]);
 
   const handleRetry = () => {
     if (requestPendingRef.current) return;

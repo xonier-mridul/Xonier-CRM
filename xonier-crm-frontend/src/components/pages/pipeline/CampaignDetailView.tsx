@@ -24,6 +24,7 @@ import StatusBadge from "@/src/components/common/Status";
 import CreatedAt from "@/src/components/common/CreatedAt";
 import AddLeadsToCampaign from "./AddLeadsToCampaign";
 import Pagination from "@/src/components/common/pagination";
+import CallModal from "@/src/components/pages/lead/CallModal";
 import CallablePhone from "@/src/components/common/CallablePhone";
 import { Lead } from "@/src/types/leads/leads.types";
 import { RootState } from "@/src/store";
@@ -99,9 +100,6 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
   const router = useRouter();
   const auth = useSelector((state: RootState) => state.auth);
   const currentUserId = auth.user?._id ?? auth.user?.id ?? "";
-  const isCampaignManager = (campaign.managers || []).some((manager: any) =>
-    String(manager?._id ?? manager?.id ?? manager) === String(currentUserId)
-  );
   const [leads, setLeads] = useState<CampaignLead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -150,8 +148,8 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
     }
   };
 
-  const fetchLeads = useCallback(async () => {
-    setIsLoading(true);
+  const fetchLeads = useCallback(async (showLoading = true) => {
+    if (showLoading) setIsLoading(true);
     try {
       const campaignId = campaign.id || campaign._id;
       const res = await CampaignService.getCampaignLeads(campaignId, currentPage, pageLimit);
@@ -175,13 +173,26 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
     } finally {
       setIsLoading(false);
     }
-  }, [campaign._id, currentPage]);
+  }, [campaign.id, campaign._id, currentPage]);
 
   useEffect(() => {
     fetchLeads();
   }, [fetchLeads]);
 
-  const isOnDemand = String(campaign.distributionMode || "").toLowerCase() === "on_demand";
+  // Other members' claims disappear on refresh without resetting this table.
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState === "visible") void fetchLeads(false);
+    };
+    const timer = window.setInterval(refresh, 10000);
+    window.addEventListener("focus", refresh);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("focus", refresh);
+    };
+  }, [fetchLeads]);
+
+  const [callingLead, setCallingLead] = useState<CampaignLead | null>(null);
   const [status, setStatus] = useState<string>(String(campaign.status || "active").toLowerCase());
   const [isTogglingPause, setIsTogglingPause] = useState(false);
   const isPaused = status === "paused";
@@ -213,8 +224,8 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
       if (res.status === 200) {
         toast.success("Lead assigned to you");
         const leadId = res.data?.data?.leadId || cl.lead?._id;
-        if (leadId) router.push(`/leads/view/${leadId}`);
-        else fetchLeads();
+        if (leadId) setCallingLead({ ...cl, lead: { ...cl.lead, _id: leadId } });
+        void fetchLeads(false);
       }
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Failed to claim lead");
@@ -336,9 +347,7 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
                   const isAssignedToMe = Boolean(
                     currentUserId && lead.assignedTo?._id === currentUserId
                   );
-                  // Agents may see campaign allocation, but can only open or
-                  // modify their own lead. Managers/admins retain oversight.
-                  const canAccessLead = isAssignedToMe || auth.isAdmin || isCampaignManager;
+                  const canAccessLead = isAssignedToMe || auth.isAdmin;
                   return (
                     <tr
                       key={lead._id}
@@ -431,7 +440,7 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
                             }`}>
                               Unassigned
                             </span>
-                            {isOnDemand && (
+                            {(
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -522,6 +531,15 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
           </div>
         )}
       </div>
+      {callingLead?.lead?._id && (
+        <CallModal
+          lead={{ ...callingLead.lead, id: callingLead.lead._id } as Lead}
+          campaignId={campaign.id || campaign._id}
+          campaignLeadId={callingLead._id}
+          onClose={() => { setCallingLead(null); void fetchLeads(false); }}
+          onDisposed={() => { void fetchLeads(false); }}
+        />
+      )}
     </div>
   );
 };
