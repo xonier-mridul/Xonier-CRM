@@ -27,6 +27,7 @@ export interface CallRequestResult {
   session: CallSession;
   mobileOnline: boolean;
   pushed: boolean;
+  campaignAssignedTo?: string | null;
 }
 
 export interface CallDisposeResult {

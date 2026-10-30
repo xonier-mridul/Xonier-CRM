@@ -33,6 +33,7 @@ from app.db.models.call_session_model import (
 from app.db.models.campaign_lead_model import CampaignLeadModel
 from app.db.models.lead_model import LeadsModel
 from app.db.models.user_model import UserModel
+from app.services.campaign_service import CampaignService
 from app.services.lead_service import LeadService
 from app.services.mobile_service import _ref_id
 from app.utils.custom_exception import AppException
@@ -175,6 +176,13 @@ class CallService:
                 except Exception:
                     raise AppException(400, "Invalid campaign call details")
 
+                campaign_service = CampaignService()
+                campaign = await campaign_service._get_campaign_or_404(campaign_id, user)
+                if str(campaign.companyId) != str(company):
+                    raise AppException(404, "Campaign not found")
+                if campaign.status == "paused":
+                    raise AppException(400, "This campaign is paused. Calling is disabled until it is resumed")
+
                 campaign_lead = await CampaignLeadModel.get_pymongo_collection().find_one({
                     "_id": campaign_lead_oid,
                     "companyId": company,
@@ -185,7 +193,17 @@ class CallService:
                 })
                 if not campaign_lead:
                     raise AppException(404, "Campaign lead not found")
-                if _ref_id(campaign_lead.get("assignedTo")) != uid:
+                # Claim atomically before creating/pushing any mobile call request.
+                # A competing caller loses the claim and cannot dial this row.
+                if _ref_id(campaign_lead.get("assignedTo")) is None:
+                    if not lead.get("phone"):
+                        raise AppException(400, "This lead has no phone number")
+                    await campaign_service.claim_lead(campaign_id, campaign_lead_id, user)
+                    campaign_lead["assignedTo"] = {"$id": uid}
+                if (
+                    not validate_admin_company_admin(user["userRole"])
+                    and _ref_id(campaign_lead.get("assignedTo")) != uid
+                ):
                     raise AppException(403, "You can only call campaign leads assigned to you")
             else:
                 assigned = {_ref_id(r) for r in (lead.get("assignedTo") or [])}
@@ -231,7 +249,10 @@ class CallService:
             pushed = await manager.send(
                 str(uid), {"event": "call_request", "session": self._mobile_view(doc)}
             )
-            return {"session": self._view(doc), "mobileOnline": online, "pushed": pushed}
+            return {
+                "session": self._view(doc), "mobileOnline": online, "pushed": pushed,
+                "campaignAssignedTo": str(_ref_id(campaign_lead.get("assignedTo"))) if campaign_id else None,
+            }
         except AppException:
             raise
         except Exception as e:

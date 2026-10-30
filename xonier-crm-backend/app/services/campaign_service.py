@@ -85,6 +85,8 @@ class CampaignService:
     def _reference_id(value):
         if isinstance(value, dict) and "$id" in value:
             return value["$id"]
+        if hasattr(value, "ref"):
+            return value.ref.id
         if hasattr(value, "id"):
             return value.id
         return value
@@ -824,7 +826,7 @@ class CampaignService:
             skip = (page - 1) * limit
 
             match: Dict[str, Any] = {
-                "campaignId.$id": campaign_oid,
+                "$or": [{"campaignId.$id": campaign_oid}, {"campaignId": campaign_oid}],
             }
 
             is_admin = validate_admin_company_admin(user.get("userRole", []))
@@ -834,37 +836,15 @@ class CampaignService:
                 if not any(str(item.get("_id")) == str(campaign_oid) for item in visible_campaigns):
                     raise AppException(404, "Campaign not found")
 
-            # ON DEMAND: agents only see the unassigned pool plus their own leads.
-            camp_doc = await self._collection().find_one({"_id": campaign_oid})
+            # Campaign ownership is independent of global lead ownership.
+            # All regular members see only their own assignment and the pool.
+            match["companyId"] = PydanticObjectId(user["companyId"])
             uid = PydanticObjectId(user["_id"])
-            if camp_doc and camp_doc.get("distributionMode") == CAMPAIGN_DISTRIBUTION_MODE.ON_DEMAND.value:
-
-                def _ids(refs):
-                    out = []
-                    for r in (refs or []):
-                        if isinstance(r, dict) and "$id" in r:
-                            out.append(r["$id"])
-                        elif hasattr(r, "id"):
-                            out.append(r.id)
-                    return out
-
-                creator = camp_doc.get("createdBy")
-                privileged = set(_ids(camp_doc.get("managers")))
-                privileged.update(_ids([creator]) if creator else [])
-                if not is_admin:
-                    personal_conditions = [
-                        {"assignedTo.$id": uid},
-                        {"leadId.$id": {"$in": list(user_scope["ownLeadIds"])}},
-                        {"leadId": {"$in": list(user_scope["ownLeadIds"])}},
-                    ]
-                    if uid in set(_ids(camp_doc.get("agents"))) and uid not in privileged:
-                        personal_conditions.append({"campaignStatus": "unassigned"})
-                    match = {"$and": [match, {"$or": personal_conditions}]}
-            elif not is_admin:
+            if not is_admin:
                 match = {"$and": [match, {"$or": [
                     {"assignedTo.$id": uid},
-                    {"leadId.$id": {"$in": list(user_scope["ownLeadIds"])}},
-                    {"leadId": {"$in": list(user_scope["ownLeadIds"])}},
+                    {"assignedTo": uid},
+                    {"assignedTo": None},
                 ]}]}
             if status_filter:
                 try:
@@ -1365,6 +1345,16 @@ class CampaignService:
     # CLAIM NEXT LEAD — ON DEMAND MODE
     # ─────────────────────────────────────────────────────────────────────────
 
+    def _require_claim_member(self, campaign, user):
+        uid = PydanticObjectId(user["_id"])
+        if str(campaign.companyId) != str(user["companyId"]):
+            raise AppException(404, "Campaign not found")
+        if validate_admin_company_admin(user.get("userRole", [])):
+            return
+        members = [*(campaign.agents or []), *(campaign.managers or []), campaign.createdBy]
+        if uid not in {self._reference_id(ref) for ref in members}:
+            raise AppException(403, "Only campaign members can claim its leads")
+
     async def claim_next_lead(
         self,
         campaign_id: str,
@@ -1376,6 +1366,7 @@ class CampaignService:
         """
         try:
             campaign = await self._get_campaign_or_404(campaign_id, user)
+            self._require_claim_member(campaign, user)
 
             if campaign.status == CAMPAIGN_STATUS.PAUSED:
                 raise AppException(400, "This campaign is paused. Calling is disabled until it is resumed")
@@ -1392,7 +1383,9 @@ class CampaignService:
 
             cl_collection = self._lead_collection()
             claimed = await cl_collection.find_one_and_update(
-                {"campaignId.$id": campaign_oid, "campaignStatus": "unassigned"},
+                {"companyId": PydanticObjectId(user["companyId"]),
+                 "$or": [{"campaignId.$id": campaign_oid}, {"campaignId": campaign_oid}],
+                 "assignedTo": None},
                 {"$set": {
                     "assignedTo": {"$ref": "users", "$id": agent_oid},
                     "assignedAt": now,
@@ -1459,15 +1452,14 @@ class CampaignService:
         user: Dict[str, Any],
     ) -> Dict[str, Any]:
         """
-        ON DEMAND: atomically claim a specific unassigned lead. If someone else
+        Atomically claim a specific unassigned campaign lead. If someone else
         already took it, the filter fails and a 409 is returned.
         """
         try:
             campaign = await self._get_campaign_or_404(campaign_id, user)
+            self._require_claim_member(campaign, user)
             if campaign.status == CAMPAIGN_STATUS.PAUSED:
                 raise AppException(400, "This campaign is paused. Calling is disabled until it is resumed")
-            if campaign.distributionMode != CAMPAIGN_DISTRIBUTION_MODE.ON_DEMAND:
-                raise AppException(400, "This campaign is not configured for ON DEMAND distribution")
 
             try:
                 cl_oid = PydanticObjectId(campaign_lead_id)
@@ -1481,8 +1473,9 @@ class CampaignService:
             claimed = await cl_collection.find_one_and_update(
                 {
                     "_id": cl_oid,
-                    "campaignId.$id": campaign.id,
-                    "campaignStatus": "unassigned",
+                    "companyId": PydanticObjectId(user["companyId"]),
+                    "$or": [{"campaignId.$id": campaign.id}, {"campaignId": campaign.id}],
+                    "assignedTo": None,
                 },
                 {"$set": {
                     "assignedTo": {"$ref": "users", "$id": agent_oid},
@@ -1493,23 +1486,29 @@ class CampaignService:
                 }},
                 return_document=True,
             )
+            newly_claimed = claimed is not None
             if not claimed:
-                raise AppException(409, "This lead has already been taken by someone else")
+                claimed = await cl_collection.find_one({
+                    "_id": cl_oid,
+                    "companyId": PydanticObjectId(user["companyId"]),
+                    "$or": [{"campaignId.$id": campaign.id}, {"campaignId": campaign.id}],
+                })
+                if not claimed:
+                    raise AppException(404, "Campaign lead not found")
+                if self._reference_id(claimed.get("assignedTo")) != agent_oid:
+                    raise AppException(409, "This lead has already been taken by someone else")
 
-            await self._collection().update_one(
-                {"_id": campaign.id},
-                {"$inc": {"assignedLeads": 1}, "$set": {"updatedAt": now}},
-            )
+            # Retries can repair global assignment without counting a second claim.
+            if newly_claimed:
+                await self._collection().update_one(
+                    {"_id": campaign.id, "companyId": PydanticObjectId(user["companyId"])},
+                    {"$inc": {"assignedLeads": 1}, "$set": {"updatedAt": now}},
+                )
 
-            lead_ref = claimed.get("leadId")
-            lead_oid = None
-            if hasattr(lead_ref, "id"):
-                lead_oid = lead_ref.id
-            elif isinstance(lead_ref, dict) and "$id" in lead_ref:
-                lead_oid = lead_ref["$id"]
+            lead_oid = self._reference_id(claimed.get("leadId"))
             if lead_oid:
                 await self._global_leads_collection().update_one(
-                    {"_id": lead_oid},
+                    {"_id": lead_oid, "companyId": PydanticObjectId(user["companyId"])},
                     {
                         "$addToSet": {"assignedTo": {"$ref": "users", "$id": agent_oid}},
                         "$set": {
