@@ -1,8 +1,9 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
-import { X, Search, UploadCloud, Check, ChevronDown, ArrowRight, AlertCircle, Megaphone, CheckCircle2 } from "lucide-react";
+import { X, Search, UploadCloud, Check, ChevronDown, AlertCircle, Megaphone, CheckCircle2 } from "lucide-react";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import { AuthService } from "@/src/services/auth.service";
@@ -174,119 +175,74 @@ export const CsvMappingModal: React.FC<CsvMappingProps> = ({ csvHeaders, preview
 
   const requiredMapped = LEAD_FIELDS.filter((f) => f.required).every((f) => mapping[f.key]);
 
-  return (
-    <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4"
-      onWheel={(e) => e.stopPropagation()}
-    >
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="flex justify-between items-center px-6 py-5 border-b border-gray-100 dark:border-gray-700/60 bg-gray-50/50 dark:bg-gray-800/50 flex-shrink-0">
-          <div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Map CSV Columns</h3>
-            <p className="text-xs text-gray-500 mt-1">Match your CSV headers to the CRM lead fields</p>
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/60 p-2 backdrop-blur-[3px] sm:p-4" role="dialog" aria-modal="true" aria-labelledby="csv-mapping-title">
+      <div className="flex max-h-[calc(100dvh-1rem)] w-full max-w-7xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900 sm:max-h-[calc(100dvh-2rem)] lg:h-[min(760px,calc(100dvh-2rem))]">
+        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-200 bg-white px-4 py-4 dark:border-gray-700 dark:bg-gray-900 sm:px-7 sm:py-5">
+          <div className="min-w-0">
+            <div className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.15em] text-[#1389a8]">
+              <span className="h-2 w-2 rounded-full bg-[#18A1C4]" /> Lead import
+            </div>
+            <h3 id="csv-mapping-title" className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-2xl">Map CSV columns</h3>
+            <p className="mt-1 text-xs text-slate-500 dark:text-gray-400 sm:text-sm">Connect your CSV headers to CRM fields, then review the sample data.</p>
           </div>
-          <button onClick={onCancel} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
-            <X size={18} />
-          </button>
+          <button type="button" onClick={onCancel} aria-label="Close column mapping" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:hover:bg-gray-800 dark:hover:text-white"><X size={18} /></button>
         </div>
 
-        <div className="overflow-y-auto flex-1 min-h-0 p-5 flex flex-col gap-4 overscroll-contain">
-          {/* Mapping table */}
-          <div className="border dark:border-gray-700 rounded-lg overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 dark:bg-gray-700/60 text-xs text-gray-500 uppercase font-bold tracking-wider">
-                <tr>
-                  <th className="px-4 py-3 text-left">CRM Field</th>
-                  <th className="px-4 py-3 text-center"><ArrowRight className="inline" size={12} /></th>
-                  <th className="px-4 py-3 text-left">Your CSV Column</th>
-                  <th className="px-4 py-3 text-left">Preview</th>
-                </tr>
-              </thead>
-              <tbody>
-                {LEAD_FIELDS.map((f) => {
-                  const selectedCol = mapping[f.key] || "";
-                  const previewVal = selectedCol && previewRows[0] ? (previewRows[0][selectedCol] || "") : "";
-                  return (
-                    <tr key={f.key} className="border-t dark:border-gray-700">
-                      <td className="px-4 py-2.5">
-                        <span className="font-medium text-gray-800 dark:text-gray-200">{f.label}</span>
-                        {f.required && <span className="ml-1 text-red-500 text-xs">*</span>}
-                      </td>
-                      <td className="px-4 py-2.5 text-center text-gray-300">→</td>
-                      <td className="px-4 py-2.5">
-                        <select
-                          value={selectedCol}
-                          onChange={(e) => setMapping((m) => ({ ...m, [f.key]: e.target.value }))}
-                          className="w-full text-xs rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1.5 text-gray-800 dark:text-gray-200 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
-                        >
-                          <option value="">— skip —</option>
-                          {csvHeaders.map((h) => (
-                            <option key={h} value={h}>{h}</option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="px-4 py-2.5 text-xs text-gray-400 max-w-[120px] truncate">
-                        {previewVal || <span className="italic opacity-50">—</span>}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {!requiredMapped && (
-            <div className="flex items-center gap-2.5 text-sm font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-xl px-4 py-3 shadow-sm">
-              <AlertCircle size={18} className="shrink-0" />
-              Required fields (Full Name, Email) must be mapped to proceed.
-            </div>
-          )}
-
-          {/* Data preview */}
-          {previewRows.length > 0 && (
-            <div>
-              <p className="text-xs font-medium text-gray-500 mb-2">Preview (first 3 rows)</p>
-              <div className="overflow-x-auto rounded-lg border dark:border-gray-700 text-xs">
-                <table className="w-full">
-                  <thead className="bg-gray-50 dark:bg-gray-700/60">
-                    <tr>
-                      {csvHeaders.map((h) => (
-                        <th key={h} className="px-3 py-2 text-left text-gray-500 whitespace-nowrap">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {previewRows.slice(0, 3).map((row, i) => (
-                      <tr key={i} className="border-t dark:border-gray-700">
-                        {csvHeaders.map((h) => (
-                          <td key={h} className="px-3 py-2 text-gray-700 dark:text-gray-300 whitespace-nowrap max-w-[120px] truncate">{row[h] || "—"}</td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+        <div className="min-h-0 flex-1 overflow-y-auto bg-slate-50/70 lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:overflow-hidden dark:bg-gray-950/40">
+          <section aria-labelledby="mapping-fields-title" className="min-w-0 px-4 py-5 sm:px-7 lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h4 id="mapping-fields-title" className="text-sm font-semibold text-slate-900 dark:text-white">Field mapping</h4>
+                <p className="mt-0.5 text-xs text-slate-500 dark:text-gray-400">Choose a CSV column for each CRM field.</p>
               </div>
+              <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">{Object.values(mapping).filter(Boolean).length} of {LEAD_FIELDS.length} mapped</span>
             </div>
-          )}
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+              {LEAD_FIELDS.map((f) => {
+                const selectedCol = mapping[f.key] || "";
+                const previewVal = selectedCol && previewRows[0] ? (previewRows[0][selectedCol] || "") : "";
+                return (
+                  <div key={f.key} className="grid gap-2 border-b border-slate-100 px-3 py-3 last:border-b-0 dark:border-gray-800 sm:grid-cols-[minmax(110px,0.8fr)_minmax(0,1.2fr)] sm:items-center sm:gap-4 sm:px-4">
+                    <label htmlFor={`csv-map-${f.key}`} className="text-xs font-semibold text-slate-700 dark:text-gray-200 sm:text-sm">{f.label}{f.required && <span className="ml-1 text-rose-500">*</span>}</label>
+                    <div className="min-w-0">
+                      <select id={`csv-map-${f.key}`} value={selectedCol} onChange={(e) => setMapping((m) => ({ ...m, [f.key]: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition-colors focus:border-[#18A1C4] focus:ring-2 focus:ring-[#18A1C4]/20 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100">
+                        <option value="">Skip this field</option>
+                        {csvHeaders.map((h) => <option key={h} value={h}>{h}</option>)}
+                      </select>
+                      {selectedCol && <p title={previewVal || "No sample value"} className="mt-1.5 truncate text-[11px] text-slate-500 dark:text-gray-400">Sample: {previewVal || "—"}</p>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          <section aria-labelledby="csv-preview-title" className="min-w-0 border-t border-slate-200 px-4 py-5 sm:px-7 lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain lg:border-l lg:border-t-0 dark:border-gray-700">
+            <div className="mb-4">
+              <h4 id="csv-preview-title" className="text-sm font-semibold text-slate-900 dark:text-white">CSV preview</h4>
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-gray-400">First {Math.min(previewRows.length, 3)} rows · {csvHeaders.length} columns · {previewRows.length} total rows</p>
+            </div>
+            <div className="min-w-0 overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+              <table className="min-w-max text-left text-xs">
+                <thead className="bg-slate-100/80 text-slate-600 dark:bg-gray-800 dark:text-gray-300"><tr>{csvHeaders.map((h) => <th key={h} scope="col" className="max-w-48 truncate whitespace-nowrap border-r border-slate-200 px-4 py-3 font-semibold last:border-r-0 dark:border-gray-700" title={h}>{h}</th>)}</tr></thead>
+                <tbody>{previewRows.slice(0, 3).map((row, i) => <tr key={i} className="border-t border-slate-100 dark:border-gray-800">{csvHeaders.map((h) => <td key={h} className="max-w-48 truncate whitespace-nowrap border-r border-slate-100 px-4 py-3 text-slate-700 last:border-r-0 dark:border-gray-800 dark:text-gray-300" title={row[h] || ""}>{row[h] || "—"}</td>)}</tr>)}</tbody>
+              </table>
+            </div>
+            <p className="mt-3 text-xs text-slate-500 dark:text-gray-400">Scroll sideways in the preview to see every CSV column.</p>
+          </section>
         </div>
 
-        {/* Footer */}
-        <div className="flex justify-end gap-3 px-6 py-5 border-t border-gray-100 dark:border-gray-700 bg-gray-50/30 dark:bg-gray-800/30">
-          <button type="button" onClick={onCancel} className="px-5 py-2.5 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors focus:outline-none">
-            Cancel
-          </button>
-          <button
-            type="button"
-            disabled={!requiredMapped || isImporting}
-            onClick={() => onConfirm(mapping)}
-            className="px-6 py-2.5 text-sm font-bold text-white bg-[#18A1C4] shadow-sm shadow-[#18A1C4]/30 hover:bg-[#158ca8] hover:shadow-md hover:shadow-[#18A1C4]/40 rounded-xl focus:outline-none focus:ring-4 focus:ring-[#18A1C4]/20 disabled:opacity-50 transition-all flex items-center gap-2"
-          >
-            {isImporting ? "Importing..." : "Import Leads"}
-          </button>
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-3 border-t border-slate-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900 sm:px-7">
+          {!requiredMapped && <p className="mr-auto flex min-w-0 items-center gap-2 text-xs font-medium text-amber-700 dark:text-amber-400"><AlertCircle size={16} className="shrink-0" /> Map Full Name and Email to continue.</p>}
+          <button type="button" onClick={onCancel} className="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:text-gray-300 dark:hover:bg-gray-800">Cancel</button>
+          <button type="button" disabled={!requiredMapped || isImporting} onClick={() => onConfirm(mapping)} className="rounded-lg bg-[#18A1C4] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#158ca8] focus:outline-none focus:ring-4 focus:ring-[#18A1C4]/20 disabled:cursor-not-allowed disabled:opacity-50">{isImporting ? "Importing..." : "Import Leads"}</button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
