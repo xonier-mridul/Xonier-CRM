@@ -63,6 +63,13 @@ async def mobile_my_campaigns(request: Request):
     return successResponse(200, "Campaigns fetched successfully", result)
 
 
+@router.get("/campaigns/summary", status_code=200, dependencies=_auth_deps)
+async def mobile_campaigns_summary(request: Request):
+    """Unique total leads across the user's campaigns (Campaigns page 'Total Leads')."""
+    result = await mobileService.campaigns_leads_summary(request.state.user)
+    return successResponse(200, "Campaigns summary fetched successfully", result)
+
+
 @router.get("/campaigns/{campaign_id}", status_code=200, dependencies=_auth_deps)
 async def mobile_campaign_detail(request: Request, campaign_id: str):
     result = await mobileService.campaign_detail(request.state.user, campaign_id)

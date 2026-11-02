@@ -465,6 +465,46 @@ class MobileService:
             traceback.print_exc()
             raise AppException(500, f"Internal server error: {e}")
 
+    async def campaigns_leads_summary(self, user: Dict[str, Any]) -> Dict[str, Any]:
+        """Unique lead count across all campaigns visible to the user (no extra permission)."""
+        try:
+            uid, company = self._ids(user)
+            is_admin = self._is_company_admin(user)
+            camps = await self._campaigns().find(
+                await self._my_campaign_query(uid, company, user=user), {"_id": 1}
+            ).to_list(length=None)
+            camp_ids = [c["_id"] for c in camps]
+            if not camp_ids:
+                return {"totalLeads": 0, "totalCampaigns": 0}
+
+            match: Dict[str, Any] = {"$or": [{"campaignId.$id": {"$in": camp_ids}},
+                                             {"campaignId": {"$in": camp_ids}}]}
+            if not is_admin:
+                oid = ObjectId(str(uid))
+                match = {"$and": [match, {"$or": [{"assignedTo.$id": oid}, {"assignedTo": oid}]}]}
+
+            rows = await self._campaign_leads().aggregate([
+                {"$match": match},
+                {"$group": {"_id": {"$ifNull": ["$leadId.$id", "$leadId"]}}},
+                {"$lookup": {"from": "leads", "localField": "_id", "foreignField": "_id", "as": "lead"}},
+                {"$unwind": "$lead"},
+                {"$match": {
+                    "lead.companyId": company,
+                    "lead.deletedAt": None,
+                    "lead.status": {"$nin": DELETED_LEAD_STATUSES},
+                }},
+                {"$count": "count"},
+            ]).to_list(length=None)
+            return {
+                "totalLeads": rows[0]["count"] if rows else 0,
+                "totalCampaigns": len(camp_ids),
+            }
+        except AppException:
+            raise
+        except Exception as e:
+            traceback.print_exc()
+            raise AppException(500, f"Internal server error: {e}")
+
     async def campaign_detail(self, user: Dict[str, Any], campaign_id: str) -> Dict[str, Any]:
         try:
             uid, _ = self._ids(user)
