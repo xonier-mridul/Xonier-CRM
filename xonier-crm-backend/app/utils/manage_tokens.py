@@ -30,10 +30,10 @@ def verify_refresh_token(token: str):
         return payload
 
     except ExpiredSignatureError:
-        return AppException(400, "Invalid jwt signature")
+        raise AppException(401, "Refresh token expired, please login again")
 
     except JWTError:
-        return AppException(400, "Invalid refresh token")
+        raise AppException(401, "Invalid refresh token")
 
 
 

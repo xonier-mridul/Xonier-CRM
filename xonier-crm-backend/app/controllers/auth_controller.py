@@ -544,7 +544,7 @@ class AuthController:
             response.delete_cookie(key="accessToken", **JWT_OPTIONS)
             response.delete_cookie(key="refreshToken", **JWT_OPTIONS)
 
-            return AppException(e.status_code, e.message)
+            raise AppException(e.status_code, e.message)
 
         except Exception as e:
             response.delete_cookie(key="accessToken", **JWT_OPTIONS)
@@ -561,7 +561,7 @@ class AuthController:
 
 
         except AppException as e:
-            return AppException(e.status_code, e.message)
+            raise AppException(e.status_code, e.message)
         
         except Exception as e:
             raise AppException(500, f"Internal server error: {e}")
