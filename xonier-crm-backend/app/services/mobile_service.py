@@ -351,14 +351,9 @@ class MobileService:
         }
         if not user or not self._is_company_admin(user):
             oid = ObjectId(str(uid))
+            # Non-admin: only campaigns in which at least one lead is assigned to the user
             lead_camp_ids = await self._get_campaign_ids_from_leads(oid)
-            or_clauses: List[Dict[str, Any]] = [
-                {"agents.$id": oid}, {"agents": oid},
-                {"managers.$id": oid}, {"managers": oid},
-            ]
-            if lead_camp_ids:
-                or_clauses.append({"_id": {"$in": lead_camp_ids}})
-            query["$or"] = or_clauses
+            query["_id"] = {"$in": lead_camp_ids}
         if status:
             try:
                 query["status"] = CAMPAIGN_STATUS(status).value
