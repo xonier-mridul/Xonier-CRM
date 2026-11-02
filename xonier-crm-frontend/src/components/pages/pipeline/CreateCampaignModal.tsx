@@ -158,7 +158,11 @@ export const CsvMappingModal: React.FC<CsvMappingProps> = ({ csvHeaders, preview
       const normalize = (value: string) => value.toLowerCase().replace(/[\s_\-().]/g, "");
       const aliases = f.key === "phone"
         ? ["phone", "phone number", "phone no", "mobile", "mobile number", "mobile no", "contact number", "telephone"]
-        : [f.key, f.label];
+        : f.key === "email"
+          ? ["email", "email id", "email address", "e-mail"]
+          : f.key === "fullName"
+            ? ["fullName", "full name", "name", "lead name"]
+            : [f.key, f.label];
       const match = csvHeaders.find(
         (h) => aliases.some((alias) => normalize(h) === normalize(alias))
       );
@@ -387,22 +391,27 @@ const CreateCampaignModal: React.FC<Props> = ({ onClose, onSuccess }) => {
           }
         });
         return lead;
-      }).filter((l) => l.email && l.fullName); // require both required fields
+      });
 
       if (leads.length === 0) {
-        toast.error("No valid rows found (fullName and email are required)");
+        toast.error("The file has no rows to import");
         setIsImporting(false);
         return;
       }
 
       const res = await CampaignService.importLeads(createdCampaignId, { leads });
       if (res.status === 201) {
-        const { inserted, skipped, distributed } = res.data?.data || {};
+        const { inserted = 0, skipped = 0, skippedRecords = [], distributed } = res.data?.data || {};
         let msg = `Imported ${inserted} lead${inserted !== 1 ? "s" : ""}`;
         if (skipped) msg += ` (${skipped} skipped)`;
         if (distributed) msg += `. Auto-assigned ${distributed} lead${distributed !== 1 ? "s" : ""} to agents`;
-        toast.success(msg);
-        onSuccess();
+        if (inserted) toast.success(msg);
+        else toast.warning(msg);
+        if (skippedRecords.length) {
+          const reasons = [...new Set(skippedRecords.map((row: { reason: string }) => row.reason))];
+          toast.warning(`Skipped because: ${reasons.slice(0, 2).join("; ")}`, { autoClose: 12000 });
+        }
+        if (inserted > 0) onSuccess();
       }
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Lead import failed");

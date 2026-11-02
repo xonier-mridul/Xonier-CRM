@@ -72,11 +72,10 @@ const AddLeadsToCampaign: React.FC<Props> = ({ campaignId, onImported }) => {
           if (col && row[col] != null && row[col] !== "") lead[f.key] = String(row[col]).trim();
         });
         return lead;
-      })
-      .filter((l) => l.email && l.fullName);
+      });
 
     if (!leads.length) {
-      toast.error("No valid rows found (fullName and email are required)");
+      toast.error("The file has no rows to import");
       return;
     }
 
@@ -84,14 +83,20 @@ const AddLeadsToCampaign: React.FC<Props> = ({ campaignId, onImported }) => {
     try {
       const res = await CampaignService.importLeads(campaignId, { leads });
       if (res.status === 201 || res.status === 200) {
-        const { inserted = 0, skipped = 0 } = res.data?.data || {};
+        const { inserted = 0, skipped = 0, skippedRecords = [] } = res.data?.data || {};
         if (inserted > 0) {
-          toast.success(`Added ${inserted} new lead${inserted !== 1 ? "s" : ""}${skipped ? ` (${skipped} duplicate/invalid skipped)` : ""}`);
+          toast.success(`Added ${inserted} new lead${inserted !== 1 ? "s" : ""}${skipped ? ` (${skipped} skipped)` : ""}`);
         } else {
-          toast.info(`No new leads added${skipped ? ` — ${skipped} duplicate/invalid skipped` : ""}`);
+          toast.warning(`No new leads added${skipped ? ` — ${skipped} skipped` : ""}`);
         }
-        setParsed(null);
-        onImported();
+        if (skippedRecords.length) {
+          const reasons = [...new Set(skippedRecords.map((row: { reason: string }) => row.reason))];
+          toast.warning(`Skipped because: ${reasons.slice(0, 2).join("; ")}`, { autoClose: 12000 });
+        }
+        if (inserted > 0) {
+          setParsed(null);
+          onImported();
+        }
       }
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Lead import failed");

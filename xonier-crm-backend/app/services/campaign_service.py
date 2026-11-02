@@ -26,6 +26,10 @@ from app.core.enums import (
     ACTIVITY_ENTITY_TYPE,
     ACTIVITY_ACTION,
     LEAD_SOURCE_TYPE,
+    PRIORITY,
+    SALES_STATUS,
+    LANGUAGE_CODE,
+    EMPLOYEE_SENIORITY,
 )
 from app.core.constants import CAMPAIGN_CACHE_NAMESPACE
 from app.core.crypto import Encryption
@@ -521,48 +525,45 @@ class CampaignService:
                     if not leads_data:
                         raise AppException(400, "leads array cannot be empty")
 
-                    # ── Step 1: Duplicate detection (same as existing bulk_create) ──
+                    # ── Step 1: Look up possible duplicates by email. Compare the
+                    # full normalized identity below so a different phone/project
+                    # type remains a distinct lead.
                     hash_filters = []
-                    pre_skipped: List[Dict[str, Any]] = []
 
                     for lead in leads_data:
                         email = (lead.get("email") or "").lower().strip()
                         if not email:
-                            pre_skipped.append({
-                                "email": lead.get("email", "N/A"),
-                                "reason": "Missing required field: email",
-                            })
                             continue
-
-                        filter_entry: Dict[str, Any] = {"hashedEmail": hash_value(email)}
-                        phone = str(lead.get("phone") or "").strip()
-                        project_type = lead.get("projectType", "")
-                        if phone:
-                            filter_entry["hashedPhone"] = hash_value(phone)
-                        if project_type:
-                            filter_entry["projectType"] = project_type
-                        hash_filters.append(filter_entry)
+                        hash_filters.append({"hashedEmail": hash_value(email)})
 
                     existing_set = set()
                     if hash_filters:
-                        existing_leads = await LeadsModel.find({"$or": hash_filters}).to_list()
+                        existing_leads = await LeadsModel.find({
+                            "companyId": campaign.companyId,
+                            "deletedAt": None,
+                            "$or": hash_filters,
+                        }).to_list()
                         existing_set = {
-                            (l.hashedEmail, getattr(l, "hashedPhone", None), getattr(l, "projectType", None))
+                            (
+                                l.hashedEmail,
+                                getattr(l, "hashedPhone", None),
+                                str(getattr(l, "projectType", None) or "").strip().lower().replace(" ", "_") or None,
+                            )
                             for l in existing_leads
                         }
 
                     # ── Step 2: Build leads to insert ─────────────────────────────
                     leads_to_insert: List[LeadsModel] = []
-                    skipped: List[Dict[str, Any]] = [*pre_skipped]
+                    skipped: List[Dict[str, Any]] = []
 
                     for lead in leads_data:
                         try:
                             email = (lead.get("email") or "").lower().strip()
                             phone = str(lead.get("phone") or "").strip()
-                            project_type = lead.get("projectType", "") or ""
-
-                            if any(s.get("email") == lead.get("email") for s in skipped):
+                            if not email:
+                                skipped.append({"email": lead.get("email") or "N/A", "reason": "Missing required field: email"})
                                 continue
+                            project_type = str(lead.get("projectType") or "").strip().lower().replace(" ", "_")
 
                             hashed_email = hash_value(email)
                             hashed_phone = hash_value(phone) if phone else None
@@ -577,17 +578,16 @@ class CampaignService:
                                     "reason": "Duplicate lead (same email, phone, project type)",
                                 })
                                 continue
-                            # Also guard against duplicates inside the same upload
-                            existing_set.add(dup_key)
-
                             # Normalize fields that are Enums so they match backend expectations.
                             # CSV may provide "Medium", "Cold Call", etc. which causes Pydantic validation to fail.
                             raw_priority = str(lead.get("priority") or "medium").strip().lower()
                             raw_source = str(lead.get("source") or "other").strip().lower().replace(" ", "_")
                             raw_status = str(lead.get("status") or "new").strip().lower().replace(" ", "_")
-                            raw_project_type = lead.get("projectType")
-                            if raw_project_type:
-                                raw_project_type = str(raw_project_type).strip().lower().replace(" ", "_")
+                            raw_project_type = project_type or None
+                            if raw_priority not in {p.value for p in PRIORITY}:
+                                raw_priority = PRIORITY.MEDIUM.value
+                            if raw_status not in {s.value for s in SALES_STATUS}:
+                                raw_status = SALES_STATUS.NEW.value
 
                             # Normalize language: CSV may send full names like "English", "Hindi"
                             # instead of ISO codes like "en", "hi". Map them here.
@@ -605,10 +605,12 @@ class CampaignService:
                                 "norwegian": "no", "danish": "da", "finnish": "fi", "icelandic": "is",
                                 "afrikaans": "af", "swahili": "sw", "zulu": "zu", "latin": "la",
                             }
-                            raw_language = lead.get("language")
+                            raw_language = lead.get("language") or None
                             if raw_language:
                                 lang_lower = str(raw_language).strip().lower()
                                 raw_language = LANGUAGE_NAME_TO_CODE.get(lang_lower, lang_lower)
+                                if raw_language not in {lang.value for lang in LANGUAGE_CODE}:
+                                    raw_language = None
 
                             # Normalize postalCode: CSV sends strings, schema expects int
                             raw_postal_code = lead.get("postalCode")
@@ -617,11 +619,15 @@ class CampaignService:
                                     raw_postal_code = int(str(raw_postal_code).strip())
                                 except (ValueError, TypeError):
                                     raw_postal_code = None
+                            if raw_postal_code is not None and not 1000 < raw_postal_code < 999999:
+                                raw_postal_code = None
 
                             # Normalize employeeSeniority: CSV may send "Senior Level" instead of "senior_level"
-                            raw_seniority = lead.get("employeeSeniority")
+                            raw_seniority = lead.get("employeeSeniority") or None
                             if raw_seniority:
                                 raw_seniority = str(raw_seniority).strip().lower().replace(" ", "_")
+                                if raw_seniority not in {level.value for level in EMPLOYEE_SENIORITY}:
+                                    raw_seniority = None
 
                             # Restore LeadsCreateSchema validation to ensure we respect manual lead creation rules.
                             try:
@@ -638,8 +644,6 @@ class CampaignService:
                                 }
                                 LeadsCreateSchema(**lead_for_validation)
                             except Exception as ve:
-                                with open("import_errors.log", "a") as f:
-                                    f.write(f"Failed lead: {lead.get('email')} - Error: {ve}\n")
                                 skipped.append({
                                     "email": lead.get("email", "N/A"),
                                     "reason": f"Validation error: {ve}",
@@ -648,6 +652,7 @@ class CampaignService:
 
                             lead_doc_data: Dict[str, Any] = {
                                 "lead_id": generate_enquiry_id("LEAD"),
+                                "companyId": campaign.companyId,
                                 "fullName": lead.get("fullName"),
                                 "email": encrypted_email,
                                 "hashedEmail": hashed_email,
@@ -687,7 +692,12 @@ class CampaignService:
                             if extra and isinstance(extra, dict):
                                 lead_doc_data["extraFields"] = extra
 
-                            leads_to_insert.append(LeadsModel(**lead_doc_data))
+                            lead_doc = LeadsModel(**lead_doc_data)
+                            leads_to_insert.append(lead_doc)
+                            # Reserve the identity only after validation and model
+                            # construction succeed. A bad row must not block a
+                            # later valid row in the same CSV.
+                            existing_set.add(dup_key)
 
                         except Exception as e:
                             traceback.print_exc()
@@ -720,6 +730,7 @@ class CampaignService:
                     for lead_doc in leads_to_insert:
                         campaign_leads_to_insert.append(
                             CampaignLeadModel(
+                                companyId=campaign.companyId,
                                 campaignId=campaign_oid,
                                 leadId=lead_doc.id,
                                 campaignStatus=CAMPAIGN_LEAD_STATUS.UNASSIGNED,
@@ -767,10 +778,6 @@ class CampaignService:
                     await self.activityRepo.create(data=act, session=session)
                     await self._clear_cache()
 
-                    with open("skipped_reasons.log", "w") as f:
-                        import json
-                        f.write(json.dumps(skipped, indent=2))
-                    
                     result_payload = {
                         "inserted": inserted_count,
                         "skipped": len(skipped),

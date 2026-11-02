@@ -83,7 +83,7 @@ class CampaignController:
             skipped = result.get("skipped", 0)
             message = f"Successfully imported {inserted} lead{'s' if inserted != 1 else ''}"
             if skipped:
-                message += f". Skipped {skipped} duplicate{'s' if skipped != 1 else ''}"
+                message += f". Skipped {skipped} row{'s' if skipped != 1 else ''}; see skippedRecords for reasons"
             return successResponse(201, message, result)
         except AppException as e:
             raise e
