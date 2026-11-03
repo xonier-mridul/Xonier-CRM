@@ -77,6 +77,19 @@ async def connect_db():
             database=db,
             document_models=[UserModel, PermissionModel, UserRoleModel, OtpModel, EnquiryModel, TeamModel, TeamCategoryModel, LeadsModel, CustomFieldModel, UserFormModel, DealModel, CalenderEventModel, QuotationModel, QuotationHistoryModel, NoteModel, UserCustomFieldModel, ActivityModel, TelephoneNumbersModel, SMSHistory, EmailTemplateModel, EmailHistoryModel, TaskCategoryModel, TaskActivityModel, TaskStatusModel, TaskModel, TaskRemarkModel, TaskReportModel, SubTaskModel, InvoiceModel, TaskTimeLogModel, FeatureModel, PlanModel, CompanyModel, SubscriptionModel, QueryModel, NotificationModel, PaymentModel, CampaignModel, CampaignLeadModel, CallSessionModel, GoogleCalendarConnectionModel]
         )
+        await db["mobile_push_tokens"].create_index(
+            [("companyId", 1), ("userId", 1)], unique=True, name="unique_user_device_token"
+        )
+        await db["mobile_push_tokens"].create_index(
+            [("tokenHash", 1)], unique=True, name="unique_registration_token"
+        )
+        await db["lead_follow_up_reminders"].create_index(
+            [("status", 1), ("nextAttemptAt", 1), ("scheduledAt", 1)],
+            name="due_follow_up_pushes",
+        )
+        await db["leads"].create_index(
+            [("followUpAt", 1)], name="follow_up_push_backfill"
+        )
         print("Successfully connected to MongoDB and initialized Beanie")
     except Exception as e:
         print(f"failed to connect with mongodb: {e} ")

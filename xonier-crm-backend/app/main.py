@@ -18,6 +18,7 @@ from app.core.cache import init_cache
 from app.middlewares.tanent_middleware import TenantMiddleware
 from app.core.notification_scheduler import notification_scheduler
 from app.jobs.event_reminder_job import send_event_reminders
+from app.services.follow_up_push_service import send_due_follow_up_pushes
 from apscheduler.triggers.interval import IntervalTrigger
 
 # Routes
@@ -82,6 +83,14 @@ async def lifespan(app: FastAPI):
         trigger=IntervalTrigger(minutes=5),
         id="event_reminder_job",
         replace_existing=True,
+    )
+    notification_scheduler.add_job(
+        send_due_follow_up_pushes,
+        trigger=IntervalTrigger(seconds=15),
+        id="lead_follow_up_push_job",
+        replace_existing=True,
+        max_instances=1,
+        coalesce=True,
     )
     notification_scheduler.start()
 

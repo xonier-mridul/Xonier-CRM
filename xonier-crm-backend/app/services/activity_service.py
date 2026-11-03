@@ -517,10 +517,11 @@ class ActivityService:
                                     f"Invalid followUpIn: '{follow_up_in}'. "
                                     "Use '1h', '6h', '1d', or ISO with offset e.g. '2026-10-16T17:00:00+05:30'."
                                 )
+                        if follow_up_at <= datetime.now(IST):
+                            raise AppException(400, "Follow-up time must be in the future")
 
-                    # If status is follow_up but no time provided, default to tomorrow
-                    if connect_status == "follow_up" and follow_up_at is None:
-                        follow_up_at = datetime.now(IST) + timedelta(days=1)
+                    # A status label alone has no due time. The mobile app sends
+                    # followUpIn explicitly when a reminder is selected.
 
                     if call_act.entityType == ACTIVITY_ENTITY_TYPE.LEAD:
                         leadId = PydanticObjectId(call_act.entityId)
@@ -558,6 +559,16 @@ class ActivityService:
                             )
                             if write_result.matched_count != 1:
                                 raise AppException(404, "Lead linked to call activity was not found")
+                            if "followUpAt" in lead_update_data:
+                                from app.services.follow_up_push_service import FollowUpPushService
+
+                                await FollowUpPushService().sync(
+                                    lead_id=leadId,
+                                    company_id=user["companyId"],
+                                    owner_id=lead_update_data.get("followUpOwnerId"),
+                                    follow_up_at=lead_update_data["followUpAt"],
+                                    session=session,
+                                )
 
                         if connect_status == "follow_up" or previous_follow_up_owner_id:
                             from app.services.google_calendar_service import GoogleCalendarService

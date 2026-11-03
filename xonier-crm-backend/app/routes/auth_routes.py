@@ -2,11 +2,14 @@ from fastapi import APIRouter, Depends, Response, Request, Query
 
 
 from app.middlewares.auth_middleware import AuthMiddleware
-from app.schemas.user_schema import UserLoginSchema, VerifyLoginOtpSchema, RegisterUserSchema, ResendOTPSchema, UpdateUserSchema, ResetPasswordSchema, UpdateUserStatusSchema, ResetPasswordByAdminSchema, AssignPhoneNumberSchema, BulkPermanentDeleteSchema, BulkRestoreUsersSchema, ForgotPasswordSchema, ForgotPassOtpSchema, AdminLoginSchema, ResendAdminOTPSchema,VerifyAdminLoginOtpSchema, FindMyCompanyId
+from app.schemas.user_schema import UserLoginSchema, PushTokenUpdateSchema, VerifyLoginOtpSchema, RegisterUserSchema, ResendOTPSchema, UpdateUserSchema, ResetPasswordSchema, UpdateUserStatusSchema, ResetPasswordByAdminSchema, AssignPhoneNumberSchema, BulkPermanentDeleteSchema, BulkRestoreUsersSchema, ForgotPasswordSchema, ForgotPassOtpSchema, AdminLoginSchema, ResendAdminOTPSchema,VerifyAdminLoginOtpSchema, FindMyCompanyId
 from app.controllers.auth_controller import AuthController
 from app.core.dependencies import Dependencies
 from beanie import PydanticObjectId
 from app.core.enums import DATE_FILTER, RATING_FILTER, ON_TIME_FILTER
+from app.services.push_token_service import PushTokenService
+from app.utils.custom_response import successResponse
+from app.utils.custom_exception import AppException
 
 router = APIRouter()
 
@@ -110,6 +113,16 @@ async def verify_admin_login_otp(request: Request, response: Response, data: Ver
 @router.post("/verify-login-otp", status_code=200)
 async def verify_login_otp(request: Request, response: Response, data: VerifyLoginOtpSchema):
     return await auth_controller.verify_login_otp(request, response, data.model_dump())
+
+
+@router.put("/push-token", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context)])
+async def update_push_token(request: Request, payload: PushTokenUpdateSchema):
+    """Authenticated FCM rotation while the mobile session remains open."""
+    user = request.state.user
+    if not user.get("companyId"):
+        raise AppException(403, "Company context required")
+    await PushTokenService().bind(user["_id"], user["companyId"], payload.fcm)
+    return successResponse(200, "Push token updated")
 
 @router.get("/me", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context)])
 async def getMe(request: Request, response: Response):

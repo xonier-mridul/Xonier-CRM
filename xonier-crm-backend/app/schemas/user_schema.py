@@ -128,6 +128,18 @@ class UserLoginSchema(BaseModel):
     companyId: str
     email: EmailStr
     password: Password
+    fcm: Optional[str] = Field(default=None, min_length=1, max_length=4096)
+
+    @field_validator("fcm")
+    @classmethod
+    def valid_fcm(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return None
+        value = value.strip()
+        if not value or value.lower() in {"placeholder", "fcm_device_registration_token"}:
+            raise ValueError("fcm must be a current registration token")
+        return value
+
 
     @model_validator(mode="before")
     @classmethod
@@ -163,6 +175,17 @@ class UserLoginSchema(BaseModel):
 
         return v
     
+
+class PushTokenUpdateSchema(BaseModel):
+    fcm: str = Field(min_length=1, max_length=4096)
+
+    @field_validator("fcm")
+    @classmethod
+    def valid_fcm(cls, value: str) -> str:
+        value = value.strip()
+        if not value or value.lower() in {"placeholder", "fcm_device_registration_token"}:
+            raise ValueError("fcm must be a current registration token")
+        return value
 
 class UpdateUserStatusSchema(BaseModel):
     status: USER_STATUS

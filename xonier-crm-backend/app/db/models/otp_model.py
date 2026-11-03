@@ -1,7 +1,7 @@
 from datetime import datetime, timezone, timedelta
 
 from beanie import Document, Indexed, before_event, Save, Replace
-from typing import Dict, Annotated
+from typing import Dict, Annotated, Optional
 from pydantic import Field
 from app.core.enums import OTP_TYPE
 from app.core.enums import OTP_EXPIRY
@@ -15,6 +15,11 @@ class OtpModel(Document):
     encrypt_opt:str = Field(...)
     otp_type: OTP_TYPE = Field(...)
     is_used: bool = False
+    # Held only in the short-lived OTP challenge; never registered as a device
+    # until password and OTP verification both succeed.
+    pendingFcmEncrypted: Optional[str] = None
+    loginUserId: Optional[str] = None
+    loginCompanyId: Optional[str] = None
     expires_at: Annotated[datetime, Indexed(expireAfterSeconds=0)] = Field(
         default_factory=lambda: datetime.now(timezone.utc) + timedelta(minutes=float(OTP_EXPIRY.TEN_MINUTS.value))
     )

@@ -60,6 +60,7 @@ from app.utils.validate_admin import (
 from app.utils.activity_payload import activity_payload
 from app.core.tenant import system_query
 from app.utils.validate_admin import validate_admin
+from app.services.push_token_service import PushTokenService
 from app.repositories.company_repository import CompanyRepository
 from app.repositories.task_repository import TaskRepository
 from app.schemas.project.user_project import USER_GET_ME_PROJECT, USER_LOOKUP
@@ -1113,6 +1114,9 @@ class AuthServices:
                         "encrypt_opt": encrypt_opt,
                         "otp_type": OTP_TYPE.LOGIN,
                         "expires_at": expire_time,
+                        "pendingFcmEncrypted": self.crypto.encrypt_data(data["fcm"]) if data.get("fcm") else None,
+                        "loginUserId": str(isUserExist.id),
+                        "loginCompanyId": str(company.id),
                     },
                     session=session,
                 )
@@ -1185,6 +1189,8 @@ class AuthServices:
             if isOtpSend:
                 now = datetime.now(timezone.utc)
                 otp_created_time = isOtpSend.createdAt
+                if otp_created_time.tzinfo is None:
+                    otp_created_time = otp_created_time.replace(tzinfo=timezone.utc)
 
                 if (now - otp_created_time) < timedelta(minutes=5):
                     raise AppException(
@@ -1273,12 +1279,15 @@ class AuthServices:
                 )
 
             isOtpSend = await self.otp_repo.find_latest_otp(
-                {"email": data["email"], "otp_type": OTP_TYPE.LOGIN.value}, session
+                {"email": hashed_mail, "otp_type": OTP_TYPE.LOGIN.value,
+                 "loginCompanyId": str(company.id)}, session
             )
 
             if isOtpSend:
                 now = datetime.now(timezone.utc)
                 otp_created_time = isOtpSend.createdAt
+                if otp_created_time.tzinfo is None:
+                    otp_created_time = otp_created_time.replace(tzinfo=timezone.utc)
 
                 if (now - otp_created_time) < timedelta(minutes=5):
                     raise AppException(
@@ -1300,6 +1309,14 @@ class AuthServices:
             expire_time = datetime.now(timezone.utc) + timedelta(
                 minutes=float(OTP_EXPIRY.TEN_MINUTS.value)
             )
+            pending_fcm = None
+            if isOtpSend and isOtpSend.loginUserId == str(isUserExist.id) and isOtpSend.loginCompanyId == str(company.id):
+                previous_expiry = isOtpSend.expires_at
+                if previous_expiry.tzinfo is None:
+                    previous_expiry = previous_expiry.replace(tzinfo=timezone.utc)
+                if previous_expiry > datetime.now(timezone.utc):
+                    pending_fcm = isOtpSend.pendingFcmEncrypted
+
             with system_query():
                 create_otp = await self.otp_repo.create(
                     {
@@ -1309,6 +1326,9 @@ class AuthServices:
                         "encrypt_opt": self.crypto.encrypt_data(str(otp)),
                         "otp_type": OTP_TYPE.LOGIN,
                         "expires_at": expire_time,
+                        "loginUserId": str(isUserExist.id),
+                        "loginCompanyId": str(company.id),
+                        "pendingFcmEncrypted": pending_fcm,
                     },
                     session=session,
                 )
@@ -1378,9 +1398,6 @@ class AuthServices:
 
             if not latest_otp:
                 raise AppException(404, "Otp not found, please try again")
-
-            # if latest_otp.expires_at < datetime.now(timezone.utc):
-            #     raise AppException(400, "Expired OTP, please regenerate otp")
 
             if latest_otp.is_used == True:
                 raise AppException(400, "Used Otp, not valid")
@@ -1505,21 +1522,30 @@ class AuthServices:
 
             with system_query():
                 latest_otp = await self.otp_repo.find_latest_otp(
-                    {"email": hashed_mail, "otp_type": OTP_TYPE.LOGIN.value},
+                    {"email": hashed_mail, "otp_type": OTP_TYPE.LOGIN.value,
+                     "loginCompanyId": str(company.id)},
                     session=session,
                 )
 
             if not latest_otp:
                 raise AppException(404, "Otp not found, please try again")
 
-            # if latest_otp.expires_at < datetime.now(timezone.utc):
-            #     raise AppException(400, "Expired OTP, please regenerate otp")
-
             if latest_otp.is_used == True:
                 raise AppException(400, "Used Otp, not valid")
 
             if latest_otp.otp != hashed_otp:
                 raise AppException(400, "Invalid Otp, Please try again")
+
+            if (latest_otp.loginUserId and latest_otp.loginUserId != str(user.id)) or (
+                latest_otp.loginCompanyId and latest_otp.loginCompanyId != str(company.id)
+            ):
+                raise AppException(400, "OTP login context mismatch")
+
+            otp_expires_at = latest_otp.expires_at
+            if otp_expires_at.tzinfo is None:
+                otp_expires_at = otp_expires_at.replace(tzinfo=timezone.utc)
+            if otp_expires_at <= datetime.now(timezone.utc):
+                raise AppException(400, "Expired OTP, please regenerate otp")
 
             latest_otp.is_used = True
             with system_query():
@@ -1566,6 +1592,17 @@ class AuthServices:
 
             if not is_activity:
                 raise AppException(400, "Activity creation failed")
+            if (
+                latest_otp.pendingFcmEncrypted
+                and latest_otp.loginUserId == str(user.id)
+                and latest_otp.loginCompanyId == str(company.id)
+            ):
+                await PushTokenService().bind(
+                    user.id,
+                    company.id,
+                    self.crypto.decrypt_data(latest_otp.pendingFcmEncrypted),
+                    session=session,
+                )
             await session.commit_transaction()
             return {
                 "user": jsonable_encoder(usr, exclude={"password", "refreshToken"}),
@@ -1755,6 +1792,8 @@ class AuthServices:
                 {"refreshToken": None, "updatedAt": datetime.now(timezone.utc)},
                 session=session,
             )
+            if user.companyId:
+                await PushTokenService().remove_user(user.id, user.companyId, session=session)
 
             activity = activity_payload(
                 userId=PydanticObjectId(user.id),

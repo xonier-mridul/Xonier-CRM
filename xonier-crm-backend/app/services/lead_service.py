@@ -1442,6 +1442,16 @@ class LeadService:
                     lead.updatedAt = datetime.now(timezone.utc)
 
                     await lead.save(session=session)
+                    if follow_up_at is not None or (connect_status != "follow_up" and previous_follow_up_owner_id):
+                        from app.services.follow_up_push_service import FollowUpPushService
+
+                        await FollowUpPushService().sync(
+                            lead_id=lead.id,
+                            company_id=user["companyId"],
+                            owner_id=lead.followUpOwnerId,
+                            follow_up_at=lead.followUpAt,
+                            session=session,
+                        )
                     
 
                     activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD.value, entityId=PydanticObjectId(lead.id), action=ACTIVITY_ACTION.UPDATE_LEAD_CONNECTION_STATUS, title="update lead connect status", metadata={"leadId": lead.lead_id, "companyName":  lead.companyName or "", "leadName": lead.fullName, "status": lead.status, "connectStatus": lead.connectStatus, "followUpAt": lead.followUpAt.isoformat() if lead.followUpAt else None, "email": lead.email or "N/A", "phone": lead.phone or "N/A"})
