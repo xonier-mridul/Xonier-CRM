@@ -26,14 +26,14 @@ export const MaskEmailField = ({
   label: string;
   value?: React.ReactNode;
 }) => {
-  
-  const email = maskEmail(String(value))
+  const strVal = value ? String(value) : "";
+  const email = maskEmail(strVal)
   return <div className="flex flex-col gap-2 group">
     <span className="text-xs uppercase tracking-wide text-gray-400 group-hover:text-blue-300">
       {label}
     </span>
     <span className="text-[13px] tracking-wide font-medium text-gray-900 dark:text-gray-100 cursor-copy group-hover:dark:bg-slate-500 rounded-lg px-3 py-1">
-      <SensitiveField value={String(value)} maskedValue={email} link={`mailto:${String(value)}`}/>
+      <SensitiveField value={strVal} maskedValue={email} link={`mailto:${strVal}`}/>
     </span>
   </div>
 };
@@ -44,14 +44,14 @@ export const MaskPhoneField = ({
   label: string;
   value?: React.ReactNode;
 }) => {
-  
-  const email = maskPhone(String(value))
+  const strVal = value ? String(value) : "";
+  const phone = maskPhone(strVal)
   return <div className="flex flex-col gap-2 group">
     <span className="text-xs uppercase tracking-wide text-gray-400 group-hover:text-blue-300">
       {label}
     </span>
     <span className="text-[13px] tracking-wide font-medium text-gray-900 dark:text-gray-100 cursor-copy group-hover:dark:bg-slate-500 rounded-lg px-3 py-1">
-      <SensitiveField value={String(value)} maskedValue={email} link={`tel:${String(value)}`}/>
+      <SensitiveField value={strVal} maskedValue={phone} link={`tel:${strVal}`}/>
     </span>
   </div>
 };

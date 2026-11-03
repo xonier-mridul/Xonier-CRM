@@ -17,7 +17,8 @@ class LeadController:
             user = request.state.user
 
             result = await self.service.create(payload=payload, user=user)
-            return successResponse(201, f"{result.get("fullName")} query created successfully", result)
+            lead_label = result.get("fullName") or result.get("lead_id") or "Lead"
+            return successResponse(201, f"{lead_label} query created successfully", result)
 
 
         except AppException as e:
@@ -150,8 +151,9 @@ class LeadController:
             user = request.state.user
 
             result = await self.service.update_status(leadId=id, payload=payload, user=user)
+            lead_label = result.get("fullName") or result.get("lead_id") or "Lead"
 
-            return successResponse(status_code=200, message=f" {result["fullName"]} status updated to {result["status"]} successfully")
+            return successResponse(status_code=200, message=f" {lead_label} status updated to {result['status']} successfully")
         
         except AppException as e:
             raise e
@@ -164,8 +166,9 @@ class LeadController:
             result = await self.service.update_connect_status(leadId=id, payload=payload, user=user)
 
             connectStatus = result.get("connectStatus")
+            lead_label = result.get("fullName") or result.get("lead_id") or "Lead"
 
-            return successResponse(status_code=200, message=f" {result["fullName"]} connect status updated to {connectStatus} successfully", data=result)
+            return successResponse(status_code=200, message=f" {lead_label} connect status updated to {connectStatus} successfully", data=result)
         
         except AppException as e:
             raise e

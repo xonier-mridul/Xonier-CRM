@@ -1,4 +1,5 @@
 "use client";
+import { useLeadStatuses } from "@/src/hooks/useLeadStatuses";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useSelector } from "react-redux";
@@ -3152,6 +3153,7 @@ function CompanyAdminLayout({ d }: { d: DashboardData }) {
 }
 
 function ManagerLayout({ d }: { d: DashboardData }) {
+  const { label: leadStatusLabel } = useLeadStatuses();
   const { t } = useTranslation();
   console.log("{d.leadSourceBreakdown:", d.leadSourceBreakdown);
   return (
@@ -3310,7 +3312,7 @@ function ManagerLayout({ d }: { d: DashboardData }) {
                   <div key={s.status}>
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-xs text-slate-400 capitalize">
-                        {cap(s.status)}
+                        {leadStatusLabel(s.status)}
                       </span>
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-mono font-bold text-slate-300">

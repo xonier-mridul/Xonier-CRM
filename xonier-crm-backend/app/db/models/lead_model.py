@@ -25,18 +25,19 @@ PhoneNumber = Annotated[
 
 class LeadsModel(BaseDocument):
     lead_id: str
-    fullName: str = Field(..., min_length=1, max_length=49)
+    fullName: Optional[str] = Field(None, max_length=49)
 
-    email: str
-    hashedEmail: str = Indexed()
+    email: Optional[str] = None
+    hashedEmail: Optional[str] = Indexed(default=None)
     phone: Optional[str] = None
     hashedPhone: Optional[str] = None
+    linkedin: Optional[str] = None
     
     priority: Optional[PRIORITY] = PRIORITY.MEDIUM.value
     source: Optional[str] = SOURCE.OTHER.value 
     projectType: Optional[str] = None
     createdBy: Link[UserModel] 
-    status: Optional[SALES_STATUS] = SALES_STATUS.NEW.value
+    status: Optional[str] = SALES_STATUS.NEW.value
     dataTag: Optional[str] = None
 
     companyName: Optional[str] = None
@@ -90,6 +91,8 @@ class LeadsModel(BaseDocument):
     @before_event(Insert, Replace, Save)
     def encrypt_email(self):
         if not self.email:
+            self.email = None
+            self.hashedEmail = None
             return
 
         if self.id is None:
@@ -106,11 +109,11 @@ class LeadsModel(BaseDocument):
     @before_event(Insert, Replace, Save)
     def encrypt_phone(self):
         if not self.phone:
+            self.phone = None
+            self.hashedPhone = None
             return
         
         if self.id is None:
-            if not self.phone:
-                return
             plain_phone = self.phone
             self.phone = encryptor.encrypt_data(plain_phone)
             self.hashedPhone = hash_value(plain_phone)

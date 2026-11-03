@@ -1,4 +1,5 @@
 "use client";
+import { useLeadStatuses } from "@/src/hooks/useLeadStatuses";
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import FormButton from "@/src/components/ui/FormButton";
 import Input from "@/src/components/ui/Input";
@@ -25,6 +26,7 @@ const KNOWN_LEAD_KEYS = new Set([
   "fullName",
   "email",
   "phone",
+  "linkedin",
   "priority",
   "source",
   "projectType",
@@ -48,14 +50,10 @@ const KNOWN_LEAD_KEYS = new Set([
   "meetingPriority",
 ]);
 
-// Base required fields. Meeting start/end are added dynamically
-// (see getDynamicRequiredFields) whenever meetingScheduled === "yes".
-const REQUIRED_FIELDS: (keyof LeadPayload)[] = [
-  "fullName",
-  "email",
-  "source",
-  "status",
-];
+// Base required fields. No lead fields are mandatory by default.
+// Meeting start/end are added dynamically (see getDynamicRequiredFields)
+// whenever meetingScheduled === "yes".
+const REQUIRED_FIELDS: (keyof LeadPayload)[] = [];
 
 // Key used to trigger the "meeting" section. Declared BEFORE EMPTY_FORM
 // so we can safely reference it while building the initial form state.
@@ -261,10 +259,11 @@ const EMPTY_FORM: Record<string, string | number | null> = {
   fullName: "",
   email: "",
   phone: "",
+  linkedin: "",
   priority: "",
   source: "",
   projectType: "",
-  status: SALES_STATUS.NEW,
+  status: "",
   companyName: "",
   city: "",
   country: null,
@@ -369,6 +368,7 @@ const groupFieldsBySection = (fields: CustomField[]): GroupedSection[] => {
 
 const page = (): JSX.Element => {
   const { t } = useTranslation();
+  const { options: leadStatusOptions } = useLeadStatuses();
   const [err, setErr] = useState<string | string[]>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -533,7 +533,7 @@ const page = (): JSX.Element => {
     if ((isDateTimeField || isMeetingField) && isMeetingScheduledYes(flatFormData)) {
       return true;
     }
-    return item.required;
+    return false;
   };
 
   if (item.type === "select") {
@@ -563,7 +563,7 @@ const page = (): JSX.Element => {
         key={item.id}
         name={item.key}
         label={item.name}
-        options={item.options ?? []}
+        options={item.key === "status" ? leadStatusOptions : (item.options ?? [])}
         placeholder={item.placeholder ? t(item.placeholder) : t("select")}
         value={String(fieldValue)}
         onChange={handleChange}
@@ -635,7 +635,9 @@ const page = (): JSX.Element => {
       const result = await LeadService.create(payload);
 
       if (result.status === 201) {
-        toast.success(`${flatFormData.fullName} ${t('lead_created_successfully')}`);
+        const createdLead = result.data?.data;
+        const leadLabel = flatFormData.fullName || createdLead?.lead_id || "";
+        toast.success(`${leadLabel} ${t('lead_created_successfully')}`.trim());
 
         // Reset: clear known fields + any dynamic extra fields
         setFlatFormData((prev) => {
@@ -687,9 +689,6 @@ const page = (): JSX.Element => {
           />
         </div>
 
-        {isMissingRequiredFields && (
-          <InformationComponent message={t("mandatory_fields_message")} />
-        )}
         {err && <ErrorComponent error={err} />}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-10">

@@ -80,7 +80,6 @@ const Page = (): JSX.Element => {
   const { id } = useParams();
   const router = useRouter();
   const { hasPermission } = usePermissions();
-
   const getQuoteData = async (id: string) => {
     setIsLoading(true);
     try {

@@ -80,6 +80,7 @@ class EnvSettings(BaseSettings):
     # GOOGLE_APPLICATION_CREDENTIALS and FCM HTTP v1 is configured.
     FOLLOW_UP_PUSH_ENABLED: bool = False
     FCM_PROJECT_ID: str = "trakeroo"
+    GOOGLE_APPLICATION_CREDENTIALS: Optional[str] = None
 
 
 

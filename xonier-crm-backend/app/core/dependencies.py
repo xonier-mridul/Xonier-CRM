@@ -49,8 +49,13 @@ class Dependencies:
             user_permissions_ids = []
 
             for item in user["userRole"]:
-               for item in item["permissions"]:
-                 user_permissions_ids.append(PydanticObjectId(item["id"]))
+               for perm in item.get("permissions") or []:
+                 if isinstance(perm, dict):
+                   perm_id = perm.get("id") or perm.get("_id") or perm.get("$id")
+                 else:
+                   perm_id = getattr(perm, "id", None) or str(perm)
+                 if perm_id and PydanticObjectId.is_valid(str(perm_id)):
+                   user_permissions_ids.append(PydanticObjectId(str(perm_id)))
 
             user_permissions = await self.permissionRepo.get_permissions_code(
                 ids=user_permissions_ids
@@ -164,13 +169,13 @@ class Dependencies:
         raise AppException(403, "Only company admins can update company settings")
 
     async def company_context(self, request: Request):
-        
         user = request.state.user
-        
-        if user["userRole"][0]["code"] == SUPER_ADMIN_CODE:
-          
+        roles = user.get("userRole", [])
+        if any(role.get("code") == SUPER_ADMIN_CODE for role in roles):
             is_admin_context.set(True)
-            current_company.set(None)
+            company = getattr(request.state, "company", None)
+            user_cid = str(company.id) if company else user.get("companyId")
+            current_company.set(str(user_cid) if user_cid else None)
             return
 
         company = getattr(request.state, "company", None)
@@ -182,8 +187,15 @@ class Dependencies:
 
     async def company_active(self, request: Request):
         user = request.state.user
+        roles = user.get("userRole", [])
 
-        if user["userRole"][0]["code"] == SUPER_ADMIN_CODE:
+        if any(role.get("code") == SUPER_ADMIN_CODE for role in roles):
+            user_cid = user.get("companyId")
+            if user_cid and PydanticObjectId.is_valid(str(user_cid)):
+                with system_query():
+                    company = await self.companyRepo.find_by_id(PydanticObjectId(user_cid))
+                if company:
+                    request.state.company = company
             return
 
         with system_query():

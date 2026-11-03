@@ -49,6 +49,7 @@ from app.routes.communication.email_route import router as email_router
 from app.routes.dashboard_router import router as dashboard_route
 from app.routes.task_category_route import router as task_category_route
 from app.routes.task_status_route import router as task_status_route
+from app.routes.lead_status_route import router as lead_status_route
 from app.routes.task_route import router as task_route
 from app.routes.otp_route import router as otp_route
 from app.routes.task_report_route import router as task_report_route
@@ -173,6 +174,7 @@ app.include_router(email_router)
 app.include_router(dashboard_route)
 app.include_router(task_category_route, prefix="/api/task-category")
 app.include_router(task_status_route, prefix="/api/task-status")
+app.include_router(lead_status_route, prefix="/api/lead-status")
 app.include_router(task_route, prefix="/api/task")
 app.include_router(otp_route, prefix="/api/otp")
 app.include_router(task_report_route, prefix="/api/task-reports")

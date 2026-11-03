@@ -15,13 +15,15 @@ from app.utils.custom_exception import AppException
 from datetime import datetime
 
 class LeadBaseSchema(BaseModel):
-    fullName: str
-    email: EmailStr
+    fullName: Optional[str] = None
+    email: Optional[EmailStr] = None
     phone: Optional[str] = None
+    linkedin: Optional[str] = None
 
     priority: Optional[PRIORITY] = PRIORITY.MEDIUM.value
     source: Optional[str] = SOURCE.OTHER.value 
-    projectType:Optional[str] = None
+    projectType: Optional[str] = None
+    status: Optional[str] = None
 
     companyName: Optional[str] = None
     city: Optional[str] = None
@@ -31,7 +33,7 @@ class LeadBaseSchema(BaseModel):
     dataTag: Optional[str] = None
 
     #meeting
-    meetingScheduled: MEETING_SCHEDULED = MEETING_SCHEDULED.NO.value
+    meetingScheduled: Optional[MEETING_SCHEDULED] = MEETING_SCHEDULED.NO.value
     meetingTitle: Optional[str] = None
     meetingDescription: Optional[str] = None
     meetingStart: Optional[datetime] = None
@@ -49,8 +51,21 @@ class LeadBaseSchema(BaseModel):
     @field_validator("fullName", mode="before")
     @classmethod
     def name_min_length(cls, v: Optional[str]):
-        if v and len(v.strip()) < 1:
-            raise AppException(422, "Full name must be at least 1 characters long")
+        if v is None:
+            return None
+        if isinstance(v, str):
+            v = v.strip()
+            return v if v else None
+        return v
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def empty_email_to_none(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, str):
+            v = v.strip()
+            return v if v else None
         return v
 
     # @field_validator("phone")
@@ -68,12 +83,12 @@ class LeadBaseSchema(BaseModel):
     #         )
     #     return v
     
-    @field_validator("postalCode")
+    @field_validator("postalCode", mode="before")
     @classmethod
     def validate_zip(cls, v):
-        if not v:
-            return v
-        
+        if v is None or v == "":
+            return None
+        v = int(v)
         if (v < 1000) or (v > 999999):
             raise AppException(422, "Postal code must be between 4 and 6 digits (e.g., 1234–123456)")
         
@@ -82,43 +97,85 @@ class LeadBaseSchema(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def validate_meeting(cls, value):
-            priority = value.get("priority")
-            valid_priorities = [p.value for p in PRIORITY]
-            if not priority or priority not in valid_priorities:
-                raise AppException(422, "Priority should be low, medium or high")
-            isMeetingScheduled = value.get("meetingScheduled")
-    
-            if isMeetingScheduled != MEETING_SCHEDULED.YES.value:
-                return value
-    
-            meetingTitle = value.get("meetingTitle")
-            meetingDescription = value.get("meetingDescription")
-            meetingStart = value.get("meetingStart")
-            meetingEnd = value.get("meetingEnd")
-            meetingLink = value.get("meetingLink")
-            meetingPriority = value.get("meetingPriority")
-    
-            if not meetingTitle or not meetingStart or not meetingEnd or not meetingLink or not meetingPriority:
-                raise AppException(422, f"{'Meeting Title' if not meetingTitle else 'Meeting Start Date' if not meetingStart else "Meeting End Date" if not meetingEnd else "Meeting Link" if not meetingLink else "Meeting Priority" if not meetingPriority else "unknown"} field is required" )
-    
+        if not isinstance(value, dict):
             return value
+
+        nullable_fields = [
+            "fullName",
+            "email",
+            "phone",
+            "linkedin",
+            "projectType",
+            "companyName",
+            "city",
+            "country",
+            "postalCode",
+            "language",
+            "dataTag",
+            "meetingTitle",
+            "meetingDescription",
+            "meetingStart",
+            "meetingEnd",
+            "meetingLink",
+            "meetingPriority",
+            "industry",
+            "employeeRole",
+            "employeeSeniority",
+            "message",
+            "membershipNotes",
+            "status",
+        ]
+        for field_key in nullable_fields:
+            if field_key in value and isinstance(value[field_key], str) and not value[field_key].strip():
+                value[field_key] = None
+
+        priority = value.get("priority")
+        valid_priorities = [p.value for p in PRIORITY]
+        if not priority:
+            value["priority"] = PRIORITY.MEDIUM.value
+        elif priority not in valid_priorities:
+            raise AppException(422, "Priority should be low, medium or high")
+
+        if not value.get("source"):
+            value["source"] = SOURCE.OTHER.value
+
+        if not value.get("meetingScheduled"):
+            value["meetingScheduled"] = MEETING_SCHEDULED.NO.value
+
+        isMeetingScheduled = value.get("meetingScheduled")
+
+        if isMeetingScheduled != MEETING_SCHEDULED.YES.value:
+            return value
+
+        meetingTitle = value.get("meetingTitle")
+        meetingDescription = value.get("meetingDescription")
+        meetingStart = value.get("meetingStart")
+        meetingEnd = value.get("meetingEnd")
+        meetingLink = value.get("meetingLink")
+        meetingPriority = value.get("meetingPriority")
+
+        if not meetingTitle or not meetingStart or not meetingEnd or not meetingLink or not meetingPriority:
+            raise AppException(422, f"{'Meeting Title' if not meetingTitle else 'Meeting Start Date' if not meetingStart else 'Meeting End Date' if not meetingEnd else 'Meeting Link' if not meetingLink else 'Meeting Priority' if not meetingPriority else 'unknown'} field is required" )
+
+        return value
 
 
 class LeadsCreateSchema(LeadBaseSchema):
-    fullName: str
-    email: EmailStr
+    fullName: Optional[str] = None
+    email: Optional[EmailStr] = None
     phone: Optional[str] = None
+    linkedin: Optional[str] = None
 
     priority: Optional[PRIORITY] = PRIORITY.MEDIUM.value
     source: Optional[str] = SOURCE.OTHER.value
-    projectType:Optional[str] = None
+    projectType: Optional[str] = None
     dataTag: Optional[str] = None
 
     companyName: Optional[str] = None
     city: Optional[str] = None
-    country: Optional[str] =None
+    country: Optional[str] = None
     postalCode: Optional[int] = Field(None, ge=1000, le=999999)
-    language: Optional[LANGUAGE_CODE] =None
+    language: Optional[LANGUAGE_CODE] = None
 
     industry: Optional[str] = None
     employeeRole: Optional[str] = None
@@ -161,10 +218,10 @@ class BulkAssignLeadSchema(BaseModel):
 
     
 class LeadUpdateSchema(LeadBaseSchema):
-    status: Optional[SALES_STATUS] = None
+    status: Optional[str] = None
 
 class LeadStatusUpdateSchema(BaseModel):
-    status: SALES_STATUS
+    status: str = Field(min_length=1, max_length=64)
 
 class LeadConnectStatusUpdateSchema(BaseModel):
     status: CONTACT_STATUS

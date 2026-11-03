@@ -1,4 +1,7 @@
 "use client";
+import { Settings2 } from "lucide-react";
+import LeadStatusConfiguration from "./LeadStatusConfiguration";
+import { useLeadStatuses } from "@/src/hooks/useLeadStatuses";
 import React, { JSX, useState, useEffect, useRef } from "react";
 import { IoIosSearch } from "react-icons/io";
 import Link from "next/link";
@@ -88,9 +91,12 @@ const AssignedToPill = ({
 };
 
 const LeadContent = (): JSX.Element => {
+  const { statuses: leadStatuses, options: leadStatusOptions, label: leadStatusLabel } = useLeadStatuses();
   const { t } = useTranslation();
   const authUser = useSelector((state: RootState) => state.auth.user);
   const assignmentRoles = authUser?.userRole || [];
+  const [configurationOpen, setConfigurationOpen] = useState(false);
+  const canConfigureLeads = assignmentRoles.some(role => ["COMPANY_ADMIN", "SUPER_ADMIN"].includes(role.code));
   const canAssignLeads = canManageAssignments(assignmentRoles);
 
 
@@ -101,7 +107,7 @@ const LeadContent = (): JSX.Element => {
   const [assignedLeadData, setAssignedLeadData] = useState<Lead[]>([]);
   const [err, setErr] = useState<string[] | string>("");
   const [currentTab, setCurrentTab] = useState<number>(TAB.ALL);
-  const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
+  const [viewMode, setViewMode] = useState<"table" | "kanban">("kanban");
   // Advanced filter data sources
   const [userData, setUserData] = useState<User[]>([]);
 
@@ -155,6 +161,11 @@ const LeadContent = (): JSX.Element => {
     [TAB.ASSIGNED]: assignedPageLimit,
   };
 
+  useEffect(() => {
+    if (leadStatuses.length && filters.status && !leadStatuses.some(s => s.key === filters.status)) {
+      setFilters(previous => ({...previous, status: ""})); setCurrentPage(1);
+    }
+  }, [leadStatuses, filters.status]);
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [isAssigning, setIsAssigning] = useState<boolean>(false);
@@ -222,7 +233,7 @@ const LeadContent = (): JSX.Element => {
       const fetchLimit = viewMode === "kanban" ? 200 : wonPageLimit;
       const result = await LeadService.getAll(currentWonPage, fetchLimit, {
         ...getLeadFilters(),
-        status: SALES_STATUS.WON,
+        status: leadStatuses.find(s => s.type === "final")?.key || "__no_final__",
       });
       if (result.status === 200) {
         const data = result.data.data;
@@ -318,6 +329,7 @@ const LeadContent = (): JSX.Element => {
     assignedPageLimit,
     assignFilter,
     viewMode,
+    leadStatuses,
   ]);
   useEffect(() => {
     getUserData();
@@ -769,7 +781,7 @@ const isIndeterminate =
     { value: string[]; handlefunction: (value: string) => void }
   > = {
     Status: {
-      value: Object.values(SALES_STATUS),
+      value: leadStatuses.map(s => s.key),
       handlefunction: handleStatus,
     },
   };
@@ -820,7 +832,7 @@ const isIndeterminate =
           <MdOutlineEdit size={16} />
         </span>
       )}
-      {item.status !== SALES_STATUS.LOST && hasPermission(PERMISSIONS.createDeal) ? (
+      {!item.inDeal && hasPermission(PERMISSIONS.createDeal) ? (
         item.status !== SALES_STATUS.DELETE ? (
           item.inDeal === false ? (
             <Link
@@ -848,7 +860,7 @@ const isIndeterminate =
     </div>
   );
 
-  const handleStatusChange = async (leadId: string, newStatus: SALES_STATUS) => {
+  const handleStatusChange = async (leadId: string, newStatus: string) => {
     try {
       const result = await LeadService.updateStatus(leadId, { status: newStatus });
       if (result.status === 200) {
@@ -916,7 +928,7 @@ const isIndeterminate =
           )}
 
           <td className="px-4 py-3.5">
-            <p className="capitalize font-semibold text-[13px] text-slate-700 dark:text-slate-200">{item.fullName}</p>
+            <p className="capitalize font-semibold text-[13px] text-slate-700 dark:text-slate-200">{item.fullName || item.lead_id}</p>
             <SensitiveField value={item.email} link={`mailto:${item.email}`} maskedValue={maskEmail(item.email)} fontSize="[13px]" />
           </td>
           <td className="px-4 py-3.5">
@@ -946,7 +958,7 @@ const isIndeterminate =
             </span>
           </td>
           <td className="px-4 py-3.5">
-            <StatusBadge status={item.status} />
+            <StatusBadge status={item.status} label={leadStatusLabel(item.status)} color={leadStatuses.find(s => s.key === item.status)?.color} />
           </td>
           <td className="px-4 py-3.5">
             <TagBadge tag={item.dataTag || "N/A"} />
@@ -970,7 +982,7 @@ const isIndeterminate =
           </td>
           <td className="px-4 py-3.5">
             {hasPermission(PERMISSIONS.updateLead) ? (
-              <StatusDropdown currentStatus={item.connectStatus as LeadEngagementStatus} Id={item.id} onStatusUpdate={updateLeadStatus} />
+              <StatusDropdown currentStatus={item.connectStatus as LeadEngagementStatus} Id={item.id} followUpAt={item.followUpAt} onStatusUpdate={updateLeadStatus} />
             ) : (
               <StatusBadge status={item.connectStatus || "N/A"} />
             )}
@@ -1033,7 +1045,7 @@ const isIndeterminate =
           )}
 
           <td className="px-4 py-3.5">
-            <p className="capitalize font-semibold text-[13px] text-slate-700 dark:text-slate-200">{item.fullName}</p>
+            <p className="capitalize font-semibold text-[13px] text-slate-700 dark:text-slate-200">{item.fullName || item.lead_id}</p>
             <SensitiveField value={item.email} link={`mailto:${item.email}`} maskedValue={maskEmail(item.email)} fontSize="[13px]" />
           </td>
           <td className="px-4 py-3.5">
@@ -1063,7 +1075,7 @@ const isIndeterminate =
             </span>
           </td>
           <td className="px-4 py-3.5">
-            <StatusBadge status={item.status || "N/A"} />
+            <StatusBadge status={item.status || "N/A"} label={leadStatusLabel(item.status)} color={leadStatuses.find(s => s.key === item.status)?.color} />
           </td>
           <td className="px-4 py-3.5">
             <TagBadge tag={item.dataTag || "N/A"} />
@@ -1087,7 +1099,7 @@ const isIndeterminate =
           </td>
           {hasPermission(PERMISSIONS.updateLead) ? (
             <td className="px-4 py-3.5">
-              <StatusDropdown currentStatus={item.connectStatus as LeadEngagementStatus} Id={item.id} onStatusUpdate={updateLeadStatus} />
+              <StatusDropdown currentStatus={item.connectStatus as LeadEngagementStatus} Id={item.id} followUpAt={item.followUpAt} onStatusUpdate={updateLeadStatus} />
             </td>
           ) : (
             <td className="px-4 py-3.5">
@@ -1127,7 +1139,7 @@ const isIndeterminate =
                   <MdOutlineEdit size={16} />
                 </span>
               )}
-              {item.status !== SALES_STATUS.LOST && hasPermission(PERMISSIONS.createDeal) ? (
+              {!item.inDeal && hasPermission(PERMISSIONS.createDeal) ? (
                 item.status !== SALES_STATUS.DELETE ? (
                   item.inDeal === false ? (
                     <Link
@@ -1160,6 +1172,10 @@ const isIndeterminate =
     });
   };
 
+  if (configurationOpen && canConfigureLeads) {
+    return <LeadStatusConfiguration onBack={() => setConfigurationOpen(false)} />;
+  }
+
   return (
     <>
       <div>
@@ -1187,11 +1203,11 @@ const isIndeterminate =
             </div>
             <div className="flex items-center gap-3 rounded-xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-green-50 p-4 dark:border-emerald-800/40 dark:from-emerald-900/20 dark:to-green-900/20">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/40"><TbTrendingUp className="text-emerald-600 dark:text-emerald-400" size={20} /></div>
-              <div><p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">Won Leads</p><p className="text-lg font-bold text-slate-800 dark:text-white">{wonLeadData.length}</p></div>
+              <div><p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">Final Leads</p><p className="text-lg font-bold text-slate-800 dark:text-white">{leadData.filter(lead => leadStatuses.some(stage => stage.key === lead.status && stage.type === "final")).length}</p><p className="text-xs text-slate-500">On this page</p></div>
             </div>
             <div className="flex items-center gap-3 rounded-xl border border-rose-100 bg-gradient-to-br from-rose-50 to-red-50 p-4 dark:border-rose-800/40 dark:from-rose-900/20 dark:to-red-900/20">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-rose-100 dark:bg-rose-900/40"><HiOutlineLightBulb className="text-rose-600 dark:text-rose-400" size={20} /></div>
-              <div><p className="text-[11px] font-semibold uppercase tracking-wide text-rose-600 dark:text-rose-400">Lost Leads</p><p className="text-lg font-bold text-slate-800 dark:text-white">{lostLeadData.length}</p></div>
+              <div><p className="text-[11px] font-semibold uppercase tracking-wide text-rose-600 dark:text-rose-400">Ongoing Leads</p><p className="text-lg font-bold text-slate-800 dark:text-white">{leadData.filter(lead => leadStatuses.some(stage => stage.key === lead.status && stage.type === "ongoing")).length}</p><p className="text-xs text-slate-500">On this page</p></div>
             </div>
             <FollowUpCountCard entity="lead" dateFilter={dateFilter} />
           </div>
@@ -1232,6 +1248,7 @@ const isIndeterminate =
                 />
               </div>
 
+              {canConfigureLeads && <button onClick={() => setConfigurationOpen(true)} className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-[13px] font-medium text-slate-600 transition hover:border-cyan-200 hover:bg-cyan-50/50 hover:text-cyan-700 dark:border-slate-500 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"><Settings2 size={16} />Lead configuration</button>}
               {hasPermission(PERMISSIONS.createLead) ? (
                 <Link
                   href="/leads/add"
@@ -1257,18 +1274,11 @@ const isIndeterminate =
                 onClickEvent={() => setCurrentTab(TAB.ALL)}
               />
               <TabsButton
-                btnTxt={t("won_leads")}
+                btnTxt="Final leads"
                 dataLen={wonLeadData.length}
                 no={TAB.WON}
                 currentVal={currentTab}
                 onClickEvent={() => handleTabs(TAB.WON)}
-              />
-              <TabsButton
-                btnTxt={t("lost_leads")}
-                dataLen={lostLeadData.length}
-                no={TAB.LOST}
-                currentVal={currentTab}
-                onClickEvent={() => handleTabs(TAB.LOST)}
               />
 
               {(canAssignLeads && hasPermission(PERMISSIONS.assignLead)) && (
@@ -1364,8 +1374,8 @@ const isIndeterminate =
                   className="bg-slate-50 dark:bg-gray-600 px-3 py-2 rounded-lg border border-slate-200 dark:border-gray-500 text-[13px] text-slate-600 dark:text-white/80 outline-none focus:ring-2 focus:ring-cyan-500/30 transition-all cursor-pointer min-w-[155px]"
                 >
                   <option value="">{t("all")}</option>
-                  {Object.values(SALES_STATUS).map((option) => (
-                    <option key={option} value={option}>{option}</option>
+                  {leadStatusOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
               </div>

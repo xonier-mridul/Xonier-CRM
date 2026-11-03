@@ -2,8 +2,7 @@
 import type { CampaignLeadAssignment } from "@/src/types/campaign/campaign.types";
 
 import { useState } from "react";
-import { parseFollowUpTime } from "@/src/app/utils/followUpTime.utils";
-import { FiPhoneCall, FiClock } from "react-icons/fi";
+import { FiPhoneCall } from "react-icons/fi";
 import CallModal from "@/src/components/pages/lead/CallModal";
 import { Lead } from "@/src/types/leads/leads.types";
 
@@ -19,17 +18,6 @@ interface CallablePhoneProps {
   campaignLeadId?: string;
 }
 
-function formatFollowUpTime(iso: string): string {
-  return parseFollowUpTime(iso).toLocaleString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-    timeZone: "Asia/Kolkata",
-  });
-}
-
 export default function CallablePhone({
   lead,
   displayValue,
@@ -43,9 +31,6 @@ export default function CallablePhone({
   const [open, setOpen] = useState(false);
 
   if (!lead.phone) return <span className="text-slate-400 text-[13px]">N/A</span>;
-
-  const isFollowUp = lead.connectStatus === "follow_up" && lead.followUpAt;
-  const isOverdue = isFollowUp && parseFollowUpTime(lead.followUpAt!) < new Date();
 
   return (
     <>
@@ -65,21 +50,6 @@ export default function CallablePhone({
           Make call
         </span>
       </span>
-
-      {/* Follow-up badge — shown below phone number when status is follow_up */}
-      {isFollowUp && (
-        <span
-          className={`mt-0.5 flex items-center gap-1 text-[11px] font-medium whitespace-nowrap ${
-            isOverdue
-              ? "text-amber-500 dark:text-amber-400"
-              : "text-teal-600 dark:text-teal-400"
-          }`}
-          title={`Follow up scheduled at ${formatFollowUpTime(lead.followUpAt!)}`}
-        >
-          <FiClock size={10} className="shrink-0" />
-          {formatFollowUpTime(lead.followUpAt!)}
-        </span>
-      )}
 
       {open && (
         <CallModal

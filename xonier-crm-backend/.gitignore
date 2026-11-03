@@ -67,3 +67,4 @@ build/
 .ruff_cache/
 .black_cache/
 .env
+firebase-service-account.json

@@ -6,7 +6,7 @@ FORM_FIELDS = [
         "name": "full name",
         "key": "fullName",
         "type": FORM_INPUT_TYPE.TEXT.value,
-        "required": True,
+        "required": False,
         "isActive": True,
         "placeholder": "Full Name",
         "module": [FORM_FIELD_MODULES.LEAD.value]
@@ -15,7 +15,7 @@ FORM_FIELDS = [
         "name": "email",
         "key": "email",
         "type": FORM_INPUT_TYPE.EMAIL.value,
-        "required": True,
+        "required": False,
         "isActive": True,
         "placeholder": "Email",
          "module": [FORM_FIELD_MODULES.LEAD.value]
@@ -24,9 +24,18 @@ FORM_FIELDS = [
         "name": "phone",
         "key": "phone",
         "type": FORM_INPUT_TYPE.TEXT.value,
-        "required": True,
+        "required": False,
         "isActive": True,
         "placeholder": "Phone",
+        "module": [FORM_FIELD_MODULES.LEAD.value]
+    },
+    {
+        "name": "linkedin link",
+        "key": "linkedin",
+        "type": FORM_INPUT_TYPE.TEXT.value,
+        "required": False,
+        "isActive": True,
+        "placeholder": "LinkedIn Link",
         "module": [FORM_FIELD_MODULES.LEAD.value]
     },
     {
@@ -134,7 +143,7 @@ FORM_FIELDS = [
         {"label": "Product Consulting", "value": PROJECT_TYPES.PRODUCT_CONSULTING.value}
     
         ],
-        "required": True,
+        "required": False,
         "isActive": True,
         "placeholder": "Project Type",
         "module": [FORM_FIELD_MODULES.LEAD.value]
@@ -166,7 +175,7 @@ FORM_FIELDS = [
             {"label": "Yes", "value": MEETING_SCHEDULED.YES.value},
            
         ],
-        "required": True,
+        "required": False,
         "isActive": True,
         "placeholder": "Meeting Scheduled",
         "module": [FORM_FIELD_MODULES.LEAD.value]
@@ -235,7 +244,7 @@ FORM_FIELDS = [
         "name": "company name",
         "key": "companyName",
         "type": FORM_INPUT_TYPE.TEXT.value,
-        "required": True,
+        "required": False,
         "isActive": True,
         "placeholder": "Company Name",
         "module": [FORM_FIELD_MODULES.LEAD.value]

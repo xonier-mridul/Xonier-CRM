@@ -1,3 +1,5 @@
+from app.services.lead_status_service import LeadStatusService
+from app.services.form_field_service import ensure_linkedin_form_field
 from typing import Dict, Any
 from app.utils.custom_exception import AppException
 from bson import ObjectId
@@ -71,6 +73,7 @@ class UserFormService:
             for field in result.selectedFormFields:
                 
                 if isinstance(field, CustomFieldModel):
+                    field.required = False
                     hydrated_fields.append(field)
                     continue
 
@@ -85,8 +88,19 @@ class UserFormService:
                 if field_id:
                     custom_field = await UserCustomFieldModel.get(field_id)
                     if custom_field:
+                        custom_field.required = False
                         hydrated_fields.append(custom_field)
 
+            if not any(getattr(f, "key", None) == "linkedin" for f in hydrated_fields):
+                linkedin_field = await ensure_linkedin_form_field()
+                if linkedin_field:
+                    linkedin_field.required = False
+                    hydrated_fields.append(linkedin_field)
+
+            options = [{"label": s["name"], "value": s["key"]} for s in await LeadStatusService().statuses()]
+            for field in hydrated_fields:
+                if getattr(field, "key", None) == "status":
+                    field.options = options
             result.selectedFormFields = hydrated_fields
 
             return result.model_dump(mode="json")

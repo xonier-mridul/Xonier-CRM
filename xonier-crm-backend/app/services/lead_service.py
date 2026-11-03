@@ -1,8 +1,10 @@
+from app.utils.transaction_retry import retry_transaction
 from typing import Dict, Any, List
+import re
 from beanie import PydanticObjectId, BeanieObjectId
 from app.core.security import hash_value
 from pymongo.errors import DuplicateKeyError
-from app.utils.enquiry_id_generator import generate_enquiry_id
+from app.utils.enquiry_id_generator import generate_enquiry_id, generate_lead_id, generate_lead_ids
 from app.utils.custom_exception import AppException
 from app.repositories.lead_repository import LeadRepository
 from fastapi.encoders import jsonable_encoder
@@ -38,6 +40,7 @@ from app.repositories.event_repository import EventRepository
 from app.utils.event_payload_generator import EventPayloadGenerator
 
 
+from app.services.lead_status_service import LeadStatusService
 from app.utils.lead_assignment_access import require_lead_assigner, require_lower_assignee
 
 
@@ -51,33 +54,35 @@ class LeadService:
         self.userRepo = UserRepository()
         self.calenderRepo = EventRepository()
 
+    @retry_transaction
     async def create(self, payload: Dict[str, Any], user: Dict[str, Any]):
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
                     
                     is_admin = validate_admin_company_admin(user["userRole"])
-                    hashed_mail = hash_value(payload["email"])
-                    
+                    hashed_mail = hash_value(payload["email"].lower()) if payload.get("email") else None
                     hashed_phone = hash_value(payload["phone"]) if payload.get("phone") else None
-                    is_exist = await self.repo.find_one(
-                        {
-                            "fullName": payload["fullName"],
-                            "hashedEmail": hashed_mail,
-                            "projectType": payload["projectType"],
-                            "hashedPhone": hashed_phone,
-                        }
-                    )
 
-         
-                    if is_exist:
-                        raise AppException(
-                            400,
-                            "The query already exist with same name, email, phone or project type",
+                    if hashed_mail or hashed_phone:
+                        is_exist = await self.repo.find_one(
+                            {
+                                "fullName": payload.get("fullName"),
+                                "hashedEmail": hashed_mail,
+                                "projectType": payload.get("projectType"),
+                                "hashedPhone": hashed_phone,
+                            }
                         )
 
-                    lead_id = generate_enquiry_id("LEAD")
+                        if is_exist:
+                            raise AppException(
+                                400,
+                                "The query already exist with same name, email, phone or project type",
+                            )
 
+                    lead_id = await generate_lead_id(session=session)
+
+                    payload["status"] = await LeadStatusService().resolve(payload.get("status"), session=session)
 
                     new_payload = {
                         **payload,
@@ -106,14 +111,14 @@ class LeadService:
                     if not new_lead:
                         raise AppException(400, "Lead creation failed, please try again")
                
-                    if payload.get("meetingScheduled").strip() == MEETING_SCHEDULED.YES.value:
+                    if (payload.get("meetingScheduled") or "").strip() == MEETING_SCHEDULED.YES.value:
                         meeting_payload = EventPayloadGenerator(title=payload.get("meetingTitle"), description=payload.get("meetingDescription", None), start=payload.get("meetingStart"), end=payload.get("meetingEnd"), meetingLink=payload.get("meetingLink"), priority=payload.get("meetingPriority"), createdBy=user["_id"], entityId=new_lead.id).to_json()
                         
                         isEventCreated = await self.calenderRepo.create(data=meeting_payload, session=session)
                         if not isEventCreated:
                             raise AppException(400, "Meeting event creation failed")
                  
-                    activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD, entityId=PydanticObjectId(new_lead.id), action=ACTIVITY_ACTION.CREATED, title="create lead", metadata={"leadId": new_lead.lead_id, "leadName": new_lead.fullName})
+                    activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD, entityId=PydanticObjectId(new_lead.id), action=ACTIVITY_ACTION.CREATED, title="create lead", metadata={"leadId": new_lead.lead_id, "leadName": new_lead.fullName or new_lead.lead_id})
 
                     
                     
@@ -138,6 +143,7 @@ class LeadService:
                 
 
 
+    @retry_transaction
     async def bulk_create(self, payload: Dict[str, Any], user: Dict[str, Any]):
         async with await self.client.start_session() as session:
             async with session.start_transaction():
@@ -232,8 +238,8 @@ class LeadService:
                                 "hashedEmail": hashed_email,
                                 "priority": lead.get("priority"),
                                 "source": lead.get("source"),
-                                "status": lead.get("status", "new"),
-                                "lead_id": generate_enquiry_id("LEAD"),
+                                "status": await LeadStatusService().resolve(lead.get("status"), session=session),
+                                "lead_id": "PENDING",
                                 "createdBy": created_by,
                                 "leadSource": lead_source,
                             }
@@ -247,6 +253,7 @@ class LeadService:
 
                            
                             optional_fields = {
+                                "linkedin": lead.get("linkedin"),
                                 "companyName": lead.get("companyName"),
                                 "city": lead.get("city"),
                                 "country": lead.get("country"),
@@ -288,6 +295,10 @@ class LeadService:
                             "skipped": len(skipped),
                             "skippedRecords": skipped,
                         }
+
+                    generated_ids = await generate_lead_ids(count=len(leads_to_insert), session=session)
+                    for doc, gen_id in zip(leads_to_insert, generated_ids):
+                        doc.lead_id = gen_id
 
                     try:
                         await LeadsModel.insert_many(documents=leads_to_insert, session=session)
@@ -756,17 +767,7 @@ class LeadService:
             #         is_admin = True
             #         break
 
-            query = {
-                "status": {
-                    "$in": [
-                        SALES_STATUS.CONTACTED.value,
-                        SALES_STATUS.NEW.value,
-                        SALES_STATUS.PROPOSAL.value,
-                        SALES_STATUS.QUALIFIED.value
-                    ]
-                },
-               
-            }
+            query = {"status": {"$ne": SALES_STATUS.DELETE.value}}
 
             if not is_admin:
                 members = await self.getTeamMem.get_team_members(user["_id"])
@@ -803,7 +804,7 @@ class LeadService:
                 query.update({"connectStatus": filters["engagementStatus"]})
 
             if "leadid" in filters:
-                query.update({"lead_id": {"$regex": filters["leadid"], "$options": "i"}})
+                query.update({"lead_id": {"$regex": re.escape(filters["leadid"]), "$options": "i"}})
 
             if "tag" in filters:
                 query.update({"dataTag": {"$regex": filters["tag"], "$options": "i"}})
@@ -824,10 +825,11 @@ class LeadService:
                 query.update({"assignedTo.$id": PydanticObjectId(filters["assignee"])})
 
             if "search" in filters and filters["search"]:
-                regex = {"$regex": filters["search"], "$options": "i"}
+                regex = {"$regex": re.escape(filters["search"]), "$options": "i"}
 
                 search_query = {"$or" : [
                     {"fullName" : regex},
+                    {"lead_id": regex},
                     {"source": regex},
                     {"tag": regex}, 
                     {"companyName": regex}, 
@@ -932,8 +934,9 @@ class LeadService:
             result = jsonable_encoder(result, exclude={"hashedEmail", "hashedPhone"})
 
             for item in result["data"]:
-                item["email"] = encryptor.decrypt_data(item["email"])
-                if item["phone"]:
+                if item.get("email"):
+                    item["email"] = encryptor.decrypt_data(item["email"])
+                if item.get("phone"):
                     item["phone"] = encryptor.decrypt_data(item["phone"])
 
             # The latest call or engagement update is the canonical source for
@@ -1087,7 +1090,8 @@ class LeadService:
             result = jsonable_encoder(result, exclude={"hashedEmail", "hashedPhone"})
 
             for item in result["data"]:
-                item["email"] = encryptor.decrypt_data(item["email"])
+                if item.get("email"):
+                    item["email"] = encryptor.decrypt_data(item["email"])
                 phone = item.get("phone")
                 if phone:
                     item["phone"] = encryptor.decrypt_data(item["phone"])
@@ -1115,7 +1119,7 @@ class LeadService:
             page = filters.get("page") or 1
             limit = filters.get("limit") or 10
 
-            query = {"status": SALES_STATUS.WON}
+            query = {"status": {"$in": await LeadStatusService().keys("final")}}
 
             if "leadid" in filters:
                 query.update({"lead_id": filters["leadid"]})
@@ -1142,8 +1146,10 @@ class LeadService:
             result = jsonable_encoder(result, exclude={"hashedEmail", "hashedPhone"})
 
             for item in result["data"]:
-                item["email"] = encryptor.decrypt_data(item["email"])
-                item["phone"] = encryptor.decrypt_data(item["phone"])
+                if item.get("email"):
+                    item["email"] = encryptor.decrypt_data(item["email"])
+                if item.get("phone"):
+                    item["phone"] = encryptor.decrypt_data(item["phone"])
 
             return result
 
@@ -1196,7 +1202,8 @@ class LeadService:
                     403, "Unauthorized, only admin, manager, assigner or creator access lead data"
                 )
 
-            result["email"] = encryptor.decrypt_data(result["email"])
+            if result.get("email"):
+                result["email"] = encryptor.decrypt_data(result["email"])
             phone = result.get("phone")
             
             if phone:
@@ -1218,6 +1225,7 @@ class LeadService:
         except Exception as e:
             raise AppException(status_code=500, message=f"Internal server error: {e}")
 
+    @retry_transaction
     async def update(
         self, leadId: str, payload: Dict[str, Any], user: Dict[str, Any]
     ) -> bool:
@@ -1227,14 +1235,9 @@ class LeadService:
                     if not ObjectId.is_valid(leadId):
                         raise AppException(400, "Invalid lead id")
 
-                    is_admin = False
+                    is_admin = validate_admin_company_admin(user["userRole"])
                     is_creator = False
                     is_assigner = False
-
-                    for item in user["userRole"]:
-                        if item["code"] == SUPER_ADMIN_CODE:
-                            is_admin = True
-                            break
 
                     if not payload:
                         raise AppException(400, "Updated data not found")
@@ -1246,17 +1249,16 @@ class LeadService:
                     if not lead:
                         raise AppException(404, "Lead not found")
                     
-                    if payload["status"] == SALES_STATUS.DELETE.value:
+                    new_status = payload.get("status")
+                    if new_status:
+                        payload["status"] = await LeadStatusService().resolve(new_status, session=session)
+                    if new_status == SALES_STATUS.DELETE.value:
                         raise AppException(400, "Action denied, can not set status delete")
                     
-                    if payload["status"] == SALES_STATUS.WON.value:
-                        raise AppException(400, "Action denied, can not set status won")
                     
                     if lead.status == SALES_STATUS.DELETE.value:
                         raise AppException(400, "Action denied, Lead is deleted")
 
-                    if lead.status == SALES_STATUS.WON.value:
-                        raise AppException(400, "Action denied, Lead is Won so you are not update it now")
 
                     if str(lead.createdBy.id) == str(user["_id"]):
                         is_creator = True
@@ -1271,6 +1273,8 @@ class LeadService:
                         )
 
                     for key, val in payload.items():
+                        if key == "status" and not val:
+                            continue
                         setattr(lead, key, val)
 
                     # lead.updatedBy = ObjectId(user["_id"])
@@ -1278,7 +1282,7 @@ class LeadService:
 
                     await lead.save(session=session)
 
-                    activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD, entityId=PydanticObjectId(lead.id), action=ACTIVITY_ACTION.UPDATED, title="update lead", metadata={"leadId": lead.lead_id, "leadName": lead.fullName})
+                    activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD, entityId=PydanticObjectId(lead.id), action=ACTIVITY_ACTION.UPDATED, title="update lead", metadata={"leadId": lead.lead_id, "leadName": lead.fullName or lead.lead_id})
 
                     is_activity = await self.activityRepo.create(data=activity, session=session)
 
@@ -1295,6 +1299,7 @@ class LeadService:
                 except Exception as e:
                     raise AppException(status_code=500, message=f"Internal server error: {e}")
 
+    @retry_transaction
     async def update_status(self, leadId:str, user:Dict[str, Any], payload: Dict[str, Any]):
         async with await self.client.start_session() as session:
             async with session.start_transaction():
@@ -1317,14 +1322,10 @@ class LeadService:
                     if payload["status"] == SALES_STATUS.DELETE.value:
                         raise AppException(400, "Action denied, can not set status delete")
                     
-                    if payload["status"] == SALES_STATUS.WON.value:
-                        raise AppException(400, "Action denied, can not set status won")
                     
                     if lead.status == SALES_STATUS.DELETE.value:
                         raise AppException(400, "Action denied, Lead is deleted")
 
-                    if lead.status == SALES_STATUS.WON.value:
-                        raise AppException(400, "Action denied, Lead is Won so you are not update it now")
 
                     if str(lead.createdBy.id) == str(user["_id"]):
                         is_creator = True
@@ -1338,7 +1339,7 @@ class LeadService:
                     
 
                     
-                    lead.status = payload["status"]
+                    lead.status = await LeadStatusService().resolve(payload["status"], session=session)
                     lead.updatedAt = datetime.now(timezone.utc)
 
                     await lead.save(session=session)
@@ -1385,14 +1386,10 @@ class LeadService:
                     if payload["status"] == SALES_STATUS.DELETE.value:
                         raise AppException(400, "Action denied, can not set status delete")
                     
-                    if payload["status"] == SALES_STATUS.WON.value:
-                        raise AppException(400, "Action denied, can not set status won")
                     
                     if lead.status == SALES_STATUS.DELETE.value:
                         raise AppException(400, "Action denied, Lead is deleted")
 
-                    if lead.status == SALES_STATUS.WON.value:
-                        raise AppException(400, "Action denied, Lead is Won so you are not update it now")
 
                     if str(lead.createdBy.id) == str(user["_id"]):
                         is_creator = True

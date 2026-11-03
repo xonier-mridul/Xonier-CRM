@@ -13,6 +13,7 @@ seed_test_settings()
 from app.core.enums import CAMPAIGN_DISTRIBUTION_MODE
 from app.core.security import hash_value
 from app.services.campaign_service import CampaignService
+from app.services.lead_status_service import DEFAULT_STATUSES
 
 
 class AsyncContext:
@@ -66,8 +67,10 @@ class CampaignImportTests(unittest.IsolatedAsyncioTestCase):
         campaign_lead_model.insert_many = AsyncMock()
         with patch("app.services.campaign_service.LeadsModel", lead_model), \
              patch("app.services.campaign_service.CampaignLeadModel", campaign_lead_model), \
-             patch("app.services.campaign_service.generate_enquiry_id", return_value="LEAD-TEST"), \
-             patch("app.services.campaign_service.activity_payload", return_value={}):
+             patch("app.services.campaign_service.generate_lead_ids", AsyncMock(side_effect=lambda count, session: [f"LEAD-TEST-{i}" for i in range(count)])), \
+             patch("app.services.campaign_service.activity_payload", return_value={}), \
+             patch("app.services.lead_status_service.LeadStatusService.config", AsyncMock(return_value={"statuses": [*DEFAULT_STATUSES, {"key": "stage_progress", "name": "In Progress", "type": "ongoing", "order": 6, "color": "#0891b2"}]})):
+
             result = await self.service.import_leads(str(self.campaign.id), {"leads": rows}, self.user)
         self.assertEqual(lead_model.find.call_args.args[0]["deletedAt"], None)
         self.assertEqual(lead_model.find.call_args.args[0]["companyId"], self.campaign.companyId)
@@ -76,7 +79,7 @@ class CampaignImportTests(unittest.IsolatedAsyncioTestCase):
     async def test_invalid_row_does_not_make_later_valid_row_a_duplicate(self):
         identity = {"email": "fresh@example.com", "phone": "+919876543210", "projectType": "Sales CRM"}
         result, created = await self.import_rows([
-            {**identity, "fullName": None},
+            {**identity, "fullName": None, "meetingScheduled": "yes"},
             {**identity, "fullName": "Fresh Lead"},
         ])
         self.assertEqual((result["inserted"], result["skipped"]), (1, 1))
@@ -91,7 +94,7 @@ class CampaignImportTests(unittest.IsolatedAsyncioTestCase):
             "postalCode": "999",
         }])
         self.assertEqual((result["inserted"], result["skipped"]), (1, 0))
-        self.assertEqual((created[0].priority, created[0].status), ("medium", "new"))
+        self.assertEqual((created[0].priority, created[0].status), ("medium", "stage_progress"))
         self.assertFalse(hasattr(created[0], "language"))
         self.assertFalse(hasattr(created[0], "postalCode"))
 

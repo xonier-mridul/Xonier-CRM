@@ -1,3 +1,4 @@
+from app.services.lead_status_service import LeadStatusService
 
 from typing import Dict, Any, Optional
 from datetime import datetime, timezone, timedelta
@@ -300,12 +301,7 @@ class ManagerDashboardService:
                         {
                             "$match": {
                                 "status": {
-                                    "$in": [
-                                        SALES_STATUS.NEW.value,
-                                        SALES_STATUS.CONTACTED.value,
-                                        SALES_STATUS.QUALIFIED.value,
-                                        SALES_STATUS.PROPOSAL.value,
-                                    ]
+                                    "$in": await LeadStatusService().keys("ongoing")
                                 },
                                 "$or": [
                                     {"createdBy.$id": {"$in": scoped_ids}},
@@ -318,7 +314,7 @@ class ManagerDashboardService:
                     "won": [
                         {
                             "$match": {
-                                "status": SALES_STATUS.WON.value,
+                                "status": {"$in": await LeadStatusService().keys("final")},
                                 "$or": [
                                     {"createdBy.$id": {"$in": scoped_ids}},
                                     {"assignedTo.$id": {"$in": scoped_ids}},
@@ -689,7 +685,7 @@ class ManagerDashboardService:
                     "totalLeads": {"$sum": 1},
                     "wonLeads": {
                         "$sum": {
-                            "$cond": [{"$eq": ["$status", SALES_STATUS.WON.value]}, 1, 0]
+                            "$cond": [{"$in": ["$status", await LeadStatusService().keys("final")]}, 1, 0]
                         }
                     },
                 }

@@ -1,4 +1,5 @@
 "use client";
+import { useLeadStatuses } from "@/src/hooks/useLeadStatuses";
 
 import { handleCopy } from "@/src/app/utils/clipboard.utils";
 import extractErrorMessages from "@/src/app/utils/error.utils";
@@ -91,6 +92,7 @@ const formatTimelineTime = (value?: string | null) =>
 
 const LeadViewPage = (): JSX.Element => {
   const { t } = useTranslation();
+  const { label: leadStatusLabel } = useLeadStatuses();
   const [err, setErr] = useState<string | string[]>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [leadData, setLeadData] = useState<Lead | null>(null);
@@ -297,7 +299,7 @@ const LeadViewPage = (): JSX.Element => {
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white capitalize">
-                  {leadData?.fullName}
+                  {leadData?.fullName || leadData?.lead_id}
                 </h1>
                 <span
                   className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${getPriorityColor(
@@ -313,7 +315,7 @@ const LeadViewPage = (): JSX.Element => {
                   )}`}
                 >
                   <IoStatsChartOutline className="w-4 h-4" />
-                  {leadData?.status}
+                  {leadStatusLabel(leadData?.status || "")}
                 </span>
               </div>
               <p
@@ -480,7 +482,7 @@ const LeadViewPage = (): JSX.Element => {
                   <InfoItem
                     icon={<IoStatsChartOutline className="w-4 h-4" />}
                     label={t("status")}
-                    value={leadData?.status}
+                    value={leadStatusLabel(leadData?.status || "")}
                   />
                   {leadData?.extraFields &&
                     Object.entries(leadData.extraFields).map(([key, value]) => (
@@ -613,6 +615,28 @@ const LeadViewPage = (): JSX.Element => {
                 />
                 <MaskEmailField label={t("email")} value={leadData?.email} />
                 <MaskPhoneField label={t("phone")} value={leadData?.phone} />
+                <InfoItem
+                  icon={<IoGlobeOutline className="w-4 h-4" />}
+                  label={t("linkedin link")}
+                  value={
+                    leadData?.linkedin ? (
+                      <a
+                        href={
+                          leadData.linkedin.startsWith("http")
+                            ? leadData.linkedin
+                            : `https://${leadData.linkedin}`
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-cyan-600 dark:text-cyan-400 hover:underline break-all"
+                      >
+                        {leadData.linkedin}
+                      </a>
+                    ) : (
+                      "—"
+                    )
+                  }
+                />
                 <InfoItem
                   icon={<IoBusinessOutline className="w-4 h-4" />}
                   label={t("company")}

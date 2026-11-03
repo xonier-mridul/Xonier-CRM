@@ -11,11 +11,14 @@ class Encryption:
 
 
     def encrypt_data(self, data: str)-> str:
-        
+        if not data:
+            return data
         encrypted: bytes = self.fernet.encrypt(data.encode("utf-8"))
         return encrypted.decode("utf-8")
 
     def decrypt_data(self, data: str)-> str:
+        if not data:
+            return data
         decrypted: bytes = self.fernet.decrypt(data.encode("utf-8"))
         return decrypted.decode("utf-8")
     

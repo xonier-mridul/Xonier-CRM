@@ -120,7 +120,9 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
           (field: CustomField) => formModule !== FORM_FIELD_MODULE.DEAL || !isDealPipelineField(field),
         );
         const selectedFieldsIds = selectedFields.map(item => item.id);
-        const required = selectedFields.filter((item) => item.required === true || item.id === "6974a52d515f3aec8648561a");
+        const required = formModule === FORM_FIELD_MODULE.LEAD
+          ? []
+          : selectedFields.filter((item) => item.required === true);
         setUserFormData(result.data.data);
         setUserFormField(selectedFields);
         setSelectedFieldsIds(prev => [
@@ -177,7 +179,7 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
     }
   };
 
-  const getAllFieldsData = async (initializeDealDefaults = false): Promise<void> => {
+  const getAllFieldsData = async (initializeDefaults = false): Promise<void> => {
     setFieldDataLoading(true);
        setDeletePopupOpen(true); // Show blur background
     try {
@@ -191,20 +193,25 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
           "dealname", "dealstage", "dealtype", "dealowner",
           "createdate", "closedate", "amount",
         ]);
-        const isDefaultDealField = (field: CustomField) => {
+        const defaultLeadFieldNames = new Set([
+          "fullname", "email", "phone", "linkedin", "linkedinlink", "priority",
+          "source", "projecttype", "status", "companyname",
+        ]);
+        const isDefaultField = (field: CustomField) => {
           const normalize = (value: string) => value.toLowerCase().replace(/[\s_-]/g, "");
-          return defaultDealFieldNames.has(normalize(field.key)) || defaultDealFieldNames.has(normalize(field.name));
+          const targetSet = formModule === FORM_FIELD_MODULE.DEAL ? defaultDealFieldNames : defaultLeadFieldNames;
+          return targetSet.has(normalize(field.key)) || targetSet.has(normalize(field.name));
         };
-        const defaults = formModule === FORM_FIELD_MODULE.DEAL && initializeDealDefaults
-          ? fields.filter(isDefaultDealField).map((field: CustomField) => field.id)
+        const defaults = initializeDefaults
+          ? fields.filter(isDefaultField).map((field: CustomField) => field.id)
           : [];
         fields.forEach((item: any, i: number) => {
+          if (formModule === FORM_FIELD_MODULE.LEAD) {
+            fields[i].required = false;
+            return;
+          }
           if (item.required === true) {
             req.push(item.id);
-          }
-          if (formModule === FORM_FIELD_MODULE.LEAD && item.id === "6974a52d515f3aec8648561a") {
-            req.push(item.id);
-            fields[i].required = true;
           }
         });
         setSelectedFieldsIds(prev => [...new Set([...prev, ...req, ...defaults])]);
@@ -229,7 +236,7 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
     const loadFormConfiguration = async () => {
       const hasSavedForm = await getFormFields();
       await Promise.all([
-        getAllFieldsData(formModule === FORM_FIELD_MODULE.DEAL && !hasSavedForm),
+        getAllFieldsData(!hasSavedForm),
         getCustomFormFields(),
       ]);
     };
@@ -402,6 +409,7 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
   };
 
   const renderFormField = (item: CustomField, index: number) => {
+    const isFieldRequired = formModule === FORM_FIELD_MODULE.LEAD ? false : item.required;
     if (item.type === "text" || item.type === "email" || item.type === "number" ||  item.type === "datetime-local") {
       return (
         <motion.div
@@ -417,7 +425,7 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
             type={item.type}
             label={item.name}
             placeholder={item.placeholder ?? ""}
-            required={item.required}
+            required={isFieldRequired}
           />
         </motion.div>
       );
@@ -438,7 +446,7 @@ const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
             label={item.name}
             options={item.options ?? []}
             placeholder={item.placeholder ?? t("select")}
-            required={item.required}
+            required={isFieldRequired}
           />
         </motion.div>
       );

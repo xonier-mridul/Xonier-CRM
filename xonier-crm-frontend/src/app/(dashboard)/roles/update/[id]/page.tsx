@@ -88,7 +88,10 @@ const UpdateRolePage = (): JSX.Element => {
     setIsLoading(true);
     try {
       const result = await RoleService.update(id, formData);
-      if (result.status === 200) toast.success("Role updated successfully");
+      if (result.status === 200) {
+        toast.success("Role updated successfully");
+        router.back();
+      }
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const messages = extractErrorMessages(error);
@@ -98,7 +101,6 @@ const UpdateRolePage = (): JSX.Element => {
         setErr(["Something went wrong"]);
       }
     } finally {
-      router.back()
       setIsLoading(false);
     }
   };

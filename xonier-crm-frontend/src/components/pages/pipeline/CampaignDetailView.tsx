@@ -1,4 +1,5 @@
 "use client";
+import { useLeadStatuses } from "@/src/hooks/useLeadStatuses";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
@@ -14,7 +15,9 @@ import {
   FiChevronDown,
   FiPause,
   FiPlay,
+  FiClock,
 } from "react-icons/fi";
+import { parseFollowUpTime } from "@/src/app/utils/followUpTime.utils";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import CampaignService from "@/src/services/campaign.service";
@@ -96,6 +99,7 @@ const StatCard: React.FC<{
 );
 
 const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange }) => {
+  const { label: leadStatusLabel } = useLeadStatuses();
   const { t } = useTranslation();
   const router = useRouter();
   const auth = useSelector((state: RootState) => state.auth);
@@ -419,7 +423,7 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
                       <td className="px-5 py-3 capitalize">{ld?.source || "—"}</td>
                       <td className="px-5 py-3 capitalize">{ld?.priority || "—"}</td>
                       <td className="px-5 py-3">
-                        {ld?.status ? <StatusBadge status={ld.status} /> : "—"}
+                        {ld?.status ? <StatusBadge status={ld.status} label={leadStatusLabel(ld.status)} /> : "—"}
                       </td>
                       <td className="px-5 py-3">
                         {lead.assignedTo?._id ? (
@@ -491,6 +495,33 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
                                 </>
                               )}
                             </button>
+                            {ld.connectStatus === "follow_up" && ld.followUpAt && (
+                              <span
+                                className={`mt-1 flex items-center gap-1 text-[11px] font-medium whitespace-nowrap ${
+                                  parseFollowUpTime(ld.followUpAt) < new Date()
+                                    ? "text-amber-500 dark:text-amber-400"
+                                    : "text-teal-600 dark:text-teal-400"
+                                }`}
+                                title={`Follow up scheduled at ${parseFollowUpTime(ld.followUpAt).toLocaleString("en-IN", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: true,
+                                  timeZone: "Asia/Kolkata",
+                                })}`}
+                              >
+                                <FiClock size={10} className="shrink-0" />
+                                {parseFollowUpTime(ld.followUpAt).toLocaleString("en-IN", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: true,
+                                  timeZone: "Asia/Kolkata",
+                                })}
+                              </span>
+                            )}
 
                             {openDropdownId === ld._id && (
                               <div className="absolute top-full left-0 mt-1 w-[180px] bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 py-1 z-50">

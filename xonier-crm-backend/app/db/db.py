@@ -90,6 +90,8 @@ async def connect_db():
         await db["leads"].create_index(
             [("followUpAt", 1)], name="follow_up_push_backfill"
         )
+        from app.services.form_field_service import ensure_linkedin_form_field
+        await ensure_linkedin_form_field()
         print("Successfully connected to MongoDB and initialized Beanie")
     except Exception as e:
         print(f"failed to connect with mongodb: {e} ")

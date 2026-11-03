@@ -11,7 +11,11 @@ controller = FormFieldController()
 async def get_form_fields(request: Request):
     return await controller.get_all(request)
 
-@router.get("/lead/all", status_code=200, dependencies=[Depends(dependencies.authorized)])
+@router.get("/lead/all", status_code=200, dependencies=[
+    Depends(dependencies.authorized),
+    Depends(dependencies.company_active),
+    Depends(dependencies.company_context),
+])
 async def get_lead_form_fields(request: Request):
     return await controller.get_leads_fields(request)
 

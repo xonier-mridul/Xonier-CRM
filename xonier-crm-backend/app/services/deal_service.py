@@ -1,3 +1,5 @@
+from app.utils.transaction_retry import retry_transaction
+from app.services.lead_status_service import LeadStatusService
 from typing import Dict, Any
 from app.utils.custom_exception import AppException
 from app.repositories.deal_repository import DealRepository
@@ -32,6 +34,7 @@ class DealService:
         self.getTeamMem = GetTeamMembers()
         self.activityRepo = ActivityRepository()
 
+    @retry_transaction
     async def create(self, payload: Dict[str, Any], createdBy: str):
         async with await self.client.start_session() as session:
           async with session.start_transaction():
@@ -65,7 +68,7 @@ class DealService:
                     if not lead:
                         raise AppException(404, "Lead not found against lead id")
                     lead.inDeal = True
-                    lead.status = SALES_STATUS.WON.value
+                    lead.status = await LeadStatusService().resolve(session=session, final=True)
                     await lead.save(session=session)
 
                 activity = activity_payload(userId=PydanticObjectId(createdBy), entityType=ACTIVITY_ENTITY_TYPE.DEAL, entityId=PydanticObjectId(deal.id), action=ACTIVITY_ACTION.CREATED, title="create deal", metadata={"dealId": deal.deal_id, "leadName": deal.dealName})
@@ -349,6 +352,7 @@ class DealService:
                     raise AppException(500, "Internal server error")
                 
 
+    @retry_transaction
     async def delete(self, id: str, user:Dict[str, Any]):
         async with await self.client.start_session() as session:
             async with session.start_transaction():
@@ -391,7 +395,7 @@ class DealService:
                     if result.lead_id:
                         lead_payload = {
                             "inDeal": False,
-                            "status": SALES_STATUS.CONTACTED.value
+                            "status": await LeadStatusService().resolve(session=session)
                         }
                         lead_update = await self.leadRepo.update(id=PydanticObjectId(result.lead_id.id), data=lead_payload, session=session)
                         if not lead_update:

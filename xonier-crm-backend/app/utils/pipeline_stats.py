@@ -102,8 +102,10 @@ def lead_reporting_fields(lead):
     return status, contact, labels
 
 
-def matches_pipeline_filter(lead, filter_name):
+def matches_pipeline_filter(lead, filter_name, final_statuses=None):
     """Match a lead to one of the clickable pipeline cards/funnel stages."""
+    closed_keys = {"won", "lost"} if final_statuses is None else set(final_statuses)
+    won_keys = {"won"} if final_statuses is None else closed_keys
     status, contact, labels = lead_reporting_fields(lead)
     if status in {"delete", "deleted"}:
         return False
@@ -111,21 +113,21 @@ def matches_pipeline_filter(lead, filter_name):
     if filter_name in {None, "", "all"}:
         return True
     if filter_name == "in_progress":
-        return status not in {"won", "lost"}
+        return status not in closed_keys
     if filter_name == "fresh_enquiry":
         return contact == "not_reached"
     if filter_name == "contacted":
         return contact not in {"not_reached", "not_connected"}
     if filter_name == "interested":
-        return status not in {"won", "lost"} and "interested" in labels
+        return status not in closed_keys and "interested" in labels
     if filter_name == "meetings_scheduled":
-        return status not in {"won", "lost"} and bool(labels & {"meeting_scheduled", "demo_scheduled", "demo_rescheduled"})
+        return status not in closed_keys and bool(labels & {"meeting_scheduled", "demo_scheduled", "demo_rescheduled"})
     if filter_name == "meetings_done":
-        return status not in {"won", "lost"} and bool(labels & {"meeting_completed", "demo_completed"})
+        return status not in closed_keys and bool(labels & {"meeting_completed", "demo_completed"})
     if filter_name == "follow_ups":
-        return status not in {"won", "lost"} and any("follow_up" in key for key in labels)
+        return status not in closed_keys and any("follow_up" in key for key in labels)
     if filter_name == "engaged":
-        return status not in {"won", "lost"} and bool(
+        return status not in closed_keys and bool(
             labels & {
                 "interested", "follow_up", "follow_up_requested", "hot_follow_up",
                 "cold_follow_up", "meeting_scheduled", "demo_scheduled",
@@ -133,21 +135,23 @@ def matches_pipeline_filter(lead, filter_name):
             }
         )
     if filter_name == "meetings":
-        return status not in {"won", "lost"} and bool(
+        return status not in closed_keys and bool(
             labels & {"meeting_scheduled", "demo_scheduled", "demo_rescheduled", "meeting_completed", "demo_completed"}
         )
     if filter_name == "closed_won":
-        return status == "won"
+        return status in won_keys
     return False
 
 
-def summarize_lead_groups(groups):
+def summarize_lead_groups(groups, final_statuses=None):
     """Groups contain reporting fields and a count of unique leads with those fields.
 
     Won/lost close the lead. Every other non-deleted lead is open/in progress.
     Each open lead counts once per normalized label and once per highlight;
     different labels can overlap (e.g. interested + meeting scheduled).
     """
+    closed_keys = {"won", "lost"} if final_statuses is None else set(final_statuses)
+    won_keys = {"won"} if final_statuses is None else closed_keys
     engagement = Counter()
     fresh_breakdown = Counter()
     in_progress_breakdown = Counter()
@@ -164,7 +168,7 @@ def summarize_lead_groups(groups):
         lifecycle[status] += count
         engagement[contact] += count
 
-        is_won_or_lost = status in {"won", "lost"}
+        is_won_or_lost = status in closed_keys
         is_lost = status == "lost"
         is_fresh = (contact == "not_reached" or status == "new") and not is_won_or_lost
         is_in_progress = not is_fresh and not is_won_or_lost
@@ -190,7 +194,7 @@ def summarize_lead_groups(groups):
                 highlights[key] += count
 
     total = sum(lifecycle.values())
-    closed = lifecycle["won"] + lifecycle["lost"]
+    closed = sum(lifecycle[key] for key in closed_keys)
     open_breakdown = fresh_breakdown + in_progress_breakdown
     funnel_filters = (
         "all", "contacted", "engaged", "meetings", "closed_won",
@@ -222,13 +226,13 @@ def summarize_lead_groups(groups):
         "totalLeads": total,
         "totalInProgress": total - closed,
         "totalClosed": closed,
-        "closedBreakdown": {"won": lifecycle["won"], "lost": lifecycle["lost"]},
+        "closedBreakdown": {"won": sum(lifecycle[key] for key in won_keys), "lost": lifecycle["lost"] if final_statuses is None else 0},
         "highlights": dict(highlights),
         "funnel": {
             filter_name: sum(
                 group["count"]
                 for group in groups
-                if matches_pipeline_filter(group["_id"], filter_name)
+                if matches_pipeline_filter(group["_id"], filter_name, final_statuses)
             )
             for filter_name in funnel_filters
         },

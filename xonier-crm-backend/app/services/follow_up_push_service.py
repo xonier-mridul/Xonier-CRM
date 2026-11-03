@@ -4,10 +4,8 @@ import asyncio
 import logging
 import uuid
 from datetime import datetime, timedelta, timezone
-
 from beanie import PydanticObjectId
 from pymongo import ReturnDocument
-
 from app.core.config import get_setting
 from app.core.crypto import encryptor
 from app.db.db import Client
@@ -149,16 +147,8 @@ class FollowUpPushService:
             await self._retry(job, claim_id, now, "no_token")
             return
         try:
-            import firebase_admin
-            from firebase_admin import messaging
-
-            try:
-                firebase_admin.get_app()
-            except ValueError:
-                firebase_admin.initialize_app(options={"projectId": get_setting().FCM_PROJECT_ID})
-
             token = encryptor.decrypt_data(token_doc["tokenEncrypted"])
-            message = build_message(messaging, token, job, lead.get("fullName") or "Lead", now)
+            lead_name = lead.get("fullName") or "Lead"
             # Recheck the version and recipient immediately before the external send.
             latest = await reminders.find_one({"_id": job["_id"], "version": job["version"],
                                                "status": "sending", "claimId": claim_id})
@@ -177,7 +167,7 @@ class FollowUpPushService:
             if not latest_lead or not latest_user or not latest_token or latest_token["tokenHash"] != token_doc["tokenHash"]:
                 await self._retry(job, claim_id, datetime.now(timezone.utc), "recipient_changed")
                 return
-            await asyncio.to_thread(messaging.send, message)
+            await asyncio.to_thread(send_fcm_message, token, job, lead_name, now)
             await reminders.update_one(
                 {"_id": job["_id"], "version": job["version"], "claimId": claim_id},
                 {"$set": {"status": "sent", "sentAt": datetime.now(timezone.utc),
@@ -198,6 +188,124 @@ class FollowUpPushService:
             {"$set": {"status": "retry", "nextAttemptAt": now + timedelta(seconds=delay),
                       "claimId": None, "lastErrorType": reason, "updatedAt": now}},
         )
+
+
+class UnregisteredError(Exception):
+    pass
+
+
+class SenderIdMismatchError(Exception):
+    pass
+
+
+def send_fcm_message(token: str, job: dict, lead_name: str, now: datetime) -> None:
+    settings = get_setting()
+    cred_path = settings.GOOGLE_APPLICATION_CREDENTIALS
+    try:
+        import firebase_admin
+        from firebase_admin import credentials, messaging
+
+        try:
+            firebase_admin.get_app()
+        except ValueError:
+            if cred_path:
+                firebase_admin.initialize_app(
+                    credentials.Certificate(cred_path),
+                    options={"projectId": settings.FCM_PROJECT_ID},
+                )
+            else:
+                firebase_admin.initialize_app(options={"projectId": settings.FCM_PROJECT_ID})
+
+        message = build_message(messaging, token, job, lead_name, now)
+        messaging.send(message)
+        return
+    except ImportError:
+        pass
+
+    import json
+    import os
+    import time
+    import jwt
+    import requests
+
+    path = cred_path or os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+    if not path or not os.path.exists(path):
+        raise RuntimeError("GOOGLE_APPLICATION_CREDENTIALS file not found")
+
+    with open(path, "r", encoding="utf-8") as f:
+        sa = json.load(f)
+
+    iat = int(time.time())
+    signed_jwt = jwt.encode(
+        {
+            "iss": sa["client_email"],
+            "sub": sa["client_email"],
+            "aud": sa.get("token_uri", "https://oauth2.googleapis.com/token"),
+            "iat": iat,
+            "exp": iat + 3600,
+            "scope": "https://www.googleapis.com/auth/firebase.messaging",
+        },
+        sa["private_key"],
+        algorithm="RS256",
+    )
+    token_resp = requests.post(
+        sa.get("token_uri", "https://oauth2.googleapis.com/token"),
+        data={
+            "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
+            "assertion": signed_jwt,
+        },
+        timeout=10,
+    )
+    token_resp.raise_for_status()
+    access_token = token_resp.json()["access_token"]
+
+    expires = utc(job["expiresAt"])
+    remaining = max(1, int((expires - now).total_seconds()))
+    data = {
+        "type": "follow_up_due", "reminderId": str(job["_id"]),
+        "leadId": str(job["leadId"]), "userId": str(job["userId"]),
+        "companyId": str(job["companyId"]), "version": str(job["version"]),
+        "scheduledAt": iso_utc(job["scheduledAt"]), "expiresAt": iso_utc(expires),
+        "leadName": str(lead_name), "title": "Lead Follow-Up",
+        "body": "It is time to follow up with this lead.",
+    }
+    project_id = settings.FCM_PROJECT_ID or sa.get("project_id", "trakeroo")
+    resp = requests.post(
+        f"https://fcm.googleapis.com/v1/projects/{project_id}/messages:send",
+        headers={"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"},
+        json={
+            "message": {
+                "token": token,
+                "data": data,
+                "android": {"priority": "HIGH", "ttl": f"{remaining}s"},
+                "apns": {
+                    "headers": {
+                        "apns-push-type": "alert",
+                        "apns-priority": "10",
+                        "apns-expiration": str(int(expires.timestamp())),
+                    },
+                    "payload": {
+                        "aps": {
+                            "alert": {
+                                "title": "Lead Follow-Up",
+                                "body": "You have a scheduled lead follow-up.",
+                            },
+                            "sound": "follow_up_alarm.caf",
+                            "category": "lead-follow-up-actions",
+                        }
+                    },
+                },
+            }
+        },
+        timeout=10,
+    )
+    if resp.status_code != 200:
+        body_text = resp.text
+        if "UNREGISTERED" in body_text:
+            raise UnregisteredError("Token unregistered")
+        if "SENDER_ID_MISMATCH" in body_text:
+            raise SenderIdMismatchError("Sender ID mismatch")
+        resp.raise_for_status()
 
 
 def build_message(messaging, token: str, job: dict, lead_name: str, now: datetime):

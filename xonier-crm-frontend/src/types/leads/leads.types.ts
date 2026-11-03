@@ -8,11 +8,12 @@ export interface Lead {
   fullName: string;
   email: string;              
   phone: string;
+  linkedin?: string | null;
 
   priority: PRIORITY;
   source: string;
   projectType: PROJECT_TYPES;
-  status: SALES_STATUS;
+  status: string;
   leadSource: LEAD_SOURCE_TYPE
   createdBy: User;          
   updatedBy?: User | null;  
@@ -47,14 +48,15 @@ export interface Lead {
 }
 
 export interface LeadPayload {
-  fullName: string;
-  email: string;
+  fullName?: string | null;
+  email?: string | null;
   phone?: string | null;
+  linkedin?: string | null;
 
   priority?: PRIORITY | "";
   source?: string | "";
   projectType?: string | "";
-  status?: SALES_STATUS | "";
+  status?: string;
 
   companyName?: string;
   city?: string;
@@ -79,7 +81,7 @@ export interface BulkLeadPayload {
 }
 
 export interface UpdateLeadStatusPayload {
-  status: SALES_STATUS
+  status: string
 }
 
 export interface BulkReassignLeadSchema{

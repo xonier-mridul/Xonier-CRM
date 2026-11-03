@@ -1,11 +1,12 @@
 from typing import Dict, Any
+from datetime import datetime, timezone
 from app.utils.custom_exception import AppException
 from app.repositories.user_role_repository import UserRoleRepository
 from app.utils.code_generator import code_generator, validate_role_name
 from app.db.db import Client
 from beanie import PydanticObjectId
 from app.repositories.user_repository import UserRepository
-from bson import ObjectId
+from bson import ObjectId, DBRef
 from app.utils.validate_admin import validate_admin
 
 from pydantic import ValidationError
@@ -162,11 +163,16 @@ class UserRoleService:
             
             new_payload: Dict[str, Any] = {
                  **data,
-                 "updatedBy": updatedBy["_id"],
-                 "code": code
+                 "updatedBy": DBRef("users", ObjectId(updatedBy["_id"])),
+                 "code": code,
+                 "updatedAt": datetime.now(timezone.utc),
             }
 
- 
+            if "permissions" in new_payload and isinstance(new_payload["permissions"], list):
+                new_payload["permissions"] = [
+                    DBRef("permissions", ObjectId(str(p))) if not isinstance(p, DBRef) else p
+                    for p in new_payload["permissions"]
+                ]
 
             update = await self.repository.update(id=PydanticObjectId(roleId),data=new_payload)
 

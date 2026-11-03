@@ -1,3 +1,5 @@
+from app.utils.transaction_retry import retry_transaction
+from app.services.lead_status_service import LeadStatusService
 from app.utils.lead_assignment_access import require_lead_assigner, require_lower_assignee
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
@@ -35,7 +37,7 @@ from app.core.constants import CAMPAIGN_CACHE_NAMESPACE
 from app.core.crypto import Encryption
 from app.core.security import hash_value
 from app.utils.custom_exception import AppException
-from app.utils.enquiry_id_generator import generate_enquiry_id
+from app.utils.enquiry_id_generator import generate_enquiry_id, generate_lead_ids
 from app.utils.activity_payload import activity_payload
 from app.utils.pipeline_stats import matches_pipeline_filter, summarize_lead_groups
 from app.utils.validate_admin import validate_admin_company_admin
@@ -158,7 +160,8 @@ class CampaignService:
             agent_ids = {self._reference_id(ref) for ref in campaign.get("agents", []) or []}
             creator_id = self._reference_id(campaign.get("createdBy"))
             is_member = user_oid in manager_ids or user_oid in agent_ids or creator_id == user_oid
-            if is_member or str(campaign["_id"]) in personal_campaign_ids:
+            # Non-admin users only see campaigns in which they have assigned/own leads.
+            if str(campaign["_id"]) in personal_campaign_ids:
                 visible_campaigns.append(campaign)
                 if is_member:
                     membership_campaign_ids.add(campaign["_id"])
@@ -488,6 +491,7 @@ class CampaignService:
     # IMPORT LEADS INTO CAMPAIGN
     # ─────────────────────────────────────────────────────────────────────────
 
+    @retry_transaction
     async def import_leads(
         self,
         campaign_id: str,
@@ -586,8 +590,7 @@ class CampaignService:
                             raw_project_type = project_type or None
                             if raw_priority not in {p.value for p in PRIORITY}:
                                 raw_priority = PRIORITY.MEDIUM.value
-                            if raw_status not in {s.value for s in SALES_STATUS}:
-                                raw_status = SALES_STATUS.NEW.value
+                            raw_status = await LeadStatusService().resolve(lead.get("status"), session=session)
 
                             # Normalize language: CSV may send full names like "English", "Hindi"
                             # instead of ISO codes like "en", "hi". Map them here.
@@ -651,7 +654,7 @@ class CampaignService:
                                 continue
 
                             lead_doc_data: Dict[str, Any] = {
-                                "lead_id": generate_enquiry_id("LEAD"),
+                                "lead_id": "PENDING",
                                 "companyId": campaign.companyId,
                                 "fullName": lead.get("fullName"),
                                 "email": encrypted_email,
@@ -710,6 +713,9 @@ class CampaignService:
                     inserted_count = 0
                     if leads_to_insert:
                         try:
+                            generated_ids = await generate_lead_ids(count=len(leads_to_insert), session=session)
+                            for doc, gen_id in zip(leads_to_insert, generated_ids):
+                                doc.lead_id = gen_id
                             insert_result = await LeadsModel.insert_many(documents=leads_to_insert, session=session)
                             inserted_ids = insert_result.inserted_ids
                             # Assign the inserted IDs back to the model instances
@@ -1547,6 +1553,7 @@ class CampaignService:
             company_oid = PydanticObjectId(user["companyId"])
             page = max(int(filters.get("page") or 1), 1)
             limit = min(max(int(filters.get("limit") or 10), 1), 100)
+            final_statuses = await LeadStatusService().keys("final")
             filter_name = str(filters.get("filter") or "all").strip().lower()
             search = str(filters.get("search") or "").strip().lower()
 
@@ -1600,7 +1607,7 @@ class CampaignService:
                     {"k": key, "v": value}
                     for key, value in (lead_data.get("extraFields") or {}).items()
                 ]
-                if not matches_pipeline_filter(lead_data, filter_name):
+                if not matches_pipeline_filter(lead_data, filter_name, final_statuses):
                     continue
 
                 if search:
@@ -1690,7 +1697,7 @@ class CampaignService:
                 "paused": sum(c.get("status") == "paused" for c in campaigns),
             }
             if not campaign_ids:
-                return {**summarize_lead_groups([]), "campaigns": campaign_summary}
+                return {**summarize_lead_groups([], await LeadStatusService().keys("final")), "campaigns": campaign_summary}
 
             # Deduplicate before joining so multi-campaign leads count only once.
             # The join also enforces company scope and removes deleted leads.
@@ -1739,7 +1746,7 @@ class CampaignService:
                 }},
             ]
             groups = await self._lead_collection().aggregate(pipeline).to_list(length=None)
-            return {**summarize_lead_groups(groups), "campaigns": campaign_summary}
+            return {**summarize_lead_groups(groups, await LeadStatusService().keys("final")), "campaigns": campaign_summary}
 
         except Exception as e:
             traceback.print_exc()

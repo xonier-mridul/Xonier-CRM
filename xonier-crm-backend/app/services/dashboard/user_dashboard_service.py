@@ -1,3 +1,4 @@
+from app.services.lead_status_service import LeadStatusService
 from typing import Dict, Any, Optional
 from datetime import datetime, timezone, timedelta
 from bson import ObjectId, DBRef
@@ -258,12 +259,7 @@ class UserDashboardService:
                             "$match": {
                                 "createdBy.$id": user_id,
                                 "status": {
-                                    "$in": [
-                                        SALES_STATUS.NEW.value,
-                                        SALES_STATUS.CONTACTED.value,
-                                        SALES_STATUS.QUALIFIED.value,
-                                        SALES_STATUS.PROPOSAL.value,
-                                    ]
+                                    "$in": await LeadStatusService().keys("ongoing")
                                 },
                             }
                         },
@@ -273,7 +269,7 @@ class UserDashboardService:
                         {
                             "$match": {
                                 "createdBy.$id": user_id,
-                                "status": SALES_STATUS.WON.value,
+                                "status": {"$in": await LeadStatusService().keys("final")},
                             }
                         },
                         {"$count": "count"},
@@ -528,12 +524,7 @@ class UserDashboardService:
                             "$match": {
                                 "createdBy.$id": user_id,
                                 "status": {
-                                    "$in": [
-                                        SALES_STATUS.NEW.value,
-                                        SALES_STATUS.CONTACTED.value,
-                                        SALES_STATUS.QUALIFIED.value,
-                                        SALES_STATUS.PROPOSAL.value,
-                                    ]
+                                    "$in": await LeadStatusService().keys("ongoing")
                                 },
                                 "deletedAt": None,
                             }
@@ -544,7 +535,7 @@ class UserDashboardService:
                         {
                             "$match": {
                                 "createdBy.$id": user_id,
-                                "status": SALES_STATUS.WON.value,
+                                "status": {"$in": await LeadStatusService().keys("final")},
                             }
                         },
                         {"$count": "count"},

@@ -1,3 +1,4 @@
+from app.services.lead_status_service import LeadStatusService
 from typing import Dict, Any, Optional
 from datetime import datetime, timezone, timedelta
 from app.utils.custom_exception import AppException
@@ -447,19 +448,14 @@ class CompanyAdminDashboardService:
                         {
                             "$match": {
                                 "status": {
-                                    "$in": [
-                                        SALES_STATUS.NEW.value,
-                                        SALES_STATUS.CONTACTED.value,
-                                        SALES_STATUS.QUALIFIED.value,
-                                        SALES_STATUS.PROPOSAL.value,
-                                    ]
+                                    "$in": await LeadStatusService().keys("ongoing")
                                 }
                             }
                         },
                         {"$count": "count"},
                     ],
                     "won": [
-                        {"$match": {"status": SALES_STATUS.WON.value}},
+                        {"$match": {"status": {"$in": await LeadStatusService().keys("final")}}},
                         {"$count": "count"},
                     ],
                     "lost": [
@@ -927,7 +923,7 @@ class CompanyAdminDashboardService:
             {
                 "$match": {
                     **match,
-                    "status": SALES_STATUS.WON.value,
+                    "status": {"$in": await LeadStatusService().keys("final")},
                     "createdAt": {"$gte": range_start, "$lte": range_end},
                 }
             },
@@ -979,7 +975,7 @@ class CompanyAdminDashboardService:
                     "won": {
                         "$sum": {
                             "$cond": [
-                                {"$eq": ["$status", SALES_STATUS.WON.value]},
+                                {"$in": ["$status", await LeadStatusService().keys("final")]},
                                 1,
                                 0,
                             ]

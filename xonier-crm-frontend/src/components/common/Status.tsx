@@ -1,4 +1,4 @@
-const StatusBadge = ({ status }: { status: string }) => {
+const StatusBadge = ({ status, label, color }: { status: string; label?: string; color?: string }) => {
   const map: Record<string, string> = {
     new:            "bg-sky-50     text-sky-600     dark:bg-sky-900/20     dark:text-sky-400",
     contacted:      "bg-violet-50  text-violet-600  dark:bg-violet-900/20  dark:text-violet-400",
@@ -27,8 +27,8 @@ const StatusBadge = ({ status }: { status: string }) => {
   const cls = map[status] ?? "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400";
 
   return (
-    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[13px] font-semibold capitalize tracking-wide ${cls}`}>
-      {status?.replace(/_/g, " ")}
+    <span style={color ? {color, backgroundColor: `${color}12`} : undefined} className={`inline-flex items-center px-2.5 py-1 rounded-md text-[13px] font-semibold capitalize tracking-wide ${cls}`}>
+      {label ?? status?.replace(/_/g, " ")}
     </span>
   );
 };

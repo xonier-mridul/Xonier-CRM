@@ -859,7 +859,7 @@ class BaseRepository:
             {"$set": data}, session=session
         )
 
-        return result.modified_count
+        return bool(getattr(result, "matched_count", 0) or getattr(result, "modified_count", 0))
     
     async def bulk_update(
     self,

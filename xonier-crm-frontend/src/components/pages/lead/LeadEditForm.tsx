@@ -1,4 +1,5 @@
 "use client";
+import { useLeadStatuses } from "@/src/hooks/useLeadStatuses";
 import type { CampaignLeadAssignment } from "@/src/types/campaign/campaign.types";
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import FormButton from "@/src/components/ui/FormButton";
@@ -34,6 +35,7 @@ const KNOWN_LEAD_KEYS = new Set([
   "fullName",
   "email",
   "phone",
+  "linkedin",
   "priority",
   "source",
   "projectType",
@@ -50,18 +52,13 @@ const KNOWN_LEAD_KEYS = new Set([
   "membershipNotes",
 ]);
 
-const REQUIRED_FIELDS = [
-  "fullName",
-  "email",
-  "priority",
-  "source",
-  "status",
-] as const;
+const REQUIRED_FIELDS: (keyof LeadPayload)[] = [];
 
 const EMPTY_FORM: Record<string, string | number | null> = {
   fullName: "",
   email: "",
   phone: "",
+  linkedin: "",
   priority: "",
   source: "",
   projectType: "",
@@ -89,6 +86,7 @@ interface LeadEditFormProps {
 
 const LeadEditForm = ({ id, embedded = false, onSaved, campaignAssignment }: LeadEditFormProps): JSX.Element => {
   const { t } = useTranslation();
+  const { statuses: leadStatuses, options: leadStatusOptions, label: leadStatusLabel } = useLeadStatuses();
   const { hasPermission } = usePermissions();
   const [assignedAgentId, setAssignedAgentId] = useState(campaignAssignment?.assignedAgentId || "");
   const [savedAgentId, setSavedAgentId] = useState(campaignAssignment?.assignedAgentId || "");
@@ -97,7 +95,7 @@ const LeadEditForm = ({ id, embedded = false, onSaved, campaignAssignment }: Lea
   const [loading, setLoading] = useState<boolean>(false);
   const [userFormData, setUserFormData] = useState<UserForm[]>([]);
   const [userFormField, setUserFormField] = useState<CustomField[]>([]);
-  const [statusData, setStatusData] = useState({ status: SALES_STATUS.NEW });
+  const [statusData, setStatusData] = useState<{status: string}>({ status: "" });
   const [engagement, setEngagement] = useState(LeadEngagementStatus.NOT_REACHED);
   const [savedEngagement, setSavedEngagement] = useState(LeadEngagementStatus.NOT_REACHED);
   const [statusLoading, setStatusLoading] = useState<boolean>(false);
@@ -126,6 +124,7 @@ const LeadEditForm = ({ id, embedded = false, onSaved, campaignAssignment }: Lea
           fullName: data.fullName ?? "",
           email: data.email ?? "",
           phone: data.phone ?? "",
+          linkedin: data.linkedin ?? "",
           priority: data.priority ?? "",
           source: data.source ?? "",
           projectType: data.projectType ?? "",
@@ -174,7 +173,7 @@ const LeadEditForm = ({ id, embedded = false, onSaved, campaignAssignment }: Lea
   };
 
   const handleStatusChange = (e: ChangeEvent<FormElement>) => {
-    setStatusData({ status: e.target.value as SALES_STATUS });
+    setStatusData({ status: e.target.value });
   };
 
   useEffect(() => {
@@ -212,7 +211,8 @@ const LeadEditForm = ({ id, embedded = false, onSaved, campaignAssignment }: Lea
 
     for (const [key, value] of Object.entries(flatFormData)) {
       if (KNOWN_LEAD_KEYS.has(key)) {
-        knownFields[key] = value;
+        const isEmpty = value === "" || value === null || value === undefined;
+        knownFields[key] = isEmpty ? null : value;
       } else {
         extraFields[key] = value;
       }
@@ -258,7 +258,7 @@ const LeadEditForm = ({ id, embedded = false, onSaved, campaignAssignment }: Lea
           setSavedAgentId(assignedAgentId);
           campaignAssignment.onAssigned(assignedAgentId);
         }
-        toast.success(`${flatFormData.fullName} lead updated successfully`);
+        toast.success(`${flatFormData.fullName ? `${flatFormData.fullName} ` : ""}lead updated successfully`);
 
         if (embedded) {
           onSaved?.({ ...payload, connectStatus: engagement } as unknown as Partial<Lead>);
@@ -329,13 +329,7 @@ const LeadEditForm = ({ id, embedded = false, onSaved, campaignAssignment }: Lea
     value: string;
   };
 
-  const SALES_STATUS_OPTIONS: SelectOption[] = Object.values(SALES_STATUS)
-    .filter((status) => status !== SALES_STATUS.DELETE)
-    .filter((status) => status !== SALES_STATUS.WON)
-    .map((status) => ({
-      label: status.charAt(0).toUpperCase() + status.slice(1),
-      value: status,
-    }));
+  const SALES_STATUS_OPTIONS: SelectOption[] = leadStatusOptions;
 
   const knownFormFieldKeys = new Set(userFormField.map((f) => f.key));
   const orphanExtraKeys = extraFieldKeys.filter(
@@ -367,13 +361,14 @@ const LeadEditForm = ({ id, embedded = false, onSaved, campaignAssignment }: Lea
             <div className="sm:col-span-2 py-8 text-center text-sm text-gray-500">Loading lead details…</div>
           ) : (
             <>
-              <Input name="fullName" label="Name" value={String(flatFormData.fullName || "")} onChange={handleChange} required />
-              <Input name="email" type="email" label="Email" value={String(flatFormData.email || "")} onChange={handleChange} required />
+              <Input name="fullName" label="Name" value={String(flatFormData.fullName || "")} onChange={handleChange} required={false} />
+              <Input name="email" type="email" label="Email" value={String(flatFormData.email || "")} onChange={handleChange} required={false} />
               <Input name="phone" type="tel" label="Phone" value={String(flatFormData.phone || "")} onChange={handleChange} required={false} />
+              <Input name="linkedin" label="LinkedIn Link" value={String(flatFormData.linkedin || "")} onChange={handleChange} required={false} />
               <Input name="companyName" label="Company" value={String(flatFormData.companyName || "")} onChange={handleChange} required={false} />
-              <Select name="source" label="Source" value={String(flatFormData.source || "")} options={sourceValues.map((value) => ({ value, label: label(value) }))} onChange={handleChange} required />
-              <Select name="priority" label="Priority" value={String(flatFormData.priority || "")} options={Object.values(PRIORITY).map((value) => ({ value, label: label(value) }))} onChange={handleChange} required />
-              <Select name="status" label="Lead Status" value={String(flatFormData.status || "")} options={SALES_STATUS_OPTIONS} onChange={handleChange} required />
+              <Select name="source" label="Source" value={String(flatFormData.source || "")} options={sourceValues.map((value) => ({ value, label: label(value) }))} onChange={handleChange} required={false} />
+              <Select name="priority" label="Priority" value={String(flatFormData.priority || "")} options={Object.values(PRIORITY).map((value) => ({ value, label: label(value) }))} onChange={handleChange} required={false} />
+              <Select name="status" label="Lead Status" value={String(flatFormData.status || "")} options={SALES_STATUS_OPTIONS} onChange={handleChange} required={false} />
               {campaignAssignment && campaignAssignment.agents.length > 1 && (
                 <Select
                   name="assignedTo"
@@ -386,7 +381,7 @@ const LeadEditForm = ({ id, embedded = false, onSaved, campaignAssignment }: Lea
                   title={!hasPermission("campaign:manage") ? "Campaign management permission is required to change assignment" : undefined}
                 />
               )}
-              <Select name="connectStatus" label="Engagement Status" value={engagement} options={engagementValues.map((value) => ({ value, label: label(value) }))} onChange={(event) => setEngagement(event.target.value as LeadEngagementStatus)} required />
+              <Select name="connectStatus" label="Engagement Status" value={engagement} options={engagementValues.map((value) => ({ value, label: label(value) }))} onChange={(event) => setEngagement(event.target.value as LeadEngagementStatus)} required={false} />
             </>
           )}
           {err && <div className="sm:col-span-2"><ErrorComponent error={err} /></div>}
@@ -425,10 +420,6 @@ const LeadEditForm = ({ id, embedded = false, onSaved, campaignAssignment }: Lea
             />}
           </div>
 
-          {isMissingRequiredFields && (
-            <InformationComponent message="Full Name, Email, Source, Priority and Status fields are mandatory" />
-          )}
-
           <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-8">
             {!isLoading ? (
               userFormField && userFormField.length > 0 ? (
@@ -436,41 +427,33 @@ const LeadEditForm = ({ id, embedded = false, onSaved, campaignAssignment }: Lea
                   {userFormField.map((item) => {
                     const fieldValue = flatFormData[item.key] ?? "";
 
-                    if (
-                      item.type === "text" ||
-                      item.type === "email" ||
-                      item.type === "number"
-                    ) {
-                      return (
-                        <Input
-                          key={item.id}
-                          name={item.key}
-                          type={item.type}
-                          label={item.name}
-                          placeholder={item.placeholder ?? ""}
-                          value={fieldValue as string}
-                          onChange={handleChange}
-                          required={item.required}
-                        />
-                      );
-                    }
-
                     if (item.type === "select") {
                       return (
                         <Select
                           key={item.id}
                           name={item.key}
                           label={item.name}
-                          options={item.options ?? []}
+                          options={item.key === "status" ? leadStatusOptions : (item.options ?? [])}
                           placeholder={item.placeholder ?? "Select"}
                           value={fieldValue as string}
                           onChange={handleChange}
-                          required={item.required}
+                          required={false}
                         />
                       );
                     }
 
-                    return null;
+                    return (
+                      <Input
+                        key={item.id}
+                        name={item.key}
+                        type={item.type || "text"}
+                        label={item.name}
+                        placeholder={item.placeholder ?? ""}
+                        value={fieldValue as string}
+                        onChange={handleChange}
+                        required={false}
+                      />
+                    );
                   })}
 
                   {(orphanExtraKeys.length > 0 || newCustomFields.length > 0) && (

@@ -1,7 +1,8 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { Lead } from "@/src/types/leads/leads.types";
+import { useLeadStatuses } from "@/src/hooks/useLeadStatuses";
 import { SALES_STATUS } from "@/src/constants/enum";
 import { MdOutlineEdit } from "react-icons/md";
 import { FaRegEye } from "react-icons/fa";
@@ -10,18 +11,8 @@ import StatusBadge from "@/src/components/common/Status";
 
 interface LeadKanbanBoardProps {
   leads: Lead[];
-  onStatusChange: (leadId: string, newStatus: SALES_STATUS) => Promise<boolean>;
+  onStatusChange: (leadId: string, newStatus: string) => Promise<boolean>;
 }
-
-// Map the enum values to user-friendly column titles and styling
-const COLUMNS = [
-  { id: SALES_STATUS.NEW, title: "New", color: "bg-slate-100 border-slate-200 text-slate-700" },
-  { id: SALES_STATUS.CONTACTED, title: "Contacted", color: "bg-blue-50 border-blue-100 text-blue-700" },
-  { id: SALES_STATUS.QUALIFIED, title: "Qualified", color: "bg-indigo-50 border-indigo-100 text-indigo-700" },
-  { id: SALES_STATUS.PROPOSAL, title: "Proposal", color: "bg-purple-50 border-purple-100 text-purple-700" },
-  { id: SALES_STATUS.WON, title: "Won", color: "bg-emerald-50 border-emerald-100 text-emerald-700" },
-  { id: SALES_STATUS.LOST, title: "Lost", color: "bg-red-50 border-red-100 text-red-700" },
-];
 
 const AssignedToAvatar = ({ user }: { user: any }) => {
   if (!user) return null;
@@ -37,6 +28,12 @@ const AssignedToAvatar = ({ user }: { user: any }) => {
 };
 
 const LeadKanbanBoard: React.FC<LeadKanbanBoardProps> = ({ leads, onStatusChange }) => {
+  const { statuses, label, loading: statusesLoading, error: statusError, refresh: refreshStatuses } = useLeadStatuses();
+  const COLUMNS = useMemo(() => [
+    ...[...statuses].sort((a, b) => Number(a.type === "final") - Number(b.type === "final") || a.order - b.order).map(s => ({id:s.key, title:s.name, color:"bg-slate-50 border-slate-200 text-slate-700", hex:s.color})),
+    ...Array.from(new Set(leads.map(l => l.status).filter(key => key && !statuses.some(s => s.key === key)))).map(key => ({id:key, title:label(key), color:"bg-slate-50 border-slate-200 text-slate-700", hex:"#64748b"}))
+  ], [statuses, leads]);
+
   const [isMounted, setIsMounted] = useState(false);
   const [boardData, setBoardData] = useState<Record<string, Lead[]>>({});
 
@@ -63,7 +60,7 @@ const LeadKanbanBoard: React.FC<LeadKanbanBoardProps> = ({ leads, onStatusChange
     });
 
     setBoardData(newBoardData);
-  }, [leads]);
+  }, [leads, COLUMNS]);
 
   const handleDragEnd = async (result: DropResult) => {
     const { source, destination, draggableId } = result;
@@ -71,8 +68,8 @@ const LeadKanbanBoard: React.FC<LeadKanbanBoardProps> = ({ leads, onStatusChange
     if (!destination) return; // Dropped outside the list
     if (source.droppableId === destination.droppableId && source.index === destination.index) return; // Dropped in the same place
 
-    const sourceStatus = source.droppableId as SALES_STATUS;
-    const destStatus = destination.droppableId as SALES_STATUS;
+    const sourceStatus = source.droppableId;
+    const destStatus = destination.droppableId;
 
     // Optimistically update the UI
     const newBoardData = { ...boardData };
@@ -82,9 +79,9 @@ const LeadKanbanBoard: React.FC<LeadKanbanBoardProps> = ({ leads, onStatusChange
     const [movedLead] = sourceList.splice(source.index, 1);
     
     // Update the lead's status optimistically
-    movedLead.status = destStatus;
+    const updatedLead = {...movedLead, status: destStatus};
     
-    destList.splice(destination.index, 0, movedLead);
+    destList.splice(destination.index, 0, updatedLead);
 
     newBoardData[sourceStatus] = sourceList;
     newBoardData[destStatus] = destList;
@@ -94,13 +91,15 @@ const LeadKanbanBoard: React.FC<LeadKanbanBoardProps> = ({ leads, onStatusChange
     if (sourceStatus !== destStatus) {
       const success = await onStatusChange(draggableId, destStatus);
       if (!success) {
+        setBoardData(boardData);
         // Revert on failure (we would ideally trigger a full refetch, but here we can just wait for the parent to pass down old leads)
         // The parent state hasn't changed unless onStatusChange succeeds, so it will re-render and fix it automatically or we can manually revert.
       }
     }
   };
 
-  if (!isMounted) return <div className="h-96 flex items-center justify-center">Loading board...</div>;
+  if (statusError) return <div role="alert" className="p-4 text-red-600">{statusError} <button onClick={refreshStatuses} className="underline">Retry</button></div>;
+  if (!isMounted || statusesLoading) return <div className="h-96 flex items-center justify-center">Loading board...</div>;
 
   return (
     <div className="w-full overflow-x-auto pb-4">
@@ -108,7 +107,7 @@ const LeadKanbanBoard: React.FC<LeadKanbanBoardProps> = ({ leads, onStatusChange
         <div className="flex gap-4 min-h-[70vh] items-start p-2">
           {COLUMNS.map((column) => (
             <div key={column.id} className="flex flex-col w-[300px] shrink-0">
-              <div className={`px-3 py-2.5 rounded-t-lg border-t border-l border-r font-semibold text-sm flex justify-between items-center ${column.color}`}>
+              <div style={{color: column.hex, backgroundColor: `${column.hex}12`}} className={`px-3 py-2.5 rounded-t-lg border-t border-l border-r font-semibold text-sm flex justify-between items-center ${column.color}`}>
                 <span>{column.title}</span>
                 <span className="bg-white/50 px-2 py-0.5 rounded-full text-xs">
                   {boardData[column.id]?.length || 0}
@@ -139,7 +138,7 @@ const LeadKanbanBoard: React.FC<LeadKanbanBoardProps> = ({ leads, onStatusChange
                           >
                             <div className="flex justify-between items-start mb-2">
                               <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate pr-2">
-                                {lead.fullName || "Unnamed Lead"}
+                                {lead.fullName || lead.lead_id || "Unnamed Lead"}
                               </h4>
                               <div className="flex gap-1 shrink-0">
                                 <Link href={`/leads/view/${lead.id}`}>
@@ -147,7 +146,7 @@ const LeadKanbanBoard: React.FC<LeadKanbanBoardProps> = ({ leads, onStatusChange
                                     <FaRegEye size={14} />
                                   </div>
                                 </Link>
-                                <Link href={`/leads/edit/${lead.id}`}>
+                                <Link href={`/leads/update/${lead.id}`}>
                                   <div className="p-1 rounded-md text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors">
                                     <MdOutlineEdit size={14} />
                                   </div>
@@ -179,7 +178,7 @@ const LeadKanbanBoard: React.FC<LeadKanbanBoardProps> = ({ leads, onStatusChange
                                   {new Date(lead.createdAt).toLocaleDateString("en-GB", { day: 'numeric', month: 'short' })}
                                 </span>
                               </div>
-                              <StatusBadge status={lead.status as SALES_STATUS} />
+                              <StatusBadge status={lead.status} label={label(lead.status)} color={column.hex} />
                             </div>
                           </div>
                         )}

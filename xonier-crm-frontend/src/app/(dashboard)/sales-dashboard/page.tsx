@@ -1,4 +1,5 @@
 "use client";
+import { useLeadStatuses } from "@/src/hooks/useLeadStatuses";
 
 import React, { useEffect, useState, useCallback } from "react";
 import { usePermissions } from "@/src/hooks/usePermissions";
@@ -165,6 +166,7 @@ type TrendData = {
 };
 
 export default function SalesDashboardPage() {
+  const { label: leadStatusLabel } = useLeadStatuses();
   const { t } = useTranslation();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -648,7 +650,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
                     </td>
                     <td className="py-3 pr-4">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${STATUS_BADGE[lead.status] ?? STATUS_BADGE.new}`}>
-                        {lead.status}
+                        {leadStatusLabel(lead.status)}
                       </span>
                     </td>
                     <td className="py-3 text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">
@@ -713,12 +715,12 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
                 const pct = ((item.count / totalLeads) * 100).toFixed(1);
                 const color = STATUS_COLORS[item.status] ?? "#6366f1";
                 return (
-                  <div key={item.status}>
+                  <div key={leadStatusLabel(item.status)}>
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
                         <span className="text-xs font-medium text-gray-700 dark:text-gray-300 capitalize flex items-center gap-1.5">
-                          {item.status}
+                          {leadStatusLabel(item.status)}
                           {item.status === "delete" && <Trash2 className="w-3 h-3 text-slate-400" />}
                         </span>
                       </div>

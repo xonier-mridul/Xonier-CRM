@@ -2,8 +2,21 @@
 
 import { useEffect, useRef, useState } from "react";
 import { FaChevronDown } from "react-icons/fa";
+import { FiClock } from "react-icons/fi";
 import { createPortal } from "react-dom";
-import { LeadEngagementStatus } from "@/src/constants/enum"
+import { LeadEngagementStatus } from "@/src/constants/enum";
+import { parseFollowUpTime } from "@/src/app/utils/followUpTime.utils";
+
+function formatFollowUpTime(iso: string): string {
+  return parseFollowUpTime(iso).toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "Asia/Kolkata",
+  });
+}
 
 const AVAILABLE_STATUSES: LeadEngagementStatus[] = [
   LeadEngagementStatus.CONNECTED,
@@ -71,6 +84,7 @@ export const STATUS_CONFIG: Record<
 type Props = {
   currentStatus: LeadEngagementStatus;
   Id: string;
+  followUpAt?: string | null;
   onStatusUpdate: (
     id: string,
     newStatus: LeadEngagementStatus,
@@ -81,6 +95,7 @@ type Props = {
 export default function StatusDropdown({
   currentStatus,
   Id,
+  followUpAt,
   onStatusUpdate,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
@@ -176,6 +191,9 @@ export default function StatusDropdown({
     }
   };
 
+  const isFollowUp = currentStatus === LeadEngagementStatus.FOLLOW_UP && Boolean(followUpAt);
+  const isOverdue = isFollowUp && parseFollowUpTime(followUpAt!) < new Date();
+
   return (
     <>
       {/* Button */}
@@ -198,6 +216,19 @@ export default function StatusDropdown({
             />
           )}
         </button>
+        {isFollowUp && (
+          <span
+            className={`mt-1 flex items-center gap-1 text-[11px] font-medium whitespace-nowrap ${
+              isOverdue
+                ? "text-amber-500 dark:text-amber-400"
+                : "text-teal-600 dark:text-teal-400"
+            }`}
+            title={`Follow up scheduled at ${formatFollowUpTime(followUpAt!)}`}
+          >
+            <FiClock size={10} className="shrink-0" />
+            {formatFollowUpTime(followUpAt!)}
+          </span>
+        )}
       </div>
 
       {/* 🔹 Floating Dropdown */}
