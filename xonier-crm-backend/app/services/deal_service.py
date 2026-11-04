@@ -192,7 +192,7 @@ class DealService:
                 limit=int(limit),
                 filters=query,
                 populate=["createdBy", "lead_id", "lead_id.assignedTo", "updatedBy", "assignedTo"],
-                sort=["-createdAt"]
+                sort=["-createdAt", "-_id"]
             )
  
             if not result:

@@ -16,6 +16,44 @@ class BaseRepository:
     def __init__(self, model):
         self.model = model
 
+    def _normalize_sort(self, sort: Optional[List[Any]] = None) -> List[Tuple[str, int]]:
+        model_fields = getattr(self.model, "model_fields", {}) or {}
+        has_created_at = "createdAt" in model_fields
+
+        if not sort:
+            if has_created_at:
+                return [("createdAt", -1), ("_id", -1)]
+            return [("_id", -1)]
+
+        normalized: List[Tuple[str, int]] = []
+        seen_fields = set()
+        for item in sort:
+            if isinstance(item, (tuple, list)) and len(item) == 2:
+                field_name = str(item[0]).lstrip("+-")
+                direction = int(item[1]) if item[1] in (-1, 1) else (-1 if str(item[0]).startswith("-") else 1)
+                normalized.append((field_name, direction))
+                seen_fields.add(field_name)
+            elif isinstance(item, str) and item.strip():
+                raw = item.strip()
+                if raw.startswith("-"):
+                    field_name, direction = raw[1:], -1
+                elif raw.startswith("+"):
+                    field_name, direction = raw[1:], 1
+                else:
+                    field_name, direction = raw, 1
+                normalized.append((field_name, direction))
+                seen_fields.add(field_name)
+
+        if not normalized:
+            if has_created_at:
+                return [("createdAt", -1), ("_id", -1)]
+            return [("_id", -1)]
+
+        if "_id" not in seen_fields and "id" not in seen_fields:
+            normalized.append(("_id", -1))
+
+        return normalized
+
 
     async def create(
         self, data: dict, session: Optional[AsyncIOMotorClientSession] = None
@@ -423,8 +461,9 @@ class BaseRepository:
         if projections:
             query = query.project(projections)
 
-        if sort:
-            query = query.sort(sort)
+        normalized_sort = self._normalize_sort(sort)
+        if normalized_sort:
+            query = query.sort(normalized_sort)
 
         if skip:
             query = query.skip(skip)
@@ -497,15 +536,10 @@ class BaseRepository:
                         }
                     })
 
-            if sort:
-                sort_doc = {}
-                for item in sort:
-                    if isinstance(item, tuple):
-                        sort_doc[item[0]] = item[1]
-                    elif isinstance(item, str):
-                        sort_doc[item[1:]] = -1 if item.startswith("-") else 1
-                if sort_doc:
-                    pipeline.append({"$sort": sort_doc})
+            normalized_sort = self._normalize_sort(sort)
+            sort_doc = dict(normalized_sort)
+            if sort_doc:
+                pipeline.append({"$sort": sort_doc})
 
             if skip:
                 pipeline.append({"$skip": skip})
@@ -525,8 +559,9 @@ class BaseRepository:
         if projections:
             query = query.project(projections)
 
-        if sort:
-            query = query.sort(sort)
+        normalized_sort = self._normalize_sort(sort)
+        if normalized_sort:
+            query = query.sort(normalized_sort)
 
         if skip:
             query = query.skip(skip)
@@ -609,8 +644,9 @@ class BaseRepository:
         if session:
             query = query.session(session)
 
-        if sort:
-            query.sort(sort)
+        normalized_sort = self._normalize_sort(sort)
+        if normalized_sort:
+            query = query.sort(normalized_sort)
 
         items = await query.to_list()
        
@@ -652,11 +688,12 @@ class BaseRepository:
         populate = populate or []
 
         skip = (page - 1) * limit
+        normalized_sort = self._normalize_sort(sort)
 
-        query = self.model.find(filters).skip(skip).limit(limit)
-
-        if sort:
-            query.sort(sort)
+        query = self.model.find(filters)
+        if normalized_sort:
+            query = query.sort(normalized_sort)
+        query = query.skip(skip).limit(limit)
 
         if session:
             query = query.session(session)
@@ -712,10 +749,11 @@ class BaseRepository:
         populate = populate or []
 
         skip = (page - 1) * limit
-        query = self.model.find(filters).skip(skip).limit(limit)
-
-        if sort:
-            query.sort(sort)
+        normalized_sort = self._normalize_sort(sort)
+        query = self.model.find(filters)
+        if normalized_sort:
+            query = query.sort(normalized_sort)
+        query = query.skip(skip).limit(limit)
 
         if session:
             query = query.session(session)
@@ -814,15 +852,10 @@ class BaseRepository:
                     }
                 })
 
-        if sort:
-            sort_doc = {}
-            for item in sort:
-                if isinstance(item, tuple):
-                    sort_doc[item[0]] = item[1]
-                elif isinstance(item, str):
-                    sort_doc[item[1:]] = -1 if item.startswith("-") else 1
-            if sort_doc:
-                pipeline.append({"$sort": sort_doc})
+        normalized_sort = self._normalize_sort(sort)
+        sort_doc = dict(normalized_sort)
+        if sort_doc:
+            pipeline.append({"$sort": sort_doc})
 
         if project:
             pipeline.append({"$project": project})
@@ -936,9 +969,10 @@ class BaseRepository:
  
         query = self.model.find(filters, session=session)
 
-        if sort:
-          query = query.sort(sort)
- 
+        normalized_sort = self._normalize_sort(sort)
+        if normalized_sort:
+            query = query.sort(normalized_sort)
+
         docs = await query.to_list()
  
         if not docs:

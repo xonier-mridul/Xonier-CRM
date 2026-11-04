@@ -33,7 +33,11 @@ from app.core.enums import (
     LANGUAGE_CODE,
     EMPLOYEE_SENIORITY,
 )
-from app.core.constants import CAMPAIGN_CACHE_NAMESPACE
+from app.core.constants import (
+    CAMPAIGN_CACHE_NAMESPACE,
+    LEAD_CACHE_NAMESPACE,
+    USER_LEAD_CACHE_NAMESPACE,
+)
 from app.core.crypto import Encryption
 from app.core.security import hash_value
 from app.utils.custom_exception import AppException
@@ -174,11 +178,13 @@ class CampaignService:
         }
 
     async def _clear_cache(self) -> None:
-        """Safely clear campaign cache; gracefully handles Redis downtime."""
+        """Safely clear campaign and lead caches; gracefully handles Redis downtime."""
         try:
             backend = FastAPICache.get_backend()
             if backend:
                 await backend.clear(namespace=CAMPAIGN_CACHE_NAMESPACE)
+                await backend.clear(namespace=LEAD_CACHE_NAMESPACE)
+                await backend.clear(namespace=USER_LEAD_CACHE_NAMESPACE)
         except Exception as e:
             print(f"[Warning] Failed to clear campaign cache: {e}")
 
@@ -274,7 +280,7 @@ class CampaignService:
                 limit=limit,
                 filters=query,
                 populate=["managers", "agents", "createdBy"],
-                sort=[(sort_field, sort_order)],
+                sort=[(sort_field, sort_order), ("_id", sort_order)],
             )
 
             if user_scope:
@@ -869,7 +875,7 @@ class CampaignService:
 
             pipeline = [
                 {"$match": match},
-                {"$sort": {"importedAt": -1}},
+                {"$sort": {"importedAt": -1, "_id": -1}},
                 # Extract raw ObjectId from Beanie DBRef before $lookup
                 {
                     "$addFields": {
@@ -905,6 +911,7 @@ class CampaignService:
                         "preserveNullAndEmptyArrays": True,
                     }
                 },
+                {"$sort": {"importedAt": -1, "_id": -1}},
                 {
                     "$project": {
                         "_id": {"$toString": "$_id"},
@@ -1598,7 +1605,7 @@ class CampaignService:
                 "companyId": company_oid,
                 "deletedAt": None,
                 "status": {"$nin": ["delete", "deleted"]},
-            }).sort("-createdAt").to_list(length=None)
+            }).sort([("createdAt", -1), ("_id", -1)]).to_list(length=None)
 
             matching_leads = []
             for lead in leads:

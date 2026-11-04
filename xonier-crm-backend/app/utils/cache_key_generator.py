@@ -7,7 +7,8 @@ def cache_key_generator(prefix: str, filters: Dict[str, Any], page: int, limit: 
     raw = {
         "filters": filters,
         "page": page,
-        "limit": limit
+        "limit": limit,
+        "version": 2,
     }
 
     data = json.dumps(raw, sort_keys=True)
@@ -22,7 +23,8 @@ def cache_key_generator_with_id(prefix: str, filters: Dict[str, Any], page: int,
         "filters": filters,
         "page": page,
         "limit": limit,
-        "userId": userId
+        "userId": userId,
+        "version": 2,
     }
 
     data = json.dumps(raw, sort_keys=True)

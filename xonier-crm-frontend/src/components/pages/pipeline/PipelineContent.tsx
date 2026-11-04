@@ -122,7 +122,7 @@ const PipelineContent = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const fetchCampaigns = useCallback(async () => {
+  const fetchCampaigns = useCallback(async (pageOverride?: number) => {
     setIsLoading(true);
     setSelectedCampaignIds([]); // Reset selection when fetching/paginating
     try {
@@ -132,7 +132,8 @@ const PipelineContent = () => {
       if (sortField) filters.sortField = sortField;
       if (sortOrder) filters.sortOrder = sortOrder;
 
-      const res = await CampaignService.getAll(currentPage, pageLimit, filters);
+      const pageToFetch = pageOverride ?? currentPage;
+      const res = await CampaignService.getAll(pageToFetch, pageLimit, filters);
       if (res.status === 200) {
         setCampaigns(res.data.data.data);
         setCurrentPage(Number(res.data.data.page));
@@ -901,7 +902,10 @@ const PipelineContent = () => {
           onClose={() => setIsCreateModalOpen(false)}
           onSuccess={() => {
             setIsCreateModalOpen(false);
-            fetchCampaigns();
+            setCurrentPage(1);
+            setSortField("createdAt");
+            setSortOrder("desc");
+            void fetchCampaigns(1);
             refreshStats();
           }}
         />

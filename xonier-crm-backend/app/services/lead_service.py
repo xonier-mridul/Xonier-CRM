@@ -894,7 +894,7 @@ class LeadService:
             cache_query = {k: serialize_for_cache(v) for k, v in query.items()}
             # Bump the list-cache shape after sourcing follow-up data from the
             # mobile activity record, so older cached lead values cannot survive.
-            cache_query["callTimelineFollowUpVersion"] = 2
+            cache_query["callTimelineFollowUpVersion"] = 3
 
             key = cache_key_generator_with_id(
                 prefix=LEAD_CACHE_NAMESPACE,
@@ -923,7 +923,7 @@ class LeadService:
                 limit=int(limit),
                 filters=query,
                 populate=["createdBy", "updatedBy", "assignedTo"],
-                sort=["-createdAt"]
+                sort=["-createdAt", "-_id"]
             )
 
             if not result:
@@ -1081,7 +1081,7 @@ class LeadService:
                 return json.loads(cache)
 
             result = await self.repo.get_all(
-                page=int(page), limit=int(limit), filters=query, sort=["-createdAt"]
+                page=int(page), limit=int(limit), filters=query, sort=["-createdAt", "-_id"]
             )
 
             if not result:
@@ -1138,6 +1138,7 @@ class LeadService:
                 limit=int(limit),
                 filters=query,
                 populate=["createdBy", "updatedBy"],
+                sort=["-createdAt", "-_id"],
             )
 
             if not result:
@@ -1708,7 +1709,7 @@ class LeadService:
 
             total = await collection.count_documents(query)
 
-            cursor = collection.find(query).sort("deletedAt", -1).skip(skip).limit(limit)
+            cursor = collection.find(query).sort([("deletedAt", -1), ("_id", -1)]).skip(skip).limit(limit)
             leads = await cursor.to_list(length=limit)
 
             for lead in leads:

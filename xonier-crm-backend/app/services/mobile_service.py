@@ -271,7 +271,7 @@ class MobileService:
             leads_col = self._leads()
             total = await leads_col.count_documents(query)
             docs = await leads_col.find(query).sort(
-                [("assignedAt", -1), ("createdAt", -1)]
+                [("createdAt", -1), ("_id", -1)]
             ).skip((page - 1) * limit).limit(limit).to_list(length=limit)
 
             status_rows = await leads_col.aggregate([
@@ -426,7 +426,7 @@ class MobileService:
                 uid, company, filters.get("status"), (filters.get("search") or "").strip(), user
             )
             total = await self._campaigns().count_documents(query)
-            camps = await self._campaigns().find(query).sort("createdAt", -1) \
+            camps = await self._campaigns().find(query).sort([("createdAt", -1), ("_id", -1)]) \
                 .skip((page - 1) * limit).limit(limit).to_list(length=limit)
 
             stats = await self._campaign_stats([c["_id"] for c in camps], uid)

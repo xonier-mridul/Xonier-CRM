@@ -152,11 +152,12 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
     }
   };
 
-  const fetchLeads = useCallback(async (showLoading = true) => {
+  const fetchLeads = useCallback(async (showLoading = true, pageOverride?: number) => {
     if (showLoading) setIsLoading(true);
     try {
       const campaignId = campaign.id || campaign._id;
-      const res = await CampaignService.getCampaignLeads(campaignId, currentPage, pageLimit);
+      const pageToFetch = pageOverride ?? currentPage;
+      const res = await CampaignService.getCampaignLeads(campaignId, pageToFetch, pageLimit);
       if (res.status === 200) {
         const payload = res.data?.data;
         // Backend returns: { data: [...], page, limit, total, totalPages }
@@ -306,7 +307,13 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
                 {total} total lead{total !== 1 ? "s" : ""}
               </span>
             )}
-            <AddLeadsToCampaign campaignId={campaign.id || campaign._id} onImported={fetchLeads} />
+            <AddLeadsToCampaign
+              campaignId={campaign.id || campaign._id}
+              onImported={() => {
+                setCurrentPage(1);
+                void fetchLeads(true, 1);
+              }}
+            />
           </div>
         </div>
 

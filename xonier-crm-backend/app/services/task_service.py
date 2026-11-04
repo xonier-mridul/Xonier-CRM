@@ -471,7 +471,7 @@ class TaskService:
                 filters=query,
                 # populate=["category", "status", "assignedTo", "createdBy"],
                 lookups=TASK_BOARD_LOOKUPS,
-                sort=["order", "-createdAt"],
+                sort=["-createdAt", "-_id"],
                 project=TASK_BOARD_PROJECT
             )
 
