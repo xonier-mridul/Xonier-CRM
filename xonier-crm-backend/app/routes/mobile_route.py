@@ -50,7 +50,9 @@ async def mobile_my_leads(request: Request):
 
 @router.patch("/leads/{lead_id}/status", status_code=200, dependencies=_auth_deps)
 async def mobile_update_lead_status(request: Request, lead_id: str, payload: LeadConnectStatusUpdateSchema):
-    result = await mobileService.update_lead_status(request.state.user, lead_id, payload.status.value)
+    result = await mobileService.update_lead_status(
+        request.state.user, lead_id, payload.status.value, payload.followUpIn
+    )
     return successResponse(200, f"Lead status updated to {result['connectStatus']}", result)
 
 

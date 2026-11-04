@@ -1,6 +1,12 @@
 """Non-secret settings for isolated tests/previews; no real CRM .env is needed."""
 import base64
 import os
+from pathlib import Path
+import sys
+
+BACKEND_ROOT = str(Path(__file__).resolve().parents[1])
+if BACKEND_ROOT not in sys.path:
+    sys.path.insert(0, BACKEND_ROOT)
 
 
 def seed_test_settings():

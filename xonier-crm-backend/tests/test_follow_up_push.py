@@ -179,3 +179,35 @@ class PushPersistenceTests(IsolatedAsyncioTestCase):
         self.assertEqual(challenge["pendingFcmEncrypted"], "encrypted:device-token")
         self.assertEqual(challenge["loginUserId"], str(user_id))
         self.assertEqual(challenge["loginCompanyId"], str(company_id))
+
+    async def test_mobile_update_lead_status_forwards_follow_up_in(self):
+        from app.services.mobile_service import MobileService
+
+        uid, company_id, lead_id = ObjectId(), ObjectId(), ObjectId()
+        user = {"_id": str(uid), "companyId": str(company_id), "userRole": [{"code": "user"}]}
+        service = MobileService()
+        service._leads = Mock(
+            return_value=Mock(
+                find_one=AsyncMock(
+                    return_value={
+                        "_id": lead_id,
+                        "assignedTo": [{"$id": uid}],
+                        "fullName": "Lead One",
+                        "lead_id": "L-1",
+                    }
+                )
+            )
+        )
+        with patch(
+            "app.services.mobile_service.LeadService.update_connect_status",
+            new_callable=AsyncMock,
+            return_value={"connectStatus": "follow_up", "followUpAt": "2026-11-03T15:00:00Z"},
+        ) as update_mock:
+            result = await service.update_lead_status(user, str(lead_id), "follow_up", "1h")
+            update_mock.assert_awaited_once_with(
+                leadId=str(lead_id),
+                user=user,
+                payload={"status": "follow_up", "followUpIn": "1h"},
+            )
+            self.assertEqual(result["connectStatus"], "follow_up")
+            self.assertEqual(result["followUpAt"], "2026-11-03T15:00:00Z")

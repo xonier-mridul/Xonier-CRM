@@ -78,7 +78,7 @@ class EnvSettings(BaseSettings):
     GOOGLE_CALENDAR_REDIRECT_URI: Optional[str] = None
     # Enable only after a rotated service account is installed server-side via
     # GOOGLE_APPLICATION_CREDENTIALS and FCM HTTP v1 is configured.
-    FOLLOW_UP_PUSH_ENABLED: bool = False
+    FOLLOW_UP_PUSH_ENABLED: bool = True
     FCM_PROJECT_ID: str = "trakeroo"
     GOOGLE_APPLICATION_CREDENTIALS: Optional[str] = None
 

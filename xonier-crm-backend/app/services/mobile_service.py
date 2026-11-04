@@ -664,28 +664,42 @@ class MobileService:
             campaign_id=campaign_id, campaign_lead_id=campaign_lead_id, user=user
         )
 
-    async def update_lead_status(self, user: Dict[str, Any], lead_id: str, status: str):
+    async def update_lead_status(
+        self,
+        user: Dict[str, Any],
+        lead_id: str,
+        status: str,
+        follow_up_in: Optional[str] = None,
+    ):
         """Agent marks the connect status of one of THEIR leads."""
         try:
             uid, company = self._ids(user)
             lead_oid = _oid(lead_id, "lead id")
             lead = await self._leads().find_one(
                 {"_id": lead_oid, "companyId": company, "deletedAt": None},
-                {"assignedTo": 1, "fullName": 1, "lead_id": 1},
+                {"assignedTo": 1, "createdBy": 1, "fullName": 1, "lead_id": 1},
             )
             if not lead:
                 raise AppException(404, "Lead not found")
-            if uid not in {_ref_id(r) for r in (lead.get("assignedTo") or [])}:
+            is_admin = validate_company_admin(user["userRole"])
+            is_owner = (
+                uid in {_ref_id(r) for r in (lead.get("assignedTo") or [])}
+                or uid == _ref_id(lead.get("createdBy"))
+            )
+            if not is_admin and not is_owner:
                 raise AppException(403, "You can only update the status of your own leads")
 
             result = await LeadService().update_connect_status(
-                leadId=str(lead_oid), user=user, payload={"status": status}
+                leadId=str(lead_oid),
+                user=user,
+                payload={"status": status, "followUpIn": follow_up_in},
             )
             return {
                 "id": str(lead_oid),
                 "leadId": lead.get("lead_id"),
                 "fullName": lead.get("fullName"),
                 "connectStatus": result.get("connectStatus"),
+                "followUpAt": result.get("followUpAt"),
             }
         except AppException:
             raise

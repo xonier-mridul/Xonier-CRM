@@ -2,6 +2,8 @@
 
 import asyncio
 import logging
+import os
+from pathlib import Path
 import uuid
 from datetime import datetime, timedelta, timezone
 from beanie import PydanticObjectId
@@ -198,9 +200,23 @@ class SenderIdMismatchError(Exception):
     pass
 
 
+def _resolve_cred_path(cred_path: str | None) -> str | None:
+    candidates = [
+        cred_path,
+        os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"),
+        str(Path(__file__).resolve().parents[2] / "firebase-service-account.json"),
+    ]
+    for candidate in candidates:
+        if candidate and os.path.exists(candidate):
+            return candidate
+    return None
+
+
 def send_fcm_message(token: str, job: dict, lead_name: str, now: datetime) -> None:
     settings = get_setting()
-    cred_path = settings.GOOGLE_APPLICATION_CREDENTIALS
+    cred_path = _resolve_cred_path(settings.GOOGLE_APPLICATION_CREDENTIALS)
+    if not cred_path:
+        raise FileNotFoundError("Firebase service account JSON not found (set GOOGLE_APPLICATION_CREDENTIALS or place firebase-service-account.json in backend root)")
     try:
         import firebase_admin
         from firebase_admin import credentials, messaging
@@ -208,13 +224,10 @@ def send_fcm_message(token: str, job: dict, lead_name: str, now: datetime) -> No
         try:
             firebase_admin.get_app()
         except ValueError:
-            if cred_path:
-                firebase_admin.initialize_app(
-                    credentials.Certificate(cred_path),
-                    options={"projectId": settings.FCM_PROJECT_ID},
-                )
-            else:
-                firebase_admin.initialize_app(options={"projectId": settings.FCM_PROJECT_ID})
+            firebase_admin.initialize_app(
+                credentials.Certificate(cred_path),
+                options={"projectId": settings.FCM_PROJECT_ID},
+            )
 
         message = build_message(messaging, token, job, lead_name, now)
         messaging.send(message)
@@ -223,12 +236,11 @@ def send_fcm_message(token: str, job: dict, lead_name: str, now: datetime) -> No
         pass
 
     import json
-    import os
     import time
     import jwt
     import requests
 
-    path = cred_path or os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+    path = cred_path
     if not path or not os.path.exists(path):
         raise RuntimeError("GOOGLE_APPLICATION_CREDENTIALS file not found")
 
