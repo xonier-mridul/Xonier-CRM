@@ -30,7 +30,7 @@ from app.db.models.user_model import UserModel
 from app.services.campaign_service import CampaignService
 from app.services.lead_service import LeadService
 from app.utils.custom_exception import AppException
-from app.utils.validate_admin import validate_company_admin
+from app.utils.validate_admin import validate_admin_company_admin, validate_company_admin
 
 DELETED_LEAD_STATUSES = ["delete", "deleted"]
 CLOSED_LEAD_STATUSES = ["won", "lost", "delete", "deleted"]
@@ -96,7 +96,7 @@ class MobileService:
 
     @staticmethod
     def _is_company_admin(user: Dict[str, Any]) -> bool:
-        return validate_company_admin(user.get("userRole", []))
+        return validate_admin_company_admin(user.get("userRole", []))
 
     # ─── collections ──────────────────────────────────────────────────────────
 
@@ -307,6 +307,7 @@ class MobileService:
                 item["campaignLeadId"] = _str(cl["_id"]) if cl else None
                 item["lastContactedAt"] = _iso(cl.get("lastContactedAt")) if cl else None
                 item["notes"] = cl.get("notes") if cl else None
+                item["canUpdateStatus"] = True
                 data.append(item)
 
             return {
@@ -620,6 +621,7 @@ class MobileService:
                 camp.get("distributionMode") == "on_demand" and camp.get("status") != "paused"
             )
 
+            is_admin = self._is_company_admin(user)
             data = []
             for r in rows:
                 owner = r.get("assignedOid")
@@ -633,7 +635,7 @@ class MobileService:
                     "assignedAt": _iso(r.get("assignedAt")),
                     "lastContactedAt": _iso(r.get("lastContactedAt")),
                     "notes": r.get("notes"),
-                    "canUpdateStatus": own == "mine",
+                    "canUpdateStatus": own == "mine" or is_admin,
                     "canClaim": own == "unassigned" and can_claim_campaign,
                 })
                 data.append(item)
@@ -681,7 +683,7 @@ class MobileService:
             )
             if not lead:
                 raise AppException(404, "Lead not found")
-            is_admin = validate_company_admin(user["userRole"])
+            is_admin = self._is_company_admin(user)
             is_owner = (
                 uid in {_ref_id(r) for r in (lead.get("assignedTo") or [])}
                 or uid == _ref_id(lead.get("createdBy"))

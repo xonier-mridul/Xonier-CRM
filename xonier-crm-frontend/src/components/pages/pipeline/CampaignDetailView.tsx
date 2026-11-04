@@ -104,6 +104,14 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
   const router = useRouter();
   const auth = useSelector((state: RootState) => state.auth);
   const currentUserId = auth.user?._id ?? auth.user?.id ?? "";
+  const isAdminUser = Boolean(
+    auth.isAdmin ||
+      auth.user?.userRole?.some((role: any) =>
+        ["SUPER_ADMIN", "COMPANY_ADMIN", "ADMIN"].includes(
+          String(role?.code || "").toUpperCase()
+        )
+      )
+  );
   const [leads, setLeads] = useState<CampaignLead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -358,7 +366,7 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
                   const isAssignedToMe = Boolean(
                     currentUserId && lead.assignedTo?._id === currentUserId
                   );
-                  const canAccessLead = isAssignedToMe || auth.isAdmin;
+                  const canAccessLead = isAssignedToMe || isAdminUser;
                   return (
                     <tr
                       key={lead._id}

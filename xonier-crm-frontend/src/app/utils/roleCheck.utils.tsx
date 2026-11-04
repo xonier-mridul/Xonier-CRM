@@ -3,7 +3,7 @@ import { UserRole } from "@/src/types";
 
 
 const checkRole = (permission: string, userRole: UserRole[]):boolean=>{
-    if(userRole.some(i => i.code === SUPER_ADMIN_ROLE_CODE)){
+    if(userRole.some(i => i.code === SUPER_ADMIN_ROLE_CODE || i.code === "COMPANY_ADMIN")){
         return true
     }
     
