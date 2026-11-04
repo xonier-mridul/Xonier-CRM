@@ -105,6 +105,34 @@ const NavBar = () => {
   const isAdmin = useSelector((state: RootState) => state.auth.isAdmin);
 
   const [profileOpen, setProfileOpen] = useState(false);
+  const profileCloseTimerRef = useRef<number | null>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  const handleProfileMouseEnter = () => {
+    if (profileCloseTimerRef.current) {
+      window.clearTimeout(profileCloseTimerRef.current);
+      profileCloseTimerRef.current = null;
+    }
+    setProfileOpen(true);
+  };
+
+  const handleProfileMouseLeave = () => {
+    if (profileCloseTimerRef.current) {
+      window.clearTimeout(profileCloseTimerRef.current);
+    }
+    profileCloseTimerRef.current = window.setTimeout(() => {
+      setProfileOpen(false);
+      profileCloseTimerRef.current = null;
+    }, 500);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (profileCloseTimerRef.current) {
+        window.clearTimeout(profileCloseTimerRef.current);
+      }
+    };
+  }, []);
   const [notifOpen, setNotifOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -218,6 +246,9 @@ useEffect(()=>{
     if(calRef.current && 
       !calRef.current.contains(e.target as Node)){
        setCalOpen(false)
+    }
+    if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+      setProfileOpen(false);
     }
 
   }
@@ -476,15 +507,20 @@ onClick={() => i18n.changeLanguage("po")}>
 
         {/* User Profile */}
         {auth.isAuthenticated && (
-          <div className="relative" onMouseLeave={() => setProfileOpen(false)}>
+          <div
+            ref={profileRef}
+            className="relative"
+            onMouseEnter={handleProfileMouseEnter}
+            onMouseLeave={handleProfileMouseLeave}
+          >
             <button
               type="button"
               onClick={() => setProfileOpen((open) => !open)}
-              className="flex items-center gap-2.5 cursor-pointer group rounded-xl p-1 -m-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+              className="flex items-center gap-2.5 cursor-pointer group rounded-xl px-1.5 py-1 focus:outline-none"
               aria-expanded={profileOpen}
               aria-label="Open account menu"
             >
-              <span className="h-8.5 w-8.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center text-xs font-bold tracking-tight shadow-xs ring-2 ring-slate-100 dark:ring-slate-800 group-hover:ring-slate-300 dark:group-hover:ring-slate-600 transition-all">
+              <span className="h-8 w-8 rounded-lg bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 flex items-center justify-center text-xs font-semibold tracking-tight">
                 {getInitials(auth.user?.firstName, auth.user?.lastName)}
               </span>
               <span className="text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white capitalize text-sm font-medium hidden md:block">
@@ -495,52 +531,98 @@ onClick={() => i18n.changeLanguage("po")}>
             <AnimatePresence>
               {profileOpen && (
                 <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 8 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
-                  className="absolute right-0 mt-3 w-80 overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-3 shadow-[0_20px_60px_-18px_rgba(15,23,42,0.35)] dark:border-slate-700 dark:bg-slate-900"
+                  initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                  onMouseEnter={handleProfileMouseEnter}
+                  onMouseLeave={handleProfileMouseLeave}
+                  className="absolute right-0 top-full mt-2 w-64 rounded-2xl border border-slate-200/80 bg-white/95 p-1.5 shadow-[0_12px_36px_-6px_rgba(15,23,42,0.12),0_4px_16px_-2px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-900/95 dark:shadow-[0_20px_48px_-8px_rgba(0,0,0,0.5)] z-50 before:absolute before:-top-3 before:left-0 before:right-0 before:h-3 before:content-['']"
                 >
-                  <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-3 dark:bg-slate-800/80">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-sm font-bold tracking-tight text-white shadow-sm dark:bg-white dark:text-slate-900">
-                      {getInitials(auth?.user?.firstName, auth?.user?.lastName)}
-                    </div>
-                    <div className="flex-1 flex flex-col min-w-0">
-                      <h3 className="text-sm font-semibold capitalize text-slate-900 truncate dark:text-white">
-                        {auth?.user?.firstName} {auth?.user?.lastName}
-                      </h3>
-                      <div className="mt-1 flex flex-wrap gap-1">
-                        {auth?.user?.userRole?.map((i, ind) => (
-                          <span key={ind} className="rounded-full bg-white px-2 py-0.5 text-[10px] font-medium text-slate-500 shadow-sm dark:bg-slate-700 dark:text-slate-300">
-                            {i.name}
-                          </span>
-                        ))}
+                  {/* User Badge & Email Header */}
+                  {(auth?.user?.userRole?.length || auth?.user?.email) && (
+                    <div className="rounded-xl bg-slate-50/80 px-3 py-2.5 dark:bg-slate-800/50 border border-slate-100/80 dark:border-slate-800/60 mb-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-cyan-50 text-cyan-700 dark:bg-cyan-950/50 dark:text-cyan-300 ring-1 ring-cyan-500/20">
+                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
+                          {auth?.user?.userRole?.[0]?.name || "User"}
+                        </span>
                       </div>
+                      {auth?.user?.email && (
+                        <p className="mt-1.5 truncate text-[12px] font-medium text-slate-500 dark:text-slate-400">
+                          {auth.user.email}
+                        </p>
+                      )}
                     </div>
-                  </div>
-                  <div className="my-3 border-t border-slate-100 dark:border-slate-800" />
-                  <nav className="space-y-1">
-                    <Link href={`/users/${auth?.user?._id || auth?.user?.id}`} onClick={() => setProfileOpen(false)} className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white">
-                      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-50 text-violet-600 transition-transform group-hover:scale-105 dark:bg-violet-500/15 dark:text-violet-300"><FiUser className="text-base" /></span>
-                      <span className="flex-1">My Profile</span><FiChevronRight className="text-slate-400" />
+                  )}
+
+                  {/* Navigation Links */}
+                  <nav className="space-y-0.5 py-0.5">
+                    <Link
+                      href={`/users/${auth?.user?._id || auth?.user?.id}`}
+                      onClick={() => setProfileOpen(false)}
+                      className="group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium text-slate-600 transition-all duration-150 hover:bg-slate-100/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-white"
+                    >
+                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition-all duration-150 group-hover:bg-cyan-50 group-hover:text-cyan-600 dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-cyan-950/50 dark:group-hover:text-cyan-400">
+                        <FiUser className="text-sm" />
+                      </span>
+                      <span className="flex-1">My Profile</span>
+                      <FiChevronRight className="text-xs text-slate-300 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-slate-500 dark:text-slate-600 dark:group-hover:text-slate-400" />
                     </Link>
-                    {!isAdmin && companyId && <Link href={`/companies/${companyId}`} onClick={() => setProfileOpen(false)} className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white">
-                      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-50 text-sky-600 transition-transform group-hover:scale-105 dark:bg-sky-500/15 dark:text-sky-300"><FaBuilding className="text-base" /></span>
-                      <span className="flex-1">Organization Overview</span><FiChevronRight className="text-slate-400" />
-                    </Link>}
-                    {!isAdmin && <Link href="/companySetting" onClick={() => setProfileOpen(false)} className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white">
-                      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-50 text-cyan-600 transition-transform group-hover:scale-105 dark:bg-cyan-500/15 dark:text-cyan-300"><FiSettings className="text-base" /></span>
-                      <span className="flex-1">Organization Settings</span><FiChevronRight className="text-slate-400" />
-                    </Link>}
-                    <Link href="/setting" onClick={() => setProfileOpen(false)} className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white">
-                      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 text-amber-600 transition-transform group-hover:scale-105 dark:bg-amber-500/15 dark:text-amber-300"><FiSliders className="text-base" /></span>
-                      <span className="flex-1">Preferences</span><FiChevronRight className="text-slate-400" />
+
+                    {!isAdmin && companyId && (
+                      <Link
+                        href={`/companies/${companyId}`}
+                        onClick={() => setProfileOpen(false)}
+                        className="group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium text-slate-600 transition-all duration-150 hover:bg-slate-100/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-white"
+                      >
+                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition-all duration-150 group-hover:bg-indigo-50 group-hover:text-indigo-600 dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-indigo-950/50 dark:group-hover:text-indigo-400">
+                          <FaBuilding className="text-xs" />
+                        </span>
+                        <span className="flex-1">Organization Overview</span>
+                        <FiChevronRight className="text-xs text-slate-300 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-slate-500 dark:text-slate-600 dark:group-hover:text-slate-400" />
+                      </Link>
+                    )}
+
+                    {!isAdmin && (
+                      <Link
+                        href="/companySetting"
+                        onClick={() => setProfileOpen(false)}
+                        className="group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium text-slate-600 transition-all duration-150 hover:bg-slate-100/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-white"
+                      >
+                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition-all duration-150 group-hover:bg-sky-50 group-hover:text-sky-600 dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-sky-950/50 dark:group-hover:text-sky-400">
+                          <FiSettings className="text-sm" />
+                        </span>
+                        <span className="flex-1">Organization Settings</span>
+                        <FiChevronRight className="text-xs text-slate-300 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-slate-500 dark:text-slate-600 dark:group-hover:text-slate-400" />
+                      </Link>
+                    )}
+
+                    <Link
+                      href="/setting"
+                      onClick={() => setProfileOpen(false)}
+                      className="group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium text-slate-600 transition-all duration-150 hover:bg-slate-100/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-white"
+                    >
+                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition-all duration-150 group-hover:bg-amber-50 group-hover:text-amber-600 dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-amber-950/50 dark:group-hover:text-amber-400">
+                        <FiSliders className="text-sm" />
+                      </span>
+                      <span className="flex-1">Preferences</span>
+                      <FiChevronRight className="text-xs text-slate-300 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-slate-500 dark:text-slate-600 dark:group-hover:text-slate-400" />
                     </Link>
                   </nav>
-                  <div className="my-3 border-t border-slate-100 dark:border-slate-800" />
-                  <button onClick={handleLogout} className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200">
-                    <FiLogOut /> Log Out
-                  </button>
+
+                  {/* Log Out */}
+                  <div className="mt-1 border-t border-slate-100/80 pt-1 dark:border-slate-800/60">
+                    <button
+                      onClick={handleLogout}
+                      className="group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium text-rose-600 transition-all duration-150 hover:bg-rose-50/80 dark:text-rose-400 dark:hover:bg-rose-950/40 cursor-pointer"
+                    >
+                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-50 text-rose-500 transition-all duration-150 group-hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-400 dark:group-hover:bg-rose-900/50">
+                        <FiLogOut className="text-sm" />
+                      </span>
+                      <span className="flex-1 text-left font-semibold">Log Out</span>
+                    </button>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>

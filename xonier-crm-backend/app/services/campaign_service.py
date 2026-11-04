@@ -1,8 +1,9 @@
 from app.utils.transaction_retry import retry_transaction
 from app.services.lead_status_service import LeadStatusService
-from app.utils.lead_assignment_access import require_lead_assigner, require_lower_assignee
+from app.utils.lead_assignment_access import can_assign_leads, require_lead_assigner, require_lower_assignee
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
+import re
 import uuid
 import traceback
 
@@ -76,7 +77,7 @@ class CampaignService:
         campaign = await self.repo.find_by_id(PydanticObjectId(campaign_id))
         if not campaign or campaign.deletedAt is not None:
             raise AppException(404, "Campaign not found")
-        if user and not validate_admin_company_admin(user.get("userRole", [])):
+        if user and not can_assign_leads(user.get("userRole", [])):
             visible_campaigns, _, _ = await self._get_user_campaign_scope(user)
             if not any(str(item.get("_id")) == str(campaign.id) for item in visible_campaigns):
                 raise AppException(404, "Campaign not found")
@@ -108,7 +109,7 @@ class CampaignService:
             campaigns = await self._collection().find(
                 {"companyId": company_oid, "deletedAt": None, "status": {"$ne": "deleted"}}
             ).to_list(length=None)
-        if validate_admin_company_admin(user.get("userRole", [])):
+        if can_assign_leads(user.get("userRole", [])):
             return campaigns, None, None
 
         user_oid = PydanticObjectId(user["_id"])
@@ -117,9 +118,10 @@ class CampaignService:
             {
                 "companyId": company_oid,
                 "deletedAt": None,
+                "isAssigned": True,
                 "$or": [
-                    {"createdBy.$id": user_oid},
                     {"assignedTo.$id": user_oid},
+                    {"assignedTo": user_oid},
                 ],
             },
             {"_id": 1},
@@ -164,11 +166,33 @@ class CampaignService:
             agent_ids = {self._reference_id(ref) for ref in campaign.get("agents", []) or []}
             creator_id = self._reference_id(campaign.get("createdBy"))
             is_member = user_oid in manager_ids or user_oid in agent_ids or creator_id == user_oid
-            # Non-admin users only see campaigns in which they have assigned/own leads.
-            if str(campaign["_id"]) in personal_campaign_ids:
+            # Campaign members see the campaign even if no lead is assigned yet;
+            # other users only see campaigns in which they own leads.
+            if is_member:
+                membership_campaign_ids.add(campaign["_id"])
+            if is_member or str(campaign["_id"]) in personal_campaign_ids:
                 visible_campaigns.append(campaign)
-                if is_member:
-                    membership_campaign_ids.add(campaign["_id"])
+
+        # Members can also see the unassigned pool of their campaigns; a lead is
+        # assigned to the member automatically once they call/claim it.
+        if membership_campaign_ids:
+            pool_links = await self._lead_collection().find(
+                {
+                    "companyId": company_oid,
+                    "assignedTo": None,
+                    "$or": [
+                        {"campaignId.$id": {"$in": list(membership_campaign_ids)}},
+                        {"campaignId": {"$in": list(membership_campaign_ids)}},
+                    ],
+                },
+                {"campaignId": 1, "leadId": 1, "assignedTo": 1, "campaignStatus": 1},
+            ).to_list(length=None)
+            for link in pool_links:
+                campaign_id = self._reference_id(link.get("campaignId"))
+                lead_id = self._reference_id(link.get("leadId"))
+                if campaign_id and lead_id:
+                    personal_lead_ids.add(lead_id)
+                    personal_links_by_campaign.setdefault(str(campaign_id), []).append(link)
 
         return visible_campaigns, personal_lead_ids, {
             "userId": user_oid,
@@ -268,7 +292,7 @@ class CampaignService:
             sort_order = -1 if sort_order_str == "desc" else 1
 
             user_scope = None
-            if not validate_admin_company_admin(user.get("userRole", [])):
+            if not can_assign_leads(user.get("userRole", [])):
                 visible_campaigns, _, user_scope = await self._get_user_campaign_scope(user)
                 visible_campaign_ids = [campaign["_id"] for campaign in visible_campaigns]
                 if not visible_campaign_ids:
@@ -332,7 +356,7 @@ class CampaignService:
             if not campaign or campaign.deletedAt is not None:
                 raise AppException(404, "Campaign not found")
 
-            if not validate_admin_company_admin(user.get("userRole", [])):
+            if not can_assign_leads(user.get("userRole", [])):
                 visible_campaigns, _, _ = await self._get_user_campaign_scope(user)
                 if not any(str(item.get("_id")) == str(campaign.id) for item in visible_campaigns):
                     raise AppException(404, "Campaign not found")
@@ -842,29 +866,37 @@ class CampaignService:
             page = int(filters.get("page", 1))
             limit = int(filters.get("limit", 20))
             status_filter = filters.get("campaignStatus")
+            search = (filters.get("search") or "").strip()
             skip = (page - 1) * limit
 
             match: Dict[str, Any] = {
                 "$or": [{"campaignId.$id": campaign_oid}, {"campaignId": campaign_oid}],
             }
 
-            is_admin = validate_admin_company_admin(user.get("userRole", []))
+            is_admin = can_assign_leads(user.get("userRole", []))
             user_scope = None
             if not is_admin:
                 visible_campaigns, _, user_scope = await self._get_user_campaign_scope(user)
                 if not any(str(item.get("_id")) == str(campaign_oid) for item in visible_campaigns):
                     raise AppException(404, "Campaign not found")
 
-            # Campaign ownership is independent of global lead ownership.
-            # All regular members see only their own assignment and the pool.
+            # Admins/managers see every lead. Regular users see the leads assigned
+            # to them, plus the unassigned pool only of campaigns they belong to
+            # (never other users' leads).
             match["companyId"] = PydanticObjectId(user["companyId"])
             uid = PydanticObjectId(user["_id"])
             if not is_admin:
-                match = {"$and": [match, {"$or": [
+                own_lead_ids = list((user_scope or {}).get("ownLeadIds", []))
+                member_ids = list((user_scope or {}).get("membershipCampaignIds", []))
+                conditions = [
                     {"assignedTo.$id": uid},
                     {"assignedTo": uid},
-                    {"assignedTo": None},
-                ]}]}
+                    {"leadId.$id": {"$in": own_lead_ids}},
+                    {"leadId": {"$in": own_lead_ids}},
+                ]
+                if campaign_oid in member_ids:
+                    conditions.append({"assignedTo": None})
+                match = {"$and": [match, {"$or": conditions}]}
             if status_filter:
                 try:
                     match["campaignStatus"] = CAMPAIGN_LEAD_STATUS(status_filter)
@@ -945,34 +977,66 @@ class CampaignService:
                         },
                     }
                 },
-                {
-                    "$facet": {
-                        "data": [{"$skip": skip}, {"$limit": limit}],
-                        "totalCount": [{"$count": "count"}],
-                    }
-                },
             ]
 
-            result = await collection.aggregate(pipeline).to_list(length=1)
-            if not result:
-                return {"data": [], "page": page, "limit": limit, "totalPages": 0, "total": 0}
-
-            data = result[0].get("data", [])
-            # Show saved phone numbers in the campaign table. Call requests
-            # enforce campaign assignment separately in the call service.
-            for item in data:
+            def _decrypt_lead_phone(item: Dict[str, Any]) -> str:
                 lead_data = item.get("lead") or {}
                 if lead_data.get("phone"):
                     try:
                         lead_data["phone"] = self.encryption.decrypt_data(lead_data["phone"])
                     except Exception:
-                        # Keep the value unavailable rather than exposing encrypted data.
                         lead_data["phone"] = None
                 else:
                     lead_data.pop("phone", None)
-            total_count_list = result[0].get("totalCount", [])
-            total = total_count_list[0].get("count", 0) if total_count_list else 0
-            total_pages = (total + limit - 1) // limit if total else 0
+                return str(lead_data.get("phone") or "")
+
+            if search:
+                all_items = await collection.aggregate(pipeline).to_list(length=None)
+                search_lower = search.lower()
+                search_digits = re.sub(r"\D", "", search)
+
+                filtered_items: List[Dict[str, Any]] = []
+                for item in all_items:
+                    phone_plain = _decrypt_lead_phone(item)
+                    lead_data = item.get("lead") or {}
+                    full_name = str(lead_data.get("fullName") or "").lower()
+                    company_name = str(lead_data.get("companyName") or "").lower()
+                    lead_code = str(lead_data.get("lead_id") or "").lower()
+                    phone_lower = phone_plain.lower()
+                    phone_digits = re.sub(r"\D", "", phone_plain)
+
+                    matched = (
+                        search_lower in full_name
+                        or search_lower in company_name
+                        or search_lower in phone_lower
+                        or search_lower in lead_code
+                        or (bool(search_digits) and search_digits in phone_digits)
+                    )
+                    if matched:
+                        filtered_items.append(item)
+
+                total = len(filtered_items)
+                data = filtered_items[skip : skip + limit]
+                total_pages = (total + limit - 1) // limit if total else 0
+            else:
+                pipeline.append(
+                    {
+                        "$facet": {
+                            "data": [{"$skip": skip}, {"$limit": limit}],
+                            "totalCount": [{"$count": "count"}],
+                        }
+                    }
+                )
+                result = await collection.aggregate(pipeline).to_list(length=1)
+                if not result:
+                    return {"data": [], "page": page, "limit": limit, "totalPages": 0, "total": 0}
+
+                data = result[0].get("data", [])
+                for item in data:
+                    _decrypt_lead_phone(item)
+                total_count_list = result[0].get("totalCount", [])
+                total = total_count_list[0].get("count", 0) if total_count_list else 0
+                total_pages = (total + limit - 1) // limit if total else 0
 
             return {
                 "data": data,
@@ -1568,7 +1632,7 @@ class CampaignService:
                 {"companyId": company_oid, "deletedAt": None, "status": {"$ne": "deleted"}},
                 {"_id": 1, "managers": 1, "agents": 1, "createdBy": 1},
             ).to_list(length=None)
-            is_admin = validate_admin_company_admin(user.get("userRole", []))
+            is_admin = can_assign_leads(user.get("userRole", []))
             user_scope = None
             if not is_admin:
                 campaigns, _, user_scope = await self._get_user_campaign_scope(user, campaigns)
@@ -1586,10 +1650,15 @@ class CampaignService:
             }
             if user_scope:
                 own_lead_ids = list(user_scope["ownLeadIds"])
+                member_ids = list(user_scope["membershipCampaignIds"])
                 link_match = {"$and": [link_match, {"$or": [
                     {"assignedTo.$id": user_scope["userId"]},
                     {"leadId.$id": {"$in": own_lead_ids}},
                     {"leadId": {"$in": own_lead_ids}},
+                    {"assignedTo": None, "$or": [
+                        {"campaignId.$id": {"$in": member_ids}},
+                        {"campaignId": {"$in": member_ids}},
+                    ]},
                 ]}]}
 
             lead_groups = await self._lead_collection().aggregate([
@@ -1618,14 +1687,27 @@ class CampaignService:
                     continue
 
                 if search:
+                    decrypted_phone = ""
+                    if lead_data.get("phone"):
+                        try:
+                            decrypted_phone = str(self.encryption.decrypt_data(lead_data["phone"]) or "")
+                        except Exception:
+                            decrypted_phone = ""
                     searchable = " ".join(
-                        str(lead_data.get(field) or "")
-                        for field in (
-                            "lead_id", "fullName", "companyName", "city", "source",
-                            "projectType", "dataTag", "status", "connectStatus",
-                        )
+                        [
+                            *(
+                                str(lead_data.get(field) or "")
+                                for field in (
+                                    "lead_id", "fullName", "companyName", "city", "source",
+                                    "projectType", "dataTag", "status", "connectStatus",
+                                )
+                            ),
+                            decrypted_phone,
+                            re.sub(r"\D", "", decrypted_phone),
+                        ]
                     ).lower()
-                    if search not in searchable:
+                    search_digits = re.sub(r"\D", "", search)
+                    if search not in searchable and not (search_digits and search_digits in searchable):
                         continue
                 matching_leads.append(lead)
 
@@ -1693,7 +1775,7 @@ class CampaignService:
                 {"companyId": company_oid, "deletedAt": None, "status": {"$ne": "deleted"}},
                 {"_id": 1, "status": 1, "managers": 1, "agents": 1, "createdBy": 1},
             ).to_list(length=None)
-            is_admin = validate_admin_company_admin(user.get("userRole", []))
+            is_admin = can_assign_leads(user.get("userRole", []))
             user_scope = None
             if not is_admin:
                 campaigns, _, user_scope = await self._get_user_campaign_scope(user, campaigns)
@@ -1716,10 +1798,15 @@ class CampaignService:
             }
             if user_scope:
                 own_lead_ids = list(user_scope["ownLeadIds"])
+                member_ids = list(user_scope["membershipCampaignIds"])
                 link_match = {"$and": [link_match, {"$or": [
                     {"assignedTo.$id": user_scope["userId"]},
                     {"leadId.$id": {"$in": own_lead_ids}},
                     {"leadId": {"$in": own_lead_ids}},
+                    {"assignedTo": None, "$or": [
+                        {"campaignId.$id": {"$in": member_ids}},
+                        {"campaignId": {"$in": member_ids}},
+                    ]},
                 ]}]}
 
             pipeline = [

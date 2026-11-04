@@ -81,11 +81,11 @@ async def update_connect_status(Request: Request, id: str, payload: LeadConnectS
     return await leadController.update_connect_status(request=Request, id=id, payload=payload.model_dump(mode="json"))
 
 @router.delete("/delete/{id}", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
-Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM)), Depends(dependencies.permissions(["lead:delete"]))])
+Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM))])
 async def delete(request: Request, id: str):
     return await leadController.delete(request,id)
 
 @router.delete("/delete/bulk", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
-Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM)), Depends(dependencies.permissions(["lead:delete"]))])
+Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM))])
 async def bulk_delete(request: Request, payload: BulkDeleteSchema):
     return await leadController.bulkDelete(request=request, payload=payload.model_dump(mode="json"))

@@ -19,6 +19,8 @@ import CreatedAt from "@/src/components/common/CreatedAt";
 import CreateCampaignModal from "./CreateCampaignModal";
 import CampaignDetailView from "./CampaignDetailView";
 import PipelineLeadTable, { PipelineLeadFilter } from "./PipelineLeadTable";
+import { usePermissions } from "@/src/hooks/usePermissions";
+import { PERMISSIONS } from "@/src/constants/enum";
 
 const PIE_COLORS: Record<string, string> = {
   not_reached: "#9ca3af",
@@ -76,6 +78,9 @@ const getCampaignIconAndBg = (index: number) => {
 
 const PipelineContent = () => {
   const { t } = useTranslation();
+  const { hasPermission } = usePermissions();
+  const canCreateCampaign = hasPermission(PERMISSIONS.createCampaign);
+  const canUpdateCampaign = hasPermission(PERMISSIONS.updateCampaign);
   const [campaigns, setCampaigns] = useState<ICampaign[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -104,6 +109,17 @@ const PipelineContent = () => {
   const [isSortOpen, setIsSortOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
   const sortRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleNav = (e: any) => {
+      if (e.detail?.path === "/pipeline") {
+        setSelectedCampaign(null);
+        setSelectedPipelineFilter(null);
+      }
+    };
+    window.addEventListener("app:navigation", handleNav);
+    return () => window.removeEventListener("app:navigation", handleNav);
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -536,7 +552,7 @@ const PipelineContent = () => {
             </div>
             
             <div className="flex items-center gap-3">
-              <div className="relative group z-20">
+              {canCreateCampaign && <div className="relative group z-20">
                 <button
                   onClick={() => setIsCreateModalOpen(true)}
                   className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#18A1C4] hover:bg-[#158ca8] text-white flex items-center justify-center shadow-sm shadow-[#18A1C4]/30 transition-all focus:outline-none"
@@ -548,9 +564,9 @@ const PipelineContent = () => {
                   Create Campaign
                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-b-gray-800 dark:border-b-gray-700"></div>
                 </div>
-              </div>
+              </div>}
 
-              {selectedCampaignIds.length > 0 && (
+              {canUpdateCampaign && selectedCampaignIds.length > 0 && (
                 <div className="flex items-center gap-2 pl-3 pr-2 py-1 rounded-xl bg-[#18A1C4]/10 border border-[#18A1C4]/30">
                   <span className="text-xs font-bold text-[#18A1C4] whitespace-nowrap">
                     {selectedCampaignIds.length} selected
@@ -697,12 +713,12 @@ const PipelineContent = () => {
                 <p className="text-gray-500 dark:text-gray-400 text-sm mt-1 mb-4 text-center max-w-sm">
           You haven&apos;t created any campaigns yet. Click the &quot;Create Campaign&quot; button to get started.
                 </p>
-                <button 
+                {canCreateCampaign && <button 
                   onClick={() => setIsCreateModalOpen(true)}
                   className="px-5 py-2.5 bg-[#18A1C4] hover:bg-[#158ca8] text-white rounded-xl text-sm font-medium transition-colors shadow-sm shadow-[#18A1C4]/30 flex items-center gap-2"
                 >
                   <Plus size={16} /> Create Campaign
-                </button>
+                </button>}
               </div>
             ) : viewMode === "grid" ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">

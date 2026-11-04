@@ -8,7 +8,7 @@ from beanie import PydanticObjectId
 from pymongo.errors import DuplicateKeyError
 from fastapi.encoders import jsonable_encoder
 from bson import ObjectId
-from app.core.constants import SUPER_ADMIN_CODE, DEAL_CACHE_NAMESPACE, DEAL_CACHE_NAMESPACE_BY_ID, LEAD_CACHE_NAMESPACE
+from app.core.constants import SUPER_ADMIN_CODE, DEAL_CACHE_NAMESPACE, DEAL_CACHE_NAMESPACE_BY_ID, LEAD_CACHE_NAMESPACE, USER_LEAD_CACHE_NAMESPACE
 from app.db.db import Client
 from app.repositories.lead_repository import LeadRepository
 from app.core.crypto import Encryption
@@ -67,9 +67,16 @@ class DealService:
                     lead = await self.leadRepo.find_by_id(PydanticObjectId(lead_id))
                     if not lead:
                         raise AppException(404, "Lead not found against lead id")
-                    lead.inDeal = True
-                    lead.status = await LeadStatusService().resolve(session=session, final=True)
-                    await lead.save(session=session)
+                    final_status = await LeadStatusService().resolve(session=session, final=True)
+                    await self.leadRepo.update(
+                        id=PydanticObjectId(lead_id),
+                        data={
+                            "inDeal": True,
+                            "status": final_status,
+                            "updatedAt": datetime.now(timezone.utc),
+                        },
+                        session=session,
+                    )
 
                 activity = activity_payload(userId=PydanticObjectId(createdBy), entityType=ACTIVITY_ENTITY_TYPE.DEAL, entityId=PydanticObjectId(deal.id), action=ACTIVITY_ACTION.CREATED, title="create deal", metadata={"dealId": deal.deal_id, "leadName": deal.dealName})
 
@@ -81,6 +88,7 @@ class DealService:
                 await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE)
                 await FastAPICache.get_backend().clear(namespace=DEAL_CACHE_NAMESPACE_BY_ID)
                 await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
+                await FastAPICache.get_backend().clear(namespace=USER_LEAD_CACHE_NAMESPACE)
 
                 return deal.model_dump(mode="json")
 

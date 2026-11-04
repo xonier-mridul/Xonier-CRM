@@ -16,6 +16,8 @@ import {
   FiPause,
   FiPlay,
   FiClock,
+  FiSearch,
+  FiX,
 } from "react-icons/fi";
 import { parseFollowUpTime } from "@/src/app/utils/followUpTime.utils";
 import { useRouter } from "next/navigation";
@@ -31,6 +33,8 @@ import CallModal from "@/src/components/pages/lead/CallModal";
 import CallablePhone from "@/src/components/common/CallablePhone";
 import { Lead } from "@/src/types/leads/leads.types";
 import { RootState } from "@/src/store";
+import { usePermissions } from "@/src/hooks/usePermissions";
+import { PERMISSIONS } from "@/src/constants/enum";
 
 interface Props {
   campaign: ICampaign;
@@ -101,15 +105,18 @@ const StatCard: React.FC<{
 const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange }) => {
   const { label: leadStatusLabel } = useLeadStatuses();
   const { t } = useTranslation();
+  const { hasPermission } = usePermissions();
+  const canUpdateCampaign = hasPermission(PERMISSIONS.updateCampaign);
+  const canManageCampaign = hasPermission(PERMISSIONS.manageCampaign);
   const router = useRouter();
   const auth = useSelector((state: RootState) => state.auth);
   const currentUserId = auth.user?._id ?? auth.user?.id ?? "";
   const isAdminUser = Boolean(
     auth.isAdmin ||
       auth.user?.userRole?.some((role: any) =>
-        ["SUPER_ADMIN", "COMPANY_ADMIN", "ADMIN"].includes(
+        ["SUPER_ADMIN", "COMPANY_ADMIN", "ADMIN", "MANAGER"].includes(
           String(role?.code || "").toUpperCase()
-        )
+        ) || (role?.code !== "USER" && role?.canManageBelow === true)
       )
   );
   const [leads, setLeads] = useState<CampaignLead[]>([]);
@@ -117,7 +124,17 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const pageLimit = 10;
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedSearch(searchQuery.trim());
+      setCurrentPage(1);
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [searchQuery]);
   
   const [updatingLeadId, setUpdatingLeadId] = useState<string | null>(null);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
@@ -165,7 +182,12 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
     try {
       const campaignId = campaign.id || campaign._id;
       const pageToFetch = pageOverride ?? currentPage;
-      const res = await CampaignService.getCampaignLeads(campaignId, pageToFetch, pageLimit);
+      const res = await CampaignService.getCampaignLeads(
+        campaignId,
+        pageToFetch,
+        pageLimit,
+        debouncedSearch
+      );
       if (res.status === 200) {
         const payload = res.data?.data;
         // Backend returns: { data: [...], page, limit, total, totalPages }
@@ -186,7 +208,7 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
     } finally {
       setIsLoading(false);
     }
-  }, [campaign.id, campaign._id, currentPage]);
+  }, [campaign.id, campaign._id, currentPage, debouncedSearch]);
 
   useEffect(() => {
     fetchLeads();
@@ -262,7 +284,7 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
         <span className="text-gray-300 dark:text-gray-600">/</span>
         <h2 className="text-xl font-semibold text-gray-800 dark:text-white">{campaign.name}</h2>
         <StatusBadge status={status} />
-        <button
+        {canUpdateCampaign && <button
           onClick={handleTogglePause}
           disabled={isTogglingPause || status === "completed" || status === "archived" || status === "deleted"}
           className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition-colors disabled:opacity-50 ${
@@ -273,7 +295,7 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
         >
           {isPaused ? <FiPlay size={13} /> : <FiPause size={13} />}
           {isTogglingPause ? "Please wait..." : isPaused ? "Resume Campaign" : "Pause Campaign"}
-        </button>
+        </button>}
       </div>
 
       {isPaused && (
@@ -307,21 +329,44 @@ const CampaignDetailView: React.FC<Props> = ({ campaign, onBack, onStatusChange 
 
       {/* Leads Table */}
       <div className="flex-1 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col">
-        <div className="px-5 py-3 border-b dark:border-gray-700 flex items-center justify-between">
+        <div className="px-5 py-3 border-b dark:border-gray-700 flex flex-wrap items-center justify-between gap-3">
           <h3 className="font-semibold text-gray-800 dark:text-white text-sm">Campaign Leads</h3>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative">
+              <FiSearch
+                size={14}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by name, company, or number..."
+                className="w-64 sm:w-72 rounded-lg border border-gray-200 bg-gray-50 py-1.5 pl-8 pr-8 text-xs text-gray-700 outline-none transition-all focus:border-cyan-500 focus:bg-white focus:ring-2 focus:ring-cyan-500/20 dark:border-gray-600 dark:bg-gray-700/60 dark:text-gray-200 dark:placeholder-gray-400 dark:focus:border-cyan-400"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  title="Clear search"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                >
+                  <FiX size={13} />
+                </button>
+              )}
+            </div>
             {!isLoading && (
               <span className="text-xs text-gray-400 dark:text-gray-500">
-                {total} total lead{total !== 1 ? "s" : ""}
+                {total} {debouncedSearch ? "matching " : "total "}lead{total !== 1 ? "s" : ""}
               </span>
             )}
-            <AddLeadsToCampaign
+            {canManageCampaign && <AddLeadsToCampaign
               campaignId={campaign.id || campaign._id}
               onImported={() => {
                 setCurrentPage(1);
                 void fetchLeads(true, 1);
               }}
-            />
+            />}
           </div>
         </div>
 

@@ -189,7 +189,7 @@ class LeadController:
         try:
             user = request.state.user
  
-            result = await self.service.bulk_delete(payload=payload, user=user)
+            result = await self.service.bulkDelete(payload=payload, user=user)
  
             deleted = result["deletedCount"]
             failed = result["failedCount"]

@@ -56,7 +56,7 @@ export default function AgentsPage() {
   const { hasPermission } = usePermissions();
   const { hasFeature } = useFeatures();
   const allowed = hasPermission(PERMISSIONS.readLead) && hasPermission(PERMISSIONS.readUser)
-    && hasFeature(FEATURES.CRM) && hasFeature(FEATURES.SALES);
+    && hasFeature(FEATURES.CRM);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);

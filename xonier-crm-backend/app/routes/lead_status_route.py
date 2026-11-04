@@ -12,7 +12,7 @@ router = APIRouter(dependencies=[Depends(deps.authorized), Depends(deps.company_
 
 @router.get("/all")
 async def list_statuses(request: Request):
-    return successResponse(200, "Lead statuses fetched", await LeadStatusService().list(include_usage=any(r.get("code") in {"COMPANY_ADMIN", "SUPER_ADMIN"} for r in request.state.user.get("userRole", []))))
+    return successResponse(200, "Lead statuses fetched", await LeadStatusService().list(include_usage=any(r.get("code") in {"COMPANY_ADMIN", "SUPER_ADMIN", "ADMIN"} for r in request.state.user.get("userRole", []))))
 
 
 @router.post("/create", status_code=201, dependencies=[Depends(deps.onlyForCompanyAdmin)])

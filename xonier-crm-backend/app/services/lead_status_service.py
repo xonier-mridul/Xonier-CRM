@@ -77,7 +77,7 @@ class LeadStatusService:
         if is_admin_context.get() and (not cid or not ObjectId.is_valid(cid)):
             stages = validate_stages(deepcopy(DEFAULT_STATUSES))
         else:
-            stages = validate_stages((await self.config(session=session, lock=True))["statuses"])
+            stages = validate_stages((await self.config(session=session, lock=False))["statuses"])
         if final:
             stage = next((s for s in stages if s["type"] == "final"), None)
             if not stage:
@@ -123,8 +123,16 @@ class LeadStatusService:
                         raise AppException(409, "This status is used by leads. Move those leads to another status before deleting it.")
                     stages.remove(target)
                 elif target:
+                    if payload and payload.get("type") == "final":
+                        for s in stages:
+                            if s is not target and s.get("type") == "final":
+                                s["type"] = "ongoing"
                     target.update(payload)
                 else:
+                    if payload and payload.get("type") == "final":
+                        for s in stages:
+                            if s.get("type") == "final":
+                                s["type"] = "ongoing"
                     stages.append({"key": "stage_" + uuid4().hex, **payload})
                 stages = validate_stages(stages)
                 await self.collection.update_one({"_id": doc["_id"]}, {"$set": {

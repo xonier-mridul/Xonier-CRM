@@ -56,10 +56,11 @@ const CampaignService = {
     
   delete: (id: string) => api.delete(`/campaign/delete/${id}`),
 
-  getCampaignLeads: (campaignId: string, page?: number, limit?: number) => {
+  getCampaignLeads: (campaignId: string, page?: number, limit?: number, search?: string) => {
     const params = new URLSearchParams();
     if (page) params.append("page", String(page));
     if (limit) params.append("limit", String(limit));
+    if (search && search.trim()) params.append("search", search.trim());
     return api.get(`/campaign/${campaignId}/leads?${params.toString()}`);
   },
 

@@ -41,7 +41,7 @@ from app.utils.event_payload_generator import EventPayloadGenerator
 
 
 from app.services.lead_status_service import LeadStatusService
-from app.utils.lead_assignment_access import require_lead_assigner, require_lower_assignee
+from app.utils.lead_assignment_access import can_assign_leads, require_lead_assigner, require_lower_assignee
 
 
 class LeadService:
@@ -54,13 +54,18 @@ class LeadService:
         self.userRepo = UserRepository()
         self.calenderRepo = EventRepository()
 
+    async def _is_admin_or_manager(self, user: Dict[str, Any]) -> bool:
+        if can_assign_leads(user.get("userRole", [])):
+            return True
+        return await self.getTeamMem.validate_manager(user["_id"])
+
     @retry_transaction
     async def create(self, payload: Dict[str, Any], user: Dict[str, Any]):
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
                     
-                    is_admin = validate_admin_company_admin(user["userRole"])
+                    is_admin_or_manager = await self._is_admin_or_manager(user)
                     hashed_mail = hash_value(payload["email"].lower()) if payload.get("email") else None
                     hashed_phone = hash_value(payload["phone"]) if payload.get("phone") else None
 
@@ -88,14 +93,14 @@ class LeadService:
                         **payload,
                         "lead_id": lead_id,
                         "createdBy": PydanticObjectId(user["_id"]),
-                        "leadSource": LEAD_SOURCE_TYPE.ADMIN_CREATED.value if is_admin else LEAD_SOURCE_TYPE.SELF_CREATED.value
+                        "leadSource": LEAD_SOURCE_TYPE.ADMIN_CREATED.value if is_admin_or_manager else LEAD_SOURCE_TYPE.SELF_CREATED.value
                     }
 
                     # Leads created by agents should immediately appear in their
                     # own web and mobile lead lists, both of which are scoped by
-                    # assignedTo. Admin-created leads retain the existing
-                    # unassigned behavior.
-                    if not is_admin:
+                    # assignedTo. Admin/Manager-created leads remain unassigned
+                    # until explicitly assigned to a user.
+                    if not is_admin_or_manager:
                         creator_id = PydanticObjectId(user["_id"])
                         now = datetime.now(timezone.utc)
                         new_payload.update({
@@ -149,7 +154,7 @@ class LeadService:
             async with session.start_transaction():
                 try:
 
-                    is_admin = validate_admin(user["userRole"])
+                    is_admin_or_manager = await self._is_admin_or_manager(user)
                 
                     leads_data = payload.get("leads", [])
                     data_tag = payload.get("dataTag", None)
@@ -230,7 +235,7 @@ class LeadService:
                                 })
                                 continue
 
-                            lead_source = LEAD_SOURCE_TYPE.ADMIN_CREATED if is_admin else LEAD_SOURCE_TYPE.SELF_CREATED
+                            lead_source = LEAD_SOURCE_TYPE.ADMIN_CREATED if is_admin_or_manager else LEAD_SOURCE_TYPE.SELF_CREATED
 
                             lead_data = {
                                 "fullName": lead.get("fullName"),
@@ -243,6 +248,15 @@ class LeadService:
                                 "createdBy": created_by,
                                 "leadSource": lead_source,
                             }
+
+                            if not is_admin_or_manager:
+                                now = datetime.now(timezone.utc)
+                                lead_data.update({
+                                    "assignedTo": [created_by],
+                                    "assignedBy": created_by,
+                                    "assignedAt": now,
+                                    "isAssigned": True,
+                                })
 
                             if encrypt_phone:
                                 lead_data["phone"] = encrypt_phone
@@ -757,39 +771,22 @@ class LeadService:
 
     async def get_all(self, filters: Dict[str, Any], user: Dict[str, Any]):
         try:
-            is_admin = validate_admin_company_admin(user["userRole"])
-            is_manager = False
+            is_admin_or_manager = await self._is_admin_or_manager(user)
+            user_object_id = PydanticObjectId(user["_id"])
 
-        
+            query: Dict[str, Any] = {"status": {"$ne": SALES_STATUS.DELETE.value}}
+            and_conditions: List[Dict[str, Any]] = []
 
-            # for item in user["userRole"]:
-            #     if item["code"] == SUPER_ADMIN_CODE:
-            #         is_admin = True
-            #         break
-
-            query = {"status": {"$ne": SALES_STATUS.DELETE.value}}
-
-            if not is_admin:
-                members = await self.getTeamMem.get_team_members(user["_id"])
-                user_object_id = PydanticObjectId(user["_id"])
-
-                if members:
-                    is_manager = True
-                    query.update({
-                        "$or": [
-                            {"createdBy.$id": {"$in": members}},
-                            {"assignedTo.$id": {"$in": members}},
-                            {"assignedTo.$id": user_object_id},
-                            {"createdBy.$id": user_object_id}
-                        ]
-                    })
-                else:
-                    query.update({
-                        "$or": [
-                            {"createdBy.$id": user_object_id},
-                            {"assignedTo.$id": user_object_id},
-                        ]
-                    })
+            # Normal users/agents can ONLY see leads assigned to them.
+            # Managers and Admins see all leads in the company.
+            if not is_admin_or_manager:
+                query["isAssigned"] = True
+                and_conditions.append({
+                    "$or": [
+                        {"assignedTo.$id": user_object_id},
+                        {"assignedTo": user_object_id},
+                    ]
+                })
 
             page = filters.get("page") or 1
             limit = filters.get("limit") or 10
@@ -821,8 +818,14 @@ class LeadService:
             if "type" in filters:
                 query.update({"projectType": {"$regex": filters["type"], "$options": "i"}})
 
-            if "assignee" in filters:
-                query.update({"assignedTo.$id": PydanticObjectId(filters["assignee"])})
+            if is_admin_or_manager and "assignee" in filters and ObjectId.is_valid(str(filters["assignee"])):
+                assignee_oid = PydanticObjectId(filters["assignee"])
+                and_conditions.append({
+                    "$or": [
+                        {"assignedTo.$id": assignee_oid},
+                        {"assignedTo": assignee_oid},
+                    ]
+                })
 
             if "search" in filters and filters["search"]:
                 regex = {"$regex": re.escape(filters["search"]), "$options": "i"}
@@ -836,7 +839,7 @@ class LeadService:
                     {"city": regex},
                     {"type": regex}]}
 
-                query.update(search_query)
+                and_conditions.append(search_query)
 
          
             if "fromDate" in filters or "toDate" in filters:
@@ -860,12 +863,17 @@ class LeadService:
                 if date_filter:
                     query.update({"createdAt": date_filter})
     
-            if is_admin or is_manager:
-                if "userid" in filters:
-                    if not ObjectId.is_valid(filters["userid"]):
+            if is_admin_or_manager:
+                creator_filter_id = filters.get("userid") or filters.get("createdBy")
+                if creator_filter_id:
+                    if not ObjectId.is_valid(str(creator_filter_id)):
                         raise AppException(400, "Invalid userId")
-                    query.update({
-                        "createdBy.$id": PydanticObjectId(filters["userid"])
+                    creator_oid = PydanticObjectId(creator_filter_id)
+                    and_conditions.append({
+                        "$or": [
+                            {"createdBy.$id": creator_oid},
+                            {"createdBy": creator_oid},
+                        ]
                     })
             
             if "isAssigned" in filters:
@@ -876,6 +884,9 @@ class LeadService:
                         "isAssigned": True,
                         "assignedTo": {"$exists": True, "$ne": []}
                     })
+
+            if and_conditions:
+                query["$and"] = and_conditions
 
             from enum import Enum
             def serialize_for_cache(v):
@@ -892,9 +903,9 @@ class LeadService:
                 return v
 
             cache_query = {k: serialize_for_cache(v) for k, v in query.items()}
-            # Bump the list-cache shape after sourcing follow-up data from the
-            # mobile activity record, so older cached lead values cannot survive.
-            cache_query["callTimelineFollowUpVersion"] = 3
+            # Bump the list-cache shape after updating visibility rules, so older
+            # cached lead values cannot survive.
+            cache_query["callTimelineFollowUpVersion"] = 4
 
             key = cache_key_generator_with_id(
                 prefix=LEAD_CACHE_NAMESPACE,
@@ -1174,33 +1185,20 @@ class LeadService:
                 raise AppException(404, "Lead data not found")
             
 
-            is_admin = validate_admin_company_admin(user["userRole"])
-            is_creator = False
-            is_manager = False
+            is_admin_or_manager = await self._is_admin_or_manager(user)
             is_assigner = False
-
-            
-            
-            if not is_admin:
-                members = await self.getTeamMem.get_team_members(user["_id"])
-                if members:
-                    is_manager = True
-                    
 
             result = result.model_dump(
                 mode="json", exclude={"hashedEmail"}
             )
-            
-            if str(result["createdBy"]["id"]) == str(user["_id"]):
-                is_creator = True
 
-            for item in result["assignedTo"]:
-                if(str(item["id"])) == str(user["_id"]):
+            for item in result.get("assignedTo") or []:
+                if str(item.get("id")) == str(user["_id"]):
                     is_assigner = True
 
-            if not is_admin and not is_creator and not is_manager and not is_assigner:
+            if not is_admin_or_manager and not (result.get("isAssigned") and is_assigner):
                 raise AppException(
-                    403, "Unauthorized, only admin, manager, assigner or creator access lead data"
+                    403, "Unauthorized, only admin, manager, or assigned user can access lead data"
                 )
 
             if result.get("email"):
@@ -1236,8 +1234,7 @@ class LeadService:
                     if not ObjectId.is_valid(leadId):
                         raise AppException(400, "Invalid lead id")
 
-                    is_admin = validate_admin_company_admin(user["userRole"])
-                    is_creator = False
+                    is_admin_or_manager = await self._is_admin_or_manager(user)
                     is_assigner = False
 
                     if not payload:
@@ -1260,17 +1257,13 @@ class LeadService:
                     if lead.status == SALES_STATUS.DELETE.value:
                         raise AppException(400, "Action denied, Lead is deleted")
 
-
-                    if str(lead.createdBy.id) == str(user["_id"]):
-                        is_creator = True
-
-                    for item in lead.assignedTo:
-                        if(str(item.id)) == str(user["_id"]):
+                    for item in lead.assignedTo or []:
+                        if str(item.id) == str(user["_id"]):
                             is_assigner = True
 
-                    if not is_admin and not is_creator and not is_assigner:
+                    if not is_admin_or_manager and not (lead.isAssigned and is_assigner):
                         raise AppException(
-                            403, "Unauthorized, only admin or creator access this"
+                            403, "Unauthorized, only admin, manager, or assigned user can access this"
                         )
 
                     for key, val in payload.items():
@@ -1309,8 +1302,7 @@ class LeadService:
                     if not ObjectId.is_valid(leadId):
                         raise AppException(400, "Invalid lead object id")
                     
-                    is_admin = validate_admin_company_admin(user["userRole"])
-                    is_creator = False
+                    is_admin_or_manager = await self._is_admin_or_manager(user)
                     is_assigner = False
                    
                     lead = await self.repo.find_by_id(
@@ -1327,23 +1319,28 @@ class LeadService:
                     if lead.status == SALES_STATUS.DELETE.value:
                         raise AppException(400, "Action denied, Lead is deleted")
 
-
-                    if str(lead.createdBy.id) == str(user["_id"]):
-                        is_creator = True
-                    
-                    for item in lead.assignedTo:
-                        if(str(item.id)) == str(user["_id"]):
+                    for item in lead.assignedTo or []:
+                        if str(item.id) == str(user["_id"]):
                             is_assigner = True
 
-                    if not is_admin and not is_creator and not is_assigner:
-                        raise AppException(403, "Permission denied, only admin, creator or assigned person can access it")
+                    if not is_admin_or_manager and not (lead.isAssigned and is_assigner):
+                        raise AppException(403, "Permission denied, only admin, manager, or assigned person can access it")
                     
 
                     
-                    lead.status = await LeadStatusService().resolve(payload["status"], session=session)
-                    lead.updatedAt = datetime.now(timezone.utc)
+                    resolved_status = await LeadStatusService().resolve(payload["status"], session=session)
+                    now = datetime.now(timezone.utc)
 
-                    await lead.save(session=session)
+                    updated = await self.repo.update(
+                        id=PydanticObjectId(leadId),
+                        data={"status": resolved_status, "updatedAt": now},
+                        session=session,
+                    )
+                    if not updated:
+                        raise AppException(400, "Failed to update lead status")
+
+                    lead.status = resolved_status
+                    lead.updatedAt = now
 
                     activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD.value, entityId=PydanticObjectId(lead.id), action=ACTIVITY_ACTION.UPDATED.value, title="update lead status", metadata={"leadId": lead.lead_id, "leadName": lead.fullName, "status": lead.status})
 
@@ -1373,8 +1370,7 @@ class LeadService:
                         raise AppException(400, "Invalid lead object id")
                     
                     
-                    is_admin = validate_admin_company_admin(user["userRole"])
-                    is_creator = False
+                    is_admin_or_manager = await self._is_admin_or_manager(user)
                     is_assigner = False
 
                     lead = await self.repo.find_by_id(
@@ -1391,16 +1387,12 @@ class LeadService:
                     if lead.status == SALES_STATUS.DELETE.value:
                         raise AppException(400, "Action denied, Lead is deleted")
 
-
-                    if str(lead.createdBy.id) == str(user["_id"]):
-                        is_creator = True
-                    
-                    for item in lead.assignedTo:
-                        if(str(item.id)) == str(user["_id"]):
+                    for item in lead.assignedTo or []:
+                        if str(item.id) == str(user["_id"]):
                             is_assigner = True
 
-                    if not is_admin and not is_creator and not is_assigner:
-                        raise AppException(403, "Permission denied, only admin, creator or assigned person can access it")
+                    if not is_admin_or_manager and not (lead.isAssigned and is_assigner):
+                        raise AppException(403, "Permission denied, only admin, manager, or assigned person can access it")
                     
                     
                     connect_status = payload["status"]
@@ -1485,6 +1477,12 @@ class LeadService:
                     raise AppException(status_code=500, message=f"Internal server error: {e}")
 
 
+    def _is_only_admin(self, user: Dict[str, Any]) -> bool:
+        return any(
+            role.get("code") in {"SUPER_ADMIN", "COMPANY_ADMIN", "ADMIN"}
+            for role in user.get("userRole", [])
+        )
+
     async def delete(self, leadId: str, user: Dict[str, Any]) -> bool:
         async with await self.client.start_session() as session:
             async with session.start_transaction():
@@ -1492,10 +1490,10 @@ class LeadService:
                     if not ObjectId.is_valid(leadId):
                         raise AppException(400, "Invalid lead id")
 
-                    is_admin = validate_admin_company_admin(user["userRole"])
-                    is_creator = False
-
-                    
+                    if not self._is_only_admin(user):
+                        raise AppException(
+                            403, "Unauthorized, only admin can delete leads"
+                        )
 
                     result = await self.repo.find_by_id(
                         id=PydanticObjectId(leadId), populate=["createdBy", "updatedBy"]
@@ -1514,13 +1512,6 @@ class LeadService:
                         mode="json", exclude={"hashedEmail", "hashedPhone"}
                     )
 
-                    if str(result["createdBy"]["id"]) == str(user["_id"]):
-                        is_creator = True
-
-                    if not is_admin and not is_creator:
-                        raise AppException(
-                            403, "Unauthorized, only admin or creator access this"
-                        )
                     payload = {
                         "status": SALES_STATUS.DELETE,
                         "deletedBy": user["_id"],
@@ -1556,6 +1547,11 @@ class LeadService:
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
+                    if not self._is_only_admin(user):
+                        raise AppException(
+                            403, "Unauthorized, only admin can delete leads"
+                        )
+
                     leadsIds = payload.get("leadsIds")
  
                     if not leadsIds:
@@ -1564,15 +1560,6 @@ class LeadService:
                     for id in leadsIds:
                         if not ObjectId.is_valid(id):
                             raise AppException(400, f"Invalid Object id: {id}")
- 
-                    is_admin = validate_admin(user["userRole"])
-                    is_manager = False
-                    members = []
- 
-                    if not is_admin:
-                        members = await self.getTeamMem.get_team_members(user["_id"])
-                        if members:
-                            is_manager = True
  
                     user_object_id = PydanticObjectId(user["_id"])
  
@@ -1611,19 +1598,6 @@ class LeadService:
                                 "reason": "Lead is in a deal, remove from deal first"
                             })
                             continue
- 
-                        if not is_admin:
-                            lead_creator_id = PydanticObjectId(lead.createdBy.id)
-                            is_creator = lead_creator_id == user_object_id
-                            is_team_member_lead = lead_creator_id in members if members else False
- 
-                            if not is_creator and not is_manager and not is_team_member_lead:
-                                failed_leads.append({
-                                    "id": str(lead.id),
-                                    "lead_id": lead.lead_id,
-                                    "reason": "Unauthorized, only admin, manager or creator can delete this lead"
-                                })
-                                continue
  
                         eligible_leads.append(lead)
  

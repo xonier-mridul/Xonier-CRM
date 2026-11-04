@@ -582,10 +582,8 @@ class MobileService:
                     "$regex": f"^{re.escape(filters.get('source'))}$", "$options": "i"
                 }
             search = (filters.get("search") or "").strip()
-            if search:
-                lead_match.update(self._search_clause(search, prefix="lead."))
 
-            pipeline = [
+            base_pipeline = [
                 {"$match": {"$or": [{"campaignId.$id": camp["_id"]}, {"campaignId": camp["_id"]}]}},
                 {"$addFields": {
                     "leadOid": {"$ifNull": ["$leadId.$id", "$leadId"]},
@@ -595,26 +593,68 @@ class MobileService:
                              "foreignField": "_id", "as": "lead"}},
                 {"$unwind": "$lead"},
                 {"$match": lead_match},
-                {"$facet": {
-                    "data": [
-                        {"$match": own_match},
-                        {"$sort": {"importedAt": -1, "_id": -1}},
-                        {"$skip": (page - 1) * limit},
-                        {"$limit": limit},
-                    ],
-                    "total": [{"$match": own_match}, {"$count": "count"}],
-                    "summary": [
-                        {"$group": {"_id": _own_expr("$assignedOid", uid), "count": {"$sum": 1}}}
-                    ],
-                }},
             ]
-            res = (await self._campaign_leads().aggregate(pipeline).to_list(length=1))[0]
-            rows = res.get("data", [])
-            total = res["total"][0]["count"] if res.get("total") else 0
-            summary = {"mine": 0, "other": 0, "unassigned": 0}
-            for r in res.get("summary", []):
-                summary[r["_id"]] = r["count"]
-            summary["all"] = sum(summary.values())
+
+            if search:
+                all_rows = await self._campaign_leads().aggregate([
+                    *base_pipeline,
+                    {"$sort": {"importedAt": -1, "_id": -1}},
+                ]).to_list(length=None)
+                search_lower = search.lower()
+                search_digits = re.sub(r"\D", "", search)
+
+                matched_rows = []
+                summary = {"mine": 0, "other": 0, "unassigned": 0}
+                for r in all_rows:
+                    lead_doc = r.get("lead") or {}
+                    phone_plain = str(self._decrypt(lead_doc.get("phone")) or "")
+                    phone_digits = re.sub(r"\D", "", phone_plain)
+                    full_name = str(lead_doc.get("fullName") or "").lower()
+                    company_name = str(lead_doc.get("companyName") or "").lower()
+                    lead_code = str(lead_doc.get("lead_id") or "").lower()
+
+                    if not (
+                        search_lower in full_name
+                        or search_lower in company_name
+                        or search_lower in phone_plain.lower()
+                        or search_lower in lead_code
+                        or (bool(search_digits) and search_digits in phone_digits)
+                    ):
+                        continue
+
+                    owner = r.get("assignedOid")
+                    own_bucket = "mine" if owner == uid else ("unassigned" if owner is None else "other")
+                    summary[own_bucket] += 1
+                    if ownership == "all" or own_bucket == ownership:
+                        matched_rows.append(r)
+
+                summary["all"] = sum(summary.values())
+                total = len(matched_rows)
+                start_idx = (page - 1) * limit
+                rows = matched_rows[start_idx : start_idx + limit]
+            else:
+                pipeline = [
+                    *base_pipeline,
+                    {"$facet": {
+                        "data": [
+                            {"$match": own_match},
+                            {"$sort": {"importedAt": -1, "_id": -1}},
+                            {"$skip": (page - 1) * limit},
+                            {"$limit": limit},
+                        ],
+                        "total": [{"$match": own_match}, {"$count": "count"}],
+                        "summary": [
+                            {"$group": {"_id": _own_expr("$assignedOid", uid), "count": {"$sum": 1}}}
+                        ],
+                    }},
+                ]
+                res = (await self._campaign_leads().aggregate(pipeline).to_list(length=1))[0]
+                rows = res.get("data", [])
+                total = res["total"][0]["count"] if res.get("total") else 0
+                summary = {"mine": 0, "other": 0, "unassigned": 0}
+                for r in res.get("summary", []):
+                    summary[r["_id"]] = r["count"]
+                summary["all"] = sum(summary.values())
 
             users = await self._user_map([r.get("assignedOid") for r in rows])
             can_claim_campaign = (

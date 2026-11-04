@@ -6,12 +6,16 @@ from app.core.crypto import Encryption
 from app.db.models.campaign_model import CampaignModel
 from app.db.models.lead_model import LeadsModel
 from app.db.models.user_model import UserModel
+from app.utils.lead_assignment_access import can_assign_leads
 
 
 class AgentService:
     async def get_breakdown(self, user):
         company_id = PydanticObjectId(user["companyId"])
         scope = {"companyId": company_id, "deletedAt": None}
+        # Same rule as campaigns/leads: only admins, managers and users who can
+        # manage below see every agent; everyone else sees only themselves.
+        own_id = None if can_assign_leads(user.get("userRole", [])) else str(user.get("_id") or user.get("id"))
         campaigns = await CampaignModel.get_pymongo_collection().find(
             {**scope, "status": {"$ne": "deleted"}}, {"agents": 1}
         ).to_list(length=None)
@@ -47,6 +51,8 @@ class AgentService:
         stats = await LeadsModel.get_pymongo_collection().aggregate(pipeline).to_list(length=None)
         by_agent = {str(item.pop("_id")): item for item in stats}
         agent_ids = set(campaign_counts) | set(by_agent)
+        if own_id:
+            agent_ids &= {own_id}
         users = await UserModel.get_pymongo_collection().find(
             {**scope, "status": {"$ne": "deleted"},
              "_id": {"$in": [PydanticObjectId(uid) for uid in agent_ids]}},

@@ -170,10 +170,15 @@ const LeadEditForm = ({ id, embedded = false, onSaved, campaignAssignment }: Lea
   const handleChange = (e: ChangeEvent<FormElement>) => {
     const { name, value } = e.target;
     setFlatFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "status") {
+      setStatusData({ status: value });
+    }
   };
 
   const handleStatusChange = (e: ChangeEvent<FormElement>) => {
-    setStatusData({ status: e.target.value });
+    const nextStatus = e.target.value;
+    setStatusData({ status: nextStatus });
+    setFlatFormData((prev) => ({ ...prev, status: nextStatus }));
   };
 
   useEffect(() => {

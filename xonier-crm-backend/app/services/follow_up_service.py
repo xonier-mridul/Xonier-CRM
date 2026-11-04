@@ -13,6 +13,7 @@ from app.services.google_calendar_service import GoogleCalendarService
 from app.core.constants import DEAL_CACHE_NAMESPACE, DEAL_CACHE_NAMESPACE_BY_ID
 from fastapi_cache import FastAPICache
 from app.utils.get_team_members import GetTeamMembers
+from app.utils.lead_assignment_access import can_assign_leads
 from app.utils.validate_admin import validate_admin_company_admin
 from app.utils.custom_exception import AppException
 
@@ -38,7 +39,18 @@ class FollowUpService:
         if user.get("companyId"):
             query["companyId"] = PydanticObjectId(user["companyId"])
 
-        if not validate_admin_company_admin(user["userRole"]):
+        if entity_type == "lead":
+            is_admin_or_manager = (
+                can_assign_leads(user.get("userRole", []))
+                or await GetTeamMembers().validate_manager(str(user_id))
+            )
+            if not is_admin_or_manager:
+                query["isAssigned"] = True
+                query["$or"] = [
+                    {"assignedTo.$id": user_id},
+                    {"assignedTo": user_id},
+                ]
+        elif not validate_admin_company_admin(user["userRole"]):
             access_ids = [user_id, *await GetTeamMembers().get_team_members(str(user_id))]
             query["$or"] = [
                 {"createdBy.$id": {"$in": access_ids}},

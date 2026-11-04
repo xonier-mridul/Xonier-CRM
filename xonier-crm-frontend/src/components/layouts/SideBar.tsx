@@ -198,6 +198,21 @@ const isSuperAdmin = auth.user?.userRole?.some(
   (role) => role.code === "SUPER_ADMIN"
 );
 
+  const handleNavClick = (targetPath: string) => (e: React.MouseEvent) => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("app:navigation", { detail: { path: targetPath } }));
+    }
+    if (pathname === targetPath) {
+      if (typeof window !== "undefined" && (window.location.search || window.location.hash)) {
+        e.preventDefault();
+        router.replace(targetPath);
+      }
+    }
+    if (activeDashboard) {
+      setActiveDashboard(false);
+    }
+  };
+
 
   return (
     <div className={`fixed top-0 left-0 w-72 p-6 z-100  ${activeDashboard ?'translate-x-0':'-translate-x-70 lg:translate-x-0'}   transition-all duration-300 bg-slate-50 h-screen dark:bg-gray-800 flex flex-col gap-6 border border-slate-900/15 dark:border-gray-700 `}>
@@ -231,6 +246,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
             <li>
               <Link
                 href="/dashboard"
+                onClick={handleNavClick("/dashboard")}
                 className={`${isActive("/dashboard")
                   ? " dark:text-cyan-300 text-cyan-700   border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"
@@ -248,6 +264,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
               <li>
                 <Link
                   href="/sales-dashboard"
+                  onClick={handleNavClick("/sales-dashboard")}
                   className={`${isActive("/sales-dashboard")
                     ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                     : "border-l-2 border-transparent"
@@ -267,6 +284,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
              <li>
               <Link
                 href="/calender"
+                onClick={handleNavClick("/calender")}
                 className={`${isActive("/calender")
                   ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"
@@ -319,6 +337,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     {(hasPermission(PERMISSIONS.readProspects)&& (hasFeature(FEATURES.CRM)) ) && <li>
                       <Link
                         href="/prospects/people"
+                        onClick={handleNavClick("/prospects/people")}
                         className={`${isActive("/prospects/people")
                           ? "dark:text-cyan-300 text-cyan-700   border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
@@ -334,6 +353,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                       (hasPermission(PERMISSIONS.readProspects) && (hasFeature(FEATURES.CRM)) )&& <li>
                         <Link
                           href="/prospects/company"
+                          onClick={handleNavClick("/prospects/company")}
                           className={`${isActive("/prospects/company")
                             ? "dark:text-cyan-300 text-cyan-700  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                             : "border-l-2 border-transparent"
@@ -353,6 +373,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
             { (hasPermission(PERMISSIONS.readNote) && (hasFeature(FEATURES.NOTE))) && <li>
               <Link
                 href="/notes"
+                onClick={handleNavClick("/notes")}
                 className={`${isActive("/notes")
                   ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"
@@ -368,7 +389,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
              <li>
               <Link
                 href="/notifications"
-           
+                onClick={handleNavClick("/notifications")}
                 className={`${isActive("/notifications")
                   ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"
@@ -420,6 +441,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     { <li>
                       <Link
                         href="/plans"
+                        onClick={handleNavClick("/plans")}
                         className={`${isActive("/plans")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
@@ -431,6 +453,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     { <li>
                         <Link
                           href="/subscriptions"
+                          onClick={handleNavClick("/subscriptions")}
                           className={`${isActive("/subscriptions")
                             ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                             : "border-l-2 border-transparent"
@@ -480,6 +503,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     { <li>
                       <Link
                         href="/companies"
+                        onClick={handleNavClick("/companies")}
                         className={`${pathname === "/companies"
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 px-3 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent px-4"
@@ -491,6 +515,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     { <li>
                       <Link
                         href="/companies/create"
+                        onClick={handleNavClick("/companies/create")}
                         className={`${isActive("/companies/create")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
@@ -502,6 +527,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     { <li>
                       <Link
                         href="/companies/deleted-companies"
+                        onClick={handleNavClick("/companies/deleted-companies")}
                         className={`${isActive("/companies/deleted-companies")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
@@ -550,6 +576,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     {( hasPermission(PERMISSIONS.readTask) &&  (hasFeature(FEATURES.TASK)) ) && <li>
                       <Link
                         href="/task"
+                        onClick={handleNavClick("/task")}
                         className={`${isActive("/task")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
@@ -562,6 +589,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     {(hasPermission(PERMISSIONS.taskCategoryRead)&&  (hasFeature(FEATURES.TASK))) && <li>
                       <Link
                         href="/category"
+                        onClick={handleNavClick("/category")}
                         className={`${isActive("/category")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
@@ -573,6 +601,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     {(hasPermission(PERMISSIONS.taskStatusRead) && (hasFeature(FEATURES.TASK))) && <li>
                       <Link
                         href="/status"
+                        onClick={handleNavClick("/status")}
                         className={`${isActive("/status")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
@@ -585,6 +614,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                       (hasPermission(PERMISSIONS.readTaskReport)&&  (hasFeature(FEATURES.TASK))) && <li>
                         <Link
                           href="/reports"
+                          onClick={handleNavClick("/reports")}
                           className={`${isActive("/reports")
                             ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                             : "border-l-2 border-transparent"
@@ -598,6 +628,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                       (hasPermission(PERMISSIONS.createTaskReport)&&  (hasFeature(FEATURES.TASK))) && <li>
                         <Link
                           href={`/report/create/${USER_ID||"new"}`}
+                          onClick={handleNavClick(`/report/create/${USER_ID||"new"}`)}
                           className={`${isActive(`/report/create/${USER_ID||"new"}`)
                             ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                             : "border-l-2 border-transparent"
@@ -648,6 +679,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     {hasPermission(PERMISSIONS.readUser) && <li>
                       <Link
                         href="/users"
+                        onClick={handleNavClick("/users")}
                         className={`${isActive("/users")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
@@ -659,6 +691,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     {hasPermission(PERMISSIONS.readRole) && <li>
                       <Link
                         href="/roles"
+                        onClick={handleNavClick("/roles")}
                         className={`${isActive("/roles")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
@@ -671,6 +704,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                       hasPermission(PERMISSIONS.deletedUserView) && <li>
                         <Link
                           href="/deleteduser"
+                          onClick={handleNavClick("/deleteduser")}
                           className={`${isActive("/deleteduser")
                             ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                             : "border-l-2 border-transparent"
@@ -720,6 +754,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     {(hasPermission(PERMISSIONS.readTeamCategory) && !auth.isAdmin ) && <li>
                       <Link
                         href="/teams/categories"
+                        onClick={handleNavClick("/teams/categories")}
                         className={`${isActive("/teams/categories")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
@@ -731,6 +766,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     {(hasPermission(PERMISSIONS.readTeam)&& !auth.isAdmin) && <li>
                       <Link
                         href="/teams"
+                        onClick={handleNavClick("/teams")}
                         className={`${(isActive("/teams") && !isActive("/teams/categories"))
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
@@ -775,9 +811,10 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     transition={{ duration: 0.25 }}
                     className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
                   >
-                    {(hasPermission(PERMISSIONS.readLead) &&  (hasFeature(FEATURES.CRM))) && <li>
+                    {(hasPermission(PERMISSIONS.readCampaign) &&  (hasFeature(FEATURES.CRM))) && <li>
                       <Link
                         href="/pipeline"
+                        onClick={handleNavClick("/pipeline")}
                         className={`${isActive("/pipeline")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
@@ -789,6 +826,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     {(hasPermission(PERMISSIONS.readLead) && hasPermission(PERMISSIONS.readUser) && hasFeature(FEATURES.CRM)) && <li>
                       <Link
                         href="/agents"
+                        onClick={handleNavClick("/agents")}
                         className={`${isActive("/agents")
                           ? "dark:text-cyan-300 text-cyan-700 border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
@@ -800,6 +838,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                   {(hasPermission(PERMISSIONS.readEnquiry)&&  (hasFeature(FEATURES.CRM))) && <li>
                       <Link
                         href="/enquiry"
+                        onClick={handleNavClick("/enquiry")}
                         className={`${isActive("/enquiry")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
@@ -811,6 +850,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     {(hasPermission(PERMISSIONS.readLead) &&  (hasFeature(FEATURES.CRM))) && <li>
                       <Link
                         href="/leads"
+                        onClick={handleNavClick("/leads")}
                         className={`${isActive("/leads")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
@@ -823,6 +863,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     {(hasPermission(PERMISSIONS.readDeal) &&  (hasFeature(FEATURES.CRM))) && <li>
                       <Link
                         href="/deals"
+                        onClick={handleNavClick("/deals")}
                         className={`${isActive("/deals")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
@@ -835,6 +876,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     {(hasPermission(PERMISSIONS.readQuote) &&  (hasFeature(FEATURES.CRM))) && <li>
                       <Link
                         href="/quotations"
+                        onClick={handleNavClick("/quotations")}
                         className={`${isActive("/quotations")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
@@ -846,6 +888,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     {(hasPermission(PERMISSIONS.readInvoice) &&  (hasFeature(FEATURES.CRM))) && <li>
                       <Link
                         href="/invoice"
+                        onClick={handleNavClick("/invoice")}
                         className={`${isActive("/invoice")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
@@ -861,6 +904,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
             {(hasPermission(PERMISSIONS.readClient)&&  (hasFeature(FEATURES.CRM)) && !auth.isAdmin) && <li>
               <Link
                 href="/clients"
+                onClick={handleNavClick("/clients")}
                 className={`${isActive("/clients")
                   ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"
@@ -964,6 +1008,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     {(hasPermission(PERMISSIONS.readTemplate)|| hasPermission(PERMISSIONS.createTemplate)) && <li>
                       <Link
                         href="/emailManagement/templates"
+                        onClick={handleNavClick("/emailManagement/templates")}
                         className={`${isActive("/emailManagement/templates")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
@@ -975,6 +1020,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     {hasPermission(PERMISSIONS.readEmailLog) && <li>
                       <Link
                         href="/emailManagement/outbox"
+                        onClick={handleNavClick("/emailManagement/outbox")}
                         className={`${isActive("/emailManagement/outbox")
                           ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                           : "border-l-2 border-transparent"
@@ -1005,6 +1051,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
             {(auth.isAdmin)  && <li>
               <Link
                 href="/query"
+                onClick={handleNavClick("/query")}
                 className={`${isActive("/query")
                   ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"

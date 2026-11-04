@@ -162,7 +162,7 @@ class Dependencies:
     async def onlyForCompanyAdmin(self, request: Request):
         user = request.state.user
         if any(
-            role.get("code") in {SUPER_ADMIN_CODE, COMPANY_ADMIN_CODE}
+            role.get("code") in {SUPER_ADMIN_CODE, COMPANY_ADMIN_CODE, "ADMIN"}
             for role in user.get("userRole", [])
         ):
             return True

@@ -104,7 +104,13 @@ const page = (): JSX.Element => {
       try {
         const result = await LeadService.getById(id);
         if (result.status === 200) {
-          setLeadData(result.data.data);
+          const fetchedLead = result.data.data;
+          setLeadData(fetchedLead);
+          setFormData((prev) => ({
+            ...prev,
+            lead_id: String(id),
+            dealName: prev.dealName || fetchedLead?.fullName || "",
+          }));
         }
       } catch (error) {
         if (axios.isAxiosError(error)) {
@@ -189,8 +195,8 @@ const page = (): JSX.Element => {
 
     if (!id) return;
 
-    setFormData({ ...formData, lead_id: String(id) });
-  }, []);
+    setFormData((prev) => ({ ...prev, lead_id: String(id) }));
+  }, [id]);
 
   const handleChecked = (e: ChangeEvent<HTMLInputElement>) => {
     const { value, checked } = e.target;

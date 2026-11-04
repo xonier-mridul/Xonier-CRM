@@ -30,7 +30,7 @@ import SensitiveField from "@/src/components/common/SensitiveField";
 import TabsButton from "@/src/components/ui/TabsButton";
 import { FaRegHandshake, FaHandshake } from "react-icons/fa";
 import Pagination from "@/src/components/common/pagination";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { maskEmail, maskPhone } from "@/src/app/utils/mask.utils";
 import { AuthService } from "@/src/services/auth.service";
 import { User } from "@/src/types";
@@ -95,9 +95,42 @@ const LeadContent = (): JSX.Element => {
   const { t } = useTranslation();
   const authUser = useSelector((state: RootState) => state.auth.user);
   const assignmentRoles = authUser?.userRole || [];
-  const [configurationOpen, setConfigurationOpen] = useState(false);
-  const canConfigureLeads = assignmentRoles.some(role => ["COMPANY_ADMIN", "SUPER_ADMIN"].includes(role.code));
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const isConfigParam = searchParams.get("view") === "configuration";
+  const [configurationOpen, setConfigurationOpen] = useState(isConfigParam);
+  const canConfigureLeads = assignmentRoles.some(role => ["COMPANY_ADMIN", "SUPER_ADMIN", "ADMIN"].includes(role.code || ""));
+  const isAdmin = assignmentRoles.some(role => ["SUPER_ADMIN", "COMPANY_ADMIN", "ADMIN"].includes(role.code || ""));
   const canAssignLeads = canManageAssignments(assignmentRoles);
+
+  useEffect(() => {
+    setConfigurationOpen(searchParams.get("view") === "configuration");
+  }, [searchParams]);
+
+  useEffect(() => {
+    const handleNav = (e: any) => {
+      if (e.detail?.path === "/leads") {
+        setConfigurationOpen(false);
+        if (searchParams.get("view")) {
+          router.replace("/leads");
+        }
+      }
+    };
+    window.addEventListener("app:navigation", handleNav);
+    return () => window.removeEventListener("app:navigation", handleNav);
+  }, [searchParams, router]);
+
+  const openConfiguration = () => {
+    setConfigurationOpen(true);
+    router.push("/leads?view=configuration");
+  };
+
+  const closeConfiguration = () => {
+    setConfigurationOpen(false);
+    if (searchParams.get("view") === "configuration") {
+      router.push("/leads");
+    }
+  };
 
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -181,7 +214,6 @@ const LeadContent = (): JSX.Element => {
   const reassignDropdownRef = useRef<HTMLDivElement>(null);
 
   const { hasPermission } = usePermissions();
-  const searchParams = useSearchParams();
   const userid = searchParams.get("userid");
   const query = userid ? { userid } : {};
 
@@ -209,8 +241,7 @@ const LeadContent = (): JSX.Element => {
   const getLeadData = async (showLoading = true): Promise<void> => {
     if (showLoading) setIsLoading(true);
     try {
-      const fetchLimit = viewMode === "kanban" ? 200 : pageLimit;
-      const result = await LeadService.getAll(currentPage, fetchLimit, getLeadFilters());
+      const result = await LeadService.getAll(currentPage, pageLimit, getLeadFilters());
       if (result.status === 200) {
         const data = result.data.data;
         setLeadData(data.data);
@@ -230,8 +261,7 @@ const LeadContent = (): JSX.Element => {
   const getWonLeadData = async (showLoading = true): Promise<void> => {
     if (showLoading) setIsLoading(true);
     try {
-      const fetchLimit = viewMode === "kanban" ? 200 : wonPageLimit;
-      const result = await LeadService.getAll(currentWonPage, fetchLimit, {
+      const result = await LeadService.getAll(currentWonPage, wonPageLimit, {
         ...getLeadFilters(),
         status: leadStatuses.find(s => s.type === "final")?.key || "__no_final__",
       });
@@ -254,8 +284,7 @@ const LeadContent = (): JSX.Element => {
   const getLostLeadData = async (showLoading = true): Promise<void> => {
     if (showLoading) setIsLoading(true);
     try {
-      const fetchLimit = viewMode === "kanban" ? 200 : lostPageLimit;
-      const result = await LeadService.getAll(currentLostPage, fetchLimit, {
+      const result = await LeadService.getAll(currentLostPage, lostPageLimit, {
         ...getLeadFilters(),
         status: SALES_STATUS.LOST,
       });
@@ -278,8 +307,7 @@ const LeadContent = (): JSX.Element => {
   const getAssignedLeadData = async (showLoading = true): Promise<void> => {
     if (showLoading) setIsLoading(true);
     try {
-      const fetchLimit = viewMode === "kanban" ? 200 : assignedPageLimit;
-      const result = await LeadService.getAll(currentAssignedPage, fetchLimit, {
+      const result = await LeadService.getAll(currentAssignedPage, assignedPageLimit, {
         ...getLeadFilters(),
         isAssigned: true,
         assignee: assignFilter || undefined,
@@ -325,10 +353,11 @@ const LeadContent = (): JSX.Element => {
     pageLimit,
     currentWonPage,
     wonPageLimit,
+    currentLostPage,
+    lostPageLimit,
     currentAssignedPage,
     assignedPageLimit,
     assignFilter,
-    viewMode,
     leadStatuses,
   ]);
   useEffect(() => {
@@ -525,7 +554,7 @@ const isIndeterminate =
         title: "Are you sure",
         btnTxt: "Yes, revoke"
       });
-      if (confirm) {
+      if (confirm.isConfirmed) {
         const result = await LeadService.revokeLeads(Array.from(selectedReassignIds));
         if (result.status === 200) {
           toast.success(`${selectedReassignIds.size} leads revoked successfully`);
@@ -545,18 +574,32 @@ const isIndeterminate =
   };
 
   const handleDelete = async (id: ParamValue, name: string): Promise<void> => {
+    if (!isAdmin) return;
     try {
       const confirm = await ConfirmPopup({
         text: `Are you want to delete ${name} lead`,
         title: "Are you sure",
         btnTxt: "Yes, delete"
       });
-      if (confirm) {
-        const result = await LeadService.delete(String(id));
+      if (confirm.isConfirmed) {
+        const leadIdStr = String(id);
+        const result = await LeadService.delete(leadIdStr);
         if (result.status === 200) {
           toast.success(`${name} lead deleted successfully`);
-          setCurrentTab(TAB.ALL);
-          await getLeadData();
+          setLeadData((prev) => prev.filter((l) => l.id !== leadIdStr));
+          setWonLeadData((prev) => prev.filter((l) => l.id !== leadIdStr));
+          setLostLeadData((prev) => prev.filter((l) => l.id !== leadIdStr));
+          setAssignedLeadData((prev) => prev.filter((l) => l.id !== leadIdStr));
+          setSelectedLeadIds((prev) => {
+            const next = new Set(prev);
+            next.delete(leadIdStr);
+            return next;
+          });
+          setSelectedReassignIds((prev) => {
+            const next = new Set(prev);
+            next.delete(leadIdStr);
+            return next;
+          });
         }
       }
     } catch (error) {
@@ -768,12 +811,14 @@ const isIndeterminate =
     clearFields();
   }, [currentTab]);
 
-      const [limitOpen, setLimitOpen] = useState(false);
-  const limits = [10, 20, 30, 40];
-   const handleLimit = (n: number) => {
-      setPageLimit(Number(n));
-      setCurrentPage(1);
-    };
+  const [limitOpen, setLimitOpen] = useState(false);
+  const limits = [10, 20, 30, 40, 50, 100, 200];
+  const handleLimit = (n: number) => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    handlePageLimit(Number(n));
+  };
   
 
   const options: Record<
@@ -857,18 +902,64 @@ const isIndeterminate =
           <FaHandshake size={15} />
         </span>
       )}
+      {isAdmin && item.status !== SALES_STATUS.DELETE && (
+        <button
+          type="button"
+          onClick={() => handleDelete(item.id, item.fullName || item.lead_id || "Lead")}
+          className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors cursor-pointer"
+          title="Delete"
+        >
+          <MdDeleteOutline size={17} />
+        </button>
+      )}
     </div>
   );
 
   const handleStatusChange = async (leadId: string, newStatus: string) => {
+    const targetStage = leadStatuses.find((s) => s.key === newStatus);
+    const targetLead =
+      leadData.find((l) => l.id === leadId) ||
+      assignedLeadData.find((l) => l.id === leadId) ||
+      wonLeadData.find((l) => l.id === leadId) ||
+      lostLeadData.find((l) => l.id === leadId);
+
+    if (targetStage?.type === "final" && targetLead && !targetLead.inDeal) {
+      toast.info("Please fill the deal details to convert this lead into a deal");
+      router.push(`/leads/make-deal/${leadId}`);
+      return false;
+    }
+
+    const prevLeadData = leadData;
+    const prevWonLeadData = wonLeadData;
+    const prevLostLeadData = lostLeadData;
+    const prevAssignedLeadData = assignedLeadData;
+
+    const updateStatusInList = (list: Lead[]) =>
+      list.map((lead) =>
+        lead.id === leadId ? { ...lead, status: newStatus as SALES_STATUS } : lead
+      );
+
+    setLeadData(updateStatusInList);
+    setWonLeadData(updateStatusInList);
+    setLostLeadData(updateStatusInList);
+    setAssignedLeadData(updateStatusInList);
+
     try {
       const result = await LeadService.updateStatus(leadId, { status: newStatus });
       if (result.status === 200) {
         toast.success(result.data.message || "Status updated successfully");
         return true;
       }
+      setLeadData(prevLeadData);
+      setWonLeadData(prevWonLeadData);
+      setLostLeadData(prevLostLeadData);
+      setAssignedLeadData(prevAssignedLeadData);
       return false;
     } catch (error) {
+      setLeadData(prevLeadData);
+      setWonLeadData(prevWonLeadData);
+      setLostLeadData(prevLostLeadData);
+      setAssignedLeadData(prevAssignedLeadData);
       toast.error("Failed to update status");
       return false;
     }
@@ -1164,6 +1255,16 @@ const isIndeterminate =
                   <FaHandshake size={15} />
                 </span>
               )}
+              {isAdmin && item.status !== SALES_STATUS.DELETE && (
+                <button
+                  type="button"
+                  onClick={() => handleDelete(item.id, item.fullName || item.lead_id || "Lead")}
+                  className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors cursor-pointer"
+                  title="Delete"
+                >
+                  <MdDeleteOutline size={17} />
+                </button>
+              )}
             </div>
 
           </td>
@@ -1172,8 +1273,8 @@ const isIndeterminate =
     });
   };
 
-  if (configurationOpen && canConfigureLeads) {
-    return <LeadStatusConfiguration onBack={() => setConfigurationOpen(false)} />;
+  if ((configurationOpen || isConfigParam) && canConfigureLeads) {
+    return <LeadStatusConfiguration onBack={closeConfiguration} />;
   }
 
   return (
@@ -1219,11 +1320,10 @@ const isIndeterminate =
             <div className="flex items-center gap-4">
                <PageLimit
                 setLimitOpen={setLimitOpen}
-                pageLimit={pageLimit}
+                pageLimit={pageLimitMap[currentTab] ?? pageLimit}
                 limitOpen={limitOpen}
                 limits={limits}
                 handleLimit={handleLimit}
-            
               />
               {/* <select
                 value={pageLimitMap[currentTab] ?? pageLimit}
@@ -1248,7 +1348,7 @@ const isIndeterminate =
                 />
               </div>
 
-              {canConfigureLeads && <button onClick={() => setConfigurationOpen(true)} className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-[13px] font-medium text-slate-600 transition hover:border-cyan-200 hover:bg-cyan-50/50 hover:text-cyan-700 dark:border-slate-500 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"><Settings2 size={16} />Lead configuration</button>}
+              {canConfigureLeads && <button onClick={openConfiguration} className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-[13px] font-medium text-slate-600 transition hover:border-cyan-200 hover:bg-cyan-50/50 hover:text-cyan-700 dark:border-slate-500 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"><Settings2 size={16} />Lead configuration</button>}
               {hasPermission(PERMISSIONS.createLead) ? (
                 <Link
                   href="/leads/add"
@@ -1633,7 +1733,11 @@ const isIndeterminate =
 
           {viewMode === "kanban" ? (
             <div className="mt-4 w-full min-w-0 overflow-x-hidden">
-              <LeadKanbanBoard leads={currentLeadData} onStatusChange={handleStatusChange} />
+              <LeadKanbanBoard
+                leads={currentLeadData}
+                onStatusChange={handleStatusChange}
+                onDelete={isAdmin ? handleDelete : undefined}
+              />
             </div>
           ) : currentTab !== TAB.ASSIGNED ? (
             <div className="overflow-x-scroll custom-scrollbar">
@@ -1751,14 +1855,10 @@ const isIndeterminate =
             </div>
           )}
 
-          {viewMode === "table" && (
-            <>
-              {currentTab === TAB.ALL && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={(p) => setCurrentPage(p)} className="w-full" />}
-              {currentTab === TAB.WON && <Pagination currentPage={currentWonPage} totalPages={wonTotalPages} onPageChange={(p) => setWonCurrentPage(p)} className="w-full" />}
-              {currentTab === TAB.LOST && <Pagination currentPage={currentLostPage} totalPages={lostTotalPages} onPageChange={(p) => setLostCurrentPage(p)} className="w-full" />}
-              {currentTab === TAB.ASSIGNED && <Pagination currentPage={currentAssignedPage} totalPages={assignedTotalPages} onPageChange={(p) => setAssignedCurrentPage(p)} className="w-full" />}
-            </>
-          )}
+          {currentTab === TAB.ALL && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={(p) => setCurrentPage(p)} className="w-full" />}
+          {currentTab === TAB.WON && <Pagination currentPage={currentWonPage} totalPages={wonTotalPages} onPageChange={(p) => setWonCurrentPage(p)} className="w-full" />}
+          {currentTab === TAB.LOST && <Pagination currentPage={currentLostPage} totalPages={lostTotalPages} onPageChange={(p) => setLostCurrentPage(p)} className="w-full" />}
+          {currentTab === TAB.ASSIGNED && <Pagination currentPage={currentAssignedPage} totalPages={assignedTotalPages} onPageChange={(p) => setAssignedCurrentPage(p)} className="w-full" />}
         </div>
       </div>
     </>
