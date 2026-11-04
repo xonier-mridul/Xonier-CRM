@@ -6,8 +6,6 @@ import { SALES_STATUS } from "@/src/constants/enum";
 import { MdDeleteOutline, MdOutlineEdit } from "react-icons/md";
 import { FaRegEye } from "react-icons/fa";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
 import StatusBadge from "@/src/components/common/Status";
 import { Inbox } from "lucide-react";
 
@@ -37,7 +35,6 @@ const AssignedToAvatar = ({ user }: { user: any }) => {
 };
 
 const LeadKanbanBoard: React.FC<LeadKanbanBoardProps> = ({ leads, onStatusChange, onDelete }) => {
-  const router = useRouter();
   const { statuses, label, loading: statusesLoading, error: statusError, refresh: refreshStatuses } = useLeadStatuses();
   const COLUMNS = useMemo(
     () => [
@@ -258,8 +255,9 @@ const LeadKanbanBoard: React.FC<LeadKanbanBoardProps> = ({ leads, onStatusChange
 
     const targetColumn = COLUMNS.find((col) => col.id === targetStatusId);
     if (targetColumn?.type === "final" && !lead.inDeal) {
-      toast.info("Please fill the deal details to convert this lead into a deal");
-      router.push(`/leads/make-deal/${lead.id}`);
+      // Navigate directly. The lead stays in its current stage until the deal
+      // is saved, when the create-deal API moves it to the final stage.
+      window.location.assign(`/leads/make-deal/${lead.id}`);
       return;
     }
 

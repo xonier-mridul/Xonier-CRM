@@ -216,11 +216,18 @@ const page = (): JSX.Element => {
     setErr("");
     setLoading(true);
     try {
-      if(formData.dealName === ""){
-        toast.error("Deal name is required")
-        return
+      if (!leadData || formData.lead_id !== String(id)) {
+        toast.error("Lead details are still loading. Please try again.");
+        return;
       }
-      console.log("formdata in deal create:",formData)
+      if (formData.dealName.trim().length < 4) {
+        toast.error("Deal name must be at least 4 characters long");
+        return;
+      }
+      if (!Number.isFinite(formData.amount) || formData.amount <= 0) {
+        toast.error("Enter an amount greater than 0");
+        return;
+      }
       const result = await dealService.create(formData);
       if (result.status === 201) {
         toast.success(`${formData.dealName} deal created successfully`);
@@ -603,7 +610,7 @@ const page = (): JSX.Element => {
               disabled={loading || selectedFieldsIds.length <= 0 || !hasPermission(PERMISSIONS.createDeal)}
             >
               <MdOutlineCloudUpload className="text-lg" />{" "}
-              {loading ? "Updating..." : "Create deal"}
+              {loading ? "Creating..." : "Create deal"}
             </button>
 
             <button

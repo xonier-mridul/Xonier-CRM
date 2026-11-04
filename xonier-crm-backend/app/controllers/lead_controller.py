@@ -11,6 +11,10 @@ class LeadController:
     def __init__(self):
         self.service = LeadService()
 
+    async def assignable_agents(self, request: Request):
+        agents = await self.service.assignable_agents(request.state.user)
+        return successResponse(200, "Assignable agents fetched successfully", agents)
+
 
     async def create(self, request: Request, payload: Dict[str, Any]):
         try:

@@ -48,6 +48,7 @@ export interface Lead {
 }
 
 export interface LeadPayload {
+  assigneeId?: string;
   fullName?: string | null;
   email?: string | null;
   phone?: string | null;

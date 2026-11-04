@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Request
 from app.core.dependencies import Dependencies
-from app.schemas.lead_schema import LeadsCreateSchema, LeadUpdateSchema, LeadBaseSchema, CreateBulkLeadSchema, BulkAssignLeadSchema, LeadStatusUpdateSchema, BulkReassignLeadSchema, BulkDeleteSchema, LeadConnectStatusUpdateSchema, BulkClearAssignSchema
+from app.schemas.lead_schema import LeadsCreateSchema, LeadCreateSchema, LeadUpdateSchema, CreateBulkLeadSchema, BulkAssignLeadSchema, LeadStatusUpdateSchema, BulkReassignLeadSchema, BulkDeleteSchema, LeadConnectStatusUpdateSchema, BulkClearAssignSchema
 from app.controllers.lead_controller import LeadController
 from app.core.enums import FEATURE
 
@@ -9,9 +9,14 @@ router = APIRouter()
 dependencies = Dependencies()
 leadController = LeadController()
 
+@router.get("/assignable-agents", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM)), Depends(dependencies.permissions(["lead:assign"]))])
+async def assignable_agents(request: Request):
+    return await leadController.assignable_agents(request)
+
 @router.post("/create", status_code=201, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
 Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM)), Depends(dependencies.permissions(["lead:create"]))])
-async def create(request: Request, payload: LeadBaseSchema):
+async def create(request: Request, payload: LeadCreateSchema):
     return await leadController.create(request=request, payload=payload.model_dump())
 
 @router.post("/create/bulk", status_code=201, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),

@@ -2,7 +2,7 @@
 import { Settings2 } from "lucide-react";
 import LeadStatusConfiguration from "./LeadStatusConfiguration";
 import { useLeadStatuses } from "@/src/hooks/useLeadStatuses";
-import React, { JSX, useState, useEffect, useRef } from "react";
+import React, { JSX, useState, useEffect, useMemo, useRef } from "react";
 import { IoIosSearch } from "react-icons/io";
 import Link from "next/link";
 import { MdOutlineEdit } from "react-icons/md";
@@ -234,9 +234,10 @@ const LeadContent = (): JSX.Element => {
           : assignedLeadData;
 
   // Client-side filter: Sales Person filter compares against lead's createdBy user
-  const currentLeadData = !salesPersonFilter
+  const currentLeadData = useMemo(() => !salesPersonFilter
     ? baseLeadData
-    : baseLeadData.filter((item) => item.createdBy?.id === salesPersonFilter);
+    : baseLeadData.filter((item) => item.createdBy?.id === salesPersonFilter),
+  [baseLeadData, salesPersonFilter]);
 
   const getLeadData = async (showLoading = true): Promise<void> => {
     if (showLoading) setIsLoading(true);
@@ -924,7 +925,6 @@ const isIndeterminate =
       lostLeadData.find((l) => l.id === leadId);
 
     if (targetStage?.type === "final" && targetLead && !targetLead.inDeal) {
-      toast.info("Please fill the deal details to convert this lead into a deal");
       router.push(`/leads/make-deal/${leadId}`);
       return false;
     }

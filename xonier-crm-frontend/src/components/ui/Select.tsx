@@ -14,12 +14,14 @@ interface SelectProps
   error?: string;
   options: SelectOption[];
   placeholder?: string;
+  placeholderDisabled?: boolean;
 }
 const Select: React.FC<SelectProps> = ({
   label,
   error,
   options,
   placeholder = "Select an option",
+  placeholderDisabled = true,
   className = "",
   required = true,
   ...props
@@ -48,7 +50,7 @@ const {t}= useTranslation()
       >
         {placeholder && (
           <option
-           value="" disabled>
+           value="" disabled={placeholderDisabled}>
             {t(placeholder)}
           </option>
         )}

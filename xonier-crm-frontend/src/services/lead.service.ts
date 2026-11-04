@@ -39,6 +39,7 @@ const LeadService = {
     return api.get(`/lead/leads-by-user/all?${params.toString()}`);
   },
   create: (data: LeadPayload)=> api.post("/lead/create", data),
+  getAssignableAgents: () => api.get("/lead/assignable-agents"),
   assignBulkLead: (userId: string, leadsId: Array<string>)=> api.patch("/lead/assign/bulk", {userId, leadsId}),
   reassignBulkLead: (payload: BulkReassignLeadSchema)=> api.patch("/lead/reassign/bulk", payload),
   bulkCreate: (data: BulkLeadPayload )=> api.post("/lead/create/bulk", data),

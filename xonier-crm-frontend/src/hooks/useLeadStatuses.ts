@@ -28,8 +28,12 @@ export function useLeadStatuses() {
     if (channel) channel.onmessage = () => { void refresh(); };
     return () => { ++requestRef.current; window.removeEventListener("focus", refresh); window.removeEventListener("lead-statuses-changed", refresh); channel?.close(); };
   }, [refresh]);
+  const label = useCallback(
+    (key: string) => statuses.find(s => s.key === key)?.name || key?.replace(/_/g, " "),
+    [statuses]
+  );
   return { statuses, loading, error, refresh,
     options: statuses.map(s => ({ label: s.name, value: s.key })),
-    label: (key: string) => statuses.find(s => s.key === key)?.name || key?.replace(/_/g, " "),
+    label,
   };
 }

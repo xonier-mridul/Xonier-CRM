@@ -21,6 +21,12 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { SALES_STATUS } from "@/src/constants/enum";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
+import { RootState } from "@/src/store";
+import { usePermissions } from "@/src/hooks/usePermissions";
+import { PERMISSIONS } from "@/src/constants/enum";
+
+type AssignableAgent = { id: string; firstName: string; lastName?: string | null };
 
 const KNOWN_LEAD_KEYS = new Set([
   "fullName",
@@ -368,6 +374,12 @@ const groupFieldsBySection = (fields: CustomField[]): GroupedSection[] => {
 
 const page = (): JSX.Element => {
   const { t } = useTranslation();
+  const { hasPermission } = usePermissions();
+  const authUser = useSelector((state: RootState) => state.auth.user);
+  const isAdmin = authUser?.userRole?.some(role =>
+    ["SUPER_ADMIN", "COMPANY_ADMIN", "ADMIN"].includes(role.code)
+  ) ?? false;
+  const canAssignOnCreate = isAdmin && hasPermission(PERMISSIONS.assignLead);
   const { options: leadStatusOptions } = useLeadStatuses();
   const [err, setErr] = useState<string | string[]>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -375,6 +387,9 @@ const page = (): JSX.Element => {
   const [userFormData, setUserFormData] = useState<UserForm[]>([]);
   const [userFormField, setUserFormField] = useState<CustomField[]>([]);
   const [customOptions, setCustomOptions] = useState<Record<string, string[]>>({});
+  const [assignableAgents, setAssignableAgents] = useState<AssignableAgent[]>([]);
+  const [assigneeId, setAssigneeId] = useState("");
+  const [agentsError, setAgentsError] = useState("");
 
   // Single flat map for ALL fields (known + dynamic extra).
   // On submit we split them apart before sending to the API.
@@ -450,6 +465,19 @@ const page = (): JSX.Element => {
     getFormFields();
   }, []);
 
+  useEffect(() => {
+    if (!canAssignOnCreate) return;
+    let active = true;
+    LeadService.getAssignableAgents()
+      .then(result => {
+        if (active) setAssignableAgents(result.data.data ?? []);
+      })
+      .catch(() => {
+        if (active) setAgentsError("Could not load agents. Please refresh the page.");
+      });
+    return () => { active = false; };
+  }, [canAssignOnCreate]);
+
   // Splits flatFormData into known LeadPayload fields and dynamic extraFields.
   // Empty/null OPTIONAL values are dropped entirely so we never send an
   // empty string for enum-type fields (priority, language, industry, etc.)
@@ -488,6 +516,7 @@ const page = (): JSX.Element => {
     return {
       ...(knownFields as unknown as LeadPayload),
       ...(Object.keys(extraFields).length > 0 ? { extraFields } : {}),
+      ...(canAssignOnCreate && assigneeId ? { assigneeId } : {}),
     };
   };
 
@@ -649,6 +678,7 @@ const page = (): JSX.Element => {
           }
           return reset;
         });
+        setAssigneeId("");
 
         setTimeout(() => {
           router.push("/leads");
@@ -731,6 +761,31 @@ const page = (): JSX.Element => {
                   <Skeleton height={38} width={500} borderRadius={14} className="animate-pulse" />
                 </div>
               ))}
+            </div>
+          )}
+
+          {canAssignOnCreate && (
+            <div className="flex flex-col gap-4">
+              <h3 className="text-lg font-semibold text-slate-800 dark:text-white border-b border-slate-200 dark:border-slate-600 pb-2">
+                Assignment
+              </h3>
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                <Select
+                  name="assigneeId"
+                  label="Assign To"
+                  placeholder="Leave unassigned"
+                  placeholderDisabled={false}
+                  options={assignableAgents.map(agent => ({
+                    value: agent.id,
+                    label: `${agent.firstName} ${agent.lastName ?? ""}`.trim(),
+                  }))}
+                  value={assigneeId}
+                  onChange={event => setAssigneeId(event.target.value)}
+                  required={false}
+                  disabled={Boolean(agentsError)}
+                />
+              </div>
+              {agentsError && <p role="alert" className="text-sm text-red-600">{agentsError}</p>}
             </div>
           )}
 

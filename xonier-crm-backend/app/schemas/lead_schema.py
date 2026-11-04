@@ -160,6 +160,10 @@ class LeadBaseSchema(BaseModel):
         return value
 
 
+class LeadCreateSchema(LeadBaseSchema):
+    assigneeId: Optional[str] = None
+
+
 class LeadsCreateSchema(LeadBaseSchema):
     fullName: Optional[str] = None
     email: Optional[EmailStr] = None

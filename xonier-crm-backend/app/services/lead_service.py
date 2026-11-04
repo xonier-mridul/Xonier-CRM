@@ -21,7 +21,8 @@ from app.core.constants import (
 from app.db.models.lead_model import LeadsModel 
 from app.db.models.campaign_lead_model import CampaignLeadModel
 from app.db.models.campaign_model import CampaignModel
-from app.core.enums import SALES_STATUS, ACTIVITY_ENTITY_TYPE, ACTIVITY_ACTION, LEAD_SOURCE_TYPE, MEETING_SCHEDULED
+from app.core.enums import SALES_STATUS, ACTIVITY_ENTITY_TYPE, ACTIVITY_ACTION, LEAD_SOURCE_TYPE, MEETING_SCHEDULED, USER_STATUS
+from app.core.tenant import current_company
 from app.utils.cache_key_generator import (
     cache_key_generator,
     cache_key_generator_with_id
@@ -59,13 +60,57 @@ class LeadService:
             return True
         return await self.getTeamMem.validate_manager(user["_id"])
 
+    async def assignable_agents(self, user: Dict[str, Any]):
+        require_lead_assigner(user)
+        company_id = current_company.get()
+        if not company_id:
+            raise AppException(403, "Company context missing")
+        candidates = await self.userRepo.get_all_without_pagination(
+            filters={
+                "companyId": PydanticObjectId(company_id),
+                "status": USER_STATUS.ACTIVE.value,
+                "deletedAt": None,
+            },
+            populate=["userRole"],
+        )
+        agents = []
+        for candidate in candidates:
+            try:
+                require_lower_assignee(user, candidate)
+            except AppException:
+                continue
+            agents.append({
+                "id": candidate["id"],
+                "firstName": candidate["firstName"],
+                "lastName": candidate.get("lastName"),
+            })
+        return sorted(agents, key=lambda agent: (agent["firstName"], agent["lastName"] or ""))
+
     @retry_transaction
     async def create(self, payload: Dict[str, Any], user: Dict[str, Any]):
+        payload = payload.copy()
+        assignee_id = payload.pop("assigneeId", None)
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
                     
                     is_admin_or_manager = await self._is_admin_or_manager(user)
+                    if assignee_id:
+                        require_lead_assigner(user)
+                        if not PydanticObjectId.is_valid(assignee_id):
+                            raise AppException(400, "Invalid assignee ID")
+                        company_id = current_company.get()
+                        if not company_id:
+                            raise AppException(403, "Company context missing")
+                        assignee = await self.userRepo.find_one({
+                            "_id": PydanticObjectId(assignee_id),
+                            "companyId": PydanticObjectId(company_id),
+                            "status": USER_STATUS.ACTIVE.value,
+                            "deletedAt": None,
+                        }, populate=["userRole"], session=session)
+                        if not assignee:
+                            raise AppException(404, "Agent not found or inactive")
+                        require_lower_assignee(user, jsonable_encoder(assignee))
                     hashed_mail = hash_value(payload["email"].lower()) if payload.get("email") else None
                     hashed_phone = hash_value(payload["phone"]) if payload.get("phone") else None
 
@@ -96,15 +141,14 @@ class LeadService:
                         "leadSource": LEAD_SOURCE_TYPE.ADMIN_CREATED.value if is_admin_or_manager else LEAD_SOURCE_TYPE.SELF_CREATED.value
                     }
 
-                    # Leads created by agents should immediately appear in their
-                    # own web and mobile lead lists, both of which are scoped by
-                    # assignedTo. Admin/Manager-created leads remain unassigned
-                    # until explicitly assigned to a user.
-                    if not is_admin_or_manager:
+                    # Agent-created leads are assigned to their creator. An admin
+                    # can choose an agent during creation; otherwise the lead stays unassigned.
+                    if assignee_id or not is_admin_or_manager:
                         creator_id = PydanticObjectId(user["_id"])
+                        target_id = PydanticObjectId(assignee_id) if assignee_id else creator_id
                         now = datetime.now(timezone.utc)
                         new_payload.update({
-                            "assignedTo": [creator_id],
+                            "assignedTo": [target_id],
                             "assignedBy": creator_id,
                             "assignedAt": now,
                             "isAssigned": True,
