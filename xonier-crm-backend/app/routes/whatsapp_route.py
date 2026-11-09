@@ -3,6 +3,7 @@ import base64
 import hashlib
 import hmac
 import json
+import logging
 import time
 
 import httpx
@@ -14,6 +15,7 @@ from app.core.config import get_setting
 from app.core.dependencies import Dependencies
 from app.utils.custom_exception import AppException
 
+logger = logging.getLogger("uvicorn.error")
 _deps = Dependencies()
 router = APIRouter(prefix="/api/whatsapp", tags=["WhatsApp"], dependencies=[
     Depends(_deps.authorized), Depends(_deps.company_active), Depends(_deps.company_context),
@@ -36,11 +38,14 @@ async def bridge(request: Request, method: str, path: str, body=None, params=Non
     encoded = base64.urlsafe_b64encode(json.dumps(payload, separators=(",", ":")).encode()).rstrip(b"=")
     signature = base64.urlsafe_b64encode(hmac.new(settings.WHATSAPP_BRIDGE_SECRET.encode(), encoded, hashlib.sha256).digest()).rstrip(b"=")
     ticket = (encoded + b"." + signature).decode()
+    started = time.monotonic()
     try:
         async with httpx.AsyncClient(timeout=25, trust_env=False) as client:
             result = await client.request(method, settings.WHATSAPP_BRIDGE_URL.rstrip("/") + path,
                                           headers={"Authorization": f"Bearer {ticket}"}, json=body, params=params)
-    except httpx.HTTPError:
+    except httpx.HTTPError as exc:
+        logger.warning("WhatsApp bridge request failed: %s %s (%s, %.2fs)",
+                       method, path, type(exc).__name__, time.monotonic() - started)
         raise AppException(503, "WhatsApp service is unavailable. Please try again shortly.")
     if result.status_code >= 400:
         try:

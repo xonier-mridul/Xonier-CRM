@@ -47,15 +47,24 @@ export class ContactDirectory {
   return [...new Set([jid, phoneNumber, ...aliases.map(row => row.jid)])];
   }
 
-  async decorate(sid, batch) {
+  async decorate(sid, batch, recoveredPhones = new Map()) {
     const rows = await this.collection.find({ sid, jid: { $in: batch.map(chat => chat.jid) } }).toArray();
     const byJid = new Map(rows.map(row => [row.jid, row]));
-    const phoneNumbers = [...new Set(rows.map(row => row.phoneNumber).filter(Boolean))];
-    const aliases = phoneNumbers.length ? await this.collection.find({ sid, phoneNumber: { $in: phoneNumbers } }).toArray() : [];
+    const phoneNumbers = [...new Set([
+      ...rows.map(row => row.phoneNumber).filter(Boolean), ...recoveredPhones.values(),
+    ])];
+    const aliases = phoneNumbers.length ? await this.collection.find({
+      sid, $or: [{ phoneNumber: { $in: phoneNumbers } }, { jid: { $in: phoneNumbers } }],
+    }).toArray() : [];
+    const names = new Map();
+    for (const alias of aliases) {
+      const phone = alias.phoneNumber || alias.jid;
+      if (!names.has(phone) && typeof alias.name === 'string' && alias.name.trim()) names.set(phone, alias.name);
+    }
     return batch.map(chat => {
       const contact = byJid.get(chat.jid) || {};
-      const savedAlias = aliases.find(row => row.phoneNumber === contact.phoneNumber && typeof row.name === 'string' && row.name.trim());
-      return displayContact(chat, { ...contact, name: contact.name || savedAlias?.name });
+      const phoneNumber = contact.phoneNumber || recoveredPhones.get(chat.jid);
+      return displayContact(chat, { ...contact, phoneNumber, name: contact.name || names.get(phoneNumber) });
     });
   }
 }

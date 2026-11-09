@@ -19,7 +19,10 @@ test('groups retain their subject; numeric group ids are hidden', () => {
 test('contact names survive history mapping order, update across aliases and stay session scoped', async () => {
   const { ContactDirectory } = await import('../src/contacts.mjs');
   const records = [];
-  const matches = (row, filter) => Object.entries(filter).every(([key, value]) => value?.$in ? value.$in.includes(row[key]) : row[key] === value);
+  const matches = (row, filter) => Object.entries(filter).every(([key, value]) => {
+    if (key === '$or') return value.some(clause => matches(row, clause));
+    return value?.$in ? value.$in.includes(row[key]) : row[key] === value;
+  });
   const collection = {
     find: filter => ({ toArray: async () => records.filter(row => matches(row, filter)).map(row => ({...row})) }),
     updateOne: async (filter, update) => {
@@ -31,6 +34,11 @@ test('contact names survive history mapping order, update across aliases and sta
   const directory = new ContactDirectory(collection);
   const lid='123456789012345@lid', pn='919876543210@s.whatsapp.net';
   await directory.absorb('one',[{id:pn,name:'Saved name'}]);
+  const beforeRead = structuredClone(records);
+  const recovered = new Map([[lid, pn]]);
+  assert.equal((await directory.decorate('one', [{jid:lid}], recovered))[0].name, 'Saved name');
+  assert.equal((await directory.decorate('two', [{jid:lid}], recovered))[0].name, '+919876543210');
+  assert.deepEqual(records, beforeRead);
   await directory.map('one',[{lid,pn}]);
   assert.equal((await directory.decorate('one',[{jid:lid}]))[0].name,'Saved name');
   await directory.absorb('one',[{id:pn,name:'Updated name'}]);
