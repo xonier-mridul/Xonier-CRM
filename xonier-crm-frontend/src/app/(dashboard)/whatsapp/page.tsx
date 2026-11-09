@@ -41,6 +41,9 @@ function WhatsAppInbox() {
   const [chatsLoaded, setChatsLoaded] = useState(false);
   const [refreshCount, setRefreshCount] = useState(0);
   const [contactSuggestions, setContactSuggestions] = useState<Contact[]>([]);
+  const [view, setView] = useState<"chats" | "contacts">("chats");
+  const [allContacts, setAllContacts] = useState<Contact[]>([]);
+  const [contactsLoaded, setContactsLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [sending, setSending] = useState(false);
   const [consent, setConsent] = useState(false);
@@ -139,6 +142,22 @@ function WhatsAppInbox() {
     return () => clearTimeout(timer);
   }, [query, owner]);
 
+  // Full saved-contact list for the Contacts tab (loaded only while that tab is open).
+  useEffect(() => {
+    if (view !== "contacts") return;
+    const controller = new AbortController();
+    setContactsLoaded(false);
+    const run = async () => {
+      try {
+        const result = await api.get<Contact[]>("/whatsapp/contacts", { params: owner ? { owner } : {}, signal: controller.signal });
+        if (!controller.signal.aborted) { setAllContacts(result.data); setContactsLoaded(true); }
+      } catch { if (!controller.signal.aborted) setContactsLoaded(true); }
+    };
+    void run();
+    const timer = setInterval(() => { if (document.visibilityState === "visible") void run(); }, 10000);
+    return () => { controller.abort(); clearInterval(timer); };
+  }, [view, owner, refreshCount]);
+
   const connect = async () => {
     setBusy(true); setError("");
     try { await api.post("/whatsapp/connect", { consent: true }); await refreshConnection(); }
@@ -209,8 +228,34 @@ function WhatsAppInbox() {
       </section>
       <section className="grid h-[600px] overflow-hidden rounded-2xl border border-slate-200 bg-white md:grid-cols-[300px_1fr] dark:border-slate-700 dark:bg-slate-800">
         <aside className={`${selected ? "hidden md:flex" : "flex"} min-h-0 flex-col border-r border-slate-200 dark:border-slate-700`}>
-          <label className="m-3 flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 dark:bg-slate-900"><Search size={16} /><input aria-label="Search chats" placeholder="Search chats" value={query} onChange={event => setQuery(event.target.value)} className="w-full bg-transparent text-sm outline-none" /></label>
-          <div className="flex-1 overflow-y-auto">{(() => {
+          <div className="mx-3 mt-3 grid grid-cols-2 gap-1 rounded-lg bg-slate-100 p-1 text-sm font-medium dark:bg-slate-900">
+            {(["chats", "contacts"] as const).map(tab => <button key={tab} type="button" onClick={() => setView(tab)} className={`rounded-md py-1.5 capitalize ${view === tab ? "bg-white text-emerald-700 shadow-sm dark:bg-slate-700 dark:text-emerald-300" : "text-slate-500"}`}>{tab}</button>)}
+          </div>
+          <label className="m-3 flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 dark:bg-slate-900"><Search size={16} /><input aria-label={view === "contacts" ? "Search contacts" : "Search chats"} placeholder={view === "contacts" ? "Search contacts" : "Search chats"} value={query} onChange={event => setQuery(event.target.value)} className="w-full bg-transparent text-sm outline-none" /></label>
+          {view === "contacts" ? <div className="flex-1 overflow-y-auto">{(() => {
+            const q = query.trim().toLowerCase();
+            const list = allContacts.filter(c => !q || `${c.name ?? ""} ${c.phone ?? ""}`.toLowerCase().includes(q));
+            if (!list.length) return <p className="p-5 text-center text-sm text-slate-500">{!contactsLoaded ? "Loading contacts…" : q ? "No matching contacts." : "No saved contacts synced yet."}</p>;
+            let letter = "";
+            return <>
+              <p className="px-4 pb-1 text-xs text-slate-400">{list.length} contact{list.length === 1 ? "" : "s"}</p>
+              {list.map(c => {
+                const label = c.name || c.phone || c.jid.split("@")[0];
+                const first = c.name ? (label[0] || "#").toUpperCase() : "#";
+                const header = first !== letter ? (letter = first) : null;
+                const found = chats.find(chat => chat.jid === c.jid || (c.phone && chat.jid === `${c.phone.slice(1)}@s.whatsapp.net`));
+                const item: Chat = found || { jid: c.jid, name: label, phone: c.phone, timestamp: 0 };
+                return <div key={c.jid}>
+                  {header && <p className="sticky top-0 bg-slate-50 px-4 py-1 text-xs font-semibold text-emerald-700 dark:bg-slate-900 dark:text-emerald-300">{header}</p>}
+                  <button onClick={() => { generation.current += 1; setSelected(item); setMessageError(""); setMessages([]); setText(""); }} className={`block w-full border-b border-slate-100 px-4 py-3 text-left dark:border-slate-700 ${selected?.jid === item.jid ? "bg-emerald-50 dark:bg-emerald-950/40" : "hover:bg-slate-50 dark:hover:bg-slate-700"}`}>
+                    <p className="truncate font-medium">{label}</p>
+                    {c.phone && c.name && <p className="mt-0.5 text-xs text-slate-400">{c.phone}</p>}
+                  </button>
+                </div>;
+              })}
+            </>;
+          })()}</div> : null}
+          {view === "chats" && <div className="flex-1 overflow-y-auto">{(() => {
               const filtered = chats.filter(chat => !query || `${chat.name} ${chat.jid} ${chat.phone ?? ""}`.toLowerCase().includes(query.toLowerCase()));
               const extra = query.length >= 2 ? contactSuggestions.filter(c =>
                 !filtered.some(chat => chat.jid === c.jid || (c.phone && chat.jid === `${c.phone.slice(1)}@s.whatsapp.net`))
@@ -229,7 +274,7 @@ function WhatsAppInbox() {
                   : viewedConnection?.status === "connected" ? "Chats are synching... New messages will appear here."
                   : "Connect WhatsApp to see synced chats."}</p>}
               </>);
-            })()}</div>
+            })()}</div>}
         </aside>
         <div className={`${selected ? "flex" : "hidden md:flex"} min-h-0 min-w-0 flex-col`}>
           {selected ? <><div className="flex items-center gap-3 border-b border-slate-200 p-4 dark:border-slate-700"><button onClick={() => { generation.current += 1; setSelected(null); }} className="text-sm text-emerald-600 md:hidden">Back</button><h3 className="truncate font-semibold">{selected.name}</h3>{!own && <span className="ml-auto text-xs text-slate-500">Admin view</span>}</div>

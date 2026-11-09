@@ -368,17 +368,17 @@ const server = http.createServer(async (req, res) => {
       data = mergeChatAliases(await directory.decorate(sid, data, phones)).slice(0, 200);
     } else if (req.method === 'GET' && url.pathname === '/contacts') {
       const q = (url.searchParams.get('q') || '').trim();
-      if (q.length < 2) {
+      if (q.length === 1) {
         data = [];
       } else {
+        // Empty query returns the full saved-contact list (for browsing); otherwise search by name/number.
         const esc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const rows = await contacts.find({ sid,
-          $or: [
-            { name: { $regex: esc, $options: 'i' } },
-            { jid: { $regex: esc } },
-            { phoneNumber: { $regex: esc } },
-          ],
-        }, { projection: { _id: 0, sid: 0 } }).sort({ name: 1 }).limit(60).toArray();
+        const filter = q ? { sid, $or: [
+          { name: { $regex: esc, $options: 'i' } },
+          { jid: { $regex: esc } },
+          { phoneNumber: { $regex: esc } },
+        ] } : { sid };
+        const rows = await contacts.find(filter, { projection: { _id: 0, sid: 0 } }).limit(q ? 120 : 5000).toArray();
         const phones = await storedAliases(sid, rows.map(c => c.jid).filter(jid => jid.endsWith('@lid')));
         const seen = new Map();
         for (const c of rows) {
@@ -390,7 +390,9 @@ const server = http.createServer(async (req, res) => {
           const prev = seen.get(jid);
           if (!prev || (!prev.name && name)) seen.set(jid, { jid, name: name || prev?.name || null, phone: phone || prev?.phone || null });
         }
-        data = [...seen.values()].slice(0, 30);
+        data = [...seen.values()]
+          .sort((a, b) => (a.name ? 0 : 1) - (b.name ? 0 : 1) || (a.name || a.phone || '').localeCompare(b.name || b.phone || '', undefined, { sensitivity: 'base' }))
+          .slice(0, q ? 30 : 2000);
       }
     } else if (req.method === 'GET' && url.pathname === '/messages') {
       const jid = url.searchParams.get('jid');
