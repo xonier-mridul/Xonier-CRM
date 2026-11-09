@@ -16,27 +16,57 @@ export function displayContact(chat, contact = {}) {
 export class ContactDirectory {
   constructor(collection) { this.collection = collection; }
   async absorb(sid, batch) {
-    for (const contact of batch || []) {
-      let aliases = [...new Set([contact.id, contact.lid, contact.phoneNumber].filter(value => typeof value === 'string' && /@(lid|s\.whatsapp\.net)$/.test(value)))];
-      if (!aliases.length) continue;
-      const previous = await this.collection.find({ sid, jid: { $in: aliases } }).toArray();
-      const phoneNumber = aliases.find(phoneFromJid) || previous.find(row => row.phoneNumber)?.phoneNumber;
-      if (phoneNumber) {
-        const linked = await this.collection.find({ sid, phoneNumber }).toArray();
-        aliases = [...new Set([...aliases, ...linked.map(row => row.jid)])];
-        previous.push(...linked);
+    const valid = (batch || []).filter(c => c && [c.id, c.lid, c.phoneNumber].some(v => typeof v === 'string' && /@(lid|s\.whatsapp\.net)$/.test(v)));
+    for (let offset = 0; offset < valid.length; offset += 200) {
+      const chunk = valid.slice(offset, offset + 200);
+      const allJids = [...new Set(chunk.flatMap(c => [c.id, c.lid, c.phoneNumber].filter(v => typeof v === 'string' && /@(lid|s\.whatsapp\.net)$/.test(v))))];
+      if (!allJids.length) continue;
+      const existing = await this.collection.find({ sid, jid: { $in: allJids } }).toArray();
+      const phones = [...new Set([...allJids.filter(phoneFromJid), ...existing.map(r => r.phoneNumber).filter(Boolean)])];
+      const linked = phones.length ? await this.collection.find({ sid, phoneNumber: { $in: phones } }).toArray() : [];
+      const byJid = new Map([...existing, ...linked].map(r => [r.jid, r]));
+      const byPhone = new Map();
+      for (const r of [...existing, ...linked]) {
+        if (r.phoneNumber) {
+          if (!byPhone.has(r.phoneNumber)) byPhone.set(r.phoneNumber, []);
+          byPhone.get(r.phoneNumber).push(r);
+        }
       }
-      const name = typeof contact.name === 'string' ? contact.name : previous.find(row => row.name)?.name;
-      for (const jid of aliases) await this.collection.updateOne({ sid, jid }, { $set: {
-        ...(phoneNumber ? { phoneNumber } : {}), ...(name !== undefined ? { name } : {}),
-      }, $setOnInsert: { sid, jid } }, { upsert: true });
+      const ops = new Map();
+      for (const contact of chunk) {
+        let aliases = [...new Set([contact.id, contact.lid, contact.phoneNumber].filter(v => typeof v === 'string' && /@(lid|s\.whatsapp\.net)$/.test(v)))];
+        const previous = aliases.map(j => byJid.get(j)).filter(Boolean);
+        const phoneNumber = aliases.find(phoneFromJid) || previous.find(r => r.phoneNumber)?.phoneNumber;
+        if (phoneNumber && byPhone.has(phoneNumber)) {
+          const phoneRows = byPhone.get(phoneNumber);
+          aliases = [...new Set([...aliases, ...phoneRows.map(r => r.jid)])];
+          previous.push(...phoneRows);
+        }
+        const name = typeof contact.name === 'string' && contact.name.trim() ? contact.name.trim() : previous.find(r => r.name)?.name;
+        for (const jid of aliases) {
+          const prev = ops.get(jid) || {};
+          ops.set(jid, {
+            ...(prev.phoneNumber || phoneNumber ? { phoneNumber: phoneNumber || prev.phoneNumber } : {}),
+            ...(name !== undefined || prev.name !== undefined ? { name: name ?? prev.name } : {}),
+          });
+        }
+      }
+      if (ops.size) {
+        await this.collection.bulkWrite([...ops.entries()].map(([jid, setFields]) => ({
+          updateOne: {
+            filter: { sid, jid },
+            update: { ...(Object.keys(setFields).length ? { $set: setFields } : {}), $setOnInsert: { sid, jid } },
+            upsert: true,
+          },
+        })));
+      }
     }
   }
   async map(sid, mappings) {
-    for (const item of mappings || []) {
-      if (!item.lid?.endsWith('@lid') || !phoneFromJid(item.pn)) continue;
-      await this.absorb(sid, [{ id: item.lid, phoneNumber: item.pn }]);
-    }
+    const batch = (mappings || [])
+      .filter(item => item?.lid?.endsWith('@lid') && phoneFromJid(item.pn))
+      .map(item => ({ id: item.lid, phoneNumber: item.pn }));
+    if (batch.length) await this.absorb(sid, batch);
   }
   async conversationAliases(sid, jid) {
   if (jid.endsWith('@g.us')) return [jid];

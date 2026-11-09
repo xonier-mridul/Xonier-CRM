@@ -5,7 +5,7 @@ import pino from 'pino';
 import QRCode from 'qrcode';
 import makeWASocket, { BufferJSON, DisconnectReason, initAuthCreds, proto, Browsers, jidNormalizedUser, normalizeMessageContent } from '@whiskeysockets/baileys';
 import { verifyTicket, seal, unseal, scope } from './security.mjs';
-import { ContactDirectory, mergeChatAliases } from './contacts.mjs';
+import { ContactDirectory, mergeChatAliases, phoneFromJid } from './contacts.mjs';
 import { isSessionOwnerActive } from './session_access.mjs';
 
 // libsignal logs session objects directly to console, outside the Baileys logger.
@@ -366,6 +366,32 @@ const server = http.createServer(async (req, res) => {
       data = await chats.find({ sid }, { projection: { _id: 0, sid: 0 } }).sort({ timestamp: -1 }).limit(1000).toArray();
       const phones = await storedAliases(sid, data.map(chat => chat.jid).filter(jid => jid.endsWith('@lid')));
       data = mergeChatAliases(await directory.decorate(sid, data, phones)).slice(0, 200);
+    } else if (req.method === 'GET' && url.pathname === '/contacts') {
+      const q = (url.searchParams.get('q') || '').trim();
+      if (q.length < 2) {
+        data = [];
+      } else {
+        const esc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const rows = await contacts.find({ sid,
+          $or: [
+            { name: { $regex: esc, $options: 'i' } },
+            { jid: { $regex: esc } },
+            { phoneNumber: { $regex: esc } },
+          ],
+        }, { projection: { _id: 0, sid: 0 } }).sort({ name: 1 }).limit(60).toArray();
+        const phones = await storedAliases(sid, rows.map(c => c.jid).filter(jid => jid.endsWith('@lid')));
+        const seen = new Map();
+        for (const c of rows) {
+          const pnJid = c.phoneNumber || phones.get(c.jid) || (phoneFromJid(c.jid) ? c.jid : null);
+          const phone = phoneFromJid(pnJid) || phoneFromJid(c.jid) || null;
+          const jid = pnJid || c.jid;
+          const name = typeof c.name === 'string' && c.name.trim() ? c.name.trim() : null;
+          if (!name && !phone) continue;
+          const prev = seen.get(jid);
+          if (!prev || (!prev.name && name)) seen.set(jid, { jid, name: name || prev?.name || null, phone: phone || prev?.phone || null });
+        }
+        data = [...seen.values()].slice(0, 30);
+      }
     } else if (req.method === 'GET' && url.pathname === '/messages') {
       const jid = url.searchParams.get('jid');
       if (!safeJid(jid)) throw fail(400, 'Invalid conversation');
@@ -390,7 +416,8 @@ const server = http.createServer(async (req, res) => {
         const state = live.get(own);
         if (state?.status !== 'connected') throw fail(409, 'WhatsApp is disconnected. Link it again before sending.');
         if (!await checkSessionAccess(own)) throw fail(403, 'An active company account is required');
-        if (!await chats.findOne({ sid: own, jid: { $in: await conversationAliases(own, body.jid) } })) throw fail(404, 'Conversation not found');
+        const aliases = await conversationAliases(own, body.jid);
+        if (!await chats.findOne({ sid: own, jid: { $in: aliases } }) && !await contacts.findOne({ sid: own, jid: { $in: aliases } })) throw fail(404, 'Conversation not found');
         const id = `${own}:${body.requestId}`;
         const existing = await sends.findOne({ _id: id });
         if (existing) {

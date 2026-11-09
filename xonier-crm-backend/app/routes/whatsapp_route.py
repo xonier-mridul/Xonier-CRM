@@ -85,6 +85,16 @@ async def chats(request: Request, owner: str | None = None):
     return await bridge(request, "GET", "/chats", params={"owner": owner} if owner else None)
 
 
+@router.get("/contacts")
+async def get_contacts(request: Request, q: str | None = Query(None, max_length=100), owner: str | None = None):
+    params: dict = {}
+    if q:
+        params["q"] = q
+    if owner:
+        params["owner"] = owner
+    return await bridge(request, "GET", "/contacts", params=params if params else None)
+
+
 @router.get("/messages")
 async def messages(request: Request, jid: str = Query(..., max_length=160), owner: str | None = None,
                    before: int | None = Query(None, ge=1)):

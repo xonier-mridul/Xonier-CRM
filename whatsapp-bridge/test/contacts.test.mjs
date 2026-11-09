@@ -30,6 +30,13 @@ test('contact names survive history mapping order, update across aliases and sta
       if(!row){ row={...update.$setOnInsert};records.push(row); }
       Object.assign(row,update.$set);
     },
+    bulkWrite: async ops => {
+      for (const { updateOne: { filter, update } } of ops) {
+        let row = records.find(row => matches(row, filter));
+        if (!row) { row = { ...update.$setOnInsert }; records.push(row); }
+        Object.assign(row, update.$set);
+      }
+    },
   };
   const directory = new ContactDirectory(collection);
   const lid='123456789012345@lid', pn='919876543210@s.whatsapp.net';
