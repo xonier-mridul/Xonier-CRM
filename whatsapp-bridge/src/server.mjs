@@ -8,6 +8,18 @@ import { verifyTicket, seal, unseal, scope } from './security.mjs';
 import { ContactDirectory, mergeChatAliases } from './contacts.mjs';
 import { isSessionOwnerActive } from './session_access.mjs';
 
+// libsignal logs session objects directly to console, outside the Baileys logger.
+const signalSessionLogs = new Set([
+  'Closing session:', 'Opening session:', 'Removing old closed session:', 'Session already closed',
+]);
+for (const level of ['info', 'warn']) {
+  const write = console[level].bind(console);
+  console[level] = (message, ...args) => {
+    if (signalSessionLogs.has(message)) return;
+    write(message, ...args);
+  };
+}
+
 const secret = process.env.WHATSAPP_BRIDGE_SECRET || '';
 const encryptionKey = Buffer.from(process.env.WHATSAPP_SESSION_KEY || '', 'base64');
 if (secret.length < 32 || encryptionKey.length !== 32 || !process.env.MONGO_URI || !process.env.DATABASE_NAME) {
