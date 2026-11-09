@@ -226,7 +226,7 @@ function WhatsAppInbox() {
                 </>)}
                 {!filtered.length && !extra.length && <p className="p-5 text-center text-sm text-slate-500">{chatError ? "Chats could not load. Refresh to retry."
                   : !chatsLoaded ? "Loading chats…"
-                  : viewedConnection?.status === "connected" ? "No synced chats yet. New messages will appear here."
+                  : viewedConnection?.status === "connected" ? "Chats are synching... New messages will appear here."
                   : "Connect WhatsApp to see synced chats."}</p>}
               </>);
             })()}</div>
