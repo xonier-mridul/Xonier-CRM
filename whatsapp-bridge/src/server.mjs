@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { MongoClient } from 'mongodb';
 import pino from 'pino';
 import QRCode from 'qrcode';
-import makeWASocket, { BufferJSON, DisconnectReason, initAuthCreds, proto, Browsers, normalizeMessageContent } from '@whiskeysockets/baileys';
+import makeWASocket, { BufferJSON, DisconnectReason, initAuthCreds, proto, Browsers, jidNormalizedUser, normalizeMessageContent } from '@whiskeysockets/baileys';
 import { verifyTicket, seal, unseal, scope } from './security.mjs';
 import { ContactDirectory, mergeChatAliases } from './contacts.mjs';
 import { isSessionOwnerActive } from './session_access.mjs';
@@ -104,9 +104,13 @@ async function saveMessages(sid, batch) {
     if (!previews.has(jid) || previews.get(jid).timestamp <= timestamp) previews.set(jid, { sid, jid, timestamp, preview: text.slice(0, 160) || `[${type}]` });
   }
   for (let offset = 0; offset < rows.length; offset += 200) {
-    await messages.bulkWrite(rows.slice(offset, offset + 200).map(row => ({ updateOne: {
-      filter: { sid, jid: row.jid, messageId: row.messageId }, update: { $setOnInsert: row }, upsert: true,
-    } })), { ordered: true });
+    await messages.bulkWrite(rows.slice(offset, offset + 200).map(({ status, ...row }) => ({
+      updateOne: {
+        filter: { sid, jid: row.jid, messageId: row.messageId },
+        update: status > 1 ? { $setOnInsert: row, $max: { status } } : { $setOnInsert: { ...row, status } },
+        upsert: true,
+      },
+    })), { ordered: true });
   }
   const items = [...previews.values()];
   for (let offset = 0; offset < items.length; offset += 200) {
@@ -229,8 +233,24 @@ async function connect(sid, company, owner, attempt = 0) {
       for (const chat of batch) if (safeJid(chat.id) && chat.name) await chats.updateOne({ sid, jid: chat.id }, { $set: { name: chat.name } });
     }));
     socket.ev.on('messages.update', guarded(async batch => {
-      for (const { key, update } of batch) if (safeJid(key.remoteJid) && update.status != null)
-        await messages.updateOne({ sid, jid: key.remoteJid, messageId: key.id }, { $set: { status: update.status } });
+      for (const { key, update } of batch) {
+        const status = update.status;
+        if (!safeJid(key.remoteJid) || !key.id || !Number.isInteger(status) || status < 0 || status > 5 || status === 1) continue;
+        const jid = jidNormalizedUser(key.remoteJid);
+        const aliases = new Set([key.remoteJid, ...await directory.conversationAliases(sid, jid)]);
+        if (directJid(jid)) {
+          const mapping = socket.signalRepository.lidMapping;
+          const alternate = jid.endsWith('@lid') ? await mapping.getPNForLID(jid) : await mapping.getLIDForPN(jid);
+          if (directJid(alternate)) aliases.add(jidNormalizedUser(alternate));
+          if (directJid(key.remoteJidAlt)) aliases.add(jidNormalizedUser(key.remoteJidAlt));
+        }
+        const filter = { sid, jid: { $in: [...aliases] }, messageId: key.id, fromMe: Boolean(key.fromMe) };
+        if (status === 0) {
+          await messages.updateMany({ ...filter, status: { $lte: 1 } }, { $set: { status } });
+        } else {
+          await messages.updateMany(filter, { $max: { status } });
+        }
+      }
     }));
   } catch {
     await stop(sid);
