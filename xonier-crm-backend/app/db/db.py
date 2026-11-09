@@ -90,6 +90,15 @@ async def connect_db():
         await db["leads"].create_index(
             [("followUpAt", 1)], name="follow_up_push_backfill"
         )
+        await db["gmail_connections"].create_index(
+            [("companyId", 1), ("userId", 1)], unique=True, name="gmail_user_connection"
+        )
+        await db["gmail_oauth_states"].create_index("expiresAt", expireAfterSeconds=0, name="gmail_oauth_expiry")
+        await db["email_history"].create_index("gmailRequestKey", unique=True,
+            partialFilterExpression={"gmailRequestKey": {"$type": "string"}}, name="gmail_send_request")
+        await db["email_history"].create_index(
+            [("companyId", 1), ("gmailUserId", 1), ("created_at", -1)], name="gmail_user_outbox"
+        )
         from app.services.form_field_service import ensure_linkedin_form_field
         await ensure_linkedin_form_field()
         print("Successfully connected to MongoDB and initialized Beanie")

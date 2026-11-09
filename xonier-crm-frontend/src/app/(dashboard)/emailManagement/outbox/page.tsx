@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { IoIosSearch } from "react-icons/io";
 import { FiRefreshCw } from "react-icons/fi";
 import { FaRegEye } from "react-icons/fa";
@@ -97,6 +98,8 @@ export default function Page() {
           {t("refresh")}
         </button>
       </div>
+
+      <Link href="/emailManagement/mail" className="mb-4 inline-flex rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-700">Connect email / Compose email</Link>
 
       {/* TABLE CARD */}
       <div className="bg-white dark:bg-gray-700 flex flex-col gap-5 p-6 rounded-xl border border-slate-900/10 w-full">

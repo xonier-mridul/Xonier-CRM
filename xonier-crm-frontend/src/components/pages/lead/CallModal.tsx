@@ -532,11 +532,11 @@ const CallModal = ({ lead: initialLead, onClose, onDisposed, onLeadUpdated, camp
                       <FaWhatsapp size={20} />
                     </a>
                     <a
-                      href={lead.email ? `mailto:${lead.email}` : undefined}
+                      href={lead.email ? `/emailManagement/mail?to=${encodeURIComponent(lead.email)}&leadId=${encodeURIComponent(lead.id)}` : undefined}
                       className={`h-10 w-10 rounded-lg border border-slate-100 dark:border-slate-600 shadow-sm flex items-center justify-center text-sky-500 hover:bg-sky-50 dark:hover:bg-slate-700 ${
                         lead.email ? "" : "opacity-40 pointer-events-none"
                       }`}
-                      title="Email"
+                      title="Send email from CRM"
                     >
                       <FiMail size={19} />
                     </a>

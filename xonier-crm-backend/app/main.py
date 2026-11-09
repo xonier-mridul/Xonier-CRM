@@ -66,6 +66,9 @@ from app.routes.campaign_route import router as campaign_router
 from app.routes.mobile_route import router as mobile_router
 from app.routes.call_route import web_router as call_web_router, mobile_router as call_mobile_router
 from app.routes.chat_route import router as chat_router
+from app.routes.whatsapp_route import router as whatsapp_router
+from app.routes.gmail_route import router as gmail_router
+from app.routes.mail_route import router as mail_router
 from app.core.chat_runtime import chat_runtime
 from app.routes.google_calendar_route import router as google_calendar_router
 from app.routes.follow_up_route import router as follow_up_router
@@ -199,6 +202,9 @@ app.include_router(google_calendar_router, prefix="/api/google-calendar", tags=[
 app.include_router(follow_up_router, prefix="/api/follow-up", tags=["Follow-ups"])
 app.include_router(call_web_router, prefix="/api/call", tags=["Calls"])
 app.include_router(chat_router)
+app.include_router(whatsapp_router)
+app.include_router(gmail_router)
+app.include_router(mail_router)
 
 app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(AppException, app_exception_handler)

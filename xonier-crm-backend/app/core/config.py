@@ -58,6 +58,20 @@ class EnvSettings(BaseSettings):
     PAYPAL_MODE: str = "sandbox"  # sandbox | live
     PAYPAL_WEBHOOK_ID: str
 
+    # Per-agent Gmail OAuth. Configure once for the CRM, not per agent.
+    GMAIL_CLIENT_ID: str = ""
+    GMAIL_CLIENT_SECRET: str = ""
+    GMAIL_REDIRECT_URI: str = "http://localhost:8000/api/gmail/oauth/callback"
+
+    # One Microsoft app supports Outlook.com/Hotmail/Live and Microsoft 365.
+    MICROSOFT_MAIL_CLIENT_ID: str = ""
+    MICROSOFT_MAIL_CLIENT_SECRET: str = ""
+    MICROSOFT_MAIL_REDIRECT_URI: str = "http://localhost:8000/api/mail/oauth/microsoft/callback"
+
+    # Optional QR-linked WhatsApp worker (private network only).
+    WHATSAPP_BRIDGE_URL: str = "http://127.0.0.1:3101"
+    WHATSAPP_BRIDGE_SECRET: str = ""
+
     # Team chat. Media/storage integrations are optional until configured.
     CHAT_ENABLED: bool = True
     CHAT_REDIS_URL: str = ""

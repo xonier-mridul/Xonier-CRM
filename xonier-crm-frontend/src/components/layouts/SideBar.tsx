@@ -36,6 +36,7 @@ import { useFeatures } from "@/src/hooks/useFeatures";
 import { useTranslation } from "react-i18next";
 import { LuTicket } from "react-icons/lu";
 import { ChatNavLink } from "@/src/components/chat/ChatProvider";
+import { FaWhatsapp } from "react-icons/fa";
 
 
 const SideBar = () => {
@@ -120,7 +121,7 @@ const SideBar = () => {
     if (pathname.startsWith("/people") || pathname.startsWith("/prospects")) {
       setOpenMenu("prospects")
     }
-    if (pathname.startsWith("/emailManagement/template") || pathname.startsWith("/emailManagement/outbox")) {
+    if (pathname.startsWith("/emailManagement")) {
       setOpenMenu("emailManagement")
     }
     if (pathname.startsWith("/message") || pathname.startsWith("/telephone")) {
@@ -917,6 +918,18 @@ const isSuperAdmin = auth.user?.userRole?.some(
               </Link>
             </li>}
               {!auth.isAdmin && auth.user?.companyId && <li><ChatNavLink /></li>}
+              {!auth.isAdmin && auth.user?.companyId && (
+                <li>
+                  <Link
+                    href="/whatsapp"
+                    onClick={handleNavClick("/whatsapp")}
+                    className={`${isActive("/whatsapp") ? "dark:text-emerald-300 text-emerald-700 dark:bg-slate-700 bg-emerald-50 border-emerald-600" : "border-transparent"} flex items-center gap-3 border-l-2 px-4 py-2.5 rounded-md text-sm hover:bg-emerald-600/10 transition-all`}
+                  >
+                    <FaWhatsapp className="text-lg" />
+                    WhatsApp
+                  </Link>
+                </li>
+              )}
             {/* {(((hasPermission(PERMISSIONS.telephone))|| hasPermission(PERMISSIONS.smsReadLog)) &&  (hasFeature(FEATURES.TELECOM)) && !auth.isAdmin )&& <li>
               <button
                 onClick={() => toggleMenu("communication")}
@@ -975,7 +988,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
                 )}
               </AnimatePresence>
             </li>} */}
-            {((hasPermission(PERMISSIONS.readTemplate) || hasPermission(PERMISSIONS.createTemplate) || hasPermission(PERMISSIONS.readEmailLog)) &&  (hasFeature(FEATURES.CRM)) && !auth.isAdmin) && <li>
+            {((hasPermission(PERMISSIONS.readTemplate) || hasPermission(PERMISSIONS.createTemplate) || hasPermission(PERMISSIONS.readEmailLog) || hasPermission(PERMISSIONS.emailProspects)) &&  (hasFeature(FEATURES.CRM)) && !auth.isAdmin) && <li>
               <button
                 onClick={() => toggleMenu("emailManagement")}
                 className={`${isMenuActive("emailManagement")
@@ -997,7 +1010,7 @@ const isSuperAdmin = auth.user?.userRole?.some(
               </button>
 
               <AnimatePresence>
-                {(openMenu === "emailManagement" && (hasPermission(PERMISSIONS.readTemplate) || hasPermission(PERMISSIONS.createTemplate))) && (
+                {(openMenu === "emailManagement") && (
                   <motion.ul
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
@@ -1005,6 +1018,10 @@ const isSuperAdmin = auth.user?.userRole?.some(
                     transition={{ duration: 0.25 }}
                     className="ml-8 mt-1 flex flex-col gap-1 overflow-hidden"
                   >
+                    {hasPermission(PERMISSIONS.emailProspects) && <li>
+                      <Link href="/emailManagement/mail" onClick={handleNavClick("/emailManagement/mail")}
+                        className={`${isActive("/emailManagement/mail") ? "bg-cyan-50 text-cyan-700 dark:bg-slate-700 dark:text-cyan-300" : ""} block rounded-md px-3 py-2 text-sm hover:bg-cyan-600/10`}>My Email</Link>
+                    </li>}
                     {(hasPermission(PERMISSIONS.readTemplate)|| hasPermission(PERMISSIONS.createTemplate)) && <li>
                       <Link
                         href="/emailManagement/templates"

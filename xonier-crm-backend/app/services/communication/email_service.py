@@ -242,6 +242,9 @@ class EmailService:
             if not original:
                 raise AppException(404, "Email not found or access denied")
 
+            if original.provider in {"gmail", "microsoft"}:
+                raise AppException(400, "Open My Email to compose a new email. Connected-account emails cannot be resent through shared SMTP.")
+
             to_emails = payload.get("to_emails") or original.to_emails
             cc_emails = payload.get("cc_emails") or original.cc_emails
             bcc_emails = payload.get("bcc_emails") or original.bcc_emails

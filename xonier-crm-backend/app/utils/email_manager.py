@@ -22,10 +22,8 @@ class EmailManager:
 
             case OTP_TYPE.LOGIN:
                 subject = "OTP for login"
-
             case OTP_TYPE.PASSWORD_RESET:
                 subject = "OTP for password reset"
-
             case _:
                 raise ValueError(f"Unsupported OTP type: {type}")
 
