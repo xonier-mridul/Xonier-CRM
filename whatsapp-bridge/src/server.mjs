@@ -184,6 +184,20 @@ async function checkSessionAccess(sid) {
   } });
   return false;
 }
+async function retryConnection(sid, company, owner, attempt, delay) {
+  await stop(sid);
+  const row = await connections.findOne({ _id: sid });
+  if (!row?.desired) return;
+  const placeholder = { status: 'reconnecting', attempt };
+  live.set(sid, placeholder);
+  await connections.updateOne({ _id: sid }, { $set: { status: 'reconnecting', error: null } });
+  placeholder.timer = setTimeout(() => serialized(sid, async () => {
+    if (live.get(sid) !== placeholder) return;
+    live.delete(sid);
+    if (await connections.findOne({ _id: sid, desired: true })) await connect(sid, company, owner, attempt);
+  }).catch(() => {}), delay);
+}
+const retryDelay = attempt => Math.min(60000, 2000 * 2 ** Math.min(attempt, 5));
 async function connect(sid, company, owner, attempt = 0) {
   if (!await checkSessionAccess(sid)) throw fail(403, 'An active company account is required');
   if (live.has(sid)) return;
@@ -208,8 +222,7 @@ async function connect(sid, company, owner, attempt = 0) {
       if (live.get(sid) === state && await checkSessionAccess(sid)) await fn(...args);
     }).catch(async () => {
       if (live.get(sid) !== state) return;
-      await stop(sid);
-      await connections.updateOne({ _id: sid }, { $set: { status: 'error', desired: false, error: 'Session synchronization failed. Disconnect and link again.' } });
+      await retryConnection(sid, company, owner, state.attempt + 1, retryDelay(state.attempt + 1));
     });
     socket.ev.on('creds.update', guarded(stored.save));
     socket.ev.on('connection.update', guarded(async update => {
@@ -246,18 +259,15 @@ async function connect(sid, company, owner, attempt = 0) {
       }
       if (update.connection === 'close') {
         const code = update.lastDisconnect?.error?.output?.statusCode;
-        const retry = code !== DisconnectReason.loggedOut && code !== DisconnectReason.connectionReplaced && attempt < 5;
-        await stop(sid);
-        await connections.updateOne({ _id: sid }, { $set: { status: retry ? 'reconnecting' : 'disconnected', desired: retry } });
-        if (code === DisconnectReason.loggedOut) await auth.deleteMany({ sid });
-        if (retry) {
-          const placeholder = { status: 'reconnecting', attempt: attempt + 1 };
-          live.set(sid, placeholder);
-          placeholder.timer = setTimeout(() => serialized(sid, async () => {
-            if (live.get(sid) !== placeholder) return;
-            live.delete(sid); await connect(sid, company, owner, attempt + 1);
-          }).catch(() => {}), code === DisconnectReason.restartRequired ? 500 : Math.min(30000, 2000 * 2 ** attempt));
+        if (code === DisconnectReason.loggedOut) {
+          await stop(sid);
+          await auth.deleteMany({ sid });
+          await connections.updateOne({ _id: sid }, { $set: { status: 'error', desired: false,
+            error: 'WhatsApp ended this linked-device session. Disconnect and link your account again.' } });
+          return;
         }
+        await retryConnection(sid, company, owner, state.attempt + 1,
+          code === DisconnectReason.restartRequired ? 500 : retryDelay(state.attempt + 1));
       }
     }));
     socket.ev.on('messages.upsert', guarded(async ({ messages: batch }) => saveMessages(sid, batch)));
@@ -305,8 +315,7 @@ async function connect(sid, company, owner, attempt = 0) {
       }
     }));
   } catch {
-    await stop(sid);
-    await connections.updateOne({ _id: sid }, { $set: { desired: false, status: 'error', error: 'Unable to restore WhatsApp session. Disconnect and link again.' } });
+    await retryConnection(sid, company, owner, attempt + 1, retryDelay(attempt + 1));
     throw fail(503, 'Unable to start WhatsApp connection');
   }
 }
@@ -457,8 +466,20 @@ const sessionTimer = setInterval(async () => {
   }
 }, 10000);
 server.listen(Number(process.env.WHATSAPP_BRIDGE_PORT || 3101), process.env.WHATSAPP_BRIDGE_HOST || '127.0.0.1');
-for await (const row of connections.find({ desired: true })) {
+for await (const row of connections.find({ $or: [
+  { desired: true },
+  { desired: false, status: 'disconnected', error: null, phone: { $type: 'string' } },
+] })) {
   await serialized(row._id, async () => {
+    if (!row.desired) {
+      if (!await auth.findOne({ _id: `${row._id}:creds` })) {
+        await connections.updateOne({ _id: row._id }, { $set: { status: 'error',
+          error: 'Saved WhatsApp session is unavailable. Disconnect and link your account again.' } });
+        return;
+      }
+      await connections.updateOne({ _id: row._id, desired: false, status: 'disconnected' },
+        { $set: { desired: true, status: 'reconnecting' } });
+    }
     if (await connections.findOne({ _id: row._id, desired: true })) await connect(row._id, row.company, row.owner);
   }).catch(() => {});
 }

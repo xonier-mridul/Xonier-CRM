@@ -213,7 +213,11 @@ function WhatsAppInbox() {
         <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-semibold">{own ? "My WhatsApp" : "Agent WhatsApp"}{viewedConnection?.phone ? ` · +${viewedConnection.phone}` : ""}</h2><p className="mt-1 text-sm text-emerald-700 dark:text-emerald-300">{loading ? "Checking connection…" : statusLabel[viewedConnection?.status || "disconnected"] || viewedConnection?.status}</p></div>
           {(viewedConnection?.owner || connection.qr) && <button disabled={busy} onClick={() => void disconnect()} className="flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-sm text-red-600 disabled:opacity-50"><Unplug size={16} />Disconnect</button>}
         </div>
-        {own && connection.status !== "connected" && <div className="mt-5 grid gap-6 md:grid-cols-[300px_1fr]">
+        {own && connection.phone && ["connecting", "reconnecting"].includes(connection.status) &&
+          <div className="mt-5 flex items-center gap-3 rounded-xl bg-emerald-50 p-4 text-sm text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-200">
+            <Loader2 className="animate-spin" size={20} /> Restoring your linked WhatsApp session automatically. Your synced chats remain available while it reconnects.
+          </div>}
+        {own && connection.status !== "connected" && !(connection.phone && ["connecting", "reconnecting"].includes(connection.status)) && <div className="mt-5 grid gap-6 md:grid-cols-[300px_1fr]">
           <div className="flex min-h-64 items-center justify-center rounded-xl border border-slate-200 bg-white p-3 text-slate-500">
             {qrValid ? <Image unoptimized src={connection.qr!} alt="Scan with WhatsApp Linked devices to connect your account" width={280} height={280} /> : (busy || ["connecting", "reconnecting"].includes(connection.status)) ? <div className="flex items-center gap-2"><Loader2 className="animate-spin" size={20} />Preparing connection…</div> : <p className="px-6 text-center text-sm">Your QR code will appear here after you connect.</p>}
           </div>
