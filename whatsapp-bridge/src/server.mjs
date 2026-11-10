@@ -5,7 +5,7 @@ import pino from 'pino';
 import QRCode from 'qrcode';
 import makeWASocket, { BufferJSON, DisconnectReason, initAuthCreds, proto, Browsers, jidNormalizedUser, normalizeMessageContent } from '@whiskeysockets/baileys';
 import { verifyTicket, seal, unseal, scope } from './security.mjs';
-import { ContactDirectory, mergeChatAliases } from './contacts.mjs';
+import { ContactDirectory, mergeChatAliases, phoneFromJid } from './contacts.mjs';
 import { isSessionOwnerActive } from './session_access.mjs';
 
 // libsignal logs session objects directly to console, outside the Baileys logger.
@@ -98,12 +98,13 @@ async function authState(sid) {
   } }, save: () => write('creds', creds) };
 }
 async function saveMessages(sid, batch) {
-  await directory.map(sid, batch.filter(m => m.key?.remoteJid?.endsWith("@lid") && m.key?.remoteJidAlt?.endsWith("@s.whatsapp.net")).map(m => ({lid:m.key.remoteJid,pn:m.key.remoteJidAlt})));
   const rows = [];
   const previews = new Map();
+  const mappings = new Map();
   for (const message of batch) {
     const jid = message.key?.remoteJid;
     if (!safeJid(jid) || !message.key?.id || !message.message) continue;
+    if (jid.endsWith('@lid') && message.key.remoteJidAlt?.endsWith('@s.whatsapp.net')) mappings.set(jid, message.key.remoteJidAlt);
     const content = normalizeMessageContent(message.message) || {};
     // Respect disappearing/view-once content: don't copy it into the CRM.
     if (message.message.viewOnceMessage || message.message.viewOnceMessageV2 || message.message.viewOnceMessageV2Extension
@@ -133,6 +134,36 @@ async function saveMessages(sid, batch) {
     await chats.bulkWrite(chunk.map(row => ({ updateOne: { filter: { sid, jid: row.jid, timestamp: { $lte: row.timestamp } },
       update: { $set: row } } })), { ordered: true });
   }
+  await directory.map(sid, [...mappings].map(([lid, pn]) => ({ lid, pn })));
+}
+
+async function storedAliases(sid, jids) {
+  const prefix = `${sid}:lid-mapping:`;
+  const keys = new Map();
+  for (const jid of jids) {
+    if (!directJid(jid)) continue;
+    const lid = jid.endsWith('@lid');
+    keys.set(prefix + jidNormalizedUser(jid).split('@')[0] + (lid ? '_reverse' : ''), jid);
+  }
+  const aliases = new Map();
+  if (!keys.size) return aliases;
+  for (const row of await auth.find({ _id: { $in: [...keys.keys()] } }).toArray()) {
+    const jid = keys.get(row._id);
+    let value;
+    try { value = JSON.parse(unseal(row.value, encryptionKey, row._id), BufferJSON.reviver); }
+    catch { continue; } // A damaged mapping must not prevent the rest of the inbox from loading.
+    if (typeof value === 'string' && /^\d+$/.test(value)) {
+      aliases.set(jid, `${value}@${jid.endsWith('@lid') ? 's.whatsapp.net' : 'lid'}`);
+    }
+  }
+  return aliases;
+}
+
+async function conversationAliases(sid, jid) {
+  const aliases = await directory.conversationAliases(sid, jid);
+  const recovered = (await storedAliases(sid, [jid])).get(jid);
+  if (!recovered) return aliases;
+  return [...new Set([...aliases, ...await directory.conversationAliases(sid, recovered)])];
 }
 
 async function stop(sid) {
@@ -234,12 +265,21 @@ async function connect(sid, company, owner, attempt = 0) {
     socket.ev.on('contacts.update', guarded(batch => directory.absorb(sid, batch)));
     socket.ev.on('lid-mapping.update', guarded(mapping => directory.map(sid, [mapping])));
     socket.ev.on('messaging-history.set', guarded(async ({ chats: batch, contacts: people, lidPnMappings, messages: history }) => {
+      if (batch?.length) {
+        const rows = batch.filter(chat => safeJid(chat.id));
+        for (let offset = 0; offset < rows.length; offset += 200) {
+          await chats.bulkWrite(rows.slice(offset, offset + 200).map(chat => ({ updateOne: {
+            filter: { sid, jid: chat.id },
+            update: { ...(chat.name ? { $set: { name: chat.name } } : {}), $setOnInsert: { sid, jid: chat.id, timestamp: 0 } },
+            upsert: true,
+          } })));
+        }
+      }
+      if (!await checkSessionAccess(sid)) return;
+      await saveMessages(sid, history || []);
+      if (!await checkSessionAccess(sid)) return;
       await directory.absorb(sid, people);
       await directory.map(sid, lidPnMappings);
-      for (const chat of batch || []) if (safeJid(chat.id)) await chats.updateOne({ sid, jid: chat.id }, {
-        ...(chat.name ? { $set: { name: chat.name } } : {}), $setOnInsert: { sid, jid: chat.id, timestamp: 0 },
-      }, { upsert: true });
-      if (await checkSessionAccess(sid)) await saveMessages(sid, history || []);
     }));
     socket.ev.on('chats.update', guarded(async batch => {
       for (const chat of batch) if (safeJid(chat.id) && chat.name) await chats.updateOne({ sid, jid: chat.id }, { $set: { name: chat.name } });
@@ -324,19 +364,40 @@ const server = http.createServer(async (req, res) => {
       data = { success: true };
     } else if (req.method === 'GET' && url.pathname === '/chats') {
       data = await chats.find({ sid }, { projection: { _id: 0, sid: 0 } }).sort({ timestamp: -1 }).limit(1000).toArray();
-      // Recover previously stored LID mappings even while the phone is disconnected.
-      const ids = data.filter(chat => chat.jid.endsWith('@lid')).map(chat => `${sid}:lid-mapping:${chat.jid.split('@')[0]}_reverse`);
-      if (ids.length) {
-        const keys = await auth.find({ _id: { $in: ids } }).toArray();
-        const mappings = keys.map(row => ({ lid: row._id.slice(`${sid}:lid-mapping:`.length).replace(/_reverse$/, '') + '@lid',
-          pn: JSON.parse(unseal(row.value, encryptionKey, row._id), BufferJSON.reviver) + '@s.whatsapp.net' }));
-        await directory.map(sid, mappings);
+      const phones = await storedAliases(sid, data.map(chat => chat.jid).filter(jid => jid.endsWith('@lid')));
+      data = mergeChatAliases(await directory.decorate(sid, data, phones)).slice(0, 200);
+    } else if (req.method === 'GET' && url.pathname === '/contacts') {
+      const q = (url.searchParams.get('q') || '').trim();
+      if (q.length === 1) {
+        data = [];
+      } else {
+        // Empty query returns the full saved-contact list (for browsing); otherwise search by name/number.
+        const esc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const filter = q ? { sid, $or: [
+          { name: { $regex: esc, $options: 'i' } },
+          { jid: { $regex: esc } },
+          { phoneNumber: { $regex: esc } },
+        ] } : { sid };
+        const rows = await contacts.find(filter, { projection: { _id: 0, sid: 0 } }).limit(q ? 120 : 5000).toArray();
+        const phones = await storedAliases(sid, rows.map(c => c.jid).filter(jid => jid.endsWith('@lid')));
+        const seen = new Map();
+        for (const c of rows) {
+          const pnJid = c.phoneNumber || phones.get(c.jid) || (phoneFromJid(c.jid) ? c.jid : null);
+          const phone = phoneFromJid(pnJid) || phoneFromJid(c.jid) || null;
+          const jid = pnJid || c.jid;
+          const name = typeof c.name === 'string' && c.name.trim() ? c.name.trim() : null;
+          if (!name && !phone) continue;
+          const prev = seen.get(jid);
+          if (!prev || (!prev.name && name)) seen.set(jid, { jid, name: name || prev?.name || null, phone: phone || prev?.phone || null });
+        }
+        data = [...seen.values()]
+          .sort((a, b) => (a.name ? 0 : 1) - (b.name ? 0 : 1) || (a.name || a.phone || '').localeCompare(b.name || b.phone || '', undefined, { sensitivity: 'base' }))
+          .slice(0, q ? 30 : 2000);
       }
-      data = mergeChatAliases(await directory.decorate(sid, data)).slice(0, 200);
     } else if (req.method === 'GET' && url.pathname === '/messages') {
       const jid = url.searchParams.get('jid');
       if (!safeJid(jid)) throw fail(400, 'Invalid conversation');
-      const filter = { sid, jid: { $in: await directory.conversationAliases(sid, jid) } };
+      const filter = { sid, jid: { $in: await conversationAliases(sid, jid) } };
       const before = Number(url.searchParams.get('before'));
       if (before > 0) filter.timestamp = { $lt: before };
       data = (await messages.aggregate([
@@ -357,7 +418,8 @@ const server = http.createServer(async (req, res) => {
         const state = live.get(own);
         if (state?.status !== 'connected') throw fail(409, 'WhatsApp is disconnected. Link it again before sending.');
         if (!await checkSessionAccess(own)) throw fail(403, 'An active company account is required');
-        if (!await chats.findOne({ sid: own, jid: { $in: await directory.conversationAliases(own, body.jid) } })) throw fail(404, 'Conversation not found');
+        const aliases = await conversationAliases(own, body.jid);
+        if (!await chats.findOne({ sid: own, jid: { $in: aliases } }) && !await contacts.findOne({ sid: own, jid: { $in: aliases } })) throw fail(404, 'Conversation not found');
         const id = `${own}:${body.requestId}`;
         const existing = await sends.findOne({ _id: id });
         if (existing) {

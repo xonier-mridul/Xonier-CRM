@@ -57,7 +57,8 @@ class DealController:
         try:
            user = request.state.user
            await self.service.update(id=id, user=user, payload=payload)
-           return successResponse(200, f"{payload["dealName"]} updated successfully")
+           deal_name = payload.get("dealName", "Deal")
+           return successResponse(200, f"{deal_name} updated successfully")
  
 
         except AppException as e:

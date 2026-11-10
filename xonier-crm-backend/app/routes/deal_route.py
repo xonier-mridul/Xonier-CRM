@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, Depends
-from app.schemas.deal_schema import DealSchema, DealUpdateSchema, BulkAssignDealsSchema
+from app.schemas.deal_schema import DealSchema, DealUpdateSchema, BulkAssignDealsSchema, UpdateDealStageSchema
 from app.controllers.deal_controller import DealController
 from app.core.dependencies import Dependencies
 from app.core.enums import FEATURE
@@ -31,6 +31,12 @@ async def get_by_id(id: str, request: Request):
 Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM)), Depends(dependencies.permissions(["deal:update"]))])
 async def update(id: str, request: Request, payload: DealUpdateSchema):
     return await controller.update(id, request, payload.model_dump(exclude_unset=True))
+
+
+@router.patch("/update/{id}/stage", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM)), Depends(dependencies.permissions(["deal:update"]))])
+async def update_stage(id: str, request: Request, payload: UpdateDealStageSchema):
+    return await controller.update(id, request, payload.model_dump())
 
 
 @router.delete("/delete/{id}", status_code=200, dependencies=[Depends(dependencies.authorized),  Depends(dependencies.company_active),
