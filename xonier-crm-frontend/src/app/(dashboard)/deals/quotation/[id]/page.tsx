@@ -41,23 +41,8 @@ import CompanyService from '@/src/services/company.service'
 import { ParamValue } from 'next/dist/server/request/params'
 import { QuotationPaymentStatus, QuotationCurrency  } from '@/src/constants/enum'
 import { useTranslation } from "react-i18next";
+import { getCurrencySymbol } from "@/src/app/utils/currency.utils";
 
-
-const CURRENCY_OPTIONS = Object.values(QuotationCurrency).map(c => ({
-  label: c,
-  value: c,
-}))
-const CURRENCY_SYMBOLS: Record<QuotationCurrency, string> = {
-  [QuotationCurrency.USD]: '$',
-  [QuotationCurrency.EUR]: '€',
-  [QuotationCurrency.GBP]: '£',
-  [QuotationCurrency.INR]: '₹',
-  [QuotationCurrency.AED]: 'د.إ',
-  [QuotationCurrency.SAR]: '﷼',
-  [QuotationCurrency.PKR]: '₨',
-  [QuotationCurrency.CAD]: 'CA$',
-  [QuotationCurrency.AUD]: 'A$',
-}
 
 const EMPTY_LINE_ITEM: QuotationLineItemPayload = {
   description: '',
@@ -331,13 +316,14 @@ const Page = () => {
   useEffect(() => {
     CompanyService.getCompanyDetails()
       .then((company) => {
+        if (company.currency) setFormData(prev => ({ ...prev, currency: company.currency as QuotationCurrency }));
         setPaymentMethods(company.paymentMethods || [])
         setPaymentTermsPresets(company.paymentTerms || [])
       })
       .catch(() => undefined)
   }, [])
 
-const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
+const symbol = getCurrencySymbol(formData.currency ?? QuotationCurrency.USD)
 
   // ── Fetch deal to pre-fill customer info ──────────────────────────────────
 
@@ -607,14 +593,10 @@ const symbol = CURRENCY_SYMBOLS[formData.currency ?? QuotationCurrency.USD]
                   className="w-full"
                 />
               </div>
-              <Select
-                label={t("currency")}
-                name="currency"
-                value={formData.currency ?? 'USD'}
-                onChange={handleInput}
-                options={CURRENCY_OPTIONS}
-                className="w-full"
-              />
+              <div className="w-full">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">{t("currency")}</label>
+                <p className="mt-2 rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600">{formData.currency}</p>
+              </div>
               <Select
                 label={t("status")}
                 name="quotationStatus"

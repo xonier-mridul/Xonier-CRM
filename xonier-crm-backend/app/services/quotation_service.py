@@ -47,11 +47,13 @@ from app.core.constants import (
 from app.repositories.activity_repository import ActivityRepository
 
 from app.utils.activity_payload import activity_payload
+from app.utils.company_currency import get_organization_currency
 from app.utils.jwt_token_generator import create_token, verify_token
 from app.core.config import get_setting
 from app.utils.validate_admin import validate_admin, validate_admin_company_admin
 
 CURRENCY_SYMBOLS = {
+    "BLR": "BLR ",
     "USD": "$",
     "EUR": "€",
     "GBP": "£",
@@ -152,8 +154,10 @@ class QuotationService:
 
                     quote_id = generate_enquiry_id(prefix="QUT")
 
+                    organization_currency = await get_organization_currency(self.client, user)
                     new_payload: Dict[str, Any] = {
                         **payload,
+                        "currency": organization_currency or payload.get("currency") or "USD",
                         "createdBy": user["_id"],
                         "quoteId": quote_id,
                     }
@@ -194,9 +198,9 @@ class QuotationService:
                         sub_total=payload["subTotal"],
                         total=payload["total"],
                         currency_symbol=CURRENCY_SYMBOLS.get(
-                            payload.get("currency", "USD"), "$"
+                            new_payload["currency"], new_payload["currency"] + " "
                         ),
-                        currency_code=payload.get("currency", "USD"),
+                        currency_code=new_payload["currency"],
                         tax_amount=payload.get("taxAmount") or 0,
                         tax_percent=payload.get("taxPercent") or 0,
                         discount_amount=payload.get("discountAmount") or 0,
@@ -1028,7 +1032,7 @@ class QuotationService:
                         link=url,
                         sub_total=quotation.subTotal,
                         total=quotation.total,
-                        currency_symbol=CURRENCY_SYMBOLS.get(currency, "$"),
+                        currency_symbol=CURRENCY_SYMBOLS.get(currency, currency + " "),
                         currency_code=currency,
                         tax_amount=quotation.taxAmount or 0,
                         tax_percent=quotation.taxPercent or 0,

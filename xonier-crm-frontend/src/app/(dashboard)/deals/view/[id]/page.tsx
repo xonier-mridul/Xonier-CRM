@@ -61,8 +61,11 @@ import { DEAL_STATUS, PERMISSIONS } from "@/src/constants/enum";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import { useTranslation } from "react-i18next";
 import { FormatDate } from "@/src/components/common/FormateDate";
+import { useCompanyCurrency } from "@/src/components/providers/CompanyCurrencyProvider";
+import { formatCurrency } from "@/src/app/utils/currency.utils";
 
 const DealViewPage = (): JSX.Element => {
+  const currency = useCompanyCurrency();
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [dealData, setDealData] = useState<Deal | null>(null);
@@ -378,7 +381,7 @@ const DealViewPage = (): JSX.Element => {
           <MetricCard
             icon={<IoCashOutline className="w-6 h-6" />}
             label={t("deal_amount")}
-            value={`$ ${dealData?.amount?.toLocaleString("en-IN")}`}
+            value={formatCurrency(Number(dealData?.amount) || 0, currency)}
             color="bg-green-500"
           />
           <MetricCard
@@ -459,7 +462,7 @@ const DealViewPage = (): JSX.Element => {
                   <InfoItem
                     icon={<IoCashOutline className="w-4 h-4" />}
                     label={t("amount")}
-                    value={`$ ${dealData?.amount?.toLocaleString("en-IN")}`}
+                    value={formatCurrency(Number(dealData?.amount) || 0, currency)}
                   />
                   <InfoItem
                     icon={<FaPercent className="w-4 h-4" />}

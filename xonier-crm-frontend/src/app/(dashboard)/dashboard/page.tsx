@@ -1,5 +1,6 @@
 "use client";
 import { useLeadStatuses } from "@/src/hooks/useLeadStatuses";
+import { getCompanyCurrency, getCurrencySymbol } from "@/src/app/utils/currency.utils";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useSelector } from "react-redux";
@@ -392,10 +393,11 @@ const ROLE_CONFIG: Record<
 
 const fmt = (n: number) => n?.toLocaleString() ?? "0";
 const fmtMoney = (n: number) => {
-  if (!n) return "$0";
-  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `$${(n / 1_000).toFixed(1)}k`;
-  return `$${n.toFixed(0)}`;
+  const symbol = getCurrencySymbol(getCompanyCurrency());
+  if (!n) return `${symbol}0`;
+  if (n >= 1_000_000) return `${symbol}${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${symbol}${(n / 1_000).toFixed(1)}k`;
+  return `${symbol}${n.toFixed(0)}`;
 };
 const cap = (s: string) =>
   s ? s.charAt(0).toUpperCase() + s.slice(1).replace(/_/g, " ") : "";
@@ -1812,13 +1814,13 @@ function SARevenueTrendChart({
             tickLine={false}
             width={40}
             tickFormatter={(v) =>
-              `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`
+              `${getCurrencySymbol(getCompanyCurrency())}${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`
             }
           />
           <Tooltip content={<Tooltip_ />} />
           <Bar
             dataKey="revenue"
-            name="Revenue ($)"
+            name={`Revenue (${getCompanyCurrency()})`}
             fill="#10b981"
             radius={[4, 4, 0, 0]}
           />

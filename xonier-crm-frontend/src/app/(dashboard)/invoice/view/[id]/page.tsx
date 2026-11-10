@@ -45,6 +45,8 @@ import { MdDeleteOutline, MdPayment, MdCategory } from "react-icons/md";
 import { FaRegPaperPlane, FaPercent } from "react-icons/fa";
 import { handleCopy } from "@/src/app/utils/clipboard.utils";
 import { useTranslation } from "react-i18next";
+import { formatCurrency } from "@/src/app/utils/currency.utils";
+import { useCompanyCurrency } from "@/src/components/providers/CompanyCurrencyProvider";
 
 const getFullName = (user: User) =>
   `${user.firstName}${user.lastName ? " " + user.lastName : ""}`;
@@ -120,6 +122,7 @@ const getStatusConfig = (status: INVOICE_STATUS) => {
 type ActiveTab = "invoice" | "deal" | "payment";
 
 const InvoiceViewPage = (): JSX.Element => {
+  const currency = useCompanyCurrency();
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [invoiceData, setInvoiceData] = useState<Invoice | null>(null);
@@ -673,7 +676,7 @@ const InvoiceViewPage = (): JSX.Element => {
 
                     <div className="grid grid-cols-3 gap-3 mb-4">
                       {[
-                        { label: "Amount", value: `$${invoiceData.deal.amount?.toLocaleString("en-US")}`, icon: <IoCashOutline className="w-3.5 h-3.5" />, color: "violet" },
+                        { label: "Amount", value: formatCurrency(Number(invoiceData.deal.amount) || 0, currency), icon: <IoCashOutline className="w-3.5 h-3.5" />, color: "violet" },
                         { label: "Stage", value: invoiceData.deal.dealStage, icon: <IoTrendingUpOutline className="w-3.5 h-3.5" />, color: "cyan" },
                         { label: "Type", value: invoiceData.deal.dealType?.replace("_", " "), icon: <MdCategory className="w-3.5 h-3.5" />, color: "orange" },
                       ].map((s) => (

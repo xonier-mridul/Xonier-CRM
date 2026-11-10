@@ -1,6 +1,6 @@
 "use client"
 import extractErrorMessages from '@/src/app/utils/error.utils';
-import { PERMISSIONS, QUOTATION_EVENT_TYPE, QuotationStatus, QuotationCurrency } from '@/src/constants/enum';
+import { PERMISSIONS, QUOTATION_EVENT_TYPE, QuotationStatus } from '@/src/constants/enum';
 import { QuoteService } from '@/src/services/quote.service';
 import { Quotation } from '@/src/types/quotations/quote.types';
 import { User } from '@/src/types';
@@ -48,18 +48,7 @@ import { QuoteHistoryService } from '@/src/services/quoteHistory.service';
 import Skeleton from 'react-loading-skeleton';
 import { useTranslation } from "react-i18next";
 import { CiFileOn } from 'react-icons/ci';
-
-const CURRENCY_SYMBOLS: Record<QuotationCurrency, string> = {
-  [QuotationCurrency.USD]: '$',
-  [QuotationCurrency.EUR]: '€',
-  [QuotationCurrency.GBP]: '£',
-  [QuotationCurrency.INR]: '₹',
-  [QuotationCurrency.AED]: 'د.إ',
-  [QuotationCurrency.SAR]: '﷼',
-  [QuotationCurrency.PKR]: '₨',
-  [QuotationCurrency.CAD]: 'CA$',
-  [QuotationCurrency.AUD]: 'A$',
-}
+import { getCurrencySymbol } from '@/src/app/utils/currency.utils';
 
 const Page = (): JSX.Element => {
   const { t } = useTranslation();
@@ -139,7 +128,7 @@ const Page = (): JSX.Element => {
     new Date(dateString).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
   const fmt = (amount: number) => {
-    const symbol = quoteData ? (CURRENCY_SYMBOLS[quoteData.currency] ?? '$') : '$';
+    const symbol = quoteData ? getCurrencySymbol(quoteData.currency) : '';
     return `${symbol}${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
@@ -351,7 +340,7 @@ const Page = (): JSX.Element => {
   }
 
   const isExpired = quoteData.valid ? new Date(quoteData.valid) < new Date() : false;
-  const symbol = CURRENCY_SYMBOLS[quoteData.currency] ?? '$';
+  const symbol = getCurrencySymbol(quoteData.currency);
   const hasLineItems = (quoteData.lineItems ?? []).length > 0;
 
   const resendDisabled = [
@@ -807,7 +796,7 @@ const Page = (): JSX.Element => {
                         <span className="text-xs font-medium text-purple-600 dark:text-purple-400">{t("amount")}</span>
                       </div>
                       <p className="text-xl font-bold text-purple-900 dark:text-purple-100">
-                        ${quoteData.deal.amount.toLocaleString()}
+                        {fmt(quoteData.deal.amount)}
                       </p>
                     </div>
                     <div className="bg-cyan-50 dark:bg-cyan-900/20 rounded-xl p-4 border border-cyan-100 dark:border-cyan-800">

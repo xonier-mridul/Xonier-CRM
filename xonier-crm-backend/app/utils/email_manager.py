@@ -65,7 +65,7 @@ class EmailManager:
         link: str,
         sub_total: float,
         total: float,
-        currency_symbol: str = "$",
+        currency_symbol: str = "",
         currency_code: str = "USD",
         tax_amount: float = 0,
         tax_percent: float = 0,
@@ -174,6 +174,3 @@ class EmailManager:
         except Exception as e:
             print(f"Quotation email error: {e}")
             return False
-
-
-        

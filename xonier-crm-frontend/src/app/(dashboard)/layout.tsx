@@ -4,6 +4,7 @@ import "../../app/globals.css";
 import SideBar from "@/src/components/layouts/SideBar";
 import NavBar from "@/src/components/layouts/NavBar";
 import ChatProvider from "@/src/components/chat/ChatProvider";
+import { CompanyCurrencyProvider } from "@/src/components/providers/CompanyCurrencyProvider";
 
 export const metadata: Metadata = {
   title: "Trakeroo CRM | Smart Sales, Leads & Customer Management",
@@ -17,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ChatProvider>
+    <CompanyCurrencyProvider><ChatProvider>
     <div className="flex min-h-screen bg-slate-50/60 dark:bg-slate-800/60">
       {/* Fixed Sidebar */}
       <SideBar />
@@ -35,6 +36,6 @@ export default function RootLayout({
         </main>
       </div>
     </div>
-    </ChatProvider>
+    </ChatProvider></CompanyCurrencyProvider>
   );
 }

@@ -15,7 +15,7 @@ def quotation_template(
     link: str,
     sub_total: float,
     total: float,
-    currency_symbol: str = "$",
+    currency_symbol: str = "",
     currency_code: str = "USD",
     tax_amount: float = 0,
     tax_percent: float = 0,
@@ -34,7 +34,7 @@ def quotation_template(
 ) -> str:
 
     def fmt(amount: float) -> str:
-        return f"{currency_symbol}{amount:,.2f}"
+        return f"{currency_symbol or currency_code + ' '}{amount:,.2f}"
 
 
     line_items_html = ""

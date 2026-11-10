@@ -21,6 +21,7 @@ import type {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import { getCompanyCurrency } from "@/src/app/utils/currency.utils";
 
 type DashboardFilter = "today" | "this_week" | "this_month" | "this_year";
 
@@ -74,7 +75,7 @@ function fmt(n: number): string {
 
 function fmtCurrency(n: number): string {
   return new Intl.NumberFormat("en-US", {
-    style: "currency", currency: "USD", maximumFractionDigits: 0,
+    style: "currency", currency: getCompanyCurrency(), maximumFractionDigits: 0,
   }).format(n ?? 0);
 }
 
@@ -797,7 +798,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
                 </div>
                 <p className="text-sm font-semibold text-slate-800 dark:text-white mb-0.5">{p.name}</p>
                 <p className="text-xs text-slate-400 mb-2">{p.deals} {t("deals_closed")}</p>
-                <p className="text-sm font-bold text-cyan-600 dark:text-cyan-400">${p.revenue.toLocaleString()}</p>
+                <p className="text-sm font-bold text-cyan-600 dark:text-cyan-400">{fmtCurrency(p.revenue)}</p>
                 <div className="w-full mt-3 bg-slate-200 dark:bg-gray-600 rounded-full h-1">
                   <div className="h-1 rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 transition-all"
                     style={{ width: `${(p.revenue / topPerformers[0].revenue) * 100}%` }} />
@@ -833,7 +834,7 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-bold text-cyan-600 dark:text-cyan-400">${p.revenue.toLocaleString()}</p>
+                    <p className="text-sm font-bold text-cyan-600 dark:text-cyan-400">{fmtCurrency(p.revenue)}</p>
                     <p className="text-xs text-gray-400">{t("revenue")}</p>
                   </div>
                 </div>

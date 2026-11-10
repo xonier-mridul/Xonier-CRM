@@ -10,11 +10,12 @@ import { usePermissions } from "@/src/hooks/usePermissions";
 import dealService from "@/src/services/deal.service";
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import ErrorComponent from "@/src/components/ui/ErrorComponent";
-import { getCompanyCurrency } from "@/src/app/utils/currency.utils";
+import { useCompanyCurrency } from "@/src/components/providers/CompanyCurrencyProvider";
 import { UserFormService } from "@/src/services/userForm.service";
 import { CustomField, UserForm } from "@/src/types/userForm/userForm.types";
 
 const CreateDealPage = () => {
+  const currency = useCompanyCurrency();
   const router = useRouter();
   const { hasPermission } = usePermissions();
   const [dealName, setDealName] = useState("");
@@ -106,7 +107,7 @@ const CreateDealPage = () => {
               <input id="dealName" className={inputClass} minLength={4} maxLength={120} required value={dealName} onChange={(event) => setDealName(event.target.value)} placeholder="e.g. Acme CRM subscription" />
             </div>
             <div>
-              <label className={labelClass} htmlFor="amount">Amount ({getCompanyCurrency()}) <span className="text-rose-500">*</span></label>
+              <label className={labelClass} htmlFor="amount">Amount ({currency}) <span className="text-rose-500">*</span></label>
               <input id="amount" className={inputClass} type="number" min="1" step="1" required value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="Enter deal amount" />
             </div>
             <div>

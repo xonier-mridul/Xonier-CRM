@@ -24,6 +24,7 @@ const OTP_LENGTH = 6;
 const RESEND_COOLDOWN = 60;
 const CURRENCIES = [
   ["USD", "US Dollar"], ["EUR", "Euro"], ["GBP", "Pound Sterling"], ["INR", "Indian Rupee"],
+  ["BLR", "Belarusian Ruble"],
   ["CAD", "Canadian Dollar"], ["AUD", "Australian Dollar"], ["NZD", "New Zealand Dollar"],
   ["JPY", "Japanese Yen"], ["CNY", "Chinese Yuan"], ["HKD", "Hong Kong Dollar"], ["SGD", "Singapore Dollar"],
   ["CHF", "Swiss Franc"], ["SEK", "Swedish Krona"], ["NOK", "Norwegian Krone"], ["DKK", "Danish Krone"],

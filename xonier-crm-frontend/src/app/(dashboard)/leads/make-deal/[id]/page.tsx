@@ -42,11 +42,14 @@ import { Lead } from "@/src/types/leads/leads.types";
 import LeadInfoCard from "@/src/components/pages/lead/LeadInfoCard";
 import { FaCheck } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
+import { useCompanyCurrency } from "@/src/components/providers/CompanyCurrencyProvider";
+import { currencyLabel } from "@/src/app/utils/currency.utils";
 import {MdSearch } from "react-icons/md";
 import LanguageSelector from "@/src/components/common/LanguageSelector";
 
 const page = (): JSX.Element => {
   const { t } = useTranslation();
+  const currency = useCompanyCurrency();
   const [err, setErr] = useState<string | string[]>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [fieldDataLoading, setFieldDataLoading] = useState<boolean>(false);
@@ -349,7 +352,7 @@ const page = (): JSX.Element => {
                   <input
                     type="checkbox"
                     id={item.key}
-                    name={item.name}
+                    name={currencyLabel(item.name, item.key, currency)}
                     value={item.id}
                     checked={checked}
                     onChange={handleChecked}
@@ -383,7 +386,7 @@ const page = (): JSX.Element => {
                         }
                       `}
                     >
-                      {item.name}
+                      {currencyLabel(item.name, item.key, currency)}
                     </span>
                   </div>
                 </label>
@@ -519,7 +522,7 @@ const page = (): JSX.Element => {
                       <Input
                         name={item.key}
                         type={item.type}
-                        label={item.name}
+                        label={currencyLabel(item.name, item.key, currency)}
                         onChange={(e) => handleChange(e)}
                         value={fieldValue}
                         placeholder={item.placeholder ?? ""}
@@ -542,7 +545,7 @@ const page = (): JSX.Element => {
                       <Input
                         name={item.key}
                         type={item.type}
-                        label={item.name}
+                        label={currencyLabel(item.name, item.key, currency)}
                         onChange={(e) => handleChange(e)}
                         onWheel={(e) => e.currentTarget.blur()}
                         value={fieldValue}
@@ -565,7 +568,7 @@ const page = (): JSX.Element => {
                     >
                       <Select
                         name={item.key}
-                        label={item.name}
+                        label={currencyLabel(item.name, item.key, currency)}
                         options={item.options ?? []}
                         placeholder={item.placeholder ?? "Select"}
                         onChange={(e) => handleChange(e)}

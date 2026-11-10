@@ -16,6 +16,7 @@ import PhoneInputField from "@/src/components/common/PhoneInput";
 import CompanyService from "@/src/services/company.service";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
+import { setCompanyCurrency } from "@/src/app/utils/currency.utils";
 
 const COMPANY_CURRENCIES = [
   { value: "USD", label: "$ — USD — US Dollar" },
@@ -24,6 +25,7 @@ const COMPANY_CURRENCIES = [
   { value: "AED", label: "د.إ — AED — UAE Dirham" },
   { value: "INR", label: "₹ — INR — Indian Rupee" },
   { value: "SAR", label: "﷼ — SAR — Saudi Riyal" },
+  { value: "BLR", label: "BLR — Belarusian Ruble" },
 ];
 
 const CompanySettingsPage = () => {
@@ -63,6 +65,7 @@ const CompanySettingsPage = () => {
 
   useEffect(() => {
     if (!company) return;
+    if (company.currency) setCompanyCurrency(company.currency);
     // Hydrate the editable form after the asynchronous company settings load.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setFormData({
@@ -155,8 +158,7 @@ const CompanySettingsPage = () => {
     const success = await updateCompany(formData);
     if (success) {
       if (formData.currency) {
-        window.localStorage.setItem("companyCurrency", formData.currency);
-        window.dispatchEvent(new Event("company-currency-changed"));
+        setCompanyCurrency(formData.currency);
       }
       setHasUnsavedChanges(false);
     }

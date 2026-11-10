@@ -10,9 +10,6 @@ import { useTranslation } from "react-i18next";
 
 type PageStatus = "loading" | "idle" | "confirming" | "confirmed" | "expired" | "error";
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(n);
-
 const fmtDate = (d: string) =>
   new Date(d).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
 
@@ -27,6 +24,9 @@ export default function QuotationConfirmPage() {
   const [quotation, setQuotation] = useState<Quotation | null>(null);
   const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState("");
+  const fmt = (n: number) => new Intl.NumberFormat("en-US", {
+    style: "currency", currency: quotation?.currency || "USD", minimumFractionDigits: 2,
+  }).format(n);
 
   useEffect(() => {
     if (!token) { setPageStatus("error"); return; }

@@ -527,6 +527,7 @@ export enum QuotationPaymentStatus {
 }
 
 export enum QuotationCurrency {
+  BLR = "BLR",
   USD = "USD",
   EUR = "EUR",
   GBP = "GBP",
@@ -536,6 +537,32 @@ export enum QuotationCurrency {
   PKR = "PKR",
   CAD = "CAD",
   AUD = "AUD",
+  NZD = "NZD",
+  JPY = "JPY",
+  CNY = "CNY",
+  HKD = "HKD",
+  SGD = "SGD",
+  CHF = "CHF",
+  SEK = "SEK",
+  NOK = "NOK",
+  DKK = "DKK",
+  ZAR = "ZAR",
+  BRL = "BRL",
+  MXN = "MXN",
+  KRW = "KRW",
+  THB = "THB",
+  IDR = "IDR",
+  MYR = "MYR",
+  PHP = "PHP",
+  TRY = "TRY",
+  PLN = "PLN",
+  ILS = "ILS",
+  EGP = "EGP",
+  NGN = "NGN",
+  BDT = "BDT",
+  VND = "VND",
+  QAR = "QAR",
+  KWD = "KWD",
 }
 
 export enum DEAL_STATUS {

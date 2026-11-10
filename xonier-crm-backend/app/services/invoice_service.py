@@ -31,6 +31,7 @@ from bson import ObjectId
 
 from app.utils.activity_payload import activity_payload
 from app.utils.enquiry_id_generator import generate_enquiry_id
+from app.utils.company_currency import get_organization_currency
 
 class InvoiceService:
     def __init__(self):
@@ -42,8 +43,10 @@ class InvoiceService:
 
     async def create_standalone(self, payload: Dict[str, Any], user: Dict[str, Any]):
         try:
+            organization_currency = await get_organization_currency(self.client, user)
             data = {
                 **payload,
+                "currency": organization_currency or payload.get("currency") or "USD",
                 "invoiceId": generate_enquiry_id("INV"),
                 "createdBy": PydanticObjectId(user["_id"]),
                 "deal": None,

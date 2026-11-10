@@ -41,8 +41,11 @@ import { IoChevronBack, IoLanguage } from "react-icons/io5";
 import { useTranslation } from "react-i18next";
 import { IoIosSearch } from "react-icons/io";
 import LanguageSelector from "@/src/components/common/LanguageSelector";
+import { useCompanyCurrency } from "@/src/components/providers/CompanyCurrencyProvider";
+import { currencyLabel } from "@/src/app/utils/currency.utils";
 
 const page = (): JSX.Element => {
+  const currency = useCompanyCurrency();
   const { t } = useTranslation();
   const [err, setErr] = useState<string | string[]>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -330,7 +333,7 @@ const handleChecked = (e: ChangeEvent<HTMLInputElement>) => {
                         <input
                           type="checkbox"
                           id={item.key}
-                          name={item.name}
+                          name={currencyLabel(item.name, item.key, currency)}
                           value={item.key}
                           checked={checked}
                           onChange={handleChecked}
@@ -367,7 +370,7 @@ const handleChecked = (e: ChangeEvent<HTMLInputElement>) => {
                                 }
                               `}
                             >
-                              {item.name}
+                              {currencyLabel(item.name, item.key, currency)}
                             </span>
                             {isRequired && (
                               <span className="px-2 py-0.5 text-[10px] font-semibold bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full flex-shrink-0">
@@ -529,7 +532,7 @@ const handleChecked = (e: ChangeEvent<HTMLInputElement>) => {
                       <Input
                         name={item.key}
                         type={item.type}
-                        label={item.name}
+                        label={currencyLabel(item.name, item.key, currency)}
                         onChange={(e) => handleChange(e)}
                         value={fieldValue}
                         placeholder={item.placeholder ?? ""}
@@ -552,7 +555,7 @@ const handleChecked = (e: ChangeEvent<HTMLInputElement>) => {
                       <Input
                         name={item.key}
                         type={item.type}
-                        label={item.name}
+                        label={currencyLabel(item.name, item.key, currency)}
                         onChange={(e) => handleChange(e)}
                         onWheel={(e) => e.currentTarget.blur()}
                         value={fieldValue}
@@ -575,7 +578,7 @@ const handleChecked = (e: ChangeEvent<HTMLInputElement>) => {
                     >
                       <Select
                         name={item.key}
-                        label={item.name}
+                        label={currencyLabel(item.name, item.key, currency)}
                         options={item.options ?? []}
                         placeholder={item.placeholder ?? "Select"}
                         onChange={(e) => handleChange(e)}

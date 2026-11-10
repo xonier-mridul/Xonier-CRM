@@ -6,8 +6,9 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 import extractErrorMessages from "@/src/app/utils/error.utils";
+import { getCurrencySymbol } from "@/src/app/utils/currency.utils";
 import { QuoteService } from "@/src/services/quote.service";
-import { QuotationStatus, QuotationCurrency } from "@/src/constants/enum";
+import { QuotationStatus } from "@/src/constants/enum";
 import { Quotation, QuotationUpdatePayload, QuotationLineItemPayload } from "@/src/types/quotations/quote.types";
 
 import Input from "@/src/components/ui/Input";
@@ -40,18 +41,6 @@ import {
   IoChevronUpOutline,
 } from "react-icons/io5";
 import { useTranslation } from "react-i18next";
-
-const CURRENCY_SYMBOLS: Record<QuotationCurrency, string> = {
-  [QuotationCurrency.USD]: '$',
-  [QuotationCurrency.EUR]: '€',
-  [QuotationCurrency.GBP]: '£',
-  [QuotationCurrency.INR]: '₹',
-  [QuotationCurrency.AED]: 'د.إ',
-  [QuotationCurrency.SAR]: '﷼',
-  [QuotationCurrency.PKR]: '₨',
-  [QuotationCurrency.CAD]: 'CA$',
-  [QuotationCurrency.AUD]: 'A$',
-}
 
 const EMPTY_LINE_ITEM: QuotationLineItemPayload = {
   description: '',
@@ -168,7 +157,7 @@ const Page = () => {
 
   const hasChanges = Object.keys(diffPayload).length > 0;
 
-  const symbol = original ? (CURRENCY_SYMBOLS[original.currency] ?? '$') : '$';
+  const symbol = original ? getCurrencySymbol(original.currency) : '';
 
   const setField = (name: keyof QuotationUpdatePayload, value: any) => {
     setFormData(prev => ({ ...prev, [name]: value }));

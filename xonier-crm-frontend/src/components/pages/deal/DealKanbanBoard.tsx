@@ -7,6 +7,8 @@ import { MdOutlineEdit } from "react-icons/md";
 import { FaRegEye } from "react-icons/fa";
 import { FaRegPaperPlane } from "react-icons/fa";
 import Link from "next/link";
+import { formatCurrency } from "@/src/app/utils/currency.utils";
+import { useCompanyCurrency } from "@/src/components/providers/CompanyCurrencyProvider";
 
 interface DealKanbanBoardProps {
   deals: Deal[];
@@ -97,6 +99,7 @@ const DealKanbanBoard: React.FC<DealKanbanBoardProps> = ({
   canUpdateDeal = true,
   canCreateQuote = false,
 }) => {
+  const currency = useCompanyCurrency();
   const [isMounted, setIsMounted] = useState(false);
   const [boardData, setBoardData] = useState<Record<string, Deal[]>>({});
 
@@ -254,7 +257,7 @@ const DealKanbanBoard: React.FC<DealKanbanBoardProps> = ({
                             {/* Amount */}
                             {deal.amount != null && deal.amount > 0 && (
                               <div className="text-xs text-slate-500 dark:text-slate-400 mb-2 font-medium">
-                                {new Intl.NumberFormat(undefined, { style: "currency", currency: typeof window !== "undefined" ? localStorage.getItem("companyCurrency") || "USD" : "USD", maximumFractionDigits: 2 }).format(Number(deal.amount))}
+                                {formatCurrency(Number(deal.amount), currency)}
                               </div>
                             )}
 
