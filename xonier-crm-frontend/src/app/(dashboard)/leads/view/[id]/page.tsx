@@ -61,6 +61,8 @@ import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import Skeleton from "react-loading-skeleton";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
+import NextActions from "@/src/components/common/NextActions";
+import CommercialTimeline from "@/src/components/common/CommercialTimeline";
 
 interface CallTimelineItem {
   id: string;
@@ -392,7 +394,7 @@ const LeadViewPage = (): JSX.Element => {
         <MetricCard
           icon={<IoBusinessOutline className="w-6 h-6" />}
           label={t("company")}
-          value={leadData?.companyName || "—"}
+          value={leadData?.organization?.name || leadData?.companyName || "—"}
           color="bg-cyan-500"
         />
         <MetricCard
@@ -661,7 +663,9 @@ const LeadViewPage = (): JSX.Element => {
             </div>
           )}
 
-          {/* Activity Tab — hidden when printing */}
+            {activeTab === "overview" && !isPrinting && <NextActions entityType="lead" entityId={leadData.id} canEdit={hasPermission(PERMISSIONS.updateLead)} />}
+
+            {/* Activity Tab — hidden when printing */}
           {activeTab === "activity" && !isPrinting && (
             <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-2 mb-6">
@@ -670,6 +674,7 @@ const LeadViewPage = (): JSX.Element => {
                   {t("activity_timeline")}
                 </h3>
               </div>
+              <CommercialTimeline entityType="lead" entityId={leadData.id} />
               {isCallHistoryLoading ? (
                 <div className="space-y-5">
                   {[0, 1, 2].map((item) => <Skeleton key={item} height={74} borderRadius={10} />)}

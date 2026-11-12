@@ -13,6 +13,7 @@ from app.core.enums import (
     DEAL_STATUS,
     USER_STATUS,
     DEAL_PIPELINE,
+    DEAL_STAGES,
     TASK_PRIORITY,
     FEATURE,
 )
@@ -471,8 +472,9 @@ class CompanyAdminDashboardService:
                             "$match": {
                                 "status": {"$ne": SALES_STATUS.DELETE.value},
                                 "$or": [
-                                    {"assignTo": {"$exists": False}},
-                                    {"assignTo": None},
+                                    {"assignedTo": {"$exists": False}},
+                                    {"assignedTo": None},
+                                    {"assignedTo": []},
                                 ],
                             }
                         },
@@ -537,11 +539,14 @@ class CompanyAdminDashboardService:
                         {"$count": "count"},
                     ],
                     "closed": [
-                        {"$match": {"status": DEAL_STATUS.CLOSED.value}},
+                        {"$match": {"dealStage": {"$in": [DEAL_STAGES.WON.value, DEAL_STAGES.CLOSED_WON.value]}, "status": {"$ne": DEAL_STATUS.DELETE.value}}},
                         {"$count": "count"},
                     ],
+                    "won": [{"$match": {"dealStage": {"$in": [DEAL_STAGES.WON.value, DEAL_STAGES.CLOSED_WON.value]}, "status": {"$ne": DEAL_STATUS.DELETE.value}}}, {"$count": "count"}],
+                    "lost": [{"$match": {"dealStage": DEAL_STAGES.LOST.value, "status": {"$ne": DEAL_STATUS.DELETE.value}}}, {"$count": "count"}],
+                    "proposal": [{"$match": {"dealStage": DEAL_STAGES.PROPOSAL.value, "status": {"$ne": DEAL_STATUS.DELETE.value}}}, {"$count": "count"}],
                     "totalRevenue": [
-                        {"$match": {"status": DEAL_STATUS.CLOSED.value}},
+                        {"$match": {"dealStage": {"$in": [DEAL_STAGES.WON.value, DEAL_STAGES.CLOSED_WON.value]}, "status": {"$ne": DEAL_STATUS.DELETE.value}}},
                         {
                             "$group": {
                                 "_id": None,
@@ -552,7 +557,8 @@ class CompanyAdminDashboardService:
                     "periodRevenue": [
                         {
                             "$match": {
-                                "status": DEAL_STATUS.CLOSED.value,
+                                "dealStage": {"$in": [DEAL_STAGES.WON.value, DEAL_STAGES.CLOSED_WON.value]},
+                                "status": {"$ne": DEAL_STATUS.DELETE.value},
                                 "createdAt": {
                                     "$gte": range_start,
                                     "$lte": range_end,
@@ -604,6 +610,10 @@ class CompanyAdminDashboardService:
             "thisMonth": _count("thisMonth"),
             "active": _count("active"),
             "closed": _count("closed"),
+            "won": _count("won"),
+            "lost": _count("lost"),
+            "proposal": _count("proposal"),
+            "inRange": _count("thisMonth"),
             "totalRevenue": _sum("totalRevenue"),
             "periodRevenue": _sum("periodRevenue"),
             "avgDealValue": _avg("avgDealValue"),
@@ -924,17 +934,52 @@ class CompanyAdminDashboardService:
                 "$match": {
                     **match,
                     "status": {"$in": await LeadStatusService().keys("final")},
-                    "createdAt": {"$gte": range_start, "$lte": range_end},
+                    # all-time (same scope as Lead Pipeline card)
                 }
             },
             {
+                "$addFields": {
+                    "_assignees": {
+                        "$cond": [
+                            {
+                                "$and": [
+                                    {"$isArray": "$assignedTo"},
+                                    {"$gt": [{"$size": "$assignedTo"}, 0]},
+                                ]
+                            },
+                            "$assignedTo",
+                            [{"$ifNull": ["$createdBy", None]}],
+                        ]
+                    }
+                }
+            },
+            {"$unwind": "$_assignees"},
+            {
+                "$addFields": {
+                    "_assigneeRaw": {
+                        "$ifNull": ["$_assignees.$id", "$_assignees"]
+                    }
+                }
+            },
+            {
+                "$addFields": {
+                    "_assigneeId": {
+                        "$convert": {
+                            "input": "$_assigneeRaw",
+                            "to": "objectId",
+                            "onError": None,
+                            "onNull": None,
+                        }
+                    }
+                }
+            },
+            {"$match": {"_assigneeId": {"$ne": None}}},
+            {
                 "$group": {
-                    "_id": "$assignTo",
+                    "_id": "$_assigneeId",
                     "wonLeads": {"$sum": 1},
                 }
             },
-            {"$sort": {"wonLeads": -1}},
-            {"$limit": 5},
             {
                 "$lookup": {
                     "from": "users",
@@ -943,7 +988,10 @@ class CompanyAdminDashboardService:
                     "as": "user",
                 }
             },
-            {"$unwind": {"path": "$user", "preserveNullAndEmptyArrays": True}},
+            {"$unwind": "$user"},
+            {"$match": {"user.status": {"$ne": USER_STATUS.DELETED.value}}},
+            {"$sort": {"wonLeads": -1}},
+            {"$limit": 5},
             {
                 "$project": {
                     "_id": 0,
@@ -964,7 +1012,7 @@ class CompanyAdminDashboardService:
             {
                 "$match": {
                     **match,
-                    "createdAt": {"$gte": range_start, "$lte": range_end},
+                    # all-time: no createdAt filter (matches Lead Pipeline card)
                     "status": {"$ne": SALES_STATUS.DELETE.value},
                 }
             },

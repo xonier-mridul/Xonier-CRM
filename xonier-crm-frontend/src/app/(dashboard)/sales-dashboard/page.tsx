@@ -74,7 +74,7 @@ function fmt(n: number): string {
 }
 
 function fmtCurrency(n: number): string {
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat(getCompanyCurrency() === "BRL" ? "pt-BR" : "en-US", {
     style: "currency", currency: getCompanyCurrency(), maximumFractionDigits: 0,
   }).format(n ?? 0);
 }

@@ -1603,6 +1603,7 @@
     "failed_to_reassign_leads": "लीड्स को पुन: असाइन करने में विफल",
     "failed_to_send_message": "संदेश भेजने में विफल",
     "in_deal": "डील में",
+    "converted_to_deal": "डील में बदला गया",
     "in_progress": "प्रगति पर",
     "is_assigned": "असाइन किया गया है",
     "language": "भाषा",

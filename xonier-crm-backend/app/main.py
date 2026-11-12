@@ -18,6 +18,7 @@ from app.core.cache import init_cache
 from app.middlewares.tanent_middleware import TenantMiddleware
 from app.core.notification_scheduler import notification_scheduler
 from app.jobs.event_reminder_job import send_event_reminders
+from app.jobs.next_action_reminder_job import send_next_action_reminders
 from app.services.follow_up_push_service import send_due_follow_up_pushes
 from apscheduler.triggers.interval import IntervalTrigger
 
@@ -51,6 +52,7 @@ from app.routes.task_category_route import router as task_category_route
 from app.routes.task_status_route import router as task_status_route
 from app.routes.lead_status_route import router as lead_status_route
 from app.routes.task_route import router as task_route
+from app.routes.next_action_route import router as next_action_route
 from app.routes.otp_route import router as otp_route
 from app.routes.task_report_route import router as task_report_route
 from app.routes.sub_task_route import router as sub_task_route
@@ -92,6 +94,14 @@ async def lifespan(app: FastAPI):
         send_due_follow_up_pushes,
         trigger=IntervalTrigger(seconds=15),
         id="lead_follow_up_push_job",
+        replace_existing=True,
+        max_instances=1,
+        coalesce=True,
+    )
+    notification_scheduler.add_job(
+        send_next_action_reminders,
+        trigger=IntervalTrigger(minutes=1),
+        id="next_action_reminder_job",
         replace_existing=True,
         max_instances=1,
         coalesce=True,
@@ -179,6 +189,7 @@ app.include_router(task_category_route, prefix="/api/task-category")
 app.include_router(task_status_route, prefix="/api/task-status")
 app.include_router(lead_status_route, prefix="/api/lead-status")
 app.include_router(task_route, prefix="/api/task")
+app.include_router(next_action_route, prefix="/api/next-action")
 app.include_router(otp_route, prefix="/api/otp")
 app.include_router(task_report_route, prefix="/api/task-reports")
 app.include_router(sub_task_route, prefix="/api/sub-task")

@@ -13,7 +13,7 @@ from app.db.models.deal_model import DealModel
 from app.db.models.activity_model import ActivityModel
 from app.db.models.quotation_model import QuotationModel
 from app.db.models.user_model import UserModel
-from app.core.enums import SALES_STATUS, DEAL_STATUS, DEAL_PIPELINE
+from app.core.enums import SALES_STATUS, DEAL_STATUS, DEAL_PIPELINE, DEAL_STAGES
 from app.db import db as database_module
 import asyncio
 
@@ -363,7 +363,8 @@ class UserDashboardService:
                         {
                             "$match": {
                                 "createdBy.$id": user_id,
-                                "status": DEAL_STATUS.CLOSED.value,
+                                "dealStage": {"$in": [DEAL_STAGES.WON.value, DEAL_STAGES.CLOSED_WON.value]},
+                                "status": {"$ne": DEAL_STATUS.DELETE.value},
                             }
                         },
                         {"$count": "count"},
@@ -372,7 +373,8 @@ class UserDashboardService:
                         {
                             "$match": {
                                 "createdBy.$id": user_id,
-                                "status": DEAL_STATUS.CLOSED.value,
+                                "dealStage": {"$in": [DEAL_STAGES.WON.value, DEAL_STAGES.CLOSED_WON.value]},
+                                "status": {"$ne": DEAL_STATUS.DELETE.value},
                             }
                         },
                         {"$group": {"_id": None, "total": {"$sum": "$amount"}}},
@@ -381,12 +383,16 @@ class UserDashboardService:
                         {
                             "$match": {
                                 "createdBy.$id": user_id,
-                                "status": DEAL_STATUS.CLOSED.value,
+                                "dealStage": {"$in": [DEAL_STAGES.WON.value, DEAL_STAGES.CLOSED_WON.value]},
+                                "status": {"$ne": DEAL_STATUS.DELETE.value},
                                 "createdAt": {"$gte": range_start, "$lte": range_end},
                             }
                         },
                         {"$group": {"_id": None, "total": {"$sum": "$amount"}}},
                     ],
+                    "won": [{"$match": {"createdBy.$id": user_id, "dealStage": {"$in": [DEAL_STAGES.WON.value, DEAL_STAGES.CLOSED_WON.value]}, "status": {"$ne": DEAL_STATUS.DELETE.value}}}, {"$count": "count"}],
+                    "lost": [{"$match": {"createdBy.$id": user_id, "dealStage": DEAL_STAGES.LOST.value, "status": {"$ne": DEAL_STATUS.DELETE.value}}}, {"$count": "count"}],
+                    "proposal": [{"$match": {"createdBy.$id": user_id, "dealStage": DEAL_STAGES.PROPOSAL.value, "status": {"$ne": DEAL_STATUS.DELETE.value}}}, {"$count": "count"}],
                     "inQuotation": [
                         {
                             "$match": {
@@ -417,6 +423,9 @@ class UserDashboardService:
             "closed": (
                 raw.get("closed", [{}])[0].get("count", 0) if raw.get("closed") else 0
             ),
+            "won": raw.get("won", [{}])[0].get("count", 0) if raw.get("won") else 0,
+            "lost": raw.get("lost", [{}])[0].get("count", 0) if raw.get("lost") else 0,
+            "proposal": raw.get("proposal", [{}])[0].get("count", 0) if raw.get("proposal") else 0,
             "totalRevenue": (
                 raw.get("totalRevenue", [{}])[0].get("total", 0)
                 if raw.get("totalRevenue")

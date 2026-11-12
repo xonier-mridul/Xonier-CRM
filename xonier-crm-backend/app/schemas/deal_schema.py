@@ -1,5 +1,5 @@
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from app.core.enums import DEAL_PIPELINE, DEAL_STAGES, DEAL_TYPE, FORECAST_CATEGORY, DEAL_STATUS
 from typing import Optional, Dict, Any
 from datetime import datetime
@@ -25,6 +25,17 @@ class DealSchema(BaseModel):
     closedWonReason: Optional[str] = None
     closedLostReason: Optional[str] = None
     originalTrafficSource: Optional[str] = None
+
+    @model_validator(mode="after")
+    def validate_closure(self):
+        closed = self.dealStage in {DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON, DEAL_STAGES.LOST}
+        if closed and not self.closeDate:
+            raise ValueError("Close date is required when a deal is Won or Lost")
+        if self.dealStage in {DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON} and not (self.closedWonReason or "").strip():
+            raise ValueError("Won reason is required when a deal is Won")
+        if self.dealStage == DEAL_STAGES.LOST and not (self.closedLostReason or "").strip():
+            raise ValueError("Lost reason is required when a deal is Lost")
+        return self
 
 
     @field_validator("dealName", mode="before")
@@ -85,6 +96,17 @@ class DealUpdateSchema(BaseModel):
     closedWonReason: Optional[str] = None
     closedLostReason: Optional[str] = None
     originalTrafficSource: Optional[str] = None
+
+    @model_validator(mode="after")
+    def validate_closure(self):
+        closed = self.dealStage in {DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON, DEAL_STAGES.LOST}
+        if closed and not self.closeDate:
+            raise ValueError("Close date is required when a deal is Won or Lost")
+        if self.dealStage in {DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON} and not (self.closedWonReason or "").strip():
+            raise ValueError("Won reason is required when a deal is Won")
+        if self.dealStage == DEAL_STAGES.LOST and not (self.closedLostReason or "").strip():
+            raise ValueError("Lost reason is required when a deal is Lost")
+        return self
 
 
     @field_validator("dealName", mode="before")

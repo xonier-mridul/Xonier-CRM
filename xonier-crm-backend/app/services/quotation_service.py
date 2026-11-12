@@ -217,13 +217,12 @@ class QuotationService:
                     )
 
                     if payload.get("deal"):
+                        deal_update = {"inQuotation": True}
+                        if deal["dealStage"] not in {DEAL_STAGES.WON.value, DEAL_STAGES.CLOSED_WON.value, DEAL_STAGES.LOST.value}:
+                            deal_update.update({"dealStage": DEAL_STAGES.PROPOSAL, "dealPipeline": DEAL_PIPELINE.PROPOSAL})
                         update_deal = await self.dealRepo.update(
                             id=PydanticObjectId(payload["deal"]),
-                            data={
-                                "inQuotation": True,
-                                "dealStage": DEAL_STAGES.PROPOSAL,
-                                "dealPipeline": DEAL_PIPELINE.PROPOSAL,
-                            },
+                            data=deal_update,
                             session=session,
                         )
 

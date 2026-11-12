@@ -19,6 +19,10 @@ export interface Lead {
   updatedBy?: User | null;  
 
   companyName?: string | null;
+  organizationId?: string | null;
+  personId?: string | null;
+  organization?: { id: string; name: string } | null;
+  person?: { id: string; fullName: string; title?: string | null } | null;
   city?: string | null;
   country?: COUNTRY_CODE | null;
   postalCode?: number | null;

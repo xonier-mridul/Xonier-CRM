@@ -11,6 +11,8 @@ from app.db.models.base_model import BaseDocument
 class DealModel(BaseDocument):
     deal_id : str
     lead_id : Optional[Link[LeadsModel]] = None
+    organizationId: Optional[PydanticObjectId] = None
+    personId: Optional[PydanticObjectId] = None
     dealName : str 
     dealPipeline: DEAL_PIPELINE
     dealStage: DEAL_STAGES

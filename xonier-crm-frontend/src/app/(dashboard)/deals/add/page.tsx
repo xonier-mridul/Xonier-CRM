@@ -25,6 +25,8 @@ const CreateDealPage = () => {
   const [closeDate, setCloseDate] = useState("");
   const [amount, setAmount] = useState("");
   const [dealDescription, setDealDescription] = useState("");
+  const [closedWonReason, setClosedWonReason] = useState("");
+  const [closedLostReason, setClosedLostReason] = useState("");
   const [error, setError] = useState<string | string[]>("");
   const [saving, setSaving] = useState(false);
   const [extraFields, setExtraFields] = useState<CustomField[]>([]);
@@ -49,6 +51,11 @@ const CreateDealPage = () => {
       toast.error("You do not have permission to create deals");
       return;
     }
+    const isWon = [DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON].includes(dealStage);
+    const isLost = dealStage === DEAL_STAGES.LOST;
+    if ((isWon || isLost) && !closeDate) return setError("Close date is required for Won/Lost deals");
+    if (isWon && !closedWonReason.trim()) return setError("Won reason is required");
+    if (isLost && !closedLostReason.trim()) return setError("Lost reason is required");
     setSaving(true);
     try {
       const result = await dealService.create({
@@ -60,6 +67,8 @@ const CreateDealPage = () => {
         closeDate: closeDate || null,
         amount: Number(amount),
         dealDescription: dealDescription.trim() || null,
+        closedWonReason: closedWonReason.trim() || null,
+        closedLostReason: closedLostReason.trim() || null,
         ...(Object.keys(extraValues).length > 0 ? { extraFields: extraValues } : {}),
       });
       if (result.status === 201) {
@@ -127,9 +136,11 @@ const CreateDealPage = () => {
               <input id="createDate" className={inputClass} type="date" required value={createDate} onChange={(event) => setCreateDate(event.target.value)} />
             </div>
             <div>
-              <label className={labelClass} htmlFor="closeDate">Close date</label>
-              <input id="closeDate" className={inputClass} type="date" min={createDate} value={closeDate} onChange={(event) => setCloseDate(event.target.value)} />
+              <label className={labelClass} htmlFor="closeDate">Close date {([DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON, DEAL_STAGES.LOST].includes(dealStage)) && <span className="text-rose-500">*</span>}</label>
+              <input id="closeDate" className={inputClass} type="date" min={createDate} required={[DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON, DEAL_STAGES.LOST].includes(dealStage)} value={closeDate} onChange={(event) => setCloseDate(event.target.value)} />
             </div>
+            {[DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON].includes(dealStage) && <div className="md:col-span-2"><label className={labelClass} htmlFor="closedWonReason">Won reason <span className="text-rose-500">*</span></label><input id="closedWonReason" className={inputClass} required value={closedWonReason} onChange={(event) => setClosedWonReason(event.target.value)} placeholder="Why did we win this deal?" /></div>}
+            {dealStage === DEAL_STAGES.LOST && <div className="md:col-span-2"><label className={labelClass} htmlFor="closedLostReason">Lost reason <span className="text-rose-500">*</span></label><input id="closedLostReason" className={inputClass} required value={closedLostReason} onChange={(event) => setClosedLostReason(event.target.value)} placeholder="Why was this deal lost?" /></div>}
             <div className="md:col-span-2">
               <label className={labelClass} htmlFor="dealDescription">Description</label>
               <textarea id="dealDescription" className={inputClass} rows={4} maxLength={2000} value={dealDescription} onChange={(event) => setDealDescription(event.target.value)} placeholder="Optional context for this deal" />

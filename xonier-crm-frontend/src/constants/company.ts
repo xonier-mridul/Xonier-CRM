@@ -22,6 +22,7 @@ export const TIMEZONE_OPTIONS = [
   { value: "Europe/Athens", label: "(GMT+2:00) Athens, Istanbul" },
   { value: "Asia/Dubai", label: "(GMT+4:00) Abu Dhabi, Dubai" },
   { value: "Asia/Kolkata", label: "(GMT+5:30) Mumbai, Kolkata, New Delhi" },
+  { value: "America/Sao_Paulo", label: "(GMT-3:00) São Paulo, Brazil" },
   { value: "Asia/Singapore", label: "(GMT+8:00) Singapore, Hong Kong" },
   { value: "Asia/Tokyo", label: "(GMT+9:00) Tokyo, Seoul" },
   { value: "Australia/Sydney", label: "(GMT+10:00) Sydney, Melbourne" },
@@ -36,4 +37,5 @@ export const COUNTRY_OPTIONS = [
   { value: COUNTRY_CODE.DE, label: "Germany", flag: "🇩🇪" },
   { value: COUNTRY_CODE.FR, label: "France", flag: "🇫🇷" },
   { value: COUNTRY_CODE.AE, label: "United Arab Emirates", flag: "🇦🇪" },
+  { value: "BR", label: "Brazil", flag: "🇧🇷" },
 ];

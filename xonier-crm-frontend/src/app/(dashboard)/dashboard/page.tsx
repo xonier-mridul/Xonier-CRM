@@ -110,6 +110,9 @@ interface LeadStats {
 
 interface DealStats {
   total: number;
+  won?: number;
+  lost?: number;
+  proposal?: number;
   inRange: number;
   active: number;
   closed: number;
@@ -614,7 +617,7 @@ function StatCard({
           </p>
           <p className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mt-1 tabular-nums">
             {prefix}
-            {v.toLocaleString()}
+            {v.toLocaleString(getCompanyCurrency() === "BRL" && prefix ? "pt-BR" : undefined)}
             {suffix}
           </p>
         </div>
@@ -794,7 +797,7 @@ function LeadsCard({ leads }: { leads: LeadStats }) {
           )}
           {leads.inDeal > 0 && (
             <MetricRow
-              label={t("in_deal")}
+              label={t("converted_to_deal", { defaultValue: "Converted to Deal" })}
               value={leads.inDeal}
               total={leads.total}
               color="#f59e0b"
@@ -810,7 +813,7 @@ function LeadsCard({ leads }: { leads: LeadStats }) {
             color: "#6366f1",
           },
           {
-            label: t("in_deal"),
+            label: t("converted_to_deal", { defaultValue: "Converted to Deal" }),
             value: leads.inDeal,
             color: "#8b5cf6",
           },
@@ -865,24 +868,24 @@ function DealsCard({ deals }: { deals: DealStats }) {
       <div className="grid grid-cols-4 rounded-xl overflow-hidden bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800/70 divide-x divide-slate-200/60 dark:divide-slate-800 mb-4">
         {[
           {
-            label: t("active"),
-            value: deals.active,
-            color: "#6366f1",
-          },
-          {
-            label: t("closed"),
-            value: deals.closed,
-            color: "#10b981",
-          },
-          {
             label: t("total"),
             value: deals.total,
             color: "#8b5cf6",
           },
           {
-            label: t("this_period"),
-            value: deals.inRange,
-            color: "#0284c7",
+            label: t("won"),
+            value: deals.won ?? deals.closed ?? 0,
+            color: "#10b981",
+          },
+          {
+            label: t("lost"),
+            value: deals.lost ?? 0,
+            color: "#ef4444",
+          },
+          {
+            label: t("proposal"),
+            value: deals.proposal ?? 0,
+            color: "#f59e0b",
           },
         ].map((i) => (
           <div
@@ -1084,7 +1087,8 @@ function MonthlyTrendChart({
             />
             <Area
               type="monotone"
-              dataKey={t("leads")}
+              dataKey="leads"
+              name={t("leads")}
               stroke="#6366f1"
               strokeWidth={2}
               fill="url(#gL)"
@@ -1093,7 +1097,8 @@ function MonthlyTrendChart({
             />
             <Area
               type="monotone"
-              dataKey={t("deals")}
+              dataKey="deals"
+              name={t("deals")}
               stroke="#10b981"
               strokeWidth={2}
               fill="url(#gD)"
@@ -2275,11 +2280,11 @@ function TopPerformers({ performers }: { performers: TopPerformer[] }) {
           {performers.slice(0, 5).map((p, i) => (
             <div
               key={p.userId}
-              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-100 transition-colors group"
+              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors group"
             >
               <span className="text-sm w-6 text-center">{medals[i]}</span>
               <div
-                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold dark:text-white flex-shrink-0"
+                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
                 style={{
                   background: `linear-gradient(135deg, ${colors[i]}, ${colors[i]}80)`,
                 }}
@@ -2287,10 +2292,10 @@ function TopPerformers({ performers }: { performers: TopPerformer[] }) {
                 {(p.firstName || "?")[0]}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-slate-300 truncate">
+                <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
                   {p.firstName} {p.lastName}
                 </p>
-                <div className="mt-1 h-1 rounded-full bg-slate-700/60">
+                <div className="mt-1 h-1 rounded-full bg-slate-100 dark:bg-slate-800">
                   <div
                     className="h-1 rounded-full"
                     style={{
@@ -2937,7 +2942,7 @@ function CompanyAdminLayout({ d }: { d: DashboardData }) {
           <StatCard
             label={t("revenue")}
             value={Math.round(d.deals.totalRevenue)}
-            prefix="$"
+            prefix={getCurrencySymbol(getCompanyCurrency())}
             sub={`${d.deals.closed} ${t("closed")}`}
             icon={DollarSign}
             color="#f59e0b"

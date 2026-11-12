@@ -41,6 +41,8 @@ class LeadsModel(BaseDocument):
     dataTag: Optional[str] = None
 
     companyName: Optional[str] = None
+    organizationId: Optional[PydanticObjectId] = None
+    personId: Optional[PydanticObjectId] = None
     city: Optional[str] = None
     country: Optional[str] = None
     postalCode: Optional[int] =  Field(None, gt=1000, lt=999999)

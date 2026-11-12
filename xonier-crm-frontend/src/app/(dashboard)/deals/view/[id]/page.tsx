@@ -57,18 +57,23 @@ import {
 } from "react-icons/io5";
 import Link from "next/link";
 import { usePermissions } from "@/src/hooks/usePermissions";
-import { DEAL_STATUS, PERMISSIONS } from "@/src/constants/enum";
+import { DEAL_STATUS, DEAL_STAGES, PERMISSIONS } from "@/src/constants/enum";
 import ConfirmPopup from "@/src/components/ui/ConfirmPopup";
 import { useTranslation } from "react-i18next";
 import { FormatDate } from "@/src/components/common/FormateDate";
 import { useCompanyCurrency } from "@/src/components/providers/CompanyCurrencyProvider";
 import { formatCurrency } from "@/src/app/utils/currency.utils";
+import NextActions from "@/src/components/common/NextActions";
+import CommercialTimeline from "@/src/components/common/CommercialTimeline";
+import { QuoteService } from "@/src/services/quote.service";
+import { Quotation } from "@/src/types/quotations/quote.types";
 
 const DealViewPage = (): JSX.Element => {
   const currency = useCompanyCurrency();
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [dealData, setDealData] = useState<Deal | null>(null);
+  const [linkedQuotes, setLinkedQuotes] = useState<Quotation[]>([]);
   const [isPrinting, setIsPrinting] = useState(false);
   const [activeTab, setActiveTab] = useState<"overview" | "lead" | "activity">(
     "overview"
@@ -100,6 +105,13 @@ const DealViewPage = (): JSX.Element => {
 
   useEffect(() => {
     if (id) getDealData(id as string);
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+    QuoteService.getAll(1, 10, { dealId: id as string })
+      .then((result) => setLinkedQuotes(result.data.data.data ?? []))
+      .catch(() => setLinkedQuotes([]));
   }, [id]);
 
   const handleDelete = async () => {
@@ -499,16 +511,16 @@ const DealViewPage = (): JSX.Element => {
                     label={t("next_step")}
                     value={dealData?.nextStep ?? "—"}
                   />
-                  <InfoItem
+                  {[DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON].includes(dealData.dealStage) && <InfoItem
                     icon={<IoCheckmarkCircle className="w-4 h-4" />}
                     label={t("closed_won_reason")}
                     value={dealData?.closedWonReason ?? "—"}
-                  />
-                  <InfoItem
+                  />}
+                  {dealData.dealStage === DEAL_STAGES.LOST && <InfoItem
                     icon={<IoCloseCircle className="w-4 h-4" />}
                     label={t("closed_lost_reason")}
                     value={dealData?.closedLostReason ?? "—"}
-                  />
+                  />}
                   <InfoItem
                     icon={<IoInformationCircleOutline className="w-4 h-4" />}
                     label={t("original_traffic_source")}
@@ -558,7 +570,7 @@ const DealViewPage = (): JSX.Element => {
                   <InfoItem
                     icon={<IoBusinessOutline className="w-4 h-4" />}
                     label={t("company")}
-                    value={lead.companyName ?? "—"}
+                    value={dealData.organization?.name ?? lead.companyName ?? "—"}
                   />
                   <InfoItem
                     icon={<IoFlagOutline className="w-4 h-4" />}
@@ -608,6 +620,8 @@ const DealViewPage = (): JSX.Element => {
               </div>
             )}
 
+            {activeTab === "overview" && !isPrinting && <NextActions entityType="deal" entityId={dealData.id} canEdit={hasPermission(PERMISSIONS.updateDeal)} />}
+
             {/* Activity Tab — hidden when printing */}
             {activeTab === "activity" && !isPrinting && (
               <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
@@ -617,12 +631,7 @@ const DealViewPage = (): JSX.Element => {
                     {t("activity_timeline")}
                   </h3>
                 </div>
-                <div className="text-center py-12">
-                  <IoInformationCircleOutline className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
-                  <p className="text-gray-500 dark:text-gray-400">
-                    {t("activity_timeline_coming_soon")}
-                  </p>
-                </div>
+                <CommercialTimeline entityType="deal" entityId={dealData.id} />
               </div>
             )}
           </div>
@@ -713,6 +722,12 @@ const DealViewPage = (): JSX.Element => {
                       : "text-gray-600"
                   }
                 />
+                {linkedQuotes.map((quote) => (
+                  <Link key={quote.id} href={`/quotations/view/${quote.id}`} className="block rounded-lg border border-cyan-100 bg-cyan-50 px-3 py-2 text-sm hover:bg-cyan-100 dark:border-cyan-900 dark:bg-cyan-950">
+                    <span className="font-medium text-cyan-800 dark:text-cyan-200">{quote.title || quote.quoteId}</span>
+                    <span className="ml-2 text-slate-600 dark:text-slate-300">{quote.quotationStatus}</span>
+                  </Link>
+                ))}
                 <StatItem
                   label={t("created")}
                   value={FormatDate(dealData.createdAt)}

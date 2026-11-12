@@ -1503,6 +1503,7 @@
   "failed_to_reassign_leads": "Failed to reassign leads",
   "failed_to_send_message": "Failed to send message",
   "in_deal": "In Deal",
+  "converted_to_deal": "Converted to Deal",
   "is_assigned": "Is Assigned",
   "language": "Language",
   "last_updated": "Last Updated",

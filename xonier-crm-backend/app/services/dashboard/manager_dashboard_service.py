@@ -7,7 +7,7 @@ from app.db.models.lead_model import LeadsModel
 from app.db.models.enquiry_management_model import EnquiryModel
 from app.db.models.deal_model import DealModel
 from app.db.models.user_model import UserModel
-from app.core.enums import SALES_STATUS, DEAL_STATUS, DEAL_PIPELINE
+from app.core.enums import SALES_STATUS, DEAL_STATUS, DEAL_PIPELINE, DEAL_STAGES
 from app.db import db as database_module
 from app.utils.get_team_members import GetTeamMembers
 from app.repositories.team_repository import TeamRepository
@@ -385,7 +385,8 @@ class ManagerDashboardService:
                     "closed": [
                         {
                             "$match": {
-                                "status": DEAL_STATUS.CLOSED.value,
+                                "dealStage": {"$in": [DEAL_STAGES.WON.value, DEAL_STAGES.CLOSED_WON.value]},
+                                "status": {"$ne": DEAL_STATUS.DELETE.value},
                                 "createdBy.$id": {"$in": scoped_ids}
                             }
                         },
@@ -394,16 +395,21 @@ class ManagerDashboardService:
                     "totalRevenue": [
                         {
                             "$match": {
-                                "status": DEAL_STATUS.CLOSED.value,
+                                "dealStage": {"$in": [DEAL_STAGES.WON.value, DEAL_STAGES.CLOSED_WON.value]},
+                                "status": {"$ne": DEAL_STATUS.DELETE.value},
                                 "createdBy.$id": {"$in": scoped_ids}
                             }
                         },
                         {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
                     ],
+                    "won": [{"$match": {"dealStage": {"$in": [DEAL_STAGES.WON.value, DEAL_STAGES.CLOSED_WON.value]}, "status": {"$ne": DEAL_STATUS.DELETE.value}, "createdBy.$id": {"$in": scoped_ids}}}, {"$count": "count"}],
+                    "lost": [{"$match": {"dealStage": DEAL_STAGES.LOST.value, "status": {"$ne": DEAL_STATUS.DELETE.value}, "createdBy.$id": {"$in": scoped_ids}}}, {"$count": "count"}],
+                    "proposal": [{"$match": {"dealStage": DEAL_STAGES.PROPOSAL.value, "status": {"$ne": DEAL_STATUS.DELETE.value}, "createdBy.$id": {"$in": scoped_ids}}}, {"$count": "count"}],
                     "rangeRevenue": [
                         {
                             "$match": {
-                                "status": DEAL_STATUS.CLOSED.value,
+                                "dealStage": {"$in": [DEAL_STAGES.WON.value, DEAL_STAGES.CLOSED_WON.value]},
+                                "status": {"$ne": DEAL_STATUS.DELETE.value},
                                 "createdAt": {"$gte": range_start, "$lte": range_end},
                                 "createdBy.$id": {"$in": scoped_ids}
                             }
@@ -422,6 +428,9 @@ class ManagerDashboardService:
             "inRange": self._safe_count(raw, "inRange"),
             "active": self._safe_count(raw, "active"),
             "closed": self._safe_count(raw, "closed"),
+            "won": self._safe_count(raw, "won"),
+            "lost": self._safe_count(raw, "lost"),
+            "proposal": self._safe_count(raw, "proposal"),
             "totalRevenue": self._safe_sum(raw, "totalRevenue"),
             "rangeRevenue": self._safe_sum(raw, "rangeRevenue"),
         }
@@ -706,10 +715,10 @@ class ManagerDashboardService:
                     "totalDeals": {"$sum": 1},
                     "closedDeals": {
                         "$sum": {
-                            "$cond": [{"$eq": ["$status", DEAL_STATUS.CLOSED.value]}, 1, 0]
+                            "$cond": [{"$in": ["$dealStage", [DEAL_STAGES.WON.value, DEAL_STAGES.CLOSED_WON.value]]}, 1, 0]
                         }
                     },
-                    "totalRevenue": {"$sum": "$amount"}
+                    "totalRevenue": {"$sum": {"$cond": [{"$in": ["$dealStage", [DEAL_STAGES.WON.value, DEAL_STAGES.CLOSED_WON.value]]}, "$amount", 0]}}
                 }
             }
         ]

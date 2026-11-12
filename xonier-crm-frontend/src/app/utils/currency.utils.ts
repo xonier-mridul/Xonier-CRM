@@ -25,7 +25,7 @@ export const currencyLabel = (label: string, key: string, currency: string) =>
     : label;
 
 export const formatCurrency = (amount: number, currency = getCompanyCurrency()) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat(currency === "BRL" ? "pt-BR" : 'en-US', {
       style: 'currency',
       currency,
       minimumFractionDigits: 2

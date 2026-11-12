@@ -8,6 +8,10 @@ export interface Deal {
 
   deal_id: string;
   lead_id?: Lead | null;
+  organizationId?: string | null;
+  personId?: string | null;
+  organization?: { id: string; name: string } | null;
+  person?: { id: string; fullName: string; title?: string | null } | null;
 
   dealName: string;
   dealPipeline: DEAL_PIPELINE;

@@ -213,6 +213,11 @@ const handleChecked = (e: ChangeEvent<HTMLInputElement>) => {
 
   const handleUpdate = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+    const isWon = [DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON].includes(formData.dealStage);
+    const isLost = formData.dealStage === DEAL_STAGES.LOST;
+    if ((isWon || isLost) && !formData.closeDate) return setErr("Close date is required when a deal is Won or Lost");
+    if (isWon && !formData.closedWonReason?.trim()) return setErr("Won reason is required when a deal is Won");
+    if (isLost && !formData.closedLostReason?.trim()) return setErr("Lost reason is required when a deal is Lost");
     setLoading(true)
     try {
         const result = await dealService.update(id, formData)
@@ -498,6 +503,7 @@ const handleChecked = (e: ChangeEvent<HTMLInputElement>) => {
                 if(item.key === "dealPipeline"){
                   return null
                 }
+                if ([DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON, DEAL_STAGES.LOST].includes(formData.dealStage) && ["closeDate", "closedWonReason", "closedLostReason"].includes(item.key)) return null;
                 const rawValue = (formData as Record<string, any>)[item.key];
 
                 const fieldValue =
@@ -610,6 +616,39 @@ const handleChecked = (e: ChangeEvent<HTMLInputElement>) => {
                   />
                 </div>
               ))}
+            </>
+          )}
+          {[DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON, DEAL_STAGES.LOST].includes(formData.dealStage) && (
+            <>
+              <Input
+                name="closeDate"
+                type="date"
+                label="Close Date"
+                value={formatDateForInput(formData.closeDate ?? undefined)}
+                onChange={handleChange}
+                required
+              />
+              {[DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON].includes(formData.dealStage) ? (
+                <Input
+                  name="closedWonReason"
+                  type="text"
+                  label="Won Reason"
+                  value={formData.closedWonReason ?? ""}
+                  onChange={handleChange}
+                  placeholder="Why did we win this deal?"
+                  required
+                />
+              ) : (
+                <Input
+                  name="closedLostReason"
+                  type="text"
+                  label="Lost Reason"
+                  value={formData.closedLostReason ?? ""}
+                  onChange={handleChange}
+                  placeholder="Why was this deal lost?"
+                  required
+                />
+              )}
             </>
           )}
           <div className="flex mt-6 items-center gap-5 justify-end col-span-2">

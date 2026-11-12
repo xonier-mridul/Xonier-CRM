@@ -201,6 +201,9 @@ export interface DealStats {
   thisMonth: number;
   active: number;
   closed: number;
+  won?: number;
+  lost?: number;
+  proposal?: number;
   totalRevenue: number;
   periodRevenue: number;
   avgDealValue: number;

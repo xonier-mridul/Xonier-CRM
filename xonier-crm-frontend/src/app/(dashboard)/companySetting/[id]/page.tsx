@@ -105,6 +105,7 @@ const COUNTRY_TIMEZONE_MAP: Record<string, string> = {
   DE: "Europe/Berlin",
   FR: "Europe/Paris",
   AF: "Asia/Kabul",
+  BR: "America/Sao_Paulo",
 };
 
 const STATUS_OPTIONS = [

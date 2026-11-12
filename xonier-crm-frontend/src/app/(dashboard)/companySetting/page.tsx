@@ -25,7 +25,7 @@ const COMPANY_CURRENCIES = [
   { value: "AED", label: "د.إ — AED — UAE Dirham" },
   { value: "INR", label: "₹ — INR — Indian Rupee" },
   { value: "SAR", label: "﷼ — SAR — Saudi Riyal" },
-  { value: "BLR", label: "BLR — Belarusian Ruble" },
+  { value: "BRL", label: "R$ — BRL — Brazilian Real" },
 ];
 
 const CompanySettingsPage = () => {

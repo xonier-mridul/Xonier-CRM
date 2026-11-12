@@ -42,6 +42,9 @@ from app.utils.event_payload_generator import EventPayloadGenerator
 
 
 from app.services.lead_status_service import LeadStatusService
+from app.services.commercial_relationship_service import CommercialRelationshipService
+from app.db.models.organization_model import OrganizationModel
+from app.db.models.person_model import PersonModel
 from app.utils.lead_assignment_access import can_assign_leads, require_lead_assigner, require_lower_assignee
 
 
@@ -159,6 +162,19 @@ class LeadService:
 
                     if not new_lead:
                         raise AppException(400, "Lead creation failed, please try again")
+
+                    organization, person = await CommercialRelationshipService().ensure_for_lead(
+                        new_lead, user["_id"], session=session
+                    )
+                    if organization or person:
+                        await self.repo.update(
+                            id=PydanticObjectId(new_lead.id),
+                            data={
+                                "organizationId": organization.id if organization else None,
+                                "personId": person.id if person else None,
+                            },
+                            session=session,
+                        )
                
                     if (payload.get("meetingScheduled") or "").strip() == MEETING_SCHEDULED.YES.value:
                         meeting_payload = EventPayloadGenerator(title=payload.get("meetingTitle"), description=payload.get("meetingDescription", None), start=payload.get("meetingStart"), end=payload.get("meetingEnd"), meetingLink=payload.get("meetingLink"), priority=payload.get("meetingPriority"), createdBy=user["_id"], entityId=new_lead.id).to_json()
@@ -222,17 +238,10 @@ class LeadService:
                                 })
                                 continue
 
-                            filter_entry = {"hashedEmail": hash_value(email)}
-
                             phone = lead.get("phone", "")
-                            project_type = lead.get("projectType", "")
-
+                            hash_filters.append({"hashedEmail": hash_value(email)})
                             if phone:
-                                filter_entry["hashedPhone"] = hash_value(phone)
-                            if project_type:
-                                filter_entry["projectType"] = project_type
-
-                            hash_filters.append(filter_entry)
+                                hash_filters.append({"hashedPhone": hash_value(phone)})
 
                         except Exception as e:
                             skipped.append({
@@ -250,10 +259,12 @@ class LeadService:
 
                         print(f"Found {len(existing_leads)} existing leads")
 
-                        existing_set = {
-                            (l.hashedEmail, getattr(l, "hashedPhone", None), getattr(l, "projectType", None))
-                            for l in existing_leads
-                        }
+                        existing_emails = {l.hashedEmail for l in existing_leads if l.hashedEmail}
+                        existing_phones = {l.hashedPhone for l in existing_leads if getattr(l, "hashedPhone", None)}
+                    else:
+                        existing_emails, existing_phones = set(), set()
+
+                    batch_emails, batch_phones = set(), set()
 
                     for lead in leads_data:
                         try:
@@ -270,14 +281,23 @@ class LeadService:
                             encrypt_email = self.encryption.encrypt_data(email)
                             encrypt_phone = self.encryption.encrypt_data(phone) if phone else None
 
-                            if (hashed_email, hashed_phone, project_type or None) in existing_set:
+                            duplicate = (
+                                hashed_email in existing_emails
+                                or hashed_email in batch_emails
+                                or (hashed_phone and (hashed_phone in existing_phones or hashed_phone in batch_phones))
+                            )
+                            if duplicate:
                                 skipped.append({
                                     "email": lead.get("email"),
                                     "phone": phone or "N/A",
                                     "projectType": project_type or "N/A",
-                                    "reason": "Duplicate lead (same email, phone, and project type)"
+                                    "reason": "Duplicate lead (matching email or phone)"
                                 })
                                 continue
+
+                            batch_emails.add(hashed_email)
+                            if hashed_phone:
+                                batch_phones.add(hashed_phone)
 
                             lead_source = LEAD_SOURCE_TYPE.ADMIN_CREATED if is_admin_or_manager else LEAD_SOURCE_TYPE.SELF_CREATED
 
@@ -1258,7 +1278,17 @@ class LeadService:
 
             for item in result["assignedTo"]:
                 item["email"] = encryptor.decrypt_data(item["email"])
-                
+
+            organization_id = result.get("organizationId")
+            person_id = result.get("personId")
+            organization = await OrganizationModel.get(PydanticObjectId(organization_id)) if organization_id else None
+            person = await PersonModel.get(PydanticObjectId(person_id)) if person_id else None
+            result["organization"] = (
+                {"id": str(organization.id), "name": organization.name} if organization else None
+            )
+            result["person"] = (
+                {"id": str(person.id), "fullName": person.fullName, "title": person.title} if person else None
+            )
 
             return result
 

@@ -28,6 +28,9 @@ from app.db.models.task_category_model import TaskCategoryModel
 from app.db.models.task_activity_model import TaskActivityModel
 from app.db.models.task_status_model import TaskStatusModel
 from app.db.models.task_model import TaskModel
+from app.db.models.next_action_model import NextActionModel
+from app.db.models.organization_model import OrganizationModel
+from app.db.models.person_model import PersonModel
 from app.db.models.task_remark_model import TaskRemarkModel
 from app.db.models.task_report_model import TaskReportModel
 from app.db.models.sub_task_model import SubTaskModel
@@ -75,7 +78,7 @@ async def connect_db():
 
         await init_beanie(
             database=db,
-            document_models=[UserModel, PermissionModel, UserRoleModel, OtpModel, EnquiryModel, TeamModel, TeamCategoryModel, LeadsModel, CustomFieldModel, UserFormModel, DealModel, CalenderEventModel, QuotationModel, QuotationHistoryModel, NoteModel, UserCustomFieldModel, ActivityModel, TelephoneNumbersModel, SMSHistory, EmailTemplateModel, EmailHistoryModel, TaskCategoryModel, TaskActivityModel, TaskStatusModel, TaskModel, TaskRemarkModel, TaskReportModel, SubTaskModel, InvoiceModel, TaskTimeLogModel, FeatureModel, PlanModel, CompanyModel, SubscriptionModel, QueryModel, NotificationModel, PaymentModel, CampaignModel, CampaignLeadModel, CallSessionModel, GoogleCalendarConnectionModel]
+            document_models=[UserModel, PermissionModel, UserRoleModel, OtpModel, EnquiryModel, TeamModel, TeamCategoryModel, LeadsModel, OrganizationModel, PersonModel, CustomFieldModel, UserFormModel, DealModel, CalenderEventModel, QuotationModel, QuotationHistoryModel, NoteModel, UserCustomFieldModel, ActivityModel, TelephoneNumbersModel, SMSHistory, EmailTemplateModel, EmailHistoryModel, TaskCategoryModel, TaskActivityModel, TaskStatusModel, TaskModel, NextActionModel, TaskRemarkModel, TaskReportModel, SubTaskModel, InvoiceModel, TaskTimeLogModel, FeatureModel, PlanModel, CompanyModel, SubscriptionModel, QueryModel, NotificationModel, PaymentModel, CampaignModel, CampaignLeadModel, CallSessionModel, GoogleCalendarConnectionModel]
         )
         await db["mobile_push_tokens"].create_index(
             [("companyId", 1), ("userId", 1)], unique=True, name="unique_user_device_token"
@@ -98,6 +101,10 @@ async def connect_db():
             partialFilterExpression={"gmailRequestKey": {"$type": "string"}}, name="gmail_send_request")
         await db["email_history"].create_index(
             [("companyId", 1), ("gmailUserId", 1), ("created_at", -1)], name="gmail_user_outbox"
+        )
+        await db["notifications"].create_index(
+            "metadata.nextActionId", unique=True, name="unique_next_action_reminder",
+            partialFilterExpression={"metadata.nextActionId": {"$type": "string"}},
         )
         from app.services.form_field_service import ensure_linkedin_form_field
         await ensure_linkedin_form_field()

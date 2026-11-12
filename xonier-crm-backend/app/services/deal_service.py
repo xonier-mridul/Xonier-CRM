@@ -23,6 +23,9 @@ from datetime import datetime, timezone
 from app.repositories.activity_repository import ActivityRepository
 
 from app.utils.activity_payload import activity_payload
+from app.services.commercial_relationship_service import CommercialRelationshipService
+from app.db.models.organization_model import OrganizationModel
+from app.db.models.person_model import PersonModel
 
 
 class DealService:
@@ -40,6 +43,7 @@ class DealService:
           async with session.start_transaction():
             try:
                 lead_id = payload.get("lead_id")
+                lead = None
                 if lead_id:
                     is_exist = await self.repo.find_by_lead(
                         leadId=PydanticObjectId(lead_id)
@@ -48,6 +52,23 @@ class DealService:
                         raise AppException(
                             400, "Deal already exist for this lead, process stopped"
                         )
+                    lead = await self.leadRepo.find_by_id(PydanticObjectId(lead_id))
+                    if not lead:
+                        raise AppException(404, "Lead not found against lead id")
+                    organization, person = await CommercialRelationshipService().ensure_for_lead(
+                        lead, createdBy, session=session
+                    )
+                    if organization or person:
+                        await self.leadRepo.update(
+                            id=PydanticObjectId(lead_id),
+                            data={
+                                "organizationId": organization.id if organization else None,
+                                "personId": person.id if person else None,
+                            },
+                            session=session,
+                        )
+                        lead.organizationId = organization.id if organization else None
+                        lead.personId = person.id if person else None
 
                 deal_id = generate_enquiry_id("DEAL")
 
@@ -56,6 +77,8 @@ class DealService:
                     "deal_id": deal_id,
                     "dealPipeline": payload.get("dealStage", DEAL_PIPELINE.QUALIFICATION.value),
                     "createdBy": PydanticObjectId(createdBy),
+                    "organizationId": lead.organizationId if lead else None,
+                    "personId": lead.personId if lead else None,
                 }
 
                 deal = await self.repo.create(data=new_payload, session=session)
@@ -64,9 +87,6 @@ class DealService:
                     raise AppException(400, "Deal creation failed")
                 
                 if lead_id:
-                    lead = await self.leadRepo.find_by_id(PydanticObjectId(lead_id))
-                    if not lead:
-                        raise AppException(404, "Lead not found against lead id")
                     final_status = await LeadStatusService().resolve(session=session, final=True)
                     await self.leadRepo.update(
                         id=PydanticObjectId(lead_id),
@@ -277,6 +297,17 @@ class DealService:
                 result["createdBy"]["email"] = self.encryption.decrypt_data(userEmail)
             if userPhone:
                 result["createdBy"]["phone"] = self.encryption.decrypt_data(userPhone)
+
+            organization_id = result.get("organizationId")
+            person_id = result.get("personId")
+            organization = await OrganizationModel.get(PydanticObjectId(organization_id)) if organization_id else None
+            person = await PersonModel.get(PydanticObjectId(person_id)) if person_id else None
+            result["organization"] = (
+                {"id": str(organization.id), "name": organization.name} if organization else None
+            )
+            result["person"] = (
+                {"id": str(person.id), "fullName": person.fullName, "title": person.title} if person else None
+            )
      
             return result
 
