@@ -63,6 +63,7 @@ import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import NextActions from "@/src/components/common/NextActions";
 import CommercialTimeline from "@/src/components/common/CommercialTimeline";
+import CompanyContactCard from "@/src/components/common/CompanyContactCard";
 
 interface CallTimelineItem {
   id: string;
@@ -416,6 +417,8 @@ const LeadViewPage = (): JSX.Element => {
           color={leadData?.inDeal ? "bg-emerald-500" : "bg-gray-500"}
         />
       </div>
+
+      <CompanyContactCard organization={leadData?.organization} person={leadData?.person} />
 
       {/* Hide tab nav when printing */}
       {!isPrinting && (

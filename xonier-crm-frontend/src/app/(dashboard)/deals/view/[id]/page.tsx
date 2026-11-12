@@ -65,6 +65,7 @@ import { useCompanyCurrency } from "@/src/components/providers/CompanyCurrencyPr
 import { formatCurrency } from "@/src/app/utils/currency.utils";
 import NextActions from "@/src/components/common/NextActions";
 import CommercialTimeline from "@/src/components/common/CommercialTimeline";
+import CompanyContactCard from "@/src/components/common/CompanyContactCard";
 import { QuoteService } from "@/src/services/quote.service";
 import { Quotation } from "@/src/types/quotations/quote.types";
 
@@ -417,6 +418,8 @@ const DealViewPage = (): JSX.Element => {
             />
           )}
         </div>
+
+        <CompanyContactCard organization={dealData.organization} person={dealData.person} />
 
         {/* Hide tab nav when printing */}
         {!isPrinting && (

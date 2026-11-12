@@ -10,7 +10,7 @@ export interface Deal {
   lead_id?: Lead | null;
   organizationId?: string | null;
   personId?: string | null;
-  organization?: { id: string; name: string } | null;
+  organization?: { id: string; name: string; industry?: string | null; city?: string | null; country?: string | null; cnpj?: string | null } | null;
   person?: { id: string; fullName: string; title?: string | null } | null;
 
   dealName: string;

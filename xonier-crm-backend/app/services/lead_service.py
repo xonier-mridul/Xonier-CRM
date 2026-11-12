@@ -1284,7 +1284,11 @@ class LeadService:
             organization = await OrganizationModel.get(PydanticObjectId(organization_id)) if organization_id else None
             person = await PersonModel.get(PydanticObjectId(person_id)) if person_id else None
             result["organization"] = (
-                {"id": str(organization.id), "name": organization.name} if organization else None
+                {
+                    "id": str(organization.id), "name": organization.name,
+                    "industry": organization.industry, "city": organization.city,
+                    "country": organization.country, "cnpj": organization.cnpj,
+                } if organization else None
             )
             result["person"] = (
                 {"id": str(person.id), "fullName": person.fullName, "title": person.title} if person else None

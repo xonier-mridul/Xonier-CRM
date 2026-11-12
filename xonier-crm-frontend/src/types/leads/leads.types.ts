@@ -21,7 +21,7 @@ export interface Lead {
   companyName?: string | null;
   organizationId?: string | null;
   personId?: string | null;
-  organization?: { id: string; name: string } | null;
+  organization?: { id: string; name: string; industry?: string | null; city?: string | null; country?: string | null; cnpj?: string | null } | null;
   person?: { id: string; fullName: string; title?: string | null } | null;
   city?: string | null;
   country?: COUNTRY_CODE | null;
