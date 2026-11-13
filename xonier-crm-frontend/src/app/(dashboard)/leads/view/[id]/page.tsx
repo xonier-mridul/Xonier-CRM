@@ -375,8 +375,8 @@ const LeadViewPage = (): JSX.Element => {
                 </div>
               </div> */}
               
+                {hasPermission(PERMISSIONS.deleteLead) && (
                 <div className=" border border-slate-200 py-2 hover:border-red-400  text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-400 dark:bg-red-400 dark:text-white rounded-xl bg-white/60 right-0 top-full w-30  transition-all  duration-300 cursor-pointer">
-                  {hasPermission(PERMISSIONS.deleteLead) && (
                     <button
                       onClick={() => handleDelete(leadData.id)}
                       className="w-full flex items-center gap-2 px-4 transition-colors cursor-pointer"
@@ -384,8 +384,8 @@ const LeadViewPage = (): JSX.Element => {
                       <MdDeleteOutline className="w-4 h-4" />
                       {t("delete")}
                     </button>
-                  )}
                 </div>
+                )}
             </div>
           </div>
         </div>
@@ -852,11 +852,11 @@ const MetricCard = ({
   color: string;
 }) => (
   <div className="bg-white dark:bg-gray-700 p-5 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
-    <div className="flex items-center gap-3 overflow-hidden">
-      <div className={`${color} p-3 rounded-lg text-white`}>{icon}</div>
-      <div className="flex-1 group:">
-        <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
-        <p className="text-xl font-bold text-gray-900 dark:text-white mt-1 capitalize truncate w-42">
+    <div className="flex items-start gap-3">
+      <div className={`${color} shrink-0 p-3 rounded-lg text-white`}>{icon}</div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm text-gray-500 dark:text-gray-400 break-words">{label}</p>
+        <p className="text-xl font-bold text-gray-900 dark:text-white mt-1 capitalize break-words [overflow-wrap:anywhere]">
           {value}
         </p>
       </div>

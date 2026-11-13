@@ -153,6 +153,8 @@ const LeadContent = (): JSX.Element => {
   const [lostPageLimit, setLostPageLimit] = useState<number>(10);
   const [assignedPageLimit, setAssignedPageLimit] = useState<number>(10);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalLeads, setTotalLeads] = useState<number | null>(null);
+  const [leadCounts, setLeadCounts] = useState<{ final: number; ongoing: number } | null>(null);
   const [wonTotalPages, setWonTotalPages] = useState<number>(1);
   const [lostTotalPages, setLostTotalPages] = useState<number>(1);
   const [assignedTotalPages, setAssignedTotalPages] = useState<number>(1);
@@ -249,6 +251,8 @@ const LeadContent = (): JSX.Element => {
         setCurrentPage(Number(data.page));
         setPageLimit(Number(data.limit));
         setTotalPages(Number(data.totalPages));
+        setTotalLeads(typeof data.total === "number" ? data.total : null);
+        setLeadCounts(typeof data.finalCount === "number" && typeof data.ongoingCount === "number" ? { final: data.finalCount, ongoing: data.ongoingCount } : null);
       }
     } catch (error) {
       process.env.NEXT_PUBLIC_ENV === "development" && console.error(error);
@@ -1300,15 +1304,15 @@ const isIndeterminate =
           <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
             <div className="flex items-center gap-3 rounded-xl border border-cyan-100 bg-gradient-to-br from-cyan-50 to-sky-50 p-4 dark:border-cyan-800/40 dark:from-cyan-900/20 dark:to-sky-900/20">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-100 dark:bg-cyan-900/40"><TbChartBar className="text-cyan-600 dark:text-cyan-400" size={20} /></div>
-              <div><p className="text-[11px] font-semibold uppercase tracking-wide text-cyan-600 dark:text-cyan-400">All Leads</p><p className="text-lg font-bold text-slate-800 dark:text-white">{leadData.length}</p></div>
+              <div><p className="text-[11px] font-semibold uppercase tracking-wide text-cyan-600 dark:text-cyan-400">Filtered CRM Leads</p><p className="text-lg font-bold text-slate-800 dark:text-white">{totalLeads ?? "—"}</p><p className="text-xs text-slate-500">All matching pages</p></div>
             </div>
             <div className="flex items-center gap-3 rounded-xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-green-50 p-4 dark:border-emerald-800/40 dark:from-emerald-900/20 dark:to-green-900/20">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/40"><TbTrendingUp className="text-emerald-600 dark:text-emerald-400" size={20} /></div>
-              <div><p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">Final Leads</p><p className="text-lg font-bold text-slate-800 dark:text-white">{leadData.filter(lead => leadStatuses.some(stage => stage.key === lead.status && stage.type === "final")).length}</p><p className="text-xs text-slate-500">On this page</p></div>
+              <div><p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">Final Leads</p><p className="text-lg font-bold text-slate-800 dark:text-white">{leadCounts?.final ?? "—"}</p><p className="text-xs text-slate-500">All matching pages</p></div>
             </div>
             <div className="flex items-center gap-3 rounded-xl border border-rose-100 bg-gradient-to-br from-rose-50 to-red-50 p-4 dark:border-rose-800/40 dark:from-rose-900/20 dark:to-red-900/20">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-rose-100 dark:bg-rose-900/40"><HiOutlineLightBulb className="text-rose-600 dark:text-rose-400" size={20} /></div>
-              <div><p className="text-[11px] font-semibold uppercase tracking-wide text-rose-600 dark:text-rose-400">Ongoing Leads</p><p className="text-lg font-bold text-slate-800 dark:text-white">{leadData.filter(lead => leadStatuses.some(stage => stage.key === lead.status && stage.type === "ongoing")).length}</p><p className="text-xs text-slate-500">On this page</p></div>
+              <div><p className="text-[11px] font-semibold uppercase tracking-wide text-rose-600 dark:text-rose-400">Ongoing Leads</p><p className="text-lg font-bold text-slate-800 dark:text-white">{leadCounts?.ongoing ?? "—"}</p><p className="text-xs text-slate-500">All matching pages</p></div>
             </div>
             <FollowUpCountCard entity="lead" dateFilter={dateFilter} />
           </div>

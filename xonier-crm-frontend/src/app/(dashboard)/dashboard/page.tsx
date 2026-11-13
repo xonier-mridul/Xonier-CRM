@@ -2931,9 +2931,9 @@ function CompanyAdminLayout({ d }: { d: DashboardData }) {
         />
         {d.leads && (
           <StatCard
-            label={t("total")}
+            label="CRM Leads"
             value={d.leads.total}
-            sub={`${d.leads.won} ${t("won")} · ${d.leads.thisMonth} ${t("this_period")}`}
+            sub={`All non-deleted CRM leads · ${d.leads.won} ${t("won")} · ${d.leads.thisMonth} ${t("this_period")}`}
             icon={Target}
             color="#10b981"
           />

@@ -154,7 +154,8 @@ class DealService:
                 query.update({"dealPipeline": filters["pipeline"]})
  
             if "stage" in filters:
-                query.update({"dealStage": filters["stage"]})
+                stage = filters["stage"]
+                query.update({"dealStage": {"$in": [DEAL_STAGES.WON.value, DEAL_STAGES.CLOSED_WON.value]} if stage == DEAL_STAGES.WON.value else stage})
  
             # createdBy filter (admin-only, filter by user who created the deal)
             if is_admin and "createdBy" in filters:

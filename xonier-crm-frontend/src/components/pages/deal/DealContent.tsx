@@ -535,7 +535,7 @@ useEffect(() => {
             >
               <option value="">All Stages</option>
               {Object.values(DEAL_STAGES)
-                .filter((s) => s !== DEAL_STAGES.DELETE)
+                .filter((s) => s !== DEAL_STAGES.DELETE && s !== DEAL_STAGES.CLOSED_WON)
                 .map((s) => (
                   <option key={s} value={s}>
                     {s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}

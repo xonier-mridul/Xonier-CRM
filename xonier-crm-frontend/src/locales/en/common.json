@@ -84,7 +84,7 @@
   
   "distribution_by_urgency": "Distribution by urgency",
   
-  "calender": "Calender",
+  "calender": "Calendar",
   "add_another_event": "Add Another Event",
   "add_event": "Add Event",
   "all_day_event": "All day event",
@@ -1163,6 +1163,7 @@
   "must_be_a_number": "Must be a number",
   "new_field": "New Field",
   "no_data_to_upload": "No data to upload",
+  "try_adjusting_your_filters": "Try adjusting your filters.",
   "number": "Number",
   "only_csv_or_xlsx_files_are": "Only CSV or XLSX files are allowed",
   "optional_group_this_batch_for_easy": "Optional — group this batch for easy filtering later",

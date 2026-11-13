@@ -969,7 +969,7 @@ class LeadService:
             cache_query = {k: serialize_for_cache(v) for k, v in query.items()}
             # Bump the list-cache shape after updating visibility rules, so older
             # cached lead values cannot survive.
-            cache_query["callTimelineFollowUpVersion"] = 4
+            cache_query["callTimelineFollowUpVersion"] = 6
 
             key = cache_key_generator_with_id(
                 prefix=LEAD_CACHE_NAMESPACE,
@@ -1003,6 +1003,12 @@ class LeadService:
 
             if not result:
                 raise AppException(404, "Leads data not found")
+
+            statuses = await LeadStatusService().statuses()
+            final_keys = [s["key"] for s in statuses if s["type"] == "final"]
+            ongoing_keys = [s["key"] for s in statuses if s["type"] == "ongoing"]
+            result["finalCount"] = await LeadsModel.find({"$and": [query, {"status": {"$in": final_keys}}]}).count()
+            result["ongoingCount"] = await LeadsModel.find({"$and": [query, {"status": {"$in": ongoing_keys}}]}).count()
 
            
 

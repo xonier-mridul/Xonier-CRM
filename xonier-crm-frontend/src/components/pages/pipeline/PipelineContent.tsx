@@ -293,7 +293,7 @@ const PipelineContent = () => {
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">Pipeline overview</h1>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">All company campaigns · Unique leads · All time</p>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Campaign leads only · Unique leads across company campaigns · All time. This is not the total CRM lead count.</p>
         </div>
         <button type="button" onClick={refreshStats} disabled={statsLoading} className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">
           <RefreshCw size={15} className={statsLoading ? "animate-spin" : ""} /> Refresh stats

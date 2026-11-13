@@ -1190,6 +1190,7 @@
     "must_be_a_number": "एक संख्या होनी चाहिए",
     "new_field": "नया फ़ील्ड",
     "no_data_to_upload": "अपलोड करने के लिए कोई डेटा नहीं",
+    "try_adjusting_your_filters": "अपने फ़िल्टर बदलकर देखें।",
     "number": "संख्या",
     "only_csv_or_xlsx_files_are": "केवल CSV या XLSX फ़ाइलों की अनुमति है",
     "optional_group_this_batch_for_easy": "वैकल्पिक — बाद में आसान फ़िल्टरिंग के लिए इस बैच को समूहित करें",
