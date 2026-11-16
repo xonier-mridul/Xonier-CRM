@@ -1,4 +1,6 @@
 "use client";
+import { useDealStages } from "@/src/hooks/useLeadStatuses";
+
 import { handleCopy } from "@/src/app/utils/clipboard.utils";
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import DataNotFound from "@/src/components/common/DataNotFound";
@@ -43,8 +45,10 @@ import { IoIosSearch } from "react-icons/io";
 import LanguageSelector from "@/src/components/common/LanguageSelector";
 import { useCompanyCurrency } from "@/src/components/providers/CompanyCurrencyProvider";
 import { currencyLabel } from "@/src/app/utils/currency.utils";
+import CommercialEntitySelectors from "@/src/components/common/CommercialEntitySelectors";
 
 const page = (): JSX.Element => {
+  const { options: stageOptions, label: stageLabel } = useDealStages();
   const currency = useCompanyCurrency();
   const { t } = useTranslation();
   const [err, setErr] = useState<string | string[]>("");
@@ -63,7 +67,8 @@ const page = (): JSX.Element => {
      const dropdownRef = useRef<HTMLDivElement>(null);
        const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState<DealUpdatePayload>({
-
+    organizationId: null,
+    personId: null,
     dealName: "",
     dealStage: DEAL_STAGES.QUALIFICATION,
     dealType: DEAL_TYPE.NEW_BUSINESS,
@@ -139,14 +144,23 @@ const page = (): JSX.Element => {
     if (result.status === 200) {
       const data = result.data.data;
 
-      const selectedKeys = getKeysWithValue(data);
-
-      console.log("selectedKeys:", selectedKeys);
+      const commercialKeys = [
+        "dealProbability",
+        "forecastProbability",
+        "forecastCategory",
+        "nextStep",
+        "closeDate",
+      ];
+      const selectedKeys = Array.from(
+        new Set([...getKeysWithValue(data), ...commercialKeys])
+      );
 
       setSelectedFieldsKeys(selectedKeys);
       setDealData(data);
        console.log("data: ", data.dealStage)
       setFormData({
+        organizationId: data.organizationId ?? null,
+        personId: data.personId ?? null,
         dealName: data.dealName ?? "",
         dealStage: data.dealStage ?? DEAL_STAGES.QUALIFICATION,
         dealType: data.dealType ?? DEAL_TYPE.NEW_BUSINESS,
@@ -213,7 +227,7 @@ const handleChecked = (e: ChangeEvent<HTMLInputElement>) => {
 
   const handleUpdate = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    const isWon = [DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON].includes(formData.dealStage);
+    const isWon = ([DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON] as string[]).includes(formData.dealStage);
     const isLost = formData.dealStage === DEAL_STAGES.LOST;
     if ((isWon || isLost) && !formData.closeDate) return setErr("Close date is required when a deal is Won or Lost");
     if (isWon && !formData.closedWonReason?.trim()) return setErr("Won reason is required when a deal is Won");
@@ -482,6 +496,16 @@ const handleChecked = (e: ChangeEvent<HTMLInputElement>) => {
             </div>
         </div>
         {err && <ErrorComponent error={err} />}
+        <CommercialEntitySelectors
+          organizationId={formData.organizationId ?? null}
+          personId={formData.personId ?? null}
+          onOrganizationChange={(orgId) =>
+            setFormData((prev) => ({ ...prev, organizationId: orgId }))
+          }
+          onPersonChange={(persId) =>
+            setFormData((prev) => ({ ...prev, personId: persId }))
+          }
+        />
         <div className=" bg-white dark:bg-gray-700 p-6 rounded-lg grid grid-cols-2 gap-5">
           {!isLoading ? (
             allFormFiled &&
@@ -503,7 +527,7 @@ const handleChecked = (e: ChangeEvent<HTMLInputElement>) => {
                 if(item.key === "dealPipeline"){
                   return null
                 }
-                if ([DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON, DEAL_STAGES.LOST].includes(formData.dealStage) && ["closeDate", "closedWonReason", "closedLostReason"].includes(item.key)) return null;
+                if (([DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON, DEAL_STAGES.LOST] as string[]).includes(formData.dealStage) && ["closeDate", "closedWonReason", "closedLostReason"].includes(item.key)) return null;
                 const rawValue = (formData as Record<string, any>)[item.key];
 
                 const fieldValue =
@@ -585,7 +609,7 @@ const handleChecked = (e: ChangeEvent<HTMLInputElement>) => {
                       <Select
                         name={item.key}
                         label={currencyLabel(item.name, item.key, currency)}
-                        options={item.options ?? []}
+                        options={item.key === "dealStage" ? (formData.dealStage === DEAL_STAGES.CLOSED_WON ? [...stageOptions, { value: DEAL_STAGES.CLOSED_WON, label: stageLabel(DEAL_STAGES.CLOSED_WON) }] : stageOptions) : item.options ?? []}
                         placeholder={item.placeholder ?? "Select"}
                         onChange={(e) => handleChange(e)}
                         value={fieldValue}
@@ -618,7 +642,7 @@ const handleChecked = (e: ChangeEvent<HTMLInputElement>) => {
               ))}
             </>
           )}
-          {[DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON, DEAL_STAGES.LOST].includes(formData.dealStage) && (
+          {([DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON, DEAL_STAGES.LOST] as string[]).includes(formData.dealStage) && (
             <>
               <Input
                 name="closeDate"
@@ -628,7 +652,7 @@ const handleChecked = (e: ChangeEvent<HTMLInputElement>) => {
                 onChange={handleChange}
                 required
               />
-              {[DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON].includes(formData.dealStage) ? (
+              {([DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON] as string[]).includes(formData.dealStage) ? (
                 <Input
                   name="closedWonReason"
                   type="text"

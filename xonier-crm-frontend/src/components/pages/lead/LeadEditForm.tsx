@@ -24,6 +24,7 @@ import { useRouter } from "next/navigation";
 import { SALES_STATUS, PRIORITY, SOURCE, LeadEngagementStatus } from "@/src/constants/enum";
 import { Plus, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import CommercialEntitySelectors from "@/src/components/common/CommercialEntitySelectors";
 
 interface NewCustomField {
   tempId: string;
@@ -41,6 +42,8 @@ const KNOWN_LEAD_KEYS = new Set([
   "projectType",
   "status",
   "companyName",
+  "organizationId",
+  "personId",
   "city",
   "country",
   "postalCode",
@@ -64,6 +67,8 @@ const EMPTY_FORM: Record<string, string | number | null> = {
   projectType: "",
   status: "",
   companyName: "",
+  organizationId: null,
+  personId: null,
   city: "",
   country: null,
   postalCode: null,
@@ -130,6 +135,8 @@ const LeadEditForm = ({ id, embedded = false, onSaved, campaignAssignment }: Lea
           projectType: data.projectType ?? "",
           status: data.status ?? "",
           companyName: data.companyName ?? "",
+          organizationId: data.organizationId ?? null,
+          personId: data.personId ?? null,
           city: data.city ?? "",
           country: data.country ?? null,
           postalCode: data.postalCode ?? null,
@@ -426,6 +433,34 @@ const LeadEditForm = ({ id, embedded = false, onSaved, campaignAssignment }: Lea
           </div>
 
           <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-8">
+            <div className="col-span-2">
+              <CommercialEntitySelectors
+                organizationId={flatFormData.organizationId ? String(flatFormData.organizationId) : null}
+                personId={flatFormData.personId ? String(flatFormData.personId) : null}
+                onOrganizationChange={(orgId, org) => {
+                  setFlatFormData((prev) => ({
+                    ...prev,
+                    organizationId: orgId,
+                    ...(org ? { companyName: org.name || prev.companyName } : {}),
+                  }));
+                }}
+                onPersonChange={(persId, person) => {
+                  setFlatFormData((prev) => ({
+                    ...prev,
+                    personId: persId,
+                    ...(person
+                      ? {
+                          fullName: person.fullName || prev.fullName,
+                          email: person.email || prev.email,
+                          phone: person.phone || prev.phone,
+                          linkedin: person.linkedin || prev.linkedin,
+                          employeeRole: person.title || prev.employeeRole,
+                        }
+                      : {}),
+                  }));
+                }}
+              />
+            </div>
             {!isLoading ? (
               userFormField && userFormField.length > 0 ? (
                 <>

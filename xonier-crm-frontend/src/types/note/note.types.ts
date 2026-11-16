@@ -9,6 +9,7 @@ export interface Note {
 
   entityType: NotesEntities;
   entityId?: string | null;
+  entityName?: string | null;
 
   visibility: NoteVisibility;
   status: NoteStatus;
@@ -31,6 +32,7 @@ export interface NoteCreatePayload {
 
   entityType: NotesEntities;
   entityId?: string | null;
+  entityName?: string | null;
 
   visibility?: NoteVisibility; 
   isPinned?: boolean;       

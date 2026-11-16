@@ -1,4 +1,6 @@
 from app.services.lead_status_service import LeadStatusService
+from app.services.deal_stage_service import DEFAULT_STAGES
+from copy import deepcopy
 from typing import Dict, Any, Optional
 from datetime import datetime, timezone, timedelta
 from app.utils.custom_exception import AppException
@@ -511,7 +513,7 @@ class CompanyAdminDashboardService:
     ) -> Dict[str, Any]:
         match = self._company_match(company_id)
         pipeline = [
-            {"$match": match},
+            {"$match": {**match, "deletedAt": None}},
             {
                 "$facet": {
                     "total": [
@@ -535,7 +537,19 @@ class CompanyAdminDashboardService:
                         {"$count": "count"},
                     ],
                     "active": [
-                        {"$match": {"status": DEAL_STATUS.ACTIVE.value}},
+                        {
+                            "$match": {
+                                "status": DEAL_STATUS.ACTIVE.value,
+                                "dealStage": {
+                                    "$nin": [
+                                        DEAL_STAGES.WON.value,
+                                        DEAL_STAGES.CLOSED_WON.value,
+                                        DEAL_STAGES.LOST.value,
+                                        DEAL_STAGES.DELETE.value,
+                                    ]
+                                },
+                            }
+                        },
                         {"$count": "count"},
                     ],
                     "closed": [
@@ -844,6 +858,19 @@ class CompanyAdminDashboardService:
 
     async def _deal_pipeline_breakdown(self, company_id: str) -> list:
         match = self._company_match(company_id)
+        stage_doc = await database_module.db["deal_stage_settings"].find_one(
+            {"_id": ObjectId(company_id)}
+        )
+        raw_stages = (
+            stage_doc.get("statuses")
+            if stage_doc and stage_doc.get("statuses")
+            else deepcopy(DEFAULT_STAGES)
+        )
+        configured_stages = sorted(
+            raw_stages,
+            key=lambda s: (s.get("type") == "final", s.get("order", 0), s.get("key", "")),
+        )
+
         pipeline = [
             {
                 "$match": {
@@ -854,12 +881,16 @@ class CompanyAdminDashboardService:
             },
             {
                 "$group": {
-                    "_id": "$dealPipeline",
+                    "_id": {
+                        "$let": {
+                            "vars": {"raw": {"$ifNull": ["$dealStage", "$dealPipeline"]}},
+                            "in": {"$cond": [{"$eq": ["$$raw", "closed_won"]}, "won", "$$raw"]},
+                        }
+                    },
                     "count": {"$sum": 1},
                     "totalAmount": {"$sum": "$amount"},
                 }
             },
-            {"$sort": {"count": -1}},
             {
                 "$project": {
                     "_id": 0,
@@ -871,35 +902,44 @@ class CompanyAdminDashboardService:
         ]
 
         result = await self._aggregate(DealModel, pipeline)
-
-        pipeline_order = [
-            DEAL_PIPELINE.QUALIFICATION.value,
-            DEAL_PIPELINE.REQUIREMENT_ANALYSIS.value,
-            DEAL_PIPELINE.PROPOSAL.value,
-            DEAL_PIPELINE.NEGOTIATION.value,
-            DEAL_PIPELINE.WON.value,
-            DEAL_PIPELINE.LOST.value,
-        ]
-
-        result_map = {item["pipeline"]: item for item in result}
+        result_map = {item["pipeline"]: item for item in result if item.get("pipeline")}
         total_count = sum(item["count"] for item in result)
 
-        return [
-            {
-                "pipeline": stage,
-                "count": result_map.get(stage, {}).get("count", 0),
-                "totalAmount": result_map.get(stage, {}).get("totalAmount", 0),
-                "percentage": round(
-                    result_map.get(stage, {}).get("count", 0)
-                    / total_count
-                    * 100,
-                    2,
+        seen_keys = set()
+        breakdown = []
+        for stage in configured_stages:
+            key = stage["key"]
+            seen_keys.add(key)
+            stat = result_map.get(key, {})
+            cnt = stat.get("count", 0)
+            breakdown.append(
+                {
+                    "pipeline": key,
+                    "name": stage.get("name", key),
+                    "color": stage.get("color", "#6366f1"),
+                    "type": stage.get("type", "ongoing"),
+                    "count": cnt,
+                    "totalAmount": stat.get("totalAmount", 0),
+                    "percentage": round(cnt / total_count * 100, 2) if total_count > 0 else 0,
+                }
+            )
+
+        for key, stat in result_map.items():
+            if key not in seen_keys and key != DEAL_STAGES.DELETE.value:
+                cnt = stat.get("count", 0)
+                breakdown.append(
+                    {
+                        "pipeline": key,
+                        "name": key.replace("_", " ").title(),
+                        "color": "#64748b",
+                        "type": "final" if key in {"won", "closed_won", "lost"} else "ongoing",
+                        "count": cnt,
+                        "totalAmount": stat.get("totalAmount", 0),
+                        "percentage": round(cnt / total_count * 100, 2) if total_count > 0 else 0,
+                    }
                 )
-                if total_count > 0
-                else 0,
-            }
-            for stage in pipeline_order
-        ]
+
+        return breakdown
 
     async def _task_priority_breakdown(self, company_id: str) -> list:
         match = self._company_match(company_id)
@@ -929,12 +969,72 @@ class CompanyAdminDashboardService:
         self, company_id: str, range_start: datetime, range_end: datetime
     ) -> list:
         match = self._company_match(company_id)
-        pipeline = [
+        final_lead_keys = await LeadStatusService().keys("final")
+        won_stages = [DEAL_STAGES.WON.value, DEAL_STAGES.CLOSED_WON.value]
+
+        deal_pipeline = [
             {
                 "$match": {
                     **match,
-                    "status": {"$in": await LeadStatusService().keys("final")},
-                    # all-time (same scope as Lead Pipeline card)
+                    "status": {"$ne": DEAL_STATUS.DELETE.value},
+                    "deletedAt": None,
+                }
+            },
+            {
+                "$addFields": {
+                    "_ownerRaw": {
+                        "$ifNull": [
+                            "$assignedTo.$id",
+                            {
+                                "$ifNull": [
+                                    "$assignedTo",
+                                    {"$ifNull": ["$createdBy.$id", "$createdBy"]},
+                                ]
+                            },
+                        ]
+                    }
+                }
+            },
+            {
+                "$addFields": {
+                    "_ownerId": {
+                        "$convert": {
+                            "input": "$_ownerRaw",
+                            "to": "objectId",
+                            "onError": None,
+                            "onNull": None,
+                        }
+                    }
+                }
+            },
+            {"$match": {"_ownerId": {"$ne": None}}},
+            {
+                "$group": {
+                    "_id": "$_ownerId",
+                    "totalDeals": {"$sum": 1},
+                    "closedDeals": {
+                        "$sum": {
+                            "$cond": [{"$in": ["$dealStage", won_stages]}, 1, 0]
+                        }
+                    },
+                    "totalRevenue": {
+                        "$sum": {
+                            "$cond": [
+                                {"$in": ["$dealStage", won_stages]},
+                                {"$ifNull": ["$amount", 0]},
+                                0,
+                            ]
+                        }
+                    },
+                }
+            },
+        ]
+
+        lead_pipeline = [
+            {
+                "$match": {
+                    **match,
+                    "status": {"$in": final_lead_keys},
                 }
             },
             {
@@ -956,9 +1056,7 @@ class CompanyAdminDashboardService:
             {"$unwind": "$_assignees"},
             {
                 "$addFields": {
-                    "_assigneeRaw": {
-                        "$ifNull": ["$_assignees.$id", "$_assignees"]
-                    }
+                    "_assigneeRaw": {"$ifNull": ["$_assignees.$id", "$_assignees"]}
                 }
             },
             {
@@ -980,29 +1078,71 @@ class CompanyAdminDashboardService:
                     "wonLeads": {"$sum": 1},
                 }
             },
-            {
-                "$lookup": {
-                    "from": "users",
-                    "localField": "_id",
-                    "foreignField": "_id",
-                    "as": "user",
-                }
-            },
-            {"$unwind": "$user"},
-            {"$match": {"user.status": {"$ne": USER_STATUS.DELETED.value}}},
-            {"$sort": {"wonLeads": -1}},
-            {"$limit": 5},
-            {
-                "$project": {
-                    "_id": 0,
-                    "userId": {"$toString": "$_id"},
-                    "wonLeads": 1,
-                    "firstName": "$user.firstName",
-                    "lastName": "$user.lastName",
-                }
-            },
         ]
-        return await self._aggregate(LeadsModel, pipeline)
+
+        deal_rows, lead_rows = await asyncio.gather(
+            self._aggregate(DealModel, deal_pipeline),
+            self._aggregate(LeadsModel, lead_pipeline),
+        )
+
+        deal_map = {str(r["_id"]): r for r in deal_rows if r.get("_id")}
+        lead_map = {str(r["_id"]): r for r in lead_rows if r.get("_id")}
+        all_oids = [
+            ObjectId(uid)
+            for uid in (set(deal_map.keys()) | set(lead_map.keys()))
+            if ObjectId.is_valid(uid)
+        ]
+
+        if not all_oids:
+            return []
+
+        user_rows = await self._aggregate(
+            UserModel,
+            [
+                {
+                    "$match": {
+                        "_id": {"$in": all_oids},
+                        "status": {"$ne": USER_STATUS.DELETED.value},
+                    }
+                },
+                {
+                    "$project": {
+                        "_id": 0,
+                        "userId": {"$toString": "$_id"},
+                        "firstName": 1,
+                        "lastName": 1,
+                    }
+                },
+            ],
+        )
+
+        performers = []
+        for u in user_rows:
+            uid = u["userId"]
+            d = deal_map.get(uid, {})
+            l = lead_map.get(uid, {})
+            performers.append(
+                {
+                    "userId": uid,
+                    "firstName": u.get("firstName", ""),
+                    "lastName": u.get("lastName", ""),
+                    "wonLeads": l.get("wonLeads", 0),
+                    "totalDeals": d.get("totalDeals", 0),
+                    "closedDeals": d.get("closedDeals", 0),
+                    "totalRevenue": round(float(d.get("totalRevenue", 0) or 0), 2),
+                }
+            )
+
+        performers.sort(
+            key=lambda x: (
+                x["totalRevenue"],
+                x["closedDeals"],
+                x["wonLeads"],
+                x["totalDeals"],
+            ),
+            reverse=True,
+        )
+        return performers[:10]
 
     async def _conversion_rate(
         self, company_id: str, range_start: datetime, range_end: datetime

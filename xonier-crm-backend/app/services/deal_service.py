@@ -2,12 +2,14 @@ from app.utils.transaction_retry import retry_transaction
 from app.services.lead_status_service import LeadStatusService
 from typing import Dict, Any
 from app.utils.custom_exception import AppException
+from app.services.deal_stage_service import DealStageService
+from app.services.deal_attention import get_attention_queue
 from app.repositories.deal_repository import DealRepository
 from app.utils.enquiry_id_generator import generate_enquiry_id
 from beanie import PydanticObjectId
 from pymongo.errors import DuplicateKeyError
 from fastapi.encoders import jsonable_encoder
-from bson import ObjectId
+from bson import ObjectId, DBRef
 from app.core.constants import SUPER_ADMIN_CODE, DEAL_CACHE_NAMESPACE, DEAL_CACHE_NAMESPACE_BY_ID, LEAD_CACHE_NAMESPACE, USER_LEAD_CACHE_NAMESPACE
 from app.db.db import Client
 from app.repositories.lead_repository import LeadRepository
@@ -15,7 +17,7 @@ from app.core.crypto import Encryption
 from app.utils.cache_key_generator import cache_key_generator, cache_key_generator_by_id, cache_key_generator_with_id
 from fastapi_cache import FastAPICache
 import json
-from app.core.enums import SALES_STATUS, DEAL_STATUS, DEAL_STAGES, ACTIVITY_ACTION, ACTIVITY_ENTITY_TYPE, DEAL_PIPELINE
+from app.core.enums import SALES_STATUS, DEAL_STATUS, DEAL_STAGES, ACTIVITY_ACTION, ACTIVITY_ENTITY_TYPE, DEAL_PIPELINE, FORECAST_CATEGORY
 
 from app.utils.get_team_members import GetTeamMembers
 from app.utils.validate_admin import validate_admin, validate_admin_company_admin
@@ -23,7 +25,11 @@ from datetime import datetime, timezone
 from app.repositories.activity_repository import ActivityRepository
 
 from app.utils.activity_payload import activity_payload
-from app.services.commercial_relationship_service import CommercialRelationshipService
+from app.services.commercial_relationship_service import (
+    CommercialRelationshipService,
+    serialize_organization,
+    serialize_person,
+)
 from app.db.models.organization_model import OrganizationModel
 from app.db.models.person_model import PersonModel
 
@@ -70,15 +76,47 @@ class DealService:
                         lead.organizationId = organization.id if organization else None
                         lead.personId = person.id if person else None
 
+                await DealStageService().validate_key(payload["dealStage"], session)
                 deal_id = generate_enquiry_id("DEAL")
+
+                org_id = (
+                    PydanticObjectId(str(payload["organizationId"]))
+                    if payload.get("organizationId") and ObjectId.is_valid(str(payload["organizationId"]))
+                    else (lead.organizationId if lead else None)
+                )
+                pers_id = (
+                    PydanticObjectId(str(payload["personId"]))
+                    if payload.get("personId") and ObjectId.is_valid(str(payload["personId"]))
+                    else (lead.personId if lead else None)
+                )
+                if pers_id and not org_id:
+                    person_doc = await PersonModel.find_one(
+                        {"_id": pers_id, "deletedAt": None}, session=session
+                    )
+                    if person_doc and person_doc.organizationId:
+                        org_id = person_doc.organizationId
+
+                extra_deal_fields: Dict[str, Any] = {}
+                if lead:
+                    if not payload.get("originalTrafficSource") and getattr(lead, "source", None):
+                        extra_deal_fields["originalTrafficSource"] = lead.source
+                    if not payload.get("assignedTo") and getattr(lead, "assignedTo", None):
+                        first_assignee = lead.assignedTo[0]
+                        assignee_oid = getattr(getattr(first_assignee, "ref", None), "id", None) or getattr(
+                            first_assignee, "id", first_assignee
+                        )
+                        if assignee_oid and ObjectId.is_valid(str(assignee_oid)):
+                            extra_deal_fields["assignedTo"] = PydanticObjectId(str(assignee_oid))
 
                 new_payload = {
                     **payload,
+                    **extra_deal_fields,
                     "deal_id": deal_id,
+                    "stageEnteredAt": datetime.now(timezone.utc),
                     "dealPipeline": payload.get("dealStage", DEAL_PIPELINE.QUALIFICATION.value),
                     "createdBy": PydanticObjectId(createdBy),
-                    "organizationId": lead.organizationId if lead else None,
-                    "personId": lead.personId if lead else None,
+                    "organizationId": org_id,
+                    "personId": pers_id,
                 }
 
                 deal = await self.repo.create(data=new_payload, session=session)
@@ -196,6 +234,9 @@ class DealService:
                 if date_filter:
                     query.update({"createdAt": date_filter})
  
+            if filters.get("attention"):
+                return await get_attention_queue(query, filters["attention"], page, limit)
+
             def serialize_for_cache(v):
                 if isinstance(v, PydanticObjectId):
                     return str(v)
@@ -301,18 +342,18 @@ class DealService:
 
             organization_id = result.get("organizationId")
             person_id = result.get("personId")
-            organization = await OrganizationModel.get(PydanticObjectId(organization_id)) if organization_id else None
-            person = await PersonModel.get(PydanticObjectId(person_id)) if person_id else None
-            result["organization"] = (
-                {
-                    "id": str(organization.id), "name": organization.name,
-                    "industry": organization.industry, "city": organization.city,
-                    "country": organization.country, "cnpj": organization.cnpj,
-                } if organization else None
+            organization = (
+                await OrganizationModel.find_one({"_id": PydanticObjectId(organization_id), "deletedAt": None})
+                if organization_id and ObjectId.is_valid(str(organization_id))
+                else None
             )
-            result["person"] = (
-                {"id": str(person.id), "fullName": person.fullName, "title": person.title} if person else None
+            person = (
+                await PersonModel.find_one({"_id": PydanticObjectId(person_id), "deletedAt": None})
+                if person_id and ObjectId.is_valid(str(person_id))
+                else None
             )
+            result["organization"] = serialize_organization(organization)
+            result["person"] = serialize_person(person, organization)
      
             return result
 
@@ -363,19 +404,114 @@ class DealService:
                     if not isAdmin and not isCreator and not isManager:
                         raise AppException(403, "Unauthorized, only admin, manager or creator update deal")
                     
+                    await DealStageService().validate_key(payload["dealStage"], session)
+                    stage = payload["dealStage"]
+                    previous_stage = deal.get("dealStage")
+                    is_won_stage = stage in {"won", "closed_won"}
+                    is_lost_stage = stage == "lost"
+                    reason_key = "closedLostReason" if is_lost_stage else "closedWonReason"
+                    resolved_close_date = payload.get("closeDate", deal.get("closeDate"))
+                    resolved_reason = (payload.get(reason_key, deal.get(reason_key)) or "").strip()
+                    if (is_won_stage or is_lost_stage) and (not resolved_close_date or not resolved_reason):
+                        raise AppException(422, "Set the close date and outcome reason in Edit Deal first")
+
                     new_payload: Dict[str, Any] = {
                         **payload,
-                        "dealPipeline": payload.get("dealStage"),
-                        "updatedBy": user["_id"]
-
+                        "dealPipeline": stage,
+                        "updatedBy": DBRef(collection="users", id=PydanticObjectId(user["_id"])),
+                        "updatedAt": datetime.now(timezone.utc),
                     }
+                    if "forecastCategory" in new_payload and hasattr(new_payload["forecastCategory"], "value"):
+                        new_payload["forecastCategory"] = new_payload["forecastCategory"].value
+
+                    if is_won_stage:
+                        if "dealProbability" not in payload or payload.get("dealProbability") is None:
+                            new_payload["dealProbability"] = 100
+                        if "forecastProbability" not in payload or payload.get("forecastProbability") is None:
+                            new_payload["forecastProbability"] = 100
+                        if "forecastCategory" not in payload or payload.get("forecastCategory") is None:
+                            new_payload["forecastCategory"] = FORECAST_CATEGORY.CLOSED.value
+                    elif is_lost_stage:
+                        if "dealProbability" not in payload or payload.get("dealProbability") is None:
+                            new_payload["dealProbability"] = 0
+                        if "forecastProbability" not in payload or payload.get("forecastProbability") is None:
+                            new_payload["forecastProbability"] = 0
+                        if "forecastCategory" not in payload or payload.get("forecastCategory") is None:
+                            new_payload["forecastCategory"] = FORECAST_CATEGORY.CLOSED.value
+                    elif previous_stage in {"won", "closed_won", "lost"}:
+                        if (
+                            ("forecastCategory" not in payload or payload.get("forecastCategory") is None)
+                            and deal.get("forecastCategory") == FORECAST_CATEGORY.CLOSED.value
+                        ):
+                            new_payload["forecastCategory"] = FORECAST_CATEGORY.PIPELINE.value
+
+                    for rel_key in ("organizationId", "personId"):
+                        if rel_key in new_payload:
+                            raw_rel = new_payload[rel_key]
+                            if raw_rel and ObjectId.is_valid(str(raw_rel)):
+                                new_payload[rel_key] = PydanticObjectId(str(raw_rel))
+                            else:
+                                new_payload[rel_key] = None
                     
-                    update = await self.repo.update(id=PydanticObjectId(id), data=new_payload,session=session)
+                    update = await self.repo.update(id=PydanticObjectId(id), data=new_payload, session=session)
 
                     if not update:
                         raise AppException(400, "Deal data not updated")
                     
-                    activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.DEAL, entityId=PydanticObjectId(deal["id"]), action=ACTIVITY_ACTION.UPDATED, title="update deal", metadata={"dealId": deal["deal_id"], "leadName": deal["dealName"]})
+                    if is_won_stage and previous_stage != stage:
+                        activity = activity_payload(
+                            userId=PydanticObjectId(user["_id"]),
+                            entityType=ACTIVITY_ENTITY_TYPE.DEAL,
+                            entityId=PydanticObjectId(deal["id"]),
+                            action=ACTIVITY_ACTION.CLOSED_WON,
+                            title="deal closed won",
+                            description=f"Won reason: {resolved_reason}",
+                            metadata={
+                                "dealId": deal["deal_id"],
+                                "leadName": deal["dealName"],
+                                "dealStage": stage,
+                                "reason": resolved_reason,
+                            },
+                        )
+                    elif is_lost_stage and previous_stage != stage:
+                        activity = activity_payload(
+                            userId=PydanticObjectId(user["_id"]),
+                            entityType=ACTIVITY_ENTITY_TYPE.DEAL,
+                            entityId=PydanticObjectId(deal["id"]),
+                            action=ACTIVITY_ACTION.CLOSED_LOST,
+                            title="deal closed lost",
+                            description=f"Lost reason: {resolved_reason}",
+                            metadata={
+                                "dealId": deal["deal_id"],
+                                "leadName": deal["dealName"],
+                                "dealStage": stage,
+                                "reason": resolved_reason,
+                            },
+                        )
+                    elif previous_stage != stage:
+                        activity = activity_payload(
+                            userId=PydanticObjectId(user["_id"]),
+                            entityType=ACTIVITY_ENTITY_TYPE.DEAL,
+                            entityId=PydanticObjectId(deal["id"]),
+                            action=ACTIVITY_ACTION.UPDATED,
+                            title=f"deal stage moved to {stage}",
+                            description=f"Stage changed from {previous_stage} to {stage}",
+                            metadata={
+                                "dealId": deal["deal_id"],
+                                "leadName": deal["dealName"],
+                                "fromStage": previous_stage,
+                                "toStage": stage,
+                            },
+                        )
+                    else:
+                        activity = activity_payload(
+                            userId=PydanticObjectId(user["_id"]),
+                            entityType=ACTIVITY_ENTITY_TYPE.DEAL,
+                            entityId=PydanticObjectId(deal["id"]),
+                            action=ACTIVITY_ACTION.UPDATED,
+                            title="update deal",
+                            metadata={"dealId": deal["deal_id"], "leadName": deal["dealName"]},
+                        )
 
                     is_activity = await self.activityRepo.create(data=activity, session=session)
 

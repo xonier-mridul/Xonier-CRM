@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Request
 from app.core.dependencies import Dependencies
-from app.schemas.lead_schema import LeadsCreateSchema, LeadCreateSchema, LeadUpdateSchema, CreateBulkLeadSchema, BulkAssignLeadSchema, LeadStatusUpdateSchema, BulkReassignLeadSchema, BulkDeleteSchema, LeadConnectStatusUpdateSchema, BulkClearAssignSchema
+from app.schemas.lead_schema import LeadsCreateSchema, LeadCreateSchema, LeadUpdateSchema, CreateBulkLeadSchema, BulkAssignLeadSchema, LeadStatusUpdateSchema, LeadDisqualifySchema, BulkReassignLeadSchema, BulkDeleteSchema, LeadConnectStatusUpdateSchema, BulkClearAssignSchema
 from app.controllers.lead_controller import LeadController
 from app.core.enums import FEATURE
 
@@ -79,6 +79,11 @@ async def update(request: Request, id:str, payload: LeadUpdateSchema ):
 Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM)), Depends(dependencies.permissions(["lead:update"]))])
 async def update_status(request:Request, id:str, payload: LeadStatusUpdateSchema):
     return await leadController.lead_update(request, id, payload.model_dump(exclude_unset=True))
+
+@router.patch("/update/{id}/disqualify", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
+Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM)), Depends(dependencies.permissions(["lead:update"]))])
+async def disqualify(request: Request, id: str, payload: LeadDisqualifySchema):
+    return await leadController.disqualify(request, id, payload.reason)
 
 @router.patch("/update/{id}/connect-status", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
 Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM)), Depends(dependencies.permissions(["lead:update"]))])

@@ -36,7 +36,7 @@ async def update(id: str, request: Request, payload: DealUpdateSchema):
 @router.patch("/update/{id}/stage", status_code=200, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active),
 Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM)), Depends(dependencies.permissions(["deal:update"]))])
 async def update_stage(id: str, request: Request, payload: UpdateDealStageSchema):
-    return await controller.update(id, request, payload.model_dump())
+    return await controller.update(id, request, payload.model_dump(exclude_unset=True))
 
 
 @router.delete("/delete/{id}", status_code=200, dependencies=[Depends(dependencies.authorized),  Depends(dependencies.company_active),

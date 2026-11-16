@@ -38,6 +38,12 @@ class LeadsModel(BaseDocument):
     projectType: Optional[str] = None
     createdBy: Link[UserModel] 
     status: Optional[str] = SALES_STATUS.NEW.value
+    # A disqualification is a terminal sales outcome, separate from the
+    # configurable pipeline stages.  Keeping its reason on the lead makes it
+    # reportable and prevents it being lost in an activity message.
+    disqualifiedReason: Optional[str] = Field(None, max_length=2000)
+    disqualifiedAt: Optional[datetime] = None
+    disqualifiedBy: Optional[Link[UserModel]] = None
     dataTag: Optional[str] = None
 
     companyName: Optional[str] = None

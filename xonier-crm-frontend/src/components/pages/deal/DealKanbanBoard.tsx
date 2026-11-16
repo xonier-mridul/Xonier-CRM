@@ -1,62 +1,30 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
-import { Deal } from "@/src/types/deals/deal.types";
+import { Deal, DealStageUpdatePayload } from "@/src/types/deals/deal.types";
 import { DEAL_STAGES } from "@/src/constants/enum";
 import { MdOutlineEdit } from "react-icons/md";
-import { FaRegEye } from "react-icons/fa";
-import { FaRegPaperPlane } from "react-icons/fa";
+import { FaRegEye, FaRegPaperPlane } from "react-icons/fa";
+import { FiCheckCircle, FiXCircle } from "react-icons/fi";
 import Link from "next/link";
 import { formatCurrency } from "@/src/app/utils/currency.utils";
 import { useCompanyCurrency } from "@/src/components/providers/CompanyCurrencyProvider";
+import DealClosureModal from "./DealClosureModal";
+
+import type { LeadStatus } from "@/src/services/leadStatus.service";
 
 interface DealKanbanBoardProps {
+  stages: LeadStatus[];
   deals: Deal[];
-  onStageChange: (dealId: string, newStage: DEAL_STAGES) => Promise<boolean>;
+  onStageChange: (
+    dealId: string,
+    newStage: string,
+    closurePayload?: DealStageUpdatePayload
+  ) => Promise<boolean>;
   canViewDeal?: boolean;
   canUpdateDeal?: boolean;
   canCreateQuote?: boolean;
 }
-
-// Each column maps to a DEAL_STAGES value — ordered by typical sales pipeline flow
-const COLUMNS = [
-  {
-    id: DEAL_STAGES.QUALIFICATION,
-    title: "Qualification",
-    color: "bg-slate-100 border-slate-200 text-slate-700",
-    dot: "bg-slate-400",
-  },
-  {
-    id: DEAL_STAGES.REQUIREMENT_ANALYSIS,
-    title: "Requirement Analysis",
-    color: "bg-orange-50 border-orange-200 text-orange-700",
-    dot: "bg-orange-400",
-  },
-  {
-    id: DEAL_STAGES.PROPOSAL,
-    title: "Proposal",
-    color: "bg-blue-50 border-blue-200 text-blue-700",
-    dot: "bg-blue-400",
-  },
-  {
-    id: DEAL_STAGES.NEGOTIATION,
-    title: "Negotiation",
-    color: "bg-purple-50 border-purple-200 text-purple-700",
-    dot: "bg-purple-400",
-  },
-  {
-    id: DEAL_STAGES.WON,
-    title: "Won",
-    color: "bg-emerald-50 border-emerald-200 text-emerald-700",
-    dot: "bg-emerald-500",
-  },
-  {
-    id: DEAL_STAGES.LOST,
-    title: "Lost",
-    color: "bg-red-50 border-red-200 text-red-700",
-    dot: "bg-red-400",
-  },
-];
 
 // Stage badge colour — matches existing table badges in DealContent
 const getStageBadgeClass = (stage: DEAL_STAGES | string): string => {
@@ -94,14 +62,24 @@ const AssignedToAvatar = ({ user }: { user: any }) => {
 
 const DealKanbanBoard: React.FC<DealKanbanBoardProps> = ({
   deals,
+  stages,
   onStageChange,
   canViewDeal = true,
   canUpdateDeal = true,
   canCreateQuote = false,
 }) => {
+  const columns = useMemo(() => stages.map(stage => ({
+    id: stage.key, title: stage.name, color: stage.color,
+  })), [stages]);
   const currency = useCompanyCurrency();
+  const [moving, setMoving] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [boardData, setBoardData] = useState<Record<string, Deal[]>>({});
+  const [pendingClosure, setPendingClosure] = useState<{
+    deal: Deal;
+    sourceStage: string;
+    targetStage: "won" | "lost";
+  } | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -110,12 +88,12 @@ const DealKanbanBoard: React.FC<DealKanbanBoardProps> = ({
   // Sync incoming deals into columns whenever the prop changes
   useEffect(() => {
     const newBoardData: Record<string, Deal[]> = {};
-    COLUMNS.forEach((col) => {
+    columns.forEach((col) => {
       newBoardData[col.id] = [];
     });
 
     deals.forEach((deal) => {
-      const stage = deal.dealStage as string;
+      const stage = deal.dealStage === DEAL_STAGES.CLOSED_WON ? DEAL_STAGES.WON : deal.dealStage;
       if (newBoardData[stage] !== undefined) {
         newBoardData[stage].push(deal);
       } else {
@@ -127,7 +105,18 @@ const DealKanbanBoard: React.FC<DealKanbanBoardProps> = ({
     });
 
     setBoardData(newBoardData);
-  }, [deals]);
+  }, [deals, columns]);
+
+  const isClosureStage = (stageKey: string): boolean => {
+    if (
+      stageKey === DEAL_STAGES.WON ||
+      stageKey === DEAL_STAGES.CLOSED_WON ||
+      stageKey === DEAL_STAGES.LOST
+    ) {
+      return true;
+    }
+    return stages.find((s) => s.key === stageKey)?.type === "final";
+  };
 
   const handleDragEnd = async (result: DropResult) => {
     const { source, destination, draggableId } = result;
@@ -139,25 +128,94 @@ const DealKanbanBoard: React.FC<DealKanbanBoardProps> = ({
     )
       return;
 
-    const sourceStage = source.droppableId as DEAL_STAGES;
-    const destStage = destination.droppableId as DEAL_STAGES;
+    if (!canUpdateDeal || source.droppableId === destination.droppableId) return;
 
-    // Optimistic UI update
-    const newBoardData = { ...boardData };
-    const sourceList = [...newBoardData[sourceStage]];
-    const destList = [...newBoardData[destStage]];
+    const draggedDeal = boardData[source.droppableId]?.find(
+      (deal) => deal.id === draggableId
+    );
+    if (!draggedDeal) return;
 
-    const [movedDeal] = sourceList.splice(source.index, 1);
-    movedDeal.dealStage = destStage;
-    destList.splice(destination.index, 0, movedDeal);
+    if (isClosureStage(destination.droppableId)) {
+      setPendingClosure({
+        deal: draggedDeal,
+        sourceStage: source.droppableId,
+        targetStage: destination.droppableId === DEAL_STAGES.LOST ? "lost" : "won",
+      });
+      return;
+    }
 
-    newBoardData[sourceStage] = sourceList;
-    newBoardData[destStage] = destList;
-    setBoardData(newBoardData);
+    setMoving(true);
+    try {
+      const saved = await onStageChange(draggableId, destination.droppableId);
+      if (saved) {
+        setBoardData((previous) => ({
+          ...previous,
+          [source.droppableId]: previous[source.droppableId].filter(
+            (deal) => deal.id !== draggableId
+          ),
+          [destination.droppableId]: [
+            ...previous[destination.droppableId].filter(
+              (deal) => deal.id !== draggableId
+            ),
+            { ...draggedDeal, dealStage: destination.droppableId },
+          ],
+        }));
+      }
+    } finally {
+      setMoving(false);
+    }
+  };
 
-    // Persist if stage changed
-    if (sourceStage !== destStage) {
-      await onStageChange(draggableId, destStage);
+  const handleConfirmClosure = async (payload: DealStageUpdatePayload): Promise<boolean> => {
+    if (!pendingClosure) return false;
+    setMoving(true);
+    try {
+      const saved = await onStageChange(
+        pendingClosure.deal.id,
+        payload.dealStage,
+        payload
+      );
+      if (saved) {
+        const destCol =
+          payload.dealStage === DEAL_STAGES.CLOSED_WON
+            ? DEAL_STAGES.WON
+            : payload.dealStage;
+        const updatedDeal: Deal = {
+          ...pendingClosure.deal,
+          dealStage: destCol,
+          closeDate: payload.closeDate ?? pendingClosure.deal.closeDate,
+          closedWonReason:
+            payload.closedWonReason ?? pendingClosure.deal.closedWonReason,
+          closedLostReason:
+            payload.closedLostReason ?? pendingClosure.deal.closedLostReason,
+          amount: payload.amount ?? pendingClosure.deal.amount,
+          dealProbability:
+            payload.dealProbability ?? pendingClosure.deal.dealProbability,
+          forecastProbability:
+            payload.forecastProbability ?? pendingClosure.deal.forecastProbability,
+          forecastCategory:
+            payload.forecastCategory ?? pendingClosure.deal.forecastCategory,
+          nextStep:
+            payload.nextStep !== undefined
+              ? payload.nextStep
+              : pendingClosure.deal.nextStep,
+        };
+        setBoardData((previous) => {
+          const next: Record<string, Deal[]> = {};
+          Object.keys(previous).forEach((colKey) => {
+            next[colKey] = previous[colKey].filter(
+              (d) => d.id !== pendingClosure.deal.id
+            );
+          });
+          if (next[destCol] !== undefined) {
+            next[destCol] = [...next[destCol], updatedDeal];
+          }
+          return next;
+        });
+      }
+      return saved;
+    } finally {
+      setMoving(false);
     }
   };
 
@@ -172,14 +230,15 @@ const DealKanbanBoard: React.FC<DealKanbanBoardProps> = ({
     <div className="w-full overflow-x-auto pb-4">
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="flex gap-4 min-h-[70vh] items-start p-2">
-          {COLUMNS.map((column) => (
+          {columns.map((column) => (
             <div key={column.id} className="flex flex-col w-[300px] shrink-0">
               {/* Column Header */}
               <div
-                className={`px-3 py-2.5 rounded-t-lg border-t border-l border-r font-semibold text-sm flex justify-between items-center ${column.color}`}
+                className={`px-3 py-2.5 rounded-t-lg border-t border-l border-r font-semibold text-sm flex justify-between items-center `}
+                  style={{ color: column.color, backgroundColor: `${column.color}12`, borderColor: `${column.color}45` }}
               >
                 <span className="flex items-center gap-2">
-                  <span className={`w-2 h-2 rounded-full ${column.dot}`} />
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: column.color }} />
                   {column.title}
                 </span>
                 <span className="bg-white/60 px-2 py-0.5 rounded-full text-xs font-bold">
@@ -203,6 +262,7 @@ const DealKanbanBoard: React.FC<DealKanbanBoardProps> = ({
                         key={deal.id}
                         draggableId={deal.id}
                         index={index}
+                        isDragDisabled={!canUpdateDeal || moving}
                       >
                         {(provided, snapshot) => (
                           <div
@@ -262,16 +322,30 @@ const DealKanbanBoard: React.FC<DealKanbanBoardProps> = ({
                             )}
 
                             {/* Stage badge */}
-                            <div className="flex flex-wrap gap-1.5 mb-3">
+                            <div className="flex flex-wrap gap-1.5 mb-2">
                               <span
                                 className={`text-[10px] px-2 py-0.5 rounded-full capitalize ${getStageBadgeClass(deal.dealStage)}`}
                               >
-                                {(deal.dealStage || "").replace(/_/g, " ")}
+                                {column.title}
                               </span>
                             </div>
 
-                            {/* Footer: Avatar + Date */}
-                            <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 dark:border-slate-700/50">
+                            {/* Outcome reason pill when closed */}
+                            {([DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON] as string[]).includes(deal.dealStage) &&
+                              deal.closedWonReason && (
+                                <div className="mb-2 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-[11px] text-emerald-700 line-clamp-2 dark:border-emerald-800/60 dark:bg-emerald-950/40 dark:text-emerald-300">
+                                  <span className="font-semibold">Won:</span> {deal.closedWonReason}
+                                </div>
+                              )}
+                            {deal.dealStage === DEAL_STAGES.LOST &&
+                              deal.closedLostReason && (
+                                <div className="mb-2 rounded-md border border-rose-200 bg-rose-50 px-2 py-1 text-[11px] text-rose-700 line-clamp-2 dark:border-rose-800/60 dark:bg-rose-950/40 dark:text-rose-300">
+                                  <span className="font-semibold">Lost:</span> {deal.closedLostReason}
+                                </div>
+                              )}
+
+                            {/* Footer: Avatar + Date + Quick Close */}
+                            <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-slate-100 dark:border-slate-700/50">
                               <div className="flex items-center gap-2">
                                 <AssignedToAvatar
                                   user={deal.assignedTo ?? deal.createdBy}
@@ -285,15 +359,51 @@ const DealKanbanBoard: React.FC<DealKanbanBoardProps> = ({
                                     : ""}
                                 </span>
                               </div>
-                              {deal.closeDate && (
-                                <span className="text-[10px] text-rose-500 font-medium">
-                                  Close:{" "}
-                                  {new Date(deal.closeDate).toLocaleDateString(
-                                    "en-GB",
-                                    { day: "numeric", month: "short" }
-                                  )}
-                                </span>
-                              )}
+                              <div className="flex items-center gap-1.5">
+                                {canUpdateDeal && !isClosureStage(deal.dealStage) && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setPendingClosure({
+                                          deal,
+                                          sourceStage: column.id,
+                                          targetStage: "won",
+                                        });
+                                      }}
+                                      title="Mark Closed Won"
+                                      className="inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 transition-colors hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
+                                    >
+                                      <FiCheckCircle size={10} /> Won
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setPendingClosure({
+                                          deal,
+                                          sourceStage: column.id,
+                                          targetStage: "lost",
+                                        });
+                                      }}
+                                      title="Mark Closed Lost"
+                                      className="inline-flex items-center gap-1 rounded-md border border-rose-200 bg-rose-50 px-1.5 py-0.5 text-[10px] font-semibold text-rose-700 transition-colors hover:bg-rose-100 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300"
+                                    >
+                                      <FiXCircle size={10} /> Lost
+                                    </button>
+                                  </>
+                                )}
+                                {deal.closeDate && (
+                                  <span className="text-[10px] text-rose-500 font-medium">
+                                    Close:{" "}
+                                    {new Date(deal.closeDate).toLocaleDateString(
+                                      "en-GB",
+                                      { day: "numeric", month: "short" }
+                                    )}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
                         )}
@@ -307,6 +417,14 @@ const DealKanbanBoard: React.FC<DealKanbanBoardProps> = ({
           ))}
         </div>
       </DragDropContext>
+
+      <DealClosureModal
+        isOpen={Boolean(pendingClosure)}
+        deal={pendingClosure?.deal ?? null}
+        initialStage={pendingClosure?.targetStage ?? "won"}
+        onClose={() => setPendingClosure(null)}
+        onConfirm={handleConfirmClosure}
+      />
     </div>
   );
 };

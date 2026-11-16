@@ -194,7 +194,7 @@ export interface LeadStatusBreakdownItem {
 
 // ── Deals ─────────────────────────────────────────────────────────────────────
 
-export type DealPipelineStage = "qualification" | "requirement_analysis" | "proposal" | "negotiation" | "won" | "lost";
+export type DealPipelineStage = string;
 
 export interface DealStats {
   total: number;
@@ -211,6 +211,9 @@ export interface DealStats {
 
 export interface DealPipelineBreakdownItem {
   pipeline: DealPipelineStage;
+  name?: string;
+  color?: string;
+  type?: string;
   count: number;
   totalAmount: number;
   percentage: number;
@@ -249,6 +252,9 @@ export interface TopPerformer {
   firstName: string;
   lastName: string;
   wonLeads: number;
+  totalDeals?: number;
+  closedDeals?: number;
+  totalRevenue?: number;
 }
 
 export interface ConversionRate {
@@ -292,6 +298,10 @@ export interface DashboardData {
   latestLeads?: LatestLead[];
   dealPipelineBreakdown?: DealPipelineBreakdownItem[];
   topPerformers?: TopPerformer[];
+  memberPerformance?: (TopPerformer & {
+    totalLeads?: number;
+    conversionRate?: number;
+  })[];
   conversionRate?: ConversionRate;
   taskPriorityBreakdown?: PriorityBreakdownItem[];
   enabledFeatures?: string[];

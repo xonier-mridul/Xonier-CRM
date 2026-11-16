@@ -26,6 +26,9 @@ class LeadBaseSchema(BaseModel):
     status: Optional[str] = None
 
     companyName: Optional[str] = None
+    organizationId: Optional[str] = None
+    personId: Optional[str] = None
+    cnpj: Optional[str] = None
     city: Optional[str] = None
     country: Optional[str] = None
     postalCode: Optional[int] = None
@@ -107,6 +110,9 @@ class LeadBaseSchema(BaseModel):
             "linkedin",
             "projectType",
             "companyName",
+            "organizationId",
+            "personId",
+            "cnpj",
             "city",
             "country",
             "postalCode",
@@ -176,6 +182,9 @@ class LeadsCreateSchema(LeadBaseSchema):
     dataTag: Optional[str] = None
 
     companyName: Optional[str] = None
+    organizationId: Optional[str] = None
+    personId: Optional[str] = None
+    cnpj: Optional[str] = None
     city: Optional[str] = None
     country: Optional[str] = None
     postalCode: Optional[int] = Field(None, ge=1000, le=999999)
@@ -226,6 +235,18 @@ class LeadUpdateSchema(LeadBaseSchema):
 
 class LeadStatusUpdateSchema(BaseModel):
     status: str = Field(min_length=1, max_length=64)
+
+
+class LeadDisqualifySchema(BaseModel):
+    reason: str = Field(min_length=2, max_length=2000)
+
+    @field_validator("reason")
+    @classmethod
+    def validate_reason(cls, value: str) -> str:
+        value = value.strip()
+        if len(value) < 2:
+            raise AppException(422, "A disqualification reason is required")
+        return value
 
 class LeadConnectStatusUpdateSchema(BaseModel):
     status: CONTACT_STATUS

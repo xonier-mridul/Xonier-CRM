@@ -10,12 +10,37 @@ export interface Deal {
   lead_id?: Lead | null;
   organizationId?: string | null;
   personId?: string | null;
-  organization?: { id: string; name: string; industry?: string | null; city?: string | null; country?: string | null; cnpj?: string | null } | null;
-  person?: { id: string; fullName: string; title?: string | null } | null;
+  organization?: {
+    id: string;
+    name: string;
+    industry?: string | null;
+    size?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    website?: string | null;
+    city?: string | null;
+    country?: string | null;
+    address?: string | null;
+    notes?: string | null;
+    cnpj?: string | null;
+  } | null;
+  person?: {
+    id: string;
+    fullName: string;
+    organizationId?: string | null;
+    organizationName?: string | null;
+    title?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    linkedin?: string | null;
+    city?: string | null;
+    country?: string | null;
+    notes?: string | null;
+  } | null;
 
   dealName: string;
-  dealPipeline: DEAL_PIPELINE;
-  dealStage: DEAL_STAGES;
+  dealPipeline: string;
+  dealStage: string;
   dealType: DEAL_TYPE;
 
   dealOwner?: string | null;
@@ -54,10 +79,12 @@ export interface Deal {
 
 export interface DealPayload {
   lead_id?: string | null;
+  organizationId?: string | null;
+  personId?: string | null;
 
   dealName: string;
   dealPipeline?: DEAL_PIPELINE;
-  dealStage: DEAL_STAGES;
+  dealStage: string;
   dealType: DEAL_TYPE;
 
   dealOwner?: string | null;
@@ -83,11 +110,12 @@ export interface DealPayload {
   originalTrafficSource?: string | null;
 }
 export interface DealUpdatePayload {
-
+  organizationId?: string | null;
+  personId?: string | null;
 
   dealName: string;
   dealPipeline?: DEAL_PIPELINE | null;
-  dealStage: DEAL_STAGES;
+  dealStage: string;
   dealType: DEAL_TYPE;
 
   dealOwner?: string | null;
@@ -110,6 +138,18 @@ export interface DealUpdatePayload {
   closedLostReason?: string | null;
 
   originalTrafficSource?: string | null;
+}
+
+export interface DealStageUpdatePayload {
+  dealStage: string;
+  closeDate?: string | null;
+  closedWonReason?: string | null;
+  closedLostReason?: string | null;
+  dealProbability?: number | null;
+  forecastProbability?: number | null;
+  forecastCategory?: FORECAST_CATEGORY | null;
+  nextStep?: string | null;
+  amount?: number;
 }
 
 export interface UpdateDealStatusPayload{

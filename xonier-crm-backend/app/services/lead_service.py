@@ -42,7 +42,11 @@ from app.utils.event_payload_generator import EventPayloadGenerator
 
 
 from app.services.lead_status_service import LeadStatusService
-from app.services.commercial_relationship_service import CommercialRelationshipService
+from app.services.commercial_relationship_service import (
+    CommercialRelationshipService,
+    serialize_organization,
+    serialize_person,
+)
 from app.db.models.organization_model import OrganizationModel
 from app.db.models.person_model import PersonModel
 from app.utils.lead_assignment_access import can_assign_leads, require_lead_assigner, require_lower_assignee
@@ -93,6 +97,13 @@ class LeadService:
     async def create(self, payload: Dict[str, Any], user: Dict[str, Any]):
         payload = payload.copy()
         assignee_id = payload.pop("assigneeId", None)
+        cnpj = payload.pop("cnpj", None)
+        for rel_key in ("organizationId", "personId"):
+            raw_rel = payload.get(rel_key)
+            if raw_rel and ObjectId.is_valid(str(raw_rel)):
+                payload[rel_key] = PydanticObjectId(str(raw_rel))
+            else:
+                payload[rel_key] = None
         async with await self.client.start_session() as session:
             async with session.start_transaction():
                 try:
@@ -164,17 +175,21 @@ class LeadService:
                         raise AppException(400, "Lead creation failed, please try again")
 
                     organization, person = await CommercialRelationshipService().ensure_for_lead(
-                        new_lead, user["_id"], session=session
+                        new_lead, user["_id"], session=session, cnpj=cnpj
                     )
                     if organization or person:
+                        org_id = organization.id if organization else new_lead.organizationId
+                        pers_id = person.id if person else new_lead.personId
                         await self.repo.update(
                             id=PydanticObjectId(new_lead.id),
                             data={
-                                "organizationId": organization.id if organization else None,
-                                "personId": person.id if person else None,
+                                "organizationId": org_id,
+                                "personId": pers_id,
                             },
                             session=session,
                         )
+                        new_lead.organizationId = org_id
+                        new_lead.personId = pers_id
                
                     if (payload.get("meetingScheduled") or "").strip() == MEETING_SCHEDULED.YES.value:
                         meeting_payload = EventPayloadGenerator(title=payload.get("meetingTitle"), description=payload.get("meetingDescription", None), start=payload.get("meetingStart"), end=payload.get("meetingEnd"), meetingLink=payload.get("meetingLink"), priority=payload.get("meetingPriority"), createdBy=user["_id"], entityId=new_lead.id).to_json()
@@ -1287,18 +1302,18 @@ class LeadService:
 
             organization_id = result.get("organizationId")
             person_id = result.get("personId")
-            organization = await OrganizationModel.get(PydanticObjectId(organization_id)) if organization_id else None
-            person = await PersonModel.get(PydanticObjectId(person_id)) if person_id else None
-            result["organization"] = (
-                {
-                    "id": str(organization.id), "name": organization.name,
-                    "industry": organization.industry, "city": organization.city,
-                    "country": organization.country, "cnpj": organization.cnpj,
-                } if organization else None
+            organization = (
+                await OrganizationModel.find_one({"_id": PydanticObjectId(organization_id), "deletedAt": None})
+                if organization_id and ObjectId.is_valid(str(organization_id))
+                else None
             )
-            result["person"] = (
-                {"id": str(person.id), "fullName": person.fullName, "title": person.title} if person else None
+            person = (
+                await PersonModel.find_one({"_id": PydanticObjectId(person_id), "deletedAt": None})
+                if person_id and ObjectId.is_valid(str(person_id))
+                else None
             )
+            result["organization"] = serialize_organization(organization)
+            result["person"] = serialize_person(person, organization)
 
             return result
 
@@ -1350,10 +1365,28 @@ class LeadService:
                             403, "Unauthorized, only admin, manager, or assigned user can access this"
                         )
 
+                    payload = payload.copy()
+                    cnpj = payload.pop("cnpj", None)
+                    for rel_key in ("organizationId", "personId"):
+                        if rel_key in payload:
+                            raw_rel = payload[rel_key]
+                            if raw_rel and ObjectId.is_valid(str(raw_rel)):
+                                payload[rel_key] = PydanticObjectId(str(raw_rel))
+                            else:
+                                payload[rel_key] = None
+
                     for key, val in payload.items():
                         if key == "status" and not val:
                             continue
                         setattr(lead, key, val)
+
+                    organization, person = await CommercialRelationshipService().ensure_for_lead(
+                        lead, user["_id"], session=session, cnpj=cnpj
+                    )
+                    if organization:
+                        lead.organizationId = organization.id
+                    if person:
+                        lead.personId = person.id
 
                     # lead.updatedBy = ObjectId(user["_id"])
                     lead.updatedAt = datetime.now(timezone.utc)
@@ -1402,6 +1435,8 @@ class LeadService:
                     
                     if lead.status == SALES_STATUS.DELETE.value:
                         raise AppException(400, "Action denied, Lead is deleted")
+                    if lead.status == "disqualified":
+                        raise AppException(400, "Disqualified leads cannot be moved through the pipeline")
 
                     for item in lead.assignedTo or []:
                         if str(item.id) == str(user["_id"]):
@@ -1443,6 +1478,38 @@ class LeadService:
 
                 except Exception as e:
                     raise AppException(status_code=500, message=f"Internal server error: {e}")
+
+    @retry_transaction
+    async def disqualify(self, leadId: str, reason: str, user: Dict[str, Any]):
+        async with await self.client.start_session() as session:
+            async with session.start_transaction():
+                if not ObjectId.is_valid(leadId):
+                    raise AppException(400, "Invalid lead object id")
+                lead = await self.repo.find_by_id(PydanticObjectId(leadId), populate=["assignedTo"])
+                if not lead:
+                    raise AppException(404, "Lead data not found")
+                if lead.status == SALES_STATUS.DELETE.value:
+                    raise AppException(400, "Action denied, Lead is deleted")
+                if lead.inDeal:
+                    raise AppException(400, "A lead already converted to a deal cannot be disqualified")
+                is_admin_or_manager = await self._is_admin_or_manager(user)
+                is_assignee = any(str(item.id) == str(user["_id"]) for item in lead.assignedTo or [])
+                if not is_admin_or_manager and not (lead.isAssigned and is_assignee):
+                    raise AppException(403, "Permission denied, only admin, manager, or assigned person can access it")
+                now = datetime.now(timezone.utc)
+                data = {"status": "disqualified", "disqualifiedReason": reason.strip(), "disqualifiedAt": now, "disqualifiedBy": PydanticObjectId(user["_id"]), "updatedAt": now}
+                updated = await self.repo.update(id=PydanticObjectId(leadId), data=data, session=session)
+                if not updated:
+                    raise AppException(400, "Failed to disqualify lead")
+                lead.status = "disqualified"
+                lead.disqualifiedReason = reason.strip()
+                lead.disqualifiedAt = now
+                activity = activity_payload(userId=PydanticObjectId(user["_id"]), entityType=ACTIVITY_ENTITY_TYPE.LEAD.value, entityId=PydanticObjectId(lead.id), action=ACTIVITY_ACTION.UPDATED.value, title="disqualified lead", metadata={"leadId": lead.lead_id, "leadName": lead.fullName, "reason": reason.strip()})
+                if not await self.activityRepo.create(data=activity, session=session):
+                    raise AppException(400, "Activity log failed")
+                await FastAPICache.get_backend().clear(namespace=LEAD_CACHE_NAMESPACE)
+                await FastAPICache.get_backend().clear(namespace=USER_LEAD_CACHE_NAMESPACE)
+                return lead.model_dump(mode="json")
 
 
     async def update_connect_status(self, leadId:str, user:Dict[str, Any], payload: Dict[str, Any]):

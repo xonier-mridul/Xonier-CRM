@@ -342,10 +342,10 @@ const symbol = getCurrencySymbol(formData.currency ?? QuotationCurrency.USD)
         const data = result.data.data
         setFormData(prev => ({
           ...prev,
-          customerName: data.lead_id?.fullName ?? '',
-          customerEmail: data.lead_id?.email ?? '',
-          customerPhone: data.lead_id?.phone ?? '',
-          companyName: data.lead_id?.companyName ?? '',
+          customerName: data.lead_id?.fullName || data.person?.fullName || '',
+          customerEmail: data.lead_id?.email || data.person?.email || data.organization?.email || '',
+          customerPhone: data.lead_id?.phone || data.person?.phone || data.organization?.phone || '',
+          companyName: data.lead_id?.companyName || data.organization?.name || '',
         }))
       }
     } catch (error) {

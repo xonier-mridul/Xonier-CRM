@@ -2,9 +2,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/src/store";
-import { LeadStatus, LeadStatusService } from "@/src/services/leadStatus.service";
+import { LeadStatus, LeadStatusService, DealStageSettingsService } from "@/src/services/leadStatus.service";
 
-export function useLeadStatuses() {
+export function useLeadStatuses(entity: "lead" | "deal" = "lead") {
+  const eventName = entity === "deal" ? "deal-stages" : "lead-statuses";
+  const service = entity === "deal" ? DealStageSettingsService : LeadStatusService;
   const userId = useSelector((s: RootState) => s.auth.user?.id || s.auth.user?._id);
   const requestRef = useRef(0);
   const [statuses, setStatuses] = useState<LeadStatus[]>([]);
@@ -14,26 +16,27 @@ export function useLeadStatuses() {
     const request = ++requestRef.current;
     if (!userId) { setStatuses([]); setLoading(false); return; }
     try {
-      const res = await LeadStatusService.list();
+      const res = await service.list();
       if (request !== requestRef.current) return;
       setStatuses(res.data.data); setError("");
-    } catch { if (request === requestRef.current) setError("Unable to load lead statuses. Please retry."); }
+    } catch { if (request === requestRef.current) setError(`Unable to load ${entity} stages. Please retry.`); }
     finally { if (request === requestRef.current) setLoading(false); }
-  }, [userId]);
+  }, [userId, service, entity]);
   useEffect(() => {
     setStatuses([]); setError(""); setLoading(true); void refresh();
     window.addEventListener("focus", refresh);
-    window.addEventListener("lead-statuses-changed", refresh);
-    const channel = typeof BroadcastChannel !== "undefined" ? new BroadcastChannel("lead-statuses") : null;
+    window.addEventListener(`${eventName}-changed`, refresh);
+    const channel = typeof BroadcastChannel !== "undefined" ? new BroadcastChannel(eventName) : null;
     if (channel) channel.onmessage = () => { void refresh(); };
-    return () => { ++requestRef.current; window.removeEventListener("focus", refresh); window.removeEventListener("lead-statuses-changed", refresh); channel?.close(); };
-  }, [refresh]);
+    return () => { ++requestRef.current; window.removeEventListener("focus", refresh); window.removeEventListener(`${eventName}-changed`, refresh); channel?.close(); };
+  }, [refresh, eventName]);
   const label = useCallback(
-    (key: string) => statuses.find(s => s.key === key)?.name || key?.replace(/_/g, " "),
-    [statuses]
+    (key: string) => statuses.find(s => s.key === (entity === "deal" && key === "closed_won" ? "won" : key))?.name || key?.replace(/_/g, " "),
+    [statuses, entity]
   );
   return { statuses, loading, error, refresh,
     options: statuses.map(s => ({ label: s.name, value: s.key })),
     label,
   };
 }
+export function useDealStages() { return useLeadStatuses("deal"); }

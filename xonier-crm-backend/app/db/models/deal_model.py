@@ -5,7 +5,7 @@ from pydantic import Field, field_validator
 from app.db.models.lead_model import LeadsModel
 from app.db.models.user_model import UserModel
 from datetime import datetime, timezone
-from app.core.enums import DEAL_PIPELINE, DEAL_STAGES, DEAL_TYPE, FORECAST_CATEGORY, DEAL_STATUS
+from app.core.enums import DEAL_TYPE, FORECAST_CATEGORY, DEAL_STATUS
 from app.db.models.base_model import BaseDocument
 
 class DealModel(BaseDocument):
@@ -14,8 +14,9 @@ class DealModel(BaseDocument):
     organizationId: Optional[PydanticObjectId] = None
     personId: Optional[PydanticObjectId] = None
     dealName : str 
-    dealPipeline: DEAL_PIPELINE
-    dealStage: DEAL_STAGES
+    dealPipeline: str
+    stageEnteredAt: Optional[datetime] = None
+    dealStage: str
     dealOwner: Optional[str]
     dealType: DEAL_TYPE
     createDate: datetime
@@ -26,8 +27,8 @@ class DealModel(BaseDocument):
     extraFields: Dict[str, Any] = Field(default_factory=dict)
     followUpAt: Optional[datetime] = None
     followUpOwnerId: Optional[PydanticObjectId] = None
-    dealProbability: Optional[int] = Field(None,gt=0, lt=100) 
-    forecastProbability: Optional[int] = Field(None, gt=0, lt=100)
+    dealProbability: Optional[int] = Field(None, ge=0, le=100)
+    forecastProbability: Optional[int] = Field(None, ge=0, le=100)
     nextStep: Optional[str] = None
     forecastCategory: Optional[FORECAST_CATEGORY] = None
     closedWonReason: Optional[str] = None
@@ -97,9 +98,24 @@ class DealModel(BaseDocument):
     @field_validator("closeDate", mode="before")
     @classmethod
     def validate_close_date(cls, v, info):
+        if not v:
+            return v
         create_date = info.data.get("createDate")
-        if v and create_date and v < create_date:
-            raise ValueError("Close date cannot be before create date")
+        if create_date:
+            def _to_date(val):
+                if isinstance(val, datetime):
+                    return val.date()
+                if isinstance(val, str):
+                    try:
+                        return datetime.fromisoformat(val.replace("Z", "+00:00")).date()
+                    except ValueError:
+                        return None
+                return None
+
+            close_d = _to_date(v)
+            create_d = _to_date(create_date)
+            if close_d and create_d and close_d < create_d:
+                raise ValueError("Close date cannot be before create date")
         return v
     
 

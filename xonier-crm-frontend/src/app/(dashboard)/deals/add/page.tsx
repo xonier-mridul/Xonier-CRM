@@ -1,4 +1,5 @@
 "use client";
+import { useDealStages } from "@/src/hooks/useLeadStatuses";
 
 import React, { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -13,13 +14,15 @@ import ErrorComponent from "@/src/components/ui/ErrorComponent";
 import { useCompanyCurrency } from "@/src/components/providers/CompanyCurrencyProvider";
 import { UserFormService } from "@/src/services/userForm.service";
 import { CustomField, UserForm } from "@/src/types/userForm/userForm.types";
+import CommercialEntitySelectors from "@/src/components/common/CommercialEntitySelectors";
 
 const CreateDealPage = () => {
+  const { statuses: stages, error: stageError } = useDealStages();
   const currency = useCompanyCurrency();
   const router = useRouter();
   const { hasPermission } = usePermissions();
   const [dealName, setDealName] = useState("");
-  const [dealStage, setDealStage] = useState<DEAL_STAGES>(DEAL_STAGES.QUALIFICATION);
+  const [dealStage, setDealStage] = useState<string>(DEAL_STAGES.QUALIFICATION);
   const [dealType, setDealType] = useState<DEAL_TYPE>(DEAL_TYPE.NEW_BUSINESS);
   const [createDate, setCreateDate] = useState(new Date().toISOString().slice(0, 10));
   const [closeDate, setCloseDate] = useState("");
@@ -31,6 +34,8 @@ const CreateDealPage = () => {
   const [saving, setSaving] = useState(false);
   const [extraFields, setExtraFields] = useState<CustomField[]>([]);
   const [extraValues, setExtraValues] = useState<Record<string, string | number | boolean | null>>({});
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
+  const [personId, setPersonId] = useState<string | null>(null);
 
   useEffect(() => {
     UserFormService.getAllDeal().then((response) => {
@@ -51,7 +56,8 @@ const CreateDealPage = () => {
       toast.error("You do not have permission to create deals");
       return;
     }
-    const isWon = [DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON].includes(dealStage);
+    if (!stages.some(stage => stage.key === dealStage)) return setError(stageError || "Select a configured deal stage.");
+    const isWon = ([DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON] as string[]).includes(dealStage);
     const isLost = dealStage === DEAL_STAGES.LOST;
     if ((isWon || isLost) && !closeDate) return setError("Close date is required for Won/Lost deals");
     if (isWon && !closedWonReason.trim()) return setError("Won reason is required");
@@ -59,6 +65,8 @@ const CreateDealPage = () => {
     setSaving(true);
     try {
       const result = await dealService.create({
+        organizationId,
+        personId,
         dealName: dealName.trim(),
         dealStage,
         dealType,
@@ -110,6 +118,14 @@ const CreateDealPage = () => {
         <ErrorComponent error={error} />
         <section>
           <h2 className="mb-5 border-b border-slate-100 pb-3 text-lg font-semibold text-slate-800 dark:border-gray-700 dark:text-white">Deal details</h2>
+          <div className="mb-6">
+            <CommercialEntitySelectors
+              organizationId={organizationId}
+              personId={personId}
+              onOrganizationChange={(orgId) => setOrganizationId(orgId)}
+              onPersonChange={(persId) => setPersonId(persId)}
+            />
+          </div>
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             <div className="md:col-span-2">
               <label className={labelClass} htmlFor="dealName">Deal name <span className="text-rose-500">*</span></label>
@@ -121,8 +137,8 @@ const CreateDealPage = () => {
             </div>
             <div>
               <label className={labelClass} htmlFor="dealStage">Deal stage <span className="text-rose-500">*</span></label>
-              <select id="dealStage" className={inputClass} value={dealStage} onChange={(event) => setDealStage(event.target.value as DEAL_STAGES)}>
-                {[DEAL_STAGES.QUALIFICATION, DEAL_STAGES.REQUIREMENT_ANALYSIS, DEAL_STAGES.PROPOSAL, DEAL_STAGES.NEGOTIATION, DEAL_STAGES.WON, DEAL_STAGES.LOST].map((stage) => <option key={stage} value={stage}>{stage.replaceAll("_", " ").replace(/^\w/, (letter) => letter.toUpperCase())}</option>)}
+              <select id="dealStage" className={inputClass} value={dealStage} onChange={(event) => setDealStage(event.target.value)}>
+                {stages.map(stage => <option key={stage.key} value={stage.key}>{stage.name}</option>)}
               </select>
             </div>
             <div>
@@ -136,10 +152,10 @@ const CreateDealPage = () => {
               <input id="createDate" className={inputClass} type="date" required value={createDate} onChange={(event) => setCreateDate(event.target.value)} />
             </div>
             <div>
-              <label className={labelClass} htmlFor="closeDate">Close date {([DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON, DEAL_STAGES.LOST].includes(dealStage)) && <span className="text-rose-500">*</span>}</label>
-              <input id="closeDate" className={inputClass} type="date" min={createDate} required={[DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON, DEAL_STAGES.LOST].includes(dealStage)} value={closeDate} onChange={(event) => setCloseDate(event.target.value)} />
+              <label className={labelClass} htmlFor="closeDate">Close date {(([DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON, DEAL_STAGES.LOST] as string[]).includes(dealStage)) && <span className="text-rose-500">*</span>}</label>
+              <input id="closeDate" className={inputClass} type="date" min={createDate} required={([DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON, DEAL_STAGES.LOST] as string[]).includes(dealStage)} value={closeDate} onChange={(event) => setCloseDate(event.target.value)} />
             </div>
-            {[DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON].includes(dealStage) && <div className="md:col-span-2"><label className={labelClass} htmlFor="closedWonReason">Won reason <span className="text-rose-500">*</span></label><input id="closedWonReason" className={inputClass} required value={closedWonReason} onChange={(event) => setClosedWonReason(event.target.value)} placeholder="Why did we win this deal?" /></div>}
+            {([DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON] as string[]).includes(dealStage) && <div className="md:col-span-2"><label className={labelClass} htmlFor="closedWonReason">Won reason <span className="text-rose-500">*</span></label><input id="closedWonReason" className={inputClass} required value={closedWonReason} onChange={(event) => setClosedWonReason(event.target.value)} placeholder="Why did we win this deal?" /></div>}
             {dealStage === DEAL_STAGES.LOST && <div className="md:col-span-2"><label className={labelClass} htmlFor="closedLostReason">Lost reason <span className="text-rose-500">*</span></label><input id="closedLostReason" className={inputClass} required value={closedLostReason} onChange={(event) => setClosedLostReason(event.target.value)} placeholder="Why was this deal lost?" /></div>}
             <div className="md:col-span-2">
               <label className={labelClass} htmlFor="dealDescription">Description</label>

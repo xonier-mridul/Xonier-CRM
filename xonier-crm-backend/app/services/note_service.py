@@ -25,14 +25,25 @@ class NoteService:
 
             is_admin:bool = validate_admin(user["userRole"])
 
-            is_exist = await self.noteRepo.find_one({"title": payload["title"], "entityType": payload["entityType"], "entityId": payload["entityId"]})
+            raw_entity_id = payload.get("entityId")
+            entity_id = raw_entity_id.strip() if isinstance(raw_entity_id, str) else raw_entity_id
+            entity_id = entity_id or None
+
+            is_exist = await self.noteRepo.find_one({
+                "title": payload["title"],
+                "entityType": payload["entityType"],
+                "entityId": entity_id,
+                "status": {"$ne": NOTE_STATUS.DELETE.value},
+                "deletedAt": None,
+            })
 
 
             if is_exist:
                 raise AppException(400, "Note is exist with this title, entity and entity Id, please use different title, entity or entity Id")
             
-            new_payload ={
+            new_payload = {
                 **payload,
+                "entityId": entity_id,
                 "createdBy": user["_id"],
                 "byAdmin": True if is_admin else False
             }
@@ -68,37 +79,44 @@ class NoteService:
                 "status": NOTE_STATUS.ACTIVE.value
             }
 
+            user_id_str = str(user["_id"])
+            user_id_values = [user_id_str]
+            if ObjectId.is_valid(user_id_str):
+                user_id_values.append(PydanticObjectId(user_id_str))
+
             visibility_conditions = []
 
-
             if is_admin:
-               
                 visibility_conditions = [
                     {"visibility": NOTE_VISIBILITY.PUBLIC.value},
                     {
                         "$and": [
                             {"visibility": NOTE_VISIBILITY.PRIVATE.value},
-                            {"createdBy.$id": user["_id"]}
+                            {"createdBy.$id": {"$in": user_id_values}}
                         ]
                     }
                 ]
 
             else:
                 members = await self.getTemMember.get_team_members(user["_id"])
-
-                members = [str(member) for member in members]
-
+                member_values = []
+                for member in members:
+                    m_str = str(member)
+                    member_values.append(m_str)
+                    if ObjectId.is_valid(m_str):
+                        member_values.append(PydanticObjectId(m_str))
 
                 visibility_conditions = [
-                    {"createdBy.$id": user["_id"]},
+                    {"createdBy.$id": {"$in": user_id_values}},
                     {"visibility": NOTE_VISIBILITY.PUBLIC.value},
-                    {
+                ]
+                if member_values:
+                    visibility_conditions.append({
                         "$and": [
                             {"visibility": NOTE_VISIBILITY.TEAM.value},
-                            {"createdBy.$id": {"$in": members}} if members else {}
+                            {"createdBy.$id": {"$in": member_values}}
                         ]
-                    }
-                ]
+                    })
             
 
 
@@ -115,7 +133,8 @@ class NoteService:
                 query["entityId"] = filters["entityId"]
 
 
-            cache_key = cache_key_generator_with_id(prefix=NOTE_CACHE_NAMESPACE, filters=query, page=int(page), limit=int(limit), userId=user["_id"])
+            cache_filters = json.loads(json.dumps(query, default=str))
+            cache_key = cache_key_generator_with_id(prefix=NOTE_CACHE_NAMESPACE, filters=cache_filters, page=int(page), limit=int(limit), userId=user_id_str)
 
 
 

@@ -1,6 +1,6 @@
 import { ParamValue } from "next/dist/server/request/params";
 import api from "../lib/axios";
-import { DealPayload, DealUpdatePayload, GetAllParams } from "../types/deals/deal.types";
+import { DealPayload, DealStageUpdatePayload, DealUpdatePayload, GetAllParams } from "../types/deals/deal.types";
 
 
 
@@ -26,7 +26,10 @@ const dealService = {
   update:(id: ParamValue, payload:DealUpdatePayload)=> api.put(`/deal/update/${id}`, payload),
   delete:(id:string)=> api.delete(`/deal/delete/${id}`),
   bulkAssign:(deal_ids: string[], assigned_to: string)=> api.patch(`/deal/bulk-assign`, { deal_ids, assigned_to }),
-  updateStage:(id: string, dealStage: string)=> api.patch(`/deal/update/${id}/stage`, { dealStage }),
+  updateStage:(id: string, stageOrPayload: string | DealStageUpdatePayload)=> api.patch(
+    `/deal/update/${id}/stage`,
+    typeof stageOrPayload === "string" ? { dealStage: stageOrPayload } : stageOrPayload
+  ),
 }
 
 export default dealService

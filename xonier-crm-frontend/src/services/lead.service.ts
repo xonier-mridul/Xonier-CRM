@@ -1,6 +1,6 @@
 import { ParamValue } from "next/dist/server/request/params";
 import api from "../lib/axios";
-import { BulkLeadPayload, LeadPayload, UpdateLeadStatusPayload, BulkReassignLeadSchema, LeadEngagementStatusPayload} from "../types/leads/leads.types";
+import { BulkLeadPayload, LeadPayload, UpdateLeadStatusPayload, DisqualifyLeadPayload, BulkReassignLeadSchema, LeadEngagementStatusPayload} from "../types/leads/leads.types";
 import { SALES_STATUS } from "../constants/enum";
 
 
@@ -46,6 +46,7 @@ const LeadService = {
   getById: (id: ParamValue)=> api.get(`/lead/get-by-id/${id}`),
   update: (id: ParamValue, payload: LeadPayload)=> api.put(`/lead/update/${id}`, payload),
   updateStatus: (id:string, payload: UpdateLeadStatusPayload) =>api.patch(`/lead/update/${id}/status`, payload),
+  disqualify: (id: string, payload: DisqualifyLeadPayload) => api.patch(`/lead/update/${id}/disqualify`, payload),
   delete: (id: string)=> api.delete(`/lead/delete/${id}`),
   updateEngagementStatus: (id: string, payload:LeadEngagementStatusPayload ) =>api.patch(`/lead/update/${id}/connect-status`, payload),
   revokeLeads: (leadsId: Array<string>) => api.patch("/lead/clear-assign/bulk", {leadsIds: leadsId}),

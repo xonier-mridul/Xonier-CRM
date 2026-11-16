@@ -1,4 +1,6 @@
 "use client";
+
+import { useDealStages } from "@/src/hooks/useLeadStatuses";
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import { FormFieldService } from "@/src/services/formField.service";
 import { UserFormService } from "@/src/services/userForm.service";
@@ -46,8 +48,11 @@ import { useCompanyCurrency } from "@/src/components/providers/CompanyCurrencyPr
 import { currencyLabel } from "@/src/app/utils/currency.utils";
 import {MdSearch } from "react-icons/md";
 import LanguageSelector from "@/src/components/common/LanguageSelector";
+import CommercialEntitySelectors from "@/src/components/common/CommercialEntitySelectors";
 
 const page = (): JSX.Element => {
+  const { statuses: stages } = useDealStages();
+  const stageOptions = stages.filter(stage => stage.type === "ongoing").map(stage => ({ value: stage.key, label: stage.name }));
   const { t } = useTranslation();
   const currency = useCompanyCurrency();
   const [err, setErr] = useState<string | string[]>("");
@@ -68,6 +73,8 @@ const page = (): JSX.Element => {
     const [leadData, setLeadData] = useState<Lead | null>(null);
   const [formData, setFormData] = useState<DealPayload>({
     lead_id: "",
+    organizationId: null,
+    personId: null,
     dealName: "",
     // dealPipeline: DEAL_PIPELINE.QUALIFICATION,
     dealStage: DEAL_STAGES.QUALIFICATION,
@@ -112,7 +119,10 @@ const page = (): JSX.Element => {
           setFormData((prev) => ({
             ...prev,
             lead_id: String(id),
+            organizationId: fetchedLead?.organizationId ?? null,
+            personId: fetchedLead?.personId ?? null,
             dealName: prev.dealName || fetchedLead?.fullName || "",
+            originalTrafficSource: prev.originalTrafficSource || fetchedLead?.source || "",
           }));
         }
       } catch (error) {
@@ -229,6 +239,10 @@ const page = (): JSX.Element => {
       }
       if (!Number.isFinite(formData.amount) || formData.amount <= 0) {
         toast.error("Enter an amount greater than 0");
+        return;
+      }
+      if (!stageOptions.some(stage => stage.value === formData.dealStage)) {
+        toast.error("Select a configured deal stage.");
         return;
       }
       const result = await dealService.create(formData);
@@ -466,6 +480,16 @@ const page = (): JSX.Element => {
 
       <div className="ml-90 relative mt-18 flex flex-col gap-6 p-8 mr-4">
         <LeadInfoCard lead={leadData} loading={isLoading} />
+        <CommercialEntitySelectors
+          organizationId={formData.organizationId ?? null}
+          personId={formData.personId ?? null}
+          onOrganizationChange={(orgId) =>
+            setFormData((prev) => ({ ...prev, organizationId: orgId }))
+          }
+          onPersonChange={(persId) =>
+            setFormData((prev) => ({ ...prev, personId: persId }))
+          }
+        />
         {err && <ErrorComponent error={err} />}
         <div className=" bg-white dark:bg-gray-700 p-6 rounded-lg grid grid-cols-2 gap-5">
           {!isLoading ? (
@@ -569,7 +593,8 @@ const page = (): JSX.Element => {
                       <Select
                         name={item.key}
                         label={currencyLabel(item.name, item.key, currency)}
-                        options={item.options ?? []}
+                        options={item.key === "dealStage" ? stageOptions : item.options ?? []}
+                        value={item.key === "dealStage" ? formData.dealStage : undefined}
                         placeholder={item.placeholder ?? "Select"}
                         onChange={(e) => handleChange(e)}
                         required={item.required}

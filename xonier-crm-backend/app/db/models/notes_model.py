@@ -11,7 +11,8 @@ class NoteModel(BaseDocument):
     title: str = Field(..., min_length=3, max_length=35)
     content: str  
     entityType: NOTES_ENTITIES 
-    # entityId: Optional[str] = None  
+    entityId: Optional[str] = None  
+    entityName: Optional[str] = None
 
     visibility: NOTE_VISIBILITY = NOTE_VISIBILITY.PUBLIC
     status: NOTE_STATUS = NOTE_STATUS.ACTIVE

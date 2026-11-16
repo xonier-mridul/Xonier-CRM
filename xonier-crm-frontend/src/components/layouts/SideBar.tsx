@@ -902,16 +902,16 @@ const isSuperAdmin = auth.user?.userRole?.some(
                 )}
               </AnimatePresence>
             </li>}
-            {(hasPermission(PERMISSIONS.readClient)&&  (hasFeature(FEATURES.CRM)) && !auth.isAdmin) && <li>
+            {((hasPermission(PERMISSIONS.readClient) || hasPermission(PERMISSIONS.readLead) || hasPermission(PERMISSIONS.readDeal)) && (hasFeature(FEATURES.CRM)) && !auth.isAdmin) && <li>
               <Link
                 href="/clients"
                 onClick={handleNavClick("/clients")}
-                className={`${isActive("/clients")
+                className={`${(isActive("/clients") || isActive("/organizations"))
                   ? "dark:text-cyan-300 text-cyan-700 dark:text-cyan-300  border-l-2 bg-linear-to-r from-cyan-50 dark:from-slate-600 to-cyan-200 dark:to-slate-800 border-cyan-600 dark:border-cyan-300"
                   : "border-l-2 border-transparent"
                   } flex items-center gap-3 px-4 py-2.5 rounded-md text-sm hover:bg-cyan-600/10 transition-all`}
               >
-                       <span  className={`${isActive("/clients")?'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
+                       <span  className={`${(isActive("/clients") || isActive("/organizations")) ? 'bg-cyan-100 dark:bg-cyan-200 dark:text-cyan-400  w-8 border border-cyan-600 dark:border-none items-center h-8 flex justify-center rounded-xl':'' }`}>
                 <FiUserCheck className="text-lg" />
                 </span>
                 {t("clients")}

@@ -1,5 +1,5 @@
 "use client";
-import { useLeadStatuses } from "@/src/hooks/useLeadStatuses";
+import { useLeadStatuses, useDealStages } from "@/src/hooks/useLeadStatuses";
 
 import React, { useEffect, useState, useCallback } from "react";
 import { usePermissions } from "@/src/hooks/usePermissions";
@@ -57,14 +57,6 @@ const STATUS_BADGE: Record<string, string> = {
 const AVATAR_BG = [
   "bg-cyan-500", "bg-violet-500", "bg-pink-500",
   "bg-orange-500", "bg-green-500", "bg-cyan-500",
-];
-
-const topPerformers = [
-  { name: "Arjun Verma", deals: 14, revenue: 128000, avatar: "AV" },
-  { name: "Neha Kapoor", deals: 11, revenue: 104000, avatar: "NK" },
-  { name: "Rohan Das", deals: 9, revenue: 87000, avatar: "RD" },
-  { name: "Meera Pillai", deals: 8, revenue: 76000, avatar: "MP" },
-  { name: "Karan Singh", deals: 15, revenue: 132000, avatar: "KS" },
 ];
 
 function fmt(n: number): string {
@@ -168,6 +160,7 @@ type TrendData = {
 
 export default function SalesDashboardPage() {
   const { label: leadStatusLabel } = useLeadStatuses();
+  const { label: dealStageLabel, statuses: dealStages } = useDealStages();
   const { t } = useTranslation();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -228,13 +221,30 @@ const dealTrendData: TrendData[] =
     .map((s) => ({ name: capitalize(s.source), value: s.count })) ?? [];
 
   const totalLeads = Math.max(leads?.total ?? 1, 1);
-  
 
-  const pipelineTotalAmount = data?.dealPipelineBreakdown?.reduce(
-    (sum, p) => sum + p.totalAmount, 0
-  ) ?? 0;
+  const pipelineStages = data?.dealPipelineBreakdown ?? [];
 
-  const isAdmin = data?.role === "super_admin" || data?.role === "company_admin";
+  const pipelineTotalAmount = pipelineStages
+    .filter((p) => p.type !== "final" && p.pipeline !== "won" && p.pipeline !== "lost")
+    .reduce((sum, p) => sum + (p.totalAmount ?? 0), 0);
+
+  const resolvedPerformers = (data?.topPerformers ?? data?.memberPerformance ?? []).map((p) => {
+    const fullName = [p.firstName, p.lastName].filter(Boolean).join(" ").trim() || "Unknown User";
+    const initials = `${(p.firstName || "")[0] ?? ""}${(p.lastName || "")[0] ?? ""}`.toUpperCase() || "?";
+    return {
+      userId: p.userId,
+      name: fullName,
+      avatar: initials,
+      deals: p.closedDeals ?? 0,
+      totalDeals: p.totalDeals ?? 0,
+      wonLeads: p.wonLeads ?? 0,
+      revenue: p.totalRevenue ?? 0,
+    };
+  });
+  const maxPerformerRevenue = Math.max(...resolvedPerformers.map((p) => p.revenue), 1);
+
+  const isSuperAdmin = data?.role === "super_admin";
+  const isAdmin = isSuperAdmin || data?.role === "company_admin";
 
   if (loading) {
     return (
@@ -286,114 +296,86 @@ if (!data) return null;
 
 if (!isAdminRole && (!leads || !deals || !enquiries)) return null; 
 
-  const kpiCards = isAdmin ? [
-    // {
-    //   label: "Total Leads",
-    //   value: fmt(leads.total),
-    //   sub: `${fmt(leads.active)} active · ${leads.won} won · ${leads.deleted ?? 0} deleted`,
-    //   barPct: Math.min((leads.active / totalLeads) * 100, 100),
-    //   color: "#6366f1",
-    //   icon: <TrendingUp className="w-4 h-4" />,
-    //   iconBg: "bg-cyan-500",
-    //   link: "/leads",
-    //   show: hasPermission(PERMISSIONS.readLead),
-    // },
-    // {
-    //   label: "Active Deals",
-    //   value: deals.active,
-    //   sub: `${fmtCurrency(pipelineTotalAmount)} pipeline · ${deals.closed} closed`,
-    //   barPct: Math.min((deals.active / Math.max(deals.total, 1)) * 100, 100),
-    //   color: "#ec4899",
-    //   icon: <Handshake className="w-4 h-4" />,
-    //   iconBg: "bg-pink-500",
-    //   link: "/deals",
-    //   show: hasPermission(PERMISSIONS.readDeal),
-    // },
-    // {
-    //   label: "Total Users",
-    //   value: users?.total ?? 0,
-    //   sub: `${users?.thisMonth ?? 0} joined · ${users?.inactive ?? 0} inactive · ${users?.deleted ?? 0} deleted`,
-    //   barPct: Math.min(((users?.active ?? 0) / Math.max(users?.total ?? 1, 1)) * 100, 100),
-    //   color: "#22c55e",
-    //   icon: <Users className="w-4 h-4" />,
-    //   iconBg: "bg-green-500",
-    //   link: "/users",
-    //   show: isAdmin && hasPermission(PERMISSIONS.readUser),
-    // },
-    // {
-    //   label: "Teams",
-    //   value: teams?.totalTeams ?? 0,
-    //   sub: `${teams?.activeTeams ?? 0} active · ${teams?.deletedTeams ?? 0} deleted`,
-    //   barPct: Math.min(((teams?.activeTeams ?? 0) / Math.max(teams?.totalTeams ?? 1, 1)) * 100, 100),
-    //   color: "#06b6d4",
-    //   icon: <Users className="w-4 h-4" />,
-    //   iconBg: "bg-cyan-500",
-    //   link: "/teams",
-    //   show: !isAdmin && hasPermission(PERMISSIONS.readTeam),
-    // },
-    // {
-    //   label: "Enquiries",
-    //   value: enquiries.total,
-    //   sub: `${enquiries.assigned} assigned · ${enquiries.unassigned ?? 0} unassigned · ${enquiries.active ?? 0} active`,
-    //   barPct: Math.min((enquiries.assigned / Math.max(enquiries.total, 1)) * 100, 100),
-    //   color: "#f97316",
-    //   icon: <MessageSquare className="w-4 h-4" />,
-    //   iconBg: "bg-orange-500",
-    //   link: "/enquiry",
-    //   show: hasPermission(PERMISSIONS.readEnquiry),
-    // },
-          {
-        label: "Total Companies",
-        value: data.companies?.total ?? 0,
-        sub: `${data.companies?.active ?? 0} active · ${data.companies?.deleted ?? 0} deleted`,
-        barPct: Math.min(((data.companies?.active ?? 0) / Math.max(data.companies?.total ?? 1, 1)) * 100, 100),
-        color: "#6366f1",
-        icon: <Users className="w-4 h-4" />,
-        iconBg: "bg-cyan-500",
-        link: "/companies",
-        show: true,
-      },
-      {
-        label: "Total Users",
-        value: data.users?.total ?? 0,
-        sub: `${data.users?.thisMonth ?? 0} joined · ${data.users?.inactive ?? 0} inactive`,
-        barPct: Math.min(((data.users?.active ?? 0) / Math.max(data.users?.total ?? 1, 1)) * 100, 100),
-        color: "#22c55e",
-        icon: <Users className="w-4 h-4" />,
-        iconBg: "bg-green-500",
-        link: "/users",
-        show: hasPermission(PERMISSIONS.readUser),
-      },
-      {
-        label: "Subscriptions",
-        value: data.subscriptions?.active ?? 0,
-        sub: `${data.subscriptions?.expiringSoon ?? 0} expiring soon`,
-        barPct: 100,
-        color: "#ec4899",
-        icon: <DollarSign className="w-4 h-4" />,
-        iconBg: "bg-pink-500",
-        link: "/subscriptions",
-        show: true,
-      },
-
-  ] :
-  [
-      // your existing non-admin cards
-      {
-        label: "Total Leads",
-        value: fmt(leads?.total ?? 0),
-        sub: `${fmt(leads?.active ?? 0)} active · ${leads?.won ?? 0} won`,
-        barPct: Math.min(((leads?.active ?? 0) / Math.max(leads?.total ?? 1, 1)) * 100, 100),
-        color: "#6366f1",
-        icon: <TrendingUp className="w-4 h-4" />,
-        iconBg: "bg-cyan-500",
-        link: "/leads",
-        show: hasPermission(PERMISSIONS.readLead),
-      },
-      // ... rest of your existing cards
-    ]
-  
-  .filter((c) => c.show);
+  const kpiCards = isSuperAdmin ? [
+    {
+      label: "Total Companies",
+      value: data.companies?.total ?? 0,
+      sub: `${data.companies?.active ?? 0} active · ${data.companies?.deleted ?? 0} deleted`,
+      barPct: Math.min(((data.companies?.active ?? 0) / Math.max(data.companies?.total ?? 1, 1)) * 100, 100),
+      color: "#6366f1",
+      icon: <Users className="w-4 h-4" />,
+      iconBg: "bg-cyan-500",
+      link: "/companies",
+      show: true,
+    },
+    {
+      label: "Total Users",
+      value: data.users?.total ?? 0,
+      sub: `${data.users?.thisMonth ?? 0} joined · ${data.users?.inactive ?? 0} inactive`,
+      barPct: Math.min(((data.users?.active ?? 0) / Math.max(data.users?.total ?? 1, 1)) * 100, 100),
+      color: "#22c55e",
+      icon: <Users className="w-4 h-4" />,
+      iconBg: "bg-green-500",
+      link: "/users",
+      show: hasPermission(PERMISSIONS.readUser),
+    },
+    {
+      label: "Subscriptions",
+      value: data.subscriptions?.active ?? 0,
+      sub: `${data.subscriptions?.expiringSoon ?? 0} expiring soon`,
+      barPct: 100,
+      color: "#ec4899",
+      icon: <DollarSign className="w-4 h-4" />,
+      iconBg: "bg-pink-500",
+      link: "/subscriptions",
+      show: true,
+    },
+  ].filter((c) => c.show) : [
+    {
+      label: "Total Leads",
+      value: fmt(leads?.total ?? 0),
+      sub: `${fmt(leads?.active ?? 0)} active · ${leads?.won ?? 0} won`,
+      barPct: Math.min(((leads?.active ?? 0) / Math.max(leads?.total ?? 1, 1)) * 100, 100),
+      color: "#6366f1",
+      icon: <TrendingUp className="w-4 h-4" />,
+      iconBg: "bg-cyan-500",
+      link: "/leads",
+      show: Boolean(leads) && hasPermission(PERMISSIONS.readLead),
+    },
+    {
+      label: "Active Deals",
+      value: deals?.active ?? 0,
+      sub: `${fmtCurrency(pipelineTotalAmount)} pipeline · ${deals?.closed ?? 0} closed`,
+      barPct: Math.min(((deals?.active ?? 0) / Math.max(deals?.total ?? 1, 1)) * 100, 100),
+      color: "#ec4899",
+      icon: <Handshake className="w-4 h-4" />,
+      iconBg: "bg-pink-500",
+      link: "/deals",
+      show: Boolean(deals) && hasPermission(PERMISSIONS.readDeal),
+    },
+    {
+      label: "Total Users",
+      value: users?.total ?? 0,
+      sub: `${users?.thisMonth ?? 0} joined · ${users?.active ?? 0} active`,
+      barPct: Math.min(((users?.active ?? 0) / Math.max(users?.total ?? 1, 1)) * 100, 100),
+      color: "#22c55e",
+      icon: <Users className="w-4 h-4" />,
+      iconBg: "bg-green-500",
+      link: "/users",
+      show: Boolean(users) && hasPermission(PERMISSIONS.readUser),
+    },
+    {
+      label: "Enquiries",
+      value: enquiries?.total ?? 0,
+      sub: `${enquiries?.assigned ?? 0} assigned · ${enquiries?.active ?? 0} active`,
+      barPct: Math.min(((enquiries?.assigned ?? 0) / Math.max(enquiries?.total ?? 1, 1)) * 100, 100),
+      color: "#f97316",
+      icon: <MessageSquare className="w-4 h-4" />,
+      iconBg: "bg-orange-500",
+      link: "/enquiry",
+      show: Boolean(enquiries) && hasPermission(PERMISSIONS.readEnquiry),
+    },
+  ].filter((c) => c.show);
 
   console.log("kpiCards visible:", kpiCards.length, kpiCards.map(c => c.label));
 console.log("data.role:", data?.role, "isAdmin:", isAdmin);
@@ -588,8 +570,8 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
             </div>
             <ResponsiveContainer width="100%" height={240}>
               <BarChart
-                data={(data.dealPipelineBreakdown ?? []).map((p) => ({
-                  stage: capitalize(p.pipeline).split(" ")[0],
+                data={pipelineStages.map((p) => ({
+                  stage: p.name || dealStageLabel(p.pipeline) || capitalize(p.pipeline),
                   count: p.count,
                   amount: p.totalAmount,
                 }))}
@@ -598,12 +580,18 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
                 <XAxis type="number" tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                <YAxis type="category" dataKey="stage" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} width={65} />
+                <YAxis type="category" dataKey="stage" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} width={110} />
                 <Tooltip content={<CustomTooltip />} />
                 <Bar dataKey="count" radius={[0, 6, 6, 0]}>
-                  {(data.dealPipelineBreakdown ?? []).map((p, i) => (
-                    <Cell key={i} fill={PIPELINE_COLORS[p.pipeline as DealPipelineStage] ?? "#6366f1"} />
-                  ))}
+                  {pipelineStages.map((p, i) => {
+                    const matchedStageColor = dealStages.find((s) => s.key === p.pipeline)?.color;
+                    return (
+                      <Cell
+                        key={p.pipeline || i}
+                        fill={p.color || matchedStageColor || PIPELINE_COLORS[p.pipeline as DealPipelineStage] || "#6366f1"}
+                      />
+                    );
+                  })}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -778,34 +766,49 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
 
         <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
           <div className="flex justify-between items-center mb-4">
-            <SectionTitle title={t("top_performers")} sub="Sales team leaderboard this month" />
-            <MdOutlineLeaderboard
-              className="w-4 h-4 text-cyan-600 dark:text-cyan-400 cursor-pointer"
-              onClick={() => setLeaderboard(true)}
-            />
+            <SectionTitle title={t("top_performers")} sub="Ranked by closed deal revenue" />
+            {resolvedPerformers.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setLeaderboard(true)}
+                aria-label="Open Leaderboard"
+                title="Open Leaderboard"
+                className="p-1.5 rounded-lg hover:bg-cyan-50 dark:hover:bg-gray-700 text-cyan-600 dark:text-cyan-400 transition-colors cursor-pointer"
+              >
+                <MdOutlineLeaderboard className="w-4 h-4" />
+              </button>
+            )}
           </div>
-          <div className="grid grid-cols-4 gap-4">
-            {topPerformers.slice(0, 4).map((p, i) => (
-              <div key={p.name}
-                className="flex flex-col items-center text-center p-4 rounded-xl bg-slate-50 dark:bg-gray-700 hover:bg-cyan-50 dark:hover:bg-gray-600 transition-colors duration-200">
-                <div className="relative mb-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 to-violet-600 flex items-center justify-center text-white text-sm font-bold shadow-md">
-                    {p.avatar}
+          {resolvedPerformers.length === 0 ? (
+            <div className="py-10 text-center text-sm text-gray-400 dark:text-gray-500">
+              No closed deals or leaderboard data yet
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {resolvedPerformers.slice(0, 4).map((p, i) => (
+                <div key={p.userId || p.name}
+                  className="flex flex-col items-center text-center p-4 rounded-xl bg-slate-50 dark:bg-gray-700 hover:bg-cyan-50 dark:hover:bg-gray-600 transition-colors duration-200">
+                  <div className="relative mb-3">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 to-violet-600 flex items-center justify-center text-white text-sm font-bold shadow-md">
+                      {p.avatar}
+                    </div>
+                    {i === 0 && <span className="absolute -top-1.5 -right-1.5 text-base">🥇</span>}
+                    {i === 1 && <span className="absolute -top-1.5 -right-1.5 text-base">🥈</span>}
+                    {i === 2 && <span className="absolute -top-1.5 -right-1.5 text-base">🥉</span>}
                   </div>
-                  {i === 0 && <span className="absolute -top-1.5 -right-1.5 text-base">🥇</span>}
-                  {i === 1 && <span className="absolute -top-1.5 -right-1.5 text-base">🥈</span>}
-                  {i === 2 && <span className="absolute -top-1.5 -right-1.5 text-base">🥉</span>}
+                  <p className="text-sm font-semibold text-slate-800 dark:text-white mb-0.5 capitalize">{p.name}</p>
+                  <p className="text-xs text-slate-400 mb-2">
+                    {p.deals} deals closed · {p.wonLeads} won leads
+                  </p>
+                  <p className="text-sm font-bold text-cyan-600 dark:text-cyan-400">{fmtCurrency(p.revenue)}</p>
+                  <div className="w-full mt-3 bg-slate-200 dark:bg-gray-600 rounded-full h-1">
+                    <div className="h-1 rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 transition-all"
+                      style={{ width: `${p.revenue > 0 ? Math.min((p.revenue / maxPerformerRevenue) * 100, 100) : 0}%` }} />
+                  </div>
                 </div>
-                <p className="text-sm font-semibold text-slate-800 dark:text-white mb-0.5">{p.name}</p>
-                <p className="text-xs text-slate-400 mb-2">{p.deals} {t("deals_closed")}</p>
-                <p className="text-sm font-bold text-cyan-600 dark:text-cyan-400">{fmtCurrency(p.revenue)}</p>
-                <div className="w-full mt-3 bg-slate-200 dark:bg-gray-600 rounded-full h-1">
-                  <div className="h-1 rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 transition-all"
-                    style={{ width: `${(p.revenue / topPerformers[0].revenue) * 100}%` }} />
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -815,30 +818,38 @@ console.log("data.role:", data?.role, "isAdmin:", isAdmin);
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
               <div>
                 <h2 className="text-lg font-semibold text-gray-800 dark:text-white">{t("leaderboard")}</h2>
-                <p className="text-xs text-gray-400 dark:text-gray-500">{t("top_performers_this_month")}</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">Ranked by closed deal revenue</p>
               </div>
               <button onClick={() => setLeaderboard(false)} className="text-gray-400 hover:text-red-500 transition-colors">✕</button>
             </div>
             <div className="p-6 space-y-3 max-h-[400px] overflow-y-auto">
-              {topPerformers.map((p, i) => (
-                <div key={p.name}
-                  className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-cyan-50 dark:hover:bg-gray-700 transition-all">
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-bold text-gray-400 w-6">#{i + 1}</span>
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-violet-600 flex items-center justify-center text-white text-xs font-bold">
-                      {p.avatar}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-800 dark:text-white">{p.name}</p>
-                      <p className="text-xs text-gray-400">{p.deals} {t("deals_closed")}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-cyan-600 dark:text-cyan-400">{fmtCurrency(p.revenue)}</p>
-                    <p className="text-xs text-gray-400">{t("revenue")}</p>
-                  </div>
+              {resolvedPerformers.length === 0 ? (
+                <div className="py-8 text-center text-sm text-gray-400 dark:text-gray-500">
+                  No closed deals or leaderboard data yet
                 </div>
-              ))}
+              ) : (
+                resolvedPerformers.map((p, i) => (
+                  <div key={p.userId || p.name}
+                    className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-cyan-50 dark:hover:bg-gray-700 transition-all">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-bold text-gray-400 w-6">#{i + 1}</span>
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-violet-600 flex items-center justify-center text-white text-xs font-bold">
+                        {p.avatar}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-800 dark:text-white capitalize">{p.name}</p>
+                        <p className="text-xs text-gray-400">
+                          {p.deals} deals closed · {p.wonLeads} won leads
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold text-cyan-600 dark:text-cyan-400">{fmtCurrency(p.revenue)}</p>
+                      <p className="text-xs text-gray-400">{t("revenue")}</p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
             <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800 flex justify-end">
               <button onClick={() => setLeaderboard(false)}

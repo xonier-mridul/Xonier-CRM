@@ -14,6 +14,8 @@ export interface Lead {
   source: string;
   projectType: PROJECT_TYPES;
   status: string;
+  disqualifiedReason?: string | null;
+  disqualifiedAt?: string | null;
   leadSource: LEAD_SOURCE_TYPE
   createdBy: User;          
   updatedBy?: User | null;  
@@ -21,8 +23,33 @@ export interface Lead {
   companyName?: string | null;
   organizationId?: string | null;
   personId?: string | null;
-  organization?: { id: string; name: string; industry?: string | null; city?: string | null; country?: string | null; cnpj?: string | null } | null;
-  person?: { id: string; fullName: string; title?: string | null } | null;
+  organization?: {
+    id: string;
+    name: string;
+    industry?: string | null;
+    size?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    website?: string | null;
+    city?: string | null;
+    country?: string | null;
+    address?: string | null;
+    notes?: string | null;
+    cnpj?: string | null;
+  } | null;
+  person?: {
+    id: string;
+    fullName: string;
+    organizationId?: string | null;
+    organizationName?: string | null;
+    title?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    linkedin?: string | null;
+    city?: string | null;
+    country?: string | null;
+    notes?: string | null;
+  } | null;
   city?: string | null;
   country?: COUNTRY_CODE | null;
   postalCode?: number | null;
@@ -64,6 +91,9 @@ export interface LeadPayload {
   status?: string;
 
   companyName?: string;
+  organizationId?: string | null;
+  personId?: string | null;
+  cnpj?: string | null;
   city?: string;
   country?: string | null;
   postalCode?: number | null;
@@ -88,6 +118,8 @@ export interface BulkLeadPayload {
 export interface UpdateLeadStatusPayload {
   status: string
 }
+
+export interface DisqualifyLeadPayload { reason: string }
 
 export interface BulkReassignLeadSchema{
     userId: string;

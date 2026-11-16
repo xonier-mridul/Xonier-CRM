@@ -33,12 +33,15 @@ def validate_stages(stages):
 
 
 class LeadStatusService:
+    collection_name = "lead_status_settings"
+    default_statuses = DEFAULT_STATUSES
+
     def __init__(self):
         # Lazy imports avoid the database/model import cycle.
         from app.db.db import Client, settings
         self.client = Client
         self.db = Client[settings.DATABASE_NAME]
-        self.collection = self.db["lead_status_settings"]
+        self.collection = self.db[self.collection_name]
 
     def company_id(self):
         cid = current_company.get()
@@ -52,7 +55,7 @@ class LeadStatusService:
             existing = await self.collection.find_one({"_id": cid}, session=session)
             if existing:
                 return existing
-        update = {"$setOnInsert": {"statuses": deepcopy(DEFAULT_STATUSES)}}
+        update = {"$setOnInsert": {"statuses": deepcopy(self.default_statuses)}}
         if lock:
             # All lead status writes and configuration edits touch this document
             # in their transaction, preventing delete/assignment races.

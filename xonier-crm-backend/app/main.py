@@ -50,6 +50,7 @@ from app.routes.communication.email_route import router as email_router
 from app.routes.dashboard_router import router as dashboard_route
 from app.routes.task_category_route import router as task_category_route
 from app.routes.task_status_route import router as task_status_route
+from app.routes.deal_stage_route import router as deal_stage_route
 from app.routes.lead_status_route import router as lead_status_route
 from app.routes.task_route import router as task_route
 from app.routes.next_action_route import router as next_action_route
@@ -74,6 +75,7 @@ from app.routes.mail_route import router as mail_router
 from app.core.chat_runtime import chat_runtime
 from app.routes.google_calendar_route import router as google_calendar_router
 from app.routes.follow_up_route import router as follow_up_router
+from app.routes.organization_route import organization_router, person_router
 
 settings = get_setting()
 
@@ -187,6 +189,7 @@ app.include_router(email_router)
 app.include_router(dashboard_route)
 app.include_router(task_category_route, prefix="/api/task-category")
 app.include_router(task_status_route, prefix="/api/task-status")
+app.include_router(deal_stage_route, prefix="/api/deal-stage")
 app.include_router(lead_status_route, prefix="/api/lead-status")
 app.include_router(task_route, prefix="/api/task")
 app.include_router(next_action_route, prefix="/api/next-action")
@@ -216,6 +219,10 @@ app.include_router(chat_router)
 app.include_router(whatsapp_router)
 app.include_router(gmail_router)
 app.include_router(mail_router)
+app.include_router(organization_router, prefix="/api/organizations", tags=["Organizations"])
+app.include_router(organization_router, prefix="/api/organization", tags=["Organizations"])
+app.include_router(person_router, prefix="/api/people", tags=["People"])
+app.include_router(person_router, prefix="/api/person", tags=["People"])
 
 app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(AppException, app_exception_handler)

@@ -13,11 +13,18 @@ class OrganizationModel(BaseDocument):
     normalizedName: str
     cnpj: Optional[str] = None
     industry: Optional[str] = None
+    size: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    website: Optional[str] = None
     city: Optional[str] = None
     country: Optional[str] = None
-    createdById: PydanticObjectId
+    address: Optional[str] = None
+    notes: Optional[str] = None
+    createdById: Optional[PydanticObjectId] = None
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updatedAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    deletedAt: Optional[datetime] = None
 
     class Settings:
         name = "organizations"

@@ -1,5 +1,7 @@
 "use client";
 
+
+import { useDealStages } from "@/src/hooks/useLeadStatuses";
 import { handleCopy } from "@/src/app/utils/clipboard.utils";
 import { formatDate } from "@/src/app/utils/date.utils";
 import extractErrorMessages from "@/src/app/utils/error.utils";
@@ -11,7 +13,7 @@ import {
 import PrimaryButton from "@/src/components/ui/PrimeryButton";
 import { SIDEBAR_WIDTH } from "@/src/constants/constants";
 import dealService from "@/src/services/deal.service";
-import { Deal } from "@/src/types/deals/deal.types";
+import { Deal, DealStageUpdatePayload } from "@/src/types/deals/deal.types";
 import axios from "axios";
 import { useParams, useRouter } from "next/navigation";
 import React, { JSX, useEffect, useRef, useState } from "react";
@@ -66,16 +68,19 @@ import { formatCurrency } from "@/src/app/utils/currency.utils";
 import NextActions from "@/src/components/common/NextActions";
 import CommercialTimeline from "@/src/components/common/CommercialTimeline";
 import CompanyContactCard from "@/src/components/common/CompanyContactCard";
+import DealClosureModal from "@/src/components/pages/deal/DealClosureModal";
 import { QuoteService } from "@/src/services/quote.service";
 import { Quotation } from "@/src/types/quotations/quote.types";
 
 const DealViewPage = (): JSX.Element => {
+  const { label: stageLabel } = useDealStages();
   const currency = useCompanyCurrency();
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [dealData, setDealData] = useState<Deal | null>(null);
   const [linkedQuotes, setLinkedQuotes] = useState<Quotation[]>([]);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [closureTarget, setClosureTarget] = useState<"won" | "lost" | null>(null);
   const [activeTab, setActiveTab] = useState<"overview" | "lead" | "activity">(
     "overview"
   );
@@ -148,6 +153,30 @@ const DealViewPage = (): JSX.Element => {
 
   const handleDownload = async () => {
     toast.info("Download functionality coming soon");
+  };
+
+  const handleClosureConfirm = async (
+    payload: DealStageUpdatePayload
+  ): Promise<boolean> => {
+    if (!dealData) return false;
+    try {
+      const result = await dealService.updateStage(dealData.id, payload);
+      if (result.status === 200) {
+        toast.success(
+          payload.dealStage === DEAL_STAGES.LOST
+            ? "Deal marked as Closed Lost"
+            : "Deal marked as Closed Won"
+        );
+        await getDealData(dealData.id);
+        return true;
+      }
+    } catch (error) {
+      const messages = extractErrorMessages(error);
+      toast.error(
+        Array.isArray(messages) ? messages[0] : messages || "Failed to update deal stage"
+      );
+    }
+    return false;
   };
 
   const handlePrint = useReactToPrint({
@@ -308,7 +337,7 @@ const DealViewPage = (): JSX.Element => {
                     )}`}
                   >
                     <IoFunnelOutline className="w-4 h-4 text-[10px]" />
-                    {dealData?.dealStage?.replace("_", " ")}
+                    {stageLabel(dealData?.dealStage ?? "")}
                   </span>
                   <span
                     className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium capitalize ${getDealTypeColor(
@@ -331,6 +360,33 @@ const DealViewPage = (): JSX.Element => {
               {/* Hide action buttons when printing */}
            
                 <div className="flex flex-wrap items-center gap-2 print:hidden">
+                {hasPermission(PERMISSIONS.updateDeal) &&
+                  dealData.status !== DEAL_STATUS.DELETE && (
+                    <>
+                      {!([DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON] as string[]).includes(
+                        dealData.dealStage
+                      ) && (
+                        <button
+                          type="button"
+                          onClick={() => setClosureTarget("won")}
+                          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors"
+                        >
+                          <IoCheckmarkCircle className="w-4 h-4" />
+                          Mark Won
+                        </button>
+                      )}
+                      {dealData.dealStage !== DEAL_STAGES.LOST && (
+                        <button
+                          type="button"
+                          onClick={() => setClosureTarget("lost")}
+                          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-sm font-medium rounded-lg transition-colors"
+                        >
+                          <IoCloseCircle className="w-4 h-4" />
+                          Mark Lost
+                        </button>
+                      )}
+                    </>
+                  )}
                 {hasPermission(PERMISSIONS.createQuote) &&
                   dealData.status !== DEAL_STATUS.DELETE && (
                     <Link
@@ -419,7 +475,11 @@ const DealViewPage = (): JSX.Element => {
           )}
         </div>
 
-        <CompanyContactCard organization={dealData.organization} person={dealData.person} />
+        <CompanyContactCard
+          organization={dealData.organization}
+          person={dealData.person}
+          onUpdated={() => { if (id) void getDealData(id as string); }}
+        />
 
         {/* Hide tab nav when printing */}
         {!isPrinting && (
@@ -467,7 +527,7 @@ const DealViewPage = (): JSX.Element => {
                   <InfoItem
                     icon={<MdTimeline className="w-4 h-4" />}
                     label={t("stage")}
-                    value={dealData?.dealStage}
+                    value={stageLabel(dealData?.dealStage ?? "")}
                   />
                   <InfoItem
                     icon={<MdCategory className="w-4 h-4" />}
@@ -514,7 +574,7 @@ const DealViewPage = (): JSX.Element => {
                     label={t("next_step")}
                     value={dealData?.nextStep ?? "—"}
                   />
-                  {[DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON].includes(dealData.dealStage) && <InfoItem
+                  {([DEAL_STAGES.WON, DEAL_STAGES.CLOSED_WON] as string[]).includes(dealData.dealStage) && <InfoItem
                     icon={<IoCheckmarkCircle className="w-4 h-4" />}
                     label={t("closed_won_reason")}
                     value={dealData?.closedWonReason ?? "—"}
@@ -746,6 +806,14 @@ const DealViewPage = (): JSX.Element => {
           </div>
         </div>
       </div>
+
+      <DealClosureModal
+        isOpen={Boolean(closureTarget)}
+        deal={dealData}
+        initialStage={closureTarget ?? "won"}
+        onClose={() => setClosureTarget(null)}
+        onConfirm={handleClosureConfirm}
+      />
     </div>
   );
 };

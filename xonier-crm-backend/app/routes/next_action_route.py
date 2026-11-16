@@ -7,11 +7,15 @@ from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field, field_validator
 
 from app.core.dependencies import Dependencies
-from app.core.enums import FEATURE
+from app.core.enums import FEATURE, NOTE_STATUS, NOTE_VISIBILITY
 from app.db.models.deal_model import DealModel
 from app.db.models.lead_model import LeadsModel
 from app.db.models.next_action_model import NextActionModel
 from app.db.models.activity_model import ActivityModel
+from app.db.models.notes_model import NoteModel
+from app.db.models.task_model import TaskModel
+from app.db.models.task_status_model import TaskStatusModel
+from app.db.models.task_activity_model import TaskActivityModel
 from app.db.models.user_model import UserModel
 from app.db.models.company_model import CompanyModel
 from app.db.models.communications.email_history_model import EmailHistoryModel
@@ -97,6 +101,123 @@ async def list_owners(request: Request, entity_type: str, entity_id: str):
     return {"data": [{"id": str(user.id), "name": " ".join(filter(None, [user.firstName, user.lastName]))} for user in users]}
 
 
+def _link_id(link) -> str:
+    if not link:
+        return ""
+    ref = getattr(link, "ref", None)
+    if ref is not None and getattr(ref, "id", None) is not None:
+        return str(ref.id)
+    if getattr(link, "id", None) is not None:
+        return str(link.id)
+    return str(link) if isinstance(link, PydanticObjectId) else ""
+
+
+async def _collect_notes_and_tasks(
+    entity_type: str,
+    entity_id_str: str,
+    current_user_id: str,
+    prefix: str = "",
+) -> list[dict]:
+    items: list[dict] = []
+    label_prefix = "Lead · " if prefix else ""
+
+    notes = await NoteModel.find({
+        "entityType": entity_type,
+        "entityId": entity_id_str,
+        "status": NOTE_STATUS.ACTIVE.value,
+        "deletedAt": None,
+    }).sort("-createdAt").limit(100).to_list()
+
+    visible_notes = []
+    for note in notes:
+        vis = note.visibility.value if hasattr(note.visibility, "value") else str(note.visibility)
+        creator_id = _link_id(note.createdBy)
+        if vis == NOTE_VISIBILITY.PRIVATE.value and creator_id != str(current_user_id):
+            continue
+        visible_notes.append((note, creator_id))
+
+    tasks = await TaskModel.find({
+        "entityType": entity_type,
+        "entityId": entity_id_str,
+        "deletedAt": None,
+    }).sort("-createdAt").limit(100).to_list()
+
+    task_activities = []
+    if tasks:
+        task_oids = [task.id for task in tasks]
+        task_activities = await TaskActivityModel.find({
+            "$or": [
+                {"task.$id": {"$in": task_oids}},
+                {"task": {"$in": task_oids}},
+            ]
+        }).sort("-createdAt").limit(100).to_list()
+
+    user_ids = {creator_id for _, creator_id in visible_notes if creator_id}
+    user_ids |= {
+        actor_id
+        for actor_id in (_link_id(ta.performedBy) for ta in task_activities)
+        if actor_id
+    }
+    valid_user_oids = [PydanticObjectId(uid) for uid in user_ids if PydanticObjectId.is_valid(uid)]
+    users = (
+        {str(user.id): user for user in await UserModel.find({"_id": {"$in": valid_user_oids}}).to_list()}
+        if valid_user_oids
+        else {}
+    )
+
+    status_ids = {sid for sid in (_link_id(task.status) for task in tasks) if sid}
+    valid_status_oids = [PydanticObjectId(sid) for sid in status_ids if PydanticObjectId.is_valid(sid)]
+    statuses = (
+        {str(st.id): st for st in await TaskStatusModel.find({"_id": {"$in": valid_status_oids}}).to_list()}
+        if valid_status_oids
+        else {}
+    )
+
+    for note, creator_id in visible_notes:
+        creator = users.get(creator_id)
+        creator_name = " ".join(filter(None, [creator.firstName, creator.lastName])) if creator else ""
+        items.append({
+            "id": f"{prefix}note-{note.id}",
+            "at": note.createdAt,
+            "kind": "note",
+            "title": f"{label_prefix}Note: {note.title}",
+            "detail": " · ".join(filter(None, [note.content, creator_name])),
+            "pending": False,
+        })
+
+    task_map = {str(task.id): task for task in tasks}
+    for task in tasks:
+        status_doc = statuses.get(_link_id(task.status))
+        status_name = status_doc.name.replace("_", " ").title() if status_doc and getattr(status_doc, "name", None) else "Task"
+        is_final = bool(getattr(status_doc, "isFinal", False))
+        priority = task.priority.value if hasattr(task.priority, "value") else str(task.priority or "")
+        items.append({
+            "id": f"{prefix}task-{task.id}",
+            "at": task.completedAt or task.createdAt,
+            "kind": "task",
+            "title": f"{label_prefix}Task: {task.title}",
+            "detail": " · ".join(filter(None, [status_name, f"Priority: {priority}" if priority else "", task.description or ""])),
+            "pending": task.completedAt is None and not is_final,
+        })
+
+    for ta in task_activities:
+        parent_task = task_map.get(_link_id(ta.task))
+        parent_title = parent_task.title if parent_task else "Task"
+        actor = users.get(_link_id(ta.performedBy))
+        actor_name = " ".join(filter(None, [actor.firstName, actor.lastName])) if actor else ""
+        action_label = ta.action.value if hasattr(ta.action, "value") else str(ta.action)
+        items.append({
+            "id": f"{prefix}task-activity-{ta.id}",
+            "at": ta.createdAt,
+            "kind": "task_activity",
+            "title": f"{label_prefix}Task {action_label.replace('_', ' ')}: {parent_title}",
+            "detail": " · ".join(filter(None, [ta.description, actor_name])),
+            "pending": False,
+        })
+
+    return items
+
+
 @router.get("/{entity_type}/{entity_id}/timeline", dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM))])
 async def timeline(request: Request, entity_type: str, entity_id: str):
     record_id = await require_record(request, entity_type, entity_id)
@@ -122,6 +243,7 @@ async def timeline(request: Request, entity_type: str, entity_id: str):
             "detail": " ".join(filter(None, [activity.description, " ".join(filter(None, [actor.firstName, actor.lastName])) if actor else ""])),
             "pending": False,
         })
+    items.extend(await _collect_notes_and_tasks(entity_type, str(record_id), str(request.state.user["_id"])))
     # A deal can inherit call history only when the viewer can also read its lead.
     lead_id = entity_id if entity_type == "lead" else None
     if entity_type == "deal":
@@ -146,6 +268,7 @@ async def timeline(request: Request, entity_type: str, entity_id: str):
                 items.append({"id": f"lead-activity-{activity.id}", "at": activity.createdAt,
                               "kind": "activity", "title": activity.title.replace("_", " ").capitalize(),
                               "detail": "Lead", "pending": False})
+            items.extend(await _collect_notes_and_tasks("lead", str(lead_id), str(request.state.user["_id"]), prefix="lead-"))
         calls = await CallService().lead_history(request.state.user, lead_id)
         for call in calls:
             at = call.get("requestedAt")

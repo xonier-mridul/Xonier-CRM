@@ -25,6 +25,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/src/store";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSIONS } from "@/src/constants/enum";
+import CommercialEntitySelectors from "@/src/components/common/CommercialEntitySelectors";
 
 type AssignableAgent = { id: string; firstName: string; lastName?: string | null };
 
@@ -38,6 +39,9 @@ const KNOWN_LEAD_KEYS = new Set([
   "projectType",
   "status",
   "companyName",
+  "organizationId",
+  "personId",
+  "cnpj",
   "city",
   "country",
   "postalCode",
@@ -271,6 +275,9 @@ const EMPTY_FORM: Record<string, string | number | null> = {
   projectType: "",
   status: "",
   companyName: "",
+  organizationId: null,
+  personId: null,
+  cnpj: null,
   city: "",
   country: null,
   postalCode: null,
@@ -722,6 +729,45 @@ const page = (): JSX.Element => {
         {err && <ErrorComponent error={err} />}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-10">
+          <div className="flex flex-col gap-3">
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-white border-b border-slate-200 dark:border-slate-600 pb-2">
+              Company & Contact Link
+            </h3>
+            <CommercialEntitySelectors
+              organizationId={flatFormData.organizationId ? String(flatFormData.organizationId) : null}
+              personId={flatFormData.personId ? String(flatFormData.personId) : null}
+              onOrganizationChange={(orgId, org) => {
+                setFlatFormData((prev) => ({
+                  ...prev,
+                  organizationId: orgId,
+                  ...(org
+                    ? {
+                        companyName: org.name || prev.companyName,
+                        industry: org.industry || prev.industry,
+                        city: org.city || prev.city,
+                        country: org.country || prev.country,
+                        cnpj: org.cnpj || prev.cnpj,
+                      }
+                    : {}),
+                }));
+              }}
+              onPersonChange={(persId, person) => {
+                setFlatFormData((prev) => ({
+                  ...prev,
+                  personId: persId,
+                  ...(person
+                    ? {
+                        fullName: person.fullName || prev.fullName,
+                        email: person.email || prev.email,
+                        phone: person.phone || prev.phone,
+                        linkedin: person.linkedin || prev.linkedin,
+                        employeeRole: person.title || prev.employeeRole,
+                      }
+                    : {}),
+                }));
+              }}
+            />
+          </div>
           {!isLoading ? (
             userFormField && userFormField.length > 0 ? (
               sections.map((section) => {

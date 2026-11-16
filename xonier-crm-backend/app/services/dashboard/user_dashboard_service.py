@@ -1,4 +1,6 @@
 from app.services.lead_status_service import LeadStatusService
+from app.services.deal_stage_service import DealStageService, DEFAULT_STAGES
+from copy import deepcopy
 from typing import Dict, Any, Optional
 from datetime import datetime, timezone, timedelta
 from bson import ObjectId, DBRef
@@ -355,6 +357,15 @@ class UserDashboardService:
                             "$match": {
                                 "createdBy.$id": user_id,
                                 "status": DEAL_STATUS.ACTIVE.value,
+                                "deletedAt": None,
+                                "dealStage": {
+                                    "$nin": [
+                                        DEAL_STAGES.WON.value,
+                                        DEAL_STAGES.CLOSED_WON.value,
+                                        DEAL_STAGES.LOST.value,
+                                        DEAL_STAGES.DELETE.value,
+                                    ]
+                                },
                             }
                         },
                         {"$count": "count"},
@@ -750,6 +761,11 @@ class UserDashboardService:
         ]
 
     async def _deal_pipeline_breakdown(self, user_id: ObjectId) -> list:
+        try:
+            configured_stages = await DealStageService().list(include_usage=False)
+        except Exception:
+            configured_stages = deepcopy(DEFAULT_STAGES)
+
         pipeline = [
             {
                 "$match": {
@@ -760,45 +776,58 @@ class UserDashboardService:
             },
             {
                 "$group": {
-                    "_id": "$dealPipeline",
+                    "_id": {
+                        "$let": {
+                            "vars": {"raw": {"$ifNull": ["$dealStage", "$dealPipeline"]}},
+                            "in": {"$cond": [{"$eq": ["$$raw", "closed_won"]}, "won", "$$raw"]},
+                        }
+                    },
                     "count": {"$sum": 1},
                     "totalAmount": {"$sum": "$amount"},
                 }
             },
-            {"$sort": {"count": -1}},
             {"$project": {"_id": 0, "pipeline": "$_id", "count": 1, "totalAmount": 1}},
         ]
 
         result = await self._aggregate(DealModel, pipeline)
-
-        pipeline_order = [
-            DEAL_PIPELINE.QUALIFICATION.value,
-            DEAL_PIPELINE.REQUIREMENT_ANALYSIS.value,
-            DEAL_PIPELINE.PROPOSAL.value,
-            DEAL_PIPELINE.NEGOTIATION.value,
-            DEAL_PIPELINE.WON.value,
-            DEAL_PIPELINE.LOST.value,
-        ]
-
-        result_map = {item["pipeline"]: item for item in result}
+        result_map = {item["pipeline"]: item for item in result if item.get("pipeline")}
         total_count = sum(item["count"] for item in result)
 
-        return [
-            {
-                "pipeline": stage,
-                "count": result_map.get(stage, {}).get("count", 0),
-                "totalAmount": result_map.get(stage, {}).get("totalAmount", 0),
-                "percentage": (
-                    round(
-                        (result_map.get(stage, {}).get("count", 0) / total_count * 100),
-                        2,
-                    )
-                    if total_count > 0
-                    else 0
-                ),
-            }
-            for stage in pipeline_order
-        ]
+        seen_keys = set()
+        breakdown = []
+        for stage in configured_stages:
+            key = stage["key"]
+            seen_keys.add(key)
+            stat = result_map.get(key, {})
+            cnt = stat.get("count", 0)
+            breakdown.append(
+                {
+                    "pipeline": key,
+                    "name": stage.get("name", key),
+                    "color": stage.get("color", "#6366f1"),
+                    "type": stage.get("type", "ongoing"),
+                    "count": cnt,
+                    "totalAmount": stat.get("totalAmount", 0),
+                    "percentage": round(cnt / total_count * 100, 2) if total_count > 0 else 0,
+                }
+            )
+
+        for key, stat in result_map.items():
+            if key not in seen_keys and key != DEAL_STAGES.DELETE.value:
+                cnt = stat.get("count", 0)
+                breakdown.append(
+                    {
+                        "pipeline": key,
+                        "name": key.replace("_", " ").title(),
+                        "color": "#64748b",
+                        "type": "final" if key in {"won", "closed_won", "lost"} else "ongoing",
+                        "count": cnt,
+                        "totalAmount": stat.get("totalAmount", 0),
+                        "percentage": round(cnt / total_count * 100, 2) if total_count > 0 else 0,
+                    }
+                )
+
+        return breakdown
 
     async def _recent_activities(self, user_id: ObjectId) -> list:
         pipeline = [

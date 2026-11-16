@@ -7,9 +7,11 @@ from app.utils.custom_exception import AppException
 
 class DealSchema(BaseModel):
     lead_id : Optional[str] = None
+    organizationId: Optional[str] = None
+    personId: Optional[str] = None
     dealName : str 
     # dealPipeline: DEAL_PIPELINE
-    dealStage: DEAL_STAGES
+    dealStage: str = Field(min_length=1, max_length=64)
     dealOwner: Optional[str]
     dealType: DEAL_TYPE
     createDate: datetime
@@ -18,8 +20,8 @@ class DealSchema(BaseModel):
     dealCollaborator: Optional[str] = None
     dealDescription: Optional[str] = None
     extraFields: Dict[str, Any] = Field(default_factory=dict)
-    dealProbability: Optional[int] = Field(None,gt=0, lt=100) 
-    forecastProbability: Optional[int] = Field(None, gt=0, lt=100)
+    dealProbability: Optional[int] = Field(None, ge=0, le=100)
+    forecastProbability: Optional[int] = Field(None, ge=0, le=100)
     nextStep: Optional[str] = None
     forecastCategory: Optional[FORECAST_CATEGORY] = None
     closedWonReason: Optional[str] = None
@@ -78,9 +80,11 @@ class DealSchema(BaseModel):
         return v
     
 class DealUpdateSchema(BaseModel):
+    organizationId: Optional[str] = None
+    personId: Optional[str] = None
     dealName : str 
     # dealPipeline: DEAL_PIPELINE
-    dealStage: DEAL_STAGES
+    dealStage: str = Field(min_length=1, max_length=64)
     dealOwner: Optional[str]
     dealType: DEAL_TYPE
     createDate: datetime
@@ -89,8 +93,8 @@ class DealUpdateSchema(BaseModel):
     dealCollaborator: Optional[str] = None
     dealDescription: Optional[str] = None
     extraFields: Optional[Dict[str, Any]] = None
-    dealProbability: Optional[int] = Field(None,gt=0, lt=100) 
-    forecastProbability: Optional[int] = Field(None, gt=0, lt=100)
+    dealProbability: Optional[int] = Field(None, ge=0, le=100)
+    forecastProbability: Optional[int] = Field(None, ge=0, le=100)
     nextStep: Optional[str] = None
     forecastCategory: Optional[FORECAST_CATEGORY] = None
     closedWonReason: Optional[str] = None
@@ -151,7 +155,15 @@ class UpdateDealStatusSchema(BaseModel):
 
 
 class UpdateDealStageSchema(BaseModel):
-    dealStage: DEAL_STAGES
+    dealStage: str = Field(min_length=1, max_length=64)
+    closeDate: Optional[datetime] = None
+    closedWonReason: Optional[str] = None
+    closedLostReason: Optional[str] = None
+    dealProbability: Optional[int] = Field(None, ge=0, le=100)
+    forecastProbability: Optional[int] = Field(None, ge=0, le=100)
+    forecastCategory: Optional[FORECAST_CATEGORY] = None
+    nextStep: Optional[str] = None
+    amount: Optional[int] = Field(None, gt=0)
 
 
 class BulkAssignDealsSchema(BaseModel):

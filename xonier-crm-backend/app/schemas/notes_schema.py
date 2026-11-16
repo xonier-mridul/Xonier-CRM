@@ -11,6 +11,7 @@ class NoteCreateSchema(BaseModel):
     content: str  
     entityType: NOTES_ENTITIES 
     entityId: Optional[str] = None  
+    entityName: Optional[str] = None
 
     visibility: NOTE_VISIBILITY = NOTE_VISIBILITY.PUBLIC
 

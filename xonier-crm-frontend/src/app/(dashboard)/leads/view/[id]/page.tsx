@@ -105,6 +105,9 @@ const LeadViewPage = (): JSX.Element => {
   >("overview");
   const [callHistory, setCallHistory] = useState<CallTimelineItem[]>([]);
   const [isCallHistoryLoading, setIsCallHistoryLoading] = useState(false);
+  const [disqualifyOpen, setDisqualifyOpen] = useState(false);
+  const [disqualifyReason, setDisqualifyReason] = useState("");
+  const [isDisqualifying, setIsDisqualifying] = useState(false);
 
   const { id } = useParams();
   const router = useRouter();
@@ -189,6 +192,23 @@ const LeadViewPage = (): JSX.Element => {
     toast.info("Duplicate functionality coming soon");
   };
 
+  const handleDisqualify = async () => {
+    if (!leadData || disqualifyReason.trim().length < 2) {
+      toast.error("Please enter a disqualification reason");
+      return;
+    }
+    setIsDisqualifying(true);
+    try {
+      const result = await LeadService.disqualify(leadData.id, { reason: disqualifyReason.trim() });
+      setLeadData(result.data.data);
+      setDisqualifyOpen(false);
+      setDisqualifyReason("");
+      toast.success(result.data.message || "Lead disqualified");
+    } catch (error) {
+      toast.error(axios.isAxiosError(error) ? extractErrorMessages(error).toString() : "Could not disqualify lead");
+    } finally { setIsDisqualifying(false); }
+  };
+
   const handleDownload = async () => {
     toast.info("Download functionality coming soon");
   };
@@ -227,6 +247,7 @@ const LeadViewPage = (): JSX.Element => {
         "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
       won: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
       lost: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+      disqualified: "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400",
       delete: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
     };
     return (
@@ -349,6 +370,11 @@ const LeadViewPage = (): JSX.Element => {
                   {t("update_lead")}
                 </span>
               )}
+              {hasPermission(PERMISSIONS.updateLead) && !leadData.inDeal && leadData.status !== SALES_STATUS.DELETE && leadData.status !== "disqualified" && (
+                <button type="button" onClick={() => setDisqualifyOpen(true)} className="inline-flex items-center gap-2 rounded-lg border border-rose-200 px-4 py-2 text-rose-600 transition-colors hover:bg-rose-50 dark:border-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/30">
+                  <IoCheckmarkCircle className="h-4 w-4" /> Disqualify
+                </button>
+              )}
 {/* 
               <button
                 onClick={handlePrint}
@@ -418,7 +444,11 @@ const LeadViewPage = (): JSX.Element => {
         />
       </div>
 
-      <CompanyContactCard organization={leadData?.organization} person={leadData?.person} />
+      <CompanyContactCard
+        organization={leadData?.organization}
+        person={leadData?.person}
+        onUpdated={() => { void getLeadData(); }}
+      />
 
       {/* Hide tab nav when printing */}
       {!isPrinting && (
@@ -489,6 +519,10 @@ const LeadViewPage = (): JSX.Element => {
                     label={t("status")}
                     value={leadStatusLabel(leadData?.status || "")}
                   />
+                  {leadData?.status === "disqualified" && <>
+                    <InfoItem icon={<IoInformationCircleOutline className="w-4 h-4" />} label="Disqualification reason" value={leadData.disqualifiedReason || "—"} />
+                    <InfoItem icon={<IoTimeOutline className="w-4 h-4" />} label="Disqualified on" value={formatTimelineDate(leadData.disqualifiedAt)} />
+                  </>}
                   {leadData?.extraFields &&
                     Object.entries(leadData.extraFields).map(([key, value]) => (
                       <InfoItem
@@ -832,6 +866,20 @@ const LeadViewPage = (): JSX.Element => {
           )}
         </div>
       </div>
+      {disqualifyOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4" role="dialog" aria-modal="true" aria-labelledby="disqualify-title">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-800">
+            <h2 id="disqualify-title" className="text-lg font-semibold text-slate-900 dark:text-white">Disqualify lead</h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">This closes the lead as disqualified. A reason is required and will be visible to managers.</p>
+            <label className="mt-5 block text-sm font-medium text-slate-700 dark:text-slate-200" htmlFor="disqualification-reason">Reason <span className="text-rose-500">*</span></label>
+            <textarea id="disqualification-reason" autoFocus value={disqualifyReason} onChange={(e) => setDisqualifyReason(e.target.value)} maxLength={2000} rows={4} placeholder="e.g. Budget unavailable, duplicate enquiry, outside our target market" className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-100 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+            <div className="mt-5 flex justify-end gap-3">
+              <button type="button" disabled={isDisqualifying} onClick={() => { setDisqualifyOpen(false); setDisqualifyReason(""); }} className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700">Cancel</button>
+              <button type="button" disabled={isDisqualifying || disqualifyReason.trim().length < 2} onClick={handleDisqualify} className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50">{isDisqualifying ? "Disqualifying…" : "Disqualify lead"}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   </div>
   );

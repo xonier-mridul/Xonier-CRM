@@ -161,6 +161,11 @@ class LeadController:
         
         except AppException as e:
             raise e
+
+    async def disqualify(self, request: Request, id: str, reason: str):
+        result = await self.service.disqualify(leadId=id, reason=reason, user=request.state.user)
+        lead_label = result.get("fullName") or result.get("lead_id") or "Lead"
+        return successResponse(200, f"{lead_label} disqualified successfully", result)
         
 
     async def update_connect_status(self, request: Request, id:str, payload: Dict[str, Any]):

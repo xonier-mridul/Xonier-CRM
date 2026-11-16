@@ -1,4 +1,6 @@
 from app.services.lead_status_service import LeadStatusService
+from app.services.deal_stage_service import DealStageService, DEFAULT_STAGES
+from copy import deepcopy
 
 from typing import Dict, Any, Optional
 from datetime import datetime, timezone, timedelta
@@ -208,7 +210,14 @@ class ManagerDashboardService:
 
             top_performer = None
             if member_performance:
-                top_performer = max(member_performance, key=lambda x: x.get("totalLeads", 0))
+                top_performer = max(
+                    member_performance,
+                    key=lambda x: (
+                        x.get("totalRevenue", 0),
+                        x.get("closedDeals", 0),
+                        x.get("wonLeads", 0),
+                    ),
+                )
 
             return {
                 "role": "manager",
@@ -377,7 +386,19 @@ class ManagerDashboardService:
                         {
                             "$match": {
                                 "status": DEAL_STATUS.ACTIVE.value,
-                                "createdBy.$id": {"$in": scoped_ids}
+                                "deletedAt": None,
+                                "dealStage": {
+                                    "$nin": [
+                                        DEAL_STAGES.WON.value,
+                                        DEAL_STAGES.CLOSED_WON.value,
+                                        DEAL_STAGES.LOST.value,
+                                        DEAL_STAGES.DELETE.value,
+                                    ]
+                                },
+                                "$or": [
+                                    {"createdBy.$id": {"$in": scoped_ids}},
+                                    {"assignedTo.$id": {"$in": scoped_ids}},
+                                ],
                             }
                         },
                         {"$count": "count"}
@@ -627,57 +648,84 @@ class ManagerDashboardService:
         return await self._aggregate(LeadsModel, pipeline)
 
     async def _deal_pipeline_breakdown(self, scoped_ids: list, range_start: datetime, range_end: datetime) -> list:
+        try:
+            configured_stages = await DealStageService().list(include_usage=False)
+        except Exception:
+            configured_stages = deepcopy(DEFAULT_STAGES)
+
         pipeline = [
             {
                 "$match": {
                     "status": {"$ne": DEAL_STATUS.DELETE.value},
+                    "deletedAt": None,
                     "createdAt": {"$gte": range_start, "$lte": range_end},
-                    "createdBy.$id": {"$in": scoped_ids}
+                    "$or": [
+                        {"createdBy.$id": {"$in": scoped_ids}},
+                        {"assignedTo.$id": {"$in": scoped_ids}},
+                    ],
                 }
             },
             {
                 "$group": {
-                    "_id": "$dealPipeline",
+                    "_id": {
+                        "$let": {
+                            "vars": {"raw": {"$ifNull": ["$dealStage", "$dealPipeline"]}},
+                            "in": {"$cond": [{"$eq": ["$$raw", "closed_won"]}, "won", "$$raw"]},
+                        }
+                    },
                     "count": {"$sum": 1},
-                    "totalAmount": {"$sum": "$amount"}
+                    "totalAmount": {"$sum": "$amount"},
                 }
             },
-            {"$sort": {"count": -1}},
             {
                 "$project": {
                     "_id": 0,
                     "pipeline": "$_id",
                     "count": 1,
-                    "totalAmount": 1
+                    "totalAmount": 1,
                 }
-            }
+            },
         ]
 
         result = await self._aggregate(DealModel, pipeline)
-
-        pipeline_order = [
-            DEAL_PIPELINE.QUALIFICATION.value,
-            DEAL_PIPELINE.REQUIREMENT_ANALYSIS.value,
-            DEAL_PIPELINE.PROPOSAL.value,
-            DEAL_PIPELINE.NEGOTIATION.value,
-            DEAL_PIPELINE.WON.value,
-            DEAL_PIPELINE.LOST.value,
-        ]
-
         result_map = {item["pipeline"]: item for item in result if item.get("pipeline")}
         total_count = sum(item["count"] for item in result)
 
-        return [
-            {
-                "pipeline": stage,
-                "count": result_map.get(stage, {}).get("count", 0),
-                "totalAmount": result_map.get(stage, {}).get("totalAmount", 0),
-                "percentage": round(
-                    result_map.get(stage, {}).get("count", 0) / total_count * 100, 2
-                ) if total_count > 0 else 0,
-            }
-            for stage in pipeline_order
-        ]
+        seen_keys = set()
+        breakdown = []
+        for stage in configured_stages:
+            key = stage["key"]
+            seen_keys.add(key)
+            stat = result_map.get(key, {})
+            cnt = stat.get("count", 0)
+            breakdown.append(
+                {
+                    "pipeline": key,
+                    "name": stage.get("name", key),
+                    "color": stage.get("color", "#6366f1"),
+                    "type": stage.get("type", "ongoing"),
+                    "count": cnt,
+                    "totalAmount": stat.get("totalAmount", 0),
+                    "percentage": round(cnt / total_count * 100, 2) if total_count > 0 else 0,
+                }
+            )
+
+        for key, stat in result_map.items():
+            if key not in seen_keys and key != DEAL_STAGES.DELETE.value:
+                cnt = stat.get("count", 0)
+                breakdown.append(
+                    {
+                        "pipeline": key,
+                        "name": key.replace("_", " ").title(),
+                        "color": "#64748b",
+                        "type": "final" if key in {"won", "closed_won", "lost"} else "ongoing",
+                        "count": cnt,
+                        "totalAmount": stat.get("totalAmount", 0),
+                        "percentage": round(cnt / total_count * 100, 2) if total_count > 0 else 0,
+                    }
+                )
+
+        return breakdown
 
     async def _member_performance(self, scoped_ids: list, range_start: datetime, range_end: datetime) -> list:
         lead_pipeline = [
@@ -685,7 +733,10 @@ class ManagerDashboardService:
                 "$match": {
                     "createdAt": {"$gte": range_start, "$lte": range_end},
                     "status": {"$ne": SALES_STATUS.DELETE.value},
-                    "createdBy.$id": {"$in": scoped_ids}
+                    "$or": [
+                        {"createdBy.$id": {"$in": scoped_ids}},
+                        {"assignedTo.$id": {"$in": scoped_ids}},
+                    ],
                 }
             },
             {
@@ -706,12 +757,16 @@ class ManagerDashboardService:
                 "$match": {
                     "createdAt": {"$gte": range_start, "$lte": range_end},
                     "status": {"$ne": DEAL_STATUS.DELETE.value},
-                    "createdBy.$id": {"$in": scoped_ids}
+                    "deletedAt": None,
+                    "$or": [
+                        {"createdBy.$id": {"$in": scoped_ids}},
+                        {"assignedTo.$id": {"$in": scoped_ids}},
+                    ],
                 }
             },
             {
                 "$group": {
-                    "_id": "$createdBy.$id",
+                    "_id": {"$ifNull": ["$assignedTo.$id", "$createdBy.$id"]},
                     "totalDeals": {"$sum": 1},
                     "closedDeals": {
                         "$sum": {
@@ -729,8 +784,8 @@ class ManagerDashboardService:
             self._get_member_details(scoped_ids),
         )
 
-        lead_map = {str(item["_id"]): item for item in lead_results}
-        deal_map = {str(item["_id"]): item for item in deal_results}
+        lead_map = {str(item["_id"]): item for item in lead_results if item.get("_id")}
+        deal_map = {str(item["_id"]): item for item in deal_results if item.get("_id")}
 
         performance = []
         for user in users:
@@ -750,10 +805,18 @@ class ManagerDashboardService:
                 "conversionRate": round(won_leads / total_leads * 100, 2) if total_leads > 0 else 0,
                 "totalDeals": deal_data.get("totalDeals", 0),
                 "closedDeals": deal_data.get("closedDeals", 0),
-                "totalRevenue": deal_data.get("totalRevenue", 0),
+                "totalRevenue": round(float(deal_data.get("totalRevenue", 0) or 0), 2),
             })
 
-        return sorted(performance, key=lambda x: x["totalLeads"], reverse=True)
+        return sorted(
+            performance,
+            key=lambda x: (
+                x.get("totalRevenue", 0),
+                x.get("closedDeals", 0),
+                x.get("wonLeads", 0),
+            ),
+            reverse=True,
+        )
 
     async def _get_member_details(self, scoped_ids: list) -> list:
         pipeline = [

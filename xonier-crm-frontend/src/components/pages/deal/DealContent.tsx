@@ -5,7 +5,7 @@ import { FaRegEye } from "react-icons/fa";
 import { IoIosSearch } from "react-icons/io";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { DEAL_PIPELINE, DEAL_STAGES, DEAL_STATUS, PERMISSIONS } from "@/src/constants/enum";
-import { Deal } from "@/src/types/deals/deal.types";
+import { Deal, DealStageUpdatePayload } from "@/src/types/deals/deal.types";
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -17,6 +17,11 @@ import Skeleton from "react-loading-skeleton";
 import TabsButton from "@/src/components/ui/TabsButton";
 import { MdOutlineEdit, MdOutlineLeaderboard } from "react-icons/md";
 import Link from "next/link";
+import { useSelector } from "react-redux";
+import { RootState } from "@/src/store";
+import { useDealStages } from "@/src/hooks/useLeadStatuses";
+import LeadStatusConfiguration from "../lead/LeadStatusConfiguration";
+import DealAttentionQueue from "./DealAttentionQueue";
 import DealKanbanBoard from "./DealKanbanBoard";
 import { HiOutlineMenuAlt2, HiOutlineViewBoards } from "react-icons/hi";
 import { formatDate } from "@/src/app/utils/date.utils";
@@ -59,6 +64,12 @@ const DealContent = (): JSX.Element => {
   const [currentTab, setCurrentTab] = useState<number>(1);
   const [searchVal, setSearchVal] = useState<string>("");
   const [inputVal, setInputVal] = useState<string>("");
+  const { statuses: dealStages, label: stageLabel, error: stageError, refresh: refreshStages } = useDealStages();
+  const [showAttention, setShowAttention] = useState(false);
+  const [configureStages, setConfigureStages] = useState(false);
+  const canConfigureStages = useSelector((s: RootState) => s.auth.user?.userRole?.some(
+    role => ["COMPANY_ADMIN", "SUPER_ADMIN", "ADMIN"].includes(role.code)
+  ));
   const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const [dateFilter, setDateFilter] = useState<DateFilter>({ fromDate: "", toDate: "" });
@@ -336,15 +347,19 @@ const DealContent = (): JSX.Element => {
   // Base data for the active tab
   const baseDealData = currentTab === 1 ? dealData : currentTab === 2 ? wonDealData : lostDealData;
 
-  const handleStageChange = async (dealId: string, newStage: DEAL_STAGES) => {
+  const handleStageChange = async (
+    dealId: string,
+    newStage: string,
+    closurePayload?: DealStageUpdatePayload
+  ) => {
     try {
-      const res = await dealService.updateStage(dealId, newStage);
+      const payload = closurePayload
+        ? { ...closurePayload, dealStage: newStage }
+        : newStage;
+      const res = await dealService.updateStage(dealId, payload);
       if (res.status === 200) {
         toast.success(t("deal_stage_updated_successfully"));
-        // Refetch current tab data to reflect changes
-        if (currentTab === 1) getDealData();
-        else if (currentTab === 2) getWonDealData();
-        else if (currentTab === 3) getLostDealData();
+        await Promise.all([getDealData(), getWonDealData(), getLostDealData()]);
         return true;
       }
     } catch (error) {
@@ -389,8 +404,12 @@ useEffect(() => {
     return () => { cancelled = true; };
   }, [currentTab, searchVal, dateFilter, stageFilter, salesPersonFilter, assignedToFilter, userid]);
 
+  if (showAttention) return <DealAttentionQueue stageLabel={stageLabel} onBack={() => setShowAttention(false)} />;
+  if (configureStages && canConfigureStages) return <LeadStatusConfiguration entity="deal" onBack={() => setConfigureStages(false)} />;
+
   return (
     <div>
+      {stageError && <p role="alert" className="mb-4 text-sm text-red-600">Could not load deal stages. <button onClick={refreshStages} className="underline">Retry</button></p>}
       <div className="bg-white mb-10 dark:bg-gray-700 dark:backdrop-blur-sm  p-6 rounded-xl border border-slate-900/10 w-full flex flex-col gap-7 items-center justify-between">
         <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
           <div className="flex items-center gap-3 rounded-xl border border-cyan-100 bg-gradient-to-br from-cyan-50 to-sky-50 p-4 dark:border-cyan-800/40 dark:from-cyan-900/20 dark:to-sky-900/20">
@@ -415,6 +434,8 @@ useEffect(() => {
             <p className="text-gray-500 dark:text-gray-400">{t("create_edit_or_remove_deals")}</p>
           </div>
           <div className="flex items-center gap-6">
+            <button onClick={() => setShowAttention(true)} className="rounded-lg border border-amber-200 px-3 py-2 text-sm font-medium text-amber-800 dark:text-amber-300">Deal ageing</button>
+            {canConfigureStages && <button onClick={() => setConfigureStages(true)} className="rounded-lg border border-cyan-200 px-3 py-2 text-sm font-medium text-cyan-700 dark:text-cyan-300">Configure stages</button>}
              <PageLimit
                             setLimitOpen={setLimitOpen}
                             pageLimit={pageLimit}
@@ -534,13 +555,7 @@ useEffect(() => {
               className="bg-slate-50 dark:bg-gray-600 px-3 py-2 rounded-lg border border-slate-200 dark:border-gray-500 text-[13px] text-slate-600 dark:text-white/80 outline-none focus:ring-2 focus:ring-cyan-500/30 transition-all cursor-pointer min-w-[160px]"
             >
               <option value="">All Stages</option>
-              {Object.values(DEAL_STAGES)
-                .filter((s) => s !== DEAL_STAGES.DELETE && s !== DEAL_STAGES.CLOSED_WON)
-                .map((s) => (
-                  <option key={s} value={s}>
-                    {s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
-                  </option>
-                ))}
+              {dealStages.map(stage => <option key={stage.key} value={stage.key}>{stage.name}</option>)}
             </select>
 
           </div>
@@ -668,6 +683,7 @@ useEffect(() => {
             <DealKanbanBoard
               deals={currentDealData}
               onStageChange={handleStageChange}
+              stages={dealStages}
               canViewDeal={hasPermission(PERMISSIONS.readDeal)}
               canUpdateDeal={hasPermission(PERMISSIONS.updateDeal)}
               canCreateQuote={hasPermission(PERMISSIONS.createQuote)}
@@ -757,7 +773,7 @@ useEffect(() => {
                                   : "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400"
                               }`}
                             >
-                              {item.dealStage.trim().replace(/_/g, " ")}
+                              {stageLabel(item.dealStage)}
                             </span>
                           </td>
                           <td className="px-4 py-3.5">
@@ -961,7 +977,7 @@ useEffect(() => {
                                   : "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400"
                               }`}
                             >
-                              {item.dealStage.trim().replace(/_/g, " ")}
+                              {stageLabel(item.dealStage)}
                             </span>
                           </td>
                           <td className="px-4 py-3.5">
@@ -1165,7 +1181,7 @@ useEffect(() => {
                                   : "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400"
                               }`}
                             >
-                              {item.dealStage.trim().replace(/_/g, " ")}
+                              {stageLabel(item.dealStage)}
                             </span>
                           </td>
                           <td className="px-4 py-3.5">

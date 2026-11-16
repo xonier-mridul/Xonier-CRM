@@ -1,5 +1,5 @@
 "use client";
-import { useLeadStatuses } from "@/src/hooks/useLeadStatuses";
+import { useLeadStatuses, useDealStages } from "@/src/hooks/useLeadStatuses";
 import { getCompanyCurrency, getCurrencySymbol } from "@/src/app/utils/currency.utils";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
@@ -66,6 +66,9 @@ interface MonthlyTrend {
 
 interface PipelineStage {
   pipeline: string;
+  name?: string;
+  color?: string;
+  type?: string;
   count: number;
   totalAmount: number;
   percentage: number;
@@ -234,6 +237,9 @@ interface TopPerformer {
   firstName: string;
   lastName: string;
   wonLeads: number;
+  totalDeals?: number;
+  closedDeals?: number;
+  totalRevenue?: number;
 }
 
 interface BreakdownStats {
@@ -927,7 +933,11 @@ const usePipelineTranslator = () => {
 
 function PipelineChart({ pipeline }: { pipeline: PipelineStage[] }) {
   const { t } = useTranslation();
-  const translatePipeline = usePipelineTranslator();
+  const { label: dealStageLabel, statuses: dealStages } = useDealStages();
+  const resolveStageName = (s: PipelineStage) =>
+    s.name || dealStageLabel(s.pipeline) || t(s.pipeline, { defaultValue: cap(s.pipeline) });
+  const resolveStageColor = (s: PipelineStage) =>
+    s.color || dealStages.find((st) => st.key === s.pipeline)?.color || PIPELINE_COLORS[s.pipeline] || "#6366f1";
   const hasData = pipeline.some((s) => s.count > 0);
 
   return (
@@ -938,7 +948,7 @@ function PipelineChart({ pipeline }: { pipeline: PipelineStage[] }) {
     >
       <div className="flex flex-col gap-3 mb-5">
         {pipeline.map((s) => {
-          const color = PIPELINE_COLORS[s.pipeline] ?? "#6366f1";
+          const color = resolveStageColor(s);
           return (
             <div key={s.pipeline} className="group">
               <div className="flex items-center justify-between mb-1.5">
@@ -948,7 +958,7 @@ function PipelineChart({ pipeline }: { pipeline: PipelineStage[] }) {
                     style={{ backgroundColor: color }}
                   />
                   <span className="text-xs font-medium text-slate-700 dark:text-slate-300 capitalize group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
-                    {translatePipeline(s.pipeline)}
+                    {resolveStageName(s)}
                   </span>
                 </div>
                 <div className="flex items-center gap-2.5">
@@ -980,7 +990,7 @@ function PipelineChart({ pipeline }: { pipeline: PipelineStage[] }) {
         <ResponsiveContainer width="100%" height={110}>
           <BarChart
             data={pipeline.map((s) => ({
-              name: translatePipeline(s.pipeline).split(" ")[0],
+              name: resolveStageName(s).split(" ")[0],
               count: s.count,
             }))}
             margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
@@ -1006,7 +1016,7 @@ function PipelineChart({ pipeline }: { pipeline: PipelineStage[] }) {
             <Tooltip content={<Tooltip_ />} />
             <Bar dataKey="count" radius={[4, 4, 0, 0]}>
               {pipeline.map((s, i) => (
-                <Cell key={i} fill={PIPELINE_COLORS[s.pipeline] ?? "#6366f1"} />
+                <Cell key={s.pipeline || i} fill={resolveStageColor(s)} />
               ))}
             </Bar>
           </BarChart>
@@ -2264,55 +2274,71 @@ const router = useRouter();
 
 function TopPerformers({ performers }: { performers: TopPerformer[] }) {
   const { t } = useTranslation();
-  const max = Math.max(...performers.map((p) => p.wonLeads), 1);
+  const maxRevenue = Math.max(...performers.map((p) => p.totalRevenue ?? 0), 0);
+  const maxLeads = Math.max(...performers.map((p) => p.wonLeads ?? 0), 1);
   const medals = ["🥇", "🥈", "🥉", "4th", "5th"];
   const colors = ["#f59e0b", "#94a3b8", "#cd7c4c", "#6366f1", "#8b5cf6"];
   return (
     <Card
       title={t("top_performers")}
-      sub={t("ranked_by_won_leads")}
+      sub="Ranked by closed deal revenue"
       icon={Award}
     >
       {performers.length === 0 ? (
         <EmptyState icon={Award} message={t("no_performance_data_yet")} />
       ) : (
         <div className="flex flex-col gap-2">
-          {performers.slice(0, 5).map((p, i) => (
-            <div
-              key={p.userId}
-              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors group"
-            >
-              <span className="text-sm w-6 text-center">{medals[i]}</span>
+          {performers.slice(0, 5).map((p, i) => {
+            const revenue = p.totalRevenue ?? 0;
+            const closedDeals = p.closedDeals ?? 0;
+            const wonLeads = p.wonLeads ?? 0;
+            const barPct =
+              maxRevenue > 0
+                ? (revenue / maxRevenue) * 100
+                : (wonLeads / maxLeads) * 100;
+            const color = colors[i % colors.length];
+            return (
               <div
-                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                style={{
-                  background: `linear-gradient(135deg, ${colors[i]}, ${colors[i]}80)`,
-                }}
+                key={p.userId}
+                className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors group"
               >
-                {(p.firstName || "?")[0]}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
-                  {p.firstName} {p.lastName}
-                </p>
-                <div className="mt-1 h-1 rounded-full bg-slate-100 dark:bg-slate-800">
-                  <div
-                    className="h-1 rounded-full"
-                    style={{
-                      width: `${(p.wonLeads / max) * 100}%`,
-                      backgroundColor: colors[i],
-                    }}
-                  />
+                <span className="text-sm w-6 text-center">{medals[i] ?? `${i + 1}`}</span>
+                <div
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                  style={{
+                    background: `linear-gradient(135deg, ${color}, ${color}80)`,
+                  }}
+                >
+                  {(p.firstName || "?")[0]}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate capitalize">
+                    {p.firstName} {p.lastName}
+                  </p>
+                  <p className="text-[10px] text-slate-400">
+                    {closedDeals} won deals · {wonLeads} won leads
+                  </p>
+                  <div className="mt-1 h-1 rounded-full bg-slate-100 dark:bg-slate-800">
+                    <div
+                      className="h-1 rounded-full"
+                      style={{
+                        width: `${Math.min(barPct, 100)}%`,
+                        backgroundColor: color,
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <span
+                    className="text-xs font-mono font-bold block"
+                    style={{ color }}
+                  >
+                    {fmtMoney(revenue)}
+                  </span>
                 </div>
               </div>
-              <span
-                className="text-xs font-mono font-bold flex-shrink-0"
-                style={{ color: colors[i] }}
-              >
-                {p.wonLeads}
-              </span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </Card>
@@ -3188,7 +3214,7 @@ function ManagerLayout({ d }: { d: DashboardData }) {
           <StatCard
             label={t("revenue")}
             value={Math.round(d.deals.totalRevenue)}
-            prefix="$"
+            prefix={getCurrencySymbol(getCompanyCurrency())}
             sub={`${d.deals.closed} ${t("deals")} ${t("closed")}`}
             icon={DollarSign}
             color="#f59e0b"

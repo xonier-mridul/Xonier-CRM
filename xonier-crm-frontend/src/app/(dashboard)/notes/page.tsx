@@ -1,9 +1,10 @@
 "use client";
 
-import React, { JSX, useState, useEffect, FormEventHandler, SubmitEvent } from "react";
+import React, { JSX, useState, useEffect, useRef, useMemo, FormEventHandler, SubmitEvent } from "react";
+import Link from "next/link";
 import { TbNotes } from "react-icons/tb";
 import { FaRegStar, FaStar } from "react-icons/fa";
-import { MdDelete, MdClose } from "react-icons/md";
+import { MdDelete, MdClose, MdSearch, MdKeyboardArrowDown, MdCheck } from "react-icons/md";
 import { BsPinAngle, BsPinAngleFill } from "react-icons/bs";
 import SecondaryButton from "@/src/components/ui/SecondaryButton";
 import { MdOutlineNoteAlt } from "react-icons/md";
@@ -11,6 +12,8 @@ import { Note, NoteCreatePayload } from "@/src/types/note/note.types";
 import extractErrorMessages from "../../utils/error.utils";
 import axios from "axios";
 import NoteService from "@/src/services/notes.service";
+import LeadService from "@/src/services/lead.service";
+import dealService from "@/src/services/deal.service";
 import Pagination from "@/src/components/common/pagination";
 import { toast } from "react-toastify";
 import Skeleton from "react-loading-skeleton";
@@ -61,6 +64,32 @@ const NoteCard = ({
       )}
 
       <div className={`${note.isPinned ? "mt-8" : "mt-0"}`}>
+        {(note.entityId || (note.entityType && note.entityType !== NotesEntities.GENERAL)) && (
+          <div className="mb-2 flex flex-wrap items-center gap-1.5">
+            {note.entityId && note.entityType === NotesEntities.LEAD ? (
+              <Link
+                href={`/leads/view/${note.entityId}`}
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-cyan-50 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300 hover:underline"
+              >
+                Lead: {note.entityName || `#${note.entityId.slice(-6)}`}
+              </Link>
+            ) : note.entityId && note.entityType === NotesEntities.DEAL ? (
+              <Link
+                href={`/deals/view/${note.entityId}`}
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 hover:underline"
+              >
+                Deal: {note.entityName || `#${note.entityId.slice(-6)}`}
+              </Link>
+            ) : (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 capitalize">
+                {note.entityType}
+                {note.entityName ? `: ${note.entityName}` : ""}
+              </span>
+            )}
+          </div>
+        )}
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2 pr-8">
           {note.title}
         </h3>
@@ -259,10 +288,17 @@ const CreateNoteModal = ({
     title: "",
     content: "",
     entityType: NotesEntities.GENERAL,
+    entityId: "",
+    entityName: "",
     visibility: NoteVisibility.PUBLIC,
     isPinned: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [entityRecords, setEntityRecords] = useState<{ label: string; value: string }[]>([]);
+  const [loadingRecords, setLoadingRecords] = useState(false);
+  const [entityDropdownOpen, setEntityDropdownOpen] = useState(false);
+  const [entitySearch, setEntitySearch] = useState("");
+  const entityDropdownRef = useRef<HTMLDivElement>(null);
 
   const entityOptions = [
     { label: "General", value: NotesEntities.GENERAL },
@@ -274,22 +310,96 @@ const CreateNoteModal = ({
 
   const visibilityOptions = [
     { label: "Public", value: NoteVisibility.PUBLIC },
+    { label: "Team", value: NoteVisibility.TEAM },
     { label: "Private", value: NoteVisibility.PRIVATE },
   ];
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (entityDropdownRef.current && !entityDropdownRef.current.contains(event.target as Node)) {
+        setEntityDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (formData.entityType !== NotesEntities.LEAD && formData.entityType !== NotesEntities.DEAL) {
+      setEntityRecords([]);
+      return;
+    }
+
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      setLoadingRecords(true);
+      try {
+        const searchFilter = entitySearch.trim() ? { search: entitySearch.trim() } : undefined;
+        if (formData.entityType === NotesEntities.LEAD) {
+          const res = await LeadService.getAll(1, 100, searchFilter);
+          const list = res?.data?.data?.data || [];
+          if (!cancelled) {
+            setEntityRecords(
+              list.map((lead: any) => ({
+                value: lead.id,
+                label: `${lead.fullName || lead.email || "Lead"}${lead.lead_id ? ` (${lead.lead_id})` : ""}`,
+              }))
+            );
+          }
+        } else {
+          const res = await dealService.getAll(1, 100, searchFilter);
+          const list = res?.data?.data?.data || [];
+          if (!cancelled) {
+            setEntityRecords(
+              list.map((deal: any) => ({
+                value: deal.id,
+                label: `${deal.dealName || "Deal"}${deal.deal_id ? ` (${deal.deal_id})` : ""}`,
+              }))
+            );
+          }
+        }
+      } catch {
+        if (!cancelled) setEntityRecords([]);
+      } finally {
+        if (!cancelled) setLoadingRecords(false);
+      }
+    }, 200);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [formData.entityType, isOpen, entitySearch]);
+
+  const filteredEntityRecords = useMemo(() => {
+    const q = entitySearch.trim().toLowerCase();
+    if (!q) return entityRecords;
+    return entityRecords.filter((item) => item.label.toLowerCase().includes(q));
+  }, [entityRecords, entitySearch]);
 
   const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      const result = await NoteService.create(formData);
+      const payload: NoteCreatePayload = {
+        ...formData,
+        entityId: formData.entityId || undefined,
+        entityName: formData.entityName || undefined,
+      };
+      const result = await NoteService.create(payload);
 
-      if (result.status === 201) {
+      if (result.status === 201 || result.status === 200) {
         toast.success(`${formData.title} note created successfully`);
+        setEntitySearch("");
+        setEntityDropdownOpen(false);
         setFormData({
           title: "",
           content: "",
           entityType: NotesEntities.GENERAL,
+          entityId: "",
+          entityName: "",
           visibility: NoteVisibility.PUBLIC,
           isPinned: false,
         });
@@ -309,10 +419,14 @@ const CreateNoteModal = ({
   };
 
   const handleClose = () => {
+    setEntitySearch("");
+    setEntityDropdownOpen(false);
     setFormData({
       title: "",
       content: "",
       entityType: NotesEntities.GENERAL,
+      entityId: "",
+      entityName: "",
       visibility: NoteVisibility.PUBLIC,
       isPinned: false,
     });
@@ -367,12 +481,16 @@ const CreateNoteModal = ({
               label={t("entity_type")}
               options={entityOptions}
               value={formData.entityType}
-              onChange={(e) =>
+              onChange={(e) => {
+                setEntitySearch("");
+                setEntityDropdownOpen(false);
                 setFormData({
                   ...formData,
                   entityType: e.target.value as NotesEntities,
-                })
-              }
+                  entityId: "",
+                  entityName: "",
+                });
+              }}
               placeholder={t("select_entity_type")}
             />
 
@@ -389,6 +507,113 @@ const CreateNoteModal = ({
               placeholder={t("select_visibility")}
             />
           </div>
+
+          {(formData.entityType === NotesEntities.LEAD || formData.entityType === NotesEntities.DEAL) && (
+            <div className="flex flex-col gap-1 w-full relative" ref={entityDropdownRef}>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                {formData.entityType === NotesEntities.LEAD ? "Linked Lead" : "Linked Deal"}
+              </label>
+
+              <button
+                type="button"
+                onClick={() => setEntityDropdownOpen((prev) => !prev)}
+                className="w-full px-3 py-2.5 rounded-md border text-[14px] bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-cyan-500 flex items-center justify-between gap-2 text-left cursor-pointer"
+              >
+                <span className={`truncate ${formData.entityId ? "text-gray-900 dark:text-white" : "text-gray-400 dark:text-gray-400"}`}>
+                  {formData.entityName ||
+                    (loadingRecords
+                      ? "Loading records..."
+                      : formData.entityType === NotesEntities.LEAD
+                      ? "Select or search a lead to link"
+                      : "Select or search a deal to link")}
+                </span>
+                <div className="flex items-center gap-1 shrink-0">
+                  {formData.entityId && (
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFormData({ ...formData, entityId: "", entityName: "" });
+                      }}
+                      className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-500"
+                      title="Clear selection"
+                    >
+                      <MdClose className="w-4 h-4" />
+                    </span>
+                  )}
+                  <MdKeyboardArrowDown
+                    className={`w-5 h-5 text-gray-500 transition-transform ${entityDropdownOpen ? "rotate-180" : ""}`}
+                  />
+                </div>
+              </button>
+
+              {entityDropdownOpen && (
+                <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl overflow-hidden">
+                  <div className="p-2 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2 bg-gray-50 dark:bg-gray-900/50">
+                    <MdSearch className="w-4 h-4 text-gray-400 shrink-0" />
+                    <input
+                      type="text"
+                      autoFocus
+                      value={entitySearch}
+                      onChange={(e) => setEntitySearch(e.target.value)}
+                      placeholder={
+                        formData.entityType === NotesEntities.LEAD
+                          ? "Search lead by name or ID..."
+                          : "Search deal by name or ID..."
+                      }
+                      className="w-full bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none"
+                    />
+                    {entitySearch && (
+                      <button
+                        type="button"
+                        onClick={() => setEntitySearch("")}
+                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                      >
+                        <MdClose className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="max-h-56 overflow-y-auto divide-y divide-gray-50 dark:divide-gray-700/40">
+                    {loadingRecords ? (
+                      <div className="px-3 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                        Loading...
+                      </div>
+                    ) : filteredEntityRecords.length === 0 ? (
+                      <div className="px-3 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                        No matching {formData.entityType === NotesEntities.LEAD ? "leads" : "deals"} found
+                      </div>
+                    ) : (
+                      filteredEntityRecords.map((item) => {
+                        const isSelected = formData.entityId === item.value;
+                        return (
+                          <button
+                            key={item.value}
+                            type="button"
+                            onClick={() => {
+                              setFormData({
+                                ...formData,
+                                entityId: item.value,
+                                entityName: item.label,
+                              });
+                              setEntityDropdownOpen(false);
+                            }}
+                            className={`w-full px-3 py-2.5 text-left text-sm flex items-center justify-between gap-2 transition-colors cursor-pointer ${
+                              isSelected
+                                ? "bg-cyan-50 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 font-medium"
+                                : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/60"
+                            }`}
+                          >
+                            <span className="truncate">{item.label}</span>
+                            {isSelected && <MdCheck className="w-4 h-4 text-cyan-600 shrink-0" />}
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
             <input
