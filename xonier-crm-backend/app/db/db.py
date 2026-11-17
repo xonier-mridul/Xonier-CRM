@@ -81,7 +81,16 @@ async def connect_db():
             document_models=[UserModel, PermissionModel, UserRoleModel, OtpModel, EnquiryModel, TeamModel, TeamCategoryModel, LeadsModel, OrganizationModel, PersonModel, CustomFieldModel, UserFormModel, DealModel, CalenderEventModel, QuotationModel, QuotationHistoryModel, NoteModel, UserCustomFieldModel, ActivityModel, TelephoneNumbersModel, SMSHistory, EmailTemplateModel, EmailHistoryModel, TaskCategoryModel, TaskActivityModel, TaskStatusModel, TaskModel, NextActionModel, TaskRemarkModel, TaskReportModel, SubTaskModel, InvoiceModel, TaskTimeLogModel, FeatureModel, PlanModel, CompanyModel, SubscriptionModel, QueryModel, NotificationModel, PaymentModel, CampaignModel, CampaignLeadModel, CallSessionModel, GoogleCalendarConnectionModel]
         )
         await db["deals"].create_index([("companyId", 1), ("dealStage", 1)], name="company_deal_stage")
+        await db["deals"].create_index(
+            [("companyId", 1), ("status", 1), ("closeDate", 1)], name="company_forecast_close_date"
+        )
         await db["deal_stage_settings"].create_index("updatedAt", name="deal_stage_settings_updated_at")
+        await db["deal_stage_automation_rules"].create_index(
+            [("companyId", 1), ("id", 1)], unique=True, name="unique_company_automation_rule"
+        )
+        await db["deal_stage_automation_rules"].create_index(
+            [("companyId", 1), ("stageKey", 1), ("enabled", 1)], name="active_stage_automation_rules"
+        )
         await db["mobile_push_tokens"].create_index(
             [("companyId", 1), ("userId", 1)], unique=True, name="unique_user_device_token"
         )

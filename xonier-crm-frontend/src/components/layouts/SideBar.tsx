@@ -874,6 +874,13 @@ const isSuperAdmin = auth.user?.userRole?.some(
                       </Link>
                     </li>}
 
+                    {(hasPermission(PERMISSIONS.readDeal) && hasFeature(FEATURES.CRM)) && <li>
+                      <Link href="/revenue-forecast" onClick={handleNavClick("/revenue-forecast")}
+                        className={`${isActive("/revenue-forecast") ? "text-cyan-700 dark:text-cyan-300 border-l-2 border-cyan-600 bg-cyan-50 dark:bg-slate-700" : "border-l-2 border-transparent"} block rounded-md px-3 py-2 text-sm hover:bg-cyan-600/5`}>
+                        Revenue forecast
+                      </Link>
+                    </li>}
+
                     {(hasPermission(PERMISSIONS.readQuote) &&  (hasFeature(FEATURES.CRM))) && <li>
                       <Link
                         href="/quotations"

@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import extractErrorMessages from "@/src/app/utils/error.utils";
 import { EventInput } from "@fullcalendar/core";
+import CrmEntityRecordPicker from "../../common/CrmEntityRecordPicker";
 import { useTranslation } from "react-i18next";
 
 interface UpdateEventModalProps {
@@ -33,6 +34,9 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
     end: null,
     isAllDay: false,
     priority: "medium",
+    entityType: "",
+    entityId: "",
+    entityName: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -53,6 +57,9 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
         end: endDate ? formatDateTimeLocal(endDate) : null,
         isAllDay: event.allDay || false,
         priority: event.extendedProps?.priority || "medium",
+        entityType: event.extendedProps?.entityType || "",
+        entityId: event.extendedProps?.entityId || "",
+        entityName: event.extendedProps?.entityName || "",
       });
       setErrors({});
     }
@@ -143,6 +150,9 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
         description: formData.description || "",
         meetingLink: formData.meetingLink?.trim() || null,
         end: formData.isAllDay ? null : (formData.end || null),
+        entityType: formData.entityType && formData.entityId ? formData.entityType : null,
+        entityId: formData.entityType && formData.entityId ? formData.entityId : null,
+        entityName: formData.entityType && formData.entityId ? formData.entityName || null : null,
       };
 
       const result = await EventService.update(payload);
@@ -342,6 +352,52 @@ const UpdateEventModal: React.FC<UpdateEventModalProps> = ({
               <label htmlFor="isAllDay" className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
                 {t("all_day_event_2")}
               </label>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t border-gray-100 dark:border-gray-700">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Link to CRM Record
+                </label>
+                <select
+                  value={formData.entityType || ""}
+                  onChange={(e) => {
+                    const nextType = e.target.value as "lead" | "deal" | "";
+                    setFormData((prev) => ({
+                      ...prev,
+                      entityType: nextType,
+                      entityId: "",
+                      entityName: "",
+                    }));
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="">None</option>
+                  <option value="lead">Lead</option>
+                  <option value="deal">Deal</option>
+                </select>
+              </div>
+
+              {(formData.entityType === "lead" || formData.entityType === "deal") && (
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {formData.entityType === "lead" ? "Linked Lead" : "Linked Deal"}
+                  </label>
+                  <CrmEntityRecordPicker
+                    entityType={formData.entityType}
+                    value={formData.entityId || ""}
+                    displayName={formData.entityName || ""}
+                    onChange={(entityId, entityName) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        entityId,
+                        entityName,
+                      }))
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:bg-gray-700 dark:text-white flex items-center justify-between gap-2 text-left cursor-pointer"
+                  />
+                </div>
+              )}
             </div>
 
           {/* Action Buttons */}

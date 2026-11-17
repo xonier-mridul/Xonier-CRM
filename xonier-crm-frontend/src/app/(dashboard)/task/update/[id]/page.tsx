@@ -24,6 +24,7 @@ import { AuthService } from "@/src/services/auth.service";
 import { RootState } from "@/src/store";
 import { useSelector } from "react-redux";
 import { CategoryItem } from "@/src/types/task/category.types";
+import CrmEntityRecordPicker from "@/src/components/common/CrmEntityRecordPicker";
 import { useTranslation } from "react-i18next";
 
 // ── Priority config ───────────────────────────────────────────────────────────
@@ -688,16 +689,19 @@ const UpdateTaskPage = (): JSX.Element => {
 
             {/* Linked Entity */}
             <Section icon="🔗" title={t("linked_entity")}>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label={t("entity_type")}>
                   <select
                     value={form.entityType ?? ""}
-                    onChange={(e) =>
-                      set(
-                        "entityType",
-                        (e.target.value as TASK_ENTITY_TYPE) || undefined
-                      )
-                    }
+                    onChange={(e) => {
+                      const nextType = (e.target.value as TASK_ENTITY_TYPE) || undefined;
+                      setForm((prev) => ({
+                        ...prev,
+                        entityType: nextType,
+                        entityId: "",
+                        entityName: "",
+                      }));
+                    }}
                     className={selectCls}
                   >
                     <option value="">{t("none")}</option>
@@ -708,24 +712,54 @@ const UpdateTaskPage = (): JSX.Element => {
                     ))}
                   </select>
                 </Field>
-                <Field label={t("entity_id")}>
-                  <input
-                    type="text"
-                    value={form.entityId ?? ""}
-                    onChange={(e) => set("entityId", e.target.value)}
-                    placeholder={t("id")}
-                    className={inputCls}
-                  />
-                </Field>
-                <Field label={t("entity_name")}>
-                  <input
-                    type="text"
-                    value={form.entityName ?? ""}
-                    onChange={(e) => set("entityName", e.target.value)}
-                    placeholder={t("name")}
-                    className={inputCls}
-                  />
-                </Field>
+                {form.entityType === TASK_ENTITY_TYPE.LEAD ||
+                form.entityType === TASK_ENTITY_TYPE.DEAL ? (
+                  <div className="md:col-span-2">
+                    <Field
+                      label={
+                        form.entityType === TASK_ENTITY_TYPE.LEAD
+                          ? "Linked Lead"
+                          : "Linked Deal"
+                      }
+                    >
+                      <CrmEntityRecordPicker
+                        entityType={
+                          form.entityType === TASK_ENTITY_TYPE.LEAD ? "lead" : "deal"
+                        }
+                        value={form.entityId ?? ""}
+                        displayName={form.entityName ?? ""}
+                        onChange={(entityId, entityName) =>
+                          setForm((prev) => ({
+                            ...prev,
+                            entityId,
+                            entityName,
+                          }))
+                        }
+                      />
+                    </Field>
+                  </div>
+                ) : (
+                  <>
+                    <Field label={t("entity_id")}>
+                      <input
+                        type="text"
+                        value={form.entityId ?? ""}
+                        onChange={(e) => set("entityId", e.target.value)}
+                        placeholder={t("id")}
+                        className={inputCls}
+                      />
+                    </Field>
+                    <Field label={t("entity_name")}>
+                      <input
+                        type="text"
+                        value={form.entityName ?? ""}
+                        onChange={(e) => set("entityName", e.target.value)}
+                        placeholder={t("name")}
+                        className={inputCls}
+                      />
+                    </Field>
+                  </>
+                )}
               </div>
             </Section>
 

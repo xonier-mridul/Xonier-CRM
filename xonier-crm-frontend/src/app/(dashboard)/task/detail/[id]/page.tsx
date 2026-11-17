@@ -963,11 +963,23 @@ console.log("taskStatus:",taskData.status.name)
                       {taskData.category?.name ?? taskData.categoryName}
                     </span>
                   )}
-                  {taskData.entityType && taskData.entityName && (
-                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 px-3 py-1.5 rounded-full border border-sky-100 dark:border-sky-900/40">
-                      <Link2 size={11} />
-                      {taskData.entityType} · {taskData.entityName}
-                    </span>
+                  {taskData.entityType && (taskData.entityName || taskData.entityId) && (
+                    taskData.entityId &&
+                    (taskData.entityType === "lead" || taskData.entityType === "deal") ? (
+                      <Link
+                        href={`/${taskData.entityType}s/view/${taskData.entityId}`}
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 px-3 py-1.5 rounded-full border border-sky-100 dark:border-sky-900/40 hover:underline"
+                      >
+                        <Link2 size={11} />
+                        {taskData.entityType} · {taskData.entityName || `#${taskData.entityId.slice(-6)}`}
+                      </Link>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 px-3 py-1.5 rounded-full border border-sky-100 dark:border-sky-900/40">
+                        <Link2 size={11} />
+                        {taskData.entityType}
+                        {taskData.entityName ? ` · ${taskData.entityName}` : ""}
+                      </span>
+                    )
                   )}
 
                   
@@ -1291,7 +1303,23 @@ console.log("taskStatus:",taskData.status.name)
                     </MetaRow>
                     {taskData.entityType && (
                       <MetaRow icon={<Building2 size={11} />} label={t("linked_to")}>
-                        <span className="capitalize font-semibold">{taskData.entityType}{taskData.entityName ? ` · ${taskData.entityName}` : ""}</span>
+                        {taskData.entityId &&
+                        (taskData.entityType === "lead" || taskData.entityType === "deal") ? (
+                          <Link
+                            href={`/${taskData.entityType}s/view/${taskData.entityId}`}
+                            className="capitalize font-semibold text-cyan-600 dark:text-cyan-400 hover:underline"
+                          >
+                            {taskData.entityType}
+                            {taskData.entityName
+                              ? ` · ${taskData.entityName}`
+                              : ` · #${taskData.entityId.slice(-6)}`}
+                          </Link>
+                        ) : (
+                          <span className="capitalize font-semibold">
+                            {taskData.entityType}
+                            {taskData.entityName ? ` · ${taskData.entityName}` : ""}
+                          </span>
+                        )}
                       </MetaRow>
                     )}
                     <MetaRow icon={<User size={11} />} label={t("created_by")}>

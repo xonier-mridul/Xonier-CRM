@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { EventInput } from "@fullcalendar/core";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSIONS, PRIORITY } from "@/src/constants/enum";
@@ -332,6 +333,42 @@ const ViewEventPopup: React.FC<ViewEventPopupProps> = ({
                     </svg>
                   </a>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Linked CRM Record */}
+          {((event.extendedProps?.entityType && event.extendedProps?.entityId) ||
+            (event.extendedProps?.followUpEntity && event.extendedProps?.followUpRecordId)) && (
+            <div className="bg-gradient-to-br from-sky-50 to-cyan-50 dark:from-sky-950/30 dark:to-cyan-950/30 rounded-xl p-5 border border-sky-200 dark:border-sky-800">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                    Linked CRM Record
+                  </h3>
+                  <p className="text-base font-bold text-gray-900 dark:text-white capitalize">
+                    {event.extendedProps?.entityType || event.extendedProps?.followUpEntity}
+                    {event.extendedProps?.entityName
+                      ? ` · ${event.extendedProps.entityName}`
+                      : ` · #${String(
+                          event.extendedProps?.entityId || event.extendedProps?.followUpRecordId
+                        ).slice(-6)}`}
+                  </p>
+                </div>
+                {((event.extendedProps?.entityType || event.extendedProps?.followUpEntity) === "lead" ||
+                  (event.extendedProps?.entityType || event.extendedProps?.followUpEntity) === "deal") && (
+                  <Link
+                    href={`/${
+                      event.extendedProps?.entityType || event.extendedProps?.followUpEntity
+                    }s/view/${
+                      event.extendedProps?.entityId || event.extendedProps?.followUpRecordId
+                    }`}
+                    onClick={onClose}
+                    className="px-4 py-2 rounded-lg text-sm font-semibold bg-cyan-600 hover:bg-cyan-700 text-white transition-colors"
+                  >
+                    Open Record →
+                  </Link>
+                )}
               </div>
             </div>
           )}

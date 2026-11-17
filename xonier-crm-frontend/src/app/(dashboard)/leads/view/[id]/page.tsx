@@ -64,6 +64,7 @@ import { useTranslation } from "react-i18next";
 import NextActions from "@/src/components/common/NextActions";
 import CommercialTimeline from "@/src/components/common/CommercialTimeline";
 import CompanyContactCard from "@/src/components/common/CompanyContactCard";
+import LeadInteractionLog from "@/src/components/pages/lead/LeadInteractionLog";
 
 interface CallTimelineItem {
   id: string;
@@ -95,7 +96,7 @@ const formatTimelineTime = (value?: string | null) =>
 
 const LeadViewPage = (): JSX.Element => {
   const { t } = useTranslation();
-  const { label: leadStatusLabel } = useLeadStatuses();
+  const { label: leadStatusLabel, statuses: leadStatuses } = useLeadStatuses();
   const [err, setErr] = useState<string | string[]>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [leadData, setLeadData] = useState<Lead | null>(null);
@@ -108,6 +109,9 @@ const LeadViewPage = (): JSX.Element => {
   const [disqualifyOpen, setDisqualifyOpen] = useState(false);
   const [disqualifyReason, setDisqualifyReason] = useState("");
   const [isDisqualifying, setIsDisqualifying] = useState(false);
+  const [isChangingStage, setIsChangingStage] = useState(false);
+  const [timelineVersion, setTimelineVersion] = useState(0);
+  const [promptNextAction, setPromptNextAction] = useState(false);
 
   const { id } = useParams();
   const router = useRouter();
@@ -207,6 +211,18 @@ const LeadViewPage = (): JSX.Element => {
     } catch (error) {
       toast.error(axios.isAxiosError(error) ? extractErrorMessages(error).toString() : "Could not disqualify lead");
     } finally { setIsDisqualifying(false); }
+  };
+
+  const handleStageChange = async (stage: string) => {
+    if (!leadData || stage === leadData.status) return;
+    setIsChangingStage(true);
+    try {
+      await LeadService.updateStatus(leadData.id, { status: stage });
+      setLeadData((current) => current ? { ...current, status: stage } : current);
+      toast.success("Lead stage updated");
+    } catch (error) {
+      toast.error(axios.isAxiosError(error) ? extractErrorMessages(error).toString() : "Could not update lead stage");
+    } finally { setIsChangingStage(false); }
   };
 
   const handleDownload = async () => {
@@ -355,6 +371,14 @@ const LeadViewPage = (): JSX.Element => {
 
             {/* Hide action buttons when printing */}
             <div className="flex flex-wrap items-center justify-center gap-2 print:hidden">
+              {hasPermission(PERMISSIONS.updateLead) && !leadData.inDeal && leadData.status !== SALES_STATUS.DELETE && leadData.status !== "disqualified" && <label className="text-xs font-medium text-slate-500">Stage
+                <select aria-label="Lead stage" value={leadData.status} disabled={isChangingStage} onChange={(event) => void handleStageChange(event.target.value)} className="ml-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white">
+                  {leadStatuses.map((stage) => <option key={stage.key} value={stage.key}>{stage.name}</option>)}
+                  {!leadStatuses.some((stage) => stage.key === leadData.status) && <option value={leadData.status}>{leadStatusLabel(leadData.status)}</option>}
+                </select>
+              </label>}
+              <button type="button" onClick={() => setActiveTab("activity")} className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-700 dark:border-slate-600 dark:text-white">Log interaction</button>
+              {hasPermission(PERMISSIONS.createDeal) && !leadData.inDeal && leadData.status !== SALES_STATUS.DELETE && leadData.status !== "disqualified" && <Link href={`/leads/make-deal/${leadData.id}`} className="rounded-lg border border-emerald-200 px-4 py-2 text-sm font-medium text-emerald-700 dark:border-emerald-700 dark:text-emerald-300">Convert to Deal</Link>}
               {hasPermission(PERMISSIONS.updateLead) &&
               leadData.status !== SALES_STATUS.DELETE ? (
                 <Link
@@ -700,18 +724,19 @@ const LeadViewPage = (): JSX.Element => {
             </div>
           )}
 
-            {activeTab === "overview" && !isPrinting && <NextActions entityType="lead" entityId={leadData.id} canEdit={hasPermission(PERMISSIONS.updateLead)} />}
+            {activeTab === "overview" && !isPrinting && <NextActions entityType="lead" entityId={leadData.id} canEdit={hasPermission(PERMISSIONS.updateLead) && !leadData.inDeal && leadData.status !== "disqualified" && leadData.status !== SALES_STATUS.DELETE} defaultOwnerId={leadData.assignedTo?.[0]?.id || leadData.createdBy?.id} promptOnOpen={promptNextAction} onActionCreated={() => setPromptNextAction(false)} />}
 
             {/* Activity Tab — hidden when printing */}
           {activeTab === "activity" && !isPrinting && (
             <div className="bg-white dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+              {hasPermission(PERMISSIONS.updateLead) && !leadData.inDeal && leadData.status !== "disqualified" && leadData.status !== SALES_STATUS.DELETE && <LeadInteractionLog leadId={leadData.id} onSaved={() => { setTimelineVersion(value => value + 1); setPromptNextAction(true); setActiveTab("overview"); toast.success("Interaction logged. Schedule the next action on this lead."); }} />}
               <div className="flex items-center gap-2 mb-6">
                 <MdTimeline className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   {t("activity_timeline")}
                 </h3>
               </div>
-              <CommercialTimeline entityType="lead" entityId={leadData.id} />
+              <CommercialTimeline key={timelineVersion} entityType="lead" entityId={leadData.id} />
               {isCallHistoryLoading ? (
                 <div className="space-y-5">
                   {[0, 1, 2].map((item) => <Skeleton key={item} height={74} borderRadius={10} />)}

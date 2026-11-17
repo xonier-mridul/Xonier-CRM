@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field, field_validator
 
 from app.core.dependencies import Dependencies
-from app.core.enums import FEATURE, NOTE_STATUS, NOTE_VISIBILITY
+from app.core.enums import FEATURE, NOTE_STATUS, NOTE_VISIBILITY, ACTIVITY_ACTION, ACTIVITY_ENTITY_TYPE
 from app.db.models.deal_model import DealModel
 from app.db.models.lead_model import LeadsModel
 from app.db.models.next_action_model import NextActionModel
@@ -16,12 +16,15 @@ from app.db.models.notes_model import NoteModel
 from app.db.models.task_model import TaskModel
 from app.db.models.task_status_model import TaskStatusModel
 from app.db.models.task_activity_model import TaskActivityModel
+from app.db.models.calender_event_model import CalenderEventModel
 from app.db.models.user_model import UserModel
 from app.db.models.company_model import CompanyModel
 from app.db.models.communications.email_history_model import EmailHistoryModel
 from app.services.deal_service import DealService
 from app.services.lead_service import LeadService
 from app.services.call_service import CallService
+from app.repositories.activity_repository import ActivityRepository
+from app.utils.activity_payload import activity_payload
 from app.utils.custom_exception import AppException
 
 router = APIRouter()
@@ -52,6 +55,19 @@ class NextActionInput(BaseModel):
         value = value.strip()
         if not value:
             raise ValueError("Title is required")
+        return value
+
+
+class LeadInteractionInput(BaseModel):
+    channel: Literal["call", "email", "whatsapp", "linkedin", "meeting", "other"]
+    summary: str = Field(min_length=2, max_length=2000)
+
+    @field_validator("summary")
+    @classmethod
+    def nonempty_summary(cls, value: str) -> str:
+        value = value.strip()
+        if len(value) < 2:
+            raise ValueError("Interaction summary is required")
         return value
 
 
@@ -158,6 +174,21 @@ async def _collect_notes_and_tasks(
         for actor_id in (_link_id(ta.performedBy) for ta in task_activities)
         if actor_id
     }
+
+    calendar_events = []
+    if PydanticObjectId.is_valid(entity_id_str):
+        entity_oid = PydanticObjectId(entity_id_str)
+        type_match = [entity_type, None] if entity_type == "lead" else [entity_type]
+        calendar_events = await CalenderEventModel.find({
+            "entityId": entity_oid,
+            "entityType": {"$in": type_match},
+        }).sort("-start").limit(100).to_list()
+        user_ids |= {
+            ev_creator_id
+            for ev_creator_id in (_link_id(ev.createdBy) for ev in calendar_events)
+            if ev_creator_id
+        }
+
     valid_user_oids = [PydanticObjectId(uid) for uid in user_ids if PydanticObjectId.is_valid(uid)]
     users = (
         {str(user.id): user for user in await UserModel.find({"_id": {"$in": valid_user_oids}}).to_list()}
@@ -213,6 +244,21 @@ async def _collect_notes_and_tasks(
             "title": f"{label_prefix}Task {action_label.replace('_', ' ')}: {parent_title}",
             "detail": " · ".join(filter(None, [ta.description, actor_name])),
             "pending": False,
+        })
+
+    now_utc = datetime.now(timezone.utc)
+    for ev in calendar_events:
+        ev_creator = users.get(_link_id(ev.createdBy))
+        ev_creator_name = " ".join(filter(None, [ev_creator.firstName, ev_creator.lastName])) if ev_creator else ""
+        ev_type_str = ev.eventType.value if hasattr(ev.eventType, "value") else str(ev.eventType or "meeting")
+        ev_start = ev.start.replace(tzinfo=ev.start.tzinfo or timezone.utc) if ev.start else ev.createdAt
+        items.append({
+            "id": f"{prefix}event-{ev.id}",
+            "at": ev_start,
+            "kind": "meeting",
+            "title": f"{label_prefix}{ev_type_str.replace('_', ' ').title()}: {ev.title}",
+            "detail": " · ".join(filter(None, [ev.description or "", ev.meetingLink or "", ev_creator_name])),
+            "pending": ev_start > now_utc,
         })
 
     return items
@@ -310,6 +356,22 @@ async def list_actions(request: Request, entity_type: str, entity_id: str):
     actions = await NextActionModel.find({"entityType": entity_type, "entityId": record_id}).sort("dueAt").to_list()
     owners = {str(user.id): user for user in await UserModel.find({"_id": {"$in": list({a.ownerId for a in actions})}}).to_list()} if actions else {}
     return {"data": [output(action, owners.get(str(action.ownerId))) for action in actions]}
+
+
+@router.post("/lead/{entity_id}/interaction", status_code=201, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM))])
+async def log_lead_interaction(request: Request, entity_id: str, payload: LeadInteractionInput):
+    record_id = await require_record(request, "lead", entity_id, write=True)
+    activity = activity_payload(
+        userId=PydanticObjectId(request.state.user["_id"]),
+        entityType=ACTIVITY_ENTITY_TYPE.LEAD,
+        entityId=record_id,
+        action=ACTIVITY_ACTION.UPDATED,
+        title=f"{payload.channel.title()} interaction",
+        description=payload.summary,
+        metadata={"channel": payload.channel, "manual": True},
+    )
+    created = await ActivityRepository().create(data=activity)
+    return {"data": {"id": str(created.id)}}
 
 
 @router.post("/{entity_type}/{entity_id}", status_code=201, dependencies=[Depends(dependencies.authorized), Depends(dependencies.company_active), Depends(dependencies.company_context), Depends(dependencies.feature_access(FEATURE.CRM))])

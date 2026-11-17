@@ -20,7 +20,9 @@ class CalenderEventModel(BaseDocument):
     createdBy: Link[UserModel]
     updatedBy: Optional[Link[UserModel]] = None
     priority: Optional[Literal["low", "medium", "high"]] = "low"
+    entityType: Optional[str] = None
     entityId: Optional[PydanticObjectId] = None
+    entityName: Optional[str] = None
     createdAt: datetime = Field(default_factory=lambda:datetime.now(timezone.utc))
     updatedAt: datetime = Field(default_factory=lambda:datetime.now(timezone.utc))
 

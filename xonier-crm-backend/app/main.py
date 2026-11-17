@@ -51,6 +51,8 @@ from app.routes.dashboard_router import router as dashboard_route
 from app.routes.task_category_route import router as task_category_route
 from app.routes.task_status_route import router as task_status_route
 from app.routes.deal_stage_route import router as deal_stage_route
+from app.routes.stage_automation_route import router as stage_automation_route
+from app.routes.revenue_forecast_route import router as revenue_forecast_route
 from app.routes.lead_status_route import router as lead_status_route
 from app.routes.task_route import router as task_route
 from app.routes.next_action_route import router as next_action_route
@@ -190,6 +192,8 @@ app.include_router(dashboard_route)
 app.include_router(task_category_route, prefix="/api/task-category")
 app.include_router(task_status_route, prefix="/api/task-status")
 app.include_router(deal_stage_route, prefix="/api/deal-stage")
+app.include_router(stage_automation_route, prefix="/api/stage-automation")
+app.include_router(revenue_forecast_route, prefix="/api/revenue-forecast")
 app.include_router(lead_status_route, prefix="/api/lead-status")
 app.include_router(task_route, prefix="/api/task")
 app.include_router(next_action_route, prefix="/api/next-action")

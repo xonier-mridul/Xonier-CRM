@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import api from "@/src/lib/axios";
 import CompanyService from "@/src/services/company.service";
 
@@ -15,10 +15,13 @@ type Action = {
   completedAt: string | null;
 };
 
-export default function NextActions({ entityType, entityId, canEdit }: {
+export default function NextActions({ entityType, entityId, canEdit, defaultOwnerId, promptOnOpen, onActionCreated }: {
   entityType: EntityType;
   entityId: string;
   canEdit: boolean;
+  defaultOwnerId?: string;
+  promptOnOpen?: boolean;
+  onActionCreated?: () => void;
 }) {
   const [actions, setActions] = useState<Action[]>([]);
   const [owners, setOwners] = useState<Owner[]>([]);
@@ -29,6 +32,14 @@ export default function NextActions({ entityType, entityId, canEdit }: {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [timezone, setTimezone] = useState<string | null>(null);
+  const [promptNext, setPromptNext] = useState(false);
+  const titleRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (promptOnOpen && canEdit) {
+      setPromptNext(true);
+      requestAnimationFrame(() => titleRef.current?.focus());
+    }
+  }, [promptOnOpen, canEdit]);
 
   useEffect(() => { CompanyService.getCompanyDetails().then((company) => setTimezone(company.timezone || "UTC")).catch(() => setError("Could not load company timezone.")); }, []);
 
@@ -50,6 +61,11 @@ export default function NextActions({ entityType, entityId, canEdit }: {
       .then((response) => setOwners(response.data.data))
       .catch(() => setOwners([]));
   }, [base, canEdit]);
+  useEffect(() => {
+    if (owners.length && !ownerId) {
+      setOwnerId(owners.find((owner) => owner.id === defaultOwnerId)?.id || owners[0].id);
+    }
+  }, [owners, ownerId, defaultOwnerId]);
 
   const create = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -60,6 +76,8 @@ export default function NextActions({ entityType, entityId, canEdit }: {
       await api.post(base, { kind, title: title.trim(), localDueAt: dueAt, ownerId });
       setTitle("");
       setDueAt("");
+      setPromptNext(false);
+      onActionCreated?.();
       await load();
     } catch {
       setError("Could not save this action. Check the date and owner.");
@@ -74,6 +92,8 @@ export default function NextActions({ entityType, entityId, canEdit }: {
     try {
       await api.patch(`${base}/${actionId}/complete`);
       await load();
+      setPromptNext(true);
+      requestAnimationFrame(() => titleRef.current?.focus());
     } catch {
       setError("Could not complete this action.");
     } finally {
@@ -89,6 +109,8 @@ export default function NextActions({ entityType, entityId, canEdit }: {
       <h3 className="mb-1 text-lg font-semibold text-gray-900 dark:text-white">Next actions</h3>
       <p className="mb-4 text-sm text-gray-500">Schedule work directly on this {entityType}. Time zone: {timezone || "loading…"}.</p>
       {canEdit && (
+        <>
+        {promptNext && <p role="status" className="mb-3 rounded border border-cyan-200 bg-cyan-50 p-3 text-sm text-cyan-800 dark:bg-cyan-950 dark:text-cyan-200">Action completed. Schedule the next step below.</p>}
         <form onSubmit={create} className="mb-5 grid gap-3 md:grid-cols-2">
           <label className="text-sm">Type
             <select aria-label="Action type" value={kind} onChange={(event) => setKind(event.target.value)} className="mt-1 w-full rounded border p-2 dark:bg-gray-700">
@@ -102,13 +124,14 @@ export default function NextActions({ entityType, entityId, canEdit }: {
             </select>
           </label>
           <label className="text-sm">Action
-            <input aria-label="Action title" value={title} onChange={(event) => setTitle(event.target.value)} maxLength={200} required className="mt-1 w-full rounded border p-2 dark:bg-gray-700" placeholder="e.g. Call to confirm meeting" />
+            <input ref={titleRef} aria-label="Action title" value={title} onChange={(event) => setTitle(event.target.value)} maxLength={200} required className="mt-1 w-full rounded border p-2 dark:bg-gray-700" placeholder="e.g. Call to confirm meeting" />
           </label>
           <label className="text-sm">Due date and time
             <input aria-label="Action due date" type="datetime-local" value={dueAt} onChange={(event) => setDueAt(event.target.value)} required className="mt-1 w-full rounded border p-2 dark:bg-gray-700" />
           </label>
           <button type="submit" disabled={busy || !owners.length || !timezone} className="rounded bg-cyan-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 md:col-span-2">Add next action</button>
         </form>
+        </>
       )}
       {error && <p role="alert" className="mb-3 text-sm text-red-600">{error}</p>}
       <div className="space-y-2">

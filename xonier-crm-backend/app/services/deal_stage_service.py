@@ -61,6 +61,11 @@ class DealStageService(LeadStatusService):
                 if delete:
                     if key in SYSTEM_KEYS:
                         raise AppException(409, "Built-in stages are required by the sales workflow")
+                    rules = await self.db["deal_stage_automation_rules"].count_documents(
+                        {"companyId": doc["_id"], "stageKey": key}, session=session
+                    )
+                    if rules:
+                        raise AppException(409, "Delete automation rules for this stage first")
                     used = await self.db["deals"].count_documents(
                         {"companyId": doc["_id"], "dealStage": key}, session=session)
                     if used:

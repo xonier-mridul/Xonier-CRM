@@ -17,6 +17,9 @@ class CreateCalendarEventSchema(BaseModel):
     isAllDay: bool = False
 
     priority: Optional[Literal["low", "medium", "high"]] = None
+    entityType: Optional[Literal["lead", "deal"]] = None
+    entityId: Optional[str] = None
+    entityName: Optional[str] = None
 
 
     @model_validator(mode="after")

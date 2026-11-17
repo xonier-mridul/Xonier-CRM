@@ -21,6 +21,9 @@ export interface CalendarEvent {
 
   createdAt: string; 
   updatedAt: string; 
+  entityType?: "lead" | "deal" | null;
+  entityId?: string | null;
+  entityName?: string | null;
   followUpEntity?: "lead" | "deal" | "quotation" | "invoice" | "enquiry";
   followUpRecordId?: string;
 }
@@ -37,6 +40,9 @@ export interface CalendarEventPayload {
   isAllDay: boolean;
 
   priority: "low" | "medium" | "high";
+  entityType?: "lead" | "deal" | "" | null;
+  entityId?: string | null;
+  entityName?: string | null;
 }
 
 export interface BulkCalenderEventPayload {

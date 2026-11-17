@@ -11,6 +11,7 @@ import { EventService } from "@/src/services/event.service";
 import { CalendarEventPayload } from "@/src/types/calenders/calender.types";
 import { EventType } from "@/src/constants/enum";
 import ErrorComponent from "../../ui/ErrorComponent";
+import CrmEntityRecordPicker from "../../common/CrmEntityRecordPicker";
 import { useTranslation } from "react-i18next";
 
 interface CreateEventModalProps {
@@ -40,6 +41,9 @@ const [isLoading, setIsLoading] = useState<boolean>(false)
     isAllDay: false,
     priority: "medium",
     description: "",
+    entityType: "",
+    entityId: "",
+    entityName: "",
   });
 
 
@@ -93,7 +97,13 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       return toast.info("Please fill all required fill  properly")
     };
   
-    const result  = await EventService.create(form)
+    const payload: CalendarEventPayload = {
+      ...form,
+      entityType: form.entityType && form.entityId ? form.entityType : null,
+      entityId: form.entityType && form.entityId ? form.entityId : null,
+      entityName: form.entityType && form.entityId ? form.entityName || null : null,
+    };
+    const result  = await EventService.create(payload)
     console.log("event created:",result)
     if(result.status === 201){
 
@@ -109,7 +119,9 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     isAllDay: false,
     priority: "medium",
     description: "",
-  
+    entityType: "",
+    entityId: "",
+    entityName: "",
     })
     setErr("")
     
@@ -222,7 +234,7 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           name="meetingLink"
           type="url"
           value={form.meetingLink ?? ""}
-          onChange={handleSelectChange}
+          onChange={handleInputChange}
           placeholder="https://meet.google.com/abc-defg-hij"
           className="col-span-2"
           />
@@ -237,6 +249,52 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             />
             {t("all_day_event")}
           </label>
+
+          <div className="col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-gray-100 dark:border-gray-800">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                Link to CRM Record
+              </label>
+              <select
+                value={form.entityType || ""}
+                onChange={(e) => {
+                  const nextType = e.target.value as "lead" | "deal" | "";
+                  setForm((prev) => ({
+                    ...prev,
+                    entityType: nextType,
+                    entityId: "",
+                    entityName: "",
+                  }));
+                }}
+                className="w-full px-3 py-2.5 rounded-md border text-[14px] bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              >
+                <option value="">None</option>
+                <option value="lead">Lead</option>
+                <option value="deal">Deal</option>
+              </select>
+            </div>
+
+            {(form.entityType === "lead" || form.entityType === "deal") && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  {form.entityType === "lead" ? "Linked Lead" : "Linked Deal"}
+                </label>
+                <CrmEntityRecordPicker
+                  entityType={form.entityType}
+                  value={form.entityId || ""}
+                  displayName={form.entityName || ""}
+                  onChange={(entityId, entityName) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      entityId,
+                      entityName,
+                    }))
+                  }
+                  className="w-full px-3 py-2.5 rounded-md border text-[14px] bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-300/30 focus:outline-none focus:ring-2 focus:ring-cyan-500 flex items-center justify-between gap-2 text-left cursor-pointer"
+                />
+              </div>
+            )}
+          </div>
          
          
           

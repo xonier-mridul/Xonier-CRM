@@ -37,6 +37,11 @@ const KIND_STYLE: Record<string, { border: string; badge: string; label: string 
     badge: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-300",
     label: "ACTION DONE",
   },
+  meeting: {
+    border: "border-teal-500",
+    badge: "bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300",
+    label: "MEETING",
+  },
   call: {
     border: "border-emerald-500",
     badge: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300",
@@ -95,6 +100,7 @@ export default function CommercialTimeline({
         (i) =>
           i.kind === "next_action" ||
           i.kind === "next_action_completed" ||
+          i.kind === "meeting" ||
           i.kind === "call" ||
           i.kind === "email"
       );
@@ -157,6 +163,7 @@ export default function CommercialTimeline({
           (i) =>
             i.kind === "next_action" ||
             i.kind === "next_action_completed" ||
+            i.kind === "meeting" ||
             i.kind === "call" ||
             i.kind === "email"
         ).length

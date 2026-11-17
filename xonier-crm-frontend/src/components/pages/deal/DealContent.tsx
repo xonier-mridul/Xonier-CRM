@@ -22,6 +22,7 @@ import { RootState } from "@/src/store";
 import { useDealStages } from "@/src/hooks/useLeadStatuses";
 import LeadStatusConfiguration from "../lead/LeadStatusConfiguration";
 import DealAttentionQueue from "./DealAttentionQueue";
+import StageAutomationRules from "./StageAutomationRules";
 import DealKanbanBoard from "./DealKanbanBoard";
 import { HiOutlineMenuAlt2, HiOutlineViewBoards } from "react-icons/hi";
 import { formatDate } from "@/src/app/utils/date.utils";
@@ -67,6 +68,10 @@ const DealContent = (): JSX.Element => {
   const { statuses: dealStages, label: stageLabel, error: stageError, refresh: refreshStages } = useDealStages();
   const [showAttention, setShowAttention] = useState(false);
   const [configureStages, setConfigureStages] = useState(false);
+  const [configureAutomations, setConfigureAutomations] = useState(false);
+  const canConfigureAutomations = useSelector((s: RootState) => s.auth.user?.userRole?.some(
+    role => ["MANAGER", "COMPANY_ADMIN", "SUPER_ADMIN", "ADMIN"].includes(role.code)
+  ));
   const canConfigureStages = useSelector((s: RootState) => s.auth.user?.userRole?.some(
     role => ["COMPANY_ADMIN", "SUPER_ADMIN", "ADMIN"].includes(role.code)
   ));
@@ -406,6 +411,7 @@ useEffect(() => {
 
   if (showAttention) return <DealAttentionQueue stageLabel={stageLabel} onBack={() => setShowAttention(false)} />;
   if (configureStages && canConfigureStages) return <LeadStatusConfiguration entity="deal" onBack={() => setConfigureStages(false)} />;
+  if (configureAutomations && canConfigureAutomations) return <div className="p-6"><button onClick={() => setConfigureAutomations(false)} className="text-sm text-cyan-600">← Back to deals</button><StageAutomationRules /></div>;
 
   return (
     <div>
@@ -436,6 +442,7 @@ useEffect(() => {
           <div className="flex items-center gap-6">
             <button onClick={() => setShowAttention(true)} className="rounded-lg border border-amber-200 px-3 py-2 text-sm font-medium text-amber-800 dark:text-amber-300">Deal ageing</button>
             {canConfigureStages && <button onClick={() => setConfigureStages(true)} className="rounded-lg border border-cyan-200 px-3 py-2 text-sm font-medium text-cyan-700 dark:text-cyan-300">Configure stages</button>}
+            {canConfigureAutomations && <button onClick={() => setConfigureAutomations(true)} className="rounded-lg border border-cyan-200 px-3 py-2 text-sm font-medium text-cyan-700 dark:text-cyan-300">Stage automations</button>}
              <PageLimit
                             setLimitOpen={setLimitOpen}
                             pageLimit={pageLimit}

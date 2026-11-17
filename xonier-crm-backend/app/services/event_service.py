@@ -46,8 +46,20 @@ class EventService:
                     if is_exist:
                         raise AppException(400, "This event already exists, please create different title or date")
 
+                    raw_entity_type = (payload.get("entityType") or "").strip().lower() or None
+                    raw_entity_id = (payload.get("entityId") or "").strip() if isinstance(payload.get("entityId"), str) else payload.get("entityId")
+                    entity_oid = (
+                        PydanticObjectId(str(raw_entity_id))
+                        if raw_entity_type and raw_entity_id and ObjectId.is_valid(str(raw_entity_id))
+                        else None
+                    )
+                    entity_name = (payload.get("entityName") or "").strip() or None if entity_oid else None
+
                     new_payload = {
                         **payload,
+                        "entityType": raw_entity_type if entity_oid else None,
+                        "entityId": entity_oid,
+                        "entityName": entity_name,
                         "createdBy": user["_id"],
                     }
 
@@ -297,8 +309,20 @@ class EventService:
 
             event_title = event.title
 
+            raw_entity_type = (payload.get("entityType") or "").strip().lower() or None
+            raw_entity_id = (payload.get("entityId") or "").strip() if isinstance(payload.get("entityId"), str) else payload.get("entityId")
+            entity_oid = (
+                PydanticObjectId(str(raw_entity_id))
+                if raw_entity_type and raw_entity_id and ObjectId.is_valid(str(raw_entity_id))
+                else None
+            )
+            entity_name = (payload.get("entityName") or "").strip() or None if entity_oid else None
+
             new_payload = {
                 **payload,
+                "entityType": raw_entity_type if entity_oid else None,
+                "entityId": entity_oid,
+                "entityName": entity_name,
                 "updatedBy": user["_id"],
                 "updatedAt": datetime.now(timezone.utc),
             }

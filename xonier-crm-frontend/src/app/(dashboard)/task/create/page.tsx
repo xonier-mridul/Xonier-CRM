@@ -22,6 +22,7 @@ import { AuthService } from "@/src/services/auth.service";
 import { RootState } from "@/src/store";
 import { PERMISSIONS } from "@/src/constants/enum";
 import UserSelect from "@/src/components/common/userselect";
+import CrmEntityRecordPicker from "@/src/components/common/CrmEntityRecordPicker";
 import { useTranslation } from "react-i18next";
 
 const PRIORITY_CFG: Record<
@@ -512,13 +513,19 @@ const CreateTaskPage = (): JSX.Element => {
             </SectionCard>
 
             <SectionCard icon="🔗" title={t("link_to_crm_entity")}>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label={t("entity_type")}>
                   <select
                     value={form.entityType ?? ""}
-                    onChange={(e) =>
-                      set("entityType", (e.target.value as TASK_ENTITY_TYPE) || undefined)
-                    }
+                    onChange={(e) => {
+                      const nextType = (e.target.value as TASK_ENTITY_TYPE) || undefined;
+                      setForm((prev) => ({
+                        ...prev,
+                        entityType: nextType,
+                        entityId: "",
+                        entityName: "",
+                      }));
+                    }}
                     className={selectCls}
                   >
                     <option value="">{t("none")}</option>
@@ -529,26 +536,56 @@ const CreateTaskPage = (): JSX.Element => {
                     ))}
                   </select>
                 </Field>
-                <Field label={t("entity_id")}>
-                  <input
-                    type="text"
-                    value={form.entityId ?? ""}
-                    onChange={(e) => set("entityId", e.target.value)}
-                    placeholder={t("objectid")}
-                    className={inputCls}
-                    disabled={!form.entityType}
-                  />
-                </Field>
-                <Field label={t("entity_name")}>
-                  <input
-                    type="text"
-                    value={form.entityName ?? ""}
-                    onChange={(e) => set("entityName", e.target.value)}
-                    placeholder={t("display_name")}
-                    className={inputCls}
-                    disabled={!form.entityType}
-                  />
-                </Field>
+                {form.entityType === TASK_ENTITY_TYPE.LEAD ||
+                form.entityType === TASK_ENTITY_TYPE.DEAL ? (
+                  <div className="md:col-span-2">
+                    <Field
+                      label={
+                        form.entityType === TASK_ENTITY_TYPE.LEAD
+                          ? "Linked Lead"
+                          : "Linked Deal"
+                      }
+                    >
+                      <CrmEntityRecordPicker
+                        entityType={
+                          form.entityType === TASK_ENTITY_TYPE.LEAD ? "lead" : "deal"
+                        }
+                        value={form.entityId ?? ""}
+                        displayName={form.entityName ?? ""}
+                        onChange={(entityId, entityName) =>
+                          setForm((prev) => ({
+                            ...prev,
+                            entityId,
+                            entityName,
+                          }))
+                        }
+                      />
+                    </Field>
+                  </div>
+                ) : (
+                  <>
+                    <Field label={t("entity_id")}>
+                      <input
+                        type="text"
+                        value={form.entityId ?? ""}
+                        onChange={(e) => set("entityId", e.target.value)}
+                        placeholder={t("objectid")}
+                        className={inputCls}
+                        disabled={!form.entityType}
+                      />
+                    </Field>
+                    <Field label={t("entity_name")}>
+                      <input
+                        type="text"
+                        value={form.entityName ?? ""}
+                        onChange={(e) => set("entityName", e.target.value)}
+                        placeholder={t("display_name")}
+                        className={inputCls}
+                        disabled={!form.entityType}
+                      />
+                    </Field>
+                  </>
+                )}
               </div>
             </SectionCard>
           </div>
