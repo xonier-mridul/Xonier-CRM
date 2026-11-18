@@ -124,6 +124,7 @@ export class ChromeSession {
       '--disable-dev-shm-usage',
       '--disable-background-networking',
       '--mute-audio',
+      ...(process.platform === 'linux' ? ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'] : []),
       `--user-agent=${this.userAgent}`,
       'about:blank',
     ];
